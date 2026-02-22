@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -13,16 +14,16 @@ BOOL CPluginFSInterface::TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL&
     detach = FALSE;
     BOOL ret = TRUE;
     BOOL close = TRUE;
-    if (!CalledFromDisconnectDialog &&                // pri volani z Disconnect dialogu se nema cenu na nic ptat
-        !forceClose &&                                // pri force se nema cenu na nic ptat
-        reason != FSTRYCLOSE_UNLOADCLOSEFS &&         // pri unloadu pluginu se nema cenu ptat (FS v panelu je v klidu, nic netaha, atd.)
-        reason != FSTRYCLOSE_UNLOADCLOSEDETACHEDFS && // pri unloadu pluginu se nema cenu ptat (odpojene FS je v klidu, nic netaha, atd.)
-        reason != FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)   // disconnect (z kontextovyho menu v Alt+F1/F2) odpojeneho FS, nema smysl se na nic ptat
+    if (!CalledFromDisconnectDialog &&                // when called from the Disconnect dialog there is no point in asking about anything
+        !forceClose &&                                // when forced there is no point in asking about anything
+        reason != FSTRYCLOSE_UNLOADCLOSEFS &&         // when unloading the plugin there is no point in asking (the FS in the panel is idle, not transferring, etc.)
+        reason != FSTRYCLOSE_UNLOADCLOSEDETACHEDFS && // when unloading the plugin there is no point in asking (the detached FS is idle, not transferring, etc.)
+        reason != FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)   // disconnecting (from the context menu in Alt+F1/F2) a detached FS, there is no point in asking about anything
 
     {
         if (reason == FSTRYCLOSE_CHANGEPATH)
         {
-            if (canDetach && !Config.DisconnectCommandUsed) // "close or detach" a nejde o prikaz "Disconnect"
+            if (canDetach && !Config.DisconnectCommandUsed) // "close or detach" and it is not the "Disconnect" command
             {
                 int res;
                 if (!Config.AlwaysNotCloseCon)
@@ -36,8 +37,8 @@ BOOL CPluginFSInterface::TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL&
                     params.CheckBoxText = LoadStr(IDS_ALWAYSNOTCLOSE);
                     params.CheckBoxValue = &Config.AlwaysNotCloseCon;
                     char buffer[100];
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   nechame pro tlacitka msgboxu resit kolize hotkeys tim, ze simulujeme, ze jde o menu
+                    /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+   we let the message box buttons handle hotkey collisions by simulating that this is a menu
 MENU_TEMPLATE_ITEM MsgBoxButtons[] = 
 {
   {MNTT_PB, 0
@@ -50,7 +51,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             DIALOG_NO, LoadStr(IDS_KEEPCONBUTTON));
                     params.AliasBtnNames = buffer;
                     res = SalamanderGeneral->SalMessageBoxEx(&params);
-                    // nechame prekreslit hlavni okno (aby user cely disconnect nekoukal na zbytek dialogu)
+                    // redraw the main window (so the user does not stare at the rest of the dialog during the entire disconnect)
                     UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
                 }
                 else
@@ -75,7 +76,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     params.CheckBoxText = LoadStr(IDS_ALWAYSCLOSE);
                     params.CheckBoxValue = &Config.AlwaysDisconnect;
                     res = SalamanderGeneral->SalMessageBoxEx(&params);
-                    // nechame prekreslit hlavni okno (aby user cely disconnect nekoukal na zbytek dialogu)
+                    // redraw the main window (so the user does not stare at the rest of the dialog during the entire disconnect)
                     UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
                 }
                 close = ret = (res == IDYES);
@@ -85,15 +86,15 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         {
             if (reason == FSTRYCLOSE_CHANGEPATHFAILURE || reason == FSTRYCLOSE_ATTACHFAILURE)
             {
-                close = ret = TRUE; // tenhle dotaz se ukazal jako silne matouci a nepochopitelny, proto proste jen preferujeme Disconnect
+                close = ret = TRUE; // this prompt proved to be very confusing and incomprehensible, so we simply prefer Disconnect
                                     /*
-        // "zadna cesta na FTP neni pristupna, disconnect?"
+        // "no path on the FTP is accessible, disconnect?"
         close = ret = (SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
                                                         LoadStr(IDS_NOPATHACCESSINPANEL),
                                                         LoadStr(IDS_FTPPLUGINTITLE),
                                                         MB_YESNO | MSGBOXEX_ESCAPEENABLED |
                                                         MSGBOXEX_ICONQUESTION) == IDYES);
-        // nechame prekreslit hlavni okno (aby user cely disconnect nekoukal na zbytek dialogu)
+        // redraw the main window (so the user does not stare at the rest of the dialog during the entire disconnect)
         UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
 */
             }
@@ -101,9 +102,9 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
     }
 
     if (close && ControlConnection != NULL && ControlConnection->IsConnected())
-    { // zde zavirame connectionu z duvodu, aby v pripade noveho pripojeni na stejny server
-        // s limitem na jedno pripojeni byla sance na uspech (s timto pripojenim uz by slo
-        // o dve na jeden server -> server by odmitl kvuli svemu limitu)
+    { // we close the connection here so that in the case of a new connection to the same server
+        // with a single-connection limit there is a chance of success (with this connection it would already be
+        // two per server -> the server would reject it due to its limit)
         ControlConnection->CloseControlConnection(SalamanderGeneral->GetMsgBoxParent());
     }
     return ret;
@@ -127,7 +128,7 @@ void CPluginFSInterface::Event(int event, DWORD param)
         if (RefreshPanelOnActivation)
         {
             RefreshPanelOnActivation = FALSE;
-            SalamanderGeneral->PostRefreshPanelFS(this); // provedeme refresh pri aktivaci hl. okna Salamandera
+            SalamanderGeneral->PostRefreshPanelFS(this); // perform a refresh when the Salamander main window gets activated
         }
 
         CPluginFSInterface* fs = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
@@ -135,7 +136,7 @@ void CPluginFSInterface::Event(int event, DWORD param)
         {
             ActivateWelcomeMsg();
             if (Config.AlwaysShowLogForActPan)
-                Logs.ActivateLog(GetLogUID()); // po aktivaci logu connectiony workera z dialogu operace je nutne po prepnuti do panelu znovu aktivovat log panelu
+                Logs.ActivateLog(GetLogUID()); // after activating the worker connection log from the operation dialog, the panel log must be reactivated when switching back to the panel
         }
         break;
     }
@@ -143,7 +144,7 @@ void CPluginFSInterface::Event(int event, DWORD param)
     case FSE_ATTACHED:
         if (ControlConnection != NULL)
             ControlConnection->LogMessage(LoadStr(IDS_LOGMSGATTACHED), -1, TRUE);
-        // break;  // nema tu byt
+        // break;  // should not be here
     case FSE_OPENED:
     {
         RefreshValuesOfPanelCtrlCon();
@@ -165,25 +166,24 @@ void CPluginFSInterface::Event(int event, DWORD param)
         break;
     }
 
-    case FSE_TIMER: // zpozdeny refresh panelu (aby se stihla vratit connectiona z operacniho dialogu do panelu)
+    case FSE_TIMER: // delayed panel refresh (to give the connection time to return from the operation dialog to the panel)
     {
-        DWORD paramLimit = 4; // max. jedna vterina cekani na connectionu (cekame, jestli se bude worker snazit predat connectionu)
+        DWORD paramLimit = 4; // maximum one second waiting for the connection (we wait to see whether the worker will try to hand over the connection)
         DWORD ti;
         if (ControlConnection != NULL &&
             ControlConnection->GetIsSocketConnectedLastCallTime(&ti) && GetTickCount() - ti < 5000)
         {
-            paramLimit = 24; // max. 5 vterin cekani na connectionu (vime, ze se nam ji worker snazi predat)
+            paramLimit = 24; // maximum five seconds waiting for the connection (we know the worker is trying to hand it over)
         }
-        if (param >= paramLimit || // param < paramLimit: spusti refresh jen pokud mame connectionu, param >= paramLimit pusti refresh vzdy
+        if (param >= paramLimit || // param < paramLimit: start the refresh only if we have the connection, param >= paramLimit always allows the refresh
             ControlConnection != NULL && ControlConnection->IsConnected())
         {
-            // potrebujeme refresh i v neaktivnim Salamanderovi (lidi nadavali, ze pri aktivaci Salama naskoci
-            // tahani listingu a ze to melo byt davno hotove) + zpozdit refresh az po predani control connectiony
-            // z operace zpet do panelu => postneme prikaz menu a v nem provedeme tvrdy refresh
+            // we need the refresh even in an inactive Salamander (people complained that listing retrieval starts when Salamander gets focus and that it should have finished long ago) + delay the refresh until the control connection
+            // is handed back from the operation to the panel => post a menu command and perform a hard refresh there
             CPluginFSInterface* fsLeft = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(PANEL_LEFT);
             CPluginFSInterface* fsRight = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(PANEL_RIGHT);
             if (fsLeft == this || fsRight == this)
-                SalamanderGeneral->PostMenuExtCommand(fsLeft == this ? FTPCMD_REFRESHLEFTPANEL : FTPCMD_REFRESHRIGHTPANEL, TRUE); // pockame na "sal-idle"
+                SalamanderGeneral->PostMenuExtCommand(fsLeft == this ? FTPCMD_REFRESHLEFTPANEL : FTPCMD_REFRESHRIGHTPANEL, TRUE); // wait for "sal-idle"
         }
         else
             SalamanderGeneral->AddPluginFSTimer(200, this, param + 1);
@@ -222,12 +222,12 @@ void CPluginFSInterface::ReleaseObject(HWND parent)
         }
         else
         {
-            // pokud jsme jeste nestihli vypsat co vedlo k zavreni connectiny, udelame to ted
-            // aspon do logu (okno uz nema smysl ukazovat, uzivatele uz to nejspis nezajima)
+            // if we have not yet written what led to closing the connection, do it now
+            // at least into the log (there is no point in showing a window, the user is probably no longer interested)
             ControlConnection->CheckCtrlConClose(TRUE, FALSE, parent, TRUE);
         }
 
-        // je-li zavirany FS v panelu, bude potreba vynulovat LeftPanelCtrlCon nebo RightPanelCtrlCon
+        // if the closed FS is in a panel, LeftPanelCtrlCon or RightPanelCtrlCon needs to be cleared
         HANDLES(EnterCriticalSection(&PanelCtrlConSect));
         if (LeftPanelCtrlCon == ControlConnection)
             LeftPanelCtrlCon = NULL;
@@ -268,20 +268,20 @@ CPluginFSInterface::GetSupportedServices()
 
 BOOL CPluginFSInterface::GetChangeDriveOrDisconnectItem(const char* fsName, char*& title, HICON& icon, BOOL& destroyIcon)
 {
-    char txt[FTP_USERPART_SIZE + 50]; // userpart + misto na fs-name + misto na zdvojeni par ampersandu
-    // text bude cesta na FS (v Salamanderovskem formatu)
+    char txt[FTP_USERPART_SIZE + 50]; // user part + space for the fs-name + space for doubling a few ampersands
+    // the text will be the path to the FS (in the Salamander format)
     txt[0] = '\t';
     sprintf(txt + 1, "%s:", fsName);
     static char emptyBuff[] = "";
     MakeUserPart(txt + strlen(txt), FTP_USERPART_SIZE, emptyBuff);
     int l = (int)strlen(txt);
     if (l > 0 && txt[l - 1] == '/')
-        txt[l - 1] = 0; // orizneme '/' z konce cesty (musi byt "relativni")
-    // zdvojime pripadne '&', aby se tisk cesty provedl korektne
+        txt[l - 1] = 0; // trim '/' from the end of the path (it must be "relative")
+    // double any '&' so that the path prints correctly
     SalamanderGeneral->DuplicateAmpersands(txt, FTP_USERPART_SIZE + 50);
     title = SalamanderGeneral->DupStr(txt);
     if (title == NULL)
-        return FALSE; // low-memory, zadna polozka nebude
+        return FALSE; // low memory, no item will be added
 
     icon = FTPIcon;
     destroyIcon = FALSE;
@@ -298,35 +298,35 @@ CPluginFSInterface::GetFSIcon(BOOL& destroyIcon)
 BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathLen, int& offset)
 {
     if (DirLineHotPathType == ftpsptEmpty && ControlConnection != NULL)
-    { // na zaklade aktualni cesty ve FS zjistime typ cesty v Directory Line
+    { // based on the current path in the FS determine the path type in the Directory Line
         DirLineHotPathType = ControlConnection->GetFTPServerPathType(Path);
         DirLineHotPathUserLength = FTPGetUserLength(User);
     }
 
     const char* end = text + pathLen;
-    const char* root = text; // ukazatel za root cestu
+    const char* root = text; // pointer past the root path
     while (*root != 0 && *root != ':')
-        root++; // preskoceni fs-name
+        root++; // skip the fs-name
     if (*root == ':')
     {
         root = FTPFindPath(root + 1, DirLineHotPathUserLength);
         if (*root == '/' || *root == '\\')
-            root++;                          // preskok prvniho '/' nebo '\\' z cesty
-        if (DirLineHotPathType == ftpsptOS2) // u OS/2 cest preskocime jeste root disku ("C:/")
+            root++;                          // skip the first '/' or '\\' from the path
+        if (DirLineHotPathType == ftpsptOS2) // for OS/2 paths skip the disk root ("C:/") as well
         {
             while (root < end && *root != '/' && *root != '\\')
                 root++;
             if (*root == '/' || *root == '\\')
-                root++; // preskok '/' nebo '\\' z rootu diskove cesty
+                root++; // skip '/' or '\\' from the disk root path
         }
-        if (DirLineHotPathType == ftpsptTandem) // u Tandem cest preskocime "system" ("\\SYSTEM"), kratsi cesta nema smysl
+        if (DirLineHotPathType == ftpsptTandem) // for Tandem paths skip the "system" ("\\SYSTEM"), a shorter path makes no sense
             while (root < end && *root != '.')
                 root++;
     }
     const char* s = text + offset;
     if (s >= end)
     {
-        DirLineHotPathType = ftpsptEmpty; // konec zjistovani hot-textu
+        DirLineHotPathType = ftpsptEmpty; // end of hot-text detection
         DirLineHotPathUserLength = 0;
         return FALSE;
     }
@@ -337,7 +337,7 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
         switch (DirLineHotPathType)
         {
         case ftpsptOpenVMS: // "PUB$DEVICE:[PUB.VMS.DIR2]"
-        {                   // oddelovac je tecka, "^." je escape-sekvence pro '.'
+        {                   // the separator is a dot, "^." is an escape sequence for '.'
             if (*s == '.')
                 s++;
             BOOL vmsEsc = FALSE;
@@ -362,10 +362,10 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
             break;
         }
 
-        case ftpsptIBMz_VM: // "ACADEM:ANONYMOU.PICS" (+root musi koncit teckou: "ACADEM:ANONYMOU.")
+        case ftpsptIBMz_VM: // "ACADEM:ANONYMOU.PICS" (+the root must end with a dot: "ACADEM:ANONYMOU.")
         case ftpsptMVS:     // "'VEA0016.MAIN.CLIST'"
         case ftpsptTandem:  // \SYSTEM.$VVVVV.SUBVOLUM.FILENAME
-        {                   // oddelovac je tecka
+        {                   // the separator is a dot
             if (*s == '.')
                 s++;
             while (s < end && *s != '.')
@@ -378,21 +378,21 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
                 {
                     if (DirLineHotPathType == ftpsptIBMz_VM)
                     {
-                        const char* z_VMRootDir = root; // pozice prvni tecky (root) u IBM_z/VM cest
+                        const char* z_VMRootDir = root; // position of the first dot (root) in IBM_z/VM paths
                         while (z_VMRootDir < end && *z_VMRootDir != '.')
                             z_VMRootDir++;
                         if (s == z_VMRootDir)
-                            s++; // root musi koncit teckou, ostatni cesty nejspis ne
+                            s++; // the root must end with a dot, other paths probably do not
                     }
                 }
             }
             break;
         }
 
-        case ftpsptNetware: // "/pub/altap/salamand" nebo "\pub\altap\salamand"
-        case ftpsptWindows: // "/pub/altap/salamand" nebo "\pub\altap\salamand"
-        case ftpsptOS2:     // napr. C:/DIR1/DIR2 nebo C:\DIR1\DIR2
-        {                   // oddelovace jsou '/' a '\\'
+        case ftpsptNetware: // "/pub/altap/salamand" or "\pub\altap\salamand"
+        case ftpsptWindows: // "/pub/altap/salamand" or "\pub\altap\salamand"
+        case ftpsptOS2:     // e.g. C:/DIR1/DIR2 or C:\DIR1\DIR2
+        {                   // the separators are '/' and '\\'
             if (*s == '/' || *s == '\\')
                 s++;
             while (s < end && *s != '/' && *s != '\\')
@@ -400,8 +400,8 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
             break;
         }
 
-        default: // unix a dalsi: "/pub/altap/salamand" (ale i "/\dir-with-backslash")
-        {        // oddelovac je '/'
+        default: // Unix and others: "/pub/altap/salamand" (but also "/\dir-with-backslash")
+        {        // the separator is '/'
             if (*s == '/')
                 s++;
             while (s < end && *s != '/')
@@ -413,7 +413,7 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
     }
     if (offset == pathLen)
     {
-        DirLineHotPathType = ftpsptEmpty; // konec zjistovani hot-textu
+        DirLineHotPathType = ftpsptEmpty; // end of hot-text detection
         DirLineHotPathUserLength = 0;
     }
     return TRUE;
@@ -422,24 +422,24 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
 void CPluginFSInterface::CompleteDirectoryLineHotPath(char* path, int pathBufSize)
 {
     if (ControlConnection != NULL)
-    { // na zaklade aktualni cesty ve FS zjistime typ cesty v Directory Line
+    { // based on the current path in the FS determine the path type in the Directory Line
         CFTPServerPathType type = ControlConnection->GetFTPServerPathType(Path);
-        if (type == ftpsptOpenVMS || type == ftpsptMVS) // pridat "zavorku" potrebuji jen OpenVMS a MVS
+        if (type == ftpsptOpenVMS || type == ftpsptMVS) // only OpenVMS and MVS need to add the "bracket"
         {
-            // ziskame ukazatel za root cestu
+            // obtain a pointer past the root path
             const char* root = path;
             while (*root != 0 && *root != ':')
-                root++; // preskoceni fs-name
+                root++; // skip the fs-name
             if (*root == ':')
             {
                 root = FTPFindPath(root + 1, FTPGetUserLength(User));
                 if (*root == '/' || *root == '\\')
-                    root++; // preskok prvniho '/' nebo '\\' z cesty
+                    root++; // skip the first '/' or '\\' from the path
             }
             int pathLen = (int)strlen(path);
 
-            // zkontrolujeme "zavorku", pripadne pokud chybi, tak ji pridame
-            if (type == ftpsptOpenVMS) // OpenVMS - zavorka je ']'
+            // check the "bracket" and add it if missing
+            if (type == ftpsptOpenVMS) // OpenVMS - the bracket is ']'
             {
                 const char* s = root;
                 BOOL vmsEsc = FALSE;
@@ -471,7 +471,7 @@ void CPluginFSInterface::CompleteDirectoryLineHotPath(char* path, int pathBufSiz
                     }
                 }
             }
-            else // MVS - zavorka je '\''
+            else // MVS - the bracket is '\''
             {
                 if (strchr(root, '\'') != NULL && path[pathLen - 1] != '\'' && pathLen + 1 < pathBufSize)
                 {
@@ -489,44 +489,44 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
     BOOL needFullPath = FALSE;
     char root[2 * MAX_PATH];
     char path[FTP_MAX_PATH];
-    if (mode == 1) // rezim "Directory Name Only"
+    if (mode == 1) // "Directory Name Only" mode
     {
         lstrcpyn(path, Path, FTP_MAX_PATH);
         if (pathType == ftpsptUnknown)
             pathType = ftpsptUnix;
-        if (FTPCutDirectory(pathType, path, FTP_MAX_PATH, buf, bufSize, NULL)) // oriznuti se povedlo
+        if (FTPCutDirectory(pathType, path, FTP_MAX_PATH, buf, bufSize, NULL)) // trimming succeeded
         {
             return TRUE;
         }
-        else // je to root nebo nastala nejaka jina chyba (neznamy typ cesty)
+        else // it is the root or some other error occurred (unknown path type)
         {
             needFullPath = TRUE;
         }
     }
     else
     {
-        if (mode == 2) // rezim "Shortened Path"
+        if (mode == 2) // "Shortened Path" mode
         {
             char* trimStart = NULL;
             char* trimEnd = NULL;
             lstrcpyn(path, Path, FTP_MAX_PATH);
             switch (pathType)
             {
-            case ftpsptIBMz_VM: // "ACADEM:ANONYMOU.PICS" (+root musi koncit teckou: "ACADEM:ANONYMOU.")
-            {                   // oddelovac je tecka
+            case ftpsptIBMz_VM: // "ACADEM:ANONYMOU.PICS" (+the root must end with a dot: "ACADEM:ANONYMOU.")
+            {                   // the separator is a dot
                 trimStart = strchr(path, '.');
-                char* s = path + strlen(path) - 1; // posledni znak ignorujeme (je-li tecka stejne preskocime)
+                char* s = path + strlen(path) - 1; // ignore the last character (if it is a dot we skip it anyway)
                 while (--s > path && *s != '.')
                     ;
                 if (s > path)
                     trimEnd = s + 1;
                 if (trimStart + 1 == trimEnd)
-                    trimEnd = NULL; // jen jedna tecka v ceste -> nedelame trim
+                    trimEnd = NULL; // only one dot in the path -> do not trim
                 break;
             }
 
             case ftpsptOpenVMS: // "PUB$DEVICE:[PUB.VMS.DIR2]"
-            {                   // oddelovac je tecka, "^." je escape-sekvence pro '.'
+            {                   // the separator is a dot, "^." is an escape sequence for '.'
                 char* s = path;
                 BOOL vmsEsc = FALSE;
                 while (*s != 0)
@@ -550,41 +550,41 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
 
                 s = path + strlen(path) - 1;
                 if (s > path && *(s - 1) == '.')
-                    s--; // posledni znak musi byt ']', ten netestujeme a posledni '.' preskocime
+                    s--; // the last character must be ']', we do not test it and skip the last '.'
                 while (--s > path && (*s != '.' || FTPIsVMSEscapeSequence(path, s)))
-                    ; // neescapovana '.'
+                    ; // non-escaped '.'
                 if (s > path)
                     trimEnd = s + 1;
                 if (trimStart + 1 == trimEnd)
-                    trimEnd = NULL; // napr. "[.pub]" -> nedelame trim
+                    trimEnd = NULL; // e.g. "[.pub]" -> do not trim
                 break;
             }
 
             case ftpsptMVS: // "'VEA0016.MAIN.CLIST'"
-            {               // oddelovac je tecka
+            {               // the separator is a dot
                 trimStart = strchr(path, '\'');
                 if (trimStart != NULL)
                     trimStart++;
                 char* s = path + strlen(path) - 1;
                 if (s > path && *(s - 1) == '.')
-                    s--; // posledni znak musi byt '\'', ten netestujeme a posledni '.' preskocime
+                    s--; // the last character must be '\'', we do not test it and skip the last '.'
                 while (--s > path && *s != '.')
                     ;
                 if (s > path)
                     trimEnd = s + 1;
                 if (trimStart + 1 == trimEnd)
-                    trimEnd = NULL; // napr. "'.pub'" -> nedelame trim
+                    trimEnd = NULL; // e.g. "'.pub'" -> do not trim
                 break;
             }
 
-            case ftpsptNetware: // "/pub/altap/salamand" nebo "\pub\altap\salamand"
-            case ftpsptWindows: // "/pub/altap/salamand" nebo "\pub\altap\salamand"
-            {                   // oddelovace jsou '/' a '\\'
+            case ftpsptNetware: // "/pub/altap/salamand" or "\pub\altap\salamand"
+            case ftpsptWindows: // "/pub/altap/salamand" or "\pub\altap\salamand"
+            {                   // the separators are '/' and '\\'
                 if (path[0] == '/' || path[0] == '\\')
                     trimStart = path + 1;
                 else
                     trimStart = path;
-                char* s = path + strlen(path) - 1; // '/' ani '\\' na konci retezce nebereme
+                char* s = path + strlen(path) - 1; // do not consider '/' or '\\' at the end of the string
                 while (--s > path && *s != '/' && *s != '\\')
                     ;
                 if (s > path)
@@ -592,7 +592,7 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
                 break;
             }
 
-            case ftpsptOS2: // napr. C:/DIR1/DIR2 nebo C:\DIR1\DIR2
+            case ftpsptOS2: // e.g. C:/DIR1/DIR2 or C:\DIR1\DIR2
             {
                 if (path[0] != 0 && path[1] == ':')
                 {
@@ -602,7 +602,7 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
                 }
                 else
                     trimStart = path;
-                char* s = path + strlen(path) - 1; // '/' ani '\\' na konci retezce nebereme
+                char* s = path + strlen(path) - 1; // do not consider '/' or '\\' at the end of the string
                 while (--s > path && *s != '/' && *s != '\\')
                     ;
                 if (s > path)
@@ -616,7 +616,7 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
                     trimStart = path + 1;
                 else
                     trimStart = path;
-                char* s = path + strlen(path) - 1; // '.' na konci retezce nebereme
+                char* s = path + strlen(path) - 1; // do not consider '.' at the end of the string
                 while (--s > path && *s != '.')
                     ;
                 if (s > path)
@@ -624,13 +624,13 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
                 break;
             }
 
-            default: // unix a dalsi: "/pub/altap/salamand" (ale i "/\dir-with-backslash")
-            {        // oddelovac je '/'
+            default: // Unix and others: "/pub/altap/salamand" (but also "/\dir-with-backslash")
+            {        // the separator is '/'
                 if (path[0] == '/')
                     trimStart = path + 1;
                 else
                     trimStart = path;
-                char* s = path + strlen(path) - 1; // '/' na konci retezce nebereme
+                char* s = path + strlen(path) - 1; // do not consider '/' at the end of the string
                 while (--s > path && *s != '/')
                     ;
                 if (s > path)
@@ -638,7 +638,7 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
                 break;
             }
             }
-            // orezeme cestu
+            // trim the path
             if (trimStart != NULL && trimEnd != NULL && trimEnd > trimStart)
             {
                 memmove(trimStart + 3, trimEnd, strlen(trimEnd) + 1);
@@ -665,44 +665,44 @@ BOOL CPluginFSInterface::GetPathForMainWindowTitle(const char* fsName, int mode,
             return TRUE;
         }
     }
-    return FALSE; // cesta staci vytvorit standardnim algoritmem
+    return FALSE; // the path can be created by the standard algorithm
 }
 
 void CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, const char* path, BOOL includingSubdirs)
 {
-    // POZOR: v 'includingSubdirs' pro FTP cesty je naORovany 0x02 pokud jde o "soft refresh"
+    // WARNING: in 'includingSubdirs' for FTP paths 0x02 is ORed in when it is a "soft refresh"
 
-    BOOL isFTP = SalamanderGeneral->StrNICmp(path, AssignedFSName, AssignedFSNameLen) == 0 &&          // jde o nase fs-name pro FTP
-                 path[AssignedFSNameLen] == ':';                                                       // nase fs-name neni jen prefix
-    BOOL isFTPS = SalamanderGeneral->StrNICmp(path, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // jde o nase fs-name pro FTPS
-                  path[AssignedFSNameLenFTPS] == ':';                                                  // nase fs-name neni jen prefix
+    BOOL isFTP = SalamanderGeneral->StrNICmp(path, AssignedFSName, AssignedFSNameLen) == 0 &&          // this is our fs-name for FTP
+                 path[AssignedFSNameLen] == ':';                                                       // our fs-name is not just a prefix
+    BOOL isFTPS = SalamanderGeneral->StrNICmp(path, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // this is our fs-name for FTPS
+                  path[AssignedFSNameLenFTPS] == ':';                                                  // our fs-name is not just a prefix
 
     if (isFTP || isFTPS)
     {
-        // otestujeme shodnost user-part cest nebo aspon jejich prefixu
+        // test whether the user-part paths match or at least share the same prefix
         char path1[FTP_USERPART_SIZE];
         char path2[FTP_USERPART_SIZE];
         lstrcpyn(path1, path + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS) + 1, FTP_USERPART_SIZE);
         MakeUserPart(path2, FTP_USERPART_SIZE);
         int userLength = FTPGetUserLength(User);
-        if (FTPHasTheSameRootPath(path1, path2, userLength)) // stejny root (pripojeni)
+        if (FTPHasTheSameRootPath(path1, path2, userLength)) // same root (connection)
         {
             char* p1 = (char*)FTPFindPath(path1, userLength);
             char* p2 = (char*)FTPFindPath(path2, userLength);
             CFTPServerPathType type = GetFTPServerPathType(Path);
-            if (FTPIsPrefixOfServerPath(type, p1, p2, !(includingSubdirs & 0x01))) // shoda prefixu nebo jen presna shoda
+            if (FTPIsPrefixOfServerPath(type, p1, p2, !(includingSubdirs & 0x01))) // prefix matches or it is an exact match
             {
                 NextRefreshWontClearCache = TRUE;
-                if (includingSubdirs & 0x02 /* soft refresh */) // provedeme refresh az se aktivuje panel
+                if (includingSubdirs & 0x02 /* soft refresh */) // perform the refresh once the panel activates
                 {
-                    if (GetForegroundWindow() != SalamanderGeneral->GetMainWindowHWND()) // neaktivni hl. okno Salamandera
-                        RefreshPanelOnActivation = TRUE;                                 // refresh se provede az pri prijmu FSE_ACTIVATEREFRESH
+                    if (GetForegroundWindow() != SalamanderGeneral->GetMainWindowHWND()) // Salamander main window is inactive
+                        RefreshPanelOnActivation = TRUE;                                 // the refresh will run when FSE_ACTIVATEREFRESH is received
                     else
-                        SalamanderGeneral->PostRefreshPanelFS(this); // aktivni hl. okno Salamandera: pokud je FS v panelu, provedeme jeho refresh
+                        SalamanderGeneral->PostRefreshPanelFS(this); // Salamander main window active: refresh the FS in the panel
                 }
-                else // provedeme refresh hned (nebudeme cekat az se aktivuje panel)
+                else // refresh immediately (do not wait for the panel to activate)
                 {
-                    SalamanderGeneral->AddPluginFSTimer(100, this, 0); // oddalujeme refresh panelu, aby se stihla vratit connectiona z dialogu operace (po dokonceni operace se posila notifikace o zmene na ceste + zavira dialog operace)
+                    SalamanderGeneral->AddPluginFSTimer(100, this, 0); // delay the panel refresh so the connection can return from the operation dialog (after finishing the operation a path-change notification is sent and the dialog closes)
                 }
             }
         }
@@ -730,7 +730,7 @@ void CPluginFSInterface::AddBookmark(HWND parent)
                                            0,
                                            Port))
         {
-            // bookmarka pridana -> nechame usera novou bookmarku umistit v seznamu bookmark
+            // bookmark added -> let the user place the new bookmark in the bookmark list
             CConnectDlg dlg(parent, 2);
             if (dlg.IsGood())
                 dlg.Execute();
@@ -744,7 +744,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
     if (ControlConnection != NULL && // (always true)
         dlg.Execute() == IDOK)
     {
-        // ulozime cestu, na ktere budeme hlasit zmenu po provedeni prikazu
+        // store the path for which we will report a change after the command is executed
         char changedPath[2 * MAX_PATH];
         const char* fsName = ControlConnection->GetEncryptControlConnection() == 1 ? AssignedFSNameFTPS : AssignedFSName;
         sprintf(changedPath, "%s:", fsName);
@@ -761,7 +761,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
         strcat(cmdBuf, "\r\n");
         strcat(logBuf, "\r\n");
 
-        TotalConnectAttemptNum = 1; // zahajeni uzivatelem pozadovane akce -> je-li treba znovu pripojit, jde o 1. pokus reconnect
+        TotalConnectAttemptNum = 1; // user-initiated action -> if reconnection is needed, this is the first reconnect attempt
         const char* retryMsgAux = NULL;
         BOOL canRetry = FALSE;
         char retryMsgBuf[300];
@@ -769,41 +769,41 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
         BOOL commandSent = FALSE;
         BOOL reconnected = FALSE;
         int ftpReplyCode;
-        char ftpReplyBuf[20480]; // bereme jen prvnich 20 KB z reply message (snad je dost predimenzovane)
+        char ftpReplyBuf[20480]; // take only the first 20 KB from the reply message (hopefully oversized enough)
         while (ReconnectIfNeeded(parent, &reconnected, TRUE,
-                                 &TotalConnectAttemptNum, retryMsgAux)) // bude-li potreba, reconnectneme se
+                                 &TotalConnectAttemptNum, retryMsgAux)) // reconnect if necessary
         {
             BOOL run = FALSE;
             BOOL ok = TRUE;
             char newPath[FTP_MAX_PATH];
-            BOOL needChangeDir = reconnected; // po reconnectu zkusime opet nastavit pracovni adresar
-            if (!reconnected)                 // jsme jiz dele pripojeni, zkontrolujeme jestli pracovni adresar odpovida 'Path'
+            BOOL needChangeDir = reconnected; // after reconnect try to set the working directory again
+            if (!reconnected)                 // already connected for a longer time, verify that the working directory matches 'Path'
             {
-                // vyuzijeme cache, v normalnich pripadech by tam cesta mela byt
+                // use the cache, under normal circumstances the path should be there
                 ok = ControlConnection->GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE,
                                                               &canRetry, retryMsgBuf, 300);
-                if (!ok && canRetry) // "retry" je povolen
+                if (!ok && canRetry) // "retry" is allowed
                 {
                     run = TRUE;
                     retryMsgAux = retryMsgBuf;
                 }
-                if (ok && strcmp(newPath, Path) != 0) // nesedi pracovni adresar na serveru - nutna zmena
-                    needChangeDir = TRUE;             // (predpoklad: server vraci stale stejny retezec pracovni cesty)
+                if (ok && strcmp(newPath, Path) != 0) // working directory on the server differs - change required
+                    needChangeDir = TRUE;             // (assumption: the server returns the same working path string)
             }
-            if (ok && needChangeDir) // je-li potreba zmenit pracovni adresar
+            if (ok && needChangeDir) // working directory needs to be changed
             {
                 int panel;
                 BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
                 BOOL success;
-                // v SendChangeWorkingPath() je pri vypadku spojeni ReconnectIfNeeded(), nastesti to
-                // nevadi, protoze kod predchazejici tomuto volani se provadi jen pokud k reconnectu
-                // nedojde - "if (!reconnected)" - pokud dojde k reconnectu, jsou oba kody stejne
+                // SendChangeWorkingPath() calls ReconnectIfNeeded() on connection failure, luckily that
+                // does not matter because the code preceding this call runs only when reconnect did not
+                // occur - "if (!reconnected)" - if reconnect happens, both code paths are the same
                 ok = ControlConnection->SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT, parent, Path,
                                                               User, USER_MAX_SIZE, &success,
                                                               ftpReplyBuf, 700, NULL,
                                                               &TotalConnectAttemptNum, NULL, TRUE, NULL);
-                if (ok && !success && Path[0] != 0) // send se povedl, ale server hlasi nejakou chybu (+ignorujeme chybu pri prazdne ceste) -> useruv prikaz nelze
-                {                                   // poslat (muze byt svazan s akt. cestou v panelu)
+                if (ok && !success && Path[0] != 0) // send succeeded, but the server reports an error (+ignore the error for an empty path) -> user command cannot
+                {                                   // be sent (it may be tied to the current path in the panel)
                     char errBuf[900 + FTP_MAX_PATH];
                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), Path, ftpReplyBuf);
                     SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
@@ -818,9 +818,9 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                                                       ControlConnection->GetWaitTime(WAITWND_COMOPER), NULL,
                                                       &ftpReplyCode, ftpReplyBuf, 20480, FALSE,
                                                       TRUE, TRUE, &canRetry, retryMsgBuf,
-                                                      300, NULL)) // nenastal fatal error
+                                                      300, NULL)) // no fatal error occurred
                 {
-                    if (dlg.RefreshWorkingPath) // nejspis doslo ke zmene na Path, zneplatnime listing Path v cache
+                    if (dlg.RefreshWorkingPath) // the Path probably changed, invalidate the Path listing cache
                         UploadListingCache.ReportUnknownChange(User, Host, Port, Path, GetFTPServerPathType(Path));
 
                     if (dlg.ChangePathInPanel)
@@ -829,37 +829,37 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                         BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
                         ok = ControlConnection->GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, TRUE,
                                                                       &canRetry, retryMsgBuf, 300);
-                        if (!ok && canRetry) // "retry" je povolen
+                        if (!ok && canRetry) // "retry" is allowed
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
                         }
                         if (ok && !notInPanel && strcmp(newPath, Path) != 0)
-                        { // doslo ke zmene cesty (+ jinak vse o.k. a jsme v panelu ("always true")) -> zmenime
-                            // cestu v panelu (predpoklad: server vraci stale stejny retezec pracovni cesty)
+                        { // the path changed (+otherwise everything is ok and we are in the panel ("always true")) -> change
+                            // the path in the panel (assumption: the server returns the same working path string)
                             char newUserPart[FTP_USERPART_SIZE];
                             MakeUserPart(newUserPart, FTP_USERPART_SIZE, newPath);
-                            ChangePathOnlyGetCurPathTime = GetTickCount(); // pro optimalizaci ChangePath() volane tesne po ziskani pracovni cesty
+                            ChangePathOnlyGetCurPathTime = GetTickCount(); // optimize ChangePath() called right after obtaining the working path
                             SalamanderGeneral->ChangePanelPathToPluginFS(panel, fsName, newUserPart);
                         }
                     }
 
-                    if (ok) // vse dopadlo dobre, muzeme userovi ohlasit vysledek prikazu
+                    if (ok) // everything went well, report the command result to the user
                     {
                         char* s = logBuf + strlen(logBuf);
                         while (s > logBuf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                             s--;
-                        *s = 0;                                                      // orizneme CRLF z konce textu prikazu do logu
-                        CWelcomeMsgDlg(parent, ftpReplyBuf, TRUE, logBuf).Execute(); // ukazeme odpoved, nic vic nedelame...
+                        *s = 0;                                                      // trim CRLF from the end of the command text for the log
+                        CWelcomeMsgDlg(parent, ftpReplyBuf, TRUE, logBuf).Execute(); // show the response, nothing more...
                         SalamanderGeneral->WaitForESCRelease();
                     }
                 }
                 else
                 {
-                    if (dlg.RefreshWorkingPath) // mozna doslo ke zmene na Path, zneplatnime listing Path v cache
+                    if (dlg.RefreshWorkingPath) // the Path may have changed, invalidate the Path listing cache
                         UploadListingCache.ReportUnknownChange(User, Host, Port, Path, GetFTPServerPathType(Path));
 
-                    if (canRetry) // "retry" je povolen
+                    if (canRetry) // "retry" is allowed
                     {
                         run = TRUE;
                         retryMsgAux = retryMsgBuf;
@@ -888,8 +888,8 @@ int CPluginFSInterface::GetLogUID()
 void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int menuY, int type,
                                      int panel, int selectedFiles, int selectedDirs)
 {
-    if (type == fscmPathInPanel || type == fscmPanel || // menu pro akt. cestu + pro panel budou shodne
-        type == fscmItemsInPanel)                       // menu pro polozky bude obsahovat prikazy pro polozky
+    if (type == fscmPathInPanel || type == fscmPanel || // menus for the current path and for the panel are identical
+        type == fscmItemsInPanel)                       // the item menu will contain commands for items
     {
         HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_ACTPATHCONTEXTMENU));
         if (main != NULL)
@@ -919,7 +919,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                     BOOL isfocusedDir = FALSE;
                     SalamanderGeneral->GetPanelFocusedItem(panel, &isfocusedDir);
 
-                    // vlozeni prikazu Salamandera
+                    // insert Salamander commands
                     int i = 0;
                     int index = 0;
                     int salCmd;
@@ -927,7 +927,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                     int type2, lastType = sctyUnknown;
                     while (SalamanderGeneral->EnumSalamanderCommands(&index, &salCmd, nameBuf, 200, &enabled, &type2))
                     {
-                        if (!enabled || salCmd == SALCMD_OPEN || // "open" pro soubory zatim neumime, tak ho nepridame (umime ho jen u adresaru a tam je nezajimavy)
+                        if (!enabled || salCmd == SALCMD_OPEN || // we cannot "open" files yet, so do not add it (we can do it only for directories and there it is uninteresting)
                             type2 == sctyForFocusedFile && isfocusedDir ||
                             (type2 != sctyForFocusedFile && type2 != sctyForFocusedFileOrDirectory &&
                              type2 != sctyForSelectedFilesAndDirectories))
@@ -935,7 +935,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                             continue;
                         }
 
-                        if (type2 != lastType && lastType != sctyUnknown) // vlozeni separatoru
+                        if (type2 != lastType && lastType != sctyUnknown) // insert a separator
                         {
                             memset(&mi, 0, sizeof(mi));
                             mi.cbSize = sizeof(mi);
@@ -945,12 +945,12 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                         }
                         lastType = type2;
 
-                        // vlozeni prikazu Salamandera
+                        // insert Salamander commands
                         memset(&mi, 0, sizeof(mi));
                         mi.cbSize = sizeof(mi);
                         mi.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
                         mi.fType = MFT_STRING;
-                        mi.wID = salCmd + 5000; // vsechny prikazy Salamandera odsuneme o 5000, aby se daly rozlisit od FTP prikazu
+                        mi.wID = salCmd + 5000; // shift all Salamander commands by 5000 so they can be distinguished from FTP commands
                         mi.dwTypeData = nameBuf;
                         mi.cch = (UINT)strlen(nameBuf);
                         mi.fState = MFS_ENABLED;
@@ -969,7 +969,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                     case CM_DISCONNECTSRV:
                     {
                         GlobalDisconnectPanel = panel;
-                        SalamanderGeneral->PostMenuExtCommand(FTPCMD_DISCONNECT, TRUE); // spusti se az v "sal-idle"
+                        SalamanderGeneral->PostMenuExtCommand(FTPCMD_DISCONNECT, TRUE); // runs later in "sal-idle"
                         break;
                     }
 
@@ -1012,8 +1012,8 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                             SalamanderGeneral->ShowMessageBox(LoadStr(IDS_FSHAVENOLOG),
                                                               LoadStr(IDS_FTPERRORTITLE), MSGBOX_ERROR);
                         }
-                        else                                                              // otevreme okno Logs s vybranym logem GlobalShowLogUID
-                            SalamanderGeneral->PostMenuExtCommand(FTPCMD_SHOWLOGS, TRUE); // spusti se az v "sal-idle"
+                        else                                                              // open the Logs window with the selected log GlobalShowLogUID
+                            SalamanderGeneral->PostMenuExtCommand(FTPCMD_SHOWLOGS, TRUE); // runs later in "sal-idle"
                         break;
                     }
 
@@ -1161,7 +1161,7 @@ void CSimpleListPluginDataInterface::ReleasePluginData(CFileData& file, BOOL isD
         free(s);
 }
 
-// callback volany ze Salamandera pro ziskani textu
+// callback invoked from Salamander to obtain text
 void WINAPI GetRowText()
 {
     char* s = (char*)((*TransferFileData)->PluginData);
@@ -1179,11 +1179,11 @@ void WINAPI GetRowText()
 void CSimpleListPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view,
                                                const char* archivePath, const CFileData* upperDir)
 {
-    view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // prepneme do Detailed rezimu + zrusime ostatni sloupce, nechame jen sloupec Name
+    view->SetViewMode(VIEW_MODE_DETAILED, VALID_DATA_NONE); // switch to Detailed mode + remove other columns, keep only the Name column
     view->GetTransferVariables(TransferFileData, TransferIsDir, TransferBuffer, TransferLen, TransferRowData,
                                TransferPluginDataIface, TransferActCustomData);
 
-    // zmenime jmeno std. sloupce Name na Line
+    // rename the standard Name column to Line
     view->SetColumnName(0, LoadStr(IDS_LINENUMCOLUMN), LoadStr(IDS_LINENUMCOLUMNDESC));
 
     CColumn column;
@@ -1238,7 +1238,7 @@ BOOL CSimpleListPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
         return TRUE;
     }
     else
-        return FALSE; // pocty oznacenych polozek a info o prazdnem panelu at vypise Salamander
+        return FALSE; // let Salamander display the item counts and empty panel information
 }
 
 //
@@ -1269,9 +1269,9 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
             case stctSize:
             {
                 hasSize = TRUE;
-                BlocksColumnOffset = -1; // CFileData::Size ma vyssi prioritu nez obecna velikost v blocich
-                BytesColumnOffset = -1;  // CFileData::Size ma vyssi prioritu nez obecna velikost v bytech
-                DataOffsets[i] = -1;     // ulozeni dat primo v CFileData
+                BlocksColumnOffset = -1; // CFileData::Size has higher priority than the generic size in blocks
+                BytesColumnOffset = -1;  // CFileData::Size has higher priority than the generic size in bytes
+                DataOffsets[i] = -1;     // store the data directly in CFileData
                 break;
             }
 
@@ -1280,10 +1280,10 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                 if (DateColumnOffset == -1)
                 {
                     int nameID = Columns->At(i)->NameID;
-                    if (nameID == 3 /* date */) // nalezen sloupec s datumem posledniho zapisu (bereme prvni zleva)
-                        DateColumnOffset = -2;  // ulozeni v CFileData::LastWrite
+                    if (nameID == 3 /* date */) // found the column with the last write date (take the first from the left)
+                        DateColumnOffset = -2;  // stored in CFileData::LastWrite
                 }
-                DataOffsets[i] = -1; // ulozeni dat primo v CFileData
+                DataOffsets[i] = -1; // store the data directly in CFileData
                 break;
             }
 
@@ -1292,10 +1292,10 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                 if (TimeColumnOffset == -1)
                 {
                     int nameID = Columns->At(i)->NameID;
-                    if (nameID == 4 /* time */) // nalezen sloupec s casem posledniho zapisu (bereme prvni zleva)
-                        TimeColumnOffset = -2;  // ulozeni v CFileData::LastWrite
+                    if (nameID == 4 /* time */) // found the column with the last write time (take the first from the left)
+                        TimeColumnOffset = -2;  // stored in CFileData::LastWrite
                 }
-                DataOffsets[i] = -1; // ulozeni dat primo v CFileData
+                DataOffsets[i] = -1; // store the data directly in CFileData
                 break;
             }
 
@@ -1311,7 +1311,7 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                 if (DateColumnOffset == -1)
                 {
                     int nameID = Columns->At(i)->NameID;
-                    if (nameID == 3 /* date */) // nalezen sloupec s datumem posledniho zapisu (bereme prvni zleva)
+                    if (nameID == 3 /* date */) // found the column with the last write date (take the first from the left)
                         DateColumnOffset = ItemDataSize;
                 }
                 DataOffsets[i] = ItemDataSize;
@@ -1324,7 +1324,7 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                 if (TimeColumnOffset == -1)
                 {
                     int nameID = Columns->At(i)->NameID;
-                    if (nameID == 4 /* time */) // nalezen sloupec s casem posledniho zapisu (bereme prvni zleva)
+                    if (nameID == 4 /* time */) // found the column with the last write time (take the first from the left)
                         TimeColumnOffset = ItemDataSize;
                 }
                 DataOffsets[i] = ItemDataSize;
@@ -1338,15 +1338,15 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                 {
                     int nameID = Columns->At(i)->NameID;
                     if (nameID == 2 /* size */)
-                    {                            // nalezen sloupec s velikostmi souboru v bytech (bereme prvni zleva)
-                        BlocksColumnOffset = -1; // obecna velikost v bytech ma vetsi prioritu nez v blocich
+                    {                            // found the column with file sizes in bytes (take the first from the left)
+                        BlocksColumnOffset = -1; // general size in bytes has higher priority than in blocks
                         BytesColumnOffset = ItemDataSize;
                     }
                     else
                     {
                         if ((nameID == 10 /* block size */ || nameID == 22 /* Physical Block Length */) &&
                             BlocksColumnOffset == -1)
-                        { // nalezen sloupec s velikostmi souboru v blocich (bereme prvni zleva)
+                        { // found the column with file sizes in blocks (take the first from the left)
                             BlocksColumnOffset = ItemDataSize;
                         }
                     }
@@ -1358,12 +1358,12 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
 
             default:
                 DataOffsets[i] = -1;
-                break; // ulozeni dat primo v CFileData
+                break; // store the data directly in CFileData
             }
         }
     }
     IsVMS = isVMS;
-    ValidDataMask = validDataMask | GetPLValidDataMask(); // musi se volat az po dohledani offsetu BytesColumnOffset, atd.
+    ValidDataMask = validDataMask | GetPLValidDataMask(); // must be called only after locating the BytesColumnOffset offsets, etc.
 }
 
 CFTPListingPluginDataInterface::~CFTPListingPluginDataInterface()
@@ -1371,7 +1371,7 @@ CFTPListingPluginDataInterface::~CFTPListingPluginDataInterface()
     if (DataOffsets != NULL)
         delete[] DataOffsets;
     if (DeleteColumns)
-        delete Columns; // slo jen o kopii, musime ji dealokovat
+        delete Columns; // it was only a copy, so we need to deallocate it
 }
 
 void CFTPListingPluginDataInterface::StoreStringToColumn(CFileData& file, int column, char* str)
@@ -1621,7 +1621,7 @@ CFTPListingPluginDataInterface::GetNumberFromColumn(const CFileData& file, int c
 
 BOOL CFTPListingPluginDataInterface::AllocPluginData(CFileData& file)
 {
-    if (ItemDataSize == 0) // zadna data nejsou ukladana mimo CFileData
+    if (ItemDataSize == 0) // no data are stored outside CFileData
     {
         file.PluginData = 0;
         return TRUE;
@@ -1633,7 +1633,7 @@ BOOL CFTPListingPluginDataInterface::AllocPluginData(CFileData& file)
         TRACE_E(LOW_MEMORY);
         return FALSE;
     }
-    memset(base, 0, ItemDataSize); // retezce byt nulovane musi, zbytek je nulovany jen pro prehlednost
+    memset(base, 0, ItemDataSize); // strings must be zeroed, the rest is zeroed just for clarity
     return TRUE;
 }
 
@@ -1651,9 +1651,9 @@ void CFTPListingPluginDataInterface::ClearPluginData(CFileData& file)
                 if (data != NULL)
                     SalamanderGeneral->Free(data);
             }
-            // stctGeneralDate, stctGeneralTime a stctGeneralNumber nejsou alokovane, uvolni se spolu s file.PluginData
+            // stctGeneralDate, stctGeneralTime, and stctGeneralNumber are not allocated separately; they are freed together with file.PluginData
         }
-        memset(base, 0, ItemDataSize); // retezce byt nulovane musi, zbytek je nulovany jen pro prehlednost
+        memset(base, 0, ItemDataSize); // strings must be zeroed, the rest is zeroed just for clarity
     }
 }
 
@@ -1671,7 +1671,7 @@ void CFTPListingPluginDataInterface::ReleasePluginData(CFileData& file, BOOL isD
                 if (data != NULL)
                     SalamanderGeneral->Free(data);
             }
-            // stctGeneralDate, stctGeneralTime a stctGeneralNumber nejsou alokovane, uvolni se spolu s file.PluginData
+            // stctGeneralDate, stctGeneralTime, and stctGeneralNumber are not allocated separately; they are freed together with file.PluginData
         }
         free(base);
     }
@@ -1703,7 +1703,7 @@ BOOL CFTPListingPluginDataInterface::GetSize(const CFileData& file, CQuadWord& s
         {
             size.SetUI64(*(__int64*)(((char*)(file.PluginData)) + BytesColumnOffset));
             if (size.Value == INT64_EMPTYNUMBER)
-                size.Set(0, 0); // je-li ve sloupci prazdna hodnota, vracime nulovou velikost
+                size.Set(0, 0); // if the column contains an empty value, return zero size
             inBytes = TRUE;
             return TRUE;
         }
@@ -1713,7 +1713,7 @@ BOOL CFTPListingPluginDataInterface::GetSize(const CFileData& file, CQuadWord& s
             {
                 size.SetUI64(*(__int64*)(((char*)(file.PluginData)) + BlocksColumnOffset));
                 if (size.Value == INT64_EMPTYNUMBER)
-                    size.Set(0, 0); // je-li ve sloupci prazdna hodnota, vracime nulovou velikost
+                    size.Set(0, 0); // if the column contains an empty value, return zero size
                 inBytes = FALSE;
                 return TRUE;
             }
@@ -1735,8 +1735,8 @@ void CFTPListingPluginDataInterface::GetBasicName(const CFileData& file, char** 
             if (file.NameLen > (DWORD)(file.Ext - file.Name))
                 *ext = buffer + (file.Ext - file.Name);
             else
-                *ext = buffer + strlen(buffer); // pro pripad, ze jmeno nema priponu (jinak je ';' vzdy za priponou)
-            return;                             // uspech, koncime
+                *ext = buffer + strlen(buffer); // in case the name has no extension (otherwise ';' is always after the extension)
+            return;                             // success, we're done
         }
         else
             TRACE_E("Unexpected situation in CFTPListingPluginDataInterface::GetBasicName(): not "
@@ -1754,7 +1754,7 @@ void CFTPListingPluginDataInterface::GetLastWriteDateAndTime(const CFileData& fi
     if (TimeColumnOffset == -2 || DateColumnOffset == -2)
     {
         DWORD mask = (TimeColumnOffset == -2 ? VALID_DATA_TIME : 0) | (DateColumnOffset == -2 ? VALID_DATA_DATE : 0);
-        if ((ValidDataMask & mask) == mask) // jen pro sychr
+        if ((ValidDataMask & mask) == mask) // just to be sure
         {
             FILETIME ft;
             SYSTEMTIME st;
@@ -1777,14 +1777,14 @@ void CFTPListingPluginDataInterface::GetLastWriteDateAndTime(const CFileData& fi
     if (*dateAndTimeValid)
     {
         if (DateColumnOffset == -1)
-            memset(date, 0, sizeof(CFTPDate)); // neznamy datum = pouzijeme "prazdnou hodnotu" (date->Day==0)
+            memset(date, 0, sizeof(CFTPDate)); // unknown date = use the "empty value" (date->Day == 0)
         else
         {
             if (DateColumnOffset != -2)
                 *date = *(CFTPDate*)(((char*)(file.PluginData)) + DateColumnOffset);
         }
-        if (TimeColumnOffset == -1 || date->Day == 0) // neznamy cas nebo neznamy ("prazdna hodnota") datum (nastavovat cas bez datumu je nesmysl -> cas je v tomto pripade proste povazovan tez za neznamy)
-        {                                             // neznamy cas: mozna pouzijeme "prazdnou hodnotu" (viz dalsi upravy 'time')
+        if (TimeColumnOffset == -1 || date->Day == 0) // unknown time or unknown ("empty value") date (setting time without a date makes no sense -> the time is considered unknown as well)
+        {                                             // unknown time: we may use the "empty value" (see further adjustments of 'time')
             memset(time, 0, sizeof(CFTPTime));
             time->Hour = 24;
         }
@@ -1794,7 +1794,7 @@ void CFTPListingPluginDataInterface::GetLastWriteDateAndTime(const CFileData& fi
                 *time = *(CFTPTime*)(((char*)(file.PluginData)) + TimeColumnOffset);
         }
 
-        // je-li neznamy cas a znamy datum, pak cas upravime na 0:00:00 (nepouzijeme "prazdnou hodnotu")
+        // if the time is unknown and the date is known, adjust the time to 0:00:00 (do not use the "empty value")
         if (time->Hour == 24 && date->Day != 0)
             memset(time, 0, sizeof(CFTPTime));
     }
@@ -1805,7 +1805,7 @@ BOOL CFTPListingPluginDataInterface::GetByteSize(const CFileData* file, BOOL isD
     if (BytesColumnOffset != -1)
     {
         size->SetUI64(*(__int64*)(((char*)(file->PluginData)) + BytesColumnOffset));
-        return size->Value != INT64_EMPTYNUMBER; // TRUE vracime jen pokud je velikost znama
+        return size->Value != INT64_EMPTYNUMBER; // return TRUE only if the size is known
     }
     return FALSE;
 }
@@ -1815,7 +1815,7 @@ BOOL CFTPListingPluginDataInterface::GetLastWriteDate(const CFileData* file, BOO
     if (DateColumnOffset != -1 && DateColumnOffset != -2)
     {
         CFTPDate d = *(CFTPDate*)(((char*)(file->PluginData)) + DateColumnOffset);
-        if (d.Day != 0) // pokud nejde o prazdnou hodnotu datumu
+        if (d.Day != 0) // if the date is not an empty value
         {
             date->wYear = d.Year;
             date->wMonth = d.Month;
@@ -1832,7 +1832,7 @@ BOOL CFTPListingPluginDataInterface::GetLastWriteTime(const CFileData* file, BOO
     if (TimeColumnOffset != -1 && TimeColumnOffset != -2)
     {
         CFTPTime t = *(CFTPTime*)(((char*)(file->PluginData)) + TimeColumnOffset);
-        if (t.Hour != 24) // pokud nejde o prazdnou hodnotu casu
+        if (t.Hour != 24) // if the time is not an empty value
         {
             time->wHour = t.Hour;
             time->wMinute = t.Minute;

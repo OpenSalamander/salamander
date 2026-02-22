@@ -116,7 +116,7 @@ IStream* ConvertMarkdownToHTML(const char* name)
     sprintf_s(buff, "<!DOCTYPE html><html lang=\"cs\" dir=\"ltr\"><head><meta charset=\"utf-8\"><style>\n");
     oStream->Write(buff, (ULONG)strlen(buff), &written);
 
-    // pokud nalezneme CSS, vlozime ho inline
+    // if we find CSS, inline it
     FILE* fpCSS = OpenMarkdownCSS();
     if (fpCSS != NULL)
     {
@@ -134,7 +134,7 @@ IStream* ConvertMarkdownToHTML(const char* name)
     sprintf_s(buff, "</article></body></html>\n");
     oStream->Write(buff, (ULONG)strlen(buff), &written);
 
-    // nastavime ukazovatko na zacatek streamu, IE z nej bude cist
+    // set the pointer to the start of the stream; IE will read from it
     LARGE_INTEGER seek;
     seek.QuadPart = 0;
     oStream->Seek(seek, STREAM_SEEK_SET, NULL);

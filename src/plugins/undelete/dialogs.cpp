@@ -220,7 +220,7 @@ INT_PTR CCopyProgressDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
 
     case WM_COMMAND:
@@ -545,7 +545,7 @@ void CConnectDialog::OnImageBrowse()
     openInfo.hwndOwner = HWindow;
     openInfo.lpstrFilter = "Image Files (*.img;*.ima)\0*.IMG;*.IMA\0AllFiles (*.*)\0*.*\0\0\0";
     openInfo.lpstrFile = Volume;
-    // TODO: porad to tady smrdi, kdyz je volume treba C:\Work\Altap\, tak init dir je svinstvo kvuli lpstrFile
+    // TODO: this still feels wrong; when the volume is e.g. C:\Work\Altap\, the initial dir becomes garbage because of lpstrFile
     openInfo.lpstrInitialDir = Volume;
     openInfo.nMaxFile = MAX_PATH;
     openInfo.Flags = OFN_FILEMUSTEXIST | OFN_READONLY;
@@ -747,8 +747,8 @@ INT_PTR CRestoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SalamanderGeneral->GetCommonFSOperSourceDescr(text2, MAX_PATH + 100, PANEL_SOURCE, files, dirs, NULL, FALSE, FALSE);
         GetDlgItemText(HWindow, IDC_LABEL_SOURCE, text1, 200);
         BOOL labelSet = FALSE;
-        // pokud jde o "file \"name.txt\"" nebo "directory \"name\"" najdeme jmeno a zbytek
-        // retezce pridame do text1, aby sla pouzit CSalamanderGUI::SetSubjectTruncatedText
+        // if it is "file \"name.txt\"" or "directory \"name\"" we find the name and the remaining text
+        // we add the strings to text1 so that CSalamanderGUI::SetSubjectTruncatedText can be used
         if (files + dirs <= 1)
         {
             char* beg = strchr(text2, '"');

@@ -11,18 +11,18 @@
 #include "wndout.h"
 #include "datarh.h"
 
-/* popis formatu salmenu.mnu
-MainMenuTemplate=             -- nazev sablony
+/* Description of the salmenu.mnu format
+MainMenuTemplate=             -- template name
 {
-IDS_COLUMN_MENU_NAME          -- 1. sekce
+IDS_COLUMN_MENU_NAME          -- section 1
 IDS_COLUMN_MENU_EXT
 IDS_COLUMN_MENU_TIME
 IDS_COLUMN_MENU_SIZE
 IDS_COLUMN_MENU_ATTR
 IDS_MENU_LEFT_SORTOPTIONS
 
-Dialog: IDD_FIND              -- dialog 2. sekce
-IDS_FFMENU_FILES              -- 2. sekce
+Dialog: IDD_FIND              -- dialog for section 2
+IDS_FFMENU_FILES              -- section 2
 IDS_FFMENU_FILES_FIND
 IDS_FFMENU_EDIT
 IDS_FFMENU_VIEW
@@ -30,10 +30,10 @@ IDS_FFMENU_OPTIONS
 IDS_FFMENU_HELP
 }
 
-PluginsDlgRemoveMenu=                  -- nazev sablony
+PluginsDlgRemoveMenu=                  -- template name
 {
-Control: IDD_PLUGINS IDB_PLUGINREMOVE  -- control spojeny s 3. sekci (label tlacitka prechazi do menu)
-IDS_UNINSTALLUNREGCOMPONENTS           -- 3. sekce
+Control: IDD_PLUGINS IDB_PLUGINREMOVE  -- control linked with section 3 (the button label moves to the menu)
+IDS_UNINSTALLUNREGCOMPONENTS           -- section 3
 }
 */
 
@@ -52,10 +52,10 @@ enum EnumSalMenuDataParserState
 struct CSalMenuDataParserState
 {
     EnumSalMenuDataParserState State;
-    char TemplateName[500];       // pokud ano, jeji nazev
-    WORD SectionDialogID;         // ID dialogu pro nasi sekci
-    WORD SectionControlDialogID;  // control v nasi sekci: ID dialogu s controlem
-    WORD SectionControlControlID; // control v nasi sekci: ID controlu
+    char TemplateName[500];       // template name, if provided
+    WORD SectionDialogID;         // dialog ID for the current section
+    WORD SectionControlDialogID;  // control metadata: dialog ID that owns the control
+    WORD SectionControlControlID; // control metadata: control ID inside that dialog
     DWORD Errors;
 
     //  CSalMenuSection *OpenedSection;
@@ -74,11 +74,11 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
     char buff[500];
     const char* p = line;
 
-    // preskocim uvodni whitespacy
+    // Skip leading whitespace.
     while (p < lineEnd && (*p == ' ' || *p == '\t'))
         p++;
 
-    // orizneme whitespacy na konci radku
+    // Trim trailing whitespace.
     while ((lineEnd - 1) > line && (*(lineEnd - 1) == ' ' || *(lineEnd - 1) == '\t'))
         lineEnd--;
 
@@ -88,9 +88,9 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
     {
     case esmpsNoTemplate:
     {
-        if (!emptyLine) // empty line v pripade ze neni otevreny template ignorujeme
+        if (!emptyLine) // ignore a blank line when no template is open
         {
-            // neni otevreny template, ocekavame jeho otevreni
+            // No template is open; expect a line that starts one.
             if (*(lineEnd - 1) != '=')
                 return FALSE;
             lstrcpyn(parserState->TemplateName, p, min(500 - 1, (lineEnd - p)));
@@ -101,7 +101,7 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
 
     case esmpsTemplateName:
     {
-        // cekame oteviraci zavorku templatu
+        // Expect the opening brace of the template.
         if (emptyLine || lineEnd > p + 1 || *p != '{')
             return FALSE;
         parserState->State = esmpsTemplateOpenBracket;
@@ -116,11 +116,11 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
     {
         if (emptyLine)
         {
-            // prazdny radek za oteviraci zavorkou nebo za jinym prazdnym radkem uvnit sekce nema smysl
+            // A blank line after the opening brace or after another blank line inside a section is invalid.
             if (parserState->State == esmpsTemplateOpenBracket || parserState->State == esmpsSectionSeparator)
                 return FALSE;
 
-            // jinak jde o separator sekci
+            // Otherwise treat it as a section separator.
             parserState->State = esmpsSectionSeparator;
             parserState->ResetSectionData();
         }
@@ -128,13 +128,13 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
         {
             if (lineEnd == p + 1 && *p == '}')
             {
-                // zavirani templatu
+                // Closing the template.
                 parserState->State = esmpsTemplateCloseBracket;
                 parserState->ResetSectionData();
             }
             else
             {
-                // jde o spojeni sekce s dialogem?
+                // Does this connect the section with a dialog?
                 if (p + 7 < lineEnd && strncmp(p, "Dialog:", 7) == 0)
                 {
                     if (parserState->State != esmpsTemplateOpenBracket && parserState->State != esmpsSectionSeparator)
@@ -159,7 +159,7 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
                 }
                 else
                 {
-                    // jde o pripojeni controlu k sekci?
+                    // Does this attach a control to the section?
                     if (p + 8 < lineEnd && strncmp(p, "Control:", 8) == 0)
                     {
                         if (parserState->State != esmpsTemplateOpenBracket && parserState->State != esmpsSectionSeparator)
@@ -212,7 +212,7 @@ BOOL CData::ProcessSalMenuLine(const char* line, const char* lineEnd, int row, C
                         {
                             if (parserState->State != esmpsSection)
                             {
-                                // sekce jeste nebyla zalozene, naalokujeme ji
+                                // No section has been created yet; allocate it now.
                                 CSalMenuSection* newSection = new CSalMenuSection();
                                 if (newSection == NULL)
                                     return FALSE; // lowmem
@@ -307,7 +307,7 @@ BOOL CData::LoadSalMenu(const char* fileName)
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
-    salMenuData[salMenuDataSize] = 0; // vlozime terminator
+    salMenuData[salMenuDataSize] = 0; // append the terminator
 
     CSalMenuDataParserState parserState;
     ZeroMemory(&parserState, sizeof(parserState));

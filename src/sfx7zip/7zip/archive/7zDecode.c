@@ -55,8 +55,8 @@ SZ_RESULT SzDecode(const CFileSize *packSizes, const CFolder *folder,
   for (si = 0; si < folder->NumPackStreams; si++)
     inSize += (size_t)packSizes[si];
 
-  // DA: ! BACHA ! tady umime rozpakovat jeden LZMA stream s BJC koderem
-  // jakmile tam bude neco jinyho, nebude to fungovat
+  // DA: WARNING! We can unpack only a single LZMA stream with the BJC coder here.
+  // As soon as something else appears, it will not work.
   for (i = 0; i < folder->NumCoders; i++) {
     coder = folder->Coders + i;
     if (coder->NumInStreams == 1 && coder->NumOutStreams == 1) {

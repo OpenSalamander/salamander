@@ -61,12 +61,12 @@ CSourceFile::CSourceFile(CSourceFile* orig, const char* newName)
             Name = iterator + 1;
             Ext = NULL;
         }
-        if (*iterator == '.' /*&& iterator > Name*/) // ".cvspass" ve Windows je pripona
+        if (*iterator == '.' /*&& iterator > Name*/) // ".cvspass" is an extension in Windows
             Ext = iterator + 1;
         iterator++;
     }
     if (orig->IsDir || Ext == NULL)
-        Ext = iterator; // adresare nemaji priponu + pokud soubor nema priponu
+        Ext = iterator; // directories do not have an extension + when a file has no extension
     NameLen = iterator - FullName;
     Size = orig->Size;
     Attr = orig->Attr;
@@ -88,7 +88,7 @@ CSourceFile::CSourceFile(WIN32_FIND_DATA& fd, const char* path, int pathLen)
     while (--Ext >= Name && *Ext != '.')
         ;
     if (Ext < Name)
-        Ext = FullName + NameLen; // ".cvspass" ve Windows je pripona
+        Ext = FullName + NameLen; // ".cvspass" is an extension in Windows
     else
         Ext++;
     Size = CQuadWord(fd.nFileSizeLow, fd.nFileSizeHigh);
@@ -121,12 +121,12 @@ CSourceFile::SetName(const char* name)
             Name = iterator + 1;
             Ext = NULL;
         }
-        if (*iterator == '.' /*&& iterator > Name*/) // ".cvspass" ve Windows je pripona
+        if (*iterator == '.' /*&& iterator > Name*/) // ".cvspass" is an extension in Windows
             Ext = iterator + 1;
         iterator++;
     }
     if (IsDir || Ext == NULL)
-        Ext = iterator; // adresare nemaji priponu + pokud soubor nema priponu
+        Ext = iterator; // directories do not have an extension + when a file has no extension
     NameLen = iterator - FullName;
     return this;
 }
@@ -321,7 +321,7 @@ int CRenamer::Rename(CSourceFile* file, int counter, char* newName, char** newPa
         *newPart = newName;
     }
 
-    // parametry pro expanzi var-stringu New Name
+    // parameters for expanding the New Name var-string
     CExecuteNewNameParam param;
     param.Spec = Spec;
     param.File = file;
@@ -333,24 +333,24 @@ int CRenamer::Rename(CSourceFile* file, int counter, char* newName, char** newPa
     {
         char tmp[MAX_PATH];
 
-        // expandujeme New Name do pomocneho bufferu
+        // expand the New Name into a temporary buffer
         l = NewName.Execute(tmp, MAX_PATH, &param);
         if (l < 0)
             return -1;
         // l is strlen(tmp)
-        if (ExcludeExt && !file->IsDir) // pripony dohledavame jen u souboru
+        if (ExcludeExt && !file->IsDir) // extensions are searched only for files
         {
             int i = l, namel = l;
             while (--i >= 0 && tmp[i] != '\\')
             {
-                if (tmp[i] == '.') // ".cvspass" ve Windows je pripona
+                if (tmp[i] == '.') // ".cvspass" is an extension in Windows
                 {
                     namel = i;
                     break;
                 }
             }
 
-            // provedeme pozadovanou substituci ve jmene
+            // perform the requested substitution in the name
             int substl = UseRegExp ? RESubst(tmp, namel, newName, MAX_PATH - pathLen) : BMSubst(tmp, namel, newName, MAX_PATH - pathLen);
 
             // dokopirujeme extension
@@ -362,13 +362,13 @@ int CRenamer::Rename(CSourceFile* file, int counter, char* newName, char** newPa
         }
         else
         {
-            // provedeme pozadovanou substituci
+            // perform the requested substitution
             l = UseRegExp ? RESubst(tmp, l, newName, MAX_PATH - pathLen) : BMSubst(tmp, l, newName, MAX_PATH - pathLen);
         }
     }
     else
     {
-        // expandujeme New Name
+        // expand the New Name
         l = NewName.Execute(newName, MAX_PATH - pathLen, &param);
     }
 
@@ -382,12 +382,12 @@ int CRenamer::Rename(CSourceFile* file, int counter, char* newName, char** newPa
         while (filePart >= newName && *filePart != '\\')
         {
             if (ext == NULL && *filePart == '.')
-                ext = filePart; // ".cvspass" ve Windows je pripona
+                ext = filePart; // ".cvspass" is an extension in Windows
             filePart--;
         }
         filePart++;
         if (file->IsDir || ext == NULL)
-            ext = newName + l; // pripony dohledavame jen u souboru
+            ext = newName + l; // extensions are searched only for files
 
         if (FileCase != ccDontChange)
         {
@@ -412,7 +412,7 @@ int CRenamer::BMSearchForward(const char* string, int length, int offset)
 
         if (WholeWords)
         {
-            // test na word break;
+            // check for a word break
             int prev = ret > 0 && IsAlnum(string[ret - 1]) > 0;
             int start = IsAlnum(string[ret]) > 0;
             int end = IsAlnum(string[ret + BMSearch->GetLength() - 1]) > 0;
@@ -461,25 +461,25 @@ int CRenamer::BMSubst(const char* source, int len, char* dest, int max)
 
     while ((start = BMSearchForward(source, len, offset)) >= 0)
     {
-        // nakopirujem cast pred nalezenym vzorem
+        // copy the part before the found pattern
         if (!SafeCopy(dest, max, pos, source + offset, start - offset))
             return -1;
 
-        // nahradime nalezeny vzor pozadovanou substituci
+        // replace the found pattern with the requested substitution
         if (!SafeCopy(dest, max, pos, ReplaceWith, ReplaceWithLen))
             return -1;
 
-        // posuneme offset
+        // move the offset forward
         offset = start + BMSearch->GetLength();
         if (!Global || offset >= len)
             break;
     }
 
-    // nakopirujem cast (vcetne ukoncovaciho NULL) za poslednim nalezeny retezcem
+    // copy the part (including the terminating NULL) after the last found string
     if (!SafeCopy(dest, max, pos, source + offset, len - offset + 1))
         return -1;
 
-    return pos - 1; // nepocitame ukoncovaci NULL
+    return pos - 1; // do not count the terminating NULL
 }
 
 BOOL CRenamer::ValidetaReplacePattern()
@@ -493,7 +493,7 @@ BOOL CRenamer::ValidetaReplacePattern()
     const char* numberEnd;
     while (*replace)
     {
-        // '\\' berem jako normalni znak
+        // treat '\\' as a regular character
         // if ((bs = *replace == '\\') || *replace == '$')
         if (*replace == '$')
         {
@@ -529,14 +529,14 @@ BOOL CRenamer::ValidetaReplacePattern()
                             replace += sizeof("stripdia") - 1;
                         else if (*replace != paren)
                         {
-                            // ocekavam zaviraci zavorku nebo definici velikosti
+                            // expecting a closing bracket or a size definition
                             Error = IDS_REP_EXPCLOSEPAR1;
                             ErrorPos1 = ErrorPos2 = (int)(replace - ReplaceWith);
                             return FALSE;
                         }
                         if (*replace != paren)
                         {
-                            // ocekavam zaviraci zavorku
+                            // expecting a closing bracket
                             Error = IDS_REP_EXPCLOSEPAR2;
                             ErrorPos1 = ErrorPos2 = (int)(replace - ReplaceWith);
                             return FALSE;
@@ -546,7 +546,7 @@ BOOL CRenamer::ValidetaReplacePattern()
                     {
                         if (*replace != paren)
                         {
-                            // ocekavam zaviraci zavorku nebo dvojtecku a definici velikosti
+                            // expecting a closing bracket or a colon and size definition
                             Error = IDS_REP_EXPCLOSEPAR3;
                             ErrorPos1 = ErrorPos2 = (int)(replace - ReplaceWith);
                             return FALSE;
@@ -556,7 +556,7 @@ BOOL CRenamer::ValidetaReplacePattern()
                 }
                 if (i >= RegExp->SubExpCount)
                 {
-                    // odkaz na nedefinovany subpattern
+                    // reference to an undefined subpattern
                     Error = IDS_REP_BADREF;
                     ErrorPos1 = (int)(numberStart - ReplaceWith);
                     ErrorPos2 = (int)(numberEnd - ReplaceWith);
@@ -595,15 +595,15 @@ BOOL CRenamer::ValidetaReplacePattern()
 BOOL CRenamer::SafeSubst(char* dest, int max, int& pos)
 {
     CALL_STACK_MESSAGE_NONE
-    // retezec ReplaceWith musi byt validovan, zde je optimalizovany kod
-    // bez kontroly syntax
+    // the ReplaceWith string must be validated; this is optimized code
+    // without syntax checking
     const char* replace = ReplaceWith;
     BOOL paren;
     while (*replace)
     {
         if (pos == max)
             return FALSE;
-        // '\\' berem jako normalni znak
+        // treat '\\' as a regular character
         // if (*replace == '\\' || *replace == '$')
         if (*replace == '$')
         {
@@ -623,7 +623,7 @@ BOOL CRenamer::SafeSubst(char* dest, int max, int& pos)
                 CChangeCase changeCase = ccDontChange;
                 if (paren)
                 {
-                    if (*replace++ == ':') // preskocime zaviraci zavorku nebo ':'
+                    if (*replace++ == ':') // skip the closing bracket or ':'
                     {
                         switch (*replace)
                         {
@@ -672,27 +672,27 @@ int CRenamer::RESubst(const char* source, int len, char* dest, int max)
 
     while (RegExp->RegExec((char*)source, len, offset + skipChar))
     {
-        // nakopirujem cast pred nalezenym vzorem
+        // copy the part before the found pattern
         if (!SafeCopy(dest, max, pos, source + offset,
                       (int)(RegExp->Startp[0] - source - offset)))
             return -1;
 
-        // nahradime nalezeny vzor pozadovanou substituci
+        // replace the found pattern with the requested substitution
         if (!SafeSubst(dest, max, pos))
             return -1;
 
-        // posuneme offset
+        // move the offset forward
         offset = (int)(RegExp->Endp[0] - source);
         skipChar = RegExp->Endp[0] - RegExp->Startp[0] == 0 ? 1 : 0;
         if (!Global)
             break;
     }
 
-    // nakopirujem cast (vcetne ukoncovaciho NULL) za poslednim nalezeny retezcem
+    // copy the part (including the terminating NULL) after the last found string
     if (!SafeCopy(dest, max, pos, source + offset, len - offset + 1))
         return -1;
 
-    return pos - 1; // nepocitame ukoncovaci NULL
+    return pos - 1; // do not count the terminating NULL
 }
 
 // ****************************************************************************

@@ -15,10 +15,10 @@ DWORD SalGetFileAttributes(const char* fileName)
 {
     int fileNameLen = (int)strlen(fileName);
     char fileNameCopy[3 * MAX_PATH];
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetFileAttributes
-    // mezery/tecky orizne a pracuje tak s jinou cestou + u souboru to sice nefunguje,
-    // ale porad lepsi nez ziskat atributy jineho souboru/adresare (pro "c:\\file.txt   "
-    // pracuje se jmenem "c:\\file.txt")
+    // if the path ends with a space/period we must append '\\', otherwise GetFileAttributes
+    // trims the spaces/periods and works with a different path; with files it still does not
+    // work, but it is better than retrieving attributes of another file/directory (for
+    // "c:\\file.txt   " it works with the name "c:\\file.txt")
     if (fileNameLen > 0 && (fileName[fileNameLen - 1] <= ' ' || fileName[fileNameLen - 1] == '.') &&
         fileNameLen + 1 < _countof(fileNameCopy))
     {
@@ -27,7 +27,7 @@ DWORD SalGetFileAttributes(const char* fileName)
         fileNameCopy[fileNameLen + 1] = 0;
         return GetFileAttributes(fileNameCopy);
     }
-    else // obycejna cesta, neni co resit, jen zavolame windowsovou GetFileAttributes
+    else // a regular path, nothing to solve, just call the Windows GetFileAttributes
     {
         return GetFileAttributes(fileName);
     }
@@ -96,8 +96,8 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
         stgMedium.hGlobal = NULL;
         stgMedium.pUnkForRelease = NULL;
 
-        // vytahnu si seznam souboru a adresaru, na ktere je kliknuto
-        // projdu ho a zjistim kolik je v nem souboru a kolik adresaru
+        // fetch the list of files and directories that were clicked
+        // walk it and find out how many files and how many directories it contains
 
         if (pDataObj->lpVtbl->GetData(pDataObj, &formatEtc, &stgMedium) == S_OK)
         {
@@ -136,7 +136,7 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
             ReleaseStgMedium(&stgMedium);
         }
 
-        // potom se vetru do kontextoveho menu
+        // then dive into the context menu
         of = filesCount == 1;
         mf = filesCount > 1;
         od = dirsCount == 1;
@@ -149,10 +149,10 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
             indexMenu = 0;
         }
 
-        // projedu vsechny itemy a pokud vyhovuji podmince, zaradim je do menu
+        // iterate through all items and if they meet the condition, add them to the menu
         while (iterator != NULL)
         {
-            // tahle podminka je na hovno - je treba predelat kriteria v Salamu
+            // this condition is awful; the selection criteria in Salamander need a redesign
             if ((iterator->LogicalAnd && (iterator->OneFile == of) && (iterator->MoreFiles == mf) &&
                  (iterator->OneDirectory == od) && (iterator->MoreDirectories == md)) ||
                 (!iterator->LogicalAnd && ((iterator->OneFile == of) || (iterator->MoreFiles == mf) ||
@@ -171,8 +171,8 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
             iterator = iterator->Next;
         }
 
-        // pokud je neco v submenu, tak ho vlozime do ContextMenu
-        // jinak ho sestrelim
+        // if there is something in the submenu, insert it into the ContextMenu
+        // otherwise remove it
         if (ShellExtConfigSubmenu)
         {
             if (itemsCount > 0)
@@ -185,7 +185,7 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
             }
             else
             {
-                // musim po sobe uklidit submenu
+                // we must clean up after ourselves and destroy the submenu
                 DestroyMenu(hMenu);
             }
         }
@@ -199,23 +199,25 @@ STDMETHODIMP SE_QueryContextMenu(THIS_
 STDMETHODIMP SE_InvokeCommand(THIS_
                                   LPCMINVOKECOMMANDINFO lpici)
 {
-    int index; // jde o index do spojaku zacinajiciho na ShellExtConfigFirst
+    int index; // index into the linked list starting at ShellExtConfigFirst
     if (SECGetItemIndex(LOWORD(lpici->lpVerb), &index))
     {
         CShellExtConfigItem* item = SECGetItem(index);
         if (item != NULL)
         {
             char buff[1000];
-            wsprintf(buff, "SE_InvokeCommand index = %d\nitem ptr = 0x%p\nIndex je treba predat do Salamandera, kde pres nej vytahnem ukazatel na itemu.", index, item);
+            wsprintf(buff,
+                     "SE_InvokeCommand index = %d\nitem ptr = 0x%p\nThe index has to be passed to Salamander so we can retrieve the pointer to the item through it.",
+                     index, item);
             MessageBox(NULL, buff, "shellext.dll", MB_OK | MB_ICONINFORMATION);
 
-            // sem prijde komunikace se Salamanderem
+            // this is where the communication with Salamander will go
 
-            // seznam souboru, ktere jsou kliknute lze obdrzet stejnou metodou,
-            // jakou pouzivam v metode SE_QueryContextMenu
-            // problem: muze to tam prijit jak v unicodu tak normalne
-            // takze to tam prevadim a mozna by bylo lepsi nechat tenhle prevod
-            // udelat az Salama - abychom to v nem meli v unicodu
+            // the list of clicked files can be obtained by the same method
+            // that I use in SE_QueryContextMenu
+            // problem: it can arrive either in Unicode or ANSI
+            // so I am converting it there and maybe it would be better to leave the conversion
+            // to Salamander so that we have it in Unicode
 
             return NOERROR;
         }
@@ -233,8 +235,8 @@ STDMETHODIMP SE_GetCommandString(THIS_
     if (pszName != NULL)
         *pszName = 0;
 
-    // retezec, ktery se ukazuje v status bare pri vyvolani context menu z exploderu
-    // museli bychom ho nechat naeditovat k jednotlivym itemam - zatim na to pecu
+    // the string shown in the status bar when the context menu is invoked from Explorer
+    // we would have to let it be edited per item - for now I am ignoring it
 
     return NOERROR;
 }

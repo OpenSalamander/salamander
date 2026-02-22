@@ -14,10 +14,9 @@
 //
 // MultipleMonitors
 //
-// Vraci TRUE, pokud je pritomno vice jak jeden monitor.
-// Pokud je 'boundingRect' ruzny od NULL, je do nej zapsan
-// opsany obdelnik vsech monitoru, tedy rozmery virtualni
-// obrazovky.
+// Returns TRUE if more than one monitor is present.
+// If 'boundingRect' is not NULL, it receives the bounding rectangle of all monitors,
+// i.e. the dimensions of the virtual desktop.
 //
 
 struct MonitorEnumProcData
@@ -171,7 +170,7 @@ void CRendererWindow::ScreenCapture()
             if (IntersectRect(&dummy, &bndR, &rect))
                 break;
         }
-        // pokud okno neexistuje nebo lezi mimo pouzitelnou oblast, vratime virtual screen
+        // if the window does not exist or lies outside the usable area, fall back to the virtual screen
     }
     case CAPTURE_SCOPE_VIRTUAL:
     {
@@ -189,7 +188,7 @@ void CRendererWindow::ScreenCapture()
     HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmap);
 
     ShowWindow(Viewer->HWindow, SW_HIDE);
-    Sleep(0); // nechame okno zmizet z taskbary
+    Sleep(0); // let the window disappear from the taskbar
 
     if (wndRgnType == COMPLEXREGION) // clip only non-rectangular windows
     {
@@ -212,7 +211,7 @@ void CRendererWindow::ScreenCapture()
 
     ShowWindow(Viewer->HWindow, SW_SHOW);
 
-    // pokud chce user zachytit take kurzor, pridame ho do bitmapy
+    // if the user also wants to capture the cursor, add it to the bitmap
     if (G.CaptureCursor)
     {
         HCURSOR hCursor = GetCurrentCursorHandle();
@@ -230,22 +229,22 @@ void CRendererWindow::ScreenCapture()
 
     SelectObject(hMemDC, hOldBitmap);
 
-    // zameteme po sobe
+    // clean up after ourselves
     DeleteDC(hMonitorDC);
     DeleteDC(hMemDC);
-    // DeleteObject(hBitmap);   // hBitmap se zrusi v OpenFile()
+    // DeleteObject(hBitmap);   // hBitmap is destroyed in OpenFile()
     DeleteObject(hWndRgn);
 
     CancelCapture();
 
-    // predame bitmapu PictView
+    // pass the bitmap to PictView
     EnumFilesSourceUID = -1;
     OpenFile(CAPTURE, -1, hBitmap);
 
     SalamanderGeneral->Free(FileName);
     FileName = SalamanderGeneral->DupStr(LoadStr(IDS_CAPTURE_TITLE));
 
-    // pri vstupu do funkce bylo okno minimalizovane, ted ho vratime do puvodni pozice
+    // when entering this function the window was minimized, now restore it to its original position
     Viewer->UpdateEnablers();
     Viewer->UpdateToolBar();
     ShowWindow(Viewer->HWindow, SW_RESTORE);
@@ -417,8 +416,8 @@ void SetWallpaper(HKEY hKey, BOOL prev, const CWallpaper* wallpaper)
                   (LPBYTE)wallpaper->TileWallpaper, (DWORD)(_tcslen(wallpaper->TileWallpaper) + 1) * sizeof(TCHAR));
 }
 
-// ulozi soubor do souboru fileName prave prohlizeny obrazek (ve formatu BMP)
-// vrati TRUE v pokud se operace zdarila, jinak vrati FALSE
+// stores the currently viewed image into the file specified by fileName (as a BMP)
+// returns TRUE if the operation succeeded, otherwise FALSE
 BOOL CRendererWindow::SaveWallpaper(LPCTSTR fileName)
 {
     int ret;
@@ -456,8 +455,8 @@ void CRendererWindow::SetAsWallpaper(WORD command)
             {
                 LPCTSTR PICTVIEW_WALLPAPER = _T("PictView_Wallpaper.bmp");
 
-                // ulozime obrazek do BMP souboru v adresari Windows
-                // (tam ho pak nechame svemu osudu), neznam cistejsi reseni
+                // save the image into a BMP file in the Windows directory
+                // (where it is then left on its own); a cleaner solution is unknown
                 TCHAR fileName[MAX_PATH];
                 GetWindowsDirectory(fileName, SizeOf(fileName));
                 SalamanderGeneral->SalPathAppend(fileName, PICTVIEW_WALLPAPER, MAX_PATH);
@@ -466,7 +465,7 @@ void CRendererWindow::SetAsWallpaper(WORD command)
                     CWallpaper cur;
                     GetWallpaper(hKey, FALSE, &cur);
 
-                    // pokud soucasny wallpaper neni nas, zazalohujeme ho jako starou verzi
+                    // if the current wallpaper is not ours, back it up as the previous version
                     LPCTSTR s = _tcsrchr(cur.Wallpaper, '\\');
                     if (s == NULL)
                         s = cur.Wallpaper;
@@ -486,7 +485,7 @@ void CRendererWindow::SetAsWallpaper(WORD command)
 
             case CMD_WALLPAPER_RESTORE:
             {
-                // musime prohodit current a prev verzi
+                // swap the current and previous versions
                 CWallpaper cur, prev;
                 GetWallpaper(hKey, TRUE, &prev);
                 GetWallpaper(hKey, FALSE, &cur);
@@ -497,7 +496,7 @@ void CRendererWindow::SetAsWallpaper(WORD command)
 
             case CMD_WALLPAPER_NONE:
             {
-                // zazalohujeme soucasny do prev a potom jej vynulujeme
+                // back up the current one into prev and then clear it
                 CWallpaper cur;
                 GetWallpaper(hKey, FALSE, &cur);
                 SetWallpaper(hKey, TRUE, &cur);
@@ -515,7 +514,7 @@ void CRendererWindow::SetAsWallpaper(WORD command)
             RegCloseKey(hKey);
         }
 
-        // dame vedet OS, ze ma provest update
+        // notify the OS that it should perform an update
         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDCHANGE);
     }
 }

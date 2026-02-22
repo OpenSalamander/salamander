@@ -142,7 +142,7 @@ ExecuteExtPart(HWND msgParent, void* param)
     LPCTSTR name = SG->SalPathFindFileName(data->LongName);
     LPCTSTR ext = _tcsrchr(name, '.');
     if (ext)
-        strcpy(data->Buffer, ext + 1); // ".cvspass" ve Windows je pripona
+        strcpy(data->Buffer, ext + 1); // ".cvspass" is an extension in Windows
     else
         *data->Buffer = 0;
     return data->Buffer;
@@ -156,7 +156,7 @@ ExecuteDOSExtPart(HWND msgParent, void* param)
     LPCTSTR name = SG->SalPathFindFileName(data->DosName);
     LPCTSTR ext = _tcsrchr(name, '.');
     if (ext)
-        strcpy(data->Buffer, ext + 1); // ".cvspass" ve Windows je pripona
+        strcpy(data->Buffer, ext + 1); // ".cvspass" is an extension in Windows
     else
         *data->Buffer = 0;
     return data->Buffer;
@@ -301,7 +301,7 @@ ExecuteSalDir(HWND msgParent, void* param)
 {
     CALL_STACK_MESSAGE1("ExecuteSalDir(, )");
     CExpData* data = (CExpData*)param;
-    GetModuleFileName(NULL, data->Buffer, MAX_PATH); // hInstance==NULL: chceme cestu k EXE, ne k DLL
+    GetModuleFileName(NULL, data->Buffer, MAX_PATH); // hInstance==NULL: we want the path to the EXE, not the DLL
     *(strrchr(data->Buffer, '\\') + 1) = 0;
     return data->Buffer;
 }
@@ -354,7 +354,7 @@ BOOL RemoveDoubleBackslahesFromPath(char* text)
     int len = (int)strlen(text);
     if (len < 3)
         return TRUE;
-    char* s = text + 2; // UNC cesty maji na zacatku "\\"
+    char* s = text + 2; // UNC paths start with "\\"
     char* d = s;
     while (*s != 0)
     {
@@ -377,9 +377,9 @@ BOOL ExpandCommand(const char* varText, char* buffer, int bufferLen, BOOL ignore
     if (SG->ExpandVarString(GetParent(), varText, buffer, bufferLen, ExpCommandVariables, &data,
                             ignoreEnvVarNotFoundOrTooLong))
     {
-        // promenne EXECUTE_WINDIR, EXECUTE_SYSDIR a EXECUTE_SALDIR jsou zakonceny zpetnym lomitkem
-        // uzivatel doplni vlastni zpetne lomitko, takze jsou ve vysledku v ceste dve
-        RemoveDoubleBackslahesFromPath(buffer); // setreseme dvojita zpetna lomitka na jedno
+        // the EXECUTE_WINDIR, EXECUTE_SYSDIR and EXECUTE_SALDIR variables end with a backslash
+        // the user adds their own backslash, so the resulting path contains two
+        RemoveDoubleBackslahesFromPath(buffer); // reduce double backslashes to one
         return TRUE;
     }
     else
@@ -417,7 +417,7 @@ BOOL ExecuteEditor(const char* tempFile)
     char longName[MAX_PATH];
     char dosName[MAX_PATH];
 
-    // expandujeme initdir
+    // expand initdir
     SG->CutDirectory(strcpy(longName, tempFile));
     if (!GetShortPathName(longName, dosName, MAX_PATH))
         dosName[0] = 0;
@@ -432,7 +432,7 @@ BOOL ExecuteEditor(const char* tempFile)
         !ExpandInitDir(InitDir, directory, longName, dosName))
         return FALSE;
 
-    // expandujeme arguments
+    // expand arguments
     if (!GetShortPathName(tempFile, dosName, MAX_PATH))
         dosName[0] = 0;
 
@@ -440,7 +440,7 @@ BOOL ExecuteEditor(const char* tempFile)
         !ExpandArguments(Arguments, arguments, tempFile, dosName))
         return FALSE;
 
-    // spustime command
+    // run the command
     if (!*command)
         return Error(IDS_PROCESS);
     TBuffer<char> cmdLine;

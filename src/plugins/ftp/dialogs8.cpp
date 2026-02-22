@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -26,7 +27,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
             SendMessage(hwnd, CB_LIMITTEXT, textLen - 1, 0);
             SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
 
-            // vse o.k. zalozime do historie
+            // everything is ok, store it in the history
             if (ti.IsGood())
             {
                 if (!secretValue && Text[0] != 0)
@@ -37,8 +38,8 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                     {
                         if (history[i] != NULL)
                         {
-                            if (strcmp(history[i], Text) == 0) // je-li uz v historii
-                            {                                  // pujde na 0. pozici
+                            if (strcmp(history[i], Text) == 0) // if it is already in the history
+                            {                                  // it will move to position 0
                                 if (i > 0)
                                 {
                                     char* swap = history[i];
@@ -73,7 +74,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
         }
 
         int i;
-        for (i = 0; i < historySize; i++) // naplneni listu combo-boxu
+        for (i = 0; i < historySize; i++) // fill the combo-box list
             if (history[i] != NULL)
                 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)history[i]);
             else
@@ -185,7 +186,7 @@ CSendFTPCommandDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_APP + 1000:
     {
         EnableControls();
-        return TRUE; // zprava je zpracovana
+        return TRUE; // message processed
     }
 
     case WM_COMMAND:
@@ -197,7 +198,7 @@ CSendFTPCommandDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND edit = GetWindow(combo, GW_CHILD);
             HWND passwdEdit = GetDlgItem(HWindow, IDE_FTPCOMMAND_PASSWD);
 
-            // musime prohodit aktualni texty mezi editem a combem
+            // we must swap the current texts between the edit and the combo
             char buf[FTPCOMMAND_MAX_SIZE];
             GetWindowText(secret ? edit : passwdEdit, buf, FTPCOMMAND_MAX_SIZE);
             SetWindowText(!secret ? edit : passwdEdit, buf);
@@ -269,7 +270,7 @@ CServersListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case VK_UP:
         case VK_DOWN:
         {
-            if (GetKeyState(VK_MENU) & 0x8000) // stisknuty Alt
+            if (GetKeyState(VK_MENU) & 0x8000) // Alt key pressed
             {
                 PostMessage(ParentDlg->HWindow, WM_COMMAND,
                             (LOWORD(wParam) == VK_UP ? IDB_MOVESERVERUP : IDB_MOVESERVERDOWN), 0);
@@ -296,7 +297,7 @@ CServersListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
-        break; // klavesy poustime dale, listbox by je nemel zpracovavat, zadny problem
+        break; // let the keys pass through, the listbox should not handle them, no problem
     }
 
     case WM_LBUTTONDBLCLK:
@@ -313,7 +314,7 @@ CServersListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         int curSel = (int)SendMessage(HWindow, LB_GETCURSEL, 0, 0);
         int item = (int)SendMessage(HWindow, LB_ITEMFROMPOINT, 0,
-                                    MAKELPARAM(LOWORD((int)lParam), HIWORD((int)lParam))); // FIXME_X64 podezrele pretypovani
+                                    MAKELPARAM(LOWORD((int)lParam), HIWORD((int)lParam))); // FIXME_X64 suspicious cast
         if (HIWORD(item) == 0 && item >= 0 && ParentDlg->TmpServerTypeList != NULL &&
             item < ParentDlg->TmpServerTypeList->Count && curSel != item)
         {
@@ -378,7 +379,7 @@ void CConnectAdvancedDlg::Validate(CTransferInfo& ti)
     int port;
     ti.EditLine(IDC_CONNECTTOPORT, port);
     if (!ti.IsGood())
-        return; // uz nastala chyba
+        return; // an error has already occurred
     if (port <= 0 || port >= 65536)
     {
         SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_PORTISUSHORT),
@@ -395,7 +396,7 @@ void CConnectAdvancedDlg::Validate(CTransferInfo& ti)
     {
         ti.EditLine(IDE_MAXCONCURRENTCON, maxConcCon);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (ti.IsGood() && maxConcCon <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -416,7 +417,7 @@ void CConnectAdvancedDlg::Validate(CTransferInfo& ti)
         {
             ti.EditLine(arr[i], num);
             if (!ti.IsGood())
-                return; // uz nastala chyba
+                return; // an error has already occurred
             if (num <= 0)
             {
                 SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -461,7 +462,7 @@ void CConnectAdvancedDlg::Validate(CTransferInfo& ti)
         char buff[] = "%g";
         ti.EditLine(IDE_SRVSPEEDLIMIT, srvSpeedLimit, buff);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (ti.IsGood() && srvSpeedLimit <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -486,8 +487,8 @@ void CConnectAdvancedDlg::Transfer(CTransferInfo& ti)
     {
         ProxyComboBox(HWindow, ti, IDC_PROXYSERVER, Server->ProxyServerUID, TRUE,
                       TmpFTPProxyServerList);
-        if (ti.Type == ttDataFromWindow)                                            // prelejeme data zpatky do zdroje
-            TmpFTPProxyServerList->CopyMembersToList(*SourceTmpFTPProxyServerList); // CheckProxyServersUID() pro editovany seznam bookmark se vola tesne po ukonceni tohoto dialogu
+        if (ti.Type == ttDataFromWindow)                                            // copy the data back to the source
+            TmpFTPProxyServerList->CopyMembersToList(*SourceTmpFTPProxyServerList); // CheckProxyServersUID() for the edited bookmark list is called right after this dialog closes
     }
 
     if (ti.Type == ttDataToWindow)
@@ -513,7 +514,7 @@ void CConnectAdvancedDlg::Transfer(CTransferInfo& ti)
         else
         {
             int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
-            CServerTypeList* serverTypeList = Config.LockServerTypeList(); // vse v hl. threadu, nemelo by dojit ke zmene Config.ServerTypeList (od okamziku plneni comba)
+            CServerTypeList* serverTypeList = Config.LockServerTypeList(); // everything in the main thread, Config.ServerTypeList should not change (from the moment the combo is filled)
             if (i != CB_ERR && i > 0 && i - 1 < serverTypeList->Count)
             {
                 UpdateStr(Server->ServerType, serverTypeList->At(i - 1)->TypeName);
@@ -566,7 +567,7 @@ void CConnectAdvancedDlg::Transfer(CTransferInfo& ti)
             if (Server->ListCommand != NULL)
                 SendMessage(combo, WM_SETTEXT, 0, (LPARAM)Server->ListCommand);
             else
-                SendMessage(combo, CB_SETCURSEL, 0, 0); // vyber textu LIST_CMD_TEXT
+                SendMessage(combo, CB_SETCURSEL, 0, 0); // select the LIST_CMD_TEXT text
         }
         else
         {
@@ -607,7 +608,7 @@ void CConnectAdvancedDlg::Transfer(CTransferInfo& ti)
             {
                 SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(strID[i]));
             }
-            // overime jestli KeepAliveCommand neni mimo meze (snad jedine prima editace registry)
+            // verify that KeepAliveCommand stays within bounds (perhaps only a direct registry edit could break it)
             if (Config.KeepAliveCommand >= i)
                 Config.KeepAliveCommand = i - 1;
             if (Config.KeepAliveCommand < 0)
@@ -673,7 +674,7 @@ void CConnectAdvancedDlg::Transfer(CTransferInfo& ti)
         ti.EditLine(IDE_SRVSPEEDLIMIT, Server->ServerSpeedLimit, buff);
         if (ti.Type == ttDataFromWindow &&
             Server->ServerSpeedLimit < 0.001)
-            Server->ServerSpeedLimit = 0.001; // aspon 1 byte za sekundu
+            Server->ServerSpeedLimit = 0.001; // at least 1 byte per second
     }
     ti.CheckBox(IDC_USELISTINGSCACHE, Server->UseListingsCache);
     ti.CheckBox(IDC_ENCRYPTCONTROLCONN, Server->EncryptControlConnection);
@@ -729,21 +730,21 @@ void CheckboxCombo(HWND dlg, int checkboxID, int comboID, int* lastCheck, int* v
         {
         case 0:
             setVal = -1;
-            break; // vypnuto
+            break; // disabled
         case 1:
         {
             if (*valueBuf == -1)
                 *valueBuf = checkedVal;
             setVal = *valueBuf;
-            break; // zapnuto
+            break; // enabled
         }
 
-        default: // treti stav
+        default: // third state
         {
             if (globValUsed)
                 setVal = globVal;
             else
-                setVal = -1; // nepouzite
+                setVal = -1; // unused
             break;
         }
         }
@@ -796,7 +797,7 @@ CConnectAdvancedDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDB_ADDPROXYSRV) // dropdown menu na Add buttonu
+        if (LOWORD(wParam) == IDB_ADDPROXYSRV) // dropdown menu on the Add button
         {
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_ADDPROXYSERVER));
             if (main != NULL)
@@ -807,7 +808,7 @@ CConnectAdvancedDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     CGUIMenuPopupAbstract* salMenu = SalamanderGUI->CreateMenuPopup();
                     if (salMenu != NULL)
                     {
-                        // enablujeme polozky menu
+                        // enable the menu items
                         HWND combo = GetDlgItem(HWindow, IDC_PROXYSERVER);
                         int sel = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                         int count = (int)SendMessage(combo, CB_GETCOUNT, 0, 0);
@@ -847,7 +848,7 @@ CConnectAdvancedDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             char initDir[MAX_PATH];
             GetDlgItemText(HWindow, IDE_TARGETPATH, initDir, MAX_PATH);
             char path[MAX_PATH];
-            GetWindowText(HWindow, path, MAX_PATH); // bude mit stejne caption
+            GetWindowText(HWindow, path, MAX_PATH); // will have the same caption
             if (SalamanderGeneral->GetTargetDirectory(HWindow, HWindow, path,
                                                       LoadStr(IDS_SELECTTARGETDIR), path,
                                                       FALSE, initDir))
@@ -976,12 +977,12 @@ CRenameDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             checkboxName[0] != 0 ? checkboxName : LoadStr(IDS_QUICKCONNECT));
                     SetDlgItemText(HWindow, IDC_COPYFOCUSEDSRV, buf);
                 }
-                else // new server type + empty list = nutne schovat/disablovat checkbox "copy from"
+                else // new server type + empty list = necessary to hide/disable the "copy from" checkbox
                 {
                     ShowWindow(GetDlgItem(HWindow, IDC_COPYFOCUSEDSRV), SW_HIDE);
                 }
                 if (!ServerTypes && !CopyDataFromFocusedServer)
-                    Name[0] = 0; // prazdne jmeno pro novy server (bude se nastavovat v Transfer())
+                    Name[0] = 0; // empty name for a new server (it will be set in Transfer())
                 if (ServerTypes)
                     SetDlgItemText(HWindow, IDT_NEWNAME, LoadStr(IDS_SRVTYPENEWSUBJECT));
             }
@@ -1125,7 +1126,7 @@ CLoginErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (HideApplyToAll)
         {
-            // zrusime "apply to all" checkbox
+            // remove the "apply to all" checkbox
             RECT r1;
             GetWindowRect(GetDlgItem(HWindow, IDC_APPLYTOALL), &r1);
             RECT r2;
@@ -1133,7 +1134,7 @@ CLoginErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             int delta = r1.bottom - r2.bottom;
             DestroyWindow(GetDlgItem(HWindow, IDC_APPLYTOALL));
 
-            // zmensime dialog
+            // shrink the dialog
             RECT windowR;
             GetWindowRect(HWindow, &windowR);
             SetWindowPos(HWindow, NULL, 0, 0, windowR.right - windowR.left, windowR.bottom - windowR.top - delta,
@@ -1143,7 +1144,7 @@ CLoginErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (DisableUser)
         {
             EnableWindow(GetDlgItem(HWindow, IDE_USERNAME), FALSE);
-            SetFocus(GetDlgItem(HWindow, IDE_PASSWORD)); // chceme svuj vlastni fokus
+            SetFocus(GetDlgItem(HWindow, IDE_PASSWORD)); // we want our own focus
             CCenteredDialog::DialogProc(uMsg, wParam, lParam);
             return FALSE;
         }
@@ -1192,13 +1193,13 @@ void CConfigPageAdvanced::Validate(CTransferInfo& ti)
     int num;
     int arr[] = {IDE_SRVREPLIESTIMEOUT, IDE_DELAYBETWCONRETR, IDE_CONNECTRETRIES,
                  IDE_NODATATRTIMEOUT, IDE_RESUMEMINFILESIZE, IDE_RESUMEOVERLAP, -1};
-    BOOL gzthzero[] = {TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, -1}; // testujeme > 0 (TRUE) nebo >= 0 (FALSE)
+    BOOL gzthzero[] = {TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, -1}; // testing > 0 (TRUE) or >= 0 (FALSE)
     int i;
     for (i = 0; arr[i] != -1; i++)
     {
         ti.EditLine(arr[i], num);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (gzthzero[i] && num <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -1217,7 +1218,7 @@ void CConfigPageAdvanced::Validate(CTransferInfo& ti)
 
     ti.EditLine(IDE_MEMCACHESIZELIMIT, num);
     if (!ti.IsGood())
-        return; // uz nastala chyba
+        return; // an error has already occurred
     if (num < 100 || num > 1 * 1024 * 1024)
     {
         SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_INVALIDMEMCACHESIZE),
@@ -1228,7 +1229,7 @@ void CConfigPageAdvanced::Validate(CTransferInfo& ti)
 
     ti.EditLine(IDE_RESUMEOVERLAP, num);
     if (!ti.IsGood())
-        return; // uz nastala chyba
+        return; // an error has already occurred
     if (num < 0 || num > 1024 * 1024 * 1024)
     {
         SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_INVALIDRESUMEOVERLAP),
@@ -1287,7 +1288,7 @@ void CConfigPageLogs::Validate(CTransferInfo& ti)
             {
                 ti.EditLine(arr[i], num);
                 if (!ti.IsGood())
-                    return; // uz nastala chyba
+                    return; // an error has already occurred
                 if (num < 0 || (!canBeZero[i] && num == 0))
                 {
                     SalamanderGeneral->SalMessageBox(HWindow, LoadStr(canBeZero[i] ? IDS_MUSTBEPOSITIVE : IDS_MUSTBEGRTHANZERO),
@@ -1314,7 +1315,7 @@ void CConfigPageLogs::Transfer(CTransferInfo& ti)
             if (Config.UseLogMaxSize)
             {
                 ti.EditLine(IDE_LOGMAXSIZE, Config.LogMaxSize);
-                Config.LogMaxSize = (Config.LogMaxSize * 1024) / 1024; // orizneme pripadne vetsi cislo
+                Config.LogMaxSize = (Config.LogMaxSize * 1024) / 1024; // trim any excessively large number
                 if (Config.LogMaxSize <= 0)
                     Config.LogMaxSize = 1;
             }
@@ -1438,7 +1439,7 @@ void CProxyServerDlg::Validate(CTransferInfo& ti)
         int port;
         ti.EditLine(IDE_PRXSRV_PORT, port);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (port <= 0 || port >= 65536)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_PORTISUSHORT),
@@ -1458,7 +1459,7 @@ void CProxyServerDlg::Validate(CTransferInfo& ti)
         {
             SalamanderGeneral->SalMessageBox(HWindow, errDescr,
                                              LoadStr(IDS_FTPERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
-            // oznacime misto chyby v textu skriptu
+            // highlight the error location in the script text
             SendDlgItemMessage(HWindow, IDE_PRXSRV_SCRIPT, EM_SETSEL, (WPARAM)(errPos - proxyScript),
                                (LPARAM)(errPos - proxyScript));
             SendDlgItemMessage(HWindow, IDE_PRXSRV_SCRIPT, EM_SCROLLCARET, 0, 0); // scroll caret into view
@@ -1592,12 +1593,12 @@ void CProxyServerDlg::Transfer(CTransferInfo& ti)
         EnableControls(proxyType != fpstOwnScript, FALSE);
     if (ti.Type == ttDataFromWindow)
     {
-        BOOL deallocPassword = FALSE;                                 // FALSE = heslo zatim beze zmeny
-        BYTE* proxyEncryptedPassword = Proxy->ProxyEncryptedPassword; // muze byt i jen scrambled
+        BOOL deallocPassword = FALSE;                                 // FALSE = the password has not changed yet
+        BYTE* proxyEncryptedPassword = Proxy->ProxyEncryptedPassword; // it may be only scrambled
         int proxyEncryptedPasswordSize = Proxy->ProxyEncryptedPasswordSize;
         if (!IsWindowVisible(GetDlgItem(HWindow, IDB_PRXSRV_PASSWD_CHANGE)))
         {
-            if (proxyPlainPassword[0] == 0) // prazdne heslo ukladame jako NULL
+            if (proxyPlainPassword[0] == 0) // store an empty password as NULL
             {
                 proxyEncryptedPassword = NULL;
                 proxyEncryptedPasswordSize = 0;
@@ -1624,7 +1625,7 @@ void CProxyServerDlg::Transfer(CTransferInfo& ti)
 
         if (deallocPassword && proxyEncryptedPassword != NULL)
         {
-            // uvolnime buffer alokovany v EncryptPassword()
+            // release the buffer allocated in EncryptPassword()
             memset(proxyEncryptedPassword, 0, proxyEncryptedPasswordSize);
             SalamanderGeneral->Free(proxyEncryptedPassword);
         }
@@ -1681,7 +1682,7 @@ CProxyScriptControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-    case WM_GETDLGCODE: // postarame se, aby nam porad neoznacovali text v editboxu
+    case WM_GETDLGCODE: // ensure the text in the edit box is not constantly selected
     {
         LRESULT ret = CWindow::WindowProc(uMsg, wParam, lParam);
         return (ret & (~DLGC_HASSETSEL));
@@ -1694,14 +1695,14 @@ CProxyScriptControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (GetFocus() != HWindow)
         {
             SendMessage(GetParent(HWindow), WM_NEXTDLGCTL, (WPARAM)HWindow, TRUE);
-            SendMessage(HWindow, EM_SETSEL, i, i); // vzdy zmena pozice caretu
+            SendMessage(HWindow, EM_SETSEL, i, i); // always change the caret position
         }
         else
         {
             DWORD start, end;
             SendMessage(HWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
             if ((i < start || i >= end) && (i < end || i >= start))
-                SendMessage(HWindow, EM_SETSEL, i, i); // klik mimo selectionu -> zmena pozice caretu
+                SendMessage(HWindow, EM_SETSEL, i, i); // click outside the selection -> change the caret position
         }
         break;
     }
@@ -1817,15 +1818,15 @@ CProxyScriptControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         "$(Password)",
                         "$(Account)",
                     };
-                    if (strID < 10 /* pocet stringu v strArr - AKTUALIZOVAT !!! */)
+                    if (strID < 10 /* number of strings in strArr - UPDATE !!! */)
                     {
                         const char* str = strArr[strID];
                         char buf2[PROXYSCRIPT_MAX_SIZE];
                         GetWindowText(HWindow, buf2, PROXYSCRIPT_MAX_SIZE);
                         DWORD pos = min(start, end);
                         if (pos <= strlen(buf2) &&
-                            (pos == 0 || pos >= 2 && *(buf2 + pos - 2) == '\r' && *(buf2 + pos - 1) == '\n')) // zacatek radky
-                        {                                                                                     // skipneme predsazeny EOL
+                            (pos == 0 || pos >= 2 && *(buf2 + pos - 2) == '\r' && *(buf2 + pos - 1) == '\n')) // start of the line
+                        {                                                                                     // skip an inserted EOL
                             if (*str == '\r')
                                 str++;
                             if (*str == '\n')
@@ -1845,7 +1846,7 @@ CProxyScriptControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CProxyServerDlg::AlignPasswordControls()
 {
-    // non-password editline (s info textem) bude posunuta na misto kde zacina editline pro password; zaroven bude protazena az k tlacitku
+    // the non-password edit line (with info text) will be moved to where the password edit line starts; it will also be stretched to the button
     RECT editRect;
     GetWindowRect(GetDlgItem(HWindow, IDE_PRXSRV_PASSWD), &editRect);
     RECT editLockedRect;
@@ -1854,7 +1855,7 @@ void CProxyServerDlg::AlignPasswordControls()
     MapWindowPoints(NULL, HWindow, (POINT*)&editRect, 2);
     SetWindowPos(GetDlgItem(HWindow, IDE_PRXSRV_PASSWD_LOCKED), NULL, editRect.left, editRect.top, width, editLockedRect.bottom - editLockedRect.top, SWP_NOZORDER);
 
-    // editline pro password bude stejne dlouha jako ta nad ni
+    // the password edit line will be as long as the one above it
     GetWindowRect(GetDlgItem(HWindow, IDE_PRXSRV_USER), &editRect);
     SetWindowPos(GetDlgItem(HWindow, IDE_PRXSRV_PASSWD), NULL, 0, 0, editRect.right - editRect.left, editRect.bottom - editRect.top, SWP_NOMOVE | SWP_NOZORDER);
 }
@@ -1882,28 +1883,28 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // posuneme password edit lines
+        // move the password edit lines
         AlignPasswordControls();
 
-        // Unlock tlacitko: vedle prikaz Unlock bude mit take Clear pro smaznuti hesla
+        // Unlock button: besides the Unlock command it will also have Clear to delete the password
         SalamanderGUI->AttachButton(HWindow, IDB_PRXSRV_PASSWD_CHANGE, BTF_DROPDOWN);
 
-        // chceme od edit line s heslem dostavat na ctrl+rclick zpravu WM_APP_SHOWPASSWORD
+        // we want the password edit line to send WM_APP_SHOWPASSWORD on ctrl+right-click
         CPasswordEditLine* passwordEL = new CPasswordEditLine(HWindow, IDE_PRXSRV_PASSWD);
 
         CGUIHyperLinkAbstract* hint = SalamanderGUI->AttachHyperLink(HWindow, IDC_PRXSRV_SAVEPASSWD_HINT, STF_HYPERLINK_COLOR | STF_UNDERLINE);
         hint->SetActionPostCommand(IDC_PRXSRV_SAVEPASSWD_HINT);
 
-        // pokud uzivatel nenastavil v Salamanderu master password, neni ukladani hesel bezpecne
+        // if the user has not set a master password in Salamander, storing passwords is not safe
         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-        // pokud uzivatel pouziva password manager, zmenime hlasku "it is not secure"
+        // if the user uses the password manager, change the "it is not secure" message
         if (passwordManager->IsUsingMasterPassword())
             SetDlgItemText(HWindow, IDC_PRXSRV_SAVEPASSWD_HINT, LoadStr(IDS_SAVEPASSWORD_PROTECTED));
 
-        // zakazeme select-all pri fokusu a zajistime vlastni kontextove menu pro edit s promennymi skriptu
+        // disable select-all on focus and ensure a custom context menu for the script variables edit
         CProxyScriptControlWindow* wnd = new CProxyScriptControlWindow(HWindow, IDE_PRXSRV_SCRIPT);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // attaching failed - it will not deallocate itself
         if (Edit)
             SetWindowText(HWindow, LoadStr(IDS_EDITPROXYSRVTITLE));
         break;
@@ -1921,10 +1922,10 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (SalamanderGeneral->SalMessageBoxEx(&params) == IDYES)
         {
             CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-            // doptame se na MP i v pripade, ze ho jiz zname
+            // ask for the master password even if we already know it
             if (!passwordManager->IsUsingMasterPassword() || passwordManager->AskForMasterPassword(HWindow))
             {
-                // heslo vytahneme primo z editline
+                // take the password directly from the edit line
                 char plainPassword[PASSWORD_MAX_SIZE];
                 GetWindowText((HWND)wParam, plainPassword, PASSWORD_MAX_SIZE);
                 plainPassword[PASSWORD_MAX_SIZE - 1] = 0;
@@ -1945,7 +1946,7 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDB_PRXSRV_PASSWD_CHANGE) // dropdown menu na Unlock tlacitku
+        if (LOWORD(wParam) == IDB_PRXSRV_PASSWD_CHANGE) // dropdown menu on the Unlock button
         {
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_UNLOCKPASSWORD));
             if (main != NULL)
@@ -1992,7 +1993,7 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case IDC_PRXSRV_SAVEPASSWD_HINT:
         {
-            // otevreme help Salamandera s napovedou k password manageru
+            // open Salamander help with guidance for the password manager
             SalamanderGeneral->OpenHtmlHelpForSalamander(HWindow, HHCDisplayContext, HTMLHELP_SALID_PWDMANAGER, FALSE);
             break;
         }
@@ -2005,18 +2006,18 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
                 if (IsDlgButtonChecked(HWindow, IDC_PRXSRV_SAVEPASSWD) == BST_CHECKED)
                 {
-                    // pokud uzivatel zaskrtnul "Save password" a editline s heslem je prave zobrazena, uzivatel pouziva master password a heslo neni zadane
+                    // if the user checked "Save password" and the password edit line is currently shown, the user uses the master password and the password is not entered
                     if (!unlockVisible && passwordManager->IsUsingMasterPassword() && !passwordManager->IsMasterPasswordSet())
                     {
-                        // doptame se na master password
+                        // ask for the master password
                         if (!passwordManager->AskForMasterPassword(HWindow))
-                            CheckDlgButton(HWindow, IDC_PRXSRV_SAVEPASSWD, BST_UNCHECKED); // pokud uzivatel nezadal validni master password, vratime checkbox do stavu pred zmenou
+                            CheckDlgButton(HWindow, IDC_PRXSRV_SAVEPASSWD, BST_UNCHECKED); // if the user did not enter a valid master password, restore the checkbox to its previous state
                     }
                 }
                 else
                 {
                     if (unlockVisible && Proxy->ProxyEncryptedPassword == NULL)
-                    { // prazdne heslo bez zapleho Save Password -> schovame Unlock a ukazeme prazdny editbox s heslem
+                    { // empty password with Save Password turned off -> hide Unlock and show an empty password edit box
                         CTransferInfo ti(HWindow, ttDataToWindow);
                         char emptyBuff[] = "";
                         ti.EditLine(IDE_PRXSRV_PASSWD, emptyBuff, PASSWORD_MAX_SIZE);
@@ -2034,12 +2035,12 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                        LoadStr(IDS_FTPPLUGINTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | /*MB_DEFBUTTON2 | */ MSGBOXEX_ICONQUESTION | MSGBOXEX_SILENT);
             if (ret == IDYES)
             {
-                // uzivatel si pral smaznout heslo
+                // the user wanted to delete the password
                 CTransferInfo ti(HWindow, ttDataToWindow);
                 char emptyBuff[] = "";
                 ti.EditLine(IDE_PRXSRV_PASSWD, emptyBuff, PASSWORD_MAX_SIZE);
 
-                // vycistime save password checkbox
+                // clear the save password checkbox
                 BOOL clear = FALSE;
                 ti.CheckBox(IDC_PRXSRV_SAVEPASSWD, clear);
 
@@ -2052,10 +2053,10 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDB_PRXSRV_PASSWD_CHANGE:
         {
             CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-            // bud se master password nepouziva nebo pouziva a jiz byl zadan nebo ho uzivatel zada prave ted
+            // either the master password is not used, or it is used and already entered, or the user will enter it now
             if (!passwordManager->IsUsingMasterPassword() || passwordManager->IsMasterPasswordSet() || passwordManager->AskForMasterPassword(HWindow))
             {
-                // pokud se MP pouziva, overime, ze s nim lze rozsifrovat toto heslo
+                // if the master password is used, verify that it can decrypt this password
                 char* proxyPlainPassword = NULL;
                 if (!passwordManager->IsUsingMasterPassword() ||
                     Proxy->ProxyEncryptedPassword != NULL && !passwordManager->DecryptPassword(Proxy->ProxyEncryptedPassword, Proxy->ProxyEncryptedPasswordSize, &proxyPlainPassword))
@@ -2064,22 +2065,22 @@ CProxyServerDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                                LoadStr(IDS_FTPERRORTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
                     if (ret == IDNO)
                         break;
-                    // uzivatel si pral smaznout heslo
+                    // the user wanted to delete the password
                     CTransferInfo ti(HWindow, ttDataToWindow);
                     char emptyBuff[] = "";
                     ti.EditLine(IDE_PRXSRV_PASSWD, emptyBuff, PASSWORD_MAX_SIZE);
-                    // vycistime save password checkbox
+                    // clear the save password checkbox
                     BOOL clear = FALSE;
                     ti.CheckBox(IDC_PRXSRV_SAVEPASSWD, clear);
                 }
                 if (proxyPlainPassword != NULL || Proxy->ProxyEncryptedPassword == NULL)
                 {
-                    // rozsifrovane heslo vlozime do editline
+                    // insert the decrypted password into the edit line
                     CTransferInfo ti(HWindow, ttDataToWindow);
                     char emptyBuff[] = "";
                     ti.EditLine(IDE_PRXSRV_PASSWD, Proxy->ProxyEncryptedPassword == NULL ? emptyBuff : proxyPlainPassword, PASSWORD_MAX_SIZE);
 
-                    // vynulujeme buffer
+                    // zero the buffer
                     if (proxyPlainPassword != NULL)
                     {
                         memset(proxyPlainPassword, 0, lstrlen(proxyPlainPassword));

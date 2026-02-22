@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -39,19 +40,19 @@ BOOL LoadStdColumnStrName(char* buf, int bufSize, int id)
     case 1:
         resID = IDS_STC_STDNAME_EXT;
         break; // extension
-    case 2 /* pri zmene zmenit i "2" v CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
+    case 2 /* when changed, also modify the "2" in CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
         resID = IDS_STC_STDNAME_SIZE;
         break; // size
-    case 3 /* pri zmene zmenit i "3" v CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
+    case 3 /* when changed, also modify the "3" in CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
         resID = IDS_STC_STDNAME_DATE;
         break; // date
-    case 4 /* pri zmene zmenit i "4" v CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
+    case 4 /* when changed, also modify the "4" in CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
         resID = IDS_STC_STDNAME_TIME;
         break; // time
     case 5:
         resID = IDS_STC_STDNAME_TYPE;
         break; // type
-    case 6 /* pri zmene zmenit i "6" v CFTPListingPluginDataInterface::FindRightsColumn() */:
+    case 6 /* when changed, also modify the "6" in CFTPListingPluginDataInterface::FindRightsColumn() */:
         resID = IDS_STC_STDNAME_RIGHTS;
         break; // rights
     case 7:
@@ -63,7 +64,7 @@ BOOL LoadStdColumnStrName(char* buf, int bufSize, int id)
     case 9:
         resID = IDS_STC_STDNAME_DEVICE;
         break; // device
-    case 10 /* pri zmene zmenit i "10" v CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
+    case 10 /* when changed, also modify the "10" in CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
         resID = IDS_STC_STDNAME_BLKSIZE;
         break; // block size
     case 11:
@@ -99,7 +100,7 @@ BOOL LoadStdColumnStrName(char* buf, int bufSize, int id)
     case 21:
         resID = IDS_STC_STDNAME_RECFM;
         break; // Record Format (used on MVS)
-    case 22 /* pri zmene zmenit i "22" v CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
+    case 22 /* when changed, also modify the "22" in CFTPListingPluginDataInterface::CFTPListingPluginDataInterface()*/:
         resID = IDS_STC_STDNAME_BLKSZ;
         break; // Physical Block Length (used on MVS)
     case 23:
@@ -145,7 +146,7 @@ BOOL LoadStdColumnStrName(char* buf, int bufSize, int id)
         resID = IDS_STC_STDNAME_RWEP;
         break; // RWEP (used on Tandem)
 
-        // pri pridavani je nutne zvysit hodnotu konstanty STC_STD_NAMES_COUNT !!!
+        // when adding items, it is necessary to increase the value of the STC_STD_NAMES_COUNT constant!!!
     }
     if (bufSize > 0)
     {
@@ -277,7 +278,7 @@ BOOL LoadStdColumnStrDescr(char* buf, int bufSize, int id)
         resID = IDS_STC_STDDESCR_RWEP;
         break; // RWEP (used on Tandem)
 
-        // pri pridavani je nutne zvysit hodnotu konstanty STC_STD_NAMES_COUNT !!!
+        // when adding items, it is necessary to increase the value of the STC_STD_NAMES_COUNT constant!!!
     }
     if (bufSize > 0)
     {
@@ -392,7 +393,7 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
     case stctExt:
     case stctType:
     case stctGeneralText:
-        return TRUE; // jakykoliv string je OK
+        return TRUE; // any string is OK
 
     case stctSize: // unsigned int64
     {
@@ -432,7 +433,7 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
                 num = -num;
         }
         else
-            num = INT64_EMPTYNUMBER; // ma se zobrazit hodnota ""
+            num = INT64_EMPTYNUMBER; // the value "" should be displayed
         if (int64Val != NULL)
             *int64Val = num;
         return empty == NULL || *empty == 0 && num != INT64_EMPTYNUMBER;
@@ -459,7 +460,7 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
         }
         else
         {
-            if (type == stctGeneralDate) // pro stctGeneralDate se ma zobrazit ""
+            if (type == stctGeneralDate) // for stctGeneralDate the value "" should be displayed
             {
                 day = 0;
                 skipDateCheck = TRUE;
@@ -480,7 +481,7 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
                 st.wDay = day;
             }
             FILETIME ft;
-            if (skipDateCheck || year >= 1602 && SystemTimeToFileTime(&st, &ft)) // test datumu
+            if (skipDateCheck || year >= 1602 && SystemTimeToFileTime(&st, &ft)) // date validation
             {
                 if (stVal != NULL)
                 {
@@ -489,10 +490,10 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
                     stVal->wDay = day;
                     stVal->wDayOfWeek = 0;
                 }
-                return TRUE; // uspech, mame datum
+                return TRUE; // success, we have a date
             }
         }
-        return FALSE; // spatna syntaxe nebo spatne datum
+        return FALSE; // invalid syntax or invalid date
     }
 
     case stctTime:
@@ -517,7 +518,7 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
         }
         else
         {
-            if (type == stctGeneralTime) // pro stctGeneralTime se ma zobrazit ""
+            if (type == stctGeneralTime) // for stctGeneralTime the value "" should be displayed
             {
                 skipTimeCheck = TRUE;
                 hours = 24;
@@ -537,10 +538,10 @@ BOOL GetColumnEmptyValue(const char* empty, CSrvTypeColumnTypes type, CQuadWord*
                     stVal->wSecond = secs;
                     stVal->wMilliseconds = 0;
                 }
-                return TRUE; // uspech, mame cas
+                return TRUE; // success, we have a time
             }
         }
-        return FALSE; // spatna syntaxe nebo spatny cas
+        return FALSE; // invalid syntax or invalid time
     }
     }
     TRACE_E("Unknown server type column type!");

@@ -77,7 +77,7 @@ public:
 		int r = 0, g = 0, b = 0;
 		if (e)
 		{
-			e++; //za tecku
+                        e++; //past the dot
 			if (e != '\0')
 			{
 				if ((*e >= '0') && (*e <= '9')) r = (*e - '0') * 25;
@@ -157,12 +157,12 @@ public:
             return dirHorizontal;
             break;
         }
-        return dirNULL; //TODO: chyba!
+        return dirNULL; //TODO: error!
     }
     //virtual ERenderDecision Decide(CCushionRow *csr, double width, double length, int level, EDirection lastdir, INT64 datasize, INT64 remainingdata, int i, int remainingfiles)
     virtual ERenderDecision Decide(CCushionRow* csr, double width, double length, INT64 datasize, INT64 remainingdata) = 0;
     //{
-    //return rdSameRow; //sloupce
+    //return rdSameRow; //columns
     //	return rdNewRow;
     //}
 };

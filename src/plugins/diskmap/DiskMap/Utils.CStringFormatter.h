@@ -18,22 +18,22 @@ protected:
 		LOCALE_SGROUPING | Grouping | Sample     | Culture 
 		3;0             |  3       |  1,234,567 |  United States 
 		3;2;0           |  32      |  12,34,567 |  India 
-		3               |  30      |   1234,567 |  ??? 
+                3               |  30      |   1234,567 |  (custom grouping example)
 		*/
 
         for (;;)
         {
             ret *= 10;
             if (*szCurr == TEXT('\0'))
-                break; //konec retezce pro konec nulou
+                break; //end of the string due to terminating null
 
             TCHAR* pch;
-            ret += _tcstol(szCurr, &pch, 10); //pricist cislo
+            ret += _tcstol(szCurr, &pch, 10); //add the number
 
             if (_tcscmp(pch, TEXT(";0")) == 0)
-                break; //konec
+                break; //end
 
-            szCurr = pch + 1; //ukazatel za stop znak
+            szCurr = pch + 1; //pointer past the delimiter
         }
 
         return ret;
@@ -117,7 +117,7 @@ public:
         }
         else
         {
-            len = l - 1; //bez NULL
+            len = l - 1; //without the null terminator
         }
         return len;
     }
@@ -142,7 +142,7 @@ public:
         }
         else
         {
-            len = l - 1; //bez NULL
+            len = l - 1; //without the null terminator
         }
         return len;
     }
@@ -162,7 +162,7 @@ public:
             l++;
             *s++ = TEXT(' ');
             l++;
-            *s = TEXT('\0'); //clovek nikdy nevi, kdyz to nevyjde...
+            *s = TEXT('\0'); //you never know when it might fail...
             len = l;
             slen -= len;
             l = FormatTime(s, slen, &st);
@@ -260,7 +260,7 @@ public:
                     l++;
                 }
             }
-            *s = TEXT('\0'); //TODO: zkontrolovat, zda neprepisuju znak za koncem
+            *s = TEXT('\0'); //TODO: verify we do not overwrite beyond the end
             len += l;
         }
         return len;
@@ -271,7 +271,7 @@ public:
         static const int maxexp = sizeof expch / sizeof TCHAR - 2;
         size_t len = 0;
         int exp = 0;
-        //C4244 ok: potrebuji jen par prvnich par ciclic, protoze pocitam kratky tvar "1,45TB"
+        //C4244 ok: we only need the first few digits because we compute the short form "1.45TB"
         double rs = (double)(__int64)size;
         while (rs >= 1024 && exp < maxexp)
         {
@@ -310,7 +310,7 @@ public:
         {
             if (size >= 1024)
             {
-                //velky, zkusime pridat kratky zapis
+                //large value, try to add the short notation
                 s += l;
                 TCHAR* si = s;
                 len += l;
@@ -322,7 +322,7 @@ public:
                     l++;
                     *si++ = TEXT('(');
                     l++;
-                    //*si = TEXT('\0'); //kdyby nahodou
+                    //*si = TEXT('\0'); //just in case
 
                     int li = (int)FormatShortFileSize(si, slen - 3, size);
                     if (li > 0)
@@ -331,12 +331,12 @@ public:
                         si += li;
                         *si++ = TEXT(')');
                         l++;
-                        *si = TEXT('\0'); //konec
+                        *si = TEXT('\0'); //end
                         len += l;
                     }
                     else
                     {
-                        //nepodarilo se pridat vnitrnosti -> odriznout zavorku
+                        //failed to append the inner text -> remove the parentheses
                         *s = TEXT('\0');
                     }
                 }
@@ -348,7 +348,7 @@ public:
         }
         else
         {
-            //neni misto pro bajty, zkusime kratky zapis
+            //no room for the bytes string, try the short notation
             len = FormatShortFileSize(s, slen, size);
         }
         return len;
@@ -363,7 +363,7 @@ public:
         {
             if (size >= 1024)
             {
-                //velky, zkusime pridat kratky zapis
+                //large value, try to add the short notation
                 s += l;
                 TCHAR* si = s;
                 len += l;
@@ -375,7 +375,7 @@ public:
                     l++;
                     *si++ = TEXT('(');
                     l++;
-                    //*si = TEXT('\0'); //kdyby nahodou
+                    //*si = TEXT('\0'); //just in case
 
                     int li = (int)FormatLongFileSize(si, slen - 3, size);
                     if (li > 0)
@@ -384,12 +384,12 @@ public:
                         si += li;
                         *si++ = TEXT(')');
                         l++;
-                        *si = TEXT('\0'); //konec
+                        *si = TEXT('\0'); //end
                         len += l;
                     }
                     else
                     {
-                        //nepodarilo se pridat vnitrnosti -> odriznout zavorku
+                        //failed to append the inner text -> remove the parentheses
                         *s = TEXT('\0');
                     }
                 }
@@ -401,7 +401,7 @@ public:
         }
         else
         {
-            //neni misto pro bajty, zkusime kratky zapis
+            //no room for the bytes string, try the short notation
             len = FormatShortFileSize(s, slen, size);
         }
         return len;

@@ -1,10 +1,11 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 // ****************************************************************************
-// podpora pro plneni comboboxu s defaultnim chovanim pri chybach behem operaci
+// support for filling the combobox with default behavior when errors occur during operations
 
 int OperDefFileAlreadyExists[] = {IDS_OPERATIONSUSERPROMPT, IDS_OPERATIONSAUTORENAME, IDS_OPERATIONSRESUME,
                                   IDS_OPERATIONSRESUMEOROVERWR, IDS_OPERATIONSOVERWRITE,
@@ -133,22 +134,22 @@ void CSolveItemErrorDlg::Validate(CTransferInfo& ti)
     }
 }
 
-// jaky vyznam ma tlacitko ve spojeni s "do the same action for all operations with the same error":
-// tlacitka (poradi hodnot v jednom radku pole):
+// meaning of the button in connection with "do the same action for all operations with the same error":
+// buttons (order of values in one row of the array):
 //   use-alternate-name, resume, resume or overwrite, overwrite, skip, use-existing-dir, ignore, in-binary-mode
-// specialni hodnota: -1 = nema smysl
+// special value: -1 = does not make sense
 int ButtonActionsTbl[][8] = {
-    // radek 0 = file exists: download+upload
+    // row 0 = file exists: download+upload
     {FILEALREADYEXISTS_AUTORENAME, FILEALREADYEXISTS_RESUME, FILEALREADYEXISTS_RES_OVRWR, FILEALREADYEXISTS_OVERWRITE, FILEALREADYEXISTS_SKIP, -1, -1, -1},
-    // radek 1 = retry na souboru FTP klientem primo vytvorenem nebo prepsanem: download+upload
+    // row 1 = retry on a file created or overwritten directly by the FTP client: download+upload
     {RETRYONCREATFILE_AUTORENAME, RETRYONCREATFILE_RESUME, RETRYONCREATFILE_RES_OVRWR, RETRYONCREATFILE_OVERWRITE, RETRYONCREATFILE_SKIP, -1, -1, -1},
-    // radek 2 = retry na souboru FTP klientem resumnutem: download+upload
+    // row 2 = retry on a file resumed by the FTP client: download+upload
     {RETRYONRESUMFILE_AUTORENAME, RETRYONRESUMFILE_RESUME, RETRYONRESUMFILE_RES_OVRWR, RETRYONRESUMFILE_OVERWRITE, RETRYONRESUMFILE_SKIP, -1, -1, -1},
-    // radek 3 = cilovy soubor/adresar nelze vytvorit: download+upload
+    // row 3 = cannot create target file/directory: download+upload
     {CANNOTCREATENAME_AUTORENAME, -1, -1, -1, CANNOTCREATENAME_SKIP, -1, -1, -1},
-    // radek 4 = ASCII transfer mode pro binarni soubor: download+upload
+    // row 4 = ASCII transfer mode for binary file: download+upload
     {-1, -1, -1, -1, ASCIITRFORBINFILE_SKIP, -1, ASCIITRFORBINFILE_IGNORE, ASCIITRFORBINFILE_INBINMODE},
-    // radek 5 = cilovy adresar jiz existuje: download+upload
+    // row 5 = target directory already exists: download+upload
     {DIRALREADYEXISTS_AUTORENAME, -1, -1, -1, DIRALREADYEXISTS_SKIP, DIRALREADYEXISTS_JOIN, -1, -1},
 };
 
@@ -293,7 +294,7 @@ void CSolveItemErrorDlg::Transfer(CTransferInfo& ti)
             case sidtUploadCrDirAutoRenFailed:
             case sidtUploadFileAutoRenFailed:
             case sidtUploadStoreFileFailed:
-                break; // tyto dialogy nemaji checkbox "Remember choice and do not show ..."
+                break; // these dialogs do not have the "Remember choice and do not show ..." checkbox
 
             default:
                 TRACE_E("Unexpected situation in CSolveItemErrorDlg::Transfer(): unknown DlgType!");
@@ -315,7 +316,7 @@ void CSolveItemErrorDlg::Transfer(CTransferInfo& ti)
                 case CM_SIED_OVERWRITE:
                     value = ButtonActionsTbl[typeIndex][3];
                     break;
-                // case CM_SIED_OVERWRITEALL:  // meni se na CM_SIED_OVERWRITE + *ApplyToAll==TRUE
+                // case CM_SIED_OVERWRITEALL:  // is changed to CM_SIED_OVERWRITE + *ApplyToAll==TRUE
                 case IDB_SCRD_SKIP:
                     value = ButtonActionsTbl[typeIndex][4];
                     break;
@@ -453,7 +454,7 @@ CSolveItemErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (DlgType == sidtTgtFileAlreadyExists ||
             DlgType == sidtUploadTgtFileAlreadyExists)
-        { // chceme svuj vlastni fokus na Overwrite buttonu
+        { // we want our own focus on the Overwrite button
             SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, CM_SIED_OVERWRITE), TRUE);
             CCenteredDialog::DialogProc(uMsg, wParam, lParam);
             return FALSE;
@@ -463,7 +464,7 @@ CSolveItemErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDOK) // dropdown menu na Retry buttonu
+        if (LOWORD(wParam) == IDOK) // dropdown menu on the Retry button
         {
             int menuID = IDM_DIREXISTSERRRETRY;
             if (DlgType == sidtTgtFileAlreadyExists ||
@@ -491,7 +492,7 @@ CSolveItemErrorDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 menuID = IDM_CANTCRFILEERRRETRY;
             }
-            HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(menuID)); // zpristupnime vsechny prikazy v obou variantach ("join" by chybel v situaci, kdy adresar existuje + podle defaultu se zkusi autorename, ktery selze -> "already exists" se tvari diky chybe jako "cannot create")
+            HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(menuID)); // we expose all commands in both variants ("join" would be missing in the situation when the directory exists + by default autorename is tried, which fails -> because of the error "already exists" looks like "cannot create")
             if (main != NULL)
             {
                 HMENU subMenu = GetSubMenu(main, 0);
@@ -607,8 +608,8 @@ void CSolveItemErrUnkAttrDlg::Transfer(CTransferInfo& ti)
         {
             switch (UsedButtonID)
             {
-            // case CM_SIEA_RETRY:  // u Retry to nema smysl
-            // case CM_SIEA_SETNEWATTRS:   // neresime ... tohle otevira novy dialog
+            // case CM_SIEA_RETRY:  // it makes no sense for Retry
+            // case CM_SIEA_SETNEWATTRS:   // not handled ... this opens a new dialog
             case IDOK:
                 Oper->SetUnknownAttrs(UNKNOWNATTRS_IGNORE);
                 break;
@@ -634,7 +635,7 @@ CSolveItemErrUnkAttrDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDOK) // dropdown menu na Ignore buttonu
+        if (LOWORD(wParam) == IDOK) // dropdown menu on the Ignore button
         {
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_UNKATTRSERRIGNORE));
             if (main != NULL)
@@ -703,7 +704,7 @@ CSolveItemErrUnkAttrDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CSolveItemSetNewAttrDlg
 //
 
-extern void UpdateCheckBox(HWND hWindow, int checkID, int value); // funkce definovana u CChangeAttrsDlg
+extern void UpdateCheckBox(HWND hWindow, int checkID, int value); // function defined in CChangeAttrsDlg
 
 CSolveItemSetNewAttrDlg::CSolveItemSetNewAttrDlg(HWND parent, CFTPOperation* oper,
                                                  const char* path, const char* name,
@@ -1046,7 +1047,7 @@ COperDlgListView::~COperDlgListView()
         DestroyWindow(HToolTip);
 }
 
-#define TTS_NOANIMATE 0x10 // nemam to v headrech, takze tu konstantu nadefinuju tady
+#define TTS_NOANIMATE 0x10 // it is not in the headers, so I define the constant here
 
 void COperDlgListView::Attach(HWND hListView, COperationDlg* operDlg, BOOL consOrItems)
 {
@@ -1057,14 +1058,14 @@ void COperDlgListView::Attach(HWND hListView, COperationDlg* operDlg, BOOL consO
     HToolTip = CreateWindow(TOOLTIPS_CLASS, (LPSTR)NULL, TTS_ALWAYSTIP | TTS_NOPREFIX | TTS_NOANIMATE,
                             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                             HWindow, (HMENU)NULL, DLLInstance, NULL);
-    // default font vytahneme z dialogu
+    // we take the default font from the dialog
     HFONT dlgFont = (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0);
     if (dlgFont != NULL || SystemFont != NULL)
         SendMessage(HToolTip, WM_SETFONT, (WPARAM)(dlgFont != NULL ? dlgFont : SystemFont), TRUE);
 
-    // zakomentoval jsem SetWindowPos(HWND_TOPMOST), protoze jinak messageboxy nad dialogem operace nefunguji
-    // zcela korektne - pri Alt+TAB do messageboxu se automaticky neaktivuje (nevytahne nahoru)
-    // dialog operace
+    // I commented out SetWindowPos(HWND_TOPMOST) because otherwise message boxes above the operation dialog do not work
+    // completely correctly - when Alt+TAB to the message box it does not activate automatically (it is not brought to the front)
+    // operation dialog
     //  SetWindowPos(HToolTip, HWND_TOPMOST, 0, 0, 0, 0,
     //               SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSIZE);
 
@@ -1102,15 +1103,15 @@ COperDlgListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (uMsg == WM_LBUTTONDOWN)
         {
-            if (LastLButtonDownLParam == lParam &&                                       // mys je na stejnem miste
-                (int)(GetTickCount() - LastLButtonDownTime) < (int)GetDoubleClickTime()) // kliknuti v limitu pro double-click
-            {                                                                            // vygenerujeme WM_LBUTTONDBLCLK (je potreba na Viste)
+            if (LastLButtonDownLParam == lParam &&                                       // mouse is in the same place
+                (int)(GetTickCount() - LastLButtonDownTime) < (int)GetDoubleClickTime()) // click within the limit for a double-click
+            {                                                                            // we generate WM_LBUTTONDBLCLK (needed on Vista)
                 uMsg = WM_LBUTTONDBLCLK;
-                LastLButtonDownTime = GetTickCount() - 2000; // aby na dalsi dvojklik nestacil jeden WM_LBUTTONDOWN
+                LastLButtonDownTime = GetTickCount() - 2000; // so that one WM_LBUTTONDOWN is not enough for the next double-click
                 break;
             }
-            LastLButtonDownTime = GetTickCount(); // zapamatujeme si cas 1. kliknuti
-            LastLButtonDownLParam = lParam;       // zapamatujeme si misto 1. kliknuti
+            LastLButtonDownTime = GetTickCount(); // remember the time of the first click
+            LastLButtonDownLParam = lParam;       // remember the location of the first click
         }
         if (HToolTip != NULL)
         {
@@ -1133,7 +1134,7 @@ COperDlgListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 (hti.iItem != LastItem || hti.iSubItem != LastSubItem) &&
                 hti.iItem >= ListView_GetTopIndex(HWindow))
             {
-                // vytahneme text z prislusneho sloupce a radku listview
+                // extract the text from the appropriate column and row of the list view
                 char buff[1000];
                 buff[0] = 0;
                 int index = hti.iItem;
@@ -1182,9 +1183,9 @@ COperDlgListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 ::SendMessage(HToolTip, TTM_SETTOOLINFO, 0, (LPARAM)(LPTOOLINFO)&ti);
 
-                // nastavime proporcionalne delku zobrazeni tooltipu (delsi text = delsi zobrazeni)
+                // proportionally set the display duration of the tooltip (longer text = longer display)
                 int len = (int)strlen(buff);
-                len = max(100, (len * 10) / 4) * 80; // pouzil jsem Honzuv recept ;-)
+                len = max(100, (len * 10) / 4) * 80; // I used Honza's recipe ;-)
                 ::SendMessage(HToolTip, TTM_SETDELAYTIME, TTDT_AUTOPOP, len);
             }
         }
@@ -1234,9 +1235,9 @@ COperDlgListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (pt.x + width > monRect.right)
                 pt.x = monRect.right - width;
 
-            // zakomentoval jsem SetWindowPos(HWND_TOPMOST), protoze jinak messageboxy nad dialogem operace nefunguji
-            // zcela korektne - pri Alt+TAB do messageboxu se automaticky neaktivuje (nevytahne nahoru)
-            // dialog operace
+            // I commented out SetWindowPos(HWND_TOPMOST) because otherwise message boxes above the operation dialog do not work
+            // completely correctly - when Alt+TAB to the message box it does not activate automatically (it is not brought to the front)
+            // operation dialog
             /*
         SetWindowPos(HToolTip, HWND_TOPMOST,
                      pt.x,
@@ -1344,20 +1345,20 @@ CGetDiskFreeSpaceThread::Body()
     {
         DWORD res = WaitForSingleObject(WorkOrTerminate, INFINITE);
 
-        // zjistime co mame delat
+        // determine what we should do
         HANDLES(EnterCriticalSection(&GetFreeSpaceCritSect));
         char path[MAX_PATH];
         BOOL terminate = TerminateThread;
         lstrcpyn(path, Path, MAX_PATH);
         HANDLES(LeaveCriticalSection(&GetFreeSpaceCritSect));
         if (terminate)
-            break; // koncime...
+            break; // we are done...
 
         CQuadWord freeSpace;
         DWORD ti = GetTickCount();
         SalamanderGeneral->GetDiskFreeSpace(&freeSpace, path, NULL);
         if (GetTickCount() - ti > 10000)
-            freeSpace.Set(-1, -1); // vysledky starsi deseti sekund hazime do kose (stejne uz je uplne jina situace)
+            freeSpace.Set(-1, -1); // discard results older than ten seconds (the situation is completely different anyway)
 
         HANDLES(EnterCriticalSection(&GetFreeSpaceCritSect));
         FreeSpace = freeSpace;
@@ -1365,9 +1366,9 @@ CGetDiskFreeSpaceThread::Body()
         HWND dialog = Dialog;
         HANDLES(LeaveCriticalSection(&GetFreeSpaceCritSect));
         if (terminate)
-            break; // koncime...
+            break; // we are done...
         if (dialog != NULL)
-            PostMessage(dialog, WM_APP_HAVEDISKFREESPACE, 0, 0); // posleme info o vysledcich a jdeme zase cekat...
+            PostMessage(dialog, WM_APP_HAVEDISKFREESPACE, 0, 0); // send info about the results and go wait again...
     }
 
     return 0;
@@ -1408,7 +1409,7 @@ void CSolveItemErrorSimpleDlg::Transfer(CTransferInfo& ti)
             int value = -1;
             switch (UsedButtonID)
             {
-                // case CM_SISE_RETRY:  // u Retry to nema smysl
+                // case CM_SISE_RETRY:  // it makes no sense for Retry
 
             case IDOK:
             {
@@ -1503,7 +1504,7 @@ CSolveItemErrorSimpleDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDOK) // dropdown menu na Retry buttonu
+        if (LOWORD(wParam) == IDOK) // dropdown menu on the Retry button
         {
             int menuID = IDM_DELETEERRORRETRY;
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(menuID));
@@ -1613,7 +1614,7 @@ CSolveServerCmdErr::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDOK && // dropdown menu na Retry buttonu
+        if (LOWORD(wParam) == IDOK && // dropdown menu on the Retry button
             (DlgType == siscdtDeleteFile || DlgType == siscdtDeleteDir))
         {
             int menuID = IDM_DELETEERRORONSRVRETRY;
@@ -1733,7 +1734,7 @@ CSolveServerCmdErr2::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDOK && // dropdown menu na Retry buttonu
+        if (LOWORD(wParam) == IDOK && // dropdown menu on the Retry button
             (DlgType == siscdt2ResumeFile || DlgType == siscdt2ResumeTestFailed ||
              DlgType == siscdt2UploadUnableToStore || DlgType == siscdt2UploadTestIfFinished))
         {

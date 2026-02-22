@@ -86,7 +86,7 @@ INT_PTR WINAPI NextVolumeDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // should be called; we skip it here, there are no horizontal lines
         dlg = (CNextVolumeDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -238,7 +238,7 @@ INT_PTR WINAPI ContinuedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // should be called; we skip it here, there are no horizontal lines
         dlg = (CContinuedFileDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -331,7 +331,7 @@ INT_PTR WINAPI ConfigDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // should be called; we skip it here, there are no horizontal lines
         dlg = (CConfigDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);
@@ -422,7 +422,7 @@ INT_PTR WINAPI AttentionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // melo by se volat, tady na to kasleme, nejsou tu horizontalni cary
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg); // should be called; we skip it here, there are no horizontal lines
         dlg = (CAttentionDialog*)lParam;
         dlg->Dlg = hDlg;
         return dlg->DialogProc(uMsg, wParam, lParam);

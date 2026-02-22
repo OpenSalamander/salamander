@@ -5,26 +5,26 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// part of the CPluginInterface interface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
 HINSTANCE UnRarDll = NULL;
 
-// funkce vyvezene z unrar.dll
+// functions exported from unrar.dll
 FRAROpenArchiveEx _RAROpenArchiveEx;
 FRARCloseArchive _RARCloseArchive;
 //FRARReadHeader RARReadHeader;
@@ -78,33 +78,33 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "UnRAR" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnRAR" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     if (!InterfaceForArchiver.Init())
         return NULL;
 
-    // nastavime zakladni informace o pluginu
+    // set basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
@@ -120,7 +120,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
 // ****************************************************************************
 //
-// stuby do UnRAR.DLL (kvuli callstacku)
+// stubs into UnRAR.DLL (for the call stack)
 //
 
 HANDLE RAROpenArchiveEx(struct RAROpenArchiveDataEx* ArchiveData)
@@ -309,7 +309,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             lstrcpy(fileData.Name, name);
             fileData.Ext = _tcsrchr(fileData.Name, '.');
             if (fileData.Ext)
-                fileData.Ext++; // ".cvspass" ve Windows je pripona
+                fileData.Ext++; // ".cvspass" is considered an extension on Windows
             else
                 fileData.Ext = fileData.Name + fileData.NameLen;
             fileData.Size = header.Size;
@@ -328,7 +328,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             if (header.Flags & RHDF_DIRECTORY)
             {
                 if (!sortByExtDirsAsFiles)
-                    fileData.Ext = fileData.Name + fileData.NameLen; // adresare nemaji pripony
+                    fileData.Ext = fileData.Name + fileData.NameLen; // directories have no extensions
                 fileData.IsLink = 0;
                 if (!dir->AddDir(path, fileData, NULL))
                     ret = FALSE;
@@ -367,7 +367,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     if (NotWholeArchListed && !(Config.Options & OP_NO_VOL_ATTENTION))
         AttentionDialog(SalamanderGeneral->GetMainWindowHWND());
 
-    //nejake soubory jsme jiz vylistovali, tak to nezabalime a zobrazime je
+    // some files have already been listed, so do not pack and display them
     if (!ret && count)
         ret = TRUE;
 
@@ -423,11 +423,11 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
     // extract files
 
-    // overime si, zda nemame v plugin data ulozeny prvni volume
+    // check whether plugin data already stores the first volume
     const CFileData* fd;
     DWORD attr;
     LPCTSTR fv;
-    if (next(NULL /* nechceme zadne dotazy */, 1, NULL, NULL, &fd, nextParam, NULL) &&
+    if (next(NULL /* we do not want any prompts */, 1, NULL, NULL, &fd, nextParam, NULL) &&
         (fv = PluginData->GetFirstVolume()) != NULL &&
         (attr = SalamanderGeneral->SalGetFileAttributes(fv)) != -1 &&
         (attr & FILE_ATTRIBUTE_DIRECTORY) == 0)
@@ -591,7 +591,7 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
     // extract files
     List = FALSE;
 
-    // overime si, zda nemame v plugin data ulozeny prvi volume
+    // check whether plugin data already stores the first volume
     DWORD attr;
     LPCTSTR fv;
     if (fileData &&
@@ -767,8 +767,9 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     AllocateWholeFile = TRUE;
     TestAllocateWholeFile = TRUE;
 
-    // Petr: nelze umistit pred volani UnpackWholeArchiveCalculateProgress, jinak se posbiraji
-    // jmena svazku archivu 2x (krome prvniho svazku, ten bude jen jednou)
+    // Petr: cannot be placed before calling UnpackWholeArchiveCalculateProgress,
+    // otherwise the archive volume names are collected twice (except for the first volume,
+    // which will appear only once)
     if (delArchiveWhenDone)
         archiveVolumes->Add(ArcFileName, -2);
     if (ArchiveVolumes != NULL)
@@ -817,7 +818,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
       }*/
 
             const char* name = SalamanderGeneral->SalPathFindFileName(header.FileName);
-            BOOL nameHasExt = _tcsrchr(name, '.') != NULL; // ".cvspass" ve Windows je pripona
+            BOOL nameHasExt = _tcsrchr(name, '.') != NULL; // ".cvspass" is considered an extension on Windows
 
             int i;
             for (i = 0; i < masks.Count; i++)
@@ -1011,7 +1012,7 @@ BOOL CPluginInterfaceForArchiver::OpenArchive()
             err = IDS_BADPASSWORD;
             break;
         case ERAR_MISSING_PASSWORD:
-            return FALSE; // Cancel v dialogu pro zadani hesla, dalsi hlaska nema smysl (user vi, proc se archiv neotevrel)
+            return FALSE; // Cancel in the password dialog; another message would make no sense (the user knows why the archive did not open)
         default:
             err = IDS_UNKNOWN;
         }
@@ -1022,10 +1023,9 @@ BOOL CPluginInterfaceForArchiver::OpenArchive()
     //RARSetProcessDataProc(ArcHandle, RARProcessDataProc);
     //RARSetCallback(ArcHandle, RARCallback, 0);
 
-    // u RAR4 archivu se sifrovanymi jmeny souboru to po zadani spatneho hesla v callbacku
-    // dojde sem a diky PasswordForOpenArchive==TRUE pri volani RAROpenArchiveEx je po zadani
-    // hesla nastaveno SF_ALLENRYPT i jen po kliknuti na OK v dialogu zadani hesla,
-    // coz zajisti, abysme se znovu neptali na heslo (misto toho se ukaze chybova hlaska o spatnem heslu)
+    // for RAR4 archives with encrypted file names we get here after the callback when an incorrect password is entered,
+    // and because PasswordForOpenArchive == TRUE when calling RAROpenArchiveEx, SF_ALLENRYPT is set even after merely clicking OK in the password dialog,
+    // which ensures we do not ask for the password again (instead an error message about the wrong password appears)
     if ((oad.Flags & 0x0080) /* block headers encrypted */)
     {
         if (!(PluginData->Silent & SF_ALLENRYPT))
@@ -1079,7 +1079,7 @@ BOOL CPluginInterfaceForArchiver::ReadHeader(CFileHeader* header)
         }
         LocalFileTimeToFileTime(&ft, &header->Time);
 
-        // uprava atributu z archivu z Unixu, a dalsich systemu nekompatibilnich s Win32
+        // adjust attributes from archives originating on Unix and other systems incompatible with Win32
         header->Attr = headerData.FileAttr & FILE_ATTRIBUTE_MASK;
         switch (headerData.HostOS)
         {
@@ -1215,7 +1215,7 @@ int CPluginInterfaceForArchiver::ChangeVolProc(char* arcName, int mode)
         if (List)
         {
             NotWholeArchListed = TRUE;
-            return -1; // listujeme, jen dokud to jde bez ptani se na dalsi volumy
+            return -1; // list only while it works without asking for additional volumes
         }
         if (NextVolumeDialog(SalamanderGeneral->GetMsgBoxParent(), arcName) != IDOK)
         {
@@ -1346,7 +1346,7 @@ int CPluginInterfaceForArchiver::NeedPassword(char* password, int size)
         case IDOK:
             if (!PluginData->PasswordForOpenArchive)
                 break;
-            // else break; // Petr: tady break nechybi! (OK ma funkci All)
+            // else break; // Petr: the break is not missing here! (OK acts as All)
         case IDALL:
             PluginData->Silent |= SF_ALLENRYPT;
             break;
@@ -1399,12 +1399,12 @@ BOOL CPluginInterfaceForArchiver::SwitchToFirstVol(LPCTSTR arcName, BOOL* saveFi
         }
         return TRUE;
     }
-    // jeste otestujeme, jestli je to archiv podle novych jmennych konvenci
+    // also test whether this archive follows the new naming conventions
     LPTSTR part = ext - 1;
     while (part >= ArcFileName)
     {
         if (*part == '.')
-            break; // ".cvspass" ve Windows je pripona
+            break; // ".cvspass" is considered an extension on Windows
         part--;
     }
     if (part >= ArcFileName && _tcsnicmp(part, _T(".part"), 5) == 0)
@@ -1415,7 +1415,7 @@ BOOL CPluginInterfaceForArchiver::SwitchToFirstVol(LPCTSTR arcName, BOOL* saveFi
         int digits = (int)(iterator - part - 5);
         if (digits && *iterator == '.')
         {
-            // je to soubor pojmenovany podle nove konvence
+            // the file is named according to the new convention
             TCHAR path[MAX_PATH];
 
             _tcsncpy_s(path, ArcFileName, part - ArcFileName);
@@ -1516,7 +1516,7 @@ BOOL CPluginInterfaceForArchiver::MakeFilesList(TIndirectArray2<CRARExtractInfo>
             ProgressTotal += size;
         }
     }
-    return errorOccured != SALENUM_CANCEL && // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    return errorOccured != SALENUM_CANCEL && // test whether no error occurred and the user did not request to abort the operation (Cancel button)
            SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(), targetDir, ProgressTotal, LoadStr(IDS_PLUGINNAME));
 }
 
@@ -1608,17 +1608,17 @@ BOOL CPluginInterfaceForArchiver::DoThisFile(CFileHeader* header, const char* ar
     }
     if (q == CQuadWord(0, 0x80000000))
     {
-        // allokace se nepovedla a uz se o to snazit nebudem
+        // allocation failed and we will not try again
         AllocateWholeFile = false;
         TestAllocateWholeFile = false;
     }
     else if (q == CQuadWord(0, 0x00000000))
     {
-        // allokace se nepovedla, ale priste to zkusime znova
+        // allocation failed, but we will try again next time
     }
     else
     {
-        // allokace se povedla
+        // allocation succeeded
         TestAllocateWholeFile = false;
     }
     if (!Salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE))
@@ -1716,7 +1716,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchiveCalculateProgress(TIndirectA
                     break;
                 }
                 const char* name = SalamanderGeneral->SalPathFindFileName(header.FileName);
-                BOOL nameHasExt = _tcsrchr(name, '.') != NULL; // ".cvspass" ve Windows je pripona
+                BOOL nameHasExt = _tcsrchr(name, '.') != NULL; // ".cvspass" is considered an extension on Windows
                 int i;
                 for (i = 0; i < masks.Count; i++)
                 {
@@ -1782,7 +1782,7 @@ LPTSTR PathFindExtension(LPTSTR pszPath)
     LPTSTR iterator = pszPath + len - 1;
     while (iterator >= pszPath)
     {
-        if (*iterator == '.') // ".cvspass" ve Windows je pripona
+        if (*iterator == '.') // ".cvspass" is considered an extension on Windows
         {
             return iterator;
         }

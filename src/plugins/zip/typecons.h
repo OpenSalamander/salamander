@@ -418,8 +418,8 @@ extern const SYSTEMTIME MinZipTime;
 
 //buffers sizes
 #define SLIDE_WINDOW_SIZE (64 * 1024)
-// pozor DECOMPRESS_INBUFFER_SIZE musi byt nasobkem 16ti bytu
-// kvuli AES knihovne
+// Note: DECOMPRESS_INBUFFER_SIZE must be a multiple of 16 bytes
+// because of the AES library
 #define DECOMPRESS_INBUFFER_SIZE (16 * 1024)
 #define MAX_HEADER_SIZE (64 * 1024)
 #define OUTPUT_BUFFER_SIZE (16 * 1024)

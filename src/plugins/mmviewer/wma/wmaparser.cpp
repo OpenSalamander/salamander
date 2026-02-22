@@ -170,7 +170,7 @@ CParserWMA::CParserWMA() : pEditor(NULL), pHeaderInfo(NULL), module(NULL)
         }
         else
         {
-            //chyba
+            // error
             FreeLibrary(module);
         }
     }
@@ -233,9 +233,9 @@ CParserWMA::CloseFile()
 CParserResultEnum
 CParserWMA::GetFileInfo(COutputInterface* output)
 {
-    if (pEditor) //aspon nejaka kontrola
+    if (pEditor) // at least some validation
     {
-        // v tomto poradi budou tagy vypisovany. prehazujte poradi dle libosti
+        // tags will be printed in this order. reorder them as you like
         WMA_TAG wmatags[] = {
             {g_wszWMBitrate, IDS_WMA_BITRATE, NULL},
             {g_wszWMDuration, IDS_WMA_DURATION, NULL},

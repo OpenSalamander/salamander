@@ -5,11 +5,11 @@
 
 #define CURRENT_CONFIG_VERSION 1
 
-// definice IDs do menu
+// menu ID definitions
 #define MID_RENAME 1
 #define MID_UNDO 2
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin terminates
 extern CSalamanderGeneralAbstract* SG;
 
 extern CSalamanderGUIAbstract* SalGUI;
@@ -24,7 +24,7 @@ public:
         CS.Enter();
         HWND w = NULL;
         CWindowQueueItem* next = Head;
-        if (next != NULL) // najdeme posledni okno
+        if (next != NULL) // find the last window
         {
             while (next->Next)
                 next = next->Next;
@@ -67,7 +67,7 @@ void OnConfiguration(HWND hParent);
 
 // ****************************************************************************
 //
-// Interface pluginu
+// Plugin interface
 //
 
 class CPluginInterface : public CPluginInterfaceAbstract
@@ -112,7 +112,7 @@ public:
 
 // ****************************************************************************
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 char* LoadStr(int resID);

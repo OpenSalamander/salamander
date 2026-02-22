@@ -16,30 +16,30 @@ class CMainWindow;
 #define BORDER_WIDTH 2
 
 // line color index
-#define LC_NORMAL 0 // shodne text
-#define LC_CHANGE 1 // zmeneny text
-#define LC_FOCUS 2  // zmeneny a fokusovany text
+#define LC_NORMAL 0 // matching text
+#define LC_CHANGE 1 // changed text
+#define LC_FOCUS 2  // changed and focused text
 
 struct CLineColors
 {
     COLORREF LineNumFgColor;
     COLORREF LineNumBkColor;
-    HPEN LineNumBorderPen; // platne jen pro LC_FOCUS (ramecek kolem fokusu) a LC_NORMAL (separator differenci)
+    HPEN LineNumBorderPen; // valid only for LC_FOCUS (focus frame) and LC_NORMAL (difference separator)
     COLORREF FgColor;
     COLORREF BkColor;
-    HPEN BorderPen;    // platne jen pro LC_FOCUS (ramecek kolem fokusu) a LC_NORMAL (separator differenci)
-    COLORREF FgCommon; // barva spolecneho textu pro zobrazeni rozdilu v radce
+    HPEN BorderPen;    // valid only for LC_FOCUS (focus frame) and LC_NORMAL (difference separator)
+    COLORREF FgCommon; // color of the shared text when rendering per-line differences
     COLORREF BkCommon;
 };
 
-// identifikace okna
+// window identification
 enum CFileViewID
 {
     fviLeft,
     fviRight
 };
 
-// identifikace okna
+// window identification
 enum CFileViewType
 {
     fvtText,
@@ -51,7 +51,7 @@ extern HCURSOR HArrowCursor;
 
 extern const char* FILEVIEWWINDOW_CLASSNAME;
 
-// proporcionalne k sirce okna, na okraje kasleme, jde o "odhad"
+// proportional to the window width; edges are ignored, this is just an "estimate"
 #define FAST_LEFTRIGHT __max(1, width / FontWidth / 6)
 
 BOOL TestHScrollWParam(WPARAM wParam);
@@ -76,7 +76,7 @@ protected:
     TMappedTextOut<char> MappedASCII8TextOut;
     BOOL Tracking;
 
-    // slouzi pro akumulaci mikrokroku pri otaceni koleckem mysi, viz
+    // accumulates micro-steps while the mouse wheel turns, see
     // http://msdn.microsoft.com/en-us/library/ms997498.aspx (Best Practices for Supporting Microsoft Mouse and Keyboard Devices)
     int MouseWheelAccumulator;  // vertical
     int MouseHWheelAccumulator; // horizontal
@@ -133,10 +133,10 @@ protected:
 //   return (line & LF_BLANK) == LF_BLANK || (line & LF_BLANK) == LF_SEPARATOR;
 // }
 
-// id timeru pro automaticky scroll pri vyberu textu pomoci mysi
+// timer ID for automatic scrolling when selecting text with the mouse
 #define IDT_SCROLLTEXT 1
 
-// znak, ktery se obevi misto prazdnych znaku
+// character displayed instead of whitespace glyphs
 //#define WHITE_SPACE_CHAR ((char)0xB7)
 
 // update selection flag
@@ -165,13 +165,13 @@ protected:
     int CaretXPos;
     int CaretYPos;
     BOOL ShowWhiteSpace;
-    // prvni prvek LineChanges[cislo_zmeny][cislo_radky_ve_zmene] udava pocet
-    // nasledujicich paru, kazdy par urcuje offset pocatku a konce zmeny v
-    // radce
+    // the first element of LineChanges[change_index][line_index_in_change] stores the count
+    // of following pairs; each pair defines the start and end offsets of the change within
+    // a line
     // unsigned int ***LineChanges;
     // int * ChangesToLinesMap;
     // int * LinesToChangesMap;
-    // CEditScript * EdScript; // potrebne poze pro in-line changes
+    // CEditScript * EdScript; // needed only for in-line changes
     BOOL DetailedDifferences;
     int TabSize;
     CMainWindow* MainWindow;

@@ -52,10 +52,10 @@ protected:
         tBits += 4 * pw * cshy;
         tBits += 4 * cshx;
 
-        //horni linka
+        //top border line
         //for (i = 0; i < 2; i++)
         {
-            //prvni radka
+            //first row
             unsigned int* piBits = (unsigned int*)tBits;
 
             piBits++;
@@ -65,17 +65,17 @@ protected:
             }
             tBits += 4 * pw;
         }
-        //dolni cast - zatoceni rohu
+        //bottom section - rounding the corners
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //levy okraj 2px + 1px kulaty roh
+            //left edge 2px + 1px rounded corner
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
             }
-            //stred preskocit
+            //skip the middle
             piBits += cshw - 4;
-            //pravy okraj 2px + 1px kulaty roh
+            //right edge 2px + 1px rounded corner
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
@@ -83,86 +83,86 @@ protected:
             tBits += 4 * pw;
         }
         /*
-		//titulek
-		for (i = 0; i < txt_heigth; i++)
-		{
-			unsigned int *piBits = (unsigned int *)tBits;
-			//levy okraj
-			*piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
+                //title
+                for (i = 0; i < txt_heigth; i++)
+                {
+                        unsigned int *piBits = (unsigned int *)tBits;
+                        //left edge
+                        *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
 
-			//stredni cast
-			for (j = 0; j < cshw - 2; j++)
-			{
-				//hlidat horni rohy
-				if (i == 0) 
-				{
-					//hlidat levy roh
-					if (j == 0)
-					{
-						*piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
-						continue;
-					}
-					//hlidat pravy roh
-					if (j == cshw - 5)
-					{
-						*piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
-						continue;
-					}
-				}
-				//vypln
-				*piBits++ = coltxt + ((*piBits >> 1) & 0x007f7f7f);
-			}
-			//pravy okraj
-			*piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
-			tBits += 4 * pw;
-		}*/
-        //pravy a levy okraj
+                        //middle section
+                        for (j = 0; j < cshw - 2; j++)
+                        {
+                                //watch the top corners
+                                if (i == 0)
+                                {
+                                        //watch the left corner
+                                        if (j == 0)
+                                        {
+                                                *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
+                                                continue;
+                                        }
+                                        //watch the right corner
+                                        if (j == cshw - 5)
+                                        {
+                                                *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
+                                                continue;
+                                        }
+                                }
+                                //fill
+                                *piBits++ = coltxt + ((*piBits >> 1) & 0x007f7f7f);
+                        }
+                        //right edge
+                        *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
+                        tBits += 4 * pw;
+                }*/
+        //right and left edges
         for (i = 0; i < cshh - 4; i++)
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //levy okraj 2px
+            //left edge 2px
             for (j = 0; j < 1; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
             }
-            //stred preskocit
+            //skip the middle
             piBits += cshw - 2;
-            //pravy okraj 2px
+            //right edge 2px
             for (j = 0; j < 1; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
             }
             tBits += 4 * pw;
         }
-        //dolni cast - zatoceni rohu
+        //bottom section - rounding the corners
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //levy okraj 2px + 1px kulaty roh
+            //left edge 2px + 1px rounded corner
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
             }
-            //stred preskocit
+            //skip the middle
             piBits += cshw - 4;
-            //pravy okraj 2px + 1px kulaty roh
+            //right edge 2px + 1px rounded corner
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 1) & 0x007f7f7f);
             }
             tBits += 4 * pw;
         }
-        //spodni linka
+        //bottom border line
         //for (i = 0; i < 2; i++)
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //pravni radka
+            //first row
             /*for (j = 0; j < cshw; j++)
-			{
-				*piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
-			}
-			tBits += 4 * pw;*/
+                        {
+                                *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
+                        }
+                        tBits += 4 * pw;*/
 
-            //druha radka - bez rohu pro efekt zakulaceni
+            //second row - without corners for a rounding effect
             piBits = (unsigned int*)tBits;
             piBits++;
             for (j = 0; j < cshw - 2; j++)
@@ -198,10 +198,10 @@ protected:
         tBits += 4 * pw * cshy;
         tBits += 4 * cshx;
 
-        //horni linka
+        //top border line
         //for (i = 0; i < 2; i++)
         {
-            //prvni radka
+            //first row
             unsigned int* piBits = (unsigned int*)tBits;
 
             piBits++;
@@ -210,7 +210,7 @@ protected:
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
             tBits += 4 * pw;
-            //druha radka
+            //second row
             piBits = (unsigned int*)tBits;
             for (j = 0; j < cshw; j++)
             {
@@ -219,7 +219,7 @@ protected:
             tBits += 4 * pw;
         }
 
-        //titulek
+        //title
         for (i = 0; i < txt_heigth; i++)
         {
             unsigned int* piBits = (unsigned int*)tBits;
@@ -229,23 +229,23 @@ protected:
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
-            txtBits += 2; //preskocit 2px okraj
+            txtBits += 2; //skip the 2px margin
 
-            //stredni cast
+            //middle section
             //for (j = 0; j < cshw - 6; j++)
             for (j = 0; j < cshw - 4; j++)
             {
-                //hlidat horni rohy
+                //watch the top corners
                 if (i == 0)
                 {
-                    //hlidat levy roh
+                    //watch the left corner
                     if (j == 0)
                     {
                         *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
                         txtBits++;
                         continue;
                     }
-                    //hlidat pravy roh
+                    //watch the right corner
                     if (j == cshw - 5)
                     {
                         *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
@@ -253,7 +253,7 @@ protected:
                         continue;
                     }
                 }
-                //optimalizace...
+                //optimization...
                 if (j > txt_width)
                 {
                     *piBits++ = coltxt + ((*piBits >> 1) & 0x007f7f7f);
@@ -295,53 +295,53 @@ protected:
             tBits += 4 * pw;
             txt_data += 4 * pw;
         }
-        //pravy a levy okraj
+        //right and left edges
         for (i = 0; i < cshh - txt_heigth - 5; i++)
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //levy okraj 2px
+            //left edge 2px
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
-            //stred preskocit
+            //skip the middle
             piBits += cshw - 4;
-            //pravy okraj 2px
+            //right edge 2px
             for (j = 0; j < 2; j++)
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
             tBits += 4 * pw;
         }
-        //dolni cast - zatoceni rohu
+        //bottom section - rounding the corners
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //levy okraj 2px + 1px kulaty roh
+            //left edge 2px + 1px rounded corner
             for (j = 0; j < 3; j++)
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
-            //stred preskocit
+            //skip the middle
             piBits += cshw - 6;
-            //pravy okraj 2px + 1px kulaty roh
+            //right edge 2px + 1px rounded corner
             for (j = 0; j < 3; j++)
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
             tBits += 4 * pw;
         }
-        //spodni linka
+        //bottom border line
         //for (i = 0; i < 2; i++)
         {
             unsigned int* piBits = (unsigned int*)tBits;
-            //pravni radka
+            //first row
             for (j = 0; j < cshw; j++)
             {
                 *piBits++ = col + ((*piBits >> 2) & 0x003f3f3f);
             }
             tBits += 4 * pw;
 
-            //druha radka - bez rohu pro efekt zakulaceni
+            //second row - without corners for a rounding effect
             piBits = (unsigned int*)tBits;
             piBits++;
             for (j = 0; j < cshw - 2; j++)
@@ -356,10 +356,10 @@ protected:
     BOOL PaintMajorDirectories(CZBitmap* pix, HDC refDC)
     {
         if (this->_majorDirectoryCount == 0)
-            return TRUE; //ok, ale nic nekreslim
+            return TRUE; //ok, but nothing to draw
 
         if ((pix == NULL) || (refDC == NULL))
-            return FALSE; //chyba: spatne parametry
+            return FALSE; //error: invalid parameters
 
         int width = pix->GetWidth();
         int height = pix->GetHeight();
@@ -379,12 +379,12 @@ protected:
             HFONT hfold = SelectFont(refDC, hfnormal);
 
             SIZE sz;
-            GetTextExtentPoint32(refDC, TEXT("..."), 3, &sz); //ziskani sirky "..." a vysky znaku
+            GetTextExtentPoint32(refDC, TEXT("..."), 3, &sz); //obtain the width of "..." and character height
             titleheight = sz.cy + 5;
 
             SelectFont(refDC, hfold);
 
-            CZBitmap* bgTxt = new CZBitmap(); //pomocna bitmapa pro vypocet stinu
+            CZBitmap* bgTxt = new CZBitmap(); //helper bitmap for shadow computation
             bgTxt->ResizeBitmap(refDC, width, titleheight + 3);
             RECT bgRect = {0, 0, width, titleheight};
 
@@ -412,24 +412,24 @@ protected:
                     {
 
                         int cxp = ty * width + tx;
-                        if ((txt_data[cxp] & 0xffff00) == 0) //neni pixel textu
+                        if ((txt_data[cxp] & 0xffff00) == 0) //not a text pixel
                         {
-                            //namixovat zakladni odstin 50% alpha
+                            //mix the base shade with 50% alpha
                             txt_data[cxp] = ((txt_data[cxp] & 0xff) + ((255 - (txt_data[cxp] & 0xff)) / 2));
                         }
-                        else //pixel textu
+                        else //text pixel
                         {
                             if (tx > titlewidth)
-                                titlewidth = tx; //prodlouzit max delku textu
+                                titlewidth = tx; //extend the maximum text length
 
-                            txt_data[cxp] = 0xff; //pixel textu bude bily
+                            txt_data[cxp] = 0xff; //text pixel will be white
 
                             for (int py = 0; py < 4; py++)
                             {
                                 for (int px = 0; px < 4; px++)
                                 {
                                     if ((px == 0) && (py == 0))
-                                        continue; //stred neni treba
+                                        continue; //no need for the center
 
                                     int txa = CDirectoryOverlay_shadowdata[py * 4 + px];
                                     if (tx - px > 0)
@@ -442,7 +442,7 @@ protected:
                                                 txt_data[txp] = ((txt_data[txp] & 0xff) + ((255 - (txt_data[txp] & 0xff)) * txa / 255));
                                             }
                                         }
-                                        if ((py != 0) && (ty + py < titleheight)) //pokud py = 0, pak nekreslit podruhe
+                                        if ((py != 0) && (ty + py < titleheight)) //if py = 0, do not draw a second time
                                         {
                                             int txp = (ty + py) * width + (tx - px);
                                             if ((txt_data[txp] & 0xffff00) == 0)
@@ -451,7 +451,7 @@ protected:
                                             }
                                         }
                                     }
-                                    if ((px != 0) && (tx + px < width)) //pokud px = 0, pak nekreslit podruhe
+                                    if ((px != 0) && (tx + px < width)) //if px = 0, do not draw a second time
                                     {
                                         if (ty - py > 0)
                                         {
@@ -461,7 +461,7 @@ protected:
                                                 txt_data[txp] = ((txt_data[txp] & 0xff) + ((255 - (txt_data[txp] & 0xff)) * txa / 255));
                                             }
                                         }
-                                        if ((py != 0) && (ty + py < titleheight)) //pokud py = 0, pak nekreslit podruhe
+                                        if ((py != 0) && (ty + py < titleheight)) //if py = 0, do not draw a second time
                                         {
                                             int txp = (ty + py) * width + (tx + px);
                                             if ((txt_data[txp] & 0xffff00) == 0)
@@ -501,7 +501,7 @@ protected:
                     rct.left = item->x;
                     rct.right = item->x + item->width - 4;
                     rct.top = item->y;
-                    rct.bottom = item->y + item->height - 2 - 1; //TODO: otazka: dojet s titulkem az ke spodnimu okraji??
+                    rct.bottom = item->y + item->height - 2 - 1; // TODO: Should the title extend all the way to the bottom edge?
 
                     CZFile* file = item->directory->GetFile();
 
@@ -522,10 +522,10 @@ protected:
     BOOL PaintMinorDirectories(CZBitmap* pix, HDC refDC)
     {
         if (this->_minorDirectoryCount == 0)
-            return TRUE; //ok, ale nic nekreslim
+            return TRUE; //ok, but nothing to draw
 
         if ((pix == NULL) || (refDC == NULL))
-            return FALSE; //chyba: spatne parametry
+            return FALSE; //error: invalid parameters
 
         int width = pix->GetWidth();
         int height = pix->GetHeight();

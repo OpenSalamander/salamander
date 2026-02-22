@@ -15,29 +15,29 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
 /*
 FPAKGetIFace PAKGetIFace;
 FPAKReleaseIFace PAKReleaseIFace;
 */
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// part of the CPluginInterface interface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is closed
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for comfortable work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// zatim staci tohleto misto konfigurace
+// for now this configuration placeholder is sufficient
 DWORD Options;
 
 const char* CONFIG_OPTIONS = "Options";
@@ -75,31 +75,31 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is made for the current Salamander version and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnARJ" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnARJ" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnARJ" /* neprekladat! */);
+    // let it load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnARJ" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     /*
-  //beta plati do konce unora 2001
+  // beta is valid until the end of February 2001
   SYSTEMTIME st;
   GetLocalTime(&st);
   if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
@@ -109,14 +109,14 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
   }
   */
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnARJ" /* neprekladat! */, "arj");
+                                   "UnARJ" /* do not translate! */, "arj");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -259,7 +259,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             lstrcpy(fileData.Name, name);
             fileData.Ext = strrchr(fileData.Name, '.');
             if (fileData.Ext != NULL)
-                fileData.Ext++; // ".cvspass" ve Windows je pripona
+                fileData.Ext++; // ".cvspass" is an extension in Windows
             else
                 fileData.Ext = fileData.Name + lstrlen(fileData.Name);
             fileData.Attr = header.Attr;
@@ -268,7 +268,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             if (header.Flags & FF_ENCRYPTED && !(fileData.Attr & FILE_ATTRIBUTE_DIRECTORY))
                 fileData.Attr |= FILE_ATTRIBUTE_ENCRYPTED;
             fileData.Hidden = fileData.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
-            fileData.PluginData = -1; // zbytecne, jen tak pro formu
+            fileData.PluginData = -1; // unnecessary, just for form's sake
             fileData.LastWrite = header.Time;
             fileData.DosName = NULL;
             fileData.NameLen = lstrlen(fileData.Name);
@@ -288,7 +288,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             if (fileData.Attr & FILE_ATTRIBUTE_DIRECTORY)
             {
                 if (!sortByExtDirsAsFiles)
-                    fileData.Ext = fileData.Name + fileData.NameLen; // adresare nemaji pripony
+                    fileData.Ext = fileData.Name + fileData.NameLen; // directories do not have extensions
                 fileData.IsLink = 0;
                 if (!dir->AddDir(path, fileData, NULL))
                     ret = FALSE;
@@ -317,7 +317,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
     Salamander = NULL;
 
-    //nejake soubory jsme jiz vylistovali, tak to nezabalime a zobrazime je
+    // we have already listed some files, so we will not abort and will display them
     if (!ret && count)
         ret = TRUE;
 
@@ -593,7 +593,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             TargetFile = INVALID_HANDLE_VALUE;
 
             const char* name = SalamanderGeneral->SalPathFindFileName(header.FileName);
-            BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" ve Windows je pripona
+            BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" is an extension in Windows
             int i;
             for (i = 0; i < masks.Count; i++)
             {
@@ -679,7 +679,7 @@ int CPluginInterfaceForArchiver::ChangeVolProc(char* arcName, char* prevName, in
         if (List)
         {
             NotWholeArchListed = TRUE;
-            return 0; // listujeme jen dokud to jde bez ptani se na dalsi volumy
+            return 0; // list only as long as it works without asking for additional volumes
         }
         if (NextVolumeDialog(SalamanderGeneral->GetMsgBoxParent(), arcName, prevName) != IDOK)
             return 0;
@@ -951,7 +951,7 @@ BOOL CPluginInterfaceForArchiver::MakeFilesList(TIndirectArray2<char>& files, Sa
             ProgressTotal += size;
         }
     }
-    return errorOccured != SALENUM_CANCEL && // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    return errorOccured != SALENUM_CANCEL && // check that no error occurred and the user did not request to cancel the operation (Cancel button)
            SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(), targetDir, ProgressTotal, LoadStr(IDS_PLUGINNAME));
 }
 
@@ -1017,17 +1017,17 @@ BOOL CPluginInterfaceForArchiver::DoThisFile(CARJHeaderData* hdr, const char* ar
     }
     if (q == CQuadWord(0, 0x80000000))
     {
-        // allokace se nepovedla a uz se o to snazit nebudem
+        // allocation failed and we will not try again
         AllocateWholeFile = false;
         TestAllocateWholeFile = false;
     }
     else if (q == CQuadWord(0, 0x00000000))
     {
-        // allokace se nepovedla, ale priste to zkusime znova
+        // allocation failed, but we'll try again next time
     }
     else
     {
-        // allokace se povedla
+        // allocation succeeded
         TestAllocateWholeFile = false;
     }
     if (!Salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE))
@@ -1119,7 +1119,7 @@ void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size)
 
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 LPTSTR PathFindExtension(LPTSTR pszPath)
@@ -1134,7 +1134,7 @@ LPTSTR PathFindExtension(LPTSTR pszPath)
     char* iterator = pszPath + len - 1;
     while (iterator >= pszPath)
     {
-        if (*iterator == '.') // ".cvspass" ve Windows je pripona
+        if (*iterator == '.') // ".cvspass" is an extension in Windows
         {
             return iterator;
         }

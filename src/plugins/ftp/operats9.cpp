@@ -1,11 +1,12 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 #ifdef _DEBUG
-int CUploadListingsOnServer::FoundPathIndexesInCache = 0; // kolik hledanych cest chytla cache
-int CUploadListingsOnServer::FoundPathIndexesTotal = 0;   // kolik bylo celkem hledanych cest
+int CUploadListingsOnServer::FoundPathIndexesInCache = 0; // how many searched paths the cache has caught
+int CUploadListingsOnServer::FoundPathIndexesTotal = 0;   // total number of searched paths
 #endif
 
 //
@@ -40,7 +41,7 @@ BOOL CUploadListingCache::AddOrUpdateListing(const char* user, const char* host,
         user = NULL;
     HANDLES(EnterCriticalSection(&UploadLstCacheCritSect));
     CUploadListingsOnServer* foundServer = FindServer(user, host, port, NULL);
-    if (foundServer == NULL && !onlyUpdate) // v cache jeste neni zadna cesta z tohoto serveru, zalozime polozku pro server
+    if (foundServer == NULL && !onlyUpdate) // the cache does not contain any path from this server yet; create an entry for the server
     {
         foundServer = new CUploadListingsOnServer(user, host, port);
         if (foundServer != NULL && foundServer->IsGood())
@@ -114,7 +115,7 @@ CUploadListingCache::FindServer(const char* user, const char* host, unsigned sho
         if (SalamanderGeneral->StrICmp(server->Host, host) == 0 &&
             (server->User == NULL && user == NULL ||
              user != NULL && server->User != NULL && strcmp(server->User, user) == 0) &&
-            server->Port == port) // server nalezen
+            server->Port == port) // server found
         {
             if (index != NULL)
                 *index = i;
@@ -226,7 +227,7 @@ BOOL CUploadListingCache::GetListing(const char* user, const char* host, unsigne
         *nameExists = FALSE;
     HANDLES(EnterCriticalSection(&UploadLstCacheCritSect));
     CUploadListingsOnServer* server = FindServer(user, host, port, NULL);
-    if (server == NULL) // v cache jeste neni zadna cesta z tohoto serveru, zalozime polozku pro server
+    if (server == NULL) // the cache does not contain any path from this server yet; create an entry for the server
     {
         server = new CUploadListingsOnServer(user, host, port);
         if (server != NULL && server->IsGood())
@@ -314,10 +315,10 @@ CUploadListingsOnServer::CUploadListingsOnServer(const char* user, const char* h
     Host = SalamanderGeneral->DupStr(host);
     if (user != NULL && strcmp(user, FTP_ANONYMOUS) == 0)
         user = NULL;
-    User = SalamanderGeneral->DupStr(user); // je-li NULL, zustane NULL
+    User = SalamanderGeneral->DupStr(user); // if it is NULL, it remains NULL
     Port = port;
 
-    // pri chybe uvolnime a nulujeme data
+    // if there is an error, release and null the data
     if (err)
     {
         if (User != NULL)
@@ -353,15 +354,15 @@ BOOL CUploadListingsOnServer::AddOrUpdateListing(const char* path, CFTPServerPat
 {
     BOOL ret = TRUE;
     int index;
-    if (FindPath(path, pathType, index)) // cesta uz je v cache
+    if (FindPath(path, pathType, index)) // the path is already in the cache
     {
         CUploadPathListing* listing = Listing[index];
         DWORD listingTime;
         if (listing->ListingState == ulsInProgress)
-            listingTime = listing->ListingStartTime; // zmeny jsou zatim jen ve fronte, daji se pouzit i na listing starsi nez LatestChangeTime
+            listingTime = listing->ListingStartTime; // the changes are currently only in the queue, so they can also be used on a listing older than LatestChangeTime
         else
             listingTime = max(listing->LatestChangeTime, listing->ListingStartTime);
-        if (listingTime < listingStartTime) // je-li to novejsi listing, provedeme update
+        if (listingTime < listingStartTime) // if this is a newer listing, perform an update
         {
             listing->ClearListingItems();
             if (listing->ParseListing(pathListing, pathListingLen, pathListingDate, pathType,
@@ -372,59 +373,59 @@ BOOL CUploadListingsOnServer::AddOrUpdateListing(const char* path, CFTPServerPat
                     CUploadListingChange* change = listing->FirstChange;
                     while (change != NULL)
                     {
-                        if (change->ChangeTime > listingStartTime) // pokud se zmena tyka i noveho listingu, provedeme ji
+                        if (change->ChangeTime > listingStartTime) // if the change also concerns the new listing, apply it
                         {
                             if (!listing->CommitChange(change))
                                 break;
                         }
                         change = change->NextChange;
                     }
-                    if (change != NULL)               // chyba behem promitani zmen do noveho listingu
-                        listing->ClearListingItems(); // novy listing zahodime, vse zustane pri starem (jakoby novy listing neslo pouzit)
-                    else                              // zmeny (pokud nejake byly) jsou promitnuty do noveho listingu
+                    if (change != NULL)               // error while applying changes to the new listing
+                        listing->ClearListingItems(); // discard the new listing; everything stays with the old one (as if the new listing could not be used)
+                    else                              // the changes (if there were any) are applied to the new listing
                     {
                         listing->ListingState = ulsInProgressButObsolete;
                         listing->ListingStartTime = listingStartTime;
 
-                        // vyhazime nasbirane zmeny, uz nejsou k nicemu
+                        // discard the collected changes; they are no longer useful
                         listing->ClearListingChanges();
-                        if (listing->LatestChangeTime < listingStartTime) // jinak listing->LatestChangeTime nesmime nulovat - obsahuje
-                            listing->LatestChangeTime = 0;                // cas posledni zmeny v listingu
+                        if (listing->LatestChangeTime < listingStartTime) // otherwise we must not reset listing->LatestChangeTime - it contains
+                            listing->LatestChangeTime = 0;                // the time of the last change in the listing
                     }
                 }
                 else
                 {
                     listing->ListingStartTime = listingStartTime;
-                    listing->LatestChangeTime = 0; // nulujeme, protoze je vzdy mensi nez 'listingStartTime' (takze k nicemu)
+                    listing->LatestChangeTime = 0; // reset because it is always less than 'listingStartTime' (so it is useless)
                     if (listing->ListingState == ulsNotAccessible)
                         listing->ListingState = ulsReady;
                     if (listing->ListingState == ulsInProgressButMayBeOutdated)
                         listing->ListingState = ulsInProgressButObsolete;
                 }
             }
-            else // chyba parsovani noveho listingu nebo je nedostatek pameti
+            else // error parsing the new listing or memory is low
             {
                 if (listing->ListingState == ulsReady)
                 {
                     Listing.Delete(index);
                     if (!Listing.IsGood())
-                        Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                        Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
                     ret = FALSE;
                 }
                 else
                 {
-                    listing->ClearListingItems();                          // novy listing zahodime
-                    if (listing->ListingState == ulsInProgressButObsolete) // nelze zjistit jestli prechodu na ulsInProgressButObsolete nepredchazela "neznama zmena listingu", proto jdeme do chyboveho stavu listingu
+                    listing->ClearListingItems();                          // discard the new listing
+                    if (listing->ListingState == ulsInProgressButObsolete) // it is impossible to determine whether the transition to ulsInProgressButObsolete was preceded by an "unknown listing change", so go to the error state of the listing
                         listing->ListingState = ulsInProgressButMayBeOutdated;
                 }
             }
         }
     }
-    else // cesta jeste neni v cache
+    else // the path is not in the cache yet
     {
-        if (!onlyUpdate) // pokud je mozne listing pridat, pridame ho
+        if (!onlyUpdate) // if it is possible to add the listing, add it
         {
-            CUploadPathListing* listing = new CUploadPathListing(path, pathType, ulsReady, listingStartTime, TRUE /* pridavany listing = listing z panelu*/);
+            CUploadPathListing* listing = new CUploadPathListing(path, pathType, ulsReady, listingStartTime, TRUE /* listing being added = listing from the panel */);
             if (listing != NULL && listing->IsGood())
             {
                 if (listing->ParseListing(pathListing, pathListingLen, pathListingDate, pathType,
@@ -438,7 +439,7 @@ BOOL CUploadListingsOnServer::AddOrUpdateListing(const char* path, CFTPServerPat
                         ret = FALSE;
                     }
                 }
-                else // listing nejde parsovat nebo je nedostatek pameti
+                else // the listing cannot be parsed or memory is low
                 {
                     delete listing;
                     ret = FALSE;
@@ -467,7 +468,7 @@ void CUploadListingsOnServer::RemoveNotAccessibleListings()
         {
             Listing.Delete(i);
             if (!Listing.IsGood())
-                Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
         }
     }
 }
@@ -482,7 +483,7 @@ CUploadListingsOnServer::AddEmptyListing(const char* path, const char* dirName, 
     if (dirName == NULL || FTPPathAppend(pathType, dir, FTP_MAX_PATH, dirName, TRUE))
     {
         int index;
-        if (doNotCheckIfPathIsKnown || !FindPath(dir, pathType, index)) // cesta jeste neni v cache
+        if (doNotCheckIfPathIsKnown || !FindPath(dir, pathType, index)) // the path is not in the cache yet
         {
             CUploadPathListing* listing = new CUploadPathListing(dir, pathType, listingState, IncListingCounter(), FALSE);
             if (listing != NULL && listing->IsGood())
@@ -520,14 +521,14 @@ BOOL CUploadListingsOnServer::FindPath(const char* path, CFTPServerPathType path
 #endif
     index = -1;
     int i;
-    for (i = 0; i < FOUND_PATH_IND_CACHE_SIZE; i++) // nejprve zkusime v minulosti uspesne indexy
+    for (i = 0; i < FOUND_PATH_IND_CACHE_SIZE; i++) // first try indexes that succeeded in the past
     {
         int ind = FoundPathIndexes[i];
         if (ind >= 0 && ind < Listing.Count &&
             FTPIsTheSameServerPath(pathType, Listing[ind]->Path, path))
         {
             index = ind;
-            if (i > 0) // vybublame nalezeny index na prvni pozici v hledaci cache (dame mu tim nejdelsi zivotnost)
+            if (i > 0) // bubble the found index up to the first position in the lookup cache (giving it the longest lifetime)
             {
                 memmove(FoundPathIndexes + 1, FoundPathIndexes, sizeof(int) * i);
                 FoundPathIndexes[0] = i;
@@ -538,11 +539,11 @@ BOOL CUploadListingsOnServer::FindPath(const char* path, CFTPServerPathType path
             return TRUE;
         }
     }
-    for (i = 0; i < Listing.Count; i++) // cache nepomohla, prohledame sekvencne cele pole
+    for (i = 0; i < Listing.Count; i++) // the cache did not help, search the entire array sequentially
     {
         if (FTPIsTheSameServerPath(pathType, Listing[i]->Path, path))
         {
-            // nalezeny index dame do hledaci cache na prvni index, ostatni posuneme dolu
+            // put the found index into the lookup cache at the first position and shift the others down
             memmove(FoundPathIndexes + 1, FoundPathIndexes, sizeof(int) * (FOUND_PATH_IND_CACHE_SIZE - 1));
             FoundPathIndexes[0] = i;
 
@@ -559,20 +560,20 @@ void CUploadListingsOnServer::ReportCreateDirs(const char* workPath, CFTPServerP
     char cutDir[FTP_MAX_PATH];
     char path[FTP_MAX_PATH];
     if (FTPIsPathRelative(pathType, newDirs))
-    { // jdeme zavolat postupne ReportCreateDir pro vsechny vytvarene podadresare
+    { // call ReportCreateDir sequentially for all directories being created
         char relPath[FTP_MAX_PATH];
         lstrcpyn(relPath, newDirs, FTP_MAX_PATH);
         lstrcpyn(path, workPath, FTP_MAX_PATH);
         while (FTPCutFirstDirFromRelativePath(pathType, relPath, cutDir, FTP_MAX_PATH))
         {
-            if (strcmp(cutDir, ".") != 0) // predpoklad: "." je cur-dir nebo nema smysl
+            if (strcmp(cutDir, ".") != 0) // assumption: "." is the current directory or is meaningless
             {
                 if (strcmp(cutDir, "..") == 0)
-                    FTPCutDirectory(pathType, path, FTP_MAX_PATH, NULL, 0, NULL); // predpoklad: ".." je up-dir nebo nema smysl
+                    FTPCutDirectory(pathType, path, FTP_MAX_PATH, NULL, 0, NULL); // assumption: ".." is the parent directory or is meaningless
                 else
                 {
                     int index;
-                    if (FindPath(path, pathType, index)) // najdeme cestu v cache
+                    if (FindPath(path, pathType, index)) // find the path in the cache
                     {
                         if (unknownResult)
                             InvalidateListing(index);
@@ -583,24 +584,24 @@ void CUploadListingsOnServer::ReportCreateDirs(const char* workPath, CFTPServerP
                             if (lowMem)
                                 InvalidateListing(index);
                             if (dirCreated)
-                                AddEmptyListing(path, cutDir, pathType, ulsReady, FALSE); // pridame do cache listingu prazdny listing pro nove vytvoreny adresar
+                                AddEmptyListing(path, cutDir, pathType, ulsReady, FALSE); // add an empty listing to the listing cache for the newly created directory
                         }
                     }
                     if (!FTPPathAppend(pathType, path, FTP_MAX_PATH, cutDir, TRUE))
-                        break; // moc dlouhe cesty neresime
+                        break; // ignore paths that are too long
                 }
             }
         }
     }
-    else // newDirs je absolutni cesta, budeme ji tedy orezavat az do rootu a volat postupne ReportCreateDir pro vsechny podadresare (nevime kolik podadresaru bylo vytvoreno)
+    else // newDirs is an absolute path, so trim it up to the root and call ReportCreateDir for all subdirectories (we do not know how many subdirectories were created)
     {
         lstrcpyn(path, newDirs, FTP_MAX_PATH);
-        FTPCompleteAbsolutePath(pathType, path, FTP_MAX_PATH, workPath); // v pripade potreby prevedeme cestu na plnou absolutni cestu
-        FTPRemovePointsFromPath(path, pathType);                         // predpoklad: "." je cur-dir nebo nema smysl, ".." je up-dir nebo nema smysl
+        FTPCompleteAbsolutePath(pathType, path, FTP_MAX_PATH, workPath); // convert the path to a full absolute path if necessary
+        FTPRemovePointsFromPath(path, pathType);                         // assumption: "." is the current directory or is meaningless, ".." is the parent directory or is meaningless
         while (FTPCutDirectory(pathType, path, FTP_MAX_PATH, cutDir, FTP_MAX_PATH, NULL))
         {
             int index;
-            if (FindPath(path, pathType, index)) // najdeme cestu v cache
+            if (FindPath(path, pathType, index)) // find the path in the cache
             {
                 if (unknownResult)
                     InvalidateListing(index);
@@ -611,7 +612,7 @@ void CUploadListingsOnServer::ReportCreateDirs(const char* workPath, CFTPServerP
                     if (lowMem)
                         InvalidateListing(index);
                     if (dirCreated)
-                        AddEmptyListing(path, cutDir, pathType, ulsReady, FALSE); // pridame do cache listingu prazdny listing pro nove vytvoreny adresar
+                        AddEmptyListing(path, cutDir, pathType, ulsReady, FALSE); // add an empty listing to the listing cache for the newly created directory
                 }
             }
         }
@@ -622,11 +623,11 @@ void CUploadListingsOnServer::ReportRename(const char* workPath, CFTPServerPathT
                                            const char* fromName, const char* newName,
                                            BOOL unknownResult)
 {
-    // fromName je vzdy jmeno (zadna cesta) na workPath - zmena na workPath je jista;
-    // newName je zadane userem, muze byt cokoliv - napr. na VMS dost slozite zjistit,
-    // co se vlastne stalo (presun v ramci serveru, zmeny jen nazvu/pripony ("a." a ".a"),
-    // atd.) - prozatim zjednodusujeme jen na zmenu na workPath - 99% pripadu bude OK
-    // (pouziva se zatim jen v Quick Rename, kde by usera nemelo vubec napadnout zadat cestu)
+    // fromName is always a name (no path) on workPath - the change on workPath is certain;
+    // newName is provided by the user and can be anything - for example, on VMS it is quite complicated to determine
+    // what actually happened (a move within the server, changes just to the name/extension ("a." and ".a"),
+    // etc.) - for now we simplify it to only a change on workPath - 99% of cases will be OK
+    // (used only in Quick Rename for now, where it should not even occur to the user to enter a path)
     int index;
     if (FindPath(workPath, pathType, index))
         InvalidateListing(index);
@@ -637,7 +638,7 @@ void CUploadListingsOnServer::ReportDelete(const char* workPath, CFTPServerPathT
 {
     int index;
     BOOL invalidateNameDir = unknownResult;
-    if (FindPath(workPath, pathType, index)) // najdeme cestu v cache
+    if (FindPath(workPath, pathType, index)) // find the path in the cache
     {
         if (unknownResult)
             InvalidateListing(index);
@@ -652,13 +653,13 @@ void CUploadListingsOnServer::ReportDelete(const char* workPath, CFTPServerPathT
 
     if (invalidateNameDir)
     {
-        // jeste pro pripad, ze 'name' je adresar nebo link na adresar, zneplatnime
-        // listing cesty do tohoto adresare
+        // just in case 'name' is a directory or a link to a directory, invalidate
+        // the listing of the path to that directory
         char path[FTP_MAX_PATH];
         lstrcpyn(path, workPath, FTP_MAX_PATH);
         if (FTPPathAppend(pathType, path, FTP_MAX_PATH, name, TRUE))
         {
-            if (FindPath(path, pathType, index)) // najdeme cestu v cache (pokud slo o soubor, cestu nemuzeme najit)
+            if (FindPath(path, pathType, index)) // find the path in the cache (if it was a file, the path cannot be found)
                 InvalidateListing(index);
         }
     }
@@ -667,7 +668,7 @@ void CUploadListingsOnServer::ReportDelete(const char* workPath, CFTPServerPathT
 void CUploadListingsOnServer::ReportStoreFile(const char* workPath, CFTPServerPathType pathType, const char* name)
 {
     int index;
-    if (FindPath(workPath, pathType, index)) // najdeme cestu v cache
+    if (FindPath(workPath, pathType, index)) // find the path in the cache
     {
         BOOL lowMem;
         Listing[index]->ReportStoreFile(name, &lowMem);
@@ -680,7 +681,7 @@ void CUploadListingsOnServer::ReportFileUploaded(const char* workPath, CFTPServe
                                                  const CQuadWord& fileSize, BOOL unknownResult)
 {
     int index;
-    if (FindPath(workPath, pathType, index)) // najdeme cestu v cache
+    if (FindPath(workPath, pathType, index)) // find the path in the cache
     {
         if (unknownResult)
             InvalidateListing(index);
@@ -719,19 +720,19 @@ void CUploadListingsOnServer::ReportUnknownChange(const char* workPath, CFTPServ
 void CUploadListingsOnServer::InvalidateListing(int index)
 {
     CUploadPathListing* listing = Listing[index];
-    if (listing->ListingState == ulsReady) // listing vyhodime z pole, uz se mu neda verit
+    if (listing->ListingState == ulsReady) // remove the listing from the array because it can no longer be trusted
     {
         Listing.Delete(index);
         if (!Listing.IsGood())
-            Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+            Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
     }
     else
     {
         if (listing->ListingState != ulsNotAccessible)
         {
-            if (listing->ListingState == ulsInProgressButObsolete) // zahodime novejsi listing, uz nebude k nicemu
+            if (listing->ListingState == ulsInProgressButObsolete) // discard the newer listing; it will no longer be useful
                 listing->ClearListingItems();
-            if (listing->ListingState == ulsInProgress) // vyhazime nasbirane zmeny, uz nejsou k nicemu
+            if (listing->ListingState == ulsInProgress) // discard the accumulated changes; they are no longer useful
                 listing->ClearListingChanges();
             listing->ListingState = ulsInProgressButMayBeOutdated;
         }
@@ -750,23 +751,23 @@ BOOL CUploadListingsOnServer::GetListing(const char* path, CFTPServerPathType pa
     if (FindPath(path, pathType, index))
     {
         CUploadPathListing* listing = Listing[index];
-        if (listing->ListingState == ulsNotAccessible) // listing je "neziskatelny"
+        if (listing->ListingState == ulsNotAccessible) // the listing is "unobtainable"
             *notAccessible = TRUE;
         else
         {
             if (listing->ListingState == ulsInProgress ||
                 listing->ListingState == ulsInProgressButObsolete ||
-                listing->ListingState == ulsInProgressButMayBeOutdated) // listing se taha, pridame workera pro hlaseni o ukonceni/chybe
+                listing->ListingState == ulsInProgressButMayBeOutdated) // the listing is being fetched; add a worker to report completion/error
             {
                 *listingInProgress = TRUE;
                 ret = listing->AddWaitingWorker(workerMsg, workerUID);
             }
             else
             {
-                if (listing->ListingState == ulsReady) // listing je ready
+                if (listing->ListingState == ulsReady) // the listing is ready
                 {
                     int index2;
-                    if (listing->FindItem(name, index2)) // nalezena polozka 'name', nakopirujeme jeji data do 'existingItem' + dame TRUE do 'nameExists'
+                    if (listing->FindItem(name, index2)) // item 'name' found; copy its data into 'existingItem' and set 'nameExists' to TRUE
                     {
                         if (nameExists != NULL)
                             *nameExists = TRUE;
@@ -801,7 +802,7 @@ BOOL CUploadListingsOnServer::GetListing(const char* path, CFTPServerPathType pa
             }
         }
     }
-    else // cesta jeste neni v cache
+    else // the path is not in the cache yet
     {
         CUploadPathListing* listing = AddEmptyListing(path, NULL, pathType, ulsInProgress, TRUE);
         if (listing != NULL)
@@ -829,7 +830,7 @@ void CUploadListingsOnServer::ListingFailed(const char* path, CFTPServerPathType
             listing->ListingState == ulsInProgressButMayBeOutdated)
         {
             listing->InformWaitingWorkers(uploadFirstWaitingWorker);
-            if (listing->ListingState == ulsInProgressButObsolete) // listing uz mame, takze nam nevadi, ze worker hlasi chybu listovani
+            if (listing->ListingState == ulsInProgressButObsolete) // we already have the listing, so we do not mind that the worker reports a listing error
             {
                 listing->ListingState = ulsReady;
                 if (listingOKErrorIgnored != NULL)
@@ -842,14 +843,14 @@ void CUploadListingsOnServer::ListingFailed(const char* path, CFTPServerPathType
                     listing->ClearListingItems();
                     listing->ClearListingChanges();
                     listing->LatestChangeTime = 0;
-                    listing->ListingStartTime = IncListingCounter(); // updatnout ho muze jen novy listing
+                    listing->ListingStartTime = IncListingCounter(); // only a new listing can update it
                     listing->ListingState = ulsNotAccessible;
                 }
                 else
                 {
                     Listing.Delete(index);
                     if (!Listing.IsGood())
-                        Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                        Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
                 }
             }
         }
@@ -875,19 +876,19 @@ BOOL CUploadListingsOnServer::ListingFinished(const char* path, CFTPServerPathTy
             listing->ListingState == ulsInProgressButMayBeOutdated)
         {
             listing->InformWaitingWorkers(NULL);
-            if (listing->ListingState == ulsInProgressButObsolete) // uz mame novejsi listing nez tento, takze tento listing ignorujeme (zustaneme u novejsiho)
+            if (listing->ListingState == ulsInProgressButObsolete) // we already have a newer listing than this one, so ignore this listing (stay with the newer one)
                 listing->ListingState = ulsReady;
             else
             {
-                if (listing->ListingState == ulsInProgressButMayBeOutdated) // vime, ze je tento listing nejspis neplatny (a zadny jiny nemame), takze cestu vyhodime z cache (listing se pak stahne znovu)
+                if (listing->ListingState == ulsInProgressButMayBeOutdated) // we know this listing is probably invalid (and we have no other), so remove the path from the cache (the listing will be downloaded again)
                 {
                     Listing.Delete(index);
                     if (!Listing.IsGood())
-                        Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                        Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
                 }
-                else // ulsInProgress: zpracujeme novy listing + commitneme na nej zmeny
+                else // ulsInProgress: process the new listing and commit the changes to it
                 {
-                    listing->ClearListingItems(); // asi zbytecne, jen pro sychr
+                    listing->ClearListingItems(); // probably unnecessary, just to be safe
                     BOOL lowMem;
                     if (listing->ParseListing(pathListing, pathListingLen, pathListingDate, pathType,
                                               welcomeReply, systReply, suggestedListingServerType, &lowMem))
@@ -895,36 +896,36 @@ BOOL CUploadListingsOnServer::ListingFinished(const char* path, CFTPServerPathTy
                         CUploadListingChange* change = listing->FirstChange;
                         while (change != NULL)
                         {
-                            if (change->ChangeTime > listing->ListingStartTime) // nejspis "always true"
+                            if (change->ChangeTime > listing->ListingStartTime) // probably "always true"
                             {
                                 if (!listing->CommitChange(change))
                                     break;
                             }
                             change = change->NextChange;
                         }
-                        if (change != NULL) // chyba behem promitani zmen do noveho listingu - muze byt jen nedostatek pameti - docasna chyba - vyhodime cestu z cache, casem se listing zkusi znovu stahnout
+                        if (change != NULL) // error while applying changes to the new listing - it can only be a lack of memory - temporary error - remove the path from the cache; the listing will be downloaded again later
                         {
                             Listing.Delete(index);
                             if (!Listing.IsGood())
-                                Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                                Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
                             ret = FALSE;
                         }
-                        else // zmeny (pokud nejake byly) jsou promitnuty do noveho listingu
+                        else // the changes (if there were any) are applied to the new listing
                         {
                             listing->ListingState = ulsReady;
-                            listing->ClearListingChanges(); // vyhazime nasbirane zmeny, uz nejsou k nicemu
+                            listing->ClearListingChanges(); // discard the accumulated changes; they are no longer useful
                         }
                     }
                     else
                     {
-                        if (lowMem) // nedostatek pameti = docasna chyba - vyhodime cestu z cache, casem se listing zkusi znovu stahnout
+                        if (lowMem) // lack of memory = temporary error - remove the path from the cache; the listing will be downloaded again later
                         {
                             Listing.Delete(index);
                             if (!Listing.IsGood())
-                                Listing.ResetState(); // Delete nemuze selhat, jen hlasi chybu pri zmensovani pole
+                                Listing.ResetState(); // Delete cannot fail; it only reports an error when shrinking the array
                             ret = FALSE;
                         }
-                        else // chyba parsovani noveho listingu = permanentni chyba - oznacime listing teto cesty za "neziskatelny"
+                        else // parsing error of the new listing = permanent error - mark the listing for this path as "unobtainable"
                         {
                             listing->ListingState = ulsNotAccessible;
                             listing->ClearListingChanges();
@@ -964,7 +965,7 @@ CUploadPathListing::CUploadPathListing(const char* path, CFTPServerPathType path
     FirstWaitingWorker = NULL;
     FromPanel = fromPanel;
 
-    // pri chybe uvolnime a nulujeme data
+    // if there is an error, release and null the data
     if (err)
     {
         if (Path != NULL)
@@ -1093,7 +1094,7 @@ LABEL_UploadListingSortItemsAux:
         }
     } while (i <= j);
 
-    // nasledujici "hezky" kod jsme nahradili kodem podstatne setricim stack (max. log(N) zanoreni rekurze)
+    // the following "nice" code was replaced with code that significantly saves stack usage (maximum log(N) recursion depth)
     //  if (left < j) UploadListingSortItemsAux(listingItem, left, j);
     //  if (i < right) UploadListingSortItemsAux(listingItem, i, right);
 
@@ -1101,7 +1102,7 @@ LABEL_UploadListingSortItemsAux:
     {
         if (i < right)
         {
-            if (j - left < right - i) // je potreba seradit obe "poloviny", tedy do rekurze posleme tu mensi, tu druhou zpracujeme pres "goto"
+            if (j - left < right - i) // both "halves" need to be sorted, so recurse into the smaller one and process the other via "goto"
             {
                 UploadListingSortItemsAux(listingItem, left, j);
                 left = i;
@@ -1155,7 +1156,7 @@ LABEL_UploadListingSortItemsCaseInsensitiveAux:
         }
     } while (i <= j);
 
-    // nasledujici "hezky" kod jsme nahradili kodem podstatne setricim stack (max. log(N) zanoreni rekurze)
+    // the following "nice" code was replaced with code that significantly saves stack usage (maximum log(N) recursion depth)
     //  if (left < j) UploadListingSortItemsCaseInsensitiveAux(listingItem, left, j);
     //  if (i < right) UploadListingSortItemsCaseInsensitiveAux(listingItem, i, right);
 
@@ -1163,7 +1164,7 @@ LABEL_UploadListingSortItemsCaseInsensitiveAux:
     {
         if (i < right)
         {
-            if (j - left < right - i) // je potreba seradit obe "poloviny", tedy do rekurze posleme tu mensi, tu druhou zpracujeme pres "goto"
+            if (j - left < right - i) // both "halves" need to be sorted, so recurse into the smaller one and process the other via "goto"
             {
                 UploadListingSortItemsCaseInsensitiveAux(listingItem, left, j);
                 left = i;
@@ -1221,25 +1222,25 @@ BOOL CUploadPathListing::FindItem(const char* name, int& index)
             res = strcmp(ListingItem[m]->Name, name);
         else
             res = SalamanderGeneral->StrICmp(ListingItem[m]->Name, name);
-        if (res == 0) // nalezeno
+        if (res == 0) // found
         {
             index = m;
             return TRUE;
         }
         else if (res > 0)
         {
-            if (l == r || l > m - 1) // nenalezeno
+            if (l == r || l > m - 1) // not found
             {
-                index = m; // mel by byt na teto pozici
+                index = m; // it should be at this position
                 return FALSE;
             }
             r = m - 1;
         }
         else
         {
-            if (l == r) // nenalezeno
+            if (l == r) // not found
             {
-                index = m + 1; // mel by byt az za touto pozici
+                index = m + 1; // it should be right after this position
                 return FALSE;
             }
             l = m + 1;
@@ -1269,7 +1270,7 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
     else
         lstrcpyn(listingServerType, suggestedListingServerType, SERVERTYPE_MAX_SIZE);
 
-    // nulovani pomocne promenne pro urceni ktery typ serveru jiz byl (neuspesne) vyzkousen
+    // reset the helper variable used to determine which server type has already been tested (unsuccessfully)
     CServerTypeList* serverTypeList = Config.LockServerTypeList();
     int serverTypeListCount = serverTypeList->Count;
     int j;
@@ -1278,7 +1279,7 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
 
     BOOL err = FALSE;
     CServerType* serverType = NULL;
-    if (listingServerType[0] != 0) // nejde o autodetekci, najdeme listingServerType
+    if (listingServerType[0] != 0) // this is not autodetection; find listingServerType
     {
         int i;
         for (i = 0; i < serverTypeListCount; i++)
@@ -1289,20 +1290,20 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
                 s++;
             if (SalamanderGeneral->StrICmp(listingServerType, s) == 0)
             {
-                // serverType je vybrany, jdeme vyzkouset jeho parser na listingu
+                // serverType has been selected; try its parser on the listing
                 serverType->ParserAlreadyTested = TRUE;
                 if (ParseListingToArray(pathListing, pathListingLen, pathListingDate, serverType, &err, isVMS))
-                    needSimpleListing = FALSE; // uspesne jsme rozparsovali listing
+                    needSimpleListing = FALSE; // successfully parsed the listing
                 if (err && lowMemory != NULL)
                     *lowMemory = TRUE;
-                break; // nasli jsme pozadovany typ serveru, koncime
+                break; // found the requested server type, done
             }
         }
         if (i == serverTypeListCount)
-            listingServerType[0] = 0; // listingServerType neexistuje -> probehne autodetekce
+            listingServerType[0] = 0; // listingServerType does not exist -> perform autodetection
     }
 
-    // autodetekce - vyber typu serveru se splnenou autodetekcni podminkou
+    // autodetection - select the server type whose autodetection condition is satisfied
     if (!err && needSimpleListing && listingServerType[0] == 0)
     {
         int welcomeReplyLen = (int)strlen(welcomeReply);
@@ -1311,13 +1312,13 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
         for (i = 0; i < serverTypeListCount; i++)
         {
             serverType = serverTypeList->At(i);
-            if (!serverType->ParserAlreadyTested) // jen pokud jsme ho uz nezkouseli
+            if (!serverType->ParserAlreadyTested) // only if we have not tried it yet
             {
                 if (serverType->CompiledAutodetCond == NULL)
                 {
                     serverType->CompiledAutodetCond = CompileAutodetectCond(HandleNULLStr(serverType->AutodetectCond),
                                                                             NULL, NULL, NULL, NULL, 0);
-                    if (serverType->CompiledAutodetCond == NULL) // muze byt jen chyba nedostatku pameti
+                    if (serverType->CompiledAutodetCond == NULL) // can only be a memory shortage error
                     {
                         err = TRUE;
                         if (lowMemory != NULL)
@@ -1328,7 +1329,7 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
                 if (serverType->CompiledAutodetCond->Evaluate(welcomeReply, welcomeReplyLen,
                                                               systReply, systReplyLen))
                 {
-                    // serverType je vybrany, jdeme vyzkouset jeho parser na listingu
+                    // serverType has been selected; try its parser on the listing
                     serverType->ParserAlreadyTested = TRUE;
                     if (ParseListingToArray(pathListing, pathListingLen, pathListingDate, serverType, &err, isVMS) || err)
                     {
@@ -1341,24 +1342,24 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
                                 s++;
                             lstrcpyn(listingServerType, s, SERVERTYPE_MAX_SIZE);
                         }
-                        needSimpleListing = err; // uspesne jsme rozparsovali listing nebo doslo k chybe nedostatku pameti, koncime
+                        needSimpleListing = err; // either successfully parsed the listing or ran into a memory shortage error, finish
                         break;
                     }
                 }
             }
         }
 
-        // autodetekce - vyber zbyvajicich typu serveru
+        // autodetection - selection of the remaining server types
         if (!err && needSimpleListing)
         {
             int k;
             for (k = 0; k < serverTypeListCount; k++)
             {
                 serverType = serverTypeList->At(k);
-                if (!serverType->ParserAlreadyTested) // jen pokud jsme ho uz nezkouseli
+                if (!serverType->ParserAlreadyTested) // only if we have not tried it yet
                 {
-                    // serverType je vybrany, jdeme vyzkouset jeho parser na listingu
-                    // serverType->ParserAlreadyTested = TRUE;  // zbytecne, dale se nepouziva
+                    // serverType has been selected; try its parser on the listing
+                    // serverType->ParserAlreadyTested = TRUE;  // unnecessary, not used later
                     if (ParseListingToArray(pathListing, pathListingLen, pathListingDate, serverType, &err, isVMS) || err)
                     {
                         if (err && lowMemory != NULL)
@@ -1370,7 +1371,7 @@ BOOL CUploadPathListing::ParseListing(const char* pathListing, int pathListingLe
                                 s++;
                             lstrcpyn(listingServerType, s, SERVERTYPE_MAX_SIZE);
                         }
-                        needSimpleListing = err; // uspesne jsme rozparsovali listing nebo doslo k chybe nedostatku pameti, koncime
+                        needSimpleListing = err; // either successfully parsed the listing or ran into a memory shortage error, finish
                         break;
                     }
                 }
@@ -1389,7 +1390,7 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
     *lowMem = FALSE;
     ClearListingItems();
 
-    // napocitame masku 'validDataMask'
+    // compute the 'validDataMask' mask
     DWORD validDataMask = VALID_DATA_HIDDEN | VALID_DATA_ISLINK; // Name + NameLen + Hidden + IsLink
     int i;
     for (i = 0; i < serverType->Columns.Count; i++)
@@ -1419,7 +1420,7 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
                                                                                    validDataMask, isVMS);
     if (dataIface != NULL)
     {
-        DWORD* emptyCol = new DWORD[serverType->Columns.Count]; // pomocne predalokovane pole pro GetNextItemFromListing
+        DWORD* emptyCol = new DWORD[serverType->Columns.Count]; // helper preallocated array for GetNextItemFromListing
         if (dataIface->IsGood() && emptyCol != NULL)
         {
             validDataMask |= dataIface->GetPLValidDataMask();
@@ -1428,7 +1429,7 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
             {
                 parser = CompileParsingRules(HandleNULLStr(serverType->RulesForParsing), &(serverType->Columns),
                                              NULL, NULL, NULL);
-                serverType->CompiledParser = parser; // 'parser' nebudeme dealokovat, uz je v 'serverType'
+                serverType->CompiledParser = parser; // do not deallocate 'parser'; it is already stored in 'serverType'
             }
             if (parser != NULL)
             {
@@ -1437,15 +1438,15 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
                 const char* listingEnd = pathListing + pathListingLen;
                 BOOL isDir = FALSE;
 
-                int rightsCol = dataIface->FindRightsColumn(); // index sloupce s pravy (pouziva se pro detekci linku)
+                int rightsCol = dataIface->FindRightsColumn(); // index of the column with rights (used for link detection)
 
                 parser->BeforeParsing(listing, listingEnd, pathListingDate.Year, pathListingDate.Month,
-                                      pathListingDate.Day, FALSE); // init parseru
+                                      pathListingDate.Day, FALSE); // initialize the parser
                 while (parser->GetNextItemFromListing(&file, &isDir, dataIface, &(serverType->Columns), &listing,
                                                       listingEnd, NULL, &err, emptyCol))
                 {
                     if (!isDir || file.NameLen > 2 ||
-                        file.Name[0] != '.' || (file.Name[1] != 0 && file.Name[1] != '.')) // nejde o adresare "." a ".."
+                        file.Name[0] != '.' || (file.Name[1] != 0 && file.Name[1] != '.')) // not the directories "." and ".."
                     {
                         CUploadListingItemType itemType;
                         if (rightsCol != -1 && IsUNIXLink(dataIface->GetStringFromColumn(file, rightsCol)))
@@ -1453,14 +1454,14 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
                         else
                             itemType = isDir ? ulitDirectory : ulitFile;
 
-                        BOOL sizeInBytes; // TRUE = 'size' je v bytech
-                        CQuadWord size;   // promenna pro velikost aktualniho souboru
+                        BOOL sizeInBytes; // TRUE = 'size' is in bytes
+                        CQuadWord size;   // variable for the size of the current file
                         if (itemType != ulitFile || !dataIface->GetSize(file, size, sizeInBytes) || !sizeInBytes)
-                            size = UPLOADSIZE_UNKNOWN; // nezname velikost souboru v bytech
+                            size = UPLOADSIZE_UNKNOWN; // the size of the file in bytes is unknown
 
                         err = !AddItemDoNotSort(itemType, file.Name, size);
                     }
-                    // uvolnime data souboru nebo adresare
+                    // release the data for the file or directory
                     dataIface->ReleasePluginData(file, isDir);
                     SalamanderGeneral->Free(file.Name);
 
@@ -1468,10 +1469,10 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
                         break;
                 }
                 if (!err && listing == listingEnd)
-                    ret = TRUE; // parsovani probehlo uspesne
+                    ret = TRUE; // parsing completed successfully
             }
             else
-                err = TRUE; // muze byt jen nedostatek pameti
+                err = TRUE; // can only be a memory shortage
         }
         else
         {
@@ -1497,7 +1498,7 @@ BOOL CUploadPathListing::ParseListingToArray(const char* pathListing, int pathLi
 
 void CUploadPathListing::ReportCreateDir(const char* newDir, BOOL* dirCreated, BOOL* lowMem)
 {
-    LatestChangeTime = IncListingCounter(); // zaznamename cas teto zmeny
+    LatestChangeTime = IncListingCounter(); // record the time of this change
     *lowMem = FALSE;
     *dirCreated = FALSE;
     int index;
@@ -1506,7 +1507,7 @@ void CUploadPathListing::ReportCreateDir(const char* newDir, BOOL* dirCreated, B
     case ulsReady:
     case ulsInProgressButObsolete:
     {
-        if (!FindItem(newDir, index)) // jmeno je volne, je mozne vytvorit adresar
+        if (!FindItem(newDir, index)) // the name is free; it is possible to create the directory
         {
             if (InsertNewItem(index, ulitDirectory, newDir, UPLOADSIZE_UNKNOWN))
                 *dirCreated = TRUE;
@@ -1532,16 +1533,16 @@ void CUploadPathListing::ReportCreateDir(const char* newDir, BOOL* dirCreated, B
         break;
     }
 
-        // case ulsInProgressButMayBeOutdated:   // neni co delat
-        // case ulsNotAccessible:                // neni co delat
+        // case ulsInProgressButMayBeOutdated:   // nothing to do
+        // case ulsNotAccessible:                // nothing to do
     }
 }
 
 void CUploadPathListing::ReportDelete(const char* name, BOOL* invalidateNameDir, BOOL* lowMem)
 {
-    LatestChangeTime = IncListingCounter(); // zaznamename cas teto zmeny
+    LatestChangeTime = IncListingCounter(); // record the time of this change
     *lowMem = FALSE;
-    *invalidateNameDir = TRUE; // netusime jestli neni adresar nebo link = je potreba zkusit zneplatnit listing adresare (pokud to bude soubor, vyignoruje se to)
+    *invalidateNameDir = TRUE; // we do not know whether it is a directory or a link, so try to invalidate the directory listing (if it is a file, it will be ignored)
     int index;
     switch (ListingState)
     {
@@ -1552,7 +1553,7 @@ void CUploadPathListing::ReportDelete(const char* name, BOOL* invalidateNameDir,
         {
             CUploadListingItem* item = ListingItem[index];
             if (item->ItemType == ulitFile)
-                *invalidateNameDir = FALSE; // soubor = neni potreba zneplatnit listing adresare
+                *invalidateNameDir = FALSE; // file = no need to invalidate the directory listing
             SalamanderGeneral->Free(item->Name);
             delete item;
             ListingItem.Detach(index);
@@ -1560,7 +1561,7 @@ void CUploadPathListing::ReportDelete(const char* name, BOOL* invalidateNameDir,
                 ListingItem.ResetState();
         }
         else
-            TRACE_E("CUploadPathListing::ReportDelete(): delete for unknown name reported: " << name); // jen warning
+            TRACE_E("CUploadPathListing::ReportDelete(): delete for unknown name reported: " << name); // warning only
         break;
     }
 
@@ -1580,14 +1581,14 @@ void CUploadPathListing::ReportDelete(const char* name, BOOL* invalidateNameDir,
         break;
     }
 
-        // case ulsInProgressButMayBeOutdated:   // neni co delat
-        // case ulsNotAccessible:                // neni co delat
+        // case ulsInProgressButMayBeOutdated:   // nothing to do
+        // case ulsNotAccessible:                // nothing to do
     }
 }
 
 void CUploadPathListing::ReportStoreFile(const char* name, BOOL* lowMem)
 {
-    LatestChangeTime = IncListingCounter(); // zaznamename cas teto zmeny
+    LatestChangeTime = IncListingCounter(); // record the time of this change
     *lowMem = FALSE;
     int index;
     switch (ListingState)
@@ -1595,12 +1596,12 @@ void CUploadPathListing::ReportStoreFile(const char* name, BOOL* lowMem)
     case ulsReady:
     case ulsInProgressButObsolete:
     {
-        if (!FindItem(name, index)) // jmeno je volne, vytvorime soubor
+        if (!FindItem(name, index)) // the name is free; create the file
         {
             if (!InsertNewItem(index, ulitFile, name, UPLOADSIZE_NEEDUPDATE))
                 *lowMem = TRUE;
         }
-        else // jmeno jiz existuje, pokud jde o soubor, zneplatnime jeho velikost (link zadnou velikost nema)
+        else // the name already exists; if it is a file, invalidate its size (a link has no size)
         {
             CUploadListingItem* item = ListingItem[index];
             if (item->ItemType == ulitFile)
@@ -1625,14 +1626,14 @@ void CUploadPathListing::ReportStoreFile(const char* name, BOOL* lowMem)
         break;
     }
 
-        // case ulsInProgressButMayBeOutdated:   // neni co delat
-        // case ulsNotAccessible:                // neni co delat
+        // case ulsInProgressButMayBeOutdated:   // nothing to do
+        // case ulsNotAccessible:                // nothing to do
     }
 }
 
 void CUploadPathListing::ReportFileUploaded(const char* name, const CQuadWord& fileSize, BOOL* lowMem)
 {
-    LatestChangeTime = IncListingCounter(); // zaznamename cas teto zmeny
+    LatestChangeTime = IncListingCounter(); // record the time of this change
     *lowMem = FALSE;
     int index;
     switch (ListingState)
@@ -1640,7 +1641,7 @@ void CUploadPathListing::ReportFileUploaded(const char* name, const CQuadWord& f
     case ulsReady:
     case ulsInProgressButObsolete:
     {
-        if (FindItem(name, index)) // pokud jde o soubor, nastavime mu novou velikost
+        if (FindItem(name, index)) // if it is a file, set its new size
         {
             CUploadListingItem* item = ListingItem[index];
             if (item->ItemType == ulitFile)
@@ -1665,8 +1666,8 @@ void CUploadPathListing::ReportFileUploaded(const char* name, const CQuadWord& f
         break;
     }
 
-        // case ulsInProgressButMayBeOutdated:   // neni co delat
-        // case ulsNotAccessible:                // neni co delat
+        // case ulsInProgressButMayBeOutdated:   // nothing to do
+        // case ulsNotAccessible:                // nothing to do
     }
 }
 
@@ -1687,24 +1688,24 @@ BOOL CUploadPathListing::CommitChange(CUploadListingChange* change)
                 ListingItem.ResetState();
         }
         else
-            TRACE_I("CUploadPathListing::CommitChange(): delete for unknown name reported: " << change->Name); // jen warning
+            TRACE_I("CUploadPathListing::CommitChange(): delete for unknown name reported: " << change->Name); // warning only
         return TRUE;
     }
 
     case ulctCreateDir:
     {
-        if (!FindItem(change->Name, index)) // jmeno je volne, je mozne vytvorit adresar
+        if (!FindItem(change->Name, index)) // the name is free; it is possible to create the directory
             return InsertNewItem(index, ulitDirectory, change->Name, UPLOADSIZE_UNKNOWN);
         return TRUE;
     }
 
     case ulctStoreFile:
     {
-        if (!FindItem(change->Name, index)) // jmeno je volne, vytvorime soubor
+        if (!FindItem(change->Name, index)) // the name is free; create the file
         {
             return InsertNewItem(index, ulitFile, change->Name, UPLOADSIZE_NEEDUPDATE);
         }
-        else // jmeno jiz existuje, pokud jde o soubor, zneplatnime jeho velikost (link zadnou velikost nema)
+        else // the name already exists; if it is a file, invalidate its size (a link has no size)
         {
             CUploadListingItem* item = ListingItem[index];
             if (item->ItemType == ulitFile)
@@ -1715,7 +1716,7 @@ BOOL CUploadPathListing::CommitChange(CUploadListingChange* change)
 
     case ulctFileUploaded:
     {
-        if (FindItem(change->Name, index)) // pokud jde o soubor, nastavime mu novou velikost
+        if (FindItem(change->Name, index)) // if it is a file, set its new size
         {
             CUploadListingItem* item = ListingItem[index];
             if (item->ItemType == ulitFile)
@@ -1759,7 +1760,7 @@ BOOL CUploadPathListing::AddWaitingWorker(int workerMsg, int workerUID)
 
 void CUploadPathListing::InformWaitingWorkers(CUploadWaitingWorker** uploadFirstWaitingWorker)
 {
-    if (uploadFirstWaitingWorker != NULL) // mam cekajici workery pridat do seznamu
+    if (uploadFirstWaitingWorker != NULL) // should add the waiting workers to the list
     {
         if (FirstWaitingWorker != NULL)
         {
@@ -1773,12 +1774,12 @@ void CUploadPathListing::InformWaitingWorkers(CUploadWaitingWorker** uploadFirst
             *uploadFirstWaitingWorker = FirstWaitingWorker;
         }
     }
-    else // mame cekajicim workerum postnout WORKER_TGTPATHLISTINGFINISHED
+    else // we need to post WORKER_TGTPATHLISTINGFINISHED to the waiting workers
     {
         CUploadWaitingWorker* worker = FirstWaitingWorker;
         while (worker != NULL)
         {
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani mozne (nehrozi dead-lock)
+            // because we are already in CSocketsThread::CritSect, this call is possible (no deadlock risk)
             SocketsThread->PostSocketMessage(worker->WorkerMsg, worker->WorkerUID, WORKER_TGTPATHLISTINGFINISHED, NULL);
 
             CUploadWaitingWorker* del = worker;
@@ -1807,7 +1808,7 @@ CUploadListingChange::CUploadListingChange(DWORD changeTime, CUploadListingChang
     ChangeTime = changeTime;
     NextChange = NULL;
 
-    // pri chybe uvolnime a nulujeme data
+    // if there is an error, release and null the data
     if (err)
     {
         if (Name != NULL)
@@ -1816,7 +1817,7 @@ CUploadListingChange::CUploadListingChange(DWORD changeTime, CUploadListingChang
     }
 }
 
-CUploadListingChange::~CUploadListingChange() // uvolneni dat, ale POZOR: nesmi uvolnit NextChange
+CUploadListingChange::~CUploadListingChange() // release the data, but WARNING: must not free NextChange
 {
     if (Name != NULL)
         SalamanderGeneral->Free(Name);
@@ -1858,11 +1859,11 @@ BOOL CFTPOpenedFile::IsSameFile(const char* user, const char* host, unsigned sho
 
 BOOL CFTPOpenedFile::IsInConflictWith(CFTPFileAccessType accessType)
 {
-    return AccessType != accessType || // dve ruzne operace na jednom souboru nejsou mozne
-           accessType == ffatWrite;    // dva uploady jednoho souboru nejsou mozne
-                                       // dva downloady najednou nejsou na skodu,
-                                       // dve mazani tez nevadi - druhe skonci chybou "not found" (vysledek je jisty, nezavisly na implementaci serveru)
-                                       // dve prejmenovani tez nevadi, navic nehrozi (Quick Rename muze probihat jen jeden zaroven), ale hrozi prejmenovani na "az-na-velikosti-pismen-stejne" jmeno (shodny zdroj i cil prejmenovani jsou dve jmena v poli)
+    return AccessType != accessType || // two different operations on a single file are not possible
+           accessType == ffatWrite;    // two uploads of one file are not possible
+                                       // two downloads at the same time do no harm,
+                                       // two deletions do not matter either - the second ends with a "not found" error (the outcome is certain, independent of the server implementation)
+                                       // two renames do not matter either and, moreover, cannot happen (Quick Rename can run only one at a time), but renaming to a name that differs only in letter casing is possible (the same source and target of the rename are two names in the array)
 }
 
 CFTPOpenedFiles::CFTPOpenedFiles() : OpenedFiles(50, 100), AllocatedObjects(50, 100)
@@ -1899,12 +1900,12 @@ BOOL CFTPOpenedFiles::OpenFile(const char* user, const char* host, unsigned shor
     {
         int uid = NextOpenedFileUID++;
         CFTPOpenedFile* n;
-        if (AllocatedObjects.Count > 0) // pokud mame neco predalokovaneho, znovu to vyuzijeme
+        if (AllocatedObjects.Count > 0) // if we have something preallocated, reuse it
         {
             n = AllocatedObjects[AllocatedObjects.Count - 1];
             AllocatedObjects.Detach(AllocatedObjects.Count - 1);
             if (!AllocatedObjects.IsGood())
-                AllocatedObjects.ResetState(); // detach nemuze selhat
+                AllocatedObjects.ResetState(); // detaching cannot fail
             n->Set(uid, user, host, port, path, pathType, name, accessType);
         }
         else
@@ -1949,7 +1950,7 @@ void CFTPOpenedFiles::CloseFile(int UID)
                 OpenedFiles.Delete(i);
             }
             if (!OpenedFiles.IsGood())
-                OpenedFiles.ResetState(); // detach ani delete nemuzou selhat, jen se nepovedlo sesunuti pole
+                OpenedFiles.ResetState(); // detach or delete cannot fail; only the array compaction did not succeed
             found = TRUE;
             break;
         }

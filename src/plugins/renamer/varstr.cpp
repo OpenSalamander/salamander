@@ -72,25 +72,25 @@ BOOL CVarString::Compile(const char* varText, int& error, int& errorPos1,
         {
             if (*++src == 0)
             {
-                // $ na konci retezce
+                // $ at the end of the string
                 Error = error = IDS_EXP_TRAILINGDOLLAR;
                 errorPos2 = errorPos1 = (int)(src - varText);
                 return FALSE;
             }
 
-            // test na $$ escape
+            // check for the $$ escape sequence
             if (*src != '$')
             {
                 if (*src != '(')
                 {
-                    // neocekavany znak, muze byt pouze $$ nebo $(
+                    // unexpected character; only $$ or $( are allowed
                     Error = error = IDS_EXP_UNEXPECTEDCHAR;
                     errorPos1 = (int)(src - varText);
                     errorPos2 = errorPos1 + 1;
                     return FALSE;
                 }
 
-                // jde o promenou, najdeme zaviraci zavorku
+                // this is a variable; find the closing bracket
                 const char* closePar = ++src;
                 BOOL quote = FALSE;
                 while (*closePar != 0)
@@ -110,7 +110,7 @@ BOOL CVarString::Compile(const char* varText, int& error, int& errorPos1,
                     return FALSE;
                 }
 
-                // najdeme ':' oddelujici jmeno promene od argumentu
+                // find the ':' separating the variable name from the argument
                 const char* colon = src;
                 quote = FALSE;
                 while (*colon != 0)
@@ -131,7 +131,7 @@ BOOL CVarString::Compile(const char* varText, int& error, int& errorPos1,
                     return FALSE;
                 }
 
-                // najdeme promenou v seznamu
+                // find the variable in the list
                 CVariableEntry* entry = variables;
                 for (; entry->Name; entry++)
                     if (SG->StrICmpEx(entry->Name, (int)strlen(entry->Name), src, (int)(colon - src)) == 0)
@@ -170,7 +170,7 @@ BOOL CVarString::Compile(const char* varText, int& error, int& errorPos1,
             }
         }
 
-        // je to normalni text
+        // this is regular text
         *tmp++ = *src++;
     }
 

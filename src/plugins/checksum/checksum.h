@@ -81,8 +81,8 @@ public:
 };
 
 extern SConfig Config;
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 char* LoadStr(int resID);
 INT_PTR OnConfiguration(HWND hParent);
@@ -90,7 +90,7 @@ INT_PTR OnConfiguration(HWND hParent);
 #define CMD_CALCULATE 1
 #define CMD_VERIFY 2
 
-// reseni focusnuti z dialogu Verify
+// focus handling from the Verify dialog
 #define CMD_FOCUSFILE 99
 extern char Focus_Path[MAX_PATH];
 

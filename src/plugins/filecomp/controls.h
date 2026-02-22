@@ -3,8 +3,8 @@
 
 #pragma once
 
-extern HFONT EnvFont;     // font prostredi (edit, toolbar, header, status)
-extern int EnvFontHeight; // vyska fontu
+extern HFONT EnvFont;     // environment font (edit, toolbar, header, status)
+extern int EnvFontHeight; // font height
 extern HBRUSH HDitheredBrush;
 
 // ****************************************************************************

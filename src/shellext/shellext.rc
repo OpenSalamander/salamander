@@ -6,7 +6,7 @@
 
 #include "..\plugins\shared\spl_vers.h"
 
-#define FILE_SALVER "5.0"   // bez cisla buildu a platformy, napr. "3.1 beta 1"
+#define FILE_SALVER "5.0"   // without the build number and platform, e.g. "3.1 beta 1"
 #define FILE_VER "1.49\0"
 #define FILE_COPYRIGHT "Copyright © 2003-2023 Open Salamander Authors\0"
 

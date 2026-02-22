@@ -438,8 +438,8 @@ BOOL CISOImage::ReadSessionCCD(char* fileName, BOOL quiet /* = FALSE*/)
                 if (extentsEnd == NULL)
                     throw Error(IDS_INSUFFICIENT_MEMORY, quiet);
 
-                // extent se v ramci session pocita od nuly
-                // je-li v session vice tracku, pak je extent tracku ulozen v ccdtrk->Index
+                // the extent within the session is counted from zero
+                // if the session contains multiple tracks, the track's extent is stored in ccdtrk->Index
 
                 // build track info
                 for (i = 0; i < ccd->TrackArray.Count; i++)
@@ -467,7 +467,7 @@ BOOL CISOImage::ReadSessionCCD(char* fileName, BOOL quiet /* = FALSE*/)
                     }
                     track->Start = 0x00;
                     track->End = 0x00;
-                    track->ExtentOffset = ccdtrk->Index; // extent tracku v ramci session
+                    track->ExtentOffset = ccdtrk->Index; // track extent within the session
                     AddTrack(track);
                 } // for
 
@@ -537,7 +537,7 @@ BOOL CISOImage::ReadSessionCCD(char* fileName, BOOL quiet /* = FALSE*/)
                     for (j = 0; j < Session[i]; j++)
                     {
                         CISOImage::Track* track = Tracks[firstTrack + j];
-                        track->ExtentOffset += extents[i]; // extent je v ramci session pocitan od nuly -> my chceme absolutni polohu v image
+                        track->ExtentOffset += extents[i]; // the extent is counted from zero within the session -> we want the absolute position in the image
 
                         DWORD endSector;
                         if (j < Session[i] - 1)

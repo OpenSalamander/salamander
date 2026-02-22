@@ -121,7 +121,7 @@ BOOL CXDVDFS::AddFileDir(const char* path, char* fileName, CDirectoryEntry* de,
         fd.LastWrite = VD.CreationTime;
         fd.DosName = NULL;
 
-        fd.Attr = FILE_ATTRIBUTE_READONLY; // vse je defaultne read-only
+        fd.Attr = FILE_ATTRIBUTE_READONLY; // everything is read-only by default
         fd.Hidden = 0;
         fd.IsOffline = 0;
 
@@ -138,7 +138,7 @@ BOOL CXDVDFS::AddFileDir(const char* path, char* fileName, CDirectoryEntry* de,
             fd.IsLink = 0;
 
             if (!SortByExtDirsAsFiles)
-                fd.Ext = fd.Name + fd.NameLen; // adresare nemaji priponu
+                fd.Ext = fd.Name + fd.NameLen; // directories do not have an extension
 
             if (dir && !dir->AddDir(path, fd, pluginData))
             {
@@ -150,7 +150,7 @@ BOOL CXDVDFS::AddFileDir(const char* path, char* fileName, CDirectoryEntry* de,
         {
             fd.Size.Value = de->FileSize;
 
-            // soubor
+            // file
             fd.IsLink = SalamanderGeneral->IsFileLink(fd.Ext);
             if (dir && !dir->AddFile(path, fd, pluginData))
             {
@@ -191,7 +191,7 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
     {
         delete[] data;
         Error(IDS_ERROR_LISTING_IMAGE, FALSE, sector);
-        // pokud se nepodari nacist sektor s rootem
+        // if reading the sector with the root fails
         return (sector == VD.RootSector) ? ERR_CONTINUE : ERR_TERMINATE;
     }
 
@@ -238,11 +238,11 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
             strcat(path, "\\");
             strcat(path, fileName);
 
-            // zanorit jen kdyz je vse OK
+            // descend only when everything is OK
             if (ret == ERR_OK)
             {
                 ret = ScanDir(de.StartSector, de.FileSize, path, dir, pluginData);
-                // kdyz se vynorime s ukoncovaci chybou, pokracovat ve zpracovani co to pujde
+                // if we surface with a termination error, keep processing as much as possible
                 if (ret == ERR_TERMINATE)
                     ret = ERR_CONTINUE;
             }
@@ -250,7 +250,7 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
         }
 
         offset += 0x000E + len;
-        // zarovnat offset na dword
+        // align the offset to a DWORD
         offset = ((offset + 3) / 4) * 4;
     }
 
@@ -303,11 +303,11 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
         // set file time
         file.SetFileTime(&ft, &ft, &ft);
 
-        // celkova operace muze pokracovat dal. pouze skip
+        // the overall operation can continue further: skip only
         if (toSkip)
             throw UNPACK_ERROR;
 
-        // celkova operace nemuze pokracovat dal. cancel
+        // the overall operation cannot continue any further: cancel
         if (hFile == INVALID_HANDLE_VALUE)
             throw UNPACK_CANCEL;
 
@@ -316,7 +316,7 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
         /*
     BYTE track = Image->GetTrackFromExtent(fp->Extent);
     if (!Image->OpenTrack(track)) {
-      // je treba otevrit track, ze ktereho budeme cist (nastaveni paramtru tracku)
+      // it is necessary to open the track we will read from (setting the track parameters)
       Error(IDS_CANT_OPEN_TRACK, silent == 1, track);
       throw UNPACK_ERROR;
     }
@@ -328,7 +328,7 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
         while (remain.Value > 0)
         {
             if (remain.Value < nbytes)
-                nbytes = remain.LoDWord; // !!! velikost bufferu nesmi byt vetsi nez DWORD
+                nbytes = remain.LoDWord; // !!! the buffer size must not exceed DWORD
 
             if (!ReadBlockPhys(block, 1, sector))
             {
@@ -358,14 +358,14 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
                 break;
             }
 
-            if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, abychom nebrzdili
+            if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, so we do not slow things down
             {
                 salamander->ProgressDialogAddText(LoadStr(IDS_CANCELING_OPERATION), FALSE);
                 salamander->ProgressEnableCancel(FALSE);
 
                 ret = UNPACK_CANCEL;
                 bFileComplete = FALSE;
-                break; // preruseni akce
+                break; // action interrupted
             }
 
             ULONG written;
@@ -394,14 +394,14 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
 
         if (!bFileComplete)
         {
-            // protoze je vytvoren s read-only atributem, musime R attribut
-            // shodit, aby sel soubor smazat
+            // because it was created with the read-only attribute, we must clear
+            // the R attribute so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-            // user zrusil operaci
-            // smazat po sobe neuplny soubor
+            // the user cancelled the operation
+            // delete the incomplete file afterwards
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());
         }

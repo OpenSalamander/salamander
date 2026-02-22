@@ -7,21 +7,21 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are reserved by this include !!!
 
-//ikony
+//icons
 #define IDI_SFXICON 500
 #define IDI_LOCK  501
 #define IDI_COMMENT 502
 
-//bitmapy
+//bitmaps
 #define IDB_ZIP      505
 
 //data
 #define ID_SFX_MANIFEST_REGULAR	550
 #define ID_SFX_MANIFEST_ADMIN	551
 
-//commandy
+//commands
 #define CM_SFX_FAVORITE 420
 #define CM_SFX_MANAGE 411
 #define CM_SFX_LASTUSED 409
@@ -46,12 +46,12 @@
 #define CM_REGENTRY   866
 #define CM_OPENPURCHASEWEB   870
 
-// virtualni IDcka - pouze pro vazbu s helpem
+// virtual IDs - used only for mapping help topics
 #define IDH_COMMENT    1000
 #define IDH_CREATESFX  1001
 #define IDH_TEST       1002
 
-//texty
+//strings
 #define IDS_ERROPEN     1001
 #define IDS_ERRFORMAT                   1002
 #define IDS_ERREOCENTRDIR               1003

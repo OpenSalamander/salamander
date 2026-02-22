@@ -12,7 +12,7 @@
 #include "pictview.rh2"
 #include "lang\lang.rh"
 
-#define PREVIEW_MARGIN 8 // odsazeni stranky od hrany preview v bodech
+#define PREVIEW_MARGIN 8 // page offset from the preview edge in points
 
 typedef struct _prevWriteInfo
 {
@@ -135,8 +135,8 @@ void CPreviewWnd::Paint(HDC hDC)
     int prevWidth, prevHeight, prevLeft, prevTop;
     RECT clientRect;
 
-    GetClientRect(HWindow, &clientRect); // POZOR: rozmery client area nebudou vzdy ctvercove, zalezi na fontech atd.
-                                         // budeme se poskytnuty prostor snazit maximalne vyuzit...
+    GetClientRect(HWindow, &clientRect); // WARNING: client area dimensions will not always be square; depends on fonts, etc.
+                                         // we will try to use the available space as much as possible...
     int dstWidth = clientRect.right;
     int dstHeight = clientRect.bottom;
 
@@ -152,7 +152,7 @@ void CPreviewWnd::Paint(HDC hDC)
         releaseDC = TRUE;
     }
 
-    // budeme kreslit pres cache, kterou vytvorime/zahodime pri kazdem paintu (nikam nespechame)
+    // draw through a cache created/destroyed on each paint (we are in no hurry)
     HBITMAP hCacheBmp = CreateCompatibleBitmap(hDC, dstWidth, dstHeight);
     HDC hCacheDC = CreateCompatibleDC(NULL);
     HBITMAP hOldCacheBmp = (HBITMAP)SelectObject(hCacheDC, hCacheBmp);
@@ -174,7 +174,7 @@ void CPreviewWnd::Paint(HDC hDC)
 
     FillRect(hCacheDC, &clientRect, (HBRUSH)(COLOR_BTNFACE + 1));
 
-    // rozmer custom controlu v bodech, do ktereho vykreslime papir
+    // size of the custom control in points into which we draw the paper
     int wWidth = clientRect.right - 2 * PREVIEW_MARGIN;
     int wHeight = clientRect.bottom - 2 * PREVIEW_MARGIN;
 
@@ -188,14 +188,14 @@ void CPreviewWnd::Paint(HDC hDC)
         zoomRatio = (double)wWidth / paperWidth;
     }
 
-    // vycentrujeme stranku do naseho preview prostoru
+    // center the page within our preview area
     RECT pageRect;
     pageRect.left = (LONG)((clientRect.right - paperWidth * zoomRatio) / 2);
     pageRect.right = (LONG)(pageRect.left + paperWidth * zoomRatio);
     pageRect.top = (LONG)((clientRect.bottom - paperHeight * zoomRatio) / 2);
     pageRect.bottom = (LONG)(pageRect.top + paperHeight * zoomRatio);
 
-    // vykreslime stranku
+    // draw the page
     FillRect(hCacheDC, &pageRect, (HBRUSH)(COLOR_WINDOW + 1));
     Rectangle(hCacheDC, pageRect.left, pageRect.top, pageRect.right, pageRect.bottom);
 
@@ -203,7 +203,7 @@ void CPreviewWnd::Paint(HDC hDC)
     ratioX = (DOUBLE)(pageRect.right - pageRect.left) / (paperWidth * 72);
     ratioY = (DOUBLE)(pageRect.bottom - pageRect.top) / (paperHeight * 72);
 
-    // realne po-tisknutelna oblast bude mensi o okraje
+    // the actual printable area will be smaller by the margins
     pageRect.left += (LONG)(pageLeftMargin * zoomRatio);
     pageRect.top += (LONG)(pageTopMargin * zoomRatio);
     pageRect.right -= (LONG)(pageRightMargin * zoomRatio);
@@ -277,13 +277,13 @@ void CPreviewWnd::Paint(HDC hDC)
         }
     }
 
-    DrawFocusRect(hCacheDC, &pageRect); // vizualizace tisknutelne oblasti
+    DrawFocusRect(hCacheDC, &pageRect); // visualize the printable area
 
-    // FIXME print -- zobrazit obrazek ve sprave orientaci, meritku a posunuti
-    // mozna by bylo sikovnejsi pouzit nejake transformace DC nez to otacet rucne?
-    // netusim zda jsou ale podporovany na vsech tiskarnach
+    // FIXME print -- show the image with the proper orientation, scale, and offset
+    // it might be smarter to use some DC transforms instead of rotating manually?
+    // not sure if they are supported on all printers
     //
-    // dal je potreba zobrazit oramovani obrazku, pokud je zapnuty checkbox IDC_PRINT_BOX
+    // then draw the image border if the IDC_PRINT_BOX checkbox is enabled
 
     if (hPreview)
     {
@@ -306,13 +306,13 @@ void CPreviewWnd::Paint(HDC hDC)
         pageRect.top += prevTop;
         pageRect.right = pageRect.left + prevWidth;
         pageRect.bottom = pageRect.top + prevHeight;
-        DrawFocusRect(hCacheDC, &pageRect); // vizualizace vlastniho nahledu
+        DrawFocusRect(hCacheDC, &pageRect); // visualize the actual preview
     }
 
-    // vse hodime do obrazovky
+    // copy everything to the screen
     BitBlt(hDC, 0, 0, dstWidth, dstHeight, hCacheDC, 0, 0, SRCCOPY);
 
-    // uvolnime cache
+    // release the cache
     SelectObject(hCacheDC, hOldCacheBmp);
     DeleteDC(hCacheDC);
     DeleteObject(hCacheBmp);
@@ -405,7 +405,7 @@ void CPrintDlg::Validate(CTransferInfo& ti)
 {
 }
 
-int UnitsIDs[] = {IDS_UNIT_INCHES, IDS_UNIT_CM, IDS_UNIT_MM, IDS_UNIT_POINTS, IDS_UNIT_PICAS, -1}; // musi koncit terminatorem -1
+int UnitsIDs[] = {IDS_UNIT_INCHES, IDS_UNIT_CM, IDS_UNIT_MM, IDS_UNIT_POINTS, IDS_UNIT_PICAS, -1}; // must end with the terminator -1
 CUnitsEnum Units[] = {untInches, untCM, untMM, untPoints, untPicas};
 
 void SetNumber(HWND hWnd, double value)
@@ -427,7 +427,7 @@ void SetNumber(HWND hWnd, double value)
     SetWindowText(hWnd, text);
 } /* SetNumber */
 
-// naplni combobox jednotkama, vybere prvni
+// fills the combo box with units, selects the first one
 void FillUnits(HWND hDlg, int cbResID, CUnitsEnum select, double value)
 {
     HWND hCombo = GetDlgItem(hDlg, cbResID);
@@ -446,7 +446,7 @@ void FillUnits(HWND hDlg, int cbResID, CUnitsEnum select, double value)
     SetNumber(GetDlgItem(hDlg, cbResID - 1), value);
 } /* FillUnits */
 
-// vrati zvolenou jednotku pro dany combobox; v pripade chyby vraci untInches
+// returns the selected unit for the given combo box; on error returns untInches
 CUnitsEnum GetUnits(HWND hDlg, int cbResID)
 {
     HWND hCombo = GetDlgItem(hDlg, cbResID);
@@ -502,7 +502,7 @@ void CPrintDlg::Transfer(CTransferInfo& ti)
     ti.CheckBox(IDC_PRINT_BOX, Params.bBoundingBox);
     ti.CheckBox(IDC_PRINT_SELECTION, Params.bSelection);
 
-    // naplnime comboboxy
+    // fill the combo boxes
     if (ti.Type == ttDataToWindow)
     {
         SetScale();
@@ -526,7 +526,7 @@ void CPrintDlg::EnableControls()
     CheckDlgButton(HWindow, IDC_PRINT_CENTER, BST_CHECKED);
   }*/
 
-    // tento blok musi nasledovat az po nastaveni IDC_PRINT_CENTER
+    // this block must follow after setting IDC_PRINT_CENTER
     BOOL bTopLeft = (IsDlgButtonChecked(HWindow, IDC_PRINT_CENTER) != BST_CHECKED) && (!bFit || bAspect);
     EnableWindow(GetDlgItem(HWindow, IDC_PRINT_LEFT), bTopLeft);
     EnableWindow(GetDlgItem(HWindow, IDC_PRINT_TOP), bTopLeft);
@@ -550,7 +550,7 @@ void CPrintDlg::OnPrintSetup()
     pd.Flags = PD_PRINTSETUP | PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE;
     if (PrintDlg(&pd))
     {
-        // ulozime nove parametry tiskarny
+        // save new printer parameters
         if (HPrinterDC != NULL)
         {
             DeleteDC(HPrinterDC);
@@ -609,7 +609,7 @@ void CPrintDlg::OnPrintSetup()
         }
         LeaveCriticalSection(&G.CS);
     }
-    if (HWindow != NULL) // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz dialog neexistuje
+    if (HWindow != NULL) // when closing from another thread (shutdown / closing Salamander main window) the dialog may no longer exist
     {
         CalcImgSize(&origImgWidth, &origImgHeight);
 
@@ -722,7 +722,7 @@ BOOL CPrintDlg::MyGetDefaultPrinter()
     // However, a better error-handling & reporting needs to be added to the above code.
     if (PrintDlg(&pd))
     {
-        // ulozime nove parametry tiskarny
+        // save new printer parameters
         ReleasePrinterHandles();
         HDevMode = pd.hDevMode;
         HDevNames = pd.hDevNames;
@@ -1042,7 +1042,7 @@ INT_PTR CPrintDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // nahodime staticu CLIENTEDGE
+        // add the CLIENTEDGE style to the static control
         HWND hChild = GetDlgItem(HWindow, IDC_PRINT_PREVIEW);
         DWORD style = GetWindowLong(hChild, GWL_EXSTYLE);
         style |= WS_EX_CLIENTEDGE;
@@ -1163,7 +1163,7 @@ INT_PTR CPrintDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         case IDC_PRINT_SETUP:
             OnPrintSetup();
-            if (HWindow != NULL) // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz dialog neexistuje
+            if (HWindow != NULL) // when closing from another thread (shutdown / closing Salamander main window) the dialog may no longer exist
                 SetDlgItemText(HWindow, IDC_PRINT_PRINTER, printerName);
             break;
         }

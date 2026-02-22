@@ -1,9 +1,10 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-TIndirectArray<CDialog> ModelessDlgs(2, 2, dtNoDelete); // pole "Welcome Message" dialogu
+TIndirectArray<CDialog> ModelessDlgs(2, 2, dtNoDelete); // array of "Welcome Message" dialogs
 
 void MyEnableMenuItem(HMENU subMenu, int cmd, BOOL enable)
 {
@@ -23,10 +24,10 @@ CCenteredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentovi
+        // horizontal and vertical centering of the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // I want the focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -89,7 +90,7 @@ void CConfigPageGeneral::Transfer(CTransferInfo& ti)
         ti.EditLine(IDE_TOTALSPEEDLIMIT, Config.TotalSpeedLimit, buff);
         if (ti.Type == ttDataFromWindow &&
             Config.TotalSpeedLimit < 0.001)
-            Config.TotalSpeedLimit = 0.001; // aspon 1 byte za sekundu
+            Config.TotalSpeedLimit = 0.001; // at least 1 byte per second
     }
 
     ti.CheckBox(IDC_ACCEPTHEXESCSEQ, Config.ConvertHexEscSeq);
@@ -124,9 +125,9 @@ void CheckboxEditLine(BOOL isInt, HWND dlg, int checkboxID, int editID, int* las
         {
         case 0:
             buf[0] = 0;
-            break; // vypnuto (prazdny retezec)
+            break; // switched off (empty string)
 
-        case 1: // zapnuto
+        case 1: // enabled
         {
             if (valueBuf[0] == 0)
             {
@@ -139,7 +140,7 @@ void CheckboxEditLine(BOOL isInt, HWND dlg, int checkboxID, int editID, int* las
             break;
         }
 
-        default: // treti stav
+        default: // third state
         {
             if (globValUsed)
             {
@@ -149,7 +150,7 @@ void CheckboxEditLine(BOOL isInt, HWND dlg, int checkboxID, int editID, int* las
                     sprintf(buf, "%g", globValDouble);
             }
             else
-                buf[0] = 0; // nepouzite (prazdny retezec)
+                buf[0] = 0; // not used (empty string)
             break;
         }
         }
@@ -225,7 +226,7 @@ CConfigPageDefaults::~CConfigPageDefaults()
 
 void CConfigPageDefaults::Validate(CTransferInfo& ti)
 {
-    // test na pasivni rezim pri HTTP proxy (HTTP proxy umi jen pasivni data transfer)
+    // check for passive mode when using an HTTP proxy (an HTTP proxy supports only passive data transfers)
     int passiveMode;
     ti.CheckBox(IDC_PASSIVE, passiveMode);
     if (TmpFTPProxyServerList != NULL && !passiveMode)
@@ -250,7 +251,7 @@ void CConfigPageDefaults::Validate(CTransferInfo& ti)
     {
         ti.EditLine(IDE_MAXCONCURRENTCON, maxConcCon);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (ti.IsGood() && maxConcCon <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -269,7 +270,7 @@ void CConfigPageDefaults::Validate(CTransferInfo& ti)
         char buff[] = "%g";
         ti.EditLine(IDE_SRVSPEEDLIMIT, srvSpeedLimit, buff);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (ti.IsGood() && srvSpeedLimit <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -286,7 +287,7 @@ void CConfigPageDefaults::Validate(CTransferInfo& ti)
     {
         ti.EditLine(arr[i], num);
         if (!ti.IsGood())
-            return; // uz nastala chyba
+            return; // an error has already occurred
         if (num <= 0)
         {
             SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_MUSTBEGRTHANZERO),
@@ -339,16 +340,16 @@ void CConfigPageDefaults::Validate(CTransferInfo& ti)
                 SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_INCORRECTSYNTAX),
                                                  LoadStr(IDS_FTPERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
                 ti.ErrorOn(IDE_ASCIIMASKS);
-                PostMessage(GetDlgItem(HWindow, IDE_ASCIIMASKS), EM_SETSEL, err, err); // oznaceni pozice chyby
+                PostMessage(GetDlgItem(HWindow, IDE_ASCIIMASKS), EM_SETSEL, err, err); // marking the error position
             }
             SalamanderGeneral->FreeSalamanderMaskGroup(maskGroup);
         }
         if (!ti.IsGood())
-            return; // nastala chyba
+            return; // an error occurred
     }
 }
 
-// podpora pro comboboxy s Proxy servery
+// support for combo boxes with proxy servers
 void ProxyComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, int& proxyUID, BOOL addDefault,
                    CFTPProxyServerList* proxyServerList)
 {
@@ -369,11 +370,11 @@ void CConfigPageDefaults::Transfer(CTransferInfo& ti)
     {
         ProxyComboBox(HWindow, ti, IDC_PROXYSERVER, Config.DefaultProxySrvUID, FALSE,
                       TmpFTPProxyServerList);
-        if (ti.Type == ttDataFromWindow) // prelejeme data zpatky do konfigurace
+        if (ti.Type == ttDataFromWindow) // copy the data back into the configuration
         {
             TmpFTPProxyServerList->CopyMembersToList(Config.FTPProxyServerList);
             Config.FTPServerList.CheckProxyServersUID(Config.FTPProxyServerList);
-            // Config.DefaultProxySrvUID kontrolovat nemusime, to se obnovilo o par radek vyse
+            // No need to validate Config.DefaultProxySrvUID, it was refreshed a few lines above
         }
     }
 
@@ -393,7 +394,7 @@ void CConfigPageDefaults::Transfer(CTransferInfo& ti)
         ti.EditLine(IDE_SRVSPEEDLIMIT, Config.ServerSpeedLimit, buff);
         if (ti.Type == ttDataFromWindow &&
             Config.ServerSpeedLimit < 0.001)
-            Config.ServerSpeedLimit = 0.001; // aspon 1 byte za sekundu
+            Config.ServerSpeedLimit = 0.001; // at least 1 byte per second
     }
 
     ti.CheckBox(IDC_USELISTINGSCACHE, Config.UseListingsCache);
@@ -444,7 +445,7 @@ void CConfigPageDefaults::Transfer(CTransferInfo& ti)
             {
                 SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)LoadStr(strID[i]));
             }
-            // overime jestli KeepAliveCommand neni mimo meze (snad jedine prima editace registry)
+            // verify that KeepAliveCommand is within bounds (only direct registry editing could break it)
             if (Config.KeepAliveCommand >= i)
                 Config.KeepAliveCommand = i - 1;
             if (Config.KeepAliveCommand < 0)
@@ -522,7 +523,7 @@ CConfigPageDefaults::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDB_ADDPROXYSRV) // dropdown menu na Add buttonu
+        if (LOWORD(wParam) == IDB_ADDPROXYSRV) // drop-down menu on the Add button
         {
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_ADDPROXYSERVER));
             if (main != NULL)
@@ -533,11 +534,11 @@ CConfigPageDefaults::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     CGUIMenuPopupAbstract* salMenu = SalamanderGUI->CreateMenuPopup();
                     if (salMenu != NULL)
                     {
-                        // enablujeme polozky menu
+                        // enable menu items
                         HWND combo = GetDlgItem(HWindow, IDC_PROXYSERVER);
                         int sel = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                         int count = (int)SendMessage(combo, CB_GETCOUNT, 0, 0);
-                        int fixedItems = 1; // tady bude 2 pro "not used" + "default"
+                        int fixedItems = 1; // this will be 2 for "not used" + "default"
                         EnableMenuItem(subMenu, CM_EDITPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel >= fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
                         EnableMenuItem(subMenu, CM_DELETEPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel >= fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
                         EnableMenuItem(subMenu, CM_MOVEUPPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel > fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
@@ -623,7 +624,7 @@ CConfigPageDefaults::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CConfigDlg
 //
 
-// pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
+// helper object for centering the configuration dialog relative to the parent
 class CCenteredPropertyWindow : public CWindow
 {
 protected:
@@ -643,10 +644,10 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_APP + 1000: // we should detach from the dialog (already centered)
         {
             DetachWindow();
-            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            delete this; // a bit hacky, but nothing touches 'this' anymore, so it's fine
             return 0;
         }
         }
@@ -672,24 +673,24 @@ typedef struct DLGTEMPLATEEX
 #include <poppack.h>
 #endif // LPDLGTEMPLATEEX
 
-// pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
+// helper callback for centering the configuration dialog relative to the parent and removing the '?' button from the caption
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
-    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
+    if (uMsg == PSCB_INITIALIZED) // attach to the dialog
     {
         CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
         if (wnd != NULL)
         {
             wnd->AttachToWindow(HWindow);
             if (wnd->HWindow == NULL)
-                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+                delete wnd; // window is not attached, destroy it right here
             else
             {
-                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // to detach CCenteredPropertyWindow from the dialog
             }
         }
     }
-    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    if (uMsg == PSCB_PRECREATE) // remove the '?' button from the property sheet header
     {
         // Remove the DS_CONTEXTHELP style from the dialog box template
         if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)
@@ -797,7 +798,7 @@ CBookmarksListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case VK_DOWN:
         {
             if (GetKeyState(VK_MENU) & 0x8000)
-                MoveUpDown(LOWORD(wParam) == VK_UP); // stisknuty Alt
+                MoveUpDown(LOWORD(wParam) == VK_UP); // Alt pressed
             break;
         }
 
@@ -820,7 +821,7 @@ CBookmarksListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
-        break; // klavesy poustime dale, listbox by je nemel zpracovavat, zadny problem
+        break; // let the keys propagate, the listbox should not handle them, no problem
     }
 
     case WM_LBUTTONDBLCLK:
@@ -838,7 +839,7 @@ CBookmarksListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         int curSel = (int)SendMessage(HWindow, LB_GETCURSEL, 0, 0);
         int item = (int)SendMessage(HWindow, LB_ITEMFROMPOINT, 0,
-                                    MAKELPARAM(LOWORD((int)lParam), HIWORD((int)lParam))); // FIXME_X64 podezrele pretypovani
+                                    MAKELPARAM(LOWORD((int)lParam), HIWORD((int)lParam))); // FIXME_X64 suspicious cast
         if (HIWORD(item) == 0 && item >= 0 && item <= ParentDlg->TmpFTPServerList.Count &&
             curSel != item)
         {
@@ -909,10 +910,10 @@ void CConnectDlg::Transfer(CTransferInfo& ti)
             if (i != LB_ERR)
                 Config.LastBookmark = i;
 
-            // prelejeme data zpatky do konfigurace (tlacitko: Connect nebo Close)
+            // copy the data back into the configuration (button: Connect or Close)
             TmpFTPServerList.CopyMembersToList(Config.FTPServerList);
             TmpFTPProxyServerList.CopyMembersToList(Config.FTPProxyServerList);
-            // zkontrolujeme jestli stale jeste existuje "default" proxy server
+            // verify that the "default" proxy server still exists
             if (Config.DefaultProxySrvUID != -1 &&
                 !Config.FTPProxyServerList.IsValidUID(Config.DefaultProxySrvUID))
             {
@@ -921,18 +922,18 @@ void CConnectDlg::Transfer(CTransferInfo& ti)
         }
     }
 
-    // nastavime zpet neexpandlou variantu retezce Address (do historie ukladame co napsal user (ne vysledek splitu))
+    // restore the non-expanded variant of the Address string (history stores what the user typed, not the split result)
     if (ti.IsGood() && ti.Type == ttDataFromWindow && Config.LastBookmark == 0)
         SetWindowText(GetDlgItem(HWindow, IDE_HOSTADDRESS), LastRawHostAddress);
     char buf[HOST_MAX_SIZE < FTP_MAX_PATH ? FTP_MAX_PATH : HOST_MAX_SIZE];
     buf[0] = 0;
     HistoryComboBox(HWindow, ti, IDE_HOSTADDRESS, buf, HOST_MAX_SIZE,
                     HOSTADDRESS_HISTORY_SIZE, Config.HostAddressHistory,
-                    Config.LastBookmark != 0 /* ukladat do historie jen pri Quick Connect*/);
+                    Config.LastBookmark != 0 /* store in history only during Quick Connect*/);
     buf[0] = 0;
     HistoryComboBox(HWindow, ti, IDE_INITIALPATH, buf, FTP_MAX_PATH,
                     INITIALPATH_HISTORY_SIZE, Config.InitPathHistory,
-                    Config.LastBookmark != 0 /* ukladat do historie jen pri Quick Connect*/);
+                    Config.LastBookmark != 0 /* store in history only during Quick Connect*/);
 }
 
 void AddToAdvancedStr(char* buf, int bufSize, const char* str)
@@ -952,7 +953,7 @@ void CConnectDlg::SelChanged()
     CFTPServer* s;
     int i;
     if (!GetCurSelServer(&s, &i))
-        return; // neocekavana situace
+        return; // unexpected situation
 
     BOOL lockedPassword = TRUE;
     char password[PASSWORD_MAX_SIZE];
@@ -1153,7 +1154,7 @@ void CConnectDlg::EnableControls()
 
 void CConnectDlg::AlignPasswordControls()
 {
-    // non-password editline (s info textem) bude posunuta na misto kde zacina editline pro password; zaroven bude protazena az k tlacitku
+    // the non-password edit line (with the info text) will be moved to where the password edit line starts and stretched to the button
     RECT editRect;
     GetWindowRect(GetDlgItem(HWindow, IDE_PASSWORD), &editRect);
     RECT editLockedRect;
@@ -1162,7 +1163,7 @@ void CConnectDlg::AlignPasswordControls()
     MapWindowPoints(NULL, HWindow, (POINT*)&editRect, 2);
     SetWindowPos(GetDlgItem(HWindow, IDE_PASSWORD_LOCKED), NULL, editRect.left, editRect.top, width, editLockedRect.bottom - editLockedRect.top, SWP_NOZORDER);
 
-    // editline pro password bude stejne dlouha jako ta nad ni
+    // the password edit line will be as long as the one above it
     GetWindowRect(GetDlgItem(HWindow, IDE_USERNAME), &editRect);
     SetWindowPos(GetDlgItem(HWindow, IDE_PASSWORD), NULL, 0, 0, editRect.right - editRect.left, editRect.bottom - editRect.top, SWP_NOMOVE | SWP_NOZORDER);
 }
@@ -1172,7 +1173,7 @@ void CConnectDlg::ShowHidePasswordControls(BOOL lockedPassword, BOOL focusEdit)
     CFTPServer* s;
     int i;
     if (!GetCurSelServer(&s, &i))
-        return; // neocekavana situace
+        return; // unexpected situation
 
     BOOL quickCon = (i == 0);
     BOOL showUnlockButton = lockedPassword;
@@ -1209,12 +1210,12 @@ void CConnectDlg::RefreshList(BOOL focusLast)
 
 void CConnectDlg::MoveItem(HWND list, int fromIndex, int toIndex, int topIndex)
 {
-    if (fromIndex > 0 && toIndex > 0 && fromIndex != toIndex &&                   // s quick-connectem nikdo nesmi pohnout
-        fromIndex <= TmpFTPServerList.Count && toIndex <= TmpFTPServerList.Count) // pohyb je v ramci pole
+    if (fromIndex > 0 && toIndex > 0 && fromIndex != toIndex &&                   // nobody is allowed to move the quick-connect entry
+        fromIndex <= TmpFTPServerList.Count && toIndex <= TmpFTPServerList.Count) // movement stays within the array
     {
         fromIndex--;
         toIndex--;
-        // prohodime data v poli
+        // swap the data in the array
         CFTPServer* s = TmpFTPServerList[fromIndex];
         TmpFTPServerList.Detach(fromIndex);
         if (TmpFTPServerList.IsGood())
@@ -1222,7 +1223,7 @@ void CConnectDlg::MoveItem(HWND list, int fromIndex, int toIndex, int topIndex)
             TmpFTPServerList.Insert(toIndex, s);
             if (TmpFTPServerList.IsGood())
             {
-                // prohodime data v listboxu
+                // swap the data in the listbox
                 SendMessage(list, WM_SETREDRAW, FALSE, 0);
                 if (topIndex == -1)
                     topIndex = (int)SendMessage(list, LB_GETTOPINDEX, 0, 0);
@@ -1236,7 +1237,7 @@ void CConnectDlg::MoveItem(HWND list, int fromIndex, int toIndex, int topIndex)
             {
                 SendMessage(list, LB_DELETESTRING, fromIndex + 1, 0);
                 TmpFTPServerList.ResetState();
-                delete s; // zbyl nam mimo pole, zrusime ho
+                delete s; // left outside the array, delete it
             }
         }
         else
@@ -1257,7 +1258,7 @@ BOOL CConnectDlg::GetCurSelServer(CFTPServer** server, int* index)
         else
         {
             TRACE_E("Unexpected situation in CConnectDlg::GetCurSelServer()!");
-            return FALSE; // neocekavana situace
+            return FALSE; // unexpected situation
         }
     }
     *server = s;
@@ -1266,7 +1267,7 @@ BOOL CConnectDlg::GetCurSelServer(CFTPServer** server, int* index)
     return TRUE;
 }
 
-UINT DragListboxMsg = 0; // cislo zpravy odpovidajici stringu DRAGLISTMSGSTRING (drag&drop listbox)
+UINT DragListboxMsg = 0; // message ID corresponding to the DRAGLISTMSGSTRING (drag&drop listbox)
 
 INT_PTR
 CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1289,30 +1290,30 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ShowWindow(ok, SW_HIDE);
         }
 
-        // Unlock tlacitko: vedle prikaz Unlock bude mit take Clear pro smaznuti hesla
+        // Unlock button: besides the Unlock command it will also have Clear to delete the password
         SalamanderGUI->AttachButton(HWindow, IDB_PASSWORD_CHANGE, BTF_DROPDOWN);
 
-        // chceme od edit line s heslem dostavat na ctrl+rclick zpravu WM_APP_SHOWPASSWORD
+        // we want to receive WM_APP_SHOWPASSWORD from the password edit line on Ctrl+right click
         CPasswordEditLine* passwordEL = new CPasswordEditLine(HWindow, IDE_PASSWORD);
 
-        // posuneme password edit lines
+        // reposition the password edit lines
         AlignPasswordControls();
 
         CGUIHyperLinkAbstract* hint = SalamanderGUI->AttachHyperLink(HWindow, IDC_SAVEPASSWORD_HINT, STF_HYPERLINK_COLOR | STF_UNDERLINE);
         hint->SetActionPostCommand(IDC_SAVEPASSWORD_HINT);
 
-        // pokud uzivatel nenastavil v Salamanderu master password, neni ukladani hesel bezpecne
+        // if the user has not set a master password in Salamander, storing passwords is not safe
         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-        // pokud uzivatel pouziva password manager, zmenime hlasku "it is not secure"
+        // if the user uses the password manager, change the "it is not secure" message
         if (passwordManager->IsUsingMasterPassword())
             SetDlgItemText(HWindow, IDC_SAVEPASSWORD_HINT, LoadStr(IDS_SAVEPASSWORD_PROTECTED));
 
-        // pripojime se na listbox (kvuli Alt+sipkam, ty do WM_VKEYTOITEM nechodi)
+        // attach to the listbox (because Alt+arrow keys do not reach WM_VKEYTOITEM)
         CBookmarksListbox* list = new CBookmarksListbox(this, IDL_BOOKMARKS);
         if (list != NULL)
         {
             if (list->HWindow == NULL)
-                delete list; // pokud chybi control, uvolnime objekt (jinak se uvolni sam)
+                delete list; // if the control is missing, release the object (otherwise it releases itself)
             else
             {
                 MakeDragList(list->HWindow);
@@ -1339,10 +1340,10 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (SalamanderGeneral->SalMessageBoxEx(&params) == IDYES)
         {
             CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-            // doptame se na MP i v pripade, ze ho jiz zname
+            // ask for the master password even if we already know it
             if (!passwordManager->IsUsingMasterPassword() || passwordManager->AskForMasterPassword(HWindow))
             {
-                // heslo vytahneme primo z editline
+                // pull the password directly from the edit line
                 char plainPassword[PASSWORD_MAX_SIZE];
                 GetWindowText((HWND)wParam, plainPassword, PASSWORD_MAX_SIZE);
                 plainPassword[PASSWORD_MAX_SIZE - 1] = 0;
@@ -1363,7 +1364,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_BUTTONDROPDOWN:
     {
-        if (LOWORD(wParam) == IDB_PASSWORD_CHANGE) // dropdown menu na Unlock tlacitku
+        if (LOWORD(wParam) == IDB_PASSWORD_CHANGE) // drop-down menu on the Unlock button
         {
             HMENU main = LoadMenu(HLanguage, MAKEINTRESOURCE(IDM_UNLOCKPASSWORD));
             if (main != NULL)
@@ -1401,16 +1402,16 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         switch (LOWORD(wParam))
         {
-        case IDOK: // aby dosla EN_KILLFOCUS i pri klavese Enter (def. button = Connect)
+        case IDOK: // to deliver EN_KILLFOCUS even when Enter (default button = Connect) is pressed
         case IDB_CLOSE:
         {
             HWND button = GetDlgItem(HWindow, LOWORD(wParam));
             if (CanChangeFocus && button != NULL && GetFocus() != button)
             {
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)button, TRUE);
-                PostMessage(HWindow, uMsg, wParam, lParam); // odlozime tento prikaz na pozdeji
-                CanChangeFocus = FALSE;                     // proti nekonecnemu cyklu
-                return TRUE;                                // nic se delat nebude, pockame na kill fokus v editboxech
+                PostMessage(HWindow, uMsg, wParam, lParam); // postpone this command
+                CanChangeFocus = FALSE;                     // prevents an infinite loop
+                return TRUE;                                // do nothing; wait for the kill focus in the edit boxes
             }
             CanChangeFocus = TRUE;
 
@@ -1430,7 +1431,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 CFTPServer* s;
                 int i;
                 if (!GetCurSelServer(&s, &i))
-                    break; // neocekavana situace
+                    break; // unexpected situation
 
                 if (s->Address == NULL || *s->Address == 0)
                 {
@@ -1441,14 +1442,14 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     HWND wnd = GetFocus();
                     while (wnd != NULL && wnd != ctrl)
                         wnd = GetParent(wnd);
-                    if (wnd == NULL) // fokusneme jen pokud neni ctrl predek GetFocusu
-                    {                // jako napr. edit-line v combo-boxu
+                    if (wnd == NULL) // set focus only if the control is not an ancestor of GetFocus
+                    {                // for example, the edit line in the combo box
                         SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
                     }
                     return TRUE;
                 }
 
-                // overime jestli nechce pouzivat active transfer mode s HTTP 1.1 proxy
+                // verify that active transfer mode is not requested with an HTTP 1.1 proxy
                 if (s->UsePassiveMode == 0 || s->UsePassiveMode == 2 && Config.PassiveMode == 0)
                 {
                     int proxyServerUID = s->ProxyServerUID;
@@ -1462,25 +1463,25 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
 
-                // pokud budou pro connect potreba hesla, musime je umet rozsifrovat
-                // otestujme bookmark
+                // if the connection needs passwords, we must be able to decrypt them
+                // test the bookmark
                 if (!s->EnsurePasswordCanBeDecrypted(HWindow))
-                    return TRUE; // nepovedlo se zadat master password nebo se asi nim nepovedlo rozsifrovat heslo
+                    return TRUE; // failed to enter the master password or it probably failed to decrypt the password
 
-                // POZOR: s->EnsurePasswordCanBeDecrypted() mohla vycistit heslo v 's' a jeho ukladani, tedy pro
-                //        pripad navratu do dialogu (return TRUE) je nutne provest "refresh"
+                // WARNING: s->EnsurePasswordCanBeDecrypted() might have cleared the password in 's' and its stored copy, which means
+                //        returning to the dialog (return TRUE) requires performing a "refresh"
 
-                // otestujme proxy server
+                // test the proxy server
                 int proxyServerUID = s->ProxyServerUID;
                 if (proxyServerUID == -2)
                     proxyServerUID = Config.DefaultProxySrvUID;
                 if (!TmpFTPProxyServerList.EnsurePasswordCanBeDecrypted(HWindow, proxyServerUID))
                 {
-                    // "refresh", duvod o par radek vyse (s->EnsurePasswordCanBeDecrypted)
+                    // "refresh", reason a few lines above (s->EnsurePasswordCanBeDecrypted)
                     SelChanged();
                     EnableControls();
 
-                    return TRUE; // nepovedlo se zadat master password nebo se jim nepovedlo rozsifrovat heslo
+                    return TRUE; // failed to enter the master password or they could not decrypt the password
                 }
             }
             break;
@@ -1498,7 +1499,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case IDC_SAVEPASSWORD_HINT:
         {
-            // otevreme help Salamandera s napovedou k password manageru
+            // open Salamander help with information about the password manager
             SalamanderGeneral->OpenHtmlHelpForSalamander(HWindow, HHCDisplayContext, HTMLHELP_SALID_PWDMANAGER, FALSE);
             break;
         }
@@ -1508,15 +1509,15 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CFTPServer* s;
             int i;
             if (!GetCurSelServer(&s, &i))
-                break; // neocekavana situace
+                break; // unexpected situation
 
             int ret = SalamanderGeneral->SalMessageBox(HWindow, LoadStr(IDS_CLEARPASSWORD_CONFIRMATION),
                                                        LoadStr(IDS_FTPPLUGINTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | /*MB_DEFBUTTON2 | */ MSGBOXEX_ICONQUESTION | MSGBOXEX_SILENT);
             if (ret == IDYES)
             {
-                // uzivatel si pral smaznout heslo
+                // user requested to delete the password
                 UpdateEncryptedPassword(&s->EncryptedPassword, &s->EncryptedPasswordSize, NULL, 0);
-                // vycistime save password checkbox
+                // clear the save password checkbox
                 s->SavePassword = FALSE;
 
                 ShowHidePasswordControls(FALSE, TRUE);
@@ -1529,15 +1530,15 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case IDB_PASSWORD_CHANGE:
         {
             CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-            // bud se master password nepouziva nebo pouziva a jiz je zadany nebo uzivatel ho zada prave ted
+            // either the master password is not used, it is already set, or the user enters it now
             if (!passwordManager->IsUsingMasterPassword() || passwordManager->IsMasterPasswordSet() || passwordManager->AskForMasterPassword(HWindow))
             {
                 CFTPServer* s;
                 int i;
                 if (!GetCurSelServer(&s, &i))
-                    break; // neocekavana situace
+                    break; // unexpected situation
 
-                // pokud se MP pouziva, overime, ze s nim lze rozsifrovat toto heslo
+                // if the master password is used, verify that this password can be decrypted with it
                 if (!passwordManager->IsUsingMasterPassword() ||
                     s->EncryptedPassword != NULL && !passwordManager->DecryptPassword(s->EncryptedPassword, s->EncryptedPasswordSize, NULL))
                 {
@@ -1545,9 +1546,9 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                                LoadStr(IDS_FTPERRORTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
                     if (ret == IDNO)
                         break;
-                    // uzivatel si pral smaznout heslo
+                    // user requested to delete the password
                     UpdateEncryptedPassword(&s->EncryptedPassword, &s->EncryptedPasswordSize, NULL, 0);
-                    // vycistime save password checkbox
+                    // clear the save password checkbox
                     s->SavePassword = FALSE;
                 }
                 ShowHidePasswordControls(FALSE, TRUE);
@@ -1561,7 +1562,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case CM_COPYSRVTO:       // "copy bookmark to" dialog
         case IDB_RENAMEBOOKMARK: // rename bookmark dialog
         case IDB_REMOVEBOOKMARK: // remove bookmark dialog
-        case IDE_HOSTADDRESS:    // zmena textu/checkboxu -> zmena dat
+        case IDE_HOSTADDRESS:    // change in text/checkbox -> change in data
         case IDE_INITIALPATH:
         case IDE_USERNAME:
         case IDE_PASSWORD:
@@ -1571,7 +1572,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CFTPServer* s;
             int i;
             if (!GetCurSelServer(&s, &i))
-                break; // neocekavana situace
+                break; // unexpected situation
 
             CTransferInfo ti(HWindow, ttDataFromWindow);
             switch (LOWORD(wParam))
@@ -1589,12 +1590,12 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                 {
                     if (!oldMPSet && passwordManager->IsUsingMasterPassword() && passwordManager->IsMasterPasswordSet())
-                    { // sice Cancel, ale master password user zadal, tedy je potreba "refresh"
+                    { // although Cancel, the user entered the master password, so a "refresh" is needed
                         SelChanged();
                         EnableControls();
                     }
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_NEWBOOKMARK:
@@ -1602,7 +1603,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case IDB_RENAMEBOOKMARK:
             {
                 if (LOWORD(wParam) == IDB_RENAMEBOOKMARK && i <= 0)
-                    return TRUE; // quick-connect nelze prejmenovat
+                    return TRUE; // quick connect cannot be renamed
 
                 char name[BOOKMARKNAME_MAX_SIZE];
                 name[0] = 0;
@@ -1660,14 +1661,14 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SelChanged();
                     EnableControls();
                 }
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDB_REMOVEBOOKMARK:
             {
                 char buf[200 + BOOKMARKNAME_MAX_SIZE];
                 sprintf(buf, LoadStr(IDS_REMOVECONFIRM), HandleNULLStr(s->ItemName));
-                if (i > 0) // quick connect nelze smazat (melo by byt always false)
+                if (i > 0) // quick connect cannot be deleted (should always be false)
                 {
                     MSGBOXEX_PARAMS params;
                     memset(&params, 0, sizeof(params));
@@ -1685,7 +1686,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
 
-                return TRUE; // dale nezpracovavat
+                return TRUE; // do not process further
             }
 
             case IDE_HOSTADDRESS:
@@ -1700,14 +1701,14 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     while (*str != 0 && *str <= ' ')
                         str++; // skip whitespaces
                     // skip FS name
-                    int isFTPS = 0; // 0 = nic, 1 = zapnout, 2 = vypnout
+                    int isFTPS = 0; // 0 = nothing, 1 = enable, 2 = disable
                     if (SalamanderGeneral->StrNICmp(str, AssignedFSName, AssignedFSNameLen) == 0 &&
                         str[AssignedFSNameLen] == ':')
                     {
                         str += AssignedFSNameLen + 1;
                         isFTPS = 2;
                     }
-                    else // je-li to FTPS, zapneme SSL sifrovani
+                    else // if it is FTPS, enable SSL encryption
                     {
                         if (SalamanderGeneral->StrNICmp(str, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 &&
                             str[AssignedFSNameLenFTPS] == ':')
@@ -1726,7 +1727,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (Config.ConvertHexEscSeq)
                         FTPConvertHexEscapeSequences(str);
                     FTPSplitPath(str, &user, &plainPassword, &host, &port, &path, &firstCharOfPath, 0);
-                    if (user != NULL && *user != 0) // mame user-name, pouzijeme ho
+                    if (user != NULL && *user != 0) // we have a user name, use it
                     {
                         if (strcmp(FTP_ANONYMOUS, user) == 0 &&
                             (plainPassword == NULL || *plainPassword == 0))
@@ -1739,13 +1740,13 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             UpdateStr(s->UserName, user);
                         }
                     }
-                    if (plainPassword != NULL && *plainPassword != 0) // mame password, pouzijeme ho
+                    if (plainPassword != NULL && *plainPassword != 0) // we have a password, use it
                     {
-                        // pokud se pouziva password manager, nezname master password a heslo mame ukladat
+                        // when the password manager is used, we do not know the master password and want to store the password
                         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
                         if (s->SavePassword && passwordManager->IsUsingMasterPassword() && !passwordManager->IsMasterPasswordSet())
                         {
-                            // doptame se na master password
+                            // ask for the master password
                             if (!passwordManager->AskForMasterPassword(HWindow))
                             {
                                 s->SavePassword = FALSE;
@@ -1754,37 +1755,37 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                         s->AnonymousConnection = FALSE;
 
-                        // ulozime heslo
-                        BYTE* encryptedPassword = NULL; // muze byt i jen scrambled
+                        // store the password
+                        BYTE* encryptedPassword = NULL; // may be just scrambled
                         int encryptedPasswordSize = 0;
-                        // pouze ukladana hesla ma smysl sifrovat
+                        // only stored passwords make sense to encrypt
                         BOOL encrypt = s->SavePassword && passwordManager->IsUsingMasterPassword() && passwordManager->IsMasterPasswordSet();
                         if (passwordManager->EncryptPassword(plainPassword, &encryptedPassword, &encryptedPasswordSize, encrypt))
                         {
                             UpdateEncryptedPassword(&s->EncryptedPassword, &s->EncryptedPasswordSize, encryptedPassword, encryptedPasswordSize);
-                            // uvolnime buffer alokovany v EncryptPassword()
+                            // free the buffer allocated in EncryptPassword()
                             memset(encryptedPassword, 0, encryptedPasswordSize);
                             SalamanderGeneral->Free(encryptedPassword);
                         }
                     }
                     UpdateStr(s->Address, HandleNULLStr(host));
-                    if (port != NULL && *port != 0) // mame port, pouzijeme ho
+                    if (port != NULL && *port != 0) // we have a port, use it
                     {
                         char* t = port;
                         while (*t >= '0' && *t <= '9')
-                            t++; // kontrola jestli jde o cislo
+                            t++; // check whether it is a number
                         int p = atoi(port);
-                        if (*t == 0 && p >= 1 && p <= 65535) // je to cislo a je v povolenych mezich
+                        if (*t == 0 && p >= 1 && p <= 65535) // it is a number and within the allowed range
                             s->Port = atoi(port);
                     }
-                    if (path != NULL) // mame remote path, pouzijeme ji
+                    if (path != NULL) // we have a remote path, use it
                     {
                         char pathBuf[FTP_MAX_PATH];
                         CFTPServerPathType type;
                         type = GetFTPServerPathType(NULL, NULL, path);
                         if (type == ftpsptOpenVMS || type == ftpsptMVS || type == ftpsptIBMz_VM ||
-                            type == ftpsptOS2) // VMS + MVS + IBM_z/VM + OS/2 (spatne rozpozna unixovou cestu "/C:/path", nejspis vsak nebude nikomu vadit, je to silne nepravdepodobna unixova cesta)
-                        {                      // nemaji '/' ani '\\' na zacatku cesty
+                            type == ftpsptOS2) // VMS + MVS + IBM_z/VM + OS/2 (poorly recognizes the Unix path "/C:/path", but it probably will not bother anyone; it is a very unlikely Unix path)
+                        {                      // they do not have '/' or '\\' at the start of the path
                             lstrcpyn(pathBuf, path, FTP_MAX_PATH);
                         }
                         else
@@ -1797,7 +1798,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     SelChanged();
                     EnableControls();
-                    memset(buf, 0, HOST_MAX_SIZE); // mazeme pamet, ve ktere se objevil password
+                    memset(buf, 0, HOST_MAX_SIZE); // wipe the memory where the password appeared
                 }
                 break;
             }
@@ -1845,25 +1846,25 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
                 if (HIWORD(wParam) == EN_KILLFOCUS && !s->AnonymousConnection &&
-                    (!s->SavePassword || !passwordManager->IsUsingMasterPassword() || passwordManager->IsMasterPasswordSet())) // jen sychr: vyloucime pripad, kdy je editbox disabled (editace na Unlock button)
+                    (!s->SavePassword || !passwordManager->IsUsingMasterPassword() || passwordManager->IsMasterPasswordSet())) // just to be safe: exclude the case when the edit box is disabled (editing via the Unlock button)
                 {
                     char plainPassword[PASSWORD_MAX_SIZE];
                     ti.EditLine(IDE_PASSWORD, plainPassword, PASSWORD_MAX_SIZE);
 
                     if (plainPassword[0] != 0)
                     {
-                        BYTE* encryptedPassword = NULL; // muze byt i jen scrambled
+                        BYTE* encryptedPassword = NULL; // may be just scrambled
                         int encryptedPasswordSize = 0;
-                        // pouze ukladana hesla ma smysl sifrovat
+                        // only stored passwords make sense to encrypt
                         BOOL encrypt = s->SavePassword && passwordManager->IsUsingMasterPassword() && passwordManager->IsMasterPasswordSet();
                         if (passwordManager->EncryptPassword(plainPassword, &encryptedPassword, &encryptedPasswordSize, encrypt))
                         {
                             UpdateEncryptedPassword(&s->EncryptedPassword, &s->EncryptedPasswordSize, encryptedPassword, encryptedPasswordSize);
-                            // uvolnime buffer alokovany v EncryptPassword()
+                            // free the buffer allocated in EncryptPassword()
                             memset(encryptedPassword, 0, encryptedPasswordSize);
                             SalamanderGeneral->Free(encryptedPassword);
                         }
-                        memset(plainPassword, 0, PASSWORD_MAX_SIZE); // mazeme pamet, ve ktere se objevil password
+                        memset(plainPassword, 0, PASSWORD_MAX_SIZE); // wipe the memory where the password appeared
                     }
                     else
                         UpdateEncryptedPassword(&s->EncryptedPassword, &s->EncryptedPasswordSize, NULL, 0);
@@ -1876,23 +1877,23 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (HIWORD(wParam) == BN_CLICKED && !s->AnonymousConnection)
                 {
                     ti.CheckBox(IDC_SAVEPASSWORD, s->SavePassword);
-                    // pokud uzivatel zaskrtnul "Save password" a editline s heslem je prave zobrazena, uzivatel pouziva master password a heslo neni zadane
+                    // if the user checked "Save password" and the password edit line is currently visible, the user uses the master password and the password is not entered
                     BOOL unlockVisible = IsWindowVisible(GetDlgItem(HWindow, IDB_PASSWORD_CHANGE));
                     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
                     if (!unlockVisible && s->SavePassword && passwordManager->IsUsingMasterPassword() && !passwordManager->IsMasterPasswordSet())
                     {
-                        // doptame se na master password
+                        // ask for the master password
                         if (!passwordManager->AskForMasterPassword(HWindow))
                         {
-                            // pokud uzivatel nezadal validni master password, vratime checkbox do stavu pred zmenou
-                            s->SavePassword = FALSE; // promitneme zaskrtnuti do dat
+                            // if the user did not enter a valid master password, revert the checkbox to the state before the change
+                            s->SavePassword = FALSE; // reflect the check box change in the data
                             CheckDlgButton(HWindow, IDC_SAVEPASSWORD, BST_UNCHECKED);
                         }
                     }
                     else
                     {
                         if (unlockVisible && !s->SavePassword && s->EncryptedPassword == NULL)
-                            SelChanged(); // prazdne heslo bez zapleho Save Password -> schovame Unlock a ukazeme prazdny editbox s heslem
+                            SelChanged(); // empty password without Save Password enabled -> hide Unlock and show an empty password edit box
                     }
                 }
                 break;
@@ -1929,7 +1930,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (!ExtraDragDropItemAdded)
             {
-                SendMessage(pdli->hWnd, LB_ADDSTRING, 0, (LPARAM) ""); // pridani prazdneho stringu na konec (kvuli insert-znacce za polozkami)
+                SendMessage(pdli->hWnd, LB_ADDSTRING, 0, (LPARAM) ""); // add an empty string at the end (because of the insertion marker after the items)
                 ExtraDragDropItemAdded = TRUE;
             }
 
@@ -1957,7 +1958,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DrawInsert(HWindow, pdli->hWnd, -1);
             int index = LBItemFromPt(pdli->hWnd, pdli->ptCursor, TRUE);
 
-            // vyhozeni prazdneho stringu z konce (byl zde kvuli insert-znacce za polozkami)
+            // remove the empty string from the end (it was there for the insertion marker after the items)
             int count = (int)SendMessage(pdli->hWnd, LB_GETCOUNT, 0, 0);
             if (count != LB_ERR && count > 0 && ExtraDragDropItemAdded)
             {
@@ -1965,12 +1966,12 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ExtraDragDropItemAdded = FALSE;
             }
 
-            // presun polozky
+            // move the item
             if (DragIndex != -1 && DragIndex != index && DragIndex + 1 != index)
             {
                 if (index > DragIndex)
                     index--;
-                MoveItem(pdli->hWnd, DragIndex, index, topIndex); // nerealny drop je osetreny uvnitr MoveItem
+                MoveItem(pdli->hWnd, DragIndex, index, topIndex); // unrealistic drop is handled inside MoveItem
             }
             break;
         }
@@ -1980,7 +1981,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DrawInsert(HWindow, pdli->hWnd, -1);
             DragIndex = -1;
 
-            // vyhozeni prazdneho stringu z konce (byl zde kvuli insert-znacce za polozkami)
+            // remove the empty string from the end (it was there for the insertion marker after the items)
             int count = (int)SendMessage(pdli->hWnd, LB_GETCOUNT, 0, 0);
             if (count != LB_ERR && count > 0 && ExtraDragDropItemAdded)
             {
@@ -2017,7 +2018,7 @@ LRESULT CPasswordEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
         if (IsWindowEnabled(HWindow) && controlPressed && !altPressed && !shiftPressed)
         {
-            // overime, ze edit line neco obsahuje
+            // verify that the edit line contains something
             char buff[2];
             GetWindowText(HWindow, buff, 2);
             if (buff[0] != 0)

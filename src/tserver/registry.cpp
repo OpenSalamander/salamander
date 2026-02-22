@@ -7,7 +7,7 @@
 #include <ostream>
 #include <limits.h>
 #include <stdio.h>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // need LPCOLORMAP
 
 #include "lstrfix.h"
 #include "trace.h"
@@ -380,7 +380,7 @@ CRegistryPath::~CRegistryPath()
 
 BOOL CRegistryPath::CreateKey()
 {
-    DWORD createType; // info jestli byl klic vytvoren nebo jen otevren
+    DWORD createType; // information whether the key was created or just opened
     LONG ret = HANDLES(RegCreateKeyEx(HRootKey, Path, 0, NULL, REG_OPTION_NON_VOLATILE,
                                       KEY_READ | KEY_WRITE, NULL, &HKey,
                                       &createType));
@@ -441,7 +441,7 @@ BOOL CRegistryClass::SaveValue()
 {
     if (RegistryPath == NULL || DataName == NULL || Data == NULL)
     {
-        TRACE_E("Neni provedena registrace.");
+        TRACE_E("Registration has not been performed.");
         return FALSE;
     }
     if (!IOClass->Save(RegistryPath->GetHKey(), DataName, Data))
@@ -458,7 +458,7 @@ BOOL CRegistryClass::LoadValue(BOOL& notFound)
     notFound = FALSE;
     if (RegistryPath == NULL || DataName == NULL || Data == NULL)
     {
-        TRACE_E("Neni provedena registrace.");
+        TRACE_E("Registration has not been performed.");
         return FALSE;
     }
     HKEY hKey = RegistryPath->GetHKey();
@@ -517,11 +517,11 @@ BOOL CRegistry::RegisterPath(HRegistryPath& hRegistryPath, HKEY hRootKey, const 
 #ifdef DIAGNOSTICS_ENABLE
         if (iterator[0] == L'\\' || iterator[0] != 0 && iterator[wcslen(iterator) - 1] == L'\\')
         {
-            TRACE_EW(L"Jednotlive polozky cesty nesmi zacinat nebo koncit zpetnym lomitkem. Polozka: " << iterator);
+            TRACE_EW(L"Individual path segments must not start or end with a backslash. Segment: " << iterator);
         }
         if (wcslen(iterator) == 0)
         {
-            TRACE_E("Polozka cesty ma nulovou delku");
+            TRACE_E("The path segment has zero length");
         }
 #endif //DIAGNOSTICS_ENABLE
         wcscat_s(newPath, len, iterator);

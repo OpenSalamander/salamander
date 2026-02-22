@@ -26,7 +26,7 @@ typedef struct
 #define WM_USER_REFRESHFILENAME (WM_USER_STARTEXTRACTING + 1)
 
 //progress control
-#define PGC_FONT_NORMAL RGB(0, 0, 192) // barvy progressBary
+#define PGC_FONT_NORMAL RGB(0, 0, 192) // progress bar colors
 #define PGC_FONT_SELECT RGB(255, 255, 255)
 #define PGC_BKGND_NORMAL RGB(255, 255, 255)
 #define PGC_BKGND_SELECT RGB(0, 0, 192)

@@ -143,7 +143,7 @@ public:
                 }
                 else
                 {
-                    //fix pro sparse 0 byte velky soubor...
+                    //fix for a sparse 0-byte file...
                     i++;
                 }
             }

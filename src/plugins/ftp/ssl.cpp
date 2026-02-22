@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -429,7 +430,7 @@ void WriteSSLErrorStackToLog(int logUID, const char* errSrc)
 {
     // log OpenSSL error stack
     int err2;
-    char buffer[256]; // pisou: at least 120 bytes
+    char buffer[256]; // they say: at least 120 bytes
     while ((err2 = SSLLib.ERR_get_error()) != 0)
     {
         SSLLib.ERR_error_string(err2, buffer);
@@ -470,10 +471,10 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
 
         WSAAsyncSelect(Socket, hWnd, 0, 0);
         err = ioctlsocket(Socket, FIONBIO, &argp);
-        // Socket je pod x64 64-bit hodnota, ale lidi kolem OpenSSL se domnivaji, ze nikdy neprekroci 2^32
-        // viz http://comments.gmane.org/gmane.comp.encryption.openssl.devel/13621
+        // On x64, SOCKET is a 64-bit value, but the OpenSSL folks assume it never exceeds 2^32
+        // see http://comments.gmane.org/gmane.comp.encryption.openssl.devel/13621
         // http://msdn.microsoft.com/en-us/library/ms724485%28VS.85%29.aspx
-        // az to nastane a tady nam zacne podminka padat, treba jiz bude existoval x64 verze SSL
+        // if that happens and this condition starts failing, maybe an x64 version of SSL will already exist
         if (Socket > 0x00000000ffffffff)
         {
             DWORD* crash = NULL;
@@ -489,7 +490,7 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
 #endif
 
         BOOL testReuseSSLSession = FALSE;
-        if (conForReuse != NULL && conForReuse->SSLConn != NULL && conForReuse->ReuseSSLSession != 2 /* ne */)
+        if (conForReuse != NULL && conForReuse->SSLConn != NULL && conForReuse->ReuseSSLSession != 2 /* no */)
         {
             SSL_SESSION* ssl_sessionid = SSLLib.SSL_get1_session(conForReuse->SSLConn); // sessionid.addref()
             if (ssl_sessionid == NULL)
@@ -518,20 +519,20 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
                 if (SSLLib.SSL_session_reused(Conn))
                 {
                     Logs.LogMessage(logUID, "SSL INFO: SSL session reused for data-connection\r\n", -1);
-                    if (conForReuse->ReuseSSLSession == 0 /* zkusit */)
-                        conForReuse->ReuseSSLSession = 1 /* ano */;
+                    if (conForReuse->ReuseSSLSession == 0 /* try */)
+                        conForReuse->ReuseSSLSession = 1 /* yes */;
                 }
                 else // SSL session not reused
                 {
-                    if (conForReuse->ReuseSSLSession == 0 /* zkusit */) // do not try again for future data-connections (or it will fail)
+                    if (conForReuse->ReuseSSLSession == 0 /* try */) // do not try again for future data-connections (or it will fail)
                     {
                         Logs.LogMessage(logUID, "SSL INFO: SSL session was NOT reused, will not try for future data-connections...\r\n", -1);
-                        conForReuse->ReuseSSLSession = 2 /* ne */;
+                        conForReuse->ReuseSSLSession = 2 /* no */;
                     }
                     else // try for all future data-cons to set ReuseSSLSessionFailed to TRUE and so reconnect ctrl-con (except if this is keep-alive data-con)
                     {
                         Logs.LogMessage(logUID, "SSL INFO: SSL session was NOT reused, it has expired in server session cache, reconnect of control connection is needed...\r\n", -1);
-                        conForReuse->ReuseSSLSessionFailed = TRUE; // aby se data-connectiona otevrela je nejspis nutny reuse, ale ten hlasi chybu: jedine reseni je reconnect control-connectiony
+                        conForReuse->ReuseSSLSessionFailed = TRUE; // To open the data connection, reuse is probably necessary, but it reports an error; the only solution is to reconnect the control connection.
                     }
                 }
             }
@@ -702,7 +703,7 @@ void FreeSSL(int loadStatus)
 
         if (loadStatus == 0 || loadStatus == 2)
         {
-            // Petr: OpenSSL nechavalo furu memory leaku, proto jsem pridal tento blok
+            // Petr: OpenSSL left a bunch of memory leaks, so I added this block
 
             // thread-local cleanup
             SSLLib.ERR_remove_state(0);
@@ -718,11 +719,11 @@ void FreeSSL(int loadStatus)
             SSLLib.EVP_cleanup();
             SSLLib.CRYPTO_cleanup_all_ex_data();
 
-            // stack s compression metodama asi nejde "legalne" uvolnit, tak se to resi rucne
+            // The stack with compression methods probably cannot be released "legally", so it is handled manually
             STACK_OF(SSL_COMP)* comp_sk = SSLLib.SSL_COMP_get_compression_methods();
             SSLLib.sk_free(CHECKED_STACK_OF(SSL_COMP, comp_sk));
 
-            // Petr: konec bloku
+            // Petr: end of block
         }
 
         if (SSLLib.hSSLLib)

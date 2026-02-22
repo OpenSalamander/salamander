@@ -128,7 +128,7 @@ BOOL SafeOpenCreateFile(LPCTSTR fileName, DWORD desiredAccess, DWORD shareMode, 
 
 void GetFirstWord(char* str, int& pos, int& len, char delimitChar)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         // CALL_STACK_MESSAGE4("GetFirstWord(, %d, %d, %d)", pos, len, delimitChar);
         pos = 0;
     while (str[pos] && ((BYTE)str[pos] <= ' '))
@@ -141,7 +141,7 @@ void GetFirstWord(char* str, int& pos, int& len, char delimitChar)
 
 void GetLastWord(char* str, int& pos, int& len, char delimitChar)
 {
-    CALL_STACK_MESSAGE_NONE // frekventovana funkce
+    CALL_STACK_MESSAGE_NONE // frequently called function
         // CALL_STACK_MESSAGE4("GetLastWord(, %d, %d, %d)", pos, len, delimitChar);
         len = (int)strlen(str);
     while (len > 0 && ((BYTE)str[len - 1] <= ' '))

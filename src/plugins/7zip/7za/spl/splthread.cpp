@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 //
-// Tohle je uprava pro Salamander 7zip plugin
+// This is a modification for the Salamander 7-Zip plugin
 //
 
 #include "StdAfx.h"
@@ -28,7 +28,7 @@ RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID paramet
     if ((module = ::GetModuleHandle("7zip.spl")) != NULL &&
         (addCallStackObject = (FThreadBody)::GetProcAddress(module, "AddCallStackObject")) != NULL)
     {
-        // podarilo se nam ziskat AddCallStackObject ze 7zip.spl
+        // successfully obtained AddCallStackObject from 7zip.spl
         AddCallStackObjectParam p;
         p.StartAddress = startAddress;
         p.Parameter = parameter;
@@ -37,7 +37,7 @@ RunThreadWithCallStackObject(LPTHREAD_START_ROUTINE startAddress, LPVOID paramet
     }
     else
     {
-        // smula, musime jet po stary koleji
+        // unlucky; we have to fall back to the old approach
         return startAddress(parameter);
     }
 }

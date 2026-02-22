@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -15,7 +16,7 @@ BOOL ViewerActive(HWND hwnd)
     return GetForegroundWindow() == hwnd;
 }
 
-// proporcionalne k sirce okna, jde o "odhad"
+// proportional to the window width, it's just an "estimate"
 #define FAST_LEFTRIGHT max(1, (Width - BORDER_WIDTH) / CharWidth / 6)
 #define MAKEVIS_LEFTRIGHT max(0, (Width - BORDER_WIDTH) / CharWidth / 6)
 
@@ -25,12 +26,12 @@ void CViewerWindow::SetViewerCaption()
     if (Caption == NULL)
     {
         if (FileName != NULL)
-            lstrcpyn(caption, FileName, MAX_PATH); // caption podle souboru
+            lstrcpyn(caption, FileName, MAX_PATH); // caption according to the file
         else
             caption[0] = 0;
     }
     else
-        lstrcpyn(caption, Caption, MAX_PATH); // caption podle zadosti plug-inu
+        lstrcpyn(caption, Caption, MAX_PATH); // caption according to the plug-in request
     if (Caption == NULL || !WholeCaption)
     {
         if (caption[0] != 0)
@@ -44,7 +45,7 @@ void CViewerWindow::SetViewerCaption()
             char* s = codeName + strlen(codeName);
             while (s > codeName && *(s - 1) == ' ')
                 s--;
-            *s = 0; // oriznuti prebytecnych mezer
+            *s = 0; // trim extra spaces
             sprintf(caption + strlen(caption), " - [%s]", codeName);
         }
     }
@@ -61,7 +62,7 @@ void CViewerWindow::SetCodeType(int c)
     CodeType = c;
     UseCodeTable = CodeTables.GetCode(CodeTable, CodeType);
 
-    // zneplatnime buffer
+    // invalidate the buffer
     Seek = 0;
     Loaded = 0;
 
@@ -74,14 +75,14 @@ void CViewerWindow::OnVScroll()
     {
         VScrollWParamOld = VScrollWParam;
         __int64 oldSeekY = SeekY;
-        EndSelectionRow = -1; // vyradime optimalizaci
+        EndSelectionRow = -1; // disable the optimization
         EnableSetScroll = ((int)LOWORD(VScrollWParam) == SB_THUMBPOSITION);
         SeekY = (__int64)(ScrollScaleY * ((short)HIWORD(VScrollWParam)) + 0.5);
         SeekY = min(SeekY, MaxSeekY);
         BOOL fatalErr = FALSE;
 
-        // inteligentnejsi nacteni bufferu pri nahodnem seekovani - nove cteni:
-        // 1/6 pred, 2/6 za SeekY (Prepare cte jen 1/2 bufferu)
+        // smarter buffer loading when seeking randomly - new read:
+        // 1/6 before, 2/6 after SeekY (Prepare reads only half the buffer)
         __int64 readFrom;
         if (SeekY > VIEW_BUFFER_SIZE / 6)
             readFrom = SeekY - VIEW_BUFFER_SIZE / 6;
@@ -105,11 +106,11 @@ void CViewerWindow::OnVScroll()
         {
             ResetFindOffsetOnNextPaint = TRUE;
             InvalidateRect(HWindow, NULL, FALSE);
-            UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+            UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
 
-            // dorolovani na dlouhy radek, msgbox pro prepnuti do HEX (ve FindBegin vyse nebo az v Paintu),
-            // odpoved Ne - konci nenastavenou scrollbarou, tenhle hack to resi (asi by stacil i jen
-            // invalidate scrollbary)
+            // when scrolling to a long line, the message box for switching to HEX (in FindBegin above or later in Paint)
+            // after answering No - ends with the scrollbar not being updated; this hack fixes it (probably invalidating the
+            // scrollbars would have been enough)
             if (ForceTextMode != oldForceTextMode)
                 InvalidateRect(HWindow, NULL, FALSE);
         }
@@ -120,8 +121,8 @@ void CViewerWindow::OnVScroll()
                 FindOffset += ViewSize;
         }
     }
-    // bezne se postrili pri SB_THUMBPOSITION, ale napr. pri vybaleni msgboxu behem
-    // tazeni (too long text line, switch to HEX) zabira tohle jeste behem otevreneho msgboxu
+    // normally this is handled by SB_THUMBPOSITION, but for example when a message box pops up during
+    // dragging (too long text line, switch to HEX) this is still active while the message box is open
     if (GetCapture() == NULL)
     {
         VScrollWParam = -1;
@@ -133,7 +134,7 @@ void CViewerWindow::OnVScroll()
 
 void CViewerWindow::PostMouseMove()
 {
-    // zajistime prekresleni bloku
+    // ensure the block is repainted
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     ScreenToClient(HWindow, &cursorPos);
@@ -202,7 +203,7 @@ BOOL CViewerWindow::ScrollViewLineUp(DWORD repeatCmd, BOOL* scrolled, BOOL repai
                 *scrolled = TRUE;
             if (repaint)
             {
-                ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); //odscrollujeme okno
+                ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); // scroll the window
                 UpdateWindow(HWindow);
                 if (EndSelectionRow != -1)
                     EndSelectionRow++;
@@ -223,7 +224,7 @@ BOOL CViewerWindow::ScrollViewLineDown(BOOL fullRedraw)
         if (oldSeekY != SeekY)
         {
             if (!fullRedraw)
-                ::ScrollWindow(HWindow, 0, -CharHeight, NULL, NULL); //odscrollujeme okno
+                ::ScrollWindow(HWindow, 0, -CharHeight, NULL, NULL); // scroll the window
             UpdateWindow(HWindow);
             if (EndSelectionRow != -1)
                 EndSelectionRow--;
@@ -242,14 +243,14 @@ CViewerWindow::GetMaxVisibleLineLen(__int64 newFirstLineLen, BOOL ignoreFirstLin
     case vtText:
     {
         int lineOffsetCount = LineOffset.Count;
-        if (newFirstLineLen != -1) // situace: ma se odrolovat o jeden radek dolu (bude nova prvni radka)
+        if (newFirstLineLen != -1) // situation: scroll down by one line (there will be a new first line)
         {
             max = newFirstLineLen;
             if (lineOffsetCount >= 3)
-                lineOffsetCount -= 3; // posledni radku vynechame (misto ni je nova prvni radka)
+                lineOffsetCount -= 3; // skip the last line (it is replaced by the new first line)
         }
-        // 'ignoreFirstLine' je TRUE: ma se odrolovat o jeden radek nahoru (bude nova posledni radka), takze
-        // prvni radku vynechame (novou posledni radku nemame, kasleme na ni, bude jen castecne viditelna, staci v Paint())
+        // 'ignoreFirstLine' is TRUE: we need to scroll up by one line (there will be a new last line), so
+        // we skip the first line (we do not have the new last line yet, it will be only partially visible, Paint() is enough)
         for (int i = ignoreFirstLine ? 3 + 2 : 2; i < lineOffsetCount; i += 3)
             if (max < LineOffset[i])
                 max = LineOffset[i];
@@ -293,11 +294,11 @@ void CViewerWindow::EnsureXVisibleInView(__int64 x, BOOL showPrevChar, BOOL& ful
     if (x >= OriginX + columns)
     {
         __int64 maxOX = GetMaxOriginX(newFirstLineLen, ignoreFirstLine, maxLineLen);
-        // u bloku tazeneho odzadu dopredu s koncem na konci nejdelsi radky (sirsi nez view)
-        // ukoncene EOLem (ne wrapem) je 'x' pozice za koncem view (podminka vyse je splnena)
-        // ale 'OriginX' uz nelze zvetsit (je uz 'maxOX'), zabranime zbytecnemu prekresleni
-        // celeho view
-        if (maxOX > OriginX) // jen pokud je mozne view jeste posunout vpravo
+        // for a block dragged from the end backwards with its end at the end of the longest line (wider than the view)
+        // terminated by EOL (not wrapping), the 'x' position is beyond the end of the view (the condition above is met),
+        // but 'OriginX' can no longer be increased (it is already at 'maxOX'), so prevent needless redrawing
+        // of the entire view
+        if (maxOX > OriginX) // only if it is still possible to move the view to the right
         {
             OriginX = x - columns + MAKEVIS_LEFTRIGHT;
             if (OriginX > maxOX)
@@ -322,15 +323,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     CALL_STACK_MESSAGE4("CViewerWindow::WindowProc(0x%X, 0x%IX, 0x%IX)", uMsg, wParam, lParam);
 
-    if (WaitForViewerRefresh && // stav "fatal error", cekame na opravu pomoci WM_USER_VIEWERREFRESH
-        uMsg != WM_SETCURSOR && // tyto zpravy jsou osetreny v obou stavech (o.k. a fatal) shodne
+    if (WaitForViewerRefresh && // "fatal error" state, waiting for recovery via WM_USER_VIEWERREFRESH
+        uMsg != WM_SETCURSOR && // these messages are handled identically in both states (ok and fatal)
         uMsg != WM_DESTROY)
     {
         switch (uMsg)
         {
         case WM_ACTIVATE:
         {
-            // zajistime schovani/zobrazeni Wait okenka (pokud existuje)
+            // ensure the Wait window (if any) is shown/hidden
             ShowSafeWaitWindow(LOWORD(wParam) != WA_INACTIVE);
             break;
         }
@@ -345,10 +346,10 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL fatalErr = FALSE;
                 FileChanged(NULL, FALSE, fatalErr, FALSE);
                 if (!fatalErr && ExitTextMode)
-                    SeekY = LastSeekY; // chceme v HEX byt cca na stejne pozici jako predtim v Textovem rezimu
+                    SeekY = LastSeekY; // in HEX we want to be roughly at the same position as before in Text mode
                 if (!fatalErr && !ExitTextMode)
                 {
-                    SeekY = min(MaxSeekY, LastSeekY); // obnova LastSeekY v nove verzi souboru
+                    SeekY = min(MaxSeekY, LastSeekY); // restore LastSeekY in the new version of the file
                     __int64 newSeekY = FindBegin(SeekY, fatalErr);
                     if (!fatalErr && !ExitTextMode)
                         SeekY = newSeekY;
@@ -356,7 +357,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (fatalErr)
                 {
                     FatalFileErrorOccured();
-                    //    // tenhle blok jsem zakomentoval, protoze jinak neslape "Retry" button v messageboxu s chybou otevrenem z LoadBehind() a LoadBefore()
+                    //    // I commented out this block because otherwise the "Retry" button in the message box with the error opened from LoadBehind() and LoadBefore() does not work
                     //            if (Caption != NULL)
                     //            {
                     //              free(Caption);
@@ -366,7 +367,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     //            if (Lock != NULL)
                     //            {
                     //              SetEvent(Lock);
-                    //              Lock = NULL;     // ted uz je to jen na disk-cache
+                    //              Lock = NULL;     // from now on it relies on the disk cache only
                     //            }
                     //            FileName = NULL;
                     //            Seek = 0;
@@ -396,7 +397,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         OriginX = LastOriginX;
                         InvalidateRect(HWindow, NULL, FALSE);
-                        UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+                        UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
                         if (RepeatCmdAfterRefresh != -1)
                             PostMessage(HWindow, WM_COMMAND, RepeatCmdAfterRefresh, 0);
                     }
@@ -432,7 +433,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         case WM_ERASEBKGND:
-            return TRUE; // nemazem pozadi
+            return TRUE; // do not erase the background
 
         case WM_SIZE:
         {
@@ -466,16 +467,16 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseWheelAccumulator > 0) || (zDelta > 0 && MouseWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru otaceni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // when the wheel direction changes we must reset the accumulator
 
-        DWORD delta = GetMouseWheelScrollLines(); // 'delta' muze byt az WHEEL_PAGESCROLL(0xffffffff)
+        DWORD delta = GetMouseWheelScrollLines(); // 'delta' can be as large as WHEEL_PAGESCROLL(0xffffffff)
 
-        // standardni scrolovani bez modifikacnich klaves
+        // standard scrolling without modifier keys
         if (!controlPressed && !altPressed && !shiftPressed)
         {
-            DWORD wheelScroll = GetMouseWheelScrollLines(); // muze byt az WHEEL_PAGESCROLL(0xffffffff)
+            DWORD wheelScroll = GetMouseWheelScrollLines(); // can be as large as WHEEL_PAGESCROLL(0xffffffff)
             DWORD pageHeight = max(1, (DWORD)Height / CharHeight);
-            wheelScroll = max(1, min(wheelScroll, pageHeight - 1)); // omezime maximalne na delku stranky
+            wheelScroll = max(1, min(wheelScroll, pageHeight - 1)); // limit it to at most the page height
 
             MouseWheelAccumulator += 1000 * zDelta;
             int stepsPerLine = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -496,15 +497,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // SHIFT: horizontalni rolovani
+        // SHIFT: horizontal scrolling
         if (!controlPressed && !altPressed && shiftPressed)
         {
-            // poznamka: zaroven je volano z WM_MOUSEHWHEEL
+            // note: also invoked from WM_MOUSEHWHEEL
             zDelta = (short)HIWORD(wParam);
 
-            DWORD wheelScroll = GetMouseWheelScrollLines(); // 'delta' muze byt az WHEEL_PAGESCROLL(0xffffffff)
+            DWORD wheelScroll = GetMouseWheelScrollLines(); // 'delta' can be as large as WHEEL_PAGESCROLL(0xffffffff)
             DWORD pageWidth = max(1, (DWORD)(Width - BORDER_WIDTH) / CharWidth);
-            wheelScroll = max(1, min(wheelScroll, pageWidth - 1)); // omezime maximalne na sirku stranky
+            wheelScroll = max(1, min(wheelScroll, pageWidth - 1)); // limit it to at most the page width
 
             MouseHWheelAccumulator += 1000 * zDelta;
             int stepsPerChar = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -566,7 +567,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         UINT drag;
         char path[MAX_PATH];
 
-        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // kolik souboru nam hodili
+        drag = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, NULL, 0); // how many files were dropped on us
         if (drag > 0)
         {
             DragQueryFile((HDROP)wParam, 0, path, MAX_PATH);
@@ -575,7 +576,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (Lock != NULL)
                 {
                     SetEvent(Lock);
-                    Lock = NULL; // ted uz je to jen na disk-cache
+                    Lock = NULL; // from now on it relies on the disk cache only
                 }
                 OpenFile(path, NULL, FALSE);
             }
@@ -588,9 +589,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (MainWindow != NULL)
         {
-            // pri deaktivaci okna dame SkipOneActivateRefresh=TRUE, na chvilku, nedokazeme
-            // totiz zjistit, jestli se prepina do hlavniho okna nebo jinam
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // when the window is deactivated we set SkipOneActivateRefresh = TRUE for a moment, because we cannot
+            // tell whether focus switches to the main window or somewhere else
+            // the main window will not refresh when switching from the viewer
             SkipOneActivateRefresh = TRUE;
             PostMessage(MainWindow->HWindow, WM_USER_SKIPONEREFRESH, 0, 0);
         }
@@ -610,7 +611,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_ERASEBKGND:
     {
         if (!EraseBkgnd)
-            return TRUE; // nemazem pozadi
+            return TRUE; // do not erase the background
         else
         {
             RECT r;
@@ -622,7 +623,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SIZE:
     {
-        if (IsWindowVisible(HWindow)) // posledni WM_SIZE prijde pri zavirani okna, o ten uz nestojime (error hlasky bez okna vieweru jsou silne nezadouci)
+        if (IsWindowVisible(HWindow)) // the last WM_SIZE arrives when closing the window; we do not care (error dialogs without the viewer window are highly undesirable)
         {
             SetToolTipOffset(-1);
             BOOL widthChanged = (Width != LOWORD(lParam));
@@ -643,7 +644,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     BOOL calledHeightChanged;
                     FileChanged(NULL, TRUE, fatalErr, FALSE, &calledHeightChanged);
-                    if (!fatalErr && !ExitTextMode && !calledHeightChanged) // inicializace noveho souboru
+                    if (!fatalErr && !ExitTextMode && !calledHeightChanged) // initialize the new file
                     {
                         HeightChanged(fatalErr);
                         if (!fatalErr && !ExitTextMode)
@@ -657,12 +658,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (FileName != NULL)
                 {
-                    // omezime posun podle nejdelsi viditelne radky
+                    // limit movement according to the longest visible line
                     __int64 maxOX = GetMaxOriginX();
                     if (OriginX > maxOX)
                     {
                         OriginX = maxOX;
-                        InvalidateRect(HWindow, NULL, FALSE); // pro jistotu
+                        InvalidateRect(HWindow, NULL, FALSE); // just in case
                     }
                 }
             }
@@ -691,7 +692,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_CLEARHISTORY:
     {
-        // musime proriznout historii v Find dialogu, je-li otevreny
+        // we must prune the history in the Find dialog if it is open
         if (FindDialog.HWindow != NULL)
             SendMessage(FindDialog.HWindow, WM_USER_CLEARHISTORY, wParam, lParam);
         return 0;
@@ -719,10 +720,10 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case SB_THUMBPOSITION:
             {
-                // ukonceni tazeni, musime OnVScroll() zavolat odtud, jinak problikne scrollbar na stare pozici
+                // drag finished; we must call OnVScroll() from here or the scrollbar briefly blinks at the old position
                 VScrollWParam = wParam;
                 KillTimer(HWindow, IDT_THUMBSCROLL);
-                MSG msg; // nechceme zadny dalsi timer, vycistime queue
+                MSG msg; // we do not want any additional timer; clear the queue
                 while (PeekMessage(&msg, HWindow, WM_TIMER, WM_TIMER, PM_REMOVE))
                     ;
                 OnVScroll();
@@ -732,11 +733,11 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case SB_THUMBTRACK:
             {
-                // vlastni rolovaci kod odsunut na timer, protoze USB mysi a MS scrollbary
-                // vytvareji neskutecne veci: pokud je viewer fullscreen, vykresleni cele
-                // obrazovky uz neco zabere a debilni scrollbar na vykresleni ceka, takze
-                // se tahne jak zvejkacka; nepomohlo ani posteni message a odlozene kresleni
-                // timer je jediny zpusob, na ktery jsme prisli
+                // the actual scrolling runs from a timer because USB mice and MS scrollbars 
+                // misbehave otherwise: when the viewer is fullscreen, repainting the whole window 
+                // takes long enough that the stubborn scrollbar waits, so dragging feels like 
+                // a chewing gum; posting the scroll message or deferring painting did not help;
+                // a timer was the only reliable fix we found.
                 if (VScrollWParam == -1)
                 {
                     VScrollWParam = wParam;
@@ -794,13 +795,13 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             step--;
                         OriginX += step;
                     }
-                    else // SB_THUMBTRACK a SB_THUMBPOSITION
+                    else // SB_THUMBTRACK and SB_THUMBPOSITION
                     {
                         EnableSetScroll = ((int)LOWORD(wParam) == SB_THUMBPOSITION);
                         OriginX = (__int64)(ScrollScaleX * ((short)HIWORD(wParam)) + 0.5);
                     }
 
-                    // omezime posun podle nejdelsi viditelne radky
+                    // limit movement according to the longest visible line
                     __int64 maxOX = GetMaxOriginX();
                     if (OriginX > maxOX)
                         OriginX = maxOX;
@@ -809,7 +810,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 ResetFindOffsetOnNextPaint = TRUE;
                 InvalidateRect(HWindow, NULL, FALSE);
-                UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+                UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
             }
             }
         }
@@ -818,7 +819,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        if (!IsWindowEnabled(HWindow)) // opatreni proti debilnim softum, ktery nam aktivuji hlavni okno ve stavu, kdy mame otevreny modalni dialog (napr. ClipMate)
+        if (!IsWindowEnabled(HWindow)) // workaround for brain-dead software that activates the main window while our modal dialog is open (e.g. ClipMate)
             return 0;
         BOOL ch = FALSE;
         switch (LOWORD(wParam))
@@ -846,7 +847,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             ofn.hwndOwner = HWindow;
             char* s = LoadStr(IDS_VIEWERFILTER);
             ofn.lpstrFilter = s;
-            while (*s != 0) // vytvoreni double-null terminated listu
+            while (*s != 0) // create a double-null-terminated list
             {
                 if (*s == '|')
                     *s = 0;
@@ -865,7 +866,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (Lock != NULL)
                     {
                         SetEvent(Lock);
-                        Lock = NULL; // ted uz je to jen na disk-cache
+                        Lock = NULL; // from now on it relies on the disk cache only
                     }
                     OpenFile(file, NULL, FALSE);
                 }
@@ -895,7 +896,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                   FileName, LOWORD(wParam) == CM_PREVSELFILE, TRUE,
                                                   fileName, &noMoreFiles,
                                                   &srcBusy, NULL);
-                if (ok && LOWORD(wParam) == CM_PREVSELFILE) // bereme jen selected soubory
+                if (ok && LOWORD(wParam) == CM_PREVSELFILE) // take only selected files
                 {
                     BOOL isSrcFileSel = FALSE;
                     ok = IsFileNameForViewerSelected(EnumFileNamesSourceUID, enumFileNamesLastFileIndex,
@@ -913,7 +914,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                               FileName, LOWORD(wParam) == CM_NEXTSELFILE, TRUE,
                                               fileName, &noMoreFiles,
                                               &srcBusy, NULL);
-                if (ok && LOWORD(wParam) == CM_NEXTSELFILE) // bereme jen selected soubory
+                if (ok && LOWORD(wParam) == CM_NEXTSELFILE) // take only selected files
                 {
                     BOOL isSrcFileSel = FALSE;
                     ok = IsFileNameForViewerSelected(EnumFileNamesSourceUID, enumFileNamesLastFileIndex,
@@ -923,16 +924,16 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-            if (ok) // mame nove jmeno
+            if (ok) // we have a new name
             {
                 if (Lock != NULL)
                 {
                     SetEvent(Lock);
-                    Lock = NULL; // ted uz je to jen na disk-cache
+                    Lock = NULL; // from now on it relies on the disk cache only
                 }
                 OpenFile(fileName, NULL, FALSE);
 
-                // index nastavime i v pripade neuspechu, aby user mohl prejit na dalsi/predchozi soubor
+                // set the index even if it failed so the user can move to the next/previous file
                 EnumFileNamesLastFileIndex = enumFileNamesLastFileIndex;
             }
             else
@@ -970,7 +971,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (MouseDrag)
                 return 0;
-            if (LastFindSeekY == SeekY && LastFindOffset != FindOffset) // obnova FindOffset po pohybu sem-tam
+            if (LastFindSeekY == SeekY && LastFindOffset != FindOffset) // restore FindOffset after moving back and forth
             {
                 FindOffset = LastFindOffset;
             }
@@ -998,7 +999,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             __int64 oldFindOffset = FindOffset;
             if (StartSelection != EndSelection && SelectionIsFindResult &&
                 (FindOffset == StartSelection || FindOffset == EndSelection))
-            { // postarame se, aby pri zmenach smeru hledani (F3/Shift+F3) nebylo 1. hledani zbytecne
+            { // ensure that the first search is not wasted when changing the direction (F3/Shift+F3)
                 if (forward)
                     FindOffset = max(StartSelection, EndSelection);
                 else
@@ -1007,26 +1008,26 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             BOOL noNotFound = FALSE;
             BOOL escPressed = FALSE;
 
-            BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // ceka uz ?
+            BOOL setWait = (GetCursor() != LoadCursor(NULL, IDC_WAIT)); // is it already waiting?
             HCURSOR oldCur;
             if (setWait)
                 oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
             CreateSafeWaitWindow(LoadStr(IDS_SEARCHINGTEXTESC), LoadStr(IDS_VIEWERTITLE), 1000, TRUE, HWindow);
-            GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - viz help
+            GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
 
-            // soubor nechame ve volani Prepare() otevrit pouze jednou a sami si ho na konci zavreme
-            // opakovani otevirani/zavirani zdrzovalo prohledavani souboru na sitovem disku (1.5MB)
+            // let Prepare() open the file just once and close it ourselves at the end
+            // repeated open/close slowed down searching on a network disk (1.5 MB)
             HANDLE hFile = NULL;
 
             BOOL fatalErr = FALSE;
-            FindingSoDonotSwitchToHex = TRUE; // behem hledani zakazeme prepinani do "hex" pri vice nez 10000 znacich na radku
+            FindingSoDonotSwitchToHex = TRUE; // during searching disable switching to "hex" when a line has more than 10000 characters
             if (FindDialog.Regular)
             {
                 if (RegExp.SetFlags(flags))
                 {
                     BOOL oldConfigEOL_NULL = Configuration.EOL_NULL;
-                    Configuration.EOL_NULL = TRUE; // nemam regexp na bin. stringy :(
+                    Configuration.EOL_NULL = TRUE; // no regexp for binary strings :(
                     __int64 len;
                     __int64 lineEnd;
                     __int64 lineBegin;
@@ -1035,23 +1036,23 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         __int64 nextLineBegin;
                         if (!FindPreviousEOL(&hFile, FindOffset, FindOffset - FIND_LINE_LEN,
                                              lineBegin, nextLineBegin /* dummy */, FALSE, TRUE, fatalErr, NULL))
-                        { // zacatek v nedohlednu
+                        { // beginning nowhere in sight
                             lineBegin = FindOffset;
                         }
 
-                        if (!fatalErr /*&& !ExitTextMode*/) // FindingSoDonotSwitchToHex je TRUE, ExitTextMode nemuze vzniknout
+                        if (!fatalErr /*&& !ExitTextMode*/) // FindingSoDonotSwitchToHex is TRUE, ExitTextMode cannot occur
                         {
                             while (lineBegin < FileSize)
                             {
                                 __int64 maxSeek = min(FileSize, lineBegin + FIND_LINE_LEN);
                                 if (!FindNextEOL(&hFile, lineBegin, maxSeek, lineEnd, nextLineBegin, fatalErr))
-                                { // konec v nedohlednu
+                                { // end nowhere in sight
                                     lineEnd = nextLineBegin = maxSeek;
                                 }
                                 if (fatalErr)
                                     break;
 
-                                if (lineBegin < lineEnd) // radek textu od lineBegin do lineEnd
+                                if (lineBegin < lineEnd) // line of text from lineBegin to lineEnd
                                 {
                                     len = Prepare(&hFile, lineBegin, lineEnd - lineBegin, fatalErr);
                                     if (fatalErr)
@@ -1115,7 +1116,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 StartSelection = lineBegin + found;
                                                 FindOffset = EndSelection = StartSelection + foundLen;
                                                 SelectionIsFindResult = TRUE;
-                                                break; // nalezeno!
+                                                break; // found!
                                             }
                                         }
                                         else // error - low memory
@@ -1148,7 +1149,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         __int64 previousLineEnd;
                         if (!FindNextEOL(&hFile, FindOffset, FindOffset + FIND_LINE_LEN,
                                          lineEnd, previousLineEnd /* dummy */, fatalErr))
-                        { // konec v nedohlednu
+                        { // end nowhere in sight
                             lineEnd = FindOffset;
                         }
 
@@ -1158,13 +1159,13 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             {
                                 if (!FindPreviousEOL(&hFile, lineEnd, lineEnd - FIND_LINE_LEN,
                                                      lineBegin, previousLineEnd, FALSE, TRUE, fatalErr, NULL))
-                                { // zacatek v nedohlednu
+                                { // beginning nowhere in sight
                                     lineBegin = previousLineEnd = lineEnd - FIND_LINE_LEN;
                                 }
                                 if (fatalErr /*|| ExitTextMode*/)
-                                    break; // FindingSoDonotSwitchToHex je TRUE, ExitTextMode nemuze vzniknout
+                                    break; // FindingSoDonotSwitchToHex is TRUE, ExitTextMode cannot occur
 
-                                if (lineBegin < lineEnd) // radek textu od lineBegin do lineEnd
+                                if (lineBegin < lineEnd) // line of text from lineBegin to lineEnd
                                 {
                                     len = Prepare(&hFile, lineBegin, lineEnd - lineBegin, fatalErr);
                                     if (fatalErr)
@@ -1228,7 +1229,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 FindOffset = StartSelection = lineBegin + found;
                                                 EndSelection = StartSelection + foundLen;
                                                 SelectionIsFindResult = TRUE;
-                                                break; // nalezeno!
+                                                break; // found!
                                             }
                                         }
                                         else // error - low memory
@@ -1322,10 +1323,10 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 if (len >= 0)
                                     FindOffset += len;
                                 else
-                                    break; // konec souboru
+                                    break; // end of file
                             }
                             else
-                                break; // konec souboru
+                                break; // end of file
 
                             if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && ViewerActive(HWindow) ||
                                 GetSafeWaitWindowClosePressed())
@@ -1351,7 +1352,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 }
                             }
                             else
-                                break; // zacatek souboru
+                                break; // beginning of file
                             len = Prepare(&hFile, off, len, fatalErr);
                             if (fatalErr)
                                 break;
@@ -1395,10 +1396,10 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 if (len >= 0)
                                     FindOffset -= len;
                                 else
-                                    break; // zacatek souboru
+                                    break; // beginning of file
                             }
                             else
-                                break; // zacatek souboru
+                                break; // beginning of file
 
                             if ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && ViewerActive(HWindow) ||
                                 GetSafeWaitWindowClosePressed())
@@ -1412,7 +1413,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             FindingSoDonotSwitchToHex = FALSE;
 
-            // pokud se soubor podarilo otevrit, je zavreni na nas
+            // if the file was successfully opened, closing it is our responsibility
             if (hFile != NULL)
                 HANDLES(CloseHandle(hFile));
 
@@ -1427,7 +1428,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             if (escPressed)
             {
-                MSG msg; // vyhodime nabufferovany ESC
+                MSG msg; // discard the buffered ESC
                 while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                     ;
                 SalMessageBox(HWindow, LoadStr(IDS_FINDTERMINATEDBYUSER),
@@ -1454,7 +1455,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (startSel == endSel)
                     startSel = endSel = 0;
                 if (startSel < SeekY || endSel > SeekY + ViewSize)
-                { // zobrazit selection - pujde-li, odrolujeme o tri radky
+                { // show the selection - if possible, scroll up by three lines
                     __int64 lineOff = FindBegin(startSel, fatalErr);
                     if (fatalErr)
                         FatalFileErrorOccured();
@@ -1482,7 +1483,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ScrollToSelection = TRUE;
             }
             InvalidateRect(HWindow, NULL, FALSE);
-            // zapamatovani pozice posledniho hledani, pro detekci pohybu sem-tam
+            // remember the position of the last search to detect moving back and forth
             LastFindSeekY = SeekY;
             LastFindOffset = FindOffset;
 
@@ -1501,9 +1502,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (h != NULL)
                 {
                     __int64 startSel = min(StartSelection, EndSelection);
-                    // if (startSel == -1) startSel = 0; // nemuze nastat (-1 muzou byt jen obe zaroven a to sem nedojde)
+                    // if (startSel == -1) startSel = 0; // cannot happen (-1 can only be both at once and we do not get here)
                     __int64 endSel = max(StartSelection, EndSelection);
-                    // if (endSel == -1) endSel = 0; // nemuze nastat (-1 muzou byt jen obe zaroven a to sem nedojde)
+                    // if (endSel == -1) endSel = 0; // cannot happen (-1 can only be both at once and we do not get here)
                     if (fatalErr || !CopyHTextToClipboard(h, (int)(endSel - startSel)))
                         NOHANDLES(GlobalFree(h));
                 }
@@ -1520,9 +1521,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (FileName != NULL)
             {
                 __int64 start = min(StartSelection, EndSelection);
-                // if (startSel == -1) startSel = 0; // zbytecne resit, resi se o par radek nize
+                // if (startSel == -1) startSel = 0; // no need to deal with it; handled a few lines below
                 __int64 end = max(StartSelection, EndSelection);
-                // if (endSel == -1) endSel = 0;     // zbytecne resit, resi se o par radek nize
+                // if (endSel == -1) endSel = 0;     // no need to deal with it; handled a few lines below
                 if (StartSelection == EndSelection)
                 {
                     start = 0;
@@ -1539,7 +1540,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ofn.hwndOwner = HWindow;
                 char* s = LoadStr(IDS_VIEWERFILTER);
                 ofn.lpstrFilter = s;
-                while (*s != 0) // vytvoreni double-null terminated listu
+                while (*s != 0) // create a double-null-terminated list
                 {
                     if (*s == '|')
                         *s = 0;
@@ -1589,7 +1590,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     char path[MAX_PATH];
                     if (endBackSlash != NULL)
                     {
-                        if (attr != 0xFFFFFFFF) // file overwrite -> provedeme pres tmp-soubor (kvuli self-overwrite)
+                        if (attr != 0xFFFFFFFF) // file overwrite -> do it via a temp file (because of self-overwrite)
                         {
                             memcpy(path, fileName, endBackSlash - fileName + 1);
                             path[endBackSlash - fileName + 1] = 0;
@@ -1614,7 +1615,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     if (fatalErr)
                                         break;
                                     if (len == 0)
-                                        break; // chyba cteni
+                                        break; // read error
                                     if (!WriteFile(file, Buffer + (off - Seek), (int)len, &written, NULL) ||
                                         written != len)
                                     {
@@ -1628,12 +1629,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 }
                                 HANDLES(CloseHandle(file));
                                 if (fatalErr || off != end)
-                                    DeleteFile(tmpFile); // pri chybe ho smazem
+                                    DeleteFile(tmpFile); // delete it if an error occurs
                                 else
                                 {
                                     if (attr != 0xFFFFFFFF) // overwrite: tmp -> fileName
                                     {
-                                        BOOL setAttr = ClearReadOnlyAttr(fileName, attr); // pro pripad read-only souboru
+                                        BOOL setAttr = ClearReadOnlyAttr(fileName, attr); // for the case of a read-only file
                                         if (DeleteFile(fileName))
                                         {
                                             if (!SalMoveFile(tmpFile, fileName))
@@ -1648,8 +1649,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                         {
                                             DWORD err = GetLastError();
                                             if (setAttr)
-                                                SetFileAttributes(fileName, attr); // vratime puvodni atributy
-                                            DeleteFile(tmpFile);                   // soubor nejde prepsat, smazeme tmp-soubor (je k nicemu)
+                                                SetFileAttributes(fileName, attr); // restore the original attributes
+                                            DeleteFile(tmpFile);                   // the file cannot be overwritten; delete the temp file (it's useless)
                                             SetCursor(oldCur);
                                             SalMessageBox(HWindow, GetErrorText(err),
                                                           LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -1657,7 +1658,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     }
                                 }
 
-                                // ohlasime zmenu na ceste (pribyl nas soubor)
+                                // notify the change on the path (our file has appeared)
                                 lstrcpyn(path, fileName, MAX_PATH);
                                 CutDirectory(path);
                                 if (MainWindow != NULL)
@@ -1789,7 +1790,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             __int64 offset = SeekY;
             if (CViewerGoToOffsetDialog(HWindow, &offset).Execute() == IDOK)
             {
-                EndSelectionRow = -1; // vyradime optimalizaci
+                EndSelectionRow = -1; // disable the optimization
                 SeekY = offset;
                 SeekY = min(SeekY, MaxSeekY);
 
@@ -1803,7 +1804,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 ResetFindOffsetOnNextPaint = TRUE;
                 InvalidateRect(HWindow, NULL, FALSE);
-                UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+                UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
             }
             return 0;
         }
@@ -1827,7 +1828,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             Configuration.AutoCopySelection = !Configuration.AutoCopySelection;
 
-            if (MainWindow != NULL && MainWindow->HWindow != NULL) // hodnotu vyvazime do pluginu jako SALCFG_AUTOCOPYSELTOCLIPBOARD, tedy upozornime na jeji zmenu
+            if (MainWindow != NULL && MainWindow->HWindow != NULL) // propagate the value to plug-ins as SALCFG_AUTOCOPYSELTOCLIPBOARD, i.e. notify them about the change
                 PostMessage(MainWindow->HWindow, WM_USER_DISPACHCFGCHANGE, 0, 0);
 
             return 0;
@@ -1855,7 +1856,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case CM_VIEWERHLP_INTRO:
         {
-            OpenHtmlHelp(NULL, HWindow, HHCDisplayTOC, 0, TRUE); // nechceme dva messageboxy za sebou
+            OpenHtmlHelp(NULL, HWindow, HHCDisplayTOC, 0, TRUE); // we do not want two message boxes in a row
             OpenHtmlHelp(NULL, HWindow, HHCDisplayContext, IDH_VIEWERINTRO, FALSE);
             return 0;
         }
@@ -1899,7 +1900,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 OriginX = 0;
                 ResetFindOffsetOnNextPaint = TRUE;
                 InvalidateRect(HWindow, NULL, FALSE);
-                UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+                UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
             }
             break;
         }
@@ -1929,7 +1930,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (SeekY > 0)
                 {
-                    EndSelectionRow = -1; // vyradime optimalizaci
+                    EndSelectionRow = -1; // disable the optimization
                     switch (Type)
                     {
                     case vtHex:
@@ -1962,13 +1963,13 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (SeekY < MaxSeekY)
                 {
-                    EndSelectionRow = -1; // vyradime optimalizaci
+                    EndSelectionRow = -1; // disable the optimization
                     __int64 size = max(0, ViewSize - LastLineSize);
-                    if (size == 0) // ani jeden cely radek -> emulace sipky dolu
+                    if (size == 0) // not a single full line -> emulate the down arrow
                     {
                         SeekY = min(MaxSeekY, SeekY + FirstLineSize);
                     }
-                    else // klasicky page down
+                    else // standard page down
                     {
                         SeekY = min(MaxSeekY, SeekY + size);
                     }
@@ -1987,21 +1988,21 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 EndSelectionPrefX = -1;
                 if (EndSelection != 0)
                     ChangingSelWithShiftKey = TRUE;
-                EndSelection = 0; // EndSelectionRow se nepouziva, protoze MouseDrag==FALSE
+                EndSelection = 0; // EndSelectionRow is not used because MouseDrag == FALSE
 
                 extSelCh = TRUE;
-                // break; // tady break chybi umyslne
+                // break; // break intentionally left out here
             }
             case CM_FILEBEGIN:
             {
-                if (FindDialog.Forward) // ruseni detekce hledani sem-tam, zde je to prijemne...
+                if (FindDialog.Forward) // cancel the detection of searching back and forth; it is convenient here...
                 {
                     LastFindSeekY = -1;
                     LastFindOffset = 0;
                 }
                 if (SeekY != 0 || OriginX != 0)
                 {
-                    EndSelectionRow = -1; // vyradime optimalizaci
+                    EndSelectionRow = -1; // disable the optimization
                     SeekY = 0;
                     OriginX = 0;
                     ch = TRUE;
@@ -2032,7 +2033,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (fatalErr || ExitTextMode)
                             return 0;
 
-                        if (lineCharLen > 0) // zajistime viditelnost konce posledniho radku (konce selectiony)
+                        if (lineCharLen > 0) // ensure the end of the last line (the end of the selection) is visible
                         {
                             __int64 oldOX = OriginX;
                             if (SeekY != MaxSeekY)
@@ -2047,19 +2048,19 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     EndSelectionPrefX = -1;
                     if (EndSelection != FileSize)
                         ChangingSelWithShiftKey = TRUE;
-                    EndSelection = FileSize; // EndSelectionRow se nepouziva, protoze MouseDrag==FALSE
+                    EndSelection = FileSize; // EndSelectionRow is not used because MouseDrag == FALSE
 
                     extSelCh = TRUE;
                 }
 
-                if (!FindDialog.Forward) // ruseni detekce hledani sem-tam, zde je to prijemne...
+                if (!FindDialog.Forward) // cancel the detection of searching back and forth; it is convenient here...
                 {
                     LastFindSeekY = -1;
                     LastFindOffset = 0;
                 }
                 if (SeekY != MaxSeekY || OriginX != newOriginX)
                 {
-                    EndSelectionRow = -1; // vyradime optimalizaci
+                    EndSelectionRow = -1; // disable the optimization
                     SeekY = MaxSeekY;
                     OriginX = newOriginX;
                     ch = TRUE;
@@ -2098,7 +2099,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case CM_EXTSEL_RIGHT:
             case CM_EXTSEL_HOME:
             case CM_EXTSEL_END:
-                EndSelectionPrefX = -1; // tady break nechybi!
+                EndSelectionPrefX = -1; // break is not missing here!
             case CM_EXTSEL_UP:
             case CM_EXTSEL_DOWN:
             {
@@ -2113,15 +2114,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 while (1)
                 {
                     for (int i = 0; i + 3 < LineOffset.Count; i += 3)
-                    { // hledani konce selectiony v LineOffset bez posledniho radku (pokud je jen castecne viditelny,
-                        // je to OK, pokud je plne viditelny, dohledame konec selectiony jeste v nem, viz nize)
-                        // pro wrap rezim: je-li blok dopredny (tazeny od zacatku ke konci souboru) a konci na konci
-                        // wrap radku, kresli se ke konci wrap radku a ne k zacatku nasledujiciho radku (ty dve pozice
-                        // maji stejny offset), je-li blok zpetny (tazeny v opacnem smeru) kresli se pro stejny offset
-                        // od zacatku radky a ne od konce predchoziho radku = vyber 'endSelLineIndex' musi toto respektovat
+                    { // search for the end of the selection in LineOffset without the last line (if it is only partially visible,
+                        // that's fine; if it is fully visible we will find the end of the selection in it as well, see below)
+                        // in wrap mode: if the block is forward (dragged from the beginning towards the end of the file) and ends at the end
+                        // of a wrapped line, it is drawn at the end of the wrapped line and not at the beginning of the next line (both positions
+                        // share the same offset); if the block is backward (dragged in the opposite direction) it is drawn for the same offset
+                        // from the beginning of the line and not from the end of the previous line = the selection of 'endSelLineIndex' must respect this
                         if ((EndSelection > LineOffset[i] ||
-                             // jen wrap rezim: pokud view zacina pokracovanim wrap radku a dopredny blok konci na offsetu
-                             // zacatku view, potrebujeme predchozi radku, kde konci nakresleny blok ("kurzor" je mimo view)
+                             // wrap mode only: if the view starts with the continuation of a wrapped line and a forward block ends at the view's
+                             // starting offset, we need the previous line where the drawn block ends (the "cursor" is outside the view)
                              EndSelection == LineOffset[i] &&
                                  (i > 0 || !WrapText || StartSelection > EndSelection || !WrapIsBeforeFirstLine)) &&
                             (EndSelection < LineOffset[i + 3] ||
@@ -2131,24 +2132,24 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             break;
                         }
                     }
-                    if (endSelLineIndex == -1 && LineOffset.Count >= 3 &&    // pred poslednim radkem jsme konec selectiony nenasli,
-                        LineOffset.Count / 3 <= Height / CharHeight &&       // zajima nas pouze plne viditelny posledni radek,
-                        (EndSelection > LineOffset[LineOffset.Count - 3] ||  // konec selectiony je v poslednim radku souboru (nema
-                         EndSelection == LineOffset[LineOffset.Count - 3] && // EOL, jinak by nebyl posledni) - specialne osetrime
-                             (!WrapText || LineOffset.Count >= 6 ||          // konec dopredneho bloku na konci predchozi wrap radky
+                    if (endSelLineIndex == -1 && LineOffset.Count >= 3 &&    // we did not find the end of the selection before the last line,
+                        LineOffset.Count / 3 <= Height / CharHeight &&       // we are interested only in the last fully visible line,
+                        (EndSelection > LineOffset[LineOffset.Count - 3] ||  // the end of the selection is in the last line of the file (otherwise
+                         EndSelection == LineOffset[LineOffset.Count - 3] && // it would not be the last one) - handle specially
+                             (!WrapText || LineOffset.Count >= 6 ||          // forward block ending at the end of the previous wrapped line
                               StartSelection > EndSelection || !WrapIsBeforeFirstLine)) &&
                         EndSelection <= LineOffset[LineOffset.Count - 2])
                     {
                         endSelLineIndex = LineOffset.Count / 3 - 1;
                     }
-                    if (endSelLineIndex == -1 && // konec selectiony neni v plne viditelnem radku, je nejdrive potreba posunout view
-                        !viewAlreadyMovedToSel)  // zkousime to jen jednou, sychr proti zacykleni
+                    if (endSelLineIndex == -1 && // the end of the selection is not in a fully visible line, we must move the view first
+                        !viewAlreadyMovedToSel)  // try it only once as protection against loops
                     {
                         viewAlreadyMovedToSel = TRUE;
-                        // posuneme view tak, aby na poslednim/prvnim radku byl konec selectiony
+                        // move the view so that the end of the selection is on the last/first line
                         int lines = EndSelection > SeekY ? Height / CharHeight : 1;
                         if (lines <= 0)
-                            break; // kdyz neni videt ani jeden radek, nefungujeme
+                            break; // if no line is visible we cannot proceed
                         BOOL fatalErr;
                         __int64 newSeekY = FindSeekBefore(EndSelection, lines, fatalErr, NULL, NULL, EndSelection > StartSelection);
                         if (fatalErr)
@@ -2158,19 +2159,19 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         SeekY = newSeekY;
                         OriginX = 0;
                         InvalidateRect(HWindow, NULL, FALSE);
-                        UpdateWindow(HWindow); // nechame nove napocitat LineOffset
+                        UpdateWindow(HWindow); // recompute LineOffset
                         continue;
                     }
                     break;
                 }
-                if (endSelLineIndex == -1) // cosi se nepovedlo, necekane musime koncit
+                if (endSelLineIndex == -1) // something went wrong, we must exit unexpectedly
                 {
                     skipCmd = TRUE;
                     break;
                 }
 
                 __int64 oldEndSel = EndSelection;
-                __int64 curX = -1; // x-ova souradnice konce bloku, musime zajistit jeji viditelnost (upravit OriginX)
+                __int64 curX = -1; // X coordinate of the block end; we must keep it visible (adjust OriginX)
                 int minRow = endSelLineIndex;
                 int maxRow = endSelLineIndex;
 
@@ -2184,12 +2185,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (LOWORD(wParam) == CM_EXTSEL_HOME || EndSelection > LineOffset[3 * endSelLineIndex])
                     {
                         if (LOWORD(wParam) == CM_EXTSEL_HOME)
-                            EndSelection = LineOffset[3 * endSelLineIndex]; // skok na zacatek
+                            EndSelection = LineOffset[3 * endSelLineIndex]; // jump to the beginning
                         else
-                            EndSelection--; // pohyb v radce
+                            EndSelection--; // move within the line
 
-                        // wrap rezim: specialne osetrime konec dopredneho bloku na konci predchozi wrap radky
-                        // (offset ma shodny se zacatkem teto radky)
+                        // wrap mode: handle the end of a forward block at the end of the previous wrapped line specially
+                        // (the offset matches the beginning of this line)
                         if (WrapText && StartSelection < EndSelection &&
                             EndSelection == LineOffset[3 * endSelLineIndex] &&
                             (endSelLineIndex > 0 && EndSelection == LineOffset[3 * (endSelLineIndex - 1) + 1] ||
@@ -2201,11 +2202,11 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 if (!GetXFromOffsetInText(&curX, EndSelection, endSelLineIndex - 1))
                                     return 0;
                             }
-                            else // radek je mimo view, je potreba posunout view o radek nahoru
+                            else // the line is outside the view; we need to scroll up by one line
                             {
                                 scrollUp = TRUE;
                                 moveIsDone = TRUE;
-                                // aby tento radek jen neodroloval, ale prekreslil se (zmena oznaceni na zacatku)
+                                // ensure this line is not only scrolled but also repainted (selection changes at the start)
                                 InvalidateRows(minRow, maxRow, FALSE);
                             }
                         }
@@ -2215,16 +2216,16 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 return 0;
                         }
                     }
-                    else // jdeme na konec predchozi radky
+                    else // go to the end of the previous line
                     {
                         if (endSelLineIndex > 0)
                         {
                             __int64 newEndSel = LineOffset[3 * (endSelLineIndex - 1) + 1];
-                            // mezi zacatkem a koncem wrapnute radky neni rozdil v offsetu, vyrobime ho
-                            // umele (horni radek je wrapnuty = urcite na nem muzeme jit o jeden znak vlevo),
-                            // musi jit o zpetny blok, jinak by byl konec bloku na konci predchozi radky
+                            // there is no offset difference between the beginning and end of a wrapped line, create one
+                            // artificially (the upper line is wrapped = we can move one character left on it),
+                            // it must be a backward block; otherwise the block would end at the end of the previous line
                             if (WrapText && newEndSel == EndSelection && newEndSel > 0)
-                                newEndSel--; // vzdy by melo byt > 0
+                                newEndSel--; // should always be > 0
                             EndSelection = newEndSel;
 
                             if (!GetXFromOffsetInText(&curX, EndSelection, endSelLineIndex - 1))
@@ -2234,7 +2235,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             maxRow--;
                         }
                         else
-                            scrollUp = TRUE; // je nutne odrolovat view o radek nahoru
+                            scrollUp = TRUE; // we need to scroll the view up by one line
                     }
                     if (scrollUp)
                     {
@@ -2243,40 +2244,40 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         __int64 firstLineCharLen;
                         if (!ScrollViewLineUp(-1, &scrolled, FALSE, &firstLineEndOff, &firstLineCharLen))
                             return 0;
-                        if (scrolled) // mame odrolovano, neprekresleno, prvni radka je od SeekY do firstLineEndOff
+                        if (scrolled) // scrolled without repainting; the first line spans SeekY to firstLineEndOff
                         {
                             if (!moveIsDone &&
-                                firstLineEndOff != -1 &&  // -1 = nezname offset konce prvni radky (hrozi pri zmene souboru)
-                                SeekY <= firstLineEndOff) // jen tak pro sychr
+                                firstLineEndOff != -1 &&  // -1 = unknown offset of the first line's end (can happen when the file changes)
+                                SeekY <= firstLineEndOff) // just to be safe
                             {
                                 __int64 newEndSel = firstLineEndOff;
-                                // mezi zacatkem a koncem wrapnute radky neni rozdil v offsetu, vyrobime ho
-                                // umele (horni radek je wrapnuty = urcite na nem muzeme jit o jeden znak vlevo),
-                                // musi jit o zpetny blok, jinak by byl konec bloku na konci predchozi radky
+                                // there is no offset difference between the beginning and end of a wrapped line, create one
+                                // artificially (the top line is wrapped = we can move one character left on it),
+                                // it must be a backward block; otherwise the block would end at the end of the previous line
                                 if (WrapText && newEndSel == EndSelection && newEndSel > 0)
-                                    newEndSel--; // vzdy by melo byt > 0
+                                    newEndSel--; // should always be > 0
                                 EndSelection = newEndSel;
                             }
 
                             if (!GetXFromOffsetInText(&curX, EndSelection, -1, SeekY, firstLineCharLen, firstLineEndOff))
                                 return 0;
 
-                            BOOL fullRedraw = FALSE; // zajistime viditelnost nove pozice konce bloku
+                            BOOL fullRedraw = FALSE; // ensure the new end-of-block position is visible
                             EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw, firstLineCharLen);
                             if (fullRedraw)
                                 InvalidateRect(HWindow, NULL, FALSE);
                             else
-                                ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); //odscrollujeme okno
+                                ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); // scroll the window
                             UpdateWindow(HWindow);
                         }
-                        else // predchozi radek neexistuje, jsme asi na zacatku souboru
+                        else // the previous line does not exist; we are probably at the beginning of the file
                         {
                             if (moveIsDone)
                                 UpdateWindow(HWindow);
                             else
                                 skipCmd = TRUE;
                         }
-                        updateView = FALSE; // mame prekresleno, znovu neni potreba
+                        updateView = FALSE; // already repainted, no need to do it again
                     }
                     break;
                 }
@@ -2289,27 +2290,27 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (LOWORD(wParam) == CM_EXTSEL_END)
                             EndSelection = LineOffset[3 * endSelLineIndex + 1];
                         else
-                            EndSelection++; // pohyb v radce
+                            EndSelection++; // move within the line
 
-                        // wrap rezim: specialne osetrime konec zpetneho bloku na zacatku dalsi wrap radky
-                        // (offset ma shodny s koncem teto radky)
+                        // wrap mode: handle the end of a backward block at the start of the next wrapped line specially
+                        // (the offset matches the end of this line)
                         if (WrapText && EndSelection < StartSelection && EndSelection == LineOffset[3 * endSelLineIndex + 1] &&
                             endSelLineIndex + 1 < LineOffset.Count / 3 &&
                             EndSelection == LineOffset[3 * (endSelLineIndex + 1)])
                         {
                             if (!GetXFromOffsetInText(&curX, EndSelection, endSelLineIndex + 1))
-                                return 0; // curX=0 (zac. radky)
+                                return 0; // curX = 0 (start of the line)
                             if (endSelLineIndex + 1 >= Height / CharHeight)
                             {
-                                BOOL fullRedraw = FALSE; // tady zrovna vzdy FALSE: wrap => OriginX==0 + curX==0
+                                BOOL fullRedraw = FALSE; // always FALSE here: wrap => OriginX == 0 and curX == 0
                                 EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw, -1, TRUE);
                                 if (fullRedraw)
                                     InvalidateRect(HWindow, NULL, FALSE);
                                 else
                                     InvalidateRows(minRow, maxRow, FALSE);
                                 if (!ScrollViewLineDown(fullRedraw))
-                                    UpdateWindow(HWindow); // neocekavane
-                                updateView = FALSE;        // mame prekresleno, znovu neni potreba
+                                    UpdateWindow(HWindow); // unexpected
+                                updateView = FALSE;        // already repainted, no need to do it again
                             }
                         }
                         else
@@ -2318,40 +2319,40 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 return 0;
                         }
                     }
-                    else // jdeme na zacatek dalsi radky
+                    else // go to the start of the next line
                     {
-                        // LineOffset vzdy obsahuje radek pod poslednim plne viditelnym (i kdyz z nej neni nic videt),
-                        // ale prirozene jen pokud radek v souboru existuje
+                        // LineOffset always contains the line below the last fully visible one (even if none of it is visible),
+                        // provided that line actually exists in the file
                         if (endSelLineIndex + 1 < LineOffset.Count / 3)
                         {
                             __int64 newEndSel = LineOffset[3 * (endSelLineIndex + 1)];
-                            // mezi koncem wrapnute radky a zacatkem dalsi neni rozdil v offsetu, vyrobime ho
-                            // umele (wrapnuti zarucuje, ze na dolnim radku muzeme jit aspon o jeden znak vpravo),
-                            // musi jit o dopredny blok, jinak by byl konec bloku na zacatku dalsi radky
+                            // there is no offset difference between the end of a wrapped line and the start of the next one, create it
+                            // artificially (wrapping guarantees that on the lower line we can move at least one character right),
+                            // it must be a forward block or else the block would end at the beginning of the next line
                             if (WrapText && newEndSel == EndSelection && newEndSel < LineOffset[3 * (endSelLineIndex + 1) + 1])
                             {
-                                newEndSel++; // vzdy by melo byt < LineOffset[3 * (endSelLineIndex + 1) + 1]
+                                newEndSel++; // should always be < LineOffset[3 * (endSelLineIndex + 1) + 1]
                                 maxRow++;
                             }
                             EndSelection = newEndSel;
 
                             if (!GetXFromOffsetInText(&curX, EndSelection, endSelLineIndex + 1))
-                                return 0; // curX=0/1 (zac. radky)
+                                return 0; // curX = 0/1 (start of the line)
                             if (endSelLineIndex + 1 == Height / CharHeight)
-                            {                            // presli jsme na radek, ktery je jen castecne viditelny, je nutne odrolovat view o radek dolu
-                                BOOL fullRedraw = FALSE; // OriginX muze byt > 0/1, protoze nemusi jit o wrap rezim, pak je potreba posun OriginX a full-redraw
+                            {                            // moved to a line that is only partially visible; we must scroll the view down by one line
+                                BOOL fullRedraw = FALSE; // OriginX may be > 0/1 because it might not be wrap mode; then we need to shift OriginX and redraw everything
                                 EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw, -1, TRUE);
                                 if (fullRedraw)
                                     InvalidateRect(HWindow, NULL, FALSE);
                                 else
                                     InvalidateRows(minRow, maxRow, FALSE);
                                 if (!ScrollViewLineDown(fullRedraw))
-                                    UpdateWindow(HWindow); // neocekavane
-                                updateView = FALSE;        // mame prekresleno, znovu neni potreba
+                                    UpdateWindow(HWindow); // unexpected
+                                updateView = FALSE;        // already repainted, no need to do it again
                             }
                         }
                         else
-                            skipCmd = TRUE; // dalsi radek neexistuje = jsme na konci souboru, dal to nepujde
+                            skipCmd = TRUE; // no next line exists = we are at the end of the file, cannot go further
                     }
                     break;
                 }
@@ -2359,7 +2360,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case CM_EXTSEL_UP:
                 case CM_EXTSEL_DOWN:
                 {
-                    if (EndSelectionPrefX == -1) // nemam preferovanou x-ovou souradnici, inicializuji na souradnici konce bloku
+                    if (EndSelectionPrefX == -1) // no preferred X coordinate yet; initialize it to the block end
                     {
                         if (!GetXFromOffsetInText(&EndSelectionPrefX, EndSelection, endSelLineIndex))
                             return 0;
@@ -2375,45 +2376,45 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             EndSelection = curOff;
                             minRow--;
                         }
-                        else // je nutne odrolovat view o radek nahoru
+                        else // we must scroll the view up by one line
                         {
                             BOOL scrolled;
                             __int64 firstLineEndOff;
                             __int64 firstLineCharLen;
                             if (!ScrollViewLineUp(-1, &scrolled, FALSE, &firstLineEndOff, &firstLineCharLen))
                                 return 0;
-                            if (scrolled) // mame odrolovano, neprekresleno, prvni radka je od SeekY do firstLineEndOff
+                            if (scrolled) // scrolled without repainting; the first line spans SeekY to firstLineEndOff
                             {
-                                if (firstLineEndOff != -1 &&  // -1 = nezname offset konce prvni radky (hrozi pri zmene souboru)
-                                    firstLineCharLen != -1 && // -1 = nezname delku prvni radky ve znacich
-                                    SeekY <= firstLineEndOff) // jen tak pro sychr
+                                if (firstLineEndOff != -1 &&  // -1 = unknown offset of the first line's end (can happen when the file changes)
+                                    firstLineCharLen != -1 && // -1 = unknown length of the first line in characters
+                                    SeekY <= firstLineEndOff) // just to be safe
                                 {
                                     if (!GetOffsetFromXInText(&curX, &curOff, EndSelectionPrefX, -1, SeekY, firstLineCharLen,
                                                               firstLineEndOff))
                                         return 0;
                                     EndSelection = curOff;
-                                    // aby tento radek jen neodroloval, ale prekreslil se (zmena oznaceni)
+                                    // to ensure this line is not only scrolled but also repainted (selection changes)
                                     InvalidateRows(minRow, maxRow, FALSE);
                                 }
 
-                                BOOL fullRedraw = FALSE; // zajistime viditelnost nove pozice konce bloku
+                                BOOL fullRedraw = FALSE; // ensure the new end-of-block position is visible
                                 if (curX != -1)
                                     EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw, firstLineCharLen);
                                 if (fullRedraw)
                                     InvalidateRect(HWindow, NULL, FALSE);
                                 else
-                                    ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); //odscrollujeme okno
+                                    ::ScrollWindow(HWindow, 0, CharHeight, NULL, NULL); // scroll the window
                                 UpdateWindow(HWindow);
-                                updateView = FALSE; // mame prekresleno, znovu neni potreba
+                                updateView = FALSE; // already repainted, no need to do it again
                             }
                             else
-                                skipCmd = TRUE; // predchozi radek neexistuje, jsme asi na zacatku souboru
+                                skipCmd = TRUE; // the previous line does not exist; we are probably at the beginning of the file
                         }
                     }
                     else // CM_EXTSEL_DOWN
                     {
-                        // LineOffset vzdy obsahuje radek pod poslednim plne viditelnym (i kdyz z nej neni nic videt),
-                        // ale prirozene jen pokud radek v souboru existuje
+                        // LineOffset always contains the line below the last fully visible one (even if none of it is visible),
+                        // provided that line actually exists in the file
                         if (endSelLineIndex + 1 < LineOffset.Count / 3)
                         {
                             if (!GetOffsetFromXInText(&curX, &curOff, EndSelectionPrefX, endSelLineIndex + 1))
@@ -2422,7 +2423,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             maxRow++;
 
                             if (endSelLineIndex + 1 == Height / CharHeight)
-                            { // presli jsme na radek, ktery je jen castecne viditelny, je nutne odrolovat view o radek dolu
+                            { // moved to a line that is only partially visible; we must scroll the view down by one line
                                 BOOL fullRedraw = FALSE;
                                 EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw, -1, TRUE);
                                 if (fullRedraw)
@@ -2430,12 +2431,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 else
                                     InvalidateRows(minRow, maxRow, FALSE);
                                 if (!ScrollViewLineDown(fullRedraw))
-                                    UpdateWindow(HWindow); // neocekavane
-                                updateView = FALSE;        // mame prekresleno, znovu neni potreba
+                                    UpdateWindow(HWindow); // unexpected
+                                updateView = FALSE;        // already repainted, no need to do it again
                             }
                         }
                         else
-                            skipCmd = TRUE; // dalsi radek neexistuje = jsme na konci souboru, dal to nepujde
+                            skipCmd = TRUE; // no next line exists = we are at the end of the file, cannot go further
                     }
                     break;
                 }
@@ -2448,15 +2449,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     BOOL fullRedraw = FALSE;
                     if (curX != -1)
-                        EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw); // zajistime viditelnost nove pozice konce bloku
+                        EnsureXVisibleInView(curX, EndSelection > StartSelection, fullRedraw); // ensure the new end-of-block position is visible
                     if (fullRedraw)
                     {
                         InvalidateRect(HWindow, NULL, FALSE);
                         UpdateWindow(HWindow);
                     }
                     else
-                        InvalidateRows(minRow, maxRow); // napocitam obdelnik, ktery je treba prekreslit
-                    updateView = FALSE;                 // nemeni se SeekY, proto staci jen invalidate, prekresleni celeho view si odpustime
+                        InvalidateRows(minRow, maxRow); // calculate the rectangle that needs to be repainted
+                    updateView = FALSE;                 // SeekY does not change, so an invalidate is enough; skip repainting the entire view
                 }
 
                 if (oldEndSel != EndSelection)
@@ -2484,7 +2485,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (updateView)
                 {
                     InvalidateRect(HWindow, NULL, FALSE);
-                    UpdateWindow(HWindow); // aby se napocitalo ViewSize pro dalsi PageDown
+                    UpdateWindow(HWindow); // so that ViewSize is calculated for the next PageDown
                 }
             }
             else
@@ -2516,7 +2517,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             __int64 selStart = 0;
             __int64 seek = off;
-            BOOL breakOnCR = FALSE; // pro dohledani '\r' od '\r\n' konce radku
+            BOOL breakOnCR = FALSE; // to locate the '\r' in a '\r\n' line ending
             while (seek > 0)
             {
                 __int64 len = min(APROX_LINE_LEN, seek);
@@ -2527,19 +2528,19 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
                 if (len == 0)
-                    return 0; // chyba
+                    return 0; // error
                 unsigned char* s = Buffer + (seek - Seek - 1);
                 unsigned char* end = s - len;
 
-                if (!wholeLine) // hledame zacatek slova
+                if (!wholeLine) // looking for the beginning of a word
                 {
                     while (s > end && (IsCharAlphaNumeric(*s) || *s == '_'))
                         s--;
                 }
-                else // hledame zacatek radky
+                else // looking for the beginning of a line
                 {
                     if (breakOnCR && s > end && *s == '\r')
-                        s++; // aby naslo konec '\r\n' a ne konec '\r'
+                        s++; // so it finds the end '\r\n' and not just '\r'
                     else
                     {
                         breakOnCR = FALSE;
@@ -2559,7 +2560,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                             break; // '\r\n'
                                     }
                                     else
-                                        breakOnCR = TRUE; // pri pristim pruchodu otestujeme, jestli bude '\r' pred timto '\n'
+                                        breakOnCR = TRUE; // on the next pass test whether '\r' precedes this '\n'
                                 }
                             }
                             if (Configuration.EOL_NULL && *s == 0)
@@ -2578,7 +2579,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             __int64 selEnd = FileSize;
             seek = off;
-            BOOL breakOnLF = FALSE; // pro dohledani '\n' od '\r\n' konce radku
+            BOOL breakOnLF = FALSE; // to locate the '\n' in a '\r\n' line ending
             while (seek < FileSize)
             {
                 __int64 len = Prepare(NULL, seek, APROX_LINE_LEN, fatalErr);
@@ -2588,31 +2589,31 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
                 if (len == 0)
-                    return 0; // chyba
+                    return 0; // error
                 unsigned char* s = Buffer + (seek - Seek);
                 unsigned char* end = s + len;
 
-                if (!wholeLine) // hledame konec slova
+                if (!wholeLine) // looking for the end of a word
                 {
                     while (s < end && (IsCharAlphaNumeric(*s) || *s == '_'))
                         s++;
                 }
-                else // hledame konec radky
+                else // looking for the end of a line
                 {
                     if (breakOnLF)
                     {
                         if (s < end && *s == '\n')
                         {
-                            s++; // aby naslo konec '\r\n'
+                            s++; // so it finds the end '\r\n'
                             selEnd = seek + len - (end - s);
-                            break; // konec hledani
+                            break; // end the search
                         }
                         else
                         {
                             if (Configuration.EOL_CR)
-                                ; // kdyz uz nevysel '\r\n', bereme aspon '\r' (nedelame nic)
+                                ; // if '\r\n' failed, at least keep '\r' (do nothing)
                             else
-                                breakOnLF = FALSE; // nevyslo ani '\r\n' ani '\r', pokracujeme ve cteni...
+                                breakOnLF = FALSE; // neither '\r\n' nor '\r' worked, continue reading...
                         }
                     }
 
@@ -2623,8 +2624,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         {
                             if (Configuration.EOL_LF && *s == '\n')
                             {
-                                s++;        // aby naslo konec '\n'
-                                eol = TRUE; // ukoncit hledani
+                                s++;        // so it finds the end '\n'
+                                eol = TRUE; // terminate the search
                                 break;      // '\n'
                             }
                             if (*s == '\r')
@@ -2636,14 +2637,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     {
                                         if (*(s + 1) == '\n')
                                         {
-                                            s += 2;     // aby naslo konec '\r\n'
-                                            eol = TRUE; // ukoncit hledani
+                                            s += 2;     // so it finds the end '\r\n'
+                                            eol = TRUE; // terminate the search
                                             break;      // '\r\n'
                                         }
                                     }
                                     else
                                     {
-                                        breakOnLF = TRUE; // pri pristim pruchodu otestujeme, jestli bude '\n' za timto '\r'
+                                        breakOnLF = TRUE; // on the next pass test whether '\n' follows this '\r'
                                         testCR = FALSE;
                                     }
                                 }
@@ -2651,16 +2652,16 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 {
                                     if (Configuration.EOL_CR)
                                     {
-                                        s++;        // aby naslo konec '\r'
-                                        eol = TRUE; // ukoncit hledani
+                                        s++;        // so it finds the end '\r'
+                                        eol = TRUE; // terminate the search
                                         break;      // '\r'
                                     }
                                 }
                             }
                             if (Configuration.EOL_NULL && *s == 0)
                             {
-                                s++;        // aby naslo konec '\0'
-                                eol = TRUE; // ukoncit hledani
+                                s++;        // so it finds the end '\0'
+                                eol = TRUE; // terminate the search
                                 break;      // '\0'
                             }
                             s++;
@@ -2668,14 +2669,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (eol)
                         {
                             selEnd = seek + len - (end - s);
-                            break; // konec hledani
+                            break; // end the search
                         }
                     }
                 }
                 if (s != end)
                 {
                     selEnd = seek + len - (end - s);
-                    break; // konec hledani
+                    break; // end the search
                 }
                 seek += len;
             }
@@ -2709,15 +2710,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 !fatalErr)
         {
             if (!shiftPressed &&
-                StartSelection != EndSelection &&                 // je nejaky blok
-                (off >= StartSelection || off >= EndSelection) && // [x,y] uvnitr bloku
+                StartSelection != EndSelection &&                 // there is a block
+                (off >= StartSelection || off >= EndSelection) && // [x,y] is inside the block
                 (off < StartSelection || off < EndSelection) &&
-                (Type != vtHex || // zacatek bloku v hex rezimu jen pokud je [x,y] na hex. cislici
+                (Type != vtHex || // start of the block in hex mode only if [x,y] is on a hex digit
                  (off != StartSelection && off != EndSelection) || onHexNum))
             {
                 BOOL msgBoxDisplayed;
                 if (CheckSelectionIsNotTooBig(HWindow, &msgBoxDisplayed) &&
-                    !msgBoxDisplayed) // po zobrazeni dotazu uz nemuzu rozjet D&D (user uz asi ani nedrzi levy tlacitko mysi)
+                    !msgBoxDisplayed) // after the prompt is shown we cannot start D&D (the user likely no longer holds the left mouse button)
                 {
                     POINT p1;
                     GetCursorPos(&p1);
@@ -2761,14 +2762,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (shiftPressed && StartSelection != -1 ||
                     GetOffset((short)LOWORD(lParam), (short)HIWORD(lParam), off, fatalErr) && !fatalErr)
-                { // musime zjistit pozici zacatku/konce tazeni - leftMost musi byt FALSE
+                { // we must determine the position of the drag start/end - leftMost must be FALSE
                     SetCapture(HWindow);
                     MouseDrag = TRUE;
                     SelectionIsFindResult = FALSE;
                     ChangingSelWithShiftKey = FALSE;
-                    if (shiftPressed && StartSelection != -1) // zmena konce bloku (Shift+klik)
+                    if (shiftPressed && StartSelection != -1) // changing the block end (Shift+click)
                     {
-                        EndSelectionRow = -1; // zatim neni platny a nebudeme hledat, kde konci soucasny blok
+                        EndSelectionRow = -1; // currently invalid; do not look for the end of the current block
                         PostMouseMove();
                     }
                     else
@@ -2894,9 +2895,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (y < 0)
                     y = 0;
             }
-            // jr: drive byla podminka if (x < 0) { x = 0; ...}, ale lidi nam nahlasili chybu, ze pokud je okno
-            // vieweru maximalizovane, nejsou schopni rolovat vlevo; protoze mame vlevo prazdny pruh (text neni
-            // uplne nalepeny), muzeme si dovolit rolovat pro x < BORDER_WIDTH
+            // jr: previously the condition was if (x < 0) { x = 0; ...}, but users reported that with the viewer window maximized
+            // they could not scroll to the left; because we have an empty strip on the left (the text is not glued to the edge)
+            // we can allow scrolling for x < BORDER_WIDTH
             if (x < BORDER_WIDTH)
             {
                 x = BORDER_WIDTH;
@@ -2914,29 +2915,29 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (EndSelection != off)
                 {
-                    // zavedena optimalizce: detekujeme zmenenou oblast pri tazeni bloku
-                    // a nechame prekreslit pouze tento obdelnik
-                    BOOL optimalize = TRUE; // budeme prekreslovat jen vybrane radky?
+                    // optimization introduced: detect the changed area while dragging the block
+                    // and repaint only that rectangle
+                    BOOL optimalize = TRUE; // should we repaint only the selected rows?
                     RECT r;
                     int endSelectionRow = 0;
                     endSelectionRow = (int)(min(Height, y) / CharHeight);
                     int minRow = min(endSelectionRow, EndSelectionRow);
                     int maxRow = max(endSelectionRow, EndSelectionRow);
-                    // ve wrap rezimu neni mezi zacatkem a koncem wrapnute radky rozdil v offsetu, takze blok
-                    // koncici na zacatku radky za wrapem radky je nakresleny tak, ze konci na konci predchozi
-                    // radky (chybi black-end vpravo), pri protazeni konce bloku dale musime prekreslit
-                    // predchozi radku, aby se ji dokreslil black-end (prekresluje zbytecne predchozi radek
-                    // mimo popsane situace, to nas ale netrapi, presna detekce situace je zbytecne slozita)
+                    // in wrap mode there is no offset difference between the beginning and end of a wrapped line, so a block
+                    // ending at the start of the line after the wrap is drawn as ending at the end of the previous line
+                    // (the black-end on the right is missing); when extending the block further we must repaint the previous line
+                    // so the black-end is drawn (this redraws the previous line unnecessarily outside the described case,
+                    // but we do not care, precise detection would be unnecessarily complex)
                     if (WrapText && StartSelection < EndSelection && off > EndSelection && minRow > 0)
                         minRow--;
-                    // aby se pri zkracovani bloku po najeti na levy kraj view (zacatek radky za wrapem radky)
-                    // prekreslil konec predchozi radky (smazal se mu black-end)
+                    // when shortening the block after reaching the left edge of the view (start of the line after wrapping)
+                    // repaint the end of the previous line (its black-end was erased)
                     if (WrapText && StartSelection < EndSelection && off < EndSelection &&
                         (x - BORDER_WIDTH + CharWidth / 2) / CharWidth <= Configuration.TabSize / 2 && minRow > 0)
                     {
                         minRow--;
                     }
-                    // napocitam obdelnik, ktery je treba prekreslit
+                    // compute the rectangle that needs to be repainted
                     r.left = 0;
                     r.top = minRow * CharHeight;
                     r.right = Width;
@@ -2946,7 +2947,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     EndSelectionRow = endSelectionRow;
 
                     EndSelection = off;
-                    // SelectionIsFindResult = FALSE;  // zbytecne, nastavuje se pri zacatku tazeni bloku (i pokracovani pres Shift+klik)
+                    // SelectionIsFindResult = FALSE;  // unnecessary, it is set when starting to drag the block (even when continuing via Shift+click)
                     InvalidateRect(HWindow, optimalize ? &r : NULL, FALSE);
                 }
             }
@@ -2993,14 +2994,14 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEHWHEEL:
     {
-        // poznamka: zaroven je volano z WM_USER_MOUSEWHEEL pri drzeni Shift
+        // note: also invoked from WM_USER_MOUSEWHEEL while holding Shift
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseHWheelAccumulator > 0) || (zDelta > 0 && MouseHWheelAccumulator < 0))
-            ResetMouseWheelAccumulator(); // pri zmene smeru naklapeni kolecka je potreba nulovat akumulator
+            ResetMouseWheelAccumulator(); // when the wheel tilt direction changes we must reset the accumulator
 
         DWORD wheelScroll = GetMouseWheelScrollChars();
         DWORD pageWidth = max(1, (DWORD)(Width - BORDER_WIDTH) / CharWidth);
-        wheelScroll = max(1, min(wheelScroll, pageWidth - 1)); // omezime maximalne na delku stranky
+        wheelScroll = max(1, min(wheelScroll, pageWidth - 1)); // limit it to at most the page width
 
         MouseHWheelAccumulator += 1000 * zDelta;
         int stepsPerChar = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
@@ -3073,8 +3074,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                       fileName, &noMoreFiles,
                                                       &srcBusy, NULL);
 
-                    prevFile = ok || srcBusy;                     // jen pokud existuje nejaky predchazejici soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
-                    firstLastFile = ok || srcBusy || noMoreFiles; // skok na prvni nebo posledni soubor jde jen pokud neni prerusena vazba se zdrojem (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                    prevFile = ok || srcBusy;                     // only if a previous file exists (or Salamander is busy, then the user must try again later)
+                    firstLastFile = ok || srcBusy || noMoreFiles; // jumping to the first or last file works only if the source link is intact (or Salamander is busy, then the user must try again later)
                     if (firstLastFile)
                     {
                         enumFileNamesLastFileIndex = EnumFileNamesLastFileIndex;
@@ -3088,7 +3089,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         {
                             ok = IsFileNameForViewerSelected(EnumFileNamesSourceUID, enumFileNamesLastFileIndex,
                                                              fileName, &isSrcFileSel, &srcBusy);
-                            prevSelFile = ok && isSrcFileSel || srcBusy; // jen pokud je predchazejici soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                            prevSelFile = ok && isSrcFileSel || srcBusy; // only if the previous file is actually selected (or Salamander is busy, then the user must try again later)
                         }
 
                         enumFileNamesLastFileIndex = EnumFileNamesLastFileIndex;
@@ -3097,7 +3098,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                       FileName, FALSE, TRUE,
                                                       fileName, &noMoreFiles,
                                                       &srcBusy, NULL);
-                        nextFile = ok || srcBusy; // jen pokud existuje nejaky dalsi soubor (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                        nextFile = ok || srcBusy; // only if another file exists (or Salamander is busy, then the user must try again later)
 
                         enumFileNamesLastFileIndex = EnumFileNamesLastFileIndex;
                         ok = GetNextFileNameForViewer(EnumFileNamesSourceUID,
@@ -3110,7 +3111,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         {
                             ok = IsFileNameForViewerSelected(EnumFileNamesSourceUID, enumFileNamesLastFileIndex,
                                                              fileName, &isSrcFileSel, &srcBusy);
-                            nextSelFile = ok && isSrcFileSel || srcBusy; // jen pokud je dalsi soubor opravdu selected (nebo je Salam busy, to nezbyva nez to usera nechat zkusit pozdeji)
+                            nextSelFile = ok && isSrcFileSel || srcBusy; // only if the next file is actually selected (or Salamander is busy, then the user must try again later)
                         }
                     }
 
@@ -3158,18 +3159,18 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (subMenu != NULL)
             {
                 BOOL firstTime = GetMenuItemCount(subMenu) == 0;
-                // pri prvnim volani bude menu naplneno a pri vsech volanich
-                // bude radiak nastaven na CodeType
+                // on the first call the menu is populated and on every call
+                // the radio item is set to CodeType
                 CodeTables.InitMenu(subMenu, CodeType);
 
                 if (CodePageAutoSelect)
                 {
-                    // pri auto-select neni zadna z polozek default
+                    // with auto-select no item is default
                     SetMenuDefaultItem(subMenu, -1, FALSE);
                 }
                 else
                 {
-                    // pokud neni auto-select, musi byt nektera polozka default
+                    // if auto-select is off, one item must be the default
                     int defCodeType;
                     CodeTables.GetCodeType(DefaultConvert, defCodeType);
                     SetMenuDefaultItem(subMenu, CM_CODING_MIN + defCodeType, FALSE);
@@ -3177,15 +3178,15 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (firstTime)
                 {
-                    // pripojime nase prikazy
+                    // append our commands
                     int count = GetMenuItemCount(subMenu);
 
                     MENUITEMINFO mi;
                     memset(&mi, 0, sizeof(mi));
                     mi.cbSize = sizeof(mi);
 
-                    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenuItem() dole...
+                    /* used by the script export_mnu.py that generates salmenu.mnu for Translator
+   keep in sync with the InsertMenuItem() calls below...
 MENU_TEMPLATE_ITEM ViewerCodingMenu[] = 
 {
   {MNTT_PB, 0
@@ -3197,7 +3198,7 @@ MENU_TEMPLATE_ITEM ViewerCodingMenu[] =
 };
 */
 
-                    // uplne nahoru Recognize a separator
+                    // Recognize at the very top of the submenu and follow it with a separator
                     mi.fMask = MIIM_TYPE | MIIM_ID;
                     mi.fType = MFT_STRING;
                     mi.wID = CM_RECOGNIZE_CODEPAGE;
@@ -3210,10 +3211,10 @@ MENU_TEMPLATE_ITEM ViewerCodingMenu[] =
                     InsertMenuItem(subMenu, 1, TRUE, &mi);
                     count++;
 
-                    // dolu separator
+                    // append another separator at the end of the submenu
                     InsertMenuItem(subMenu, count++, TRUE, &mi);
 
-                    // a prikazy
+                    // now append the rest of the commands
                     mi.fMask = MIIM_TYPE | MIIM_ID;
                     mi.fType = MFT_STRING;
 
@@ -3252,7 +3253,7 @@ MENU_TEMPLATE_ITEM ViewerCodingMenu[] =
         {
         case VK_SHIFT:
             ChangingSelWithShiftKey = FALSE;
-            break; // stisk druheho Shift behem zmeny oznaceni pres Shift+sipky/Home/End neocekavame, kdyz k nemu dojde, rusi nam plany (nedojde ke zkopirovani oznaceni do schranky), ale na to kaslu...
+            break; // we do not expect the second Shift to be pressed while adjusting selection with Shift+arrows/Home/End; if it happens it ruins our plans (the selection is not copied to the clipboard), but never mind...
 
         case VK_UP:
         {

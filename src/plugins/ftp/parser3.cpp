@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -8,60 +9,60 @@
 // CFTPAutodetCondLexAn
 //
 
-// lexikalni symboly pro preklad autodetekcni podminky
+// lexical symbols for translating the autodetection condition
 enum CFTPAutodetCondLexElement
 {
-    lexNone,             // neinicializovano
-    lexEOS,              // byl dosazen konec retezce
-    lexUnknown,          // neznamy symbol
+    lexNone,             // not initialized
+    lexEOS,              // end of string reached
+    lexUnknown,          // unknown symbol
     lexLogOr,            // OR
     lexLogAnd,           // AND
     lexLogNegation,      // NOT
     lexLeftParenthesis,  // (
     lexRightParenthesis, // )
-    lexFunction,         // funkce vcetne jednoho parametru v zavorkach
+    lexFunction,         // function including one parameter in parentheses
 };
 
 class CFTPAutodetCondLexAn
 {
 protected:
-    const char* CondBeg;    // zacatek textu autodetekcni podminky
-    const char* CondEnd;    // konec textu autodetekcni podminky
-    const char* Cond;       // pozice zacatku aktualniho symbolu v textu autodetekcni podminky
-    const char* CondSymEnd; // pozice konce aktualniho symbolu v textu autodetekcni podminky (NULL = neznamy)
+    const char* CondBeg;    // beginning of the autodetection condition text
+    const char* CondEnd;    // end of the autodetection condition text
+    const char* Cond;       // start position of the current symbol in the autodetection condition text
+    const char* CondSymEnd; // end position of the current symbol in the autodetection condition text (NULL = unknown)
 
-    CFTPAutodetCondLexElement ActElem; // aktualni symbol (lexNone = je teprve nutne symbol najit)
+    CFTPAutodetCondLexElement ActElem; // current symbol (lexNone = it is still necessary to find the symbol)
 
-    int* ErrorResID; // neni-li NULL, uklada se sem id retezce v resourcech, ktery popisuje chybu
-    BOOL* LowMem;    // neni-li NULL, uklada se sem TRUE pri chybe zpusobene nedostatkem pameti
-    char* ErrBuf;    // buffer o velikosti ErrBufSize pro textovy popis chyby (prioritnejsi nez ErrorResID)
-    int ErrBufSize;  // velikost bufferu ErrBuf (0 = NULLovy buffer)
+    int* ErrorResID; // if not NULL, stores the id of the string in resources that describes the error
+    BOOL* LowMem;    // if not NULL, stores TRUE for an error caused by lack of memory
+    char* ErrBuf;    // buffer of size ErrBufSize for the textual description of the error (higher priority than ErrorResID)
+    int ErrBufSize;  // size of the ErrBuf buffer (0 = NULL buffer)
 
-    CFTPAutodetCondFunction ActFunction; // data funkce (jen je-li aktualni symbol lexFunction)
-    void* ActFuncAlgorithm;              // bud (CSalamanderBMSearchData *) a nebo (CSalamanderREGEXPSearchData *)
+    CFTPAutodetCondFunction ActFunction; // function data (only if the current symbol is lexFunction)
+    void* ActFuncAlgorithm;              // either (CSalamanderBMSearchData*) or (CSalamanderREGEXPSearchData*)
 
 public:
     CFTPAutodetCondLexAn(const char* cond, const char* condEnd, int* errorResID, BOOL* lowMem,
                          char* errBuf, int errBufSize);
     ~CFTPAutodetCondLexAn() { ReleaseActFuncAlgorithm(); }
 
-    // uvolni a vyNULLuje ActFuncAlgorithm
+    // release ActFuncAlgorithm and set it to NULL
     void ReleaseActFuncAlgorithm();
 
-    // vraci kod aktualniho lexikalniho elementu
+    // return the code of the current lexical element
     CFTPAutodetCondLexElement GetActualElement();
 
-    // preskoci jeden lexikalni element
+    // skip one lexical element
     void Match();
 
-    // vraci data pro funkci; aktualni symbol musi byt lexFunction a muze se
-    // volat jen jednou pro kazdy symbol funkce
+    // return data for the function; the current symbol must be lexFunction and it can be
+    // called only once for each function symbol
     void GiveFunctionData(CFTPAutodetCondFunction& function, void*& algorithm);
 
-    // vraci pozici aktualniho symbolu v textu
+    // return the position of the current symbol in the text
     int GetActualSymPos() { return (int)(Cond - CondBeg); }
 
-    // pomocne chybove parametry (nastavuji "globalni" promenne)
+    // auxiliary error parameters (they set the "global" variables)
     void SetErrorResID(int errorResID)
     {
         if (ErrorResID != NULL && *ErrorResID == -1 &&
@@ -177,7 +178,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                         "reg_exp_in_syst",
                         "reg_exp_in_welcome",
                     };
-                    // celkovy pocet funkci (AKTUALIZOVAT !!! + rovnat s CFTPAutodetCondFunction + doplnit i functionCodes)
+                    // total number of functions (UPDATE !!! + keep in sync with CFTPAutodetCondFunction + also update functionCodes)
                     static const int count = 4;
                     static CFTPAutodetCondFunction functionCodes[] = {
                         acfSyst_contains,
@@ -198,7 +199,7 @@ CFTPAutodetCondLexAn::GetActualElement()
 
                     if (funcType != acfNone)
                     {
-                        // jdeme hledat parametr funkce
+                        // search for the function parameter
                         while (s < end && *s <= ' ')
                             s++;
                         if (s < end && *s == '(')
@@ -210,18 +211,18 @@ CFTPAutodetCondLexAn::GetActualElement()
                             {
                                 s++;
                                 const char* strBeg = s;
-                                int esc = 0; // pocet escape sekvenci
+                                int esc = 0; // number of escape sequences
                                 BOOL strEndFound = FALSE;
                                 while (s < end)
                                 {
-                                    if (*s == '"') // konec retezce
+                                    if (*s == '"') // end of string
                                     {
                                         strEndFound = TRUE;
                                         break;
                                     }
                                     if (*s == '\r' || *s == '\n')
-                                        break;                     // retezec nemuze obsahovat primo EOL (pouzite escape sekvence '\r' a '\n')
-                                    if (*s == '\\' && s + 1 < end) // escape sekvence
+                                        break;                     // the string cannot contain EOL directly (use escape sequences '\r' and '\n')
+                                    if (*s == '\\' && s + 1 < end) // escape sequence
                                     {
                                         s++;
                                         esc++;
@@ -235,7 +236,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                     }
                                     s++;
                                 }
-                                if (strEndFound) // string je OK
+                                if (strEndFound) // string is OK
                                 {
                                     const char* orgStrBeg = strBeg;
                                     char* str = (char*)malloc((s - strBeg) - esc + 1);
@@ -274,7 +275,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                             }
                                         }
                                         *t = 0;
-                                        s++; // preskocime koncovou '"' retezce
+                                        s++; // skip the closing '"' of the string
 
                                         while (s < end && *s <= ' ')
                                             s++;
@@ -282,7 +283,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                         {
                                             Cond = beg;
                                             CondSymEnd = s + 1;
-                                            if (str[0] == 0) // prazdny vzorek = always true
+                                            if (str[0] == 0) // empty pattern = always true
                                             {
                                                 free(str);
                                                 ActFunction = acfAlwaysTrue;
@@ -302,7 +303,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                                     if (!((CSalamanderBMSearchData*)ActFuncAlgorithm)->IsGood())
                                                     {
                                                         SalamanderGeneral->FreeSalamanderBMSearchData((CSalamanderBMSearchData*)ActFuncAlgorithm);
-                                                        ActFuncAlgorithm = NULL; // ohlasime low memory
+                                                        ActFuncAlgorithm = NULL; // report low memory
                                                     }
                                                 }
                                                 break;
@@ -327,7 +328,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                                         }
                                                         SalamanderGeneral->FreeSalamanderREGEXPSearchData((CSalamanderREGEXPSearchData*)ActFuncAlgorithm);
                                                         ActFuncAlgorithm = NULL;
-                                                        setLowMemErr = FALSE; // chyba uz je nastavena
+                                                        setLowMemErr = FALSE; // the error is already set
                                                     }
                                                 }
                                                 break;
@@ -336,7 +337,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                             default:
                                             {
                                                 TRACE_E("Unknown function in CFTPAutodetCondLexAn::GetActualElement()!");
-                                                ActFuncAlgorithm = NULL; // koncime s "low memory"
+                                                ActFuncAlgorithm = NULL; // we end with "low memory"
                                             }
                                             }
                                             free(str);
@@ -418,9 +419,9 @@ void CFTPAutodetCondLexAn::GiveFunctionData(CFTPAutodetCondFunction& function, v
 {
     if (ActElem == lexFunction && ActFunction != acfNone)
     {
-        function = ActFunction; // data funkce (jen je-li aktualni symbol lexFunction)
+        function = ActFunction; // function data (only if the current symbol is lexFunction)
         algorithm = ActFuncAlgorithm;
-        ActFunction = acfNone; // odted jiz data nejsou nase
+        ActFunction = acfNone; // from now on the data are no longer ours
         ActFuncAlgorithm = NULL;
     }
     else
@@ -457,10 +458,10 @@ CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int*
         errBuf[0] = 0;
 
     CFTPAutodetCondLexAn lexAn(cond, cond + strlen(cond), errorResID, lowMem, errBuf, errBufSize);
-    if (lexAn.GetActualElement() != lexEOS) // neprazdna podminka -> jdeme prekladat
+    if (lexAn.GetActualElement() != lexEOS) // non-empty condition -> start parsing
     {
         CFTPAutodetCondNode* node = FTP_AC_ExpOr(lexAn);
-        if (node != NULL && lexAn.GetActualElement() != lexEOS) // pokud neni prelozeny cely string, jde o chybu (pravidlo "empty" z gramatiky je "vybalene" na tomto miste)
+        if (node != NULL && lexAn.GetActualElement() != lexEOS) // if the entire string is not parsed, it is an error (the "empty" rule from the grammar is "unpacked" here)
         {
             lexAn.SetErrorResID(IDS_STPAR_ERR_UNEXPSYM);
             delete node;
@@ -470,7 +471,7 @@ CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int*
             *errorPos = lexAn.GetActualSymPos();
         return node;
     }
-    else // prazdna podminka -> always true
+    else // empty condition -> always true
     {
         CFTPAutodetCondNode* node = new CFTPAutodetCondNode;
         if (node != NULL)
@@ -490,12 +491,12 @@ CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int*
 
 //
 // ****************************************************************************
-// funkce pro kompilaci autodetekcni podminky
+// functions for compiling the autodetection condition
 //
 
-// alokuje novy uzel pro operator; 'type' muze byt jen 'acntOr' nebo 'acntAnd';
-// 'left'+'right' jsou operandy; vraci alokovany uzel; pri nedostatku pameti
-// dealokuje 'left' a 'right' a vraci NULL
+// allocates a new node for an operator; 'type' can only be 'acntOr' or 'acntAnd';
+// 'left'+'right' are operands; returns the allocated node; on lack of memory
+// deallocates 'left' and 'right' and returns NULL
 CFTPAutodetCondNode* CreateNewACOperNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodetCondNodeType type,
                                          CFTPAutodetCondNode* left, CFTPAutodetCondNode* right)
 {
@@ -516,8 +517,8 @@ CFTPAutodetCondNode* CreateNewACOperNode(CFTPAutodetCondLexAn& lexAn, CFTPAutode
     return node;
 }
 
-// alokuje novy uzel pro negaci; 'operand' je operand negace; vraci alokovany
-// uzel; pri nedostatku pameti dealokuje 'operand' a vraci NULL
+// allocates a new node for negation; 'operand' is the operand of negation; returns the allocated
+// node; on lack of memory deallocates 'operand' and returns NULL
 CFTPAutodetCondNode* CreateNewACNotNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodetCondNode* operand)
 {
     CFTPAutodetCondNode* node = new CFTPAutodetCondNode;
@@ -534,8 +535,8 @@ CFTPAutodetCondNode* CreateNewACNotNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodet
     return node;
 }
 
-// alokuje novy uzel pro funkci nactenou z 'lexAn'; vraci alokovany uzel nebo
-// NULL pri nedostatku pameti
+// allocates a new node for a function loaded from 'lexAn'; returns the allocated node or
+// NULL when memory is insufficient
 CFTPAutodetCondNode* CreateNewACFuncNode(CFTPAutodetCondLexAn& lexAn)
 {
     CFTPAutodetCondNode* node = new CFTPAutodetCondNode;
@@ -554,7 +555,7 @@ CFTPAutodetCondNode* FTP_AC_ExpOr(CFTPAutodetCondLexAn& lexAn)
 {
     CFTPAutodetCondNode* left = FTP_AC_ExpAnd(lexAn);
     if (left == NULL)
-        return NULL; // chyba, koncime
+        return NULL; // error, abort
     return FTP_AC_ExpOrRest(left, lexAn);
 }
 
@@ -569,7 +570,7 @@ CFTPAutodetCondNode* FTP_AC_ExpOrRest(CFTPAutodetCondNode* left, CFTPAutodetCond
         if (right == NULL)
         {
             delete left;
-            return NULL; // chyba, koncime
+            return NULL; // error, abort
         }
         return CreateNewACOperNode(lexAn, acntOr, left, right);
     }
@@ -591,7 +592,7 @@ CFTPAutodetCondNode* FTP_AC_ExpAnd(CFTPAutodetCondLexAn& lexAn)
 {
     CFTPAutodetCondNode* left = FTP_AC_ExpNot(lexAn);
     if (left == NULL)
-        return NULL; // chyba, koncime
+        return NULL; // error, abort
     return FTP_AC_ExpAndRest(left, lexAn);
 }
 
@@ -606,7 +607,7 @@ CFTPAutodetCondNode* FTP_AC_ExpAndRest(CFTPAutodetCondNode* left, CFTPAutodetCon
         if (right == NULL)
         {
             delete left;
-            return NULL; // chyba, koncime
+            return NULL; // error, abort
         }
         return CreateNewACOperNode(lexAn, acntAnd, left, right);
     }
@@ -634,7 +635,7 @@ CFTPAutodetCondNode* FTP_AC_ExpNot(CFTPAutodetCondLexAn& lexAn)
         lexAn.Match();
         CFTPAutodetCondNode* operand = FTP_AC_Term(lexAn);
         if (operand == NULL)
-            return NULL; // chyba, koncime
+            return NULL; // error, abort
         return CreateNewACNotNode(lexAn, operand);
     }
 
@@ -666,7 +667,7 @@ CFTPAutodetCondNode* FTP_AC_Term(CFTPAutodetCondLexAn& lexAn)
         lexAn.Match();
         CFTPAutodetCondNode* node = FTP_AC_ExpOr(lexAn);
         if (node == NULL)
-            return NULL; // chyba, koncime
+            return NULL; // error, abort
         if (lexAn.GetActualElement() == lexRightParenthesis)
             lexAn.Match();
         else // unexpected symbol
@@ -808,7 +809,7 @@ BOOL CFTPAutodetCondNode::Evaluate(const char* welcomeReply, int welcomeReplyLen
         else
         {
             if (Function == acfAlwaysTrue)
-                return TRUE; // hledani prazdneho vzorku = always true
+                return TRUE; // searching an empty pattern = always true
             else
                 TRACE_E("Unknown function without algorithm in CFTPAutodetCondNode::Evaluate()!");
         }

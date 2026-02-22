@@ -27,7 +27,7 @@
 #include "tserver.rh"
 #include "tserver.rh2"
 
-// pro owner draw listbox
+// for the owner-drawn list box
 #define LEFT_MARGIN 5
 #define RIGHT_MARGIN 6
 
@@ -359,7 +359,7 @@ void CTabList::SetCount(int count)
 {
     BOOL scrollToLatest = ConfigData.ScrollToLatestMessage;
     BOOL focusLatest = FALSE;
-    if (!scrollToLatest) // pokud scroll neni zaply naporad, budeme scrollovat jen je-li kurzor na posledni polozce
+    if (!scrollToLatest) // if scrolling is not permanently enabled, scroll only when the cursor is on the last item
     {
         int curSelect = ListView_GetNextItem(HListView, -1, LVIS_SELECTED);
         int lvCount = ListView_GetItemCount(HListView);
@@ -372,7 +372,7 @@ void CTabList::SetCount(int count)
 
     ListView_SetItemCountEx(HListView,
                             count,
-                            /*(count > 0 ? LVSICF_NOINVALIDATEALL : 0) |*/ //p.s.: pri dosazeni limitniho poctu messages dojde k prepisu (pri posunu) dat a nedojde k prekresleni
+                            /*(count > 0 ? LVSICF_NOINVALIDATEALL : 0) |*/ // P.S.: when the message limit is reached, data are overwritten (during the shift) and no repaint occurs
                             LVSICF_NOSCROLL);
     if (count == 0)
     {
@@ -395,7 +395,7 @@ void CTabList::BuildHeader()
 {
     LV_COLUMN lvc;
 
-    // odstranim stare sloupce
+    // remove old columns
     while (ListView_DeleteColumn(HListView, 0) == TRUE)
         ;
 
@@ -403,7 +403,7 @@ void CTabList::BuildHeader()
     int index = 0;
     CounterColumnIndex = -1;
     MessageColumnIndex = -1;
-    for (int i = 0; i < HEADER_ITEMS; i++) // vytvorim sloupce
+    for (int i = 0; i < HEADER_ITEMS; i++) // create columns
     {
         if (*(&(ConfigData.ViewColumnVisible_Type) + i))
         {
@@ -456,7 +456,7 @@ void CTabList::GetCounterRect()
 void CTabList::GetHeaderWidths()
 {
     int index = 0;
-    for (int i = 0; i < HEADER_ITEMS; i++) // vytvorim sloupce
+    for (int i = 0; i < HEADER_ITEMS; i++) // iterate over the columns
     {
         if (*(&(ConfigData.ViewColumnVisible_Type) + i))
         {
@@ -570,17 +570,17 @@ void CTabList::GetText(int iItem, int index, WCHAR* buff, int buffMax, BOOL pref
         break;
     }
 
-    case 12: // pozor na osetreni DBLCLK, je vazano na konstantu 12!
+    case 12: // beware: the DBLCLK handling is tied to constant 12!
     {
         const WCHAR* s = Data.Messages[iItem].Message;
-        if (preferEndOfText) // chceme vratit konec textu (napr. do tooltipu)
+        if (preferEndOfText) // we want to return the end of the text (e.g., for a tooltip)
         {
             int len = wcslen(s);
             if (len + 1 > buffMax)
             {
                 s += len - (buffMax - 1);
                 if (IS_LOW_SURROGATE(*s))
-                    s++; // UTF-16 muze obsahovat surrogate pairs, pripadny 2. znak paru preskocime (at text nezaciname v druhe pulce znaku)
+                    s++; // UTF-16 can contain surrogate pairs; skip the second code unit so the text does not start in the middle of a character
             }
         }
         lstrcpyn(buff, s, buffMax);
@@ -643,7 +643,7 @@ CTabList::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         RECT r;
         GetClientRect(HWindow, &r);
-        // umistim listvie
+        // position the list view
         if (HListView != NULL)
             SetWindowPos(HListView, NULL, 0, 0, r.right, r.bottom, SWP_NOMOVE);
         break;
@@ -785,11 +785,11 @@ CTabList::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (cd->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
                 {
-                    // pozadame si o zaslani notifikace CDDS_ITEMPREPAINT | CDDS_SUBITEM
+                    // request the CDDS_ITEMPREPAINT | CDDS_SUBITEM notification
                     return CDRF_NOTIFYSUBITEMDRAW;
                 }
 
-                // ERRORS vykreslime cervene
+                // draw ERRORS in red
                 if (cd->nmcd.dwDrawStage == (CDDS_ITEMPREPAINT | CDDS_SUBITEM))
                 {
                     int index = cd->nmcd.dwItemSpec;

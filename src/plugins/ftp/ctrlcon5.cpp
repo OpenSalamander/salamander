@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -26,7 +27,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
     BOOL usePassiveModeAux = UsePassiveMode;
-    int logUID = LogUID; // UID logu teto connectiony
+    int logUID = LogUID; // log UID of this connection
     char errBuf[900 + FTP_MAX_PATH];
     char hostBuf[HOST_MAX_SIZE];
     char userBuffer[USER_MAX_SIZE];
@@ -35,11 +36,11 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
     unsigned short portBuf = Port;
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-    int lockedFileUID; // UID zamceneho souboru (v FTPOpenedFiles) - soubor zamykame pro download
+    int lockedFileUID; // UID of the locked file (in FTPOpenedFiles) - we lock the file for download
     if (FTPOpenedFiles.OpenFile(userBuffer, hostBuf, portBuf, workPath,
                                 GetFTPServerPathType(workPath),
                                 fileName, &lockedFileUID, ffatRead))
-    { // soubor na serveru jeste neni otevreny, muzeme s nim pracovat, alokujeme objekt pro "data connection"
+    { // the file on the server is not open yet, we can work with it, allocate an object for the "data connection"
         HANDLES(EnterCriticalSection(&SocketCritSect));
         CFTPProxyForDataCon* dataConProxyServer = ProxyServer == NULL ? NULL : ProxyServer->AllocProxyForDataCon(ServerIP, Host, HostIP, Port);
         BOOL dataConProxyServerOK = ProxyServer == NULL || dataConProxyServer != NULL;
@@ -49,7 +50,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
         if (dataConnection == NULL || !dataConnection->IsGood())
         {
             if (dataConnection != NULL)
-                DeleteSocket(dataConnection); // bude se jen dealokovat
+                DeleteSocket(dataConnection); // it will only be deallocated
             else
             {
                 if (dataConProxyServer != NULL)
@@ -68,16 +69,16 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
             BOOL reconnected = FALSE;
             char replyBuf[700];
             BOOL setStartTimeIfConnected = TRUE;
-            BOOL sslErrReconnect = FALSE;     // TRUE = reconnect kvuli chybam SSL
-            BOOL fastSSLErrReconnect = FALSE; // TRUE = jde o zmenu certifikatu serveru, zadouci je okamzity reconnect (bez 20 vterin cekani)
+            BOOL sslErrReconnect = FALSE;     // TRUE = reconnect because of SSL errors
+            BOOL fastSSLErrReconnect = FALSE; // TRUE = server certificate changed, an immediate reconnect is desirable (without 20 seconds of waiting)
             while (ReconnectIfNeeded(notInPanel, panel == PANEL_LEFT, parent,
                                      userBuf, userBufSize, &reconnected,
                                      setStartTimeIfConnected, totalAttemptNum,
                                      retryMsgAux, NULL,
                                      sslErrReconnect ? IDS_DOWNLOADONEFILEERROR : -1,
-                                     fastSSLErrReconnect)) // bude-li potreba, reconnectneme se
+                                     fastSSLErrReconnect)) // if needed, we reconnect
             {
-                if (pCertificate) // certifikat control-connectiony se mohl zmenit, predame pripadny novy do data-connectiony
+                if (pCertificate) // the control connection certificate may have changed; pass any new one to the data connection
                     dataConnection->SetCertificate(pCertificate);
                 sslErrReconnect = FALSE;
                 fastSSLErrReconnect = FALSE;
@@ -85,31 +86,31 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                 BOOL run = FALSE;
                 BOOL ok = TRUE;
                 char newPath[FTP_MAX_PATH];
-                BOOL needChangeDir = reconnected; // po reconnectu zkusime opet nastavit pracovni adresar
-                if (!reconnected)                 // jsme jiz dele pripojeni, zkontrolujeme jestli pracovni adresar odpovida 'workPath'
+                BOOL needChangeDir = reconnected; // after a reconnect we try to set the working directory again
+                if (!reconnected)                 // we have been connected for a while, check whether the working directory matches 'workPath'
                 {
-                    // vyuzijeme cache, v normalnich pripadech by tam cesta mela byt
+                    // use the cache; in normal cases the path should be there
                     ok = GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE, &canRetry, retryMsgBuf, 300);
-                    if (!ok && canRetry) // "retry" je povolen
+                    if (!ok && canRetry) // "retry" is allowed
                     {
                         run = TRUE;
                         retryMsgAux = retryMsgBuf;
                     }
-                    if (ok && strcmp(newPath, workPath) != 0) // nesedi pracovni adresar na serveru - nutna zmena
-                        needChangeDir = TRUE;                 // (predpoklad: server vraci stale stejny retezec pracovni cesty)
+                    if (ok && strcmp(newPath, workPath) != 0) // the working directory on the server differs - change required
+                        needChangeDir = TRUE;                 // (assumption: the server always returns the same working path string)
                 }
-                if (ok && needChangeDir) // je-li potreba zmenit pracovni adresar
+                if (ok && needChangeDir) // if we need to change the working directory
                 {
                     BOOL success;
-                    // v SendChangeWorkingPath() je pri vypadku spojeni ReconnectIfNeeded(), nastesti to
-                    // nevadi, protoze kod predchazejici tomuto volani se provadi jen pokud k reconnectu
-                    // nedojde - "if (!reconnected)" - pokud dojde k reconnectu, jsou oba kody stejne
+                    // SendChangeWorkingPath() contains ReconnectIfNeeded() when the connection drops; luckily that
+                    // does not matter, because the code preceding this call runs only if no reconnect happened
+                    // - "if (!reconnected)" - if a reconnect occurs, both code paths are identical
                     ok = SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT, parent, workPath,
                                                userBuf, userBufSize, &success,
                                                replyBuf, 700, NULL,
                                                totalAttemptNum, NULL, TRUE, NULL);
-                    if (ok && !success && workPath[0] != 0) // send se povedl, ale server hlasi nejakou chybu (+ignorujeme chybu pri prazdne ceste) -> soubor nelze
-                    {                                       // downloadnout (je na akt. ceste v panelu)
+                    if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+                    {                                       // downloaded (it is on the current path in the panel)
                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                         SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                          MB_OK | MB_ICONEXCLAMATION);
@@ -118,10 +119,10 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                 }
 
                 ReuseSSLSessionFailed = FALSE;
-                if (ok && usePassiveModeAux) // pasivni rezim (PASV)
+                if (ok && usePassiveModeAux) // passive mode (PASV)
                 {
                     PrepareFTPCommand(cmdBuf, 50 + FTP_MAX_PATH, logBuf, 50 + FTP_MAX_PATH,
-                                      ftpcmdPassive, NULL); // nemuze selhat
+                                      ftpcmdPassive, NULL); // cannot fail
                     int ftpReplyCode;
                     if (SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
                                        &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, &canRetry,
@@ -129,25 +130,25 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     {
                         DWORD ip;
                         unsigned short port;
-                        if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS &&      // uspech (melo by byt 227)
-                            FTPGetIPAndPortFromReply(replyBuf, -1, &ip, &port)) // podarilo se ziskat IP+port
+                        if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS &&      // success (should be 227)
+                            FTPGetIPAndPortFromReply(replyBuf, -1, &ip, &port)) // successfully obtained IP+port
                         {
                             dataConnection->SetPassive(ip, port, logUID);
-                            dataConnection->PassiveConnect(NULL); // prvni pokus, vysledek nas nezajima (testuje se pozdeji)
+                            dataConnection->PassiveConnect(NULL); // first attempt; the result does not matter (checked later)
                         }
-                        else // pasivni rezim neni podporovan
+                        else // passive mode is not supported
                         {
                             HANDLES(EnterCriticalSection(&SocketCritSect));
-                            UsePassiveMode = usePassiveModeAux = FALSE; // zkusime to jeste v normalnim rezimu (PORT)
+                            UsePassiveMode = usePassiveModeAux = FALSE; // we will try again in the active mode (PORT)
                             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
                             Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGPASVNOTSUPPORTED), -1);
                         }
                     }
-                    else // chyba -> zavrena connectiona
+                    else // error -> connection closed
                     {
                         ok = FALSE;
-                        if (canRetry) // "retry" je povolen
+                        if (canRetry) // "retry" is allowed
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
@@ -155,10 +156,10 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     }
                 }
 
-                if (ok && !usePassiveModeAux) // normalni rezim (PORT)
+                if (ok && !usePassiveModeAux) // active mode (PORT)
                 {
                     DWORD localIP;
-                    GetLocalIP(&localIP, NULL);   // snad ani nemuze vratit chybu
+                    GetLocalIP(&localIP, NULL);   // this should not be able to return an error
                     unsigned short localPort = 0; // listen on any port
                     dataConnection->SetActive(logUID);
                     if (OpenForListeningAndWaitForRes(parent, dataConnection, &localIP, &localPort, &canRetry,
@@ -166,24 +167,24 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                                       errBuf, 900 + FTP_MAX_PATH))
                     {
                         PrepareFTPCommand(cmdBuf, 50 + FTP_MAX_PATH, logBuf, 50 + FTP_MAX_PATH,
-                                          ftpcmdSetPort, NULL, localIP, localPort); // nemuze selhat
+                                          ftpcmdSetPort, NULL, localIP, localPort); // cannot fail
                         int ftpReplyCode;
                         if (!SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
                                             &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, &canRetry,
-                                            retryMsgBuf, 300, NULL)) // odpoved serveru ignorujeme, chyba se objevi dale (timeout pri listovani)
-                        {                                            // chyba -> zavrena connectiona
+                                            retryMsgBuf, 300, NULL)) // ignore the server reply; the error shows later (timeout when listing)
+                        {                                            // error -> connection closed
                             ok = FALSE;
-                            if (canRetry) // "retry" je povolen
+                            if (canRetry) // "retry" is allowed
                             {
                                 run = TRUE;
                                 retryMsgAux = retryMsgBuf;
                             }
                         }
                     }
-                    else // nepodarilo se otevrit "listen" socket pro prijem datoveho spojeni ze serveru ->
-                    {    // zavrena connectiona (aby se dalo pouzit standardni Retry)
+                    else // failed to open the "listen" socket for accepting the data connection from the server ->
+                    {    // connection closed (so the standard Retry can be used)
                         ok = FALSE;
-                        if (canRetry) // "retry" je povolen, jdeme na dalsi reconnect
+                        if (canRetry) // "retry" is allowed, proceed to the next reconnect
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
@@ -191,13 +192,13 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     }
                 }
 
-                if (ok) // jsme-li jeste pripojeni, zmenime rezim prenosu podle 'asciiMode' (uspesnost ignorujeme)
+                if (ok) // if we are still connected, change the transfer mode according to 'asciiMode' (ignore success)
                 {
                     if (!SetCurrentTransferMode(parent, asciiMode, NULL, NULL, 0, FALSE, &canRetry,
                                                 retryMsgBuf, 300))
-                    { // chyba -> zavrena connectiona
+                    { // error -> connection closed
                         ok = FALSE;
-                        if (canRetry) // "retry" je povolen
+                        if (canRetry) // "retry" is allowed
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
@@ -207,11 +208,11 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
 
                 if (ok)
                 {
-                    // nastavime jmeno ciloveho souboru do data-connectiony, flush dat se bude provadet
-                    // do tohoto souboru (vzdy dojde k jeho prepisu, zadny resume zde delat nebudeme)
+                    // set the target file name in the data connection; data flushes will be performed
+                    // into this file (it is always overwritten, we will not do any resume here)
                     dataConnection->SetDirectFlushParams(tgtFileName, asciiMode ? ctrmASCII : ctrmBinary);
 
-                    if (fileSizeInBytes != CQuadWord(-1, -1)) // je-li znama velikost souboru v bytech, nastavime ji
+                    if (fileSizeInBytes != CQuadWord(-1, -1)) // if the file size in bytes is known, set it
                         dataConnection->SetDataTotalSize(fileSizeInBytes);
 
                     int ftpReplyCode;
@@ -223,7 +224,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
                     PrepareFTPCommand(cmdBuf, 50 + FTP_MAX_PATH, logBuf, 50 + FTP_MAX_PATH,
-                                      ftpcmdRetrieveFile, NULL, fileName); // nemuze nahlasit chybu
+                                      ftpcmdRetrieveFile, NULL, fileName); // cannot report an error
                     BOOL fileIncomplete = TRUE;
                     BOOL tgtFileError = FALSE;
                     userIface.InitWnd(fileName, hostBuf, workPath, pathType);
@@ -232,8 +233,8 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                                      retryMsgBuf, 300, &userIface);
                     int asciiTrForBinFileHowToSolve = 0;
                     if (dataConnection->IsAsciiTrForBinFileProblem(&asciiTrForBinFileHowToSolve))
-                    {                                         // byl detekovan problem "ascii transfer mode for binary file"
-                        if (asciiTrForBinFileHowToSolve == 0) // mame se zeptat uzivatele
+                    {                                         // the "ascii transfer mode for binary file" problem was detected
+                        if (asciiTrForBinFileHowToSolve == 0) // we should ask the user
                         {
                             INT_PTR res = CViewErrAsciiTrForBinFileDlg(parent).Execute();
                             if (res == IDOK)
@@ -246,50 +247,50 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                     asciiTrForBinFileHowToSolve = 2;
                             }
                             dataConnection->SetAsciiTrModeForBinFileHowToSolve(asciiTrForBinFileHowToSolve);
-                            // nechame prekreslit hlavni okno
+                            // repaint the main window
                             UpdateWindow(SalamanderGeneral->GetMainWindowHWND());
                         }
-                        if (asciiTrForBinFileHowToSolve == 1) // downloadnout znovu v binary rezimu
+                        if (asciiTrForBinFileHowToSolve == 1) // download again in binary mode
                         {
-                            // pockame si na zavreni souboru v diskcache, jinak nepujde soubor smazat
-                            dataConnection->WaitForFileClose(5000); // max. 5 sekund
+                            // wait for the file to close in the disk cache; otherwise the file cannot be deleted
+                            dataConnection->WaitForFileClose(5000); // max. 5 seconds
 
                             SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL);
                             DeleteFile(tgtFileName);
-                            asciiMode = FALSE; // downloadnout znovu v binary rezimu
+                            asciiMode = FALSE; // download again in binary mode
 
-                            ok = FALSE; // zopakujeme download
+                            ok = FALSE; // repeat the download
                             run = TRUE;
                             retryMsgAux = NULL;
                             setStartTimeIfConnected = FALSE;
                         }
                         else
                         {
-                            if (asciiTrForBinFileHowToSolve == 2) // prerusit download souboru (cancel)
+                            if (asciiTrForBinFileHowToSolve == 2) // cancel the file download
                             {
-                                // pockame si na zavreni souboru v diskcache, jinak nepujde soubor smazat
-                                dataConnection->WaitForFileClose(5000); // max. 5 sekund
+                                // wait for the file to close in the disk cache; otherwise the file cannot be deleted
+                                dataConnection->WaitForFileClose(5000); // max. 5 seconds
 
                                 SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL);
                                 DeleteFile(tgtFileName);
-                                ok = FALSE; // zadnou hlasku vypisovat nebudeme, user jiz cancel potvrdil
+                                ok = FALSE; // do not show any message; the user already confirmed the cancel
                             }
                         }
                     }
                     else
                         asciiTrForBinFileHowToSolve = 3;
-                    if (asciiTrForBinFileHowToSolve == 3) // problem "ascii transfer mode for binary file" nenastal nebo ma byt ignorovan
+                    if (asciiTrForBinFileHowToSolve == 3) // the "ascii transfer mode for binary file" problem did not occur or should be ignored
                     {
                         if (sendCmdRes)
                         {
-                            if (userIface.WasAborted()) // uzivatel download abortoval - koncime s chybou (nekompletnim souborem)
-                                ok = FALSE;             // zadnou hlasku vypisovat nebudeme, user potvrdil dotaz pri abortu
+                            if (userIface.WasAborted()) // user aborted the download - end with an error (incomplete file)
+                                ok = FALSE;             // do not display any message; the user confirmed the prompt during the abort
                             else
                             {
-                                if (FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS || // server hlasi chybu downloadu
-                                    userIface.HadError() ||                        // datova connectiona zaznamenala chybu hlasenou systemem
-                                    //dataConnection->GetDecomprMissingStreamEnd() || // bohuzel tenhle test je nepruchozi, napr. Serv-U 7 a 8 proste stream neukoncuje // pokud jsou data komprimovana (MODE Z), musime dostat kompletni data stream, jinak jde o chybu
-                                    userIface.GetDatConCancelled()) // datova connectiona byla prerusena (bud nedoslo k otevreni nebo zavreni po chybe hlasene serverem v odpovedi na RETR)
+                                if (FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS || // server reports a download error
+                                    userIface.HadError() ||                        // the data connection recorded an error reported by the system
+                                    //dataConnection->GetDecomprMissingStreamEnd() || // unfortunately this test is not viable; e.g. Serv-U 7 and 8 simply do not terminate the stream // if the data are compressed (MODE Z), we must receive the complete data stream, otherwise it is an error
+                                    userIface.GetDatConCancelled()) // the data connection was interrupted (either it was not opened or it was closed after an error reported by the server in the reply to RETR)
                                 {
                                     ok = FALSE;
 
@@ -305,9 +306,9 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                                         FTP_DIGIT_1(ftpReplyCode) == FTP_D1_ERROR);
                                     if (sslErrorOccured == SSLCONERR_UNVERIFIEDCERT || sslErrorOccured == SSLCONERR_CANRETRY ||
                                         sslReuseErr)
-                                    {                                                                       // potrebujeme provest reconnect
-                                        CloseControlConnection(parent);                                     // zavreme soucasnou control connectionu
-                                        lstrcpyn(retryMsgBuf, LoadStr(IDS_ERRDATACONSSLCONNECTERROR), 300); // nastavime text chyby pro reconnect wait okenko
+                                    {                                                                       // we need to reconnect
+                                        CloseControlConnection(parent);                                     // close the current control connection
+                                        lstrcpyn(retryMsgBuf, LoadStr(IDS_ERRDATACONSSLCONNECTERROR), 300); // set the error text for the reconnect wait dialog
                                         retryMsgAux = retryMsgBuf;
                                         sslErrReconnect = TRUE;
                                         run = TRUE;
@@ -315,15 +316,15 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                     }
                                     else
                                     {
-                                        // vypiseme hlasku "Unable to download file from server"
+                                        // display the message "Unable to download file from server"
                                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_DOWNLOADFILEERROR), fileName, workPath);
                                         int len = (int)strlen(errBuf);
                                         BOOL isNetErr = TRUE;
-                                        int useSuffixResID = IDS_DOWNLOADFILEERRORSUFIX2; // server reply:  (prefix pro hlasku v 'replyBuf')
+                                        int useSuffixResID = IDS_DOWNLOADFILEERRORSUFIX2; // server reply:  (prefix for the message in 'replyBuf')
                                         if (tgtFileErr != NO_ERROR || FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS ||
                                             noDataTrTimeout || sslErrorOccured != SSLCONERR_NOERROR ||
                                             decomprErrorOccured /*|| decomprMissingStreamEnd*/)
-                                        {                                                 // pokud nemame popis chyby ze serveru, spokojime se se systemovym popisem
+                                        {                                                 // if we do not have an error description from the server, settle for the system description
                                             useSuffixResID = IDS_DOWNLOADFILEERRORSUFIX1; // error:
                                             isNetErr = sslErrorOccured != SSLCONERR_NOERROR || netErr != NO_ERROR ||
                                                        tgtFileErr == NO_ERROR || decomprErrorOccured /*|| decomprMissingStreamEnd*/;
@@ -370,15 +371,15 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                     }
                                 }
                                 else
-                                    fileIncomplete = FALSE; // vse OK, download se povedl
+                                    fileIncomplete = FALSE; // everything OK, download succeeded
                             }
                         }
-                        else // zavrena connectiona
+                        else // connection closed
                         {
-                            if (userIface.WasAborted()) // uzivatel download abortoval - cimz se terminovala connectiona (dela napr. sunsolve.sun.com (Sun Unix) nebo ftp.chg.ru) - koncime s chybou (nekompletnim listingem)
+                            if (userIface.WasAborted()) // the user aborted the download, which terminated the connection (e.g. sunsolve.sun.com (Sun Unix) or ftp.chg.ru) - end with an error (incomplete listing)
                             {
-                                ok = FALSE;   // hlasku "file can be incomplete" vypisovat nebudeme, user byl varovan pri abortu
-                                if (canRetry) // prevezmeme hlaseni do messageboxu, ktery oznami preruseni spojeni
+                                ok = FALSE;   // do not show the "file can be incomplete" message; the user was warned during the abort
+                                if (canRetry) // adopt the message for the message box that reports the connection interruption
                                 {
                                     HANDLES(EnterCriticalSection(&SocketCritSect));
                                     if (ConnectionLostMsg != NULL)
@@ -389,9 +390,9 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                             }
                             else
                             {
-                                // chyba -> 'ok' zustava FALSE, jdeme na dalsi reconnect
+                                // error -> 'ok' stays FALSE, proceed to the next reconnect
                                 ok = FALSE;
-                                if (canRetry) // "retry" je povolen
+                                if (canRetry) // "retry" is allowed
                                 {
                                     run = TRUE;
                                     retryMsgAux = retryMsgBuf;
@@ -399,28 +400,28 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                             }
                         }
 
-                        // pockame si na zavreni souboru v diskcache, jinak nepujde soubor smazat a
-                        // nemusi ho ani otevrit viewery (bez SHARE_WRITE nejde otevrit)
-                        dataConnection->WaitForFileClose(5000); // max. 5 sekund
+                        // wait for the file to close in the disk cache; otherwise it cannot be deleted and
+                        // viewers might not open it either (without SHARE_WRITE it cannot be opened)
+                        dataConnection->WaitForFileClose(5000); // max. 5 seconds
 
-                        if (run) // jdeme na dalsi pokus, pro jistotu vycistime cilovy soubor (mohl se vytvorit pred chybou/prerusenim)
-                        {        // nejsme v zadne kriticke sekci, takze i kdyz se diskova operace na cas zakousne, nic se nedeje
+                        if (run) // go for another attempt; clean the target file just in case (it may have been created before the error/interruption)
+                        {        // we are not in any critical section, so even if the disk operation stalls for a while, nothing happens
                             SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL);
                             DeleteFile(tgtFileName);
                         }
-                        else // koncime download
+                        else // finish the download
                         {
-                            dataConnection->GetTgtFileState(newFileCreated, newFileSize); // zjistime jestli soubor existuje + jak je veliky
-                            *newFileIncomplete = fileIncomplete;                          // ulozime tez jestli je soubor kompletni
-                            if (!*newFileCreated &&                                       // prazdne soubory data-connectiona neumi vytvorit (vytvari soubor jen tesne pred zapisem), musime je tedy vytvorit zde
-                                !fileIncomplete &&                                        // nejde jen o chybu pri ziskavani souboru
-                                !tgtFileError)                                            // jen pokus nedoslo k nejake chybe ciloveho souboru (at k ni nedojde podruhe zde)
+                            dataConnection->GetTgtFileState(newFileCreated, newFileSize); // find out whether the file exists + its size
+                            *newFileIncomplete = fileIncomplete;                          // also store whether the file is complete
+                            if (!*newFileCreated &&                                       // the data connection cannot create empty files (it creates the file only just before writing), so we must do it here
+                                !fileIncomplete &&                                        // this is not merely an error when obtaining the file
+                                !tgtFileError)                                            // just in case no target file error occurred (to avoid it happening again here)
                             {
                                 if (*newFileSize != CQuadWord(0, 0))
                                     TRACE_E("CControlConnectionSocket::DownloadOneFile(): unexpected situation: file was not created, but its size is not null!");
 
-                                // nejsme v zadne kriticke sekci, takze i kdyz se diskova operace na cas zakousne, nic se nedeje
-                                SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL); // aby sel prepsat i read-only soubor
+                                // we are not in any critical section, so even if the disk operation stalls for a while, nothing happens
+                                SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL); // so a read-only file can be overwritten
                                 HANDLE file = HANDLES_Q(CreateFile(tgtFileName, GENERIC_WRITE,
                                                                    FILE_SHARE_READ, NULL,
                                                                    CREATE_ALWAYS,
@@ -435,7 +436,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                 {
                                     DWORD err = GetLastError();
 
-                                    // vypiseme hlasku "Unable to download file from server"
+                                    // display the message "Unable to download file from server"
                                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_DOWNLOADFILEERROR), fileName, workPath);
                                     int len = (int)strlen(errBuf);
                                     if (err != NO_ERROR)
@@ -452,21 +453,21 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     }
                 }
 
-                if (dataConnection->IsConnected())       // pripadne zavreme "data connection", system se pokusi o "graceful"
-                    dataConnection->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
+                if (dataConnection->IsConnected())       // close the "data connection" if needed; the system attempts a "graceful"
+                    dataConnection->CloseSocketEx(NULL); // shutdown (we do not learn the result)
 
                 if (!run)
                     break;
             }
 
-            // uvolnime "data connection"
+            // release the "data connection"
             DeleteSocket(dataConnection);
         }
         FTPOpenedFiles.CloseFile(lockedFileUID);
     }
     else
     {
-        // vypiseme hlasku "Unable to download file from server - file is locked by another operation"
+        // display the message "Unable to download file from server - file is locked by another operation"
         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_DOWNLOADFILEERROR), fileName, workPath);
         int len = (int)strlen(errBuf);
         _snprintf_s(errBuf + len, 900 + FTP_MAX_PATH - len, _TRUNCATE, LoadStr(IDS_DOWNLOADFILEERRORSUFIX4));
@@ -500,37 +501,37 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
     while (ReconnectIfNeeded(notInPanel, panel == PANEL_LEFT, parent,
                              userBuf, userBufSize, &reconnected,
                              setStartTimeIfConnected, totalAttemptNum,
-                             retryMsgAux, NULL, -1, FALSE)) // bude-li potreba, reconnectneme se
+                             retryMsgAux, NULL, -1, FALSE)) // if needed, we reconnect
     {
         setStartTimeIfConnected = TRUE;
         BOOL run = FALSE;
         BOOL ok = TRUE;
         char newPath[FTP_MAX_PATH];
-        BOOL needChangeDir = reconnected; // po reconnectu zkusime opet nastavit pracovni adresar
-        if (!reconnected)                 // jsme jiz dele pripojeni, zkontrolujeme jestli pracovni adresar odpovida 'workPath'
+        BOOL needChangeDir = reconnected; // after a reconnect we try to set the working directory again
+        if (!reconnected)                 // we have been connected for a while, check whether the working directory matches 'workPath'
         {
-            // vyuzijeme cache, v normalnich pripadech by tam cesta mela byt
+            // use the cache; in normal cases the path should be there
             ok = GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE, &canRetry, retryMsgBuf, 300);
-            if (!ok && canRetry) // "retry" je povolen
+            if (!ok && canRetry) // "retry" is allowed
             {
                 run = TRUE;
                 retryMsgAux = retryMsgBuf;
             }
-            if (ok && strcmp(newPath, workPath) != 0) // nesedi pracovni adresar na serveru - nutna zmena
-                needChangeDir = TRUE;                 // (predpoklad: server vraci stale stejny retezec pracovni cesty)
+            if (ok && strcmp(newPath, workPath) != 0) // the working directory on the server differs - change required
+                needChangeDir = TRUE;                 // (assumption: the server always returns the same working path string)
         }
-        if (ok && needChangeDir) // je-li potreba zmenit pracovni adresar
+        if (ok && needChangeDir) // if we need to change the working directory
         {
             BOOL success;
-            // v SendChangeWorkingPath() je pri vypadku spojeni ReconnectIfNeeded(), nastesti to
-            // nevadi, protoze kod predchazejici tomuto volani se provadi jen pokud k reconnectu
-            // nedojde - "if (!reconnected)" - pokud dojde k reconnectu, jsou oba kody stejne
+            // SendChangeWorkingPath() contains ReconnectIfNeeded() when the connection drops; luckily that
+            // does not matter, because the code preceding this call runs only if no reconnect happened
+            // - "if (!reconnected)" - if a reconnect occurs, both code paths are identical
             ok = SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT, parent, workPath,
                                        userBuf, userBufSize, &success,
                                        replyBuf, 700, NULL,
                                        totalAttemptNum, NULL, TRUE, NULL);
-            if (ok && !success && workPath[0] != 0) // send se povedl, ale server hlasi nejakou chybu (+ignorujeme chybu pri prazdne ceste) -> soubor nelze
-            {                                       // downloadnout (je na akt. ceste v panelu)
+            if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+            {                                       // downloaded (it is on the current path in the panel)
                 _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                 SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
@@ -540,9 +541,9 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
 
         if (ok)
         {
-            // vytvorime pozadovany adresar
+            // create the requested directory
             PrepareFTPCommand(cmdBuf, 50 + 2 * MAX_PATH, logBuf, 50 + 2 * MAX_PATH,
-                              ftpcmdCreateDir, NULL, newName); // nemuze selhat
+                              ftpcmdCreateDir, NULL, newName); // cannot fail
             BOOL refreshWorkingPath = TRUE;
             int ftpReplyCode;
             if (SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
@@ -550,7 +551,7 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                                retryMsgBuf, 300, NULL))
             {
                 retSuccess = FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS;
-                if (retSuccess && workPath[0] != 0) // pokud se adresar(e) vytvoril(y), zmenime listing(y) (pokud FTP prikaz nevraci uspech, predpokladame zjednodusene, ze zadny adresar proste nebyl vytvoren - na VMS lze tvorit vic adresaru najednou, asi muze dojit pouze k castecnemu vytvoreni, to ale neresime)
+                if (retSuccess && workPath[0] != 0) // if the directory/directories were created, adjust the listing(s) (if the FTP command does not report success, we simply assume no directory was created - on VMS multiple directories can be created at once; partial creation might occur, but we do not handle that)
                 {
                     HANDLES(EnterCriticalSection(&SocketCritSect));
                     lstrcpyn(hostBuf, Host, HOST_MAX_SIZE);
@@ -560,10 +561,10 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                     UploadListingCache.ReportCreateDirs(hostBuf, userBuffer, portBuf, workPath,
                                                         GetFTPServerPathType(workPath), newName, FALSE);
                 }
-                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // vraci se uspech (melo by byt 257)
+                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // success is returned (should be 257)
                     FTPGetDirectoryFromReply(replyBuf, (int)strlen(replyBuf), newPath, FTP_MAX_PATH))
-                {                   // prave byl vytvoren adresar 'newPath'
-                    newName[0] = 0; // zatim se zadny focus po refreshi nekona
+                {                   // directory 'newPath' has just been created
+                    newName[0] = 0; // no focus after refresh yet
                     CFTPServerPathType pathType = GetFTPServerPathType(newPath);
                     char cutDir[FTP_MAX_PATH];
                     if (pathType != ftpsptUnknown &&
@@ -575,16 +576,16 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                             refreshWorkingPath = FALSE;
                         }
                         if (FTPIsTheSameServerPath(pathType, newPath, workPath))
-                            lstrcpyn(newName, cutDir, 2 * MAX_PATH); // jmeno adresare pro focus po refreshi
+                            lstrcpyn(newName, cutDir, 2 * MAX_PATH); // directory name for focus after the refresh
                     }
-                    else // nejspis server vraci v odpovedi "257" relativni jmeno adresare (napr. warftpd)
+                    else // probably the server returns a relative directory name in reply "257" (e.g. warftpd)
                     {
-                        lstrcpyn(newName, newPath, 2 * MAX_PATH); // jmeno adresare pro focus po refreshi
+                        lstrcpyn(newName, newPath, 2 * MAX_PATH); // directory name for focus after the refresh
                     }
                 }
-                else // chyba (i neocekavany format odpovedi "257")
+                else // error (including unexpected format of reply "257")
                 {
-                    if (!retSuccess) // pri uspesne odpovedi nebudeme vypisovat error hlasku
+                    if (!retSuccess) // do not display an error message for a successful reply
                     {
                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CREATEDIRERROR), newName, replyBuf);
                         SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
@@ -592,9 +593,9 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                     }
                 }
             }
-            else // chyba -> zavrena connectiona
+            else // error -> connection closed
             {
-                if (workPath[0] != 0) // nevime, jestli se adresar(e) vytvoril(y), zneplatnime listing(y)
+                if (workPath[0] != 0) // we do not know whether the directory/directories were created; invalidate the listing(s)
                 {
                     HANDLES(EnterCriticalSection(&SocketCritSect));
                     lstrcpyn(hostBuf, Host, HOST_MAX_SIZE);
@@ -604,7 +605,7 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                     UploadListingCache.ReportCreateDirs(hostBuf, userBuffer, portBuf, workPath,
                                                         GetFTPServerPathType(workPath), newName, TRUE);
                 }
-                if (canRetry) // "retry" je povolen
+                if (canRetry) // "retry" is allowed
                 {
                     run = TRUE;
                     retryMsgAux = retryMsgBuf;
@@ -633,7 +634,7 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
     if (strcmp(fromName, newName) == 0)
     {
         newName[0] = 0;
-        return TRUE; // neni co delat, nedochazi ke zmene jmena
+        return TRUE; // nothing to do; the name does not change
     }
 
     char fromNameBuf[MAX_PATH + 10];
@@ -657,14 +658,14 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
     BOOL tgtLocked = FALSE;
     char errBuf[900 + FTP_MAX_PATH];
     CFTPServerPathType pathType = GetFTPServerPathType(workPath);
-    int lockedFromFileUID; // UID zamceneho souboru (v FTPOpenedFiles) - soubor zamykame pro prejmenovani
+    int lockedFromFileUID; // UID of the locked file (in FTPOpenedFiles) - we lock the file for renaming
     if (isDir || FTPOpenedFiles.OpenFile(userBuffer, hostBuf, portBuf, workPath, pathType,
                                          fromNameForSrv, &lockedFromFileUID, ffatRename))
-    {                        // soubor na serveru jeste neni otevreny, muzeme s nim pracovat, alokujeme objekt pro "data connection"
-        int lockedToFileUID; // UID zamceneho souboru (v FTPOpenedFiles) - soubor zamykame pro prejmenovani
+    {                        // the file on the server is not open yet, we can work with it, allocate an object for the "data connection"
+        int lockedToFileUID; // UID of the locked file (in FTPOpenedFiles) - we lock the file for renaming
         if (isDir || FTPOpenedFiles.OpenFile(userBuffer, hostBuf, portBuf, workPath, pathType,
                                              newName, &lockedToFileUID, ffatRename))
-        { // soubor na serveru jeste neni otevreny, muzeme s nim pracovat, alokujeme objekt pro "data connection"
+        { // the file on the server is not open yet, we can work with it, allocate an object for the "data connection"
             BOOL reconnected = FALSE;
             BOOL setStartTimeIfConnected = TRUE;
             BOOL canRetry = FALSE;
@@ -676,37 +677,37 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
             while (ReconnectIfNeeded(notInPanel, panel == PANEL_LEFT, parent,
                                      userBuf, userBufSize, &reconnected,
                                      setStartTimeIfConnected, totalAttemptNum,
-                                     retryMsgAux, NULL, -1, FALSE)) // bude-li potreba, reconnectneme se
+                                     retryMsgAux, NULL, -1, FALSE)) // if needed, we reconnect
             {
                 setStartTimeIfConnected = TRUE;
                 BOOL run = FALSE;
                 BOOL ok = TRUE;
                 char newPath[FTP_MAX_PATH];
-                BOOL needChangeDir = reconnected; // po reconnectu zkusime opet nastavit pracovni adresar
-                if (!reconnected)                 // jsme jiz dele pripojeni, zkontrolujeme jestli pracovni adresar odpovida 'workPath'
+                BOOL needChangeDir = reconnected; // after a reconnect we try to set the working directory again
+                if (!reconnected)                 // we have been connected for a while, check whether the working directory matches 'workPath'
                 {
-                    // vyuzijeme cache, v normalnich pripadech by tam cesta mela byt
+                    // use the cache; in normal cases the path should be there
                     ok = GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE, &canRetry, retryMsgBuf, 300);
-                    if (!ok && canRetry) // "retry" je povolen
+                    if (!ok && canRetry) // "retry" is allowed
                     {
                         run = TRUE;
                         retryMsgAux = retryMsgBuf;
                     }
-                    if (ok && strcmp(newPath, workPath) != 0) // nesedi pracovni adresar na serveru - nutna zmena
-                        needChangeDir = TRUE;                 // (predpoklad: server vraci stale stejny retezec pracovni cesty)
+                    if (ok && strcmp(newPath, workPath) != 0) // the working directory on the server differs - change required
+                        needChangeDir = TRUE;                 // (assumption: the server always returns the same working path string)
                 }
-                if (ok && needChangeDir) // je-li potreba zmenit pracovni adresar
+                if (ok && needChangeDir) // if we need to change the working directory
                 {
                     BOOL success;
-                    // v SendChangeWorkingPath() je pri vypadku spojeni ReconnectIfNeeded(), nastesti to
-                    // nevadi, protoze kod predchazejici tomuto volani se provadi jen pokud k reconnectu
-                    // nedojde - "if (!reconnected)" - pokud dojde k reconnectu, jsou oba kody stejne
+                    // SendChangeWorkingPath() contains ReconnectIfNeeded() when the connection drops; luckily that
+                    // does not matter, because the code preceding this call runs only if no reconnect happened
+                    // - "if (!reconnected)" - if a reconnect occurs, both code paths are identical
                     ok = SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT, parent, workPath,
                                                userBuf, userBufSize, &success,
                                                replyBuf, 700, NULL,
                                                totalAttemptNum, NULL, TRUE, NULL);
-                    if (ok && !success && workPath[0] != 0) // send se povedl, ale server hlasi nejakou chybu (+ignorujeme chybu pri prazdne ceste) -> soubor nelze
-                    {                                       // downloadnout (je na akt. ceste v panelu)
+                    if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+                    {                                       // downloaded (it is on the current path in the panel)
                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                         SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                          MB_OK | MB_ICONEXCLAMATION);
@@ -716,24 +717,24 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
 
                 if (ok)
                 {
-                    // posleme nejprve "rename from" prikaz (pozdeji posleme navazujici "rename to")
+                    // send the "rename from" command first (later send the follow-up "rename to")
                     PrepareFTPCommand(cmdBuf, 50 + 2 * MAX_PATH, logBuf, 50 + 2 * MAX_PATH,
-                                      ftpcmdRenameFrom, NULL, fromNameForSrv); // nemuze selhat
+                                      ftpcmdRenameFrom, NULL, fromNameForSrv); // cannot fail
                     int ftpReplyCode;
                     if (SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
                                        &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, &canRetry,
                                        retryMsgBuf, 300, NULL))
                     {
                         if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_PARTIALSUCCESS) // 350 Requested file action pending further information
-                        {                                                       // mame poslat "rename to"
+                        {                                                       // we need to send "rename to"
                             PrepareFTPCommand(cmdBuf, 50 + 2 * MAX_PATH, logBuf, 50 + 2 * MAX_PATH,
-                                              ftpcmdRenameTo, NULL, newName); // nemuze selhat
+                                              ftpcmdRenameTo, NULL, newName); // cannot fail
                             if (SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
                                                &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, &canRetry,
                                                retryMsgBuf, 300, NULL))
                             {
-                                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // vraci se uspech (melo by byt 250)
-                                {                                                // quick rename uspesne probehl - v 'newName' nechame nove jmeno, aby se mohlo focusnout pri naslednem refreshi
+                                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // success is returned (should be 250)
+                                {                                                // quick rename completed successfully - leave the new name in 'newName' so it can be focused after the refresh
                                     retSuccess = TRUE;
                                     if (workPath[0] != 0)
                                     {
@@ -746,14 +747,14 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                                                                         pathType, fromName, newName, FALSE);
                                     }
                                 }
-                                else // chyba
+                                else // error
                                 {
                                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_QUICKRENAMEERROR), fromName, newName, replyBuf);
                                     SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                                      MB_OK | MB_ICONEXCLAMATION);
                                 }
                             }
-                            else // chyba -> zavrena connectiona
+                            else // error -> connection closed
                             {
                                 if (workPath[0] != 0)
                                 {
@@ -765,7 +766,7 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                                     UploadListingCache.ReportRename(hostBuf, userBuffer, portBuf, workPath,
                                                                     pathType, fromName, newName, TRUE);
                                 }
-                                if (canRetry) // "retry" je povolen
+                                if (canRetry) // "retry" is allowed
                                 {
                                     run = TRUE;
                                     retryMsgAux = retryMsgBuf;
@@ -773,16 +774,16 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                             }
                             lstrcpyn(changedPath, workPath, FTP_MAX_PATH);
                         }
-                        else // chyba (i neocekavana odpoved)
+                        else // error (including an unexpected reply)
                         {
                             _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_QUICKRENAMEERROR), fromName, newName, replyBuf);
                             SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                              MB_OK | MB_ICONEXCLAMATION);
                         }
                     }
-                    else // chyba -> zavrena connectiona
+                    else // error -> connection closed
                     {
-                        if (canRetry) // "retry" je povolen
+                        if (canRetry) // "retry" is allowed
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
@@ -797,15 +798,15 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                 FTPOpenedFiles.CloseFile(lockedToFileUID);
         }
         else
-            tgtLocked = TRUE; // rename-to-file uz je otevreny
+            tgtLocked = TRUE; // rename-to-file is already open
         if (!isDir)
             FTPOpenedFiles.CloseFile(lockedFromFileUID);
     }
     else
-        srcLocked = TRUE; // rename-from-file uz je otevreny
+        srcLocked = TRUE; // rename-from-file is already open
     if (srcLocked || tgtLocked)
     {
-        // vypiseme hlasku "Unable to rename file on server - src or tgt file is locked by another operation"
+        // display the message "Unable to rename file on server - src or tgt file is locked by another operation"
         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_QUICKRENAMEFILEERR), fromNameForSrv, newName);
         int len = (int)strlen(errBuf);
         _snprintf_s(errBuf + len, 900 + FTP_MAX_PATH - len, _TRUNCATE,
@@ -826,7 +827,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
     char buf[300];
 
     parent = FindPopupParent(parent);
-    DWORD startTime = GetTickCount(); // cas zacatku operace
+    DWORD startTime = GetTickCount(); // operation start time
     *canRetry = FALSE;
     if (retryMsgBufSize > 0)
         retryMsg[0] = 0;
@@ -837,19 +838,19 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
     HWND focusedWnd = NULL;
     BOOL parentIsEnabled = IsWindowEnabled(parent);
     CSetWaitCursorWindow* winParent = NULL;
-    if (parentIsEnabled) // parenta nemuzeme nechat enablovaneho (wait okenko neni modalni)
+    if (parentIsEnabled) // we cannot leave the parent enabled (the wait window is not modal)
     {
-        // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+        // store the focus from 'parent' (if the focus is not from 'parent', save NULL)
         focusedWnd = GetFocus();
         HWND hwnd = focusedWnd;
         while (hwnd != NULL && hwnd != parent)
             hwnd = GetParent(hwnd);
         if (hwnd != parent)
             focusedWnd = NULL;
-        // disablujeme 'parent', pri enablovani obnovime i fokus
+        // disable 'parent'; re-enable it along with the focus
         EnableWindow(parent, FALSE);
 
-        // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+        // set the wait cursor over the parent; unfortunately we cannot do it otherwise
         winParent = new CSetWaitCursorWindow;
         if (winParent != NULL)
             winParent->AttachToWindow(parent);
@@ -859,26 +860,26 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
 
     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
     if (serverTimeout < 1000)
-        serverTimeout = 1000; // aspon sekundu
+        serverTimeout = 1000; // at least a second
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    int logUID = LogUID;                                  // UID logu teto connectiony
-    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE pokud se keep-alive neresi o uroven vyse (je nutne ho resit zde)
+    int logUID = LogUID;                                  // log UID of this connection
+    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE if keep-alive is not handled one level above (it must be handled here)
     DWORD auxServerIP = ServerIP;
     int proxyPort = ProxyServer != NULL ? ProxyServer->ProxyPort : 0;
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
     if (handleKeepAlive)
     {
-        // pockame na dokonceni keep-alive prikazu (pokud prave probiha) + nastavime
-        // keep-alive na 'kamForbidden' (probiha normalni prikaz)
+        // wait for the keep-alive command to finish (if it is running) + set
+        // keep-alive to 'kamForbidden' (a normal command is in progress)
         DWORD waitTime = GetTickCount() - startTime;
         WaitForEndOfKeepAlive(parent, waitTime < (DWORD)waitWndTime ? waitWndTime - waitTime : 0);
     }
 
     dataConnection->SetPostMessagesToWorker(TRUE, GetMsg(), GetUID(), -1, -1, -1, CTRLCON_LISTENFORCON);
 
-    BOOL doNotCloseCon = FALSE; // TRUE = pri chybe se nema zavrit control-connectiona
+    BOOL doNotCloseCon = FALSE; // TRUE = on error the control connection must not be closed
     BOOL listenError;
     DWORD err;
     if (dataConnection->OpenForListeningWithProxy(*listenOnIP, *listenOnPort, &listenError, &err))
@@ -894,7 +895,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
         BOOL run = TRUE;
         while (run)
         {
-            // pockame na udalost na socketu (odpoved serveru) nebo ESC
+            // wait for an event on the socket (server reply) or ESC
             CControlConnectionSocketEvent event;
             DWORD data1, data2;
             DWORD now = GetTickCount();
@@ -913,11 +914,11 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
                 if (esc)
                 {
                     run = FALSE;
-                    Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) do logu
+                    Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) into the log
                 }
                 else
                 {
-                    SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                    SalamanderGeneral->WaitForESCRelease(); // ensure that subsequent actions are not interrupted after every ESC in the previous message box
                     waitWnd.Show(TRUE);
                 }
                 break;
@@ -939,13 +940,13 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
 
             case ccsevListenForCon:
             {
-                if ((int)data1 == dataConnection->GetUID()) // zpravu zpracujeme jen pokud je pro nasi data-connectionu
+                if ((int)data1 == dataConnection->GetUID()) // process the message only if it is for our data connection
                 {
-                    if (!dataConnection->GetListenIPAndPort(listenOnIP, listenOnPort)) // chyba "listen"
+                    if (!dataConnection->GetListenIPAndPort(listenOnIP, listenOnPort)) // "listen" error
                     {
                         if (dataConnection->GetProxyError(buf, 300, NULL, 0, TRUE) &&
                             errBufSize > 0)
-                        { // vypiseme chybu do logu
+                        { // write the error to the log
                             _snprintf_s(errBuf, errBufSize, _TRUNCATE, LoadStr(IDS_LOGMSGDATCONERROR), buf);
                             Logs.LogMessage(logUID, errBuf, -1, TRUE);
                         }
@@ -953,20 +954,20 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
                         lstrcpyn(retryMsg, LoadStr(IDS_PROXYERROPENACTDATA), retryMsgBufSize);
                     }
                     else
-                        ret = TRUE; // uspech, vratime "listen" IP+port
+                        ret = TRUE; // success, return the "listen" IP+port
                     run = FALSE;
                 }
                 break;
             }
 
-            case ccsevClosed: // ztratu spojeni posleme znovu az to tady dokoncime
+            case ccsevClosed: // resend the connection loss after we finish here
             {
                 closedReceived = TRUE;
                 closedData1 = data1;
                 break;
             }
 
-            case ccsevNewBytesRead: // zpravu o nacteni novych bytu posleme znovu az to tady dokoncime
+            case ccsevNewBytesRead: // resend the message about reading new bytes after we finish here
             {
                 newBytesReadReceived = TRUE;
                 newBytesReadData1 = data1;
@@ -981,13 +982,13 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
         waitWnd.Destroy();
 
         if (newBytesReadReceived)
-            AddEvent(ccsevNewBytesRead, newBytesReadData1, 0, newBytesReadData1 == NO_ERROR); // prepsatelna jen pokud nejde o chybu
+            AddEvent(ccsevNewBytesRead, newBytesReadData1, 0, newBytesReadData1 == NO_ERROR); // can be overwritten only if it is not an error
         if (closedReceived)
             AddEvent(ccsevClosed, closedData1, 0);
     }
     else
     {
-        if (listenError) // selhalo volani CSocket::OpenForListening() - "retry" nema smysl (slo o lokalni operaci)
+        if (listenError) // CSocket::OpenForListening() failed - "retry" makes no sense (it was a local operation)
         {
             if (errBufSize > 0)
             {
@@ -998,7 +999,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
             }
             doNotCloseCon = TRUE;
         }
-        else // chyba connectu na proxy server, vypiseme chybu do logu, zavreme control-connectionu a provedeme "retry"
+        else // connection error on the proxy server; log the error, close the control connection, and perform "retry"
         {
             in_addr srvAddr;
             srvAddr.s_addr = auxServerIP;
@@ -1008,7 +1009,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
                 char* s = errBuf + strlen(errBuf);
                 while (s > errBuf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                     s--;
-                *s = 0; // oriznuti znaku konce radky z textu chyby
+                *s = 0; // trim newline characters from the error text
                 _snprintf_s(buf, _TRUNCATE, LoadStr(IDS_LOGMSGUNABLETOCONPRX2), inet_ntoa(srvAddr), proxyPort, errBuf);
             }
             else
@@ -1020,18 +1021,18 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
         }
     }
 
-    if (parentIsEnabled) // pokud jsme disablovali parenta, zase ho enablujeme
+    if (parentIsEnabled) // if we disabled the parent, enable it again
     {
-        // shodime cekaci kurzor nad parentem
+        // remove the wait cursor from the parent
         if (winParent != NULL)
         {
             winParent->DetachWindow();
             delete winParent;
         }
 
-        // enablujeme 'parent'
+        // enable 'parent'
         EnableWindow(parent, TRUE);
-        // pokud je aktivni 'parent', obnovime i fokus
+        // if 'parent' is active, restore the focus as well
         if (GetForegroundWindow() == parent)
         {
             if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -1044,23 +1045,23 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
         }
     }
 
-    if (ret || doNotCloseCon) // uspech nebo chyba, pri ktere se spojeni nema zavirat
+    if (ret || doNotCloseCon) // success or an error where the connection must not be closed
     {
         if (handleKeepAlive)
         {
-            // pokud je vse OK, nastavime timer pro keep-alive
+            // if everything is OK, set the keep-alive timer
             SetupKeepAliveTimer();
         }
     }
-    else // chyba, po ktere se provede "retry", musime zavrit spojeni (standardni "retry" zacina connectem...)
+    else // error after which "retry" will run; we must close the connection (the standard "retry" starts with connect...)
     {
-        CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+        CloseSocket(NULL); // close the socket (if it is open); the system attempts a "graceful" shutdown (we do not learn the result)
         Logs.SetIsConnected(logUID, IsConnected());
-        Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+        Logs.RefreshListOfLogsInLogsDlg(); // message "connection inactive"
 
         if (handleKeepAlive)
         {
-            // uvolnime keep-alive, ted uz nebude potreba (uz neni navazane spojeni)
+            // release keep-alive; it will no longer be needed (no connection is established now)
             ReleaseKeepAlive();
         }
     }

@@ -11,18 +11,18 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// part of the CPluginInterface interface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -48,39 +48,39 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "UnLHA" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnLHA" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
-    // inicializace unpackeru
+    // initialize the unpacker
     LHAInit();
 
-    // nastavime zakladni informace o pluginu
+    // set basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnLHA" /* neprekladat! */, "lzh;lha;lzs");
+                                   "UnLHA" /* do not translate! */, "lzh;lha;lzs");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -163,14 +163,14 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
     while ((gh = LHAGetHeader(f, &hdr)) == GH_SUCCESS)
     {
-        // pokud je ne konci '\', tak ho vyhodime (kvuli adresarum)
+        // if it ends with '\', remove it (because of directories)
         int l = lstrlen(hdr.name) - 1;
         if (hdr.name[l] == '\\')
         {
             hdr.name[l] = 0;
             l--;
         }
-        // najdeme jmeno a cestu
+        // find the name and the path
         char* name = hdr.name + l;
         const char* path = hdr.name;
         while (name >= path && *name != '\\')
@@ -186,7 +186,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
             name = hdr.name;
         }
 
-        ZeroMemory(&fd, sizeof(fd)); // pro jistotu...
+        ZeroMemory(&fd, sizeof(fd)); // just to be safe...
 
         fd.Name = SalamanderGeneral->DupStr(name);
         if (!fd.Name)
@@ -198,7 +198,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
         fd.Ext = _tcsrchr(fd.Name, '.');
         if (fd.Ext != NULL)
-            fd.Ext++; // ".cvspass" ve Windows je pripona
+            fd.Ext++; // ".cvspass" counts as an extension on Windows
         else
             fd.Ext = fd.Name + _tcslen(fd.Name);
         fd.Size = CQuadWord(hdr.original_size, 0);
@@ -221,7 +221,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
                  hdr.method == LZHDIRS_METHOD_NUM)
         {
             if (!sortByExtDirsAsFiles)
-                fd.Ext = fd.Name + fd.NameLen; // adresare nemaji pripony
+                fd.Ext = fd.Name + fd.NameLen; // directories have no extensions
             fd.IsLink = 0;
             if (!dir->AddDir(path, fd, NULL))
                 ret = FALSE;
@@ -252,14 +252,14 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
         ret = FALSE;
     }
 
-    //nejake soubory jsme jiz vylistovali, tak to nezabalime a zobrazime je
+    // some files have already been listed, so do not pack and display them
     if (!ret && count)
         ret = TRUE;
 
     return ret;
 }
 
-static BOOL ProgressCallback(int size) // callback volany pri dekompresi
+static BOOL ProgressCallback(int size) // callback invoked during decompression
 {
     if (InterfaceForArchiver.UnpackWhole)
         return InterfaceForArchiver.Salamander->ProgressSetSize(CQuadWord(size, 0), CQuadWord(-1, -1), TRUE);
@@ -299,10 +299,10 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
         return FALSE;
     }
 
-    if (hdr.method == LHA_UNKNOWNMETHOD && hdr.original_size != 0 /* viz nize : */)
+    if (hdr.method == LHA_UNKNOWNMETHOD && hdr.original_size != 0 /* see below : */)
     {
-        // Nevim proc, ale soubory nulove delky obcas LHA zabali s nesmyslnym nazvem metody...
-        // Pokud ma soubor delku 0, typ metody tedy ingoruju.
+        // I do not know why, but LHA sometimes packs zero-length files with a nonsensical method name...
+        // If the file length is 0, I therefore ignore the method type.
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_METHOD), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         fclose(f);
         return FALSE;
@@ -340,13 +340,13 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
 
     if (!uf)
     {
-        if (iLHAErrorStrId != IDS_WRITEERROR) // kvuli SafeWriteFile
+        if (iLHAErrorStrId != IDS_WRITEERROR) // because of SafeWriteFile
             SalamanderGeneral->ShowMessageBox(LoadStr(iLHAErrorStrId), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         return FALSE;
     }
     if (hdr.has_crc && crc != hdr.crc)
     {
-        SalamanderGeneral->ClearReadOnlyAttr(targetName); // aby sel mazat i read-only soubor
+        SalamanderGeneral->ClearReadOnlyAttr(targetName); // so a read-only file can be deleted
         DeleteFile(targetName);
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_CRCERROR), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         return FALSE;
@@ -471,12 +471,12 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
         const char* name = SalamanderGeneral->SalPathFindFileName(hdr.name);
         char nameBuf[MAX_PATH];
         int nameLen = (int)strlen(name);
-        if (nameLen > 0 && name[nameLen - 1] == '\\') // diky volani SalPathFindFileName muze byt '\\' jedine na konci, odstranime ho pro volani AgreeMask
+        if (nameLen > 0 && name[nameLen - 1] == '\\') // due to SalPathFindFileName the '\\' can only be at the end; remove it before calling AgreeMask
         {
             lstrcpyn(nameBuf, name, min(nameLen, MAX_PATH));
             name = nameBuf;
         }
-        BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" ve Windows je pripona
+        BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" is considered an extension on Windows
 
         int i;
         for (i = 0; i < masks.Count; i++)
@@ -517,7 +517,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     return Ret;
 }
 
-// UnpackInnerBody - volano z UnpackWholeArchive a UnpackArchive
+// UnpackInnerBody - called from UnpackWholeArchive and UnpackArchive
 
 void CPluginInterfaceForArchiver::UnpackInnerBody(FILE* f, const char* targetDir, const char* fileName, LHA_HEADER& hdr, BOOL bDir)
 {
@@ -601,7 +601,7 @@ void CPluginInterfaceForArchiver::UnpackInnerBody(FILE* f, const char* targetDir
         {
             if (!uf)
             {
-                if (iLHAErrorStrId != IDS_WRITEERROR) // kvuli SafeWriteFile
+                if (iLHAErrorStrId != IDS_WRITEERROR) // because of SafeWriteFile
                     SalamanderGeneral->ShowMessageBox(LoadStr(iLHAErrorStrId), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
                 Abort = TRUE;
                 Ret = FALSE;
@@ -628,7 +628,7 @@ void CPluginInterfaceForArchiver::UnpackInnerBody(FILE* f, const char* targetDir
 
 //****************************************************************************
 //
-//  Pomocne funkce
+//  Helper functions
 //
 
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size)
@@ -707,7 +707,7 @@ BOOL CPluginInterfaceForArchiver::MakeFilesList(TDirectArray<int>& offsets, SalE
             ProgressTotal += size;
         }
     }
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    // test whether no error occurred and the user did not request to abort the operation (Cancel button)
     if (errorOccured == SALENUM_CANCEL)
         return FALSE;
 

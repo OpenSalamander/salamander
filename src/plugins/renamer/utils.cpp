@@ -168,7 +168,7 @@ BOOL FileOverwrite(HWND parent, const char* fileName1, const char* fileData1,
                 *silent |= SILENT_OVERWRITE_FILE_EXIST;
 
         case DIALOG_YES:
-            break; // jeste musime overit hidden/system overwrite
+            break; // we still need to verify hidden/system overwrite
 
         case DIALOG_SKIPALL:
             if (silent)
@@ -188,7 +188,7 @@ BOOL FileOverwrite(HWND parent, const char* fileName1, const char* fileData1,
         }
     }
 
-    // jeste overime, zda neprepisujeme hidden/system adresar
+    // also check that we are not overwriting a hidden/system directory
     if (attr == -1)
         attr = SG->SalGetFileAttributes(fileName1);
     if ((attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) == 0)
@@ -435,11 +435,11 @@ BOOL IsValidFloat(const char* begin, const char* end)
     }
     if (begin < end)
     {
-        // desetina tecka
+        // decimal point
         if (*begin != '.')
             return FALSE;
 
-        // desetina cast
+        // fractional part
         while (begin < end)
         {
             if (!IsDigit(*begin))
@@ -512,7 +512,7 @@ char* StripRoot(char* path, int rootLen)
 BOOL IsValidFileNameComponent(const char* start, const char* end)
 {
     CALL_STACK_MESSAGE_NONE
-    // ignorujeme tecky na konci jmena
+    // ignore dots at the end of the name
     while (end > start && end[-1] == '.')
         end--;
     char save = *end;
@@ -602,7 +602,7 @@ int CutTrailingDots(char* name, int len, CRenameSpec spec)
 {
     CALL_STACK_MESSAGE_NONE
     char* nameEnd = name + len;
-    // preskocime root
+    // skip the root
     if (spec == rsFullPath)
     {
         if (name[0] == '\\' && name[1] == '\\') // UNC

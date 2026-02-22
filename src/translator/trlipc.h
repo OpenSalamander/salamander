@@ -8,8 +8,8 @@
 struct CSharedMemory
 {
     DWORD Version; // SHARED_MEMORY_VERSION
-    BOOL Taken;    // zdrojovy proces nastavi na FALSE, cilovy na TRUE po te, co si vytvori kopii dat do lokalniho bufferu; zdrojovy pak sdilenou pamet zahodi
-    DWORD Size;    // velikost sdilene pameti v bajtech
+    BOOL Taken;    // Source sets this to FALSE; the destination switches it to TRUE after copying the data to its local buffer, letting the source dispose of the shared memory
+    DWORD Size;    // Size of the shared memory block in bytes
                    // stream...
 };
 #pragma pack(pop)

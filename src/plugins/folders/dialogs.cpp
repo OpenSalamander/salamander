@@ -23,10 +23,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // request focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);

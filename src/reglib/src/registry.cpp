@@ -76,11 +76,12 @@ namespace RegLib
 
 #ifndef INSIDE_SALAMANDER
 
-    // nase varianta funkce RegQueryValueEx, narozdil od API varianty zajistuje
-    // pridani null-terminatoru pro typy REG_SZ, REG_MULTI_SZ a REG_EXPAND_SZ
-    // POZOR: pri zjistovani potrebne velikosti bufferu vraci o jeden nebo dva (dva
-    //        jen u REG_MULTI_SZ) znaky vic pro pripad, ze by string bylo potreba
-    //        zakoncit nulou/nulami
+    // our variant of the RegQueryValueEx function; unlike the API version it
+    // ensures adding a null terminator for REG_SZ, REG_MULTI_SZ, and
+    // REG_EXPAND_SZ
+    // WARNING: when determining the required buffer size it returns one or two
+    //          characters more (two only for REG_MULTI_SZ) in case the string
+    //          needs to be terminated with null character(s)
     LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                             LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
     {
@@ -95,7 +96,7 @@ namespace RegLib
                 lpcbData != NULL &&
                 (ret == ERROR_MORE_DATA || lpData == NULL && ret == ERROR_SUCCESS))
             {
-                (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // rekneme si radsi o pripadny null-terminator(y) navic
+                (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // proactively request extra null terminator(s)
                 return ret;
             }
             if (ret == ERROR_SUCCESS && lpData != NULL)
@@ -107,9 +108,9 @@ namespace RegLib
                         ((char*)lpData)[*lpcbData] = 0;
                         (*lpcbData)++;
                     }
-                    else // nedostatek mista pro null-terminator v bufferu
+                    else // not enough space for a null terminator in the buffer
                     {
-                        (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // rekneme si o potrebny null-terminator(y)
+                        (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request the required null terminator(s)
                         return ERROR_MORE_DATA;
                     }
                 }
@@ -120,9 +121,9 @@ namespace RegLib
                         ((char*)lpData)[*lpcbData] = 0;
                         (*lpcbData)++;
                     }
-                    else // nedostatek mista pro druhy null-terminator v bufferu
+                    else // not enough space for the second null terminator in the buffer
                     {
-                        (*lpcbData)++; // rekneme si o potrebny null-terminator
+                        (*lpcbData)++; // request the required null terminator
                         return ERROR_MORE_DATA;
                     }
                 }

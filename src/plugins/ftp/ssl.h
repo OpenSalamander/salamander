@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -29,8 +30,8 @@ public:
     void ShowCertificate(HWND hParent);
     bool CheckCertificate(LPTSTR buf, int maxlen);
 
-    // POZOR: metoda meni data certifikatu, volajici si musi zajistit, ze se data nepouzivaji
-    //        zaroven v jinem threadu (idealne volat dokud je tohle jediny odkaz na objekt)
+    // NOTE: the method modifies certificate data, the caller must ensure the data are not used
+    //        simultaneously in another thread (ideally call it while this is the only reference to the object)
     void SetVerified(bool verified) { bVerified = verified; };
 
     bool IsSame(BYTE* pDERCert, int DERCertLen, BYTE* pPKCS7Cert, int PKCS7CertLen);
@@ -66,7 +67,7 @@ protected:
 
 struct SSL_SESSION
 {
-}; // Petr: nepotrebujeme znat obsah struktury, pracuje se s ni vyhradne uvnitr OpenSSL
+}; // Petr: we do not need to know the contents of the structure; it is handled exclusively inside OpenSSL
 
 typedef int (*TSSL_get_error)(SSL* SSL, int ret);
 typedef int (*TSSL_write)(SSL* SSL, const void* data, int Size);

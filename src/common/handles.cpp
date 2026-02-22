@@ -553,12 +553,12 @@ C__Handles::~C__Handles()
         sprintf_s(msgBuf,
 #ifdef MESSAGES_DEBUG
                   __FILE__ " %d:\n\n"
-#endif MESSAGES_DEBUG
+#endif // MESSAGES_DEBUG
                            "Some monitored handles remained opened.\n%s%d"
                            "\nDo you want to list opened handles to Trace Server (ensure it is running) ?",
 #ifdef MESSAGES_DEBUG
                   __LINE__,
-#endif MESSAGES_DEBUG
+#endif // MESSAGES_DEBUG
                   __HandlesMessageNumberOpened, Handles.Count);
         HWND parent = __MessagesParent;
         if (!IsWindow(parent))

@@ -28,7 +28,7 @@
 //
 
 // RIFF header
-// pro CIF format vytvareny Easy CD Creatorem
+// for the CIF format created by Easy CD Creator
 struct RIFFHeader
 {
     char RIFF[4];
@@ -61,7 +61,7 @@ void ISODateTimeToFileTime(BYTE isodt[], FILETIME* ft)
     ft->dwHighDateTime = (DWORD)(newtime >> 32);
 }
 
-// prevede retezcovy format datumu na SYSTEMTIME
+// converts the string date format to SYSTEMTIME
 void ISODateTimeStrToSystemTime(BYTE isodt[], SYSTEMTIME* st)
 {
     CALL_STACK_MESSAGE1("ISODateTimeStrToSystemTime(, )");
@@ -308,12 +308,12 @@ CISOImage::GetSectorOffset(int nSector)
 }
 
 //
-// Sada funkci pro detekci, zda je image validni. Pro kazdy format jedna funkce.
-// Je to sice ponekud pitome, protoze pro kazdy novy format musime pridat novou funkci.
-// jiny pluginy, hledaji signaturu CD001 a urcuji format podle ni. To bychom taky mohli
-// udelat, ale neda se na to uplne spolehnout.
-// Timto zpusobem ale dokazeme nastavovat rovnou i format image aj dulezite informace.
-// A mame jistotu, ze urcite pracujeme s CD imagem
+// A set of functions to detect whether the image is valid. One function per format.
+// It's a bit silly because we have to add a new function for every new format.
+// Other plugins look for the CD001 signature and determine the format based on it. We could do that too,
+// but you cannot fully rely on it.
+// With this approach we can also set the image format and other important information right away.
+// And we can be sure that we are indeed working with a CD image
 //
 
 BOOL CISOImage::CheckForISO(BOOL quiet /* = FALSE*/)
@@ -418,8 +418,8 @@ BOOL CISOImage::CheckForECDC(BOOL quiet /* = FALSE*/)
     char hdr[6];
 
     // check for ISO from Easy CD Creator
-    // Easy CD Creator dava do ISO souboru hlavicky oddelujici sektory, ale "spatne" (jsou to same nuly),
-    // takze funkce CheckSectorType nic nepozna
+    // Easy CD Creator inserts headers separating sectors into the ISO file, but "incorrectly" (they are all zeros),
+    // so the CheckSectorType function cannot detect anything
     if (ReadDataByPos(0x9318, sizeof(hdr), hdr) != sizeof(hdr))
         return FALSE;
 
@@ -534,7 +534,7 @@ BOOL CISOImage::CheckForCIF(BOOL quiet /* = FALSE*/)
         return FALSE;
     offset += sizeof(riffHead) + 8; // sizeof(SectorHeader) == 8
 
-    // je vysoce pravdepodobne, ze je to CIF
+    // it is highly probable that this is a CIF
     SetSectorFormat(stCIF);
 
     if (ReadDataByPos(offset + GetSectorOffset(16), sizeof(hdr), hdr) != sizeof(hdr))
@@ -558,7 +558,7 @@ BOOL CISOImage::CheckForCIF2332(BOOL quiet /* = FALSE*/)
     {
         if (IsValidCDHeader(hdr))
         {
-            // nejaky obskurni format z CloneCD 5.0
+            // some obscure format from CloneCD 5.0
             DataOffset = 0;
             SetSectorFormat(stCIF);
             SectorRawSize = 0x91C; // special format - override settings from SetSectorFormat
@@ -674,18 +674,18 @@ BOOL CISOImage::CheckForAPFS(BOOL quiet /* = FALSE*/)
 //
 //  int len = strlen(FileName);
 //  char *fn = new char [len + 1];
-//BUGBUG: test na fn == NULL
+//BUGBUG: test for fn == NULL
 //  ZeroMemory(fn, len);
 //  strcpy(fn, FileName);
 //
-//  // zjistit priponu
+//  // determine the extension
 //  char *ext = strrchr(fn, '.');
 //  if (ext != NULL) {   // ".cvspass" is extension in Windows
 //
-//BUGBUG: co kdyz se prijde pripona "nrgXX", ohodnotis ji jako "nrg"
+//BUGBUG: what if the extension "nrgXX" shows up? You would classify it as "nrg"
 //    char extlwr[3];
 //    strncpy(extlwr, ext + 1, 3);
-//BUGBUG: strncpy() neterminuje retezec, takze _strlwr nasledne prepisovalo stack
+//BUGBUG: strncpy() does not terminate the string, so _strlwr then overwrote the stack
 //    _strlwr(extlwr);
 //
 //    if (strncmp(extlwr, "nrg", 3) == 0)
@@ -820,7 +820,7 @@ BOOL CISOImage::Open(const char* fileName, BOOL quiet /* = FALSE*/)
     if (!fileName)
         return FALSE;
 
-    // zapamatovat si jmeno otviraneho souboru
+    // remember the name of the file being opened
     if ((FileName = new char[strlen(fileName) + 1]) == NULL)
         return Error(IDS_INSUFFICIENT_MEMORY, quiet);
 
@@ -899,13 +899,13 @@ BOOL CISOImage::Open(const char* fileName, BOOL quiet /* = FALSE*/)
             {
                 if (Tracks[trk]->FSType != fsUnknown && Tracks[trk]->FSType != fsAudio)
                 {
-                    // pokud se nepodari track otevrit neni to podporovany format a nejspis jsou to data (napr. na video cd)
+                    // if the track cannot be opened it is not a supported format and most likely contains data (e.g. on a video CD)
                     SetTrackParams(trk);
                     ret = DetectTrackFS(trk);
                     if (ret == ERR_CONTINUE)
                     {
                         Tracks[trk]->FSType = fsData;
-                        ret = ERR_OK; // raw data tracky umime, takze chybu zmenime na OK (jsme to ale sibalove :-D)
+                        ret = ERR_OK; // we can handle raw data tracks, so we turn the error into OK (what rascals we are :-D)
                     }
                     if (ret == ERR_TERMINATE)
                         throw ERR_TERMINATE;
@@ -1210,7 +1210,7 @@ BOOL CISOImage::OpenTrack(int track, BOOL quiet)
     if (track < 0 || track >= Tracks.Count)
         return FALSE;
 
-    // chceme otevrit track, ktery uz je otevreny. to nemusime ;)
+    // we want to open a track that is already open. We don't have to ;)
     if (OpenedTrack == track)
         return TRUE;
 
@@ -1294,7 +1294,7 @@ CISOImage::ReadBlock(DWORD block, DWORD size, void* data)
     SLOW_CALL_STACK_MESSAGE4("CISOImage::ReadBlock(%u, %u, 0x%p)", block, size, data);
 
     char sectorStat[0x8000];
-    char* sector = SectorUserSize <= sizeof(sectorStat) ? sectorStat : new char[SectorUserSize]; // nemuze selhat (viz allochan.* v Salamanderovi)
+    char* sector = SectorUserSize <= sizeof(sectorStat) ? sectorStat : new char[SectorUserSize]; // cannot fail (see allochan.* in Salamander)
 
     BYTE* end = (BYTE*)data;
     DWORD remain = size;
@@ -1384,7 +1384,7 @@ BOOL CISOImage::ListImage(CSalamanderDirectoryAbstract* dir, CPluginDataInterfac
                     break;
 
                 case fsUnknown:
-                    // s tim nic neudelame
+                    // nothing we can do about it
                     break;
 
                 default:
@@ -1412,7 +1412,7 @@ BOOL CISOImage::ListImage(CSalamanderDirectoryAbstract* dir, CPluginDataInterfac
         else
         {
             BOOL ret = FALSE;
-            // jeste zkusime vlozit audio tracky, pokud nejaky jsou
+            // we also try to insert audio tracks if there are any
             int track;
             for (track = 0; track < Tracks.Count; track++)
             {
@@ -1500,7 +1500,7 @@ int CISOImage::ExtractAllItems(CSalamanderForOperationsAbstract* salamander, cha
     {
         CFileData const* file = dir->GetFile(i);
         //    TRACE_I("EnumAllItems(): file: " << path << (path[0] != 0 ? "\\" : "") << file->Name);
-        salamander->ProgressDialogAddText(file->Name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+        salamander->ProgressDialogAddText(file->Name, TRUE); // delayedPaint==TRUE, so we do not slow things down
 
         salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
         salamander->ProgressSetTotalSize(file->Size + CQuadWord(1, 0), CQuadWord(-1, -1));

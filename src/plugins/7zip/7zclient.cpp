@@ -164,10 +164,10 @@ BOOL C7zClient::FillItemData(IInArchive* archive, UINT32 index, C7zClient::CItem
 {
     NWindows::NCOM::CPropVariant propVariant;
 
-    // index v archivu
+    // index in the archive
     itemData->Idx = index;
 
-    // je-li soubor zaheslovany
+    // whether the file is password protected
     if (archive->GetProperty(index, kpidEncrypted, &propVariant) != S_OK)
         itemData->Encrypted = FALSE;
     else if (propVariant.vt != VT_BOOL)
@@ -175,7 +175,7 @@ BOOL C7zClient::FillItemData(IInArchive* archive, UINT32 index, C7zClient::CItem
     else
         itemData->Encrypted = VARIANT_BOOLToBool(propVariant.boolVal);
 
-    // velikost zkomprimovaneho souboru
+    // size of the compressed file
     if (archive->GetProperty(index, kpidPackSize, &propVariant) != S_OK)
         itemData->PackedSize = 0;
     else if (propVariant.vt == VT_EMPTY)
@@ -183,7 +183,7 @@ BOOL C7zClient::FillItemData(IInArchive* archive, UINT32 index, C7zClient::CItem
     else
         ConvertPropVariantToUInt64(propVariant, itemData->PackedSize);
 
-    // metoda
+    // method
     if (archive->GetProperty(index, kpidMethod, &propVariant) != S_OK)
         itemData->SetMethod("Unknown");
     else if (propVariant.vt == VT_EMPTY)
@@ -191,7 +191,7 @@ BOOL C7zClient::FillItemData(IInArchive* archive, UINT32 index, C7zClient::CItem
     else
         itemData->SetMethod(GetAnsiString(propVariant.bstrVal));
 
-    /*  // 06F10701 je id pro 7zAES -> cili heslo :)
+    /*  // 06F10701 is the id for 7zAES -> so it's the password :)
 //  if (strstr(itemData->Method, "06F10701") != NULL)
   if (strstr(itemData->Method, "7zAES") != NULL)
     itemData->Encrypted = TRUE;
@@ -251,7 +251,7 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
         fd.NameLen = _tcslen(fd.Name);
         LPTSTR s = _tcsrchr(fd.Name, '.');
         if (s != NULL)
-            fd.Ext = s + 1; // ".cvspass" ve Windows je pripona ...
+            fd.Ext = s + 1; // ".cvspass" is treated as an extension on Windows ...
         else
             fd.Ext = fd.Name + fd.NameLen;
 
@@ -277,7 +277,7 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
 
         fd.DosName = NULL;
 
-        // attributy
+        // attributes
         archive->GetProperty(idx, kpidAttrib, &propVariant);
         fd.IsLink = 0;
         fd.Attr = propVariant.ulVal;
@@ -308,19 +308,19 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
             fd.IsLink = 0;
 
             if (!SortByExtDirsAsFiles)
-                fd.Ext = fd.Name + fd.NameLen; // adresare nemaji priponu
+                fd.Ext = fd.Name + fd.NameLen; // directories have no extension
 
             if (dir && !dir->AddDir(filePath, fd, pluginData))
             {
                 SalamanderGeneral->Free(fd.Name);
-                delete itemData; // je v fd.PluginData
-                // dir->Clear(pluginData);  // Petr: neni duvod vse ostatni zahodit
-                if (_tcslen(filePath) > MAX_PATH - 5) // Petr: test na too-long-path prevzaty ze Salamandera
+                delete itemData; // already stored in fd.PluginData
+                // dir->Clear(pluginData);  // Petr: no reason to throw the rest away
+                if (_tcslen(filePath) > MAX_PATH - 5) // Petr: too-long-path test copied from Salamander
                 {
                     if (*reportTooLongPathErr)
                     {
                         Error(IDS_ERRADDDIR_TOOLONG);
-                        *reportTooLongPathErr = FALSE; // Petr: predchazim opakovanemu hlaseni too-long-path, muze jich byt hodne
+                        *reportTooLongPathErr = FALSE; // Petr: prevent repeated too-long-path reports, there can be many
                     }
                 }
                 else
@@ -336,18 +336,18 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
             // What is better? Check on *.lnk/pif/url extensions or Unix flags or both? We do both.
             fd.IsLink |= SalamanderGeneral->IsFileLink(fd.Ext);
 
-            // soubor
+            // file
             if (dir && !dir->AddFile(filePath, fd, pluginData))
             {
                 SalamanderGeneral->Free(fd.Name);
-                delete itemData; // je v fd.PluginData
-                // dir->Clear(pluginData);  // Petr: neni duvod vse ostatni zahodit
-                if (_tcslen(filePath) > MAX_PATH - 5) // Petr: test na too-long-path prevzaty ze Salamandera
+                delete itemData; // already stored in fd.PluginData
+                // dir->Clear(pluginData);  // Petr: no reason to throw the rest away
+                if (_tcslen(filePath) > MAX_PATH - 5) // Petr: too-long-path test copied from Salamander
                 {
                     if (*reportTooLongPathErr)
                     {
                         Error(IDS_ERRADDFILE_TOOLONG);
-                        *reportTooLongPathErr = FALSE; // Petr: predchazim opakovanemu hlaseni too-long-path, muze jich byt hodne
+                        *reportTooLongPathErr = FALSE; // Petr: prevent repeated too-long-path reports, there can be many
                     }
                 }
                 else
@@ -398,7 +398,7 @@ int C7zClient::Decompress(CSalamanderForOperationsAbstract* salamander, const ch
             throw OPER_CANCEL;
         }
 
-        // vytvorit pole indexu pro extrakci
+        // create an array of indices for extraction
         int count = 0;
         ItemsToExtractMap itemsToExtract;
         int i;
@@ -425,7 +425,7 @@ int C7zClient::Decompress(CSalamanderForOperationsAbstract* salamander, const ch
                 }
             }
             else
-                TRACE_I("C7zClient::Decompress(): PluginData == NULL (to by se nemelo stat!)");
+                TRACE_I("C7zClient::Decompress(): PluginData == NULL (this should not happen!)");
         }
 
         // setup callback
@@ -441,8 +441,8 @@ int C7zClient::Decompress(CSalamanderForOperationsAbstract* salamander, const ch
         extractCallbackSpec->Init(inArchive, outDir /*,&archiveItems*/, ft, 0, silentDelete);
         qsort(fileIndex, count, sizeof(fileIndex[0]), compare);
 
-        // spustit vybalovani ve vlakne
-        // tahle silenost je tu kvuli tomu, ze 7za.dll je multi-threadovy a nesly zobrazovat nase message boxy
+        // start extraction in a thread
+        // this craziness is here because 7za.dll is multi-threaded and could not display our message boxes
         CDecompressParamObject dpo;
         dpo.Archive = inArchive;
         dpo.FileIndex = fileIndex;
@@ -454,7 +454,7 @@ int C7zClient::Decompress(CSalamanderForOperationsAbstract* salamander, const ch
 
         ret = (result == E_ABORT) ? OPER_CANCEL : ((result == S_OK) ? OPER_OK : OPER_CONTINUE);
 
-        // kontrolujeme navratovy kod vlakna
+        // check the thread's return code
         if (ret == OPER_CANCEL)
             extractCallbackSpec->Cleanup();
     }
@@ -493,8 +493,8 @@ int C7zClient::TestArchive(CSalamanderForOperationsAbstract* salamander, const c
 
         extractCallbackSpec->InitTest();
 
-        // spustit vybalovani ve vlakne
-        // tahle silenost je tu kvuli tomu, ze 7za.dll je multi-threadovy a nesly zobrazovat nase message boxy
+        // start extraction in a thread
+        // this craziness is here because 7za.dll is multi-threaded and could not display our message boxes
         CDecompressParamObject dpo;
         dpo.Archive = inArchive;
         dpo.FileIndex = NULL;
@@ -539,7 +539,7 @@ int C7zClient::GetArchiveItemList(IInArchive* archive, TIndirectArray<CArchiveIt
         archive->GetProperty(i, kpidMTime, &propVariant);
         FILETIME lastWrite = propVariant.filetime;
 
-        // attributy
+        // attributes
         archive->GetProperty(i, kpidAttrib, &propVariant);
         DWORD attr = propVariant.ulVal;
 
@@ -567,18 +567,18 @@ int C7zClient::GetArchiveItemList(IInArchive* archive, TIndirectArray<CArchiveIt
 } /* C7zClient::GetArchiveItemList */
 
 //
-// archiveItems - polozky v archivu
-// deleteItems - polozky, ktere se budou z archivu mazat
-// updateList - vysledny seznam polozek, ktere v archivu zbydou
+// archiveItems - items in the archive
+// deleteItems - items that will be removed from the archive
+// updateList - the resulting list of items that will remain in the archive
 //
 int C7zClient::DeleteMakeUpdateList(TIndirectArray<CArchiveItem>* archiveItems, TIndirectArray<CArchiveItemInfo>* deleteList,
                                     TIndirectArray<CUpdateInfo>* updateList)
 {
-    // z archiveItems a deleteList vyrobit updateList, coz je seznam polozek, ktere zbudou v archivu
+    // produce updateList from archiveItems and deleteList, which is the list of items that will remain in the archive
     int archIdx;
     for (archIdx = 0; archIdx < archiveItems->Count; archIdx++)
     {
-        // ziskat index polozky v archivu
+        // obtain the index of an item in the archive
         int archItemIdx = (*archiveItems)[archIdx]->Idx;
         bool bToBeDeleted = false;
 
@@ -680,7 +680,7 @@ int C7zClient::Delete(CSalamanderForOperationsAbstract* salamander, const char* 
             throw OPER_CANCEL;
         }
 
-        // vylistovat si archiv
+        // list the archive contents
         UINT32 numItems = 0;
         if (GetArchiveItemList(inArchive, &archiveItems, &numItems) == OPER_CANCEL)
             throw OPER_CANCEL;
@@ -706,11 +706,11 @@ int C7zClient::Delete(CSalamanderForOperationsAbstract* salamander, const char* 
         updateCallbackSpec->Password = password;
         updateCallbackSpec->AskPassword = passwordIsDefined;
 
-        // TODO: co s delete? jde nacit kompressni parametry? a musi se vubec nastavovat?
+        // TODO: what about delete? is it possible to load compression parameters? and do they even need to be set?
         //    SetCompressionParams(outArchive, compr);
 
-        // spustit update ve vlakne
-        // tahle silenost je tu kvuli tomu, ze 7za.dll je multi-threadovy a nesly zobrazovat nase message boxy
+        // start update in a thread
+        // this craziness is here because 7za.dll is multi-threaded and could not display our message boxes
         CUpdateParamObject upo;
         upo.Archive = outArchive;
         upo.Stream = outStream;
@@ -727,13 +727,13 @@ int C7zClient::Delete(CSalamanderForOperationsAbstract* salamander, const char* 
         //    if (result == E_ABORT) throw OPER_CANCEL;
         if (ret == S_OK)
         {
-            // zavrit otevreny archiv
+            // close the open archive
             inArchive->Close();
-            // smazat ho
+            // delete it
             if (::DeleteFile(archiveName))
             {
                 DWORD err2;
-                // prejemnovat na tmpfile na archiv
+                // rename the tmp file to the archive
                 if (!SalamanderGeneral->SalMoveFile(tmpName, archiveName, &err2))
                 {
                     SysError(IDS_CANT_MOVE_TMPARCHIVE, err2, FALSE, tmpName);
@@ -753,14 +753,14 @@ int C7zClient::Delete(CSalamanderForOperationsAbstract* salamander, const char* 
 
             NWindows::NCOM::CPropVariant propVariant;
             inArchive->GetArchiveProperty(kpidSolid, &propVariant);
-            // zahlasit error a ze to neni nase vina
+            // report the error and make it clear it is not our fault
             Error(VARIANT_BOOLToBool(propVariant.boolVal) ? IDS_7Z_SOLID_DELETE_UNSUP : IDS_7Z_UPDATE_ERROR);
             /*
-      // smazat temp soubor
+      // delete the temp file
       if (!::DeleteFile(tmpName))
       {
         DWORD err = ::GetLastError();
-        // zareportit chybu
+        // report the error
         SysError(IDS_CANT_DELETE_TMPARCHIVE, err, FALSE, tmpName);
         throw OPER_CANCEL;
       }
@@ -866,7 +866,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
 {
     int i;
 
-    // promenne pro overwite dialog
+    // variables for the overwrite dialog
     BOOL overwriteSilent = FALSE;
     enum EOperationMode
     {
@@ -875,7 +875,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
         Skip
     } overwriteMode = Ask;
 
-    // logicky seradit fileList
+    // logically sort fileList
     CIntVector fileIndexes;
     UStringVector fileNames;
     int fileItemCount = fileList->Count;
@@ -883,7 +883,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
         fileNames.Add((*fileList)[i]->Name);
     IndirectSort(fileNames, fileIndexes);
 
-    // logicky seradit archiveList
+    // logically sort archiveList
     CIntVector archiveIndexes;
     UStringVector archiveNames;
     int archiveItemCount = archiveItems->Count;
@@ -918,7 +918,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
         {
             if (!ai->IsDir)
             {
-                // prepisovani nas zajima jen u souboru
+                // overwriting only matters for files
                 EOperationMode mode = overwriteMode;
 
                 if (mode == Ask)
@@ -974,7 +974,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
             archiveIterIndex++;
         }
     }
-    // dokoncit vytvoreni seznamu
+    // finish building the list
     for (; fileIterIndex < fileItemCount; fileIterIndex++)
     {
         if (AddFileUpdateInfo(updateList, fileIndexes[fileIterIndex]) == OPER_CANCEL)
@@ -990,7 +990,7 @@ int C7zClient::UpdateMakeUpdateList(TIndirectArray<CFileItem>* fileList, TIndire
     return OPER_OK;
 } /* C7zClient::UpdateMakeUpdateList */
 
-// nastavi parametry komprese podle konfigurace pluginu
+// set compression parameters according to the plugin configuration
 HRESULT
 C7zClient::SetCompressionParams(IOutArchive* outArchive, CCompressParams* compressParams)
 {
@@ -1010,8 +1010,8 @@ C7zClient::SetCompressionParams(IOutArchive* outArchive, CCompressParams* compre
 
         // TODO: multi volume options
 
-        // kompresni parametry nastavovat pokud opravdu komprimujeme
-        // nastavovat jako posledni
+        // set compression parameters only if we are really compressing
+        // set them as the last step
         if (compressParams->CompressLevel != COMPRESS_LEVEL_STORE)
         {
             char dictSizeStr[32];
@@ -1025,7 +1025,7 @@ C7zClient::SetCompressionParams(IOutArchive* outArchive, CCompressParams* compre
 
                 // set dictionary size
                 names.Add(L"0d");
-                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize je v KB
+                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize is in KB
                 values.push_back(NWindows::NCOM::CPropVariant(GetUnicodeString(dictSizeStr)));
 
                 // set word size
@@ -1041,7 +1041,7 @@ C7zClient::SetCompressionParams(IOutArchive* outArchive, CCompressParams* compre
 
                 // set dictionary size
                 names.Add(L"0d");
-                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize je v KB
+                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize is provided in KB
                 values.push_back(NWindows::NCOM::CPropVariant(GetUnicodeString(dictSizeStr)));
 
                 // set word size
@@ -1057,7 +1057,7 @@ C7zClient::SetCompressionParams(IOutArchive* outArchive, CCompressParams* compre
 
                 // set dictionary size
                 names.Add(L"0mem");
-                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize je v KB
+                sprintf(dictSizeStr, "%dB", compressParams->DictSize * 1024); // DictSize is provided in KB
                 values.push_back(NWindows::NCOM::CPropVariant(GetUnicodeString(dictSizeStr)));
 
                 // set word size
@@ -1079,7 +1079,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
                       CCompressParams* compressParams, bool passwordIsDefined, UString password)
 {
     char tmpName[MAX_PATH];
-    // oriznout filename z archiveName, zustane nam cilova cesta, kam budeme vybalovat
+    // trim the filename from archiveName, leaving the target path where we will extract
     lstrcpy(tmpName, archiveName);
     SalamanderGeneral->CutDirectory(tmpName, NULL);
     DWORD err;
@@ -1104,7 +1104,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             if (!CreateObject(&IID_IOutArchive, (void**)&outArchive))
                 throw OPER_CANCEL;
 
-            // vytvorit si prazdne pole
+            // create an empty array
             archiveItems = new TIndirectArray<CArchiveItem>(1, 20, dtDelete);
             if (archiveItems == NULL)
             {
@@ -1114,7 +1114,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
         }
         else
         {
-            // pridavani polozek do existujiciho archivu
+            // adding items to an existing archive
             if (!OpenArchive(archiveName, &inArchive, password))
                 throw OPER_CANCEL;
 
@@ -1126,12 +1126,12 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
                 throw OPER_CANCEL;
             }
 
-            // vylistovat si archiv
+            // list the archive contents
             if (GetArchiveItemList(inArchive, &archiveItems, &numItems) == OPER_CANCEL)
                 throw OPER_CANCEL;
         }
 
-        // vystupni stream
+        // output stream
         CRetryableOutFileStream* outStreamSpec = new CRetryableOutFileStream(salamander->ProgressGetHWND());
         if (outStreamSpec == NULL)
         {
@@ -1146,7 +1146,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             throw OPER_CANCEL;
         }
 
-        // velikost je pocet polozek v archivu + pocet pridavanych polozek
+        // size is the number of items in the archive + the number of items being added
         updateList = new TIndirectArray<CUpdateInfo>(numItems + fileList->Count, 20, dtDelete);
         if (updateList == NULL)
         {
@@ -1154,11 +1154,11 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             throw OPER_CANCEL;
         }
 
-        // pripravit 'davku' pro zpravovani
+        // prepare a 'batch' for processing
         if (UpdateMakeUpdateList(fileList, archiveItems, updateList) == OPER_CANCEL)
             throw OPER_CANCEL;
 
-        // zpracovat
+        // process it
         CArchiveUpdateCallback* updateCallbackSpec = new CArchiveUpdateCallback(salamander->ProgressGetHWND());
         if (updateCallbackSpec == NULL)
         {
@@ -1178,8 +1178,8 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
 
         SetCompressionParams(outArchive, compressParams);
 
-        // spustit update ve vlakne
-        // tahle silenost je tu kvuli tomu, ze 7za.dll je multi-threadovy a nesly zobrazovat nase message boxy
+        // start update in a thread
+        // this craziness is here because 7za.dll is multi-threaded and could not display our message boxes
         CUpdateParamObject upo;
         upo.Archive = outArchive;
         upo.Stream = outStream;
@@ -1195,12 +1195,12 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
 
         if (ret == OPER_OK)
         {
-            // nakonec jeste prejmenovat tmp
+            // finally rename the tmp file
             if (!isNewArchive)
             {
-                // zavrit otevreny archiv
+                // close the open archive
                 inArchive->Close();
-                // smazat ho
+                // delete it
                 if (!::DeleteFile(archiveName))
                 {
                     Error(IDS_CANT_UPDATE_ARCHIVE, FALSE, archiveName);
@@ -1209,7 +1209,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             }
 
             DWORD err2;
-            // prejmenovat tmpfile na archiv
+            // rename the tmp file to the archive
             if (!SalamanderGeneral->SalMoveFile(tmpName, archiveName, &err2))
             {
                 SysError(IDS_CANT_MOVE_TMPARCHIVE, err2, FALSE, tmpName);
@@ -1252,7 +1252,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             }
             //      }
             /*
-      // smazat temp soubor
+      // delete the temp file
       if (!::DeleteFile(tmpName))
       {
         SysError(IDS_CANT_DELETE_TMPARCHIVE, ::GetLastError(), FALSE, tmpName);

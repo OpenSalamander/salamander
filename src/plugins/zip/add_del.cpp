@@ -260,7 +260,7 @@ int CZipPack::DeleteFromArchive(SalEnumSelection next, void* param)
                                     }
                                     if (buffer)
                                         free(buffer);
-                                    //if (rootDir.Name) free(rootDir.Name); smaze se to samo, rootDir ma jiz destructor
+                                    //if (rootDir.Name) free(rootDir.Name); it will delete itself, rootDir already has a destructor
                                 }
                             }
                         }
@@ -315,7 +315,7 @@ BOOL CZipPack::LoadDefaults()
     Options = DefOptions;
     //Options.SfxSettings.IconIndex = -IDI_SFXICON;
 
-    // Config->DefSfxFile je "" kdyz nenajdeme zadny *.sfx, takze nelze balit sfx
+    // Config->DefSfxFile is "" when we do not find any *.sfx, so we cannot package SFX
     if (*Config.DefSfxFile)
     {
         if (DefLanguage && lstrcmp(DefLanguage->FileName, Config.DefSfxFile))
@@ -393,7 +393,7 @@ int CZipPack::LoadExPackOptions(unsigned flags)
     {
         if (PackDialog(SalamanderGeneral->GetMainWindowHWND(), this, &Config, &Options, ZipName, flags) != IDOK)
         {
-            //nebudeme ukladat zachovame starou VolSizeCache
+            // do not store it; keep the old VolSizeCache
             int i;
             for (i = 0; i < 5; i++)
             {
@@ -412,7 +412,7 @@ int CZipPack::LoadExPackOptions(unsigned flags)
     if (Options.Action & PA_SELFEXTRACT)
     {
         LastUsedSfxSet.Settings = Options.SfxSettings;
-        //to jmeno je jen pro interni potrebu (nekde dal se to testuje na "")
+        // this name is only needed internally (it is checked for "" somewhere else)
         lstrcpy(LastUsedSfxSet.Name, "Last Used");
     }
     return 0;
@@ -440,7 +440,7 @@ int CZipPack::CreateSFX()
         return ErrorID = IDS_NODISPLAY;
 
     LastUsedSfxSet.Settings = Options.SfxSettings;
-    //to jmeno je jen pro interni potrebu (nekde dal se to testuje na "")
+    // this name is only needed internally (it is checked for "" somewhere else)
     lstrcpy(LastUsedSfxSet.Name, "Last Used");
 
     if (Options.SfxSettings.Flags & SE_AUTO)
@@ -547,7 +547,7 @@ int CZipPack::CommentArchive()
     if (!temp)
         return ErrorID = IDS_LOWMEM;
     Comment = (char*)temp;
-    Comment[EONewCentrDir.CommentLen] = 0; // pro jistotu
+    Comment[EONewCentrDir.CommentLen] = 0; // just to be sure
 
     CCommentDialog dlg(SalamanderGeneral->GetMainWindowHWND(), this);
     if (dlg.Proceed() != IDOK)

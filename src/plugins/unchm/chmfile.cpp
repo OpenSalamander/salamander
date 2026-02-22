@@ -173,7 +173,7 @@ BOOL CCHMFile::AddFileDir(struct chmUnitInfo* ui, CSalamanderDirectoryAbstract* 
     fd.NameLen = strlen(fd.Name);
     char* s = strrchr(fd.Name, '.');
     if (s != NULL)
-        fd.Ext = s + 1; // ".cvspass" ve Windows je pripona
+        fd.Ext = s + 1; // ".cvspass" is an extension in Windows
     else
         fd.Ext = fd.Name + fd.NameLen;
 
@@ -192,12 +192,12 @@ BOOL CCHMFile::AddFileDir(struct chmUnitInfo* ui, CSalamanderDirectoryAbstract* 
 
     fd.DosName = NULL;
 
-    fd.Attr = FILE_ATTRIBUTE_READONLY; // vse je defaultne read-only
+    fd.Attr = FILE_ATTRIBUTE_READONLY; // everything is read-only by default
     fd.Hidden = 0;
 
     fd.Size.SetUI64(ui->length);
 
-    // soubor
+    // file
     fd.IsLink = SalamanderGeneral->IsFileLink(fd.Ext);
     fd.IsOffline = 0;
     if (dir && !dir->AddFile(path, fd, pluginData))
@@ -276,11 +276,11 @@ int CCHMFile::ExtractObject(CSalamanderForOperationsAbstract* salamander, const 
     // set file time
     SetFileTime(file, &ft, &ft, &ft);
 
-    // celkova operace muze pokracovat dal. pouze skip
+    // the overall operation can continue; skip only
     if (toSkip)
         return UNPACK_ERROR;
 
-    // celkova operace nemuze pokracovat dal. cancel
+    // the overall operation cannot continue; cancel
     if (file == INVALID_HANDLE_VALUE)
         return UNPACK_CANCEL;
 
@@ -336,14 +336,14 @@ int CCHMFile::ExtractObject(CSalamanderForOperationsAbstract* salamander, const 
             break;
         }
 
-        if (!salamander->ProgressAddSize((int)len, TRUE)) // delayedPaint==TRUE, abychom nebrzdili
+        if (!salamander->ProgressAddSize((int)len, TRUE)) // delayedPaint==TRUE so we do not slow down
         {
             salamander->ProgressDialogAddText(LoadStr(IDS_CANCELOPER), FALSE);
             salamander->ProgressEnableCancel(FALSE);
 
             ret = UNPACK_CANCEL;
             whole = FALSE;
-            break; // preruseni akce
+            break; // interrupt the action
         }
     } // while
 
@@ -356,14 +356,14 @@ int CCHMFile::ExtractObject(CSalamanderForOperationsAbstract* salamander, const 
         if (ret == UNPACK_OK)
             ret = UNPACK_CANCEL;
 
-        // protoze je vytvoren s read-only atributem, musime R attribut
-        // shodit, aby sel soubor smazat
+        // because it is created with the read-only attribute, we must clear the R attribute
+        // to allow the file to be deleted
         attrs &= ~FILE_ATTRIBUTE_READONLY;
         if (!SetFileAttributes(name, attrs))
             Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-        // user zrusil operaci
-        // smazat po sobe neuplny soubor
+        // the user canceled the operation
+        // delete the incomplete file afterwards
         if (!DeleteFile(name))
             Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());
     }
@@ -405,7 +405,7 @@ int CCHMFile::ExtractAllObjects(CSalamanderForOperationsAbstract* salamander, ch
     for (i = 0; i < count; i++)
     {
         CFileData const* file = dir->GetFile(i);
-        salamander->ProgressDialogAddText(file->Name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+        salamander->ProgressDialogAddText(file->Name, TRUE); // delayedPaint==TRUE so we do not slow down
 
         salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
         salamander->ProgressSetTotalSize(file->Size + CQuadWord(1, 0), CQuadWord(-1, -1));

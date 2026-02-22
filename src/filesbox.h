@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -13,11 +14,11 @@ class CFilesBox;
 
 enum CViewModeEnum
 {
-    vmBrief,      // nekolik sloupcu dat; pouze vodorovne rolovatko; spodni polozky jsou vzdy cele viditelne
-    vmDetailed,   // jeden sloupec dat; zobrzene obe rolovatka; posledni radek nemusi byt cely viditelny
-    vmIcons,      // velke ikony zleva doprava a pak shora dolu; pouze svisle rolovatko
-    vmThumbnails, // nahledy zleva doprava a pak shora dolu; pouze svisle rolovatko
-    vmTiles       // velke (48x48) ikony zleva doprava a pak shora dolu; pouze svisle rolovatko
+    vmBrief,      // several columns of data; horizontal scrollbar only; bottom items are always fully visible
+    vmDetailed,   // single column of data; both scrollbars shown; last row may be partially visible
+    vmIcons,      // large icons left-to-right then top-to-bottom; vertical scrollbar only
+    vmThumbnails, // thumbnails left-to-right then top-to-bottom; vertical scrollbar only
+    vmTiles       // large (48x48) icons left-to-right then top-to-bottom; vertical scrollbar only
 };
 
 //****************************************************************************
@@ -25,13 +26,13 @@ enum CViewModeEnum
 // CBottomBar
 //
 
-// drzi scrollbaru a obdelnicek za ni
+// holds the scrollbar and the rectangle behind it
 class CBottomBar : public CWindow
 {
 protected:
     HWND HScrollBar;
-    BOOL VertScrollSpace;   // drzet prostor pro svisle roovatko
-    CFilesBox* RelayWindow; // pro predavani messages
+    BOOL VertScrollSpace;   // reserve space for the vertical scrollbar
+    CFilesBox* RelayWindow; // used to relay messages
 
 public:
     CBottomBar();
@@ -40,7 +41,7 @@ public:
 protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void LayoutChilds(); // napocita rozmery obdelniku a rozmisti child okna
+    void LayoutChilds(); // computes rectangles and positions child windows
 
     friend class CFilesBox;
 };
@@ -52,47 +53,47 @@ protected:
 
 enum CHeaderHitTestEnum
 {
-    hhtNone,    // plocha za polsedni polozkou
-    hhtItem,    // polozka
-    hhtDivider, // oodelovac polozky, ktera ma nastavitelnou sirku
+    hhtNone,    // area after the last item
+    hhtItem,    // item
+    hhtDivider, // divider of an item with adjustable width
 };
 
 class CHeaderLine : public CWindow
 {
 protected:
     CFilesBox* Parent;
-    TDirectArray<CColumn>* Columns; // ukazatel do pole drzeneho v CFilesWindow
+    TDirectArray<CColumn>* Columns; // pointer to the array held in CFilesWindow
     int Width;
     int Height;
-    int HotIndex;        // index sloupce, ktery je prave vysviceny
-    BOOL HotExt;         // ma vyznam pouze je-li HotIndex==0 (Name)
-    int DownIndex;       // index sloupce, kde doslo k LDOWN
-    BOOL DownVisible;    // je prave stikly
-    int DragIndex;       // index sloupce, jehoz sirka je nastavovana
-    BOOL MouseIsTracked; // je mys sledovana pomoci TrackMouseEvent?
-    int OldDragColWidth; // sirka sloupce pred zacatkem tazeni; ma vyznam pri tazeni sirky sloupce
+    int HotIndex;        // index of the column currently highlighted
+    BOOL HotExt;         // meaningful only when HotIndex==0 (Name)
+    int DownIndex;       // column index where the LDOWN occurred
+    BOOL DownVisible;    // is it currently pressed?
+    int DragIndex;       // index of the column whose width is being set
+    BOOL MouseIsTracked; // is the mouse tracked using TrackMouseEvent?
+    int OldDragColWidth; // column width before dragging started; used when resizing the column width
 
 public:
     CHeaderLine();
     ~CHeaderLine();
 
-    // obehne pole Columns a nastavi sloupcum minimalni sirky
-    // na zaklade nazvu sloupcu a jestli je podle sloupce mozne
-    // radit (potom rezervuje prostor pro symbol sipky
+    // walks through the Columns array and sets minimal widths for columns
+    // based on column names and whether sorting is possible by the column
+    // (then reserves space for the arrow symbol if needed)
     void SetMinWidths();
 
-    // Urci, ve ktere casti se naleza bod [xPos, yPos] (v client souradnicich).
-    // Pokud vrati hhtItem nebo hhtDivider, nastavi do promenne 'index'
-    // index odpovidajiciho sloupce v poli Columns.
-    // Pokud dojde na kliknuti na "Name", bude nastavena promenna 'extInName'
-    // Je-li kliknuto na "Ext", bude rovna TRUE. Jinak bude FALSE.
+    // Determines which part contains point [xPos, yPos] (in client coordinates).
+    // If it returns hhtItem or hhtDivider, it sets the variable 'index'
+    // to index of the column from Columns array.
+    // If "Name" was clicked, it sets the variable 'extInName'
+    // When "Ext" is clicked it becomes TRUE, otherwise FALSE.
     CHeaderHitTestEnum HitTest(int xPos, int yPos, int& index, BOOL& extInName);
 
 protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void PaintAllItems(HDC hDC, HRGN hUpdateRgn);
-    void PaintItem(HDC hDC, int index, int x = -1); // pro 'x==-1' se napocita spravna pozice
+    void PaintItem(HDC hDC, int index, int x = -1); // for 'x==-1' the correct position is computed
     void PaintItem2(int index);
     void Cancel();
 
@@ -109,54 +110,54 @@ class CFilesBox : public CWindow
 {
 protected:
     CFilesWindow* Parent;
-    HDC HPrivateDC; // kazdy panel ma sve DC
+    HDC HPrivateDC; // each panel has its own DC
     HWND HVScrollBar;
     HWND HHScrollBar;
     CBottomBar BottomBar;
     CHeaderLine HeaderLine;
 
-    RECT ClientRect;    // rozmery celeho okna
-    RECT HeaderRect;    // poloha header controlu v ramci ClientRect
-    RECT VScrollRect;   // poloha svisle scrollbary v ramci ClientRect
-    RECT BottomBarRect; // poloha vodorovne scrollbary v ramci ClientRect
-    RECT FilesRect;     // poloha vlastni kreslici polochy v ramci ClientRect
+    RECT ClientRect;    // dimensions of the entire window
+    RECT HeaderRect;    // position of the header control within ClientRect
+    RECT VScrollRect;   // position of the vertical scrollbar within ClientRect
+    RECT BottomBarRect; // position of the horizontal scrollbar within ClientRect
+    RECT FilesRect;     // position of the drawing area within ClientRect
 
-    int TopIndex;            // vmBrief || vmDetailed: index prvni zobrazene polozky
-                             // vmIcons || vmThumbnails: odrolovani panelu v bodech
-    int XOffset;             // X souradnice prvniho zobrazeneho bodu
-    int ItemsCount;          // celkovy pocet polozek
-    int EntireItemsInColumn; // pocet plne viditelnych polozek ve sloupci
-    int ItemsInColumn;       // celkovy pocet radku
-    int EntireColumnsCount;  // pocet plne viditelnych sloupcu - plati pouze v Brief rezimu
-    int ColumnsCount;        // celkovy pocet sloupcu
+    int TopIndex;            // vmBrief || vmDetailed: index of the first displayed item
+                             // vmIcons || vmThumbnails: panel scrolled in pixels
+    int XOffset;             // X coordinate of the first visible point
+    int ItemsCount;          // total number of items
+    int EntireItemsInColumn; // number of fully visible items in a column
+    int ItemsInColumn;       // total number of rows
+    int EntireColumnsCount;  // number of fully visible columns - valid only in Brief mode
+    int ColumnsCount;        // total number of columns
 
-    SCROLLINFO OldVertSI; // abychom nenastavovali scrollbar zbytecne
-    SCROLLINFO OldHorzSI; // abychom nenastavovali scrollbar zbytecne
+    SCROLLINFO OldVertSI; // to avoid setting the scrollbar unnecessarily
+    SCROLLINFO OldHorzSI; // to avoid setting the scrollbar unnecessarily
 
     CViewModeEnum ViewMode;
-    BOOL HeaderLineVisible; // je zobrazena header line?
+    BOOL HeaderLineVisible; // is the header line displayed?
 
-    int ItemHeight; // vyska polozky
+    int ItemHeight; // item height
     int ItemWidth;
 
-    int ThumbnailWidth; // rozmery thumbnailu, rizene promennou CConfiguration::ThumbnailSize
+    int ThumbnailWidth; // thumbnail dimensions controlled by CConfiguration::ThumbnailSize
     int ThumbnailHeight;
 
-    // slouzi pro akumulaci mikrokroku pri otaceni koleckem mysi, viz
-    // http://msdn.microsoft.com/en-us/library/ms997498.aspx (Best Practices for Supporting Microsoft Mouse and Keyboard Devices)
+    // used to accumulate microsteps when rotating the mouse wheel;
+    // see http://msdn.microsoft.com/en-us/library/ms997498.aspx (Best Practices for Supporting Microsoft Mouse and Keyboard Devices)
     int MouseWheelAccumulator;  // vertical
     int MouseHWheelAccumulator; // horizontal
 
 public:
     CFilesBox(CFilesWindow* parent);
 
-    // nastavi pocet polozek v panelu
-    // count             - pocet polozek v panelu
-    // suggestedXOffset  - novy XOffset
-    // suggestedTopIndex - novy TopIndex
-    // disableSBUpdate   - pokud je FALSE, nebude zmena promitnuta do scrollbar
+    // sets the number of items in the panel
+    // count             - number of items in the panel
+    // suggestedXOffset  - new XOffset
+    // suggestedTopIndex - new TopIndex
+    // disableSBUpdate   - if FALSE, the change will not be reflected in the scrollbar
     void SetItemsCount(int count, int xOffset, int topIndex, BOOL disableSBUpdate);
-    void SetItemsCount2(int count); // jednoducha verze, pouze nastavi pocet a zavola UpdateInternalData()
+    void SetItemsCount2(int count); // simple version: just sets the count and calls UpdateInternalData()
     int GetEntireItemsInColumn();
 
     int GetColumnsCount();
@@ -170,46 +171,46 @@ public:
     int GetTopIndex() { return TopIndex; }
     int GetXOffset() { return XOffset; }
 
-    // vraci index polozky na souradnicich 'x' a 'y', ridi se 'nearest'
-    // pokud je 'labelRect' != NULL, vrati v nem polohu ramecku kolem textu
-    // pokud nenajde zadnou polozku odpovidajici kriteriim, vraci INT_MAX
+    // returns the index of the item at coordinates 'x' and 'y'; obeys 'nearest'
+    // if 'labelRect' != NULL, returns the position of rectangle around the text
+    // if no item matching the criteria is found, returns INT_MAX
     int GetIndex(int x, int y, BOOL nearest = FALSE, RECT* labelRect = NULL);
 
     void PaintAllItems(HRGN hUpdateRgn, DWORD drawFlags);
     void PaintItem(int index, DWORD drawFlags);
 
-    void PaintHeaderLine(); // pokud je zobrazen, bude prekreslen
+    void PaintHeaderLine(); // if it is visible it will be repainted
 
-    // v 'rect' vrati obsany obdelnik kolem polozky 'index'
-    // vrati TRUE, pokud je obdelnik alespon castecne viditelny
+    // in 'rect' returns the bounding rectangle of item 'index'
+    // returns TRUE if the rectangle is at least partially visible
     BOOL GetItemRect(int index, RECT* rect);
 
-    // forcePaint - i v pripade, ze nedojde k rolovani bude polozka prekreslena
-    // scroll: FALSE - polozka bude plne viditelna; TRUE - polozka bude alespon castecne viditelna
-    // selFocChangeOnly: pokud nedojde k odrolovani, bude pri kresleni polozky pouzit flag DRAWFLAG_SELFOC_CHANGE
+    // forcePaint - even if no scrolling occurs the item will be repainted
+    // scroll: FALSE - the item will be fully visible; TRUE - the item will be at least partially visible
+    // selFocChangeOnly: if not scrolled, DRAWFLAG_SELFOC_CHANGE is used when painting
     void EnsureItemVisible(int index, BOOL forcePaint = FALSE, BOOL scroll = FALSE, BOOL selFocChangeOnly = FALSE);
 
-    // vrati novy TopIndex, ktery by nastavila metoda EnsureItemVisible pro scroll == FALSE
+    // returns the new TopIndex that EnsureItemVisible would set for scroll == FALSE
     int PredictTopIndex(int index);
 
-    // specialni verze funkce: odroluje pouze s casti obrazovky, ktera neobsahuje
-    // polozku index; potom vykresli zbyle polozky
+    // special version: scrolls only the part of the screen that doesn't contain
+    // the item index, then repaints the remaining items
     void EnsureItemVisible2(int newTopIndex, int index);
 
-    // vraci TRUE pokud je polozka index alespon castecne viditelna; neni-li 'isFullyVisible' NULL,
-    // vraci v nem TRUE pokud je polozka cela videt (FALSE = neni videt nebo jen castecne)
+    // returns TRUE if item 'index' is at least partially visible; if 'isFullyVisible' is not NULL,
+    // it receives TRUE when the item is fully visible (FALSE = not visible or only partially)
     BOOL IsItemVisible(int index, BOOL* isFullyVisible);
 
-    // vraci index prvni alespon castecne viditelne polozky a pocet alespon
-    // castecne viditelnych polozek (urcuje vsechny alespon castecne viditelne
-    // polozky - pouziva se pri priorizaci nacitani ikonek a thumbnailu)
+    // returns the index of the first at least partially visible item and the
+    // number of partially visible items (determines all at least partially visible
+    // items - used when prioritizing icon and thumbnail loading)
     void GetVisibleItems(int* firstIndex, int* count);
 
     CHeaderLine* GetHeaderLine() { return &HeaderLine; }
 
-    // nuluje akumulator, ktery pouzivame pri detekci mouse wheel; po vynulovani se pri dalsim otacenim zacina nacisto
-    // MS doporucuji v Best Practices for Supporting Microsoft Mouse and Keyboard Devices (http://msdn.microsoft.com/en-us/library/ms997498.aspx)
-    // nulovat akumulator pri zmene otaceni kolecka nebo focusu okna
+    // resets the accumulator used for mouse wheel detection; after reset, the next rotation starts from scratch
+    // Microsoft recommends in Best Practices for Supporting Microsoft Mouse and Keyboard Devices (http://msdn.microsoft.com/en-us/library/ms997498.aspx)
+    // to clear the accumulator when the wheel direction changes or the window focus changes
     void ResetMouseWheelAccumulator()
     {
         MouseWheelAccumulator = 0;
@@ -217,11 +218,11 @@ public:
     }
 
 protected:
-    void LayoutChilds(BOOL updateAndCheck = TRUE);                               // napocita rozmery obdelniku a rozmisti child okna
-    void SetupScrollBars(DWORD flags = UPDATE_VERT_SCROLL | UPDATE_HORZ_SCROLL); // nastavi info scrollbaram
-    BOOL ShowHideChilds();                                                       // na zaklade promenne Mode zobrazi/zhasne childy; pri zmene vrati TRUE, jinak vrati FALSE
+    void LayoutChilds(BOOL updateAndCheck = TRUE);                               // computes rectangle size and positions child windows
+    void SetupScrollBars(DWORD flags = UPDATE_VERT_SCROLL | UPDATE_HORZ_SCROLL); // updates scrollbar information
+    BOOL ShowHideChilds();                                                       // shows or hides children based on Mode; returns TRUE when a change occurs otherwise returns FALSE
     void UpdateInternalData();
-    void CheckAndCorrectBoundaries(); // zajisti, aby byly rolovatka v mozne poloze, pripadne je upravi
+    void CheckAndCorrectBoundaries(); // ensures scrollbars are in valid ranges, adjusting them if needed
 
     void OnHScroll(int scrollCode, int pos);
     void OnVScroll(int scrollCode, int pos);

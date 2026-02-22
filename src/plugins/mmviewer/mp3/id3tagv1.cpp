@@ -343,7 +343,7 @@ BOOL ID3TAGV1_Read(FILE* f, ID3TAGV1* ph)
         }
         else
         {
-            //vrat se zpet na puv. pozici
+            // return to the original position
             fseek(f, fpos, SEEK_SET);
             return FALSE;
         }
@@ -367,14 +367,14 @@ BOOL ID3TAGV1_Decode(ID3TAGV1* ph, ID3TAGV1_DECODED* phd)
         else
             phd->version = 0x0100;
 
-        //smaz prebytecne mezery (maji nektere stare tagy)
+        // remove excess spaces (some old tags have them)
         WipeOut(sizeof(ph->artist) - 1, ph->artist);
         WipeOut(sizeof(ph->album) - 1, ph->album);
         WipeOut(sizeof(ph->title) - 1, ph->title);
         WipeOut(sizeof(ph->year) - 1, ph->year);
         WipeOut(sizeof(ph->comments) - 1, ph->comments);
 
-        //zkopiruj polozky do dekodovane struktury
+        // copy the items into the decoded structure
         strncpy_s(phd->artist, ph->artist, sizeof(ph->artist));
         strncpy_s(phd->album, ph->album, sizeof(ph->album));
         strncpy_s(phd->title, ph->title, sizeof(ph->title));

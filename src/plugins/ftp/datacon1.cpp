@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "spl_zlib.h"
@@ -25,8 +26,8 @@ CDataConnectionBaseSocket::CDataConnectionBaseSocket(CFTPProxyForDataCon* proxyS
     NetEventLastError = NO_ERROR;
     SSLErrorOccured = SSLCONERR_NOERROR;
     ReceivedConnected = FALSE;
-    LastActivityTime = GetTickCount(); // hresime na to, ze objekt se konstruuje pred poslanim transfer prikazu (prikaz bude mit kratsi nebo stejny timeout)
-    SocketCloseTime = GetTickCount();  // pro jistotu, pred volanim GetSocketCloseTime() by se melo prepsat
+    LastActivityTime = GetTickCount(); // we rely on the object being constructed before sending the transfer command (the command will have a shorter or equal timeout)
+    SocketCloseTime = GetTickCount();  // just to be safe, it should be overwritten before calling GetSocketCloseTime()
 
     GlobalLastActivityTime = NULL;
 
@@ -70,7 +71,7 @@ void CDataConnectionBaseSocket::SetPassive(DWORD ip, unsigned short port, int lo
     ServerIP = ip;
     ServerPort = port;
     LogUID = logUID;
-    LastActivityTime = GetTickCount(); // hresime na to, ze objekt se inicializuje pred poslanim transfer prikazu (prikaz bude mit kratsi nebo stejny timeout)
+    LastActivityTime = GetTickCount(); // we rely on the object being initialized before sending the transfer command (the command will have a shorter or equal timeout)
     if (GlobalLastActivityTime != NULL)
         GlobalLastActivityTime->Set(LastActivityTime);
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -96,7 +97,7 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
     unsigned short auxServerPort = ServerPort;
     int logUID = LogUID;
 
-    // pred dalsim connectem nulujeme...
+    // reset before the next connect attempt...
     ClearBeforeConnect();
     TransferSpeedMeter.Clear();
     if (CompressData)
@@ -108,7 +109,7 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
 
     if (auxUsePassiveMode)
     {
-        DWORD err; // 'ProxyServer' je v data-connectionach pristupny bez kriticke sekce
+        DWORD err; // 'ProxyServer' is accessible in data connections without the critical section
         BOOL conRes;
         BOOL connectToProxy = FALSE;
         if (ProxyServer != NULL && IsSOCKSOrHTTPProxy(ProxyServer->ProxyType))
@@ -130,10 +131,10 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
             conRes = Connect(auxServerIP, auxServerPort, &err);
         }
         BOOL ret = TRUE;
-        if (!conRes) // neni nadeje na uspech
+        if (!conRes) // there is no hope for success
         {
             HANDLES(EnterCriticalSection(&SocketCritSect));
-            NetEventLastError = err; // zaznamename chybu (krome fatalnich chyb (nedostatek pameti, atd.))
+            NetEventLastError = err; // record the error (except fatal errors such as insufficient memory, etc.)
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
             char buf[500];
@@ -146,7 +147,7 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
                 char* s = errBuf + strlen(errBuf);
                 while (s > errBuf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                     s--;
-                *s = 0; // oriznuti znaku konce radky z textu chyby
+                *s = 0; // trim newline characters from the error text
                 _snprintf_s(buf, _TRUNCATE, LoadStr(connectToProxy ? IDS_LOGMSGUNABLETOCONPRX2 : IDS_LOGMSGUNABLETOOPEN2), inet_ntoa(srvAddr),
                             (connectToProxy ? ProxyServer->ProxyPort : auxServerPort), errBuf);
             }
@@ -166,7 +167,7 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
     {
         TRACE_E("Unexpected situation in CDataConnectionSocket::PassiveConnect() - not in passive mode.");
         if (error != NULL)
-            *error = NO_ERROR; // neznama chyba
+            *error = NO_ERROR; // unknown error
         return FALSE;
     }
 }
@@ -180,7 +181,7 @@ void CDataConnectionBaseSocket::SetActive(int logUID)
     UsePassiveMode = FALSE;
     LogUID = logUID;
 
-    // pred dalsim pokusem o navazani spojeni nulujeme...
+    // reset before the next attempt to establish a connection...
     ClearBeforeConnect();
     TransferSpeedMeter.Clear();
     if (CompressData)
@@ -189,7 +190,7 @@ void CDataConnectionBaseSocket::SetActive(int logUID)
     SSLErrorOccured = SSLCONERR_NOERROR;
     ReceivedConnected = FALSE;
 
-    LastActivityTime = GetTickCount(); // hresime na to, ze objekt se inicializuje pred poslanim transfer prikazu (prikaz bude mit kratsi nebo stejny timeout)
+    LastActivityTime = GetTickCount(); // we rely on the object being initialized before sending the transfer command (the command will have a shorter or equal timeout)
     if (GlobalLastActivityTime != NULL)
         GlobalLastActivityTime->Set(LastActivityTime);
 
@@ -203,8 +204,8 @@ BOOL CDataConnectionBaseSocket::IsTransfering(BOOL* transferFinished)
     HANDLES(EnterCriticalSection(&SocketCritSect));
     BOOL ret = IsConnected();
     if (transferFinished != NULL)
-        *transferFinished = ReceivedConnected && !ret; // doslo ke spojeni, ale uz je zavrene? (hotovo)
-    ret = ReceivedConnected && ret;                    // doslo ke spojeni a je stale otevrene? (transfering)
+        *transferFinished = ReceivedConnected && !ret; // the connection was established but is already closed? (finished)
+    ret = ReceivedConnected && ret;                    // the connection was established and is still open? (transferring)
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
     return ret;
@@ -232,9 +233,9 @@ void CDataConnectionBaseSocket::ActivateConnection()
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-    if (passiveModeRetry) // v pasivnim modu doslo k odmitnuti prvniho pokusu o spojeni, provedeme druhy pokus
+    if (passiveModeRetry) // in passive mode the first connection attempt was rejected, perform a second attempt
     {
-        // CloseSocketEx(NULL);           // nema smysl zavirat socket stare "data connection" (uz musi byt zavreny)
+        // CloseSocketEx(NULL);           // there is no point in closing the socket of the old "data connection" (it must already be closed)
         Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGDATACONRECON), -1, TRUE);
         PassiveConnect(NULL);
     }
@@ -372,7 +373,7 @@ void CDataConnectionBaseSocket::LogNetEventLastError(BOOL canBeProxyError)
         char* s = errBuf + strlen(errBuf);
         while (s > errBuf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
             s--;
-        *s = 0; // oriznuti znaku konce radky z textu chyby
+        *s = 0; // trim newline characters from the error text
         _snprintf_s(buf, _TRUNCATE, LoadStr(IDS_LOGMSGDATCONERROR), errBuf);
         Logs.LogMessage(LogUID, buf, -1, TRUE);
     }
@@ -426,7 +427,7 @@ CDataConnectionSocket::CDataConnectionSocket(BOOL flushData, CFTPProxyForDataCon
     TgtDiskFileSize.Set(0, 0);
     CurrentTransferMode = ctrmUnknown;
     AsciiTrModeForBinFileProblemOccured = FALSE;
-    AsciiTrModeForBinFileHowToSolve = 0 /* ptat se uzivatele */;
+    AsciiTrModeForBinFileHowToSolve = 0 /* ask the user */;
     TgtDiskFileClosed = FALSE;
     TgtDiskFileCloseIndex = -1;
     DiskWorkIsUsed = FALSE;
@@ -495,17 +496,17 @@ char* CDataConnectionSocket::GiveData(int* length, BOOL* decomprErr)
                             TRACE_E("CDataConnectionSocket::GiveData(): ignoring data (" << zi.avail_in << " bytes) received after end of compressed stream");
                         break;
                     }
-                    if (err < 0) // chyba pri dekompresi: pocitame se SAL_Z_DATA_ERROR a SAL_Z_BUF_ERROR, ostatni jsou necekane; BTW, SAL_Z_DATA_ERROR by taky teoreticky nemela nikdy nastat, muselo by jit o interni chybu serveru (ze by data spatne zakomprimoval), TCP je zabezpeceny; SAL_Z_BUF_ERROR nastane pokud stream neni ukonceny (predcasne preruseny data-transfer)
+                    if (err < 0) // decompression error: we expect SAL_Z_DATA_ERROR and SAL_Z_BUF_ERROR, the others are unexpected; BTW, SAL_Z_DATA_ERROR theoretically should never occur, it would have to be an internal server error (the data was compressed incorrectly), TCP is reliable; SAL_Z_BUF_ERROR occurs when the stream is not terminated (data transfer interrupted early)
                     {
                         if (err != SAL_Z_DATA_ERROR && (err != SAL_Z_BUF_ERROR || zi.avail_in != 0))
                             TRACE_E("CDataConnectionSocket::GiveData(): SalZLIB->Inflate returns unexpected error: " << err);
-                        if (err != SAL_Z_BUF_ERROR || zi.avail_in != 0) // pri nekompletnich datech predpokladame, ze jinak je stream OK a dekomprimovana data jsou tez OK
+                        if (err != SAL_Z_BUF_ERROR || zi.avail_in != 0) // with incomplete data we assume the stream is otherwise OK and the decompressed data are OK as well
                         {
                             Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGDECOMPRERROR), -1, TRUE);
                             *decomprErr = TRUE;
-                            *length = 0; // pri chybe dekomprimace muzou byt data uplne nesmyslna (nevyslo CRC), takze je radsi komplet zrusime
+                            *length = 0; // when decompression fails the data may be completely garbage (CRC failed), so we discard them entirely
                         }
-                        // else;  // chybu neukonceni streamu ignorujeme, neukoncuje napr. Serv-U 7 a 8 (6 ho jeste ukoncuje); asi zadna traga, protoze se kontroluje server reply + uspesne zavreni TCP spojeni (prenos vsech dat ze serveru by tedy mel byt zajisten)
+                        // else;  // we ignore the missing end-of-stream error; for example Serv-U 7 and 8 do not terminate it (6 still does); probably not a big deal because we check the server reply and the successful closing of the TCP connection (the transfer of all data from the server should therefore be ensured)
                         break;
                     }
                     if (zi.avail_out == 0)
@@ -516,7 +517,7 @@ char* CDataConnectionSocket::GiveData(int* length, BOOL* decomprErr)
                         zi.next_out = (BYTE*)ret + *length;
                     }
                 }
-                // zkusime buffer zmensit, aby zbytecne nezabiral pamet
+                // try to shrink the buffer so it does not occupy memory unnecessarily
                 // NOTE: realloc(x, 0) frees x and returns NULL!
                 ret = (char*)realloc(ret, max(1, *length));
                 ignErr = SalZLIB->InflateEnd(&zi);
@@ -526,7 +527,7 @@ char* CDataConnectionSocket::GiveData(int* length, BOOL* decomprErr)
             }
             else
             {
-                if (ValidBytesInReadBytesBuf < ReadBytesAllocatedSize) // zkusime buffer zmensit, aby zbytecne nezabiral pamet
+                if (ValidBytesInReadBytesBuf < ReadBytesAllocatedSize) // try to shrink the buffer so it does not occupy memory unnecessarily
                     ret = (char*)realloc(ReadBytes, ValidBytesInReadBytesBuf);
                 if (ret == NULL)
                     ret = ReadBytes;
@@ -537,9 +538,9 @@ char* CDataConnectionSocket::GiveData(int* length, BOOL* decomprErr)
             ReadBytesAllocatedSize = 0;
             TotalReadBytesCount.Set(0, 0);
         }
-        else // vracime prazdny buffer
+        else // we return an empty buffer
         {
-            ret = (char*)malloc(1); // pokud se nepodari alokace, mame vracet NULL, hotovo...
+            ret = (char*)malloc(1); // if the allocation fails we are supposed to return NULL, period...
         }
     }
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -559,7 +560,7 @@ void CDataConnectionSocket::ClearBeforeConnect()
     FlushTimerAdded = FALSE;
     TgtFileLastError = NO_ERROR;
     ReadBytesLowMemory = FALSE;
-    ResetEvent(TransferFinished); // TransferFinished nemuze byt NULL (IsGood() by vratila FALSE)
+    ResetEvent(TransferFinished); // TransferFinished cannot be NULL (IsGood() would return FALSE)
     StatusHasChanged();
     AsciiTrModeForBinFileProblemOccured = FALSE;
     DataTotalSize.Set(-1, -1);
@@ -589,8 +590,8 @@ void CDataConnectionBaseSocket::EncryptPassiveDataCon()
         !EncryptSocket(LogUID, &err, NULL, NULL, NULL, 0, SSLConForReuse))
     {
         SSLErrorOccured = err;
-        if (Socket != INVALID_SOCKET) // always true: socket je pripojeny
-            CloseSocketEx(NULL);      // zavreme "data connection", dale nema smysl drzet
+        if (Socket != INVALID_SOCKET) // always true: the socket is connected
+            CloseSocketEx(NULL);      // close the "data connection", there is no point keeping it any longer
     }
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 }
@@ -636,10 +637,10 @@ BOOL CDataConnectionSocket::CloseSocketEx(DWORD* error)
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     SocketCloseTime = GetTickCount();
-    if (TgtDiskFileName[0] == 0 ||                                     // pokud nejde o primy flush dat do souboru
-        ValidBytesInFlushBuffer == 0 && ValidBytesInReadBytesBuf == 0) // nebo jsou vsechna data jiz flushnuta
+    if (TgtDiskFileName[0] == 0 ||                                     // if this is not a direct flush of data to a file
+        ValidBytesInFlushBuffer == 0 && ValidBytesInReadBytesBuf == 0) // or all data have already been flushed
     {
-        SetEvent(TransferFinished); // TransferFinished nemuze byt NULL (IsGood() by vratila FALSE)
+        SetEvent(TransferFinished); // TransferFinished cannot be NULL (IsGood() would return FALSE)
     }
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -654,7 +655,7 @@ void CDataConnectionSocket::DirectFlushData()
         TRACE_E("Incorrect call to CDataConnectionSocket::DirectFlushData(): must be entered in section SocketCritSect!");
 #endif
 
-    if (TgtDiskFileName[0] != 0) // jen pri pouziti primeho flushe dat do souboru z data-connectiony
+    if (TgtDiskFileName[0] != 0) // only when directly flushing data to a file from the data connection
     {
         if (TgtDiskFileClosed)
             TRACE_E("Unexpected situation in CDataConnectionSocket::DirectFlushData(): TgtDiskFileClosed is TRUE!");
@@ -665,13 +666,13 @@ void CDataConnectionSocket::DirectFlushData()
             BOOL deleteTgtFile;
             BOOL haveFlushData = GiveFlushData(&flushBuffer, &validBytesInFlushBuffer, &deleteTgtFile);
 
-            if (deleteTgtFile) // potrebujeme smazat cilovy soubor, protoze mozna obsahuje poskozena data
+            if (deleteTgtFile) // we need to delete the target file because it may contain corrupted data
             {
                 if (TgtDiskFile != NULL)
                 {
                     FTPDiskThread->AddFileToClose("", TgtDiskFileName, TgtDiskFile, FALSE, FALSE, NULL, NULL,
                                                   TRUE, NULL, &TgtDiskFileCloseIndex);
-                    TgtDiskFile = NULL; // sice je zavirani+mazani teprve naplanovane, ale my uz se souborem pracovat nebudeme
+                    TgtDiskFile = NULL; // the closing + deletion is only scheduled, but we will no longer work with the file
                     TgtDiskFileCreated = FALSE;
                     TgtDiskFileSize.Set(0, 0);
                 }
@@ -679,13 +680,13 @@ void CDataConnectionSocket::DirectFlushData()
             }
             else
             {
-                if (haveFlushData) // mame 'flushBuffer', musime jej predat do disk-threadu (pri chybe ho uvolnime)
+                if (haveFlushData) // we have 'flushBuffer', we must hand it over to the disk thread (and free it if there is an error)
                 {
                     if (!AsciiTrModeForBinFileProblemOccured && CurrentTransferMode == ctrmASCII &&
                         !SalamanderGeneral->IsANSIText(flushBuffer, validBytesInFlushBuffer))
                     {
-                        AsciiTrModeForBinFileProblemOccured = TRUE; // detekovana chyba "ascii rezim pro binarni soubor"
-                        StatusHasChanged();                         // at se to list-wait-wnd dozvi co nejdrive
+                        AsciiTrModeForBinFileProblemOccured = TRUE; // detected the "ASCII mode for a binary file" problem
+                        StatusHasChanged();                         // let the list-wait window know about it as soon as possible
                     }
                     if (DiskWorkIsUsed)
                         TRACE_E("Unexpected situation in CDataConnectionSocket::DirectFlushData(): DiskWorkIsUsed may not be TRUE here!");
@@ -707,7 +708,7 @@ void CDataConnectionSocket::DirectFlushData()
                     DiskWork.WorkFile = TgtDiskFile;
                     if (FTPDiskThread->AddWork(&DiskWork))
                         DiskWorkIsUsed = TRUE;
-                    else // nelze flushnout data, nelze pokracovat v downloadu
+                    else // unable to flush the data, cannot continue with the download
                     {
                         if (DiskWork.FlushDataBuffer != NULL)
                         {
@@ -715,16 +716,16 @@ void CDataConnectionSocket::DirectFlushData()
                             DiskWork.FlushDataBuffer = NULL;
                         }
 
-                        ReadBytesLowMemory = TRUE; // koncime pro nedostatek pameti
-                        CloseSocketEx(NULL);       // zavreme "data connection", dale nema smysl pokracovat
+                        ReadBytesLowMemory = TRUE; // stop due to insufficient memory
+                        CloseSocketEx(NULL);       // close the "data connection", there is no point in continuing
                         FreeFlushData();
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-                        // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // tohle by tady nemelo byt potreba
+                        // since we are already in the CSocketsThread::CritSect section, this call
+                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                        // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // this should not be necessary here
                     }
                 }
                 else
-                    TRACE_E("Unexpected situation in CDataConnectionSocket::DirectFlushData(): data-connection has nothing to flush!"); // snad nemozne
+                    TRACE_E("Unexpected situation in CDataConnectionSocket::DirectFlushData(): data-connection has nothing to flush!"); // hopefully impossible
             }
         }
     }
@@ -736,7 +737,7 @@ void CDataConnectionSocket::CancelConnectionAndFlushing()
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
     CloseSocketEx(NULL);
-    if (TgtDiskFileName[0] != 0) // jen pri pouziti primeho flushe dat do souboru z data-connectiony
+    if (TgtDiskFileName[0] != 0) // only when directly flushing data to a file from the data connection
     {
         CloseTgtFile();
         FreeFlushData();
@@ -750,8 +751,8 @@ BOOL CDataConnectionSocket::IsFlushingDataToDisk()
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
     BOOL ret = FALSE;
-    if (TgtDiskFileName[0] != 0)                                             // jen pri pouziti primeho flushe dat do souboru z data-connectiony
-        ret = ValidBytesInFlushBuffer != 0 || ValidBytesInReadBytesBuf != 0; // probiha flush dat? (aneb: je co flushnout?)
+    if (TgtDiskFileName[0] != 0)                                             // only when directly flushing data to a file from the data connection
+        ret = ValidBytesInFlushBuffer != 0 || ValidBytesInReadBytesBuf != 0; // is data flushing in progress? (in other words: is there anything to flush?)
     HANDLES(LeaveCriticalSection(&SocketCritSect));
     return ret;
 }
@@ -797,24 +798,24 @@ void CDataConnectionSocket::ReceivePostMessage(DWORD id, void* param)
                 TRACE_E("CDataConnectionSocket::ReceivePostMessage(): DATACON_DISKWORKWRITEFINISHED: DiskWorkIsUsed is not TRUE!");
             DiskWorkIsUsed = FALSE;
 
-            if (DiskWork.State == sqisNone) // flush dat se podaril
+            if (DiskWork.State == sqisNone) // data flush succeeded
             {
                 TgtDiskFileCreated = TRUE;
 
-                // napocitame novou velikost souboru
+                // calculate the new file size
                 TgtDiskFileSize += CQuadWord(DiskWork.ValidBytesInFlushDataBuffer, 0);
 
-                // pokud se vytvarel soubor, ziskame zde jeho handle
+                // if the file was being created, obtain its handle here
                 if (TgtDiskFile == NULL)
                     TgtDiskFile = DiskWork.OpenedFile;
                 DiskWork.OpenedFile = NULL;
 
-                // pokud data-connection existuje, vratime buffer pro dalsi pouziti
+                // if the data connection exists, return the buffer for reuse
                 char* flushData = DiskWork.FlushDataBuffer;
                 DiskWork.FlushDataBuffer = NULL;
-                FlushDataFinished(flushData, FALSE); // POZOR: pouzivame vyjimku pro volani z kriticke sekce + zde muze dojit k dalsimu vyuziti DiskWork!!!
+                FlushDataFinished(flushData, FALSE); // WARNING: we use an exception for calling from the critical section + DiskWork may be reused here!!!
             }
-            else // nastala chyba
+            else // an error occurred
             {
                 if (DiskWork.FlushDataBuffer != NULL)
                 {
@@ -822,16 +823,16 @@ void CDataConnectionSocket::ReceivePostMessage(DWORD id, void* param)
                     DiskWork.FlushDataBuffer = NULL;
                 }
 
-                TgtFileLastError = DiskWork.WinError; // nastavime chybu pri vytvareni/zapisu do ciloveho souboru
-                CloseSocketEx(NULL);                  // shutdown (nedozvime se o vysledku)
+                TgtFileLastError = DiskWork.WinError; // store the error when creating/writing to the target file
+                CloseSocketEx(NULL);                  // shut down (we will not learn about the result)
                 FreeFlushData();
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-                // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // tohle by tady nemelo byt potreba
+                // since we are already in the CSocketsThread::CritSect section, this call
+                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // this should not be necessary here
             }
 
-            if (!IsConnected() && !DiskWorkIsUsed) // data-connection je zavrena + vsechna data flushnuta -> koncime
-                SetEvent(TransferFinished);        // TransferFinished nemuze byt NULL (IsGood() by vratila FALSE)
+            if (!IsConnected() && !DiskWorkIsUsed) // the data connection is closed + all data flushed -> we are done
+                SetEvent(TransferFinished);        // TransferFinished cannot be NULL (IsGood() would return FALSE)
         }
         break;
     }
@@ -841,13 +842,13 @@ void CDataConnectionSocket::ReceivePostMessage(DWORD id, void* param)
 
 void CDataConnectionSocket::JustConnected()
 {
-    ReceivedConnected = TRUE; // pokud prijde FD_READ pred FD_CONNECT (kazdopadne musi byt connected)
+    ReceivedConnected = TRUE; // if FD_READ arrives before FD_CONNECT (either way it must be connected)
     TransferSpeedMeter.JustConnected();
-    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+    // since we are already in the CSocketsThread::CritSect section, this call
+    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectedToServer);
-    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+    // since we are already in the CSocketsThread::CritSect section, this call
+    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
     SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_TESTNODATATRTIMEOUT,
                             DATACON_TESTNODATATRTIMERID, NULL);
 }
@@ -867,17 +868,17 @@ void CDataConnectionSocket::ConnectionAccepted(BOOL success, DWORD winError, BOO
         if (!EncryptSocket(LogUID, &err, NULL, NULL, NULL, 0, SSLConForReuse))
         {
             SSLErrorOccured = err;
-            if (Socket != INVALID_SOCKET) // always true: socket je pripojeny
-                CloseSocketEx(NULL);      // zavreme "data connection", dale nema smysl drzet
+            if (Socket != INVALID_SOCKET) // always true: the socket is connected
+                CloseSocketEx(NULL);      // close the "data connection", there is no point keeping it any longer
             success = FALSE;
         }
     }
     if (success)
     {
-        LastActivityTime = GetTickCount(); // doslo k uspesnemu acceptu
+        LastActivityTime = GetTickCount(); // the accept succeeded
         if (GlobalLastActivityTime != NULL)
             GlobalLastActivityTime->Set(LastActivityTime);
-        NetEventLastError = NO_ERROR; // v predchozim acceptu mohlo dojit k chybe, ted uz neni aktualni
+        NetEventLastError = NO_ERROR; // the previous accept may have failed; that error is no longer relevant
         SSLErrorOccured = SSLCONERR_NOERROR;
         StatusHasChanged();
         JustConnected();
@@ -886,7 +887,7 @@ void CDataConnectionSocket::ConnectionAccepted(BOOL success, DWORD winError, BOO
     {
         NetEventLastError = winError;
         if (proxyError && NetEventLastError == NO_ERROR)
-            NetEventLastError = ERROR_INVALID_FUNCTION /* jen nesmi byt NO_ERROR */;
+            NetEventLastError = ERROR_INVALID_FUNCTION /* it just must not be NO_ERROR */;
         LogNetEventLastError(proxyError);
     }
 }
@@ -910,17 +911,17 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
     BOOL logLastErr = FALSE;
     switch (WSAGETSELECTEVENT(lParam)) // extract event
     {
-    case FD_CLOSE: // nekdy chodi pred poslednim FD_READ, nezbyva tedy nez napred zkusit FD_READ a pokud uspeje, poslat si FD_CLOSE znovu (muze pred nim znovu uspet FD_READ)
+    case FD_CLOSE: // sometimes arrives before the last FD_READ, so we first try FD_READ and if it succeeds, post FD_CLOSE again (FD_READ may succeed again before it)
     case FD_READ:
     {
-        BOOL sendFDCloseAgain = FALSE;     // TRUE = prisel FD_CLOSE + bylo co cist (provedl se jako FD_READ) => posleme si znovu FD_CLOSE (soucasny FD_CLOSE byl plany poplach)
-        BOOL skipSendingOfFDClose = FALSE; // TRUE = prisel FD_CLOSE + cekame na flushnuti dat, takze ho zpozdime (ted ho nezpracujeme)
+        BOOL sendFDCloseAgain = FALSE;     // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ) => post FD_CLOSE again (the current FD_CLOSE was a false alarm)
+        BOOL skipSendingOfFDClose = FALSE; // TRUE = FD_CLOSE arrived and we are waiting for the data flush, so delay it (do not process it now)
         HANDLES(EnterCriticalSection(&SocketCritSect));
-        if (ReceivedConnected || UsePassiveMode) // ignorujeme zavreni "listen" socketu
+        if (ReceivedConnected || UsePassiveMode) // ignore closing of the "listen" socket
         {
-            if (eventError == NO_ERROR) // jen pokud nenastala chyba (podle helpu hrozi jen WSAENETDOWN)
+            if (eventError == NO_ERROR) // only if no error occurred (according to the help only WSAENETDOWN can happen)
             {
-                if (UsePassiveMode) // u aktivniho spojeni musime cekat na FD_ACCEPT (tenhle socket je "listen", a pak az "data connection")
+                if (UsePassiveMode) // for an active connection we have to wait for FD_ACCEPT (this socket is the "listen" one, and only then comes the "data connection")
                 {
                     if (!ReceivedConnected)
                         JustConnected();
@@ -933,7 +934,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     if (WSAGETSELECTEVENT(lParam) == FD_READ)
                     {
                         if (DataTransferPostponed == 0)
-                            DataTransferPostponed = 1 /* FD_READ */; // nelze zapomenout FD_CLOSE na ukor FD_READ
+                            DataTransferPostponed = 1 /* FD_READ */; // must not forget FD_CLOSE in favour of FD_READ
                     }
                     else
                     {
@@ -943,12 +944,12 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                 }
                 else
                 {
-                    if (Socket != INVALID_SOCKET) // socket je pripojeny
+                    if (Socket != INVALID_SOCKET) // the socket is connected
                     {
                         BOOL lowMem = ReadBytesLowMemory;
-                        if (FlushData) // data se predavaji pro overeni/zapis na disk pres FlushBuffer (velikost bufferu DATACON_FLUSHBUFFERSIZE)
+                        if (FlushData) // data are handed over for verification/write to disk through FlushBuffer (buffer size DATACON_FLUSHBUFFERSIZE)
                         {
-                            if (!lowMem && ReadBytesAllocatedSize < DATACON_FLUSHBUFFERSIZE) // nealokovany buffer 'ReadBytes'
+                            if (!lowMem && ReadBytesAllocatedSize < DATACON_FLUSHBUFFERSIZE) // the 'ReadBytes' buffer is not allocated
                             {
                                 if (ReadBytes != NULL)
                                 {
@@ -958,7 +959,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                 ReadBytes = (char*)malloc(DATACON_FLUSHBUFFERSIZE);
                                 if (ReadBytes != NULL)
                                     ReadBytesAllocatedSize = DATACON_FLUSHBUFFERSIZE;
-                                else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                                else // not enough memory to store the data in our buffer (only TRACE reports the error)
                                 {
                                     TRACE_E(LOW_MEMORY);
                                     lowMem = TRUE;
@@ -969,26 +970,26 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                             {
                                 if (ReadBytesAllocatedSize - ValidBytesInReadBytesBuf > 0)
                                 {
-                                    // precteme co nejvice bytu do bufferu, necteme cyklicky, aby se data prijimala postupne;
-                                    // je-li jeste neco ke cteni, dostaneme znovu FD_READ
+                                    // read as many bytes as possible into the buffer; do not read cyclically so that the data arrive gradually;
+                                    // if there is more to read, we will receive FD_READ again
                                     int len;
                                     if (!SSLConn)
                                         len = recv(Socket, ReadBytes + ValidBytesInReadBytesBuf,
                                                    ReadBytesAllocatedSize - ValidBytesInReadBytesBuf, 0);
                                     else
                                     {
-                                        if (SSLLib.SSL_pending(SSLConn) > 0) // je-li neprazdny interni SSL buffer nedojde vubec k volani recv() a tudiz neprijde dalsi FD_READ, tedy musime si ho poslat sami, jinak se prenos dat zastavi
+                                        if (SSLLib.SSL_pending(SSLConn) > 0) // if the internal SSL buffer is not empty, recv() is not called and no further FD_READ arrives, so we must post it ourselves, otherwise the data transfer stops
                                             PostMessage(SocketsThread->GetHiddenWindow(), Msg, (WPARAM)Socket, FD_READ);
                                         len = SSLLib.SSL_read(SSLConn, ReadBytes + ValidBytesInReadBytesBuf,
                                                               ReadBytesAllocatedSize - ValidBytesInReadBytesBuf);
                                     }
-                                    if (len >= 0) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                                    if (len >= 0) // we may have read something (0 = the connection is already closed)
                                     {
                                         if (len > 0)
                                         {
-                                            ValidBytesInReadBytesBuf += len;          // upravime pocet jiz nactenych bytu o nove nactene
-                                            TotalReadBytesCount += CQuadWord(len, 0); // upravime celkovy pocet jiz nactenych bytu o nove nactene
-                                            LastActivityTime = GetTickCount();        // doslo k uspesnemu nacteni bytu ze socketu
+                                            ValidBytesInReadBytesBuf += len;          // adjust the number of bytes already read by the newly read ones
+                                            TotalReadBytesCount += CQuadWord(len, 0); // adjust the total number of bytes already read by the newly read ones
+                                            LastActivityTime = GetTickCount();        // successfully read bytes from the socket
                                             if (GlobalLastActivityTime != NULL)
                                                 GlobalLastActivityTime->Set(LastActivityTime);
                                             TransferSpeedMeter.BytesReceived(len, LastActivityTime);
@@ -997,36 +998,36 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                             StatusHasChanged();
 
                                             if (ReadBytesAllocatedSize - ValidBytesInReadBytesBuf == 0)
-                                            { // dalsi data uz neni kam cist, je potreba flushnout buffer
+                                            { // nowhere to read more data, we need to flush the buffer
                                                 if (NeedFlushReadBuf != 0 &&
                                                     (ValidBytesInFlushBuffer == 0 || NeedFlushReadBuf != 1 /* timer flush */))
                                                 {
                                                     TRACE_E("CDataConnectionSocket::ReceiveNetEvent(): Unexpected value of NeedFlushReadBuf: " << NeedFlushReadBuf);
                                                 }
-                                                if (ValidBytesInFlushBuffer == 0) // spustime flushnuti dat z bufferu (buffery se zameni a bude zase misto pro cteni)
+                                                if (ValidBytesInFlushBuffer == 0) // start flushing data from the buffer (buffers swap and there will be room for reading again)
                                                 {
-                                                    // pokud byl zalozen timer pro flushnuti dat s timeoutem DATACON_FLUSHTIMEOUT, tak ho smazeme
+                                                    // if a timer for flushing data with the DATACON_FLUSHTIMEOUT timeout was created, delete it
                                                     if (FlushTimerAdded)
                                                     {
-                                                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                                        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                                        // since we are already in the CSocketsThread::CritSect section, this call
+                                                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                                         SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                                                         FlushTimerAdded = FALSE;
                                                     }
 
                                                     MoveReadBytesToFlushBuffer();
 
-                                                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                                    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                                    // since we are already in the CSocketsThread::CritSect section, this call
+                                                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                                     DoPostMessageToWorker(WorkerMsgFlushData);
 
-                                                    // pokud jde o primy flush dat do souboru z data-connectiony, provede se zde
+                                                    // if this is direct flushing of data to a file from the data connection, perform it here
                                                     DirectFlushData();
 
                                                     if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
                                                         sendFDCloseAgain = TRUE;
                                                 }
-                                                else // pockame az dobehne flushnuti dat, pak se buffery prohodi a zase bude misto
+                                                else // wait for the data flush to finish, then swap the buffers and there will be room again
                                                 {
                                                     if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
                                                     {
@@ -1042,13 +1043,13 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                 if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
                                                     sendFDCloseAgain = TRUE;
 
-                                                // pokud jeste nebyl zalozen timer pro flushnuti dat s timeoutem DATACON_FLUSHTIMEOUT,
-                                                // a zaroven jeste neni zaznamenana potreba flushnout buffer (NeedFlushReadBuf == 0),
-                                                // tak zalozime timer pro flushnuti dat
+                                                // if no timer for flushing data with the DATACON_FLUSHTIMEOUT timeout has been created yet,
+                                                // and at the same time the need to flush the buffer is not recorded (NeedFlushReadBuf == 0),
+                                                // then create a timer for flushing the data
                                                 if (!FlushTimerAdded && NeedFlushReadBuf == 0)
                                                 {
-                                                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                                    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                                    // since we are already in the CSocketsThread::CritSect section, this call
+                                                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                                     FlushTimerAdded = SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_FLUSHTIMEOUT,
                                                                                               DATACON_FLUSHTIMERID, NULL);
                                                 }
@@ -1074,39 +1075,39 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                         DWORD err = !SSLConn ? WSAGetLastError() : SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, len));
                                         if (err != WSAEWOULDBLOCK)
                                         {
-                                            NetEventLastError = err; // nastala chyba
+                                            NetEventLastError = err; // an error occurred
                                             logLastErr = TRUE;
-                                            CloseSocketEx(NULL); // zavreme "data connection", dale nema smysl drzet
-                                            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                            CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
+                                            // since we are already in the CSocketsThread::CritSect section, this call
+                                            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                             DoPostMessageToWorker(WorkerMsgConnectionClosed);
                                         }
                                     }
                                 }
-                                else // data uz neni kam cist, musime pockat na dokonceni flushnuti bufferu (pak se buffery zameni a bude zase misto pro cteni)
+                                else // nowhere to read more data, we must wait until the buffer flush finishes (then the buffers swap and there will be room to read again)
                                 {
                                     if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
                                     {
                                         skipSendingOfFDClose = TRUE;
-                                        NeedFlushReadBuf = 3; // flush + FD_CLOSE (muze prepsat FD_READ)
+                                        NeedFlushReadBuf = 3; // flush + FD_CLOSE (can overwrite FD_READ)
                                     }
                                     else // WSAGETSELECTEVENT(lParam) == FD_READ
                                     {
                                         if (NeedFlushReadBuf != 3 /* flush + FD_CLOSE */)
-                                            NeedFlushReadBuf = 2; // flush + FD_READ (nemuze prepsat FD_CLOSE)
+                                            NeedFlushReadBuf = 2; // flush + FD_READ (cannot overwrite FD_CLOSE)
                                     }
                                 }
                             }
                             else
                             {
-                                ReadBytesLowMemory = TRUE; // koncime cteni pro nedostatek pameti
-                                CloseSocketEx(NULL);       // zavreme "data connection", dale nema smysl drzet
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                ReadBytesLowMemory = TRUE; // stop reading due to insufficient memory
+                                CloseSocketEx(NULL);       // close the "data connection", there is no point keeping it any longer
+                                // since we are already in the CSocketsThread::CritSect section, this call
+                                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                 DoPostMessageToWorker(WorkerMsgConnectionClosed);
                             }
                         }
-                        else // vsechna data se ukladaji do bufferu ReadBytes
+                        else // all data are stored in the ReadBytes buffer
                         {
                             if (!lowMem &&
                                 ReadBytesAllocatedSize - ValidBytesInReadBytesBuf < DATACON_BYTESTOREADONSOCKET) // maly buffer 'ReadBytes'
@@ -1119,7 +1120,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                     ReadBytes = newBuf;
                                     ReadBytesAllocatedSize = newSize;
                                 }
-                                else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                                else // not enough memory to store the data in our buffer (only TRACE reports the error)
                                 {
                                     TRACE_E(LOW_MEMORY);
                                     lowMem = TRUE;
@@ -1127,8 +1128,8 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                             }
 
                             if (!lowMem)
-                            { // precteme co nejvice bytu do bufferu, necteme cyklicky, aby se data prijimala postupne;
-                                // je-li jeste neco ke cteni, dostaneme znovu FD_READ
+                            { // read as many bytes as possible into the buffer; do not read cyclically so that the data arrive gradually;
+                                // if there is more to read, we will receive FD_READ again
                                 int len;
 
                                 if (!SSLConn)
@@ -1136,18 +1137,18 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                ReadBytesAllocatedSize - ValidBytesInReadBytesBuf, 0);
                                 else
                                 {
-                                    if (SSLLib.SSL_pending(SSLConn) > 0) // je-li neprazdny interni SSL buffer nedojde vubec k volani recv() a tudiz neprijde dalsi FD_READ, tedy musime si ho poslat sami, jinak se prenos dat zastavi
+                                    if (SSLLib.SSL_pending(SSLConn) > 0) // if the internal SSL buffer is not empty, recv() is not called and no further FD_READ arrives, so we must post it ourselves, otherwise the data transfer stops
                                         PostMessage(SocketsThread->GetHiddenWindow(), Msg, (WPARAM)Socket, FD_READ);
                                     len = SSLLib.SSL_read(SSLConn, ReadBytes + ValidBytesInReadBytesBuf,
                                                           ReadBytesAllocatedSize - ValidBytesInReadBytesBuf);
                                 }
-                                if (len >= 0) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                                if (len >= 0) // we may have read something (0 = the connection is already closed)
                                 {
                                     if (len > 0)
                                     {
-                                        ValidBytesInReadBytesBuf += len;          // upravime pocet jiz nactenych bytu o nove nactene
-                                        TotalReadBytesCount += CQuadWord(len, 0); // upravime celkovy pocet jiz nactenych bytu o nove nactene
-                                        LastActivityTime = GetTickCount();        // doslo k uspesnemu nacteni bytu ze socketu
+                                        ValidBytesInReadBytesBuf += len;          // adjust the number of bytes already read by the newly read ones
+                                        TotalReadBytesCount += CQuadWord(len, 0); // adjust the total number of bytes already read by the newly read ones
+                                        LastActivityTime = GetTickCount();        // successfully read bytes from the socket
                                         if (GlobalLastActivityTime != NULL)
                                             GlobalLastActivityTime->Set(LastActivityTime);
                                         TransferSpeedMeter.BytesReceived(len, LastActivityTime);
@@ -1177,60 +1178,60 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                     DWORD err = !SSLConn ? WSAGetLastError() : SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, len));
                                     if (err != WSAEWOULDBLOCK)
                                     {
-                                        NetEventLastError = err; // nastala chyba
+                                        NetEventLastError = err; // an error occurred
                                         logLastErr = TRUE;
-                                        CloseSocketEx(NULL); // zavreme "data connection", dale nema smysl drzet
-                                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                        CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
+                                        // since we are already in the CSocketsThread::CritSect section, this call
+                                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                         DoPostMessageToWorker(WorkerMsgConnectionClosed);
                                     }
                                 }
                             }
                             else
                             {
-                                ReadBytesLowMemory = TRUE; // koncime cteni pro nedostatek pameti
-                                CloseSocketEx(NULL);       // zavreme "data connection", dale nema smysl drzet
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                ReadBytesLowMemory = TRUE; // stop reading due to insufficient memory
+                                CloseSocketEx(NULL);       // close the "data connection", there is no point keeping it any longer
+                                // since we are already in the CSocketsThread::CritSect section, this call
+                                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                                 DoPostMessageToWorker(WorkerMsgConnectionClosed);
                             }
                         }
                     }
                     else
                     {
-                        // muze nastat: hl. thread stihne zavolat CloseSocket() pred dorucenim FD_READ
+                        // may happen: the main thread manages to call CloseSocket() before FD_READ is delivered
                         // TRACE_E("Unexpected situation in CControlConnectionSocket::ReceiveNetEvent(FD_READ): Socket is not connected.");
-                        // udalost s touto necekanou chybou nebudeme zavadet (reseni: user pouzije ESC)
+                        // we will not bother the event loop with this unexpected error (solution: the user presses ESC)
                     }
                 }
             }
             else
             {
-                if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // chybu si FD_CLOSE zpracuje po svem
+                if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // FD_CLOSE will handle the error on its own
                 {
                     NetEventLastError = eventError;
                     logLastErr = TRUE;
-                    CloseSocketEx(NULL); // zavreme "data connection", dale nema smysl drzet
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                    CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
+                    // since we are already in the CSocketsThread::CritSect section, this call
+                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                     DoPostMessageToWorker(WorkerMsgConnectionClosed);
                 }
             }
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-        // ted zpracujeme FD_CLOSE
+        // now process FD_CLOSE
         if (WSAGETSELECTEVENT(lParam) == FD_CLOSE && !skipSendingOfFDClose)
         {
-            if (sendFDCloseAgain) // FD_CLOSE byl misto FD_READ => posleme FD_CLOSE znovu
+            if (sendFDCloseAgain) // FD_CLOSE came instead of FD_READ => post FD_CLOSE again
             {
                 PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                             (WPARAM)GetSocket(), lParam);
             }
-            else // korektni FD_CLOSE
+            else // correct FD_CLOSE
             {
                 logLastErr = (eventError != NO_ERROR);
-                CSocket::ReceiveNetEvent(lParam, index); // zavolame metodu predka
+                CSocket::ReceiveNetEvent(lParam, index); // call the base method
             }
         }
         break;
@@ -1243,7 +1244,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         {
             if (!ReceivedConnected)
                 JustConnected();
-            LastActivityTime = GetTickCount(); // doslo k uspesnemu connectu
+            LastActivityTime = GetTickCount(); // the connect succeeded
             if (GlobalLastActivityTime != NULL)
                 GlobalLastActivityTime->Set(LastActivityTime);
             StatusHasChanged();
@@ -1252,9 +1253,9 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         {
             NetEventLastError = eventError;
             logLastErr = TRUE;
-            CloseSocketEx(NULL); // zavreme socket "data connection", uz se nemuze otevrit
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+            CloseSocketEx(NULL); // close the "data connection" socket, it can no longer be opened
+            // since we are already in the CSocketsThread::CritSect section, this call
+            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
             DoPostMessageToWorker(WorkerMsgConnectionClosed);
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1277,20 +1278,20 @@ void CDataConnectionSocket::SocketWasClosed(DWORD error)
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     SocketCloseTime = GetTickCount();
-    if (TgtDiskFileName[0] == 0 ||                                     // pokud nejde o primy flush dat do souboru
-        ValidBytesInFlushBuffer == 0 && ValidBytesInReadBytesBuf == 0) // nebo jsou vsechna data jiz flushnuta
+    if (TgtDiskFileName[0] == 0 ||                                     // if this is not a direct flush of data to a file
+        ValidBytesInFlushBuffer == 0 && ValidBytesInReadBytesBuf == 0) // or all data have already been flushed
     {
-        SetEvent(TransferFinished); // TransferFinished nemuze byt NULL (IsGood() by vratila FALSE)
+        SetEvent(TransferFinished); // TransferFinished cannot be NULL (IsGood() would return FALSE)
     }
     if (error != NO_ERROR)
         NetEventLastError = error;
 
-    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+    // since we are already in the CSocketsThread::CritSect section, this call
+    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectionClosed);
 
-    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+    // since we are already in the CSocketsThread::CritSect section, this call
+    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
     SocketsThread->DeleteTimer(UID, DATACON_TESTNODATATRTIMERID);
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1318,7 +1319,7 @@ void CDataConnectionSocket::SetWindowWithStatus(HWND hwnd, UINT msg)
     HANDLES(EnterCriticalSection(&SocketCritSect));
     WindowWithStatus = hwnd;
     StatusMessage = msg;
-    StatusMessageSent = (WindowWithStatus == NULL); // nic se nema posilat
+    StatusMessageSent = (WindowWithStatus == NULL); // nothing needs to be sent
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 }
 
@@ -1375,15 +1376,15 @@ void CDataConnectionSocket::CloseTgtFile()
     HANDLES(EnterCriticalSection(&SocketCritSect));
     if (TgtDiskFileName[0] != 0)
     {
-        if (DiskWorkIsUsed) // je-li rozjete nejake flushovani na disk, zrusime jej
+        if (DiskWorkIsUsed) // if some disk flush is in progress, cancel it
         {
             BOOL workIsInProgress;
             if (FTPDiskThread->CancelWork(&DiskWork, &workIsInProgress))
             {
                 if (workIsInProgress)
-                    DiskWork.FlushDataBuffer = NULL; // prace je rozdelana, nemuzeme uvolnit buffer se zapisovanymi/testovanymi daty, nechame to na disk-work threadu (viz cast cancelovani prace) - do DiskWork muzeme zapisovat, protoze po Cancelu do nej uz disk-thread nesmi pristupovat (napr. uz vubec nemusi existovat)
+                    DiskWork.FlushDataBuffer = NULL; // the work is in progress; we cannot free the buffer with the data being written/tested, leave it to the disk-work thread (see the cancellation part) - we can write to DiskWork because after Cancel the disk thread must no longer access it (it may no longer exist)
                 else
-                { // prace byla zcanclovana pred tim, nez ji disk-thread zacal provadet - provedeme dealokaci flush bufferu
+                { // the work was cancelled before the disk thread started processing it - deallocate the flush buffer
                     if (DiskWork.FlushDataBuffer != NULL)
                     {
                         free(DiskWork.FlushDataBuffer);
@@ -1391,32 +1392,32 @@ void CDataConnectionSocket::CloseTgtFile()
                     }
                 }
             }
-            else // prace uz je hotova, uz je pry na ceste DATACON_DISKWORKWRITEFINISHED (jeste nedorazil)
+            else // the work is already finished, DATACON_DISKWORKWRITEFINISHED is supposedly on its way (has not arrived yet)
             {
-                if (DiskWork.FlushDataBuffer != NULL) // flush buffer uz je na nic
+                if (DiskWork.FlushDataBuffer != NULL) // the flush buffer is now useless
                 {
                     free(DiskWork.FlushDataBuffer);
                     DiskWork.FlushDataBuffer = NULL;
                 }
-                if (DiskWork.State == sqisNone) // flush dat se podaril
+                if (DiskWork.State == sqisNone) // data flush succeeded
                 {
                     TgtDiskFileCreated = TRUE;
 
-                    // napocitame novou velikost souboru
+                    // calculate the new file size
                     TgtDiskFileSize += CQuadWord(DiskWork.ValidBytesInFlushDataBuffer, 0);
 
-                    // pokud se vytvarel soubor, ziskame zde jeho handle
+                    // if the file was being created, obtain its handle here
                     if (TgtDiskFile == NULL)
                         TgtDiskFile = DiskWork.OpenedFile;
                     DiskWork.OpenedFile = NULL;
                 }
-                else // nastala chyba
+                else // an error occurred
                 {
-                    TgtFileLastError = DiskWork.WinError; // nastavime chybu pri vytvareni/zapisu do ciloveho souboru
-                    CloseSocketEx(NULL);                  // shutdown (nedozvime se o vysledku)
+                    TgtFileLastError = DiskWork.WinError; // store the error when creating/writing to the target file
+                    CloseSocketEx(NULL);                  // shut down (we will not learn about the result)
                     FreeFlushData();
-                    // POZOR: nejsme v sekci CSocketsThread::CritSect, takze toto volani neni mozne:
-                    // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // tohle by tady nemelo byt potreba
+                    // WARNING: we are not in the CSocketsThread::CritSect section, so this call is not possible:
+                    // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // this should not be necessary here
                 }
             }
             DiskWorkIsUsed = FALSE;
@@ -1425,7 +1426,7 @@ void CDataConnectionSocket::CloseTgtFile()
         {
             FTPDiskThread->AddFileToClose("", TgtDiskFileName, TgtDiskFile, FALSE, FALSE, NULL, NULL,
                                           FALSE, NULL, &TgtDiskFileCloseIndex);
-            TgtDiskFile = NULL; // sice je zavirani teprve naplanovane, ale my uz se souborem pracovat nebudeme
+            TgtDiskFile = NULL; // the closing is only scheduled, but we will no longer work with the file
         }
         TgtDiskFileClosed = TRUE;
     }
@@ -1442,7 +1443,7 @@ BOOL CDataConnectionSocket::WaitForFileClose(DWORD timeout)
 
     if (tgtDiskFileCloseIndex != -1)
         return FTPDiskThread->WaitForFileClose(tgtDiskFileCloseIndex, timeout);
-    return FALSE; // soubor zrejme vubec nebyl otevreny (nebo je zavreni+delete na disk-work threadu - cancel behem prvni create+flush disk-prace)
+    return FALSE; // the file probably was not opened at all (or the closing+delete is handled on the disk-work thread - cancellation during the first create+flush disk job)
 }
 
 void CDataConnectionSocket::SetDataTotalSize(CQuadWord const& size)
@@ -1532,7 +1533,7 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
             {
                 if (ZLIBInfo.avail_in > 0)
                     TRACE_E("CDataConnectionSocket::GiveFlushData(): ignoring data (" << ZLIBInfo.avail_in << " bytes) received after end of compressed stream");
-                //DecomprMissingStreamEnd = FALSE;  // dekomprese uz je kompletni
+                //DecomprMissingStreamEnd = FALSE;  // decompression is now complete
             }
             if (err < 0)
             {
@@ -1542,7 +1543,7 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
                 DecomprErrorOccured = TRUE;
                 Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGDECOMPRERROR), -1, TRUE);
                 if (Socket != INVALID_SOCKET)
-                    CloseSocketEx(NULL); // zavreme "data connection", dale nema smysl pokracovat
+                    CloseSocketEx(NULL); // close the "data connection", there is no point in continuing
                 FreeFlushData();
                 *deleteTgtFile = TRUE;
             }
@@ -1550,7 +1551,7 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
             {
                 int newBytes = (DecomprDataAllocatedSize - DecomprDataDelayedBytes - ZLIBInfo.avail_out) -
                                (ValidBytesInFlushBuffer - AlreadyDecomprPartOfFlushBuffer - ZLIBInfo.avail_in);
-                if (newBytes != 0) // vyrovname rozdil zpusobeny dekompresi (POZOR: muze byt i zaporny)
+                if (newBytes != 0) // balance the difference caused by decompression (WARNING: it can also be negative)
                 {
                     if (newBytes > 0)
                     {
@@ -1572,17 +1573,17 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
                 }
             }
 
-            BOOL isFirstDecompFromFlushBuffer = AlreadyDecomprPartOfFlushBuffer == 0; // TRUE = jde o prvni cast dekomprimovanych dat z FlushBuffer
+            BOOL isFirstDecompFromFlushBuffer = AlreadyDecomprPartOfFlushBuffer == 0; // TRUE = this is the first portion of decompressed data from FlushBuffer
             if (!DecomprErrorOccured)
                 AlreadyDecomprPartOfFlushBuffer = (int)(ZLIBInfo.next_in - (BYTE*)FlushBuffer);
             if (err >= 0)
             {
                 *flushBuffer = DecomprDataBuffer;
                 if (err != SAL_Z_STREAM_END && !isFirstDecompFromFlushBuffer && *validBytesInFlushBuffer < DecomprDataAllocatedSize)
-                { // pri pokracovani dekomprese dat z FlushBuffer v pripade, ze nejde o konec souboru a nedoslo k zaplneni bufferu DecomprDataBuffer (zaplneni zavisi na kompresnim pomeru, extremne muze jit i jen o jeden byte), pockame se zapisem do souboru na dalsi cyklus (aby nedochazelo ke zbytecne fragmentaci souboru)
+                { // when continuing to decompress data from FlushBuffer, if it is not the end of the file and the DecomprDataBuffer was not filled (fill level depends on compression ratio, in extreme cases it may be just a single byte), wait with writing to the file until the next cycle (to avoid unnecessary fragmentation)
                     //          TRACE_I("flushing: buffer is not full (only " << *validBytesInFlushBuffer << " bytes), waiting...");
                     DecomprDataDelayedBytes = *validBytesInFlushBuffer;
-                    *validBytesInFlushBuffer = 0; // zapis prazdneho bufferu se neprovede
+                    *validBytesInFlushBuffer = 0; // do not write an empty buffer
                 }
                 else
                 {
@@ -1656,35 +1657,35 @@ void CDataConnectionSocket::FlushDataFinished(char* flushBuffer, BOOL enterSocke
         TRACE_E("CDataConnectionSocket::FlushDataFinished(): flushBuffer cannot be NULL!");
 
     if (CompressData && AlreadyDecomprPartOfFlushBuffer < ValidBytesInFlushBuffer)
-    { // je-li treba pokracovat v dekompresi dat z 'FlushBuffer'
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+    { // if it is necessary to continue decompressing data from 'FlushBuffer'
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
         DoPostMessageToWorker(WorkerMsgFlushData);
 
-        // pokud jde o primy flush dat do souboru z data-connectiony, provede se zde
+        // if this is direct flushing of data to a file from the data connection, perform it here
         DirectFlushData();
     }
     else
     {
         if ((NeedFlushReadBuf != 0 || ReadBytesAllocatedSize - ValidBytesInReadBytesBuf == 0) &&
             ValidBytesInReadBytesBuf > 0)
-        { // je-li treba znovu flushnout data
-            // pokud byl zalozen timer pro flushnuti dat s timeoutem DATACON_FLUSHTIMEOUT, tak ho smazeme
+        { // if the data need to be flushed again
+            // if a timer for flushing data with the DATACON_FLUSHTIMEOUT timeout was created, delete it
             if (FlushTimerAdded)
             {
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                // since we are already in the CSocketsThread::CritSect section, this call
+                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                 SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                 FlushTimerAdded = FALSE;
             }
 
             MoveReadBytesToFlushBuffer();
 
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+            // since we are already in the CSocketsThread::CritSect section, this call
+            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
             DoPostMessageToWorker(WorkerMsgFlushData);
 
-            // pokud jde o primy flush dat do souboru z data-connectiony, provede se zde
+            // if this is direct flushing of data to a file from the data connection, perform it here
             DirectFlushData();
         }
         else
@@ -1720,26 +1721,26 @@ BOOL CDataConnectionSocket::AreAllDataFlushed(BOOL onlyTest)
             if (!onlyTest)
             {
                 if (ValidBytesInFlushBuffer == 0)
-                { // je-li mozne flushnout data, flushneme je
-                    // pokud byl zalozen timer pro flushnuti dat s timeoutem DATACON_FLUSHTIMEOUT, tak ho smazeme
+                { // if it is possible to flush the data, flush them
+                    // if a timer for flushing data with the DATACON_FLUSHTIMEOUT timeout was created, delete it
                     if (FlushTimerAdded)
                     {
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                        // since we are already in the CSocketsThread::CritSect section, this call
+                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                         SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                         FlushTimerAdded = FALSE;
                     }
 
                     MoveReadBytesToFlushBuffer();
 
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                    // since we are already in the CSocketsThread::CritSect section, this call
+                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                     DoPostMessageToWorker(WorkerMsgFlushData);
 
-                    // pokud jde o primy flush dat do souboru z data-connectiony, provede se zde
+                    // if this is direct flushing of data to a file from the data connection, perform it here
                     DirectFlushData();
 
-                    if (NeedFlushReadBuf != 0) // neprobihal flush dat, takze by tu mela byt nula
+                    if (NeedFlushReadBuf != 0) // no data flush was running, so this should be zero
                         TRACE_E("CDataConnectionSocket::AreAllDataFlushed(): Unexpected value of NeedFlushReadBuf: " << NeedFlushReadBuf);
                 }
             }
@@ -1764,8 +1765,8 @@ void CDataConnectionSocket::FreeFlushData()
         NeedFlushReadBuf = 0;
         DecomprDataDelayedBytes = 0;
 
-        if (!IsConnected())             // data-connection je zavrena + vsechna data flushnuta -> koncime
-            SetEvent(TransferFinished); // TransferFinished nemuze byt NULL (IsGood() by vratila FALSE)
+        if (!IsConnected())             // the data connection is closed + all data flushed -> we are done
+            SetEvent(TransferFinished); // TransferFinished cannot be NULL (IsGood() would return FALSE)
     }
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 }
@@ -1775,49 +1776,49 @@ void CDataConnectionSocket::ReceiveTimer(DWORD id, void* param)
     CALL_STACK_MESSAGE1("CDataConnectionSocket::ReceiveTimer()");
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    if (FlushTimerAdded && id == DATACON_FLUSHTIMERID) // mame provest flushnuti dat, timer vyprsel
+    if (FlushTimerAdded && id == DATACON_FLUSHTIMERID) // we need to flush the data, the timer expired
     {
         FlushTimerAdded = FALSE;
-        if (ValidBytesInReadBytesBuf > 0) // pokud je co flushnout (temer "always true")
+        if (ValidBytesInReadBytesBuf > 0) // if there is something to flush (almost "always true")
         {
             if (ValidBytesInFlushBuffer == 0)
-            { // je-li mozne flushnout data, flushneme je
+            { // if it is possible to flush the data, flush them
                 MoveReadBytesToFlushBuffer();
 
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                // since we are already in the CSocketsThread::CritSect section, this call
+                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                 DoPostMessageToWorker(WorkerMsgFlushData);
 
-                // pokud jde o primy flush dat do souboru z data-connectiony, provede se zde
+                // if this is direct flushing of data to a file from the data connection, perform it here
                 DirectFlushData();
 
-                if (NeedFlushReadBuf != 0) // neprobihal flush dat, takze by tu mela byt nula
+                if (NeedFlushReadBuf != 0) // no data flush was running, so this should be zero
                     TRACE_E("CDataConnectionSocket::ReceiveTimer(): Unexpected value of NeedFlushReadBuf: " << NeedFlushReadBuf);
             }
             else
             {
                 if (NeedFlushReadBuf == 0)
-                    NeedFlushReadBuf = 1; // je potreba flushnout data (FD_READ (NeedFlushReadBuf == 2) ani FD_CLOSE (NeedFlushReadBuf == 3) maji vyssi prioritu, neprepiseme je)
+                    NeedFlushReadBuf = 1; // we need to flush data (FD_READ (NeedFlushReadBuf == 2) and FD_CLOSE (NeedFlushReadBuf == 3) have higher priority, we will not overwrite them)
             }
         }
     }
     else
     {
         if (id == DATACON_TESTNODATATRTIMERID && Socket != INVALID_SOCKET)
-        { // periodicke testovani no-data-transfer timeoutu
+        { // periodic testing of the no-data-transfer timeout
             if (!WorkerPaused &&
                 (GetTickCount() - LastActivityTime) / 1000 >= (DWORD)Config.GetNoDataTransferTimeout())
-            { // timeout nastal, zavreme data-connectionu - nasimulujeme, ze to udelal server
+            { // timeout occurred, close the data connection - simulate that the server did it
                 NoDataTransTimeout = TRUE;
                 Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGNODATATRTIMEOUT), -1, TRUE);
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
-                CSocket::ReceiveNetEvent(MAKELPARAM(FD_CLOSE, WSAECONNRESET), GetMsgIndex()); // zavolame metodu predka
+                CSocket::ReceiveNetEvent(MAKELPARAM(FD_CLOSE, WSAECONNRESET), GetMsgIndex()); // call the base method
                 HANDLES(EnterCriticalSection(&SocketCritSect));
             }
-            else // zatim timeout nenastal, pridame timer pro dalsi test
+            else // the timeout has not occurred yet, add a timer for the next test
             {
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                // since we are already in the CSocketsThread::CritSect section, this call
+                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
                 SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_TESTNODATATRTIMEOUT,
                                         DATACON_TESTNODATATRTIMERID, NULL);
             }

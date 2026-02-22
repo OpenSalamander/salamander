@@ -14,6 +14,7 @@
 
 #include "precomp.h"
 #include "engassoc.h"
+#include "knownengines.h"
 
 CScriptEngineAssociations g_oScriptAssociations;
 
@@ -79,6 +80,10 @@ bool CScriptEngineAssociations::FindEngineByExt(
 
                 RegCloseKey(hkScriptEngine);
             }
+            else if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+            {
+                hr = QueryHardcodedScriptEngineAssociation(pszExt, &sNewAssoc.clsidEngine);
+            }
 
             RegCloseKey(hkFileType);
         }
@@ -111,4 +116,20 @@ SCRIPT_ENGINE_ASSOCIATION* CScriptEngineAssociations::FindAssoc(PCTSTR pszExt)
     }
 
     return NULL;
+}
+
+HRESULT CScriptEngineAssociations::QueryHardcodedScriptEngineAssociation(
+    PCTSTR pszExt,
+    __out CLSID* clsidEngine)
+{
+    // Windows really makes hard time for us to use the JScript engine.
+    // Use hardcoded association for .js files if everything else fails.
+
+    if (_tcsicmp(pszExt, _T(".js")) == 0)
+    {
+        *clsidEngine = CLSID_JScript;
+        return S_OK;
+    }
+
+    return E_FAIL;
 }

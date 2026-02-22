@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -123,7 +124,7 @@ CFTPWorker::CFTPWorker(CFTPOperation* oper, CFTPQueue* queue, const char* host,
     UploadType = utNone;
     UseDeleteForOverwrite = FALSE;
 
-    if (Config.EnableLogging && !Config.DisableLoggingOfWorkers) // bez synchronizace, neni potreba
+    if (Config.EnableLogging && !Config.DisableLoggingOfWorkers) // without synchronization, not needed
     {
         Logs.CreateLog(&LogUID, host, port, user, NULL, FALSE, TRUE);
         Oper->SendHeaderToLog(LogUID);
@@ -256,13 +257,13 @@ int CFTPWorker::GetCopyOfMsg()
 void CFTPWorker::CorrectErrorDescr()
 {
 #ifdef _DEBUG
-    if (WorkerCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (WorkerCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::CorrectErrorDescr(): not from section WorkerCritSect!");
 #endif
 
-    // CR+LF prelozime na mezery
+    // translate CR+LF to spaces
     char* s = ErrorDescr;
     char* end = ErrorDescr + FTPWORKER_ERRDESCR_BUFSIZE - 1;
     while (s < end && *s != 0)
@@ -273,7 +274,7 @@ void CFTPWorker::CorrectErrorDescr()
             *s = ' ';
         s++;
     }
-    // mezery a tecky z konce retezce vyhazime
+    // drop spaces and periods from the end of the string
     end = s;
     while (end > ErrorDescr && (*(end - 1) == '.' || *(end - 1) == ' '))
         end--;
@@ -287,8 +288,8 @@ void CFTPWorker::InitDiskWork(DWORD msgID, CFTPDiskWorkType type, const char* pa
                               HANDLE workFile)
 {
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::InitDiskWork(): not from section SocketCritSect!");
 #endif
@@ -354,7 +355,7 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     if (itemData->mask & LVIF_IMAGE)
-        itemData->iImage = 0; // zatim mame jedinou ikonu
+        itemData->iImage = 0; // we only have a single icon for now
     if ((itemData->mask & LVIF_TEXT) && bufSize > 0)
     {
         switch (itemData->iSubItem)
@@ -489,7 +490,7 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
 
                 case fwsSleeping:
                 case fwsStopped:
-                    break; // zadny text v techto pripadech
+                    break; // no text in these cases
 
                 case fwsPreparing:
                     _snprintf_s(buf, bufSize, _TRUNCATE, LoadStr(IDS_OPERDLGCOACT_PREPARING));
@@ -580,11 +581,11 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
                                 {
                                     transferredSize = ResumingFileOnServer ? FileOnServerResumedAtOffset + StatusTransferred : StatusTransferred;
                                 }
-                                SalamanderGeneral->PrintDiskSize(num1, transferredSize, 0); // pozor num1 pouzito u tvorby num3
+                                SalamanderGeneral->PrintDiskSize(num1, transferredSize, 0); // careful, num1 is used when creating num3
                                 if (StatusTotal != CQuadWord(-1, -1))
                                 {
                                     if (StatusType == wstUploadStatus && StatusTotal == transferredSize)
-                                        num3[0] = 0; // uz se nic neuploadi
+                                        num3[0] = 0; // nothing else will be uploaded
                                     int off = 0;
                                     SalamanderGeneral->PrintDiskSize(num2, StatusTotal, 0);
                                     off = _snprintf_s(bufRest, bufRestSize, _TRUNCATE, LoadStr(num3[0] != 0 ? IDS_LISTWNDSTATUS1 : IDS_OPERDLGSTATUS2),
@@ -593,7 +594,7 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
                                         off = bufRestSize;
                                     if (StatusTotal > CQuadWord(0, 0))
                                     {
-                                        int progress = ((int)((CQuadWord(1000, 0) * transferredSize) / StatusTotal).Value /*+ 5*/) / 10; // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+                                        int progress = ((int)((CQuadWord(1000, 0) * transferredSize) / StatusTotal).Value /*+ 5*/) / 10; // do not round (100% must appear only at 100%, not at 99.5%)
                                         if (progress > 100)
                                             progress = 100;
                                         if (progress < 0)
@@ -607,11 +608,11 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
                                                 StatusTotal > transferredSize)
                                             {
                                                 CQuadWord waiting = StatusTotal - transferredSize;
-                                                CQuadWord secs = waiting / CQuadWord(StatusSpeed, 0); // odhad zbyvajicich sekund
-                                                secs.Value++;                                         // jedna vterina navic, abysme koncili operaci s "time left: 1 sec" (misto 0 sec)
+                                                CQuadWord secs = waiting / CQuadWord(StatusSpeed, 0); // estimate of remaining seconds
+                                                secs.Value++;                                         // add one more second so the operation ends with "time left: 1 sec" (instead of 0 sec)
                                                 if (LastTimeEstimation != -1)
                                                     secs = (CQuadWord(2, 0) * secs + CQuadWord(LastTimeEstimation, 0)) / CQuadWord(3, 0);
-                                                // vypocet zaokrouhleni (zhruba 10% chyba + zaokrouhlujeme po hezkych cislech 1,2,5,10,20,40)
+                                                // rounding calculation (roughly 10% error + we round to nice numbers 1,2,5,10,20,40)
                                                 CQuadWord dif = (secs + CQuadWord(5, 0)) / CQuadWord(10, 0);
                                                 int expon = 0;
                                                 while (dif >= CQuadWord(50, 0))
@@ -633,10 +634,10 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
                                                     dif = CQuadWord(40, 0);
                                                 while (expon--)
                                                     dif *= CQuadWord(60, 0);
-                                                secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // zaokrouhlime 'secs' na 'dif' sekund
+                                                secs = ((secs + dif / CQuadWord(2, 0)) / dif) * dif; // round 'secs' to 'dif' seconds
                                                 lstrcpyn(timeLeftText, LoadStr(IDS_OPERDLGCOACT_TIMELEFT), 200);
                                                 int len = (int)strlen(timeLeftText);
-                                                if (len < 99) // celkem 200, takze pokud ma zbyt 100 znaku pro casovy udaj, musi byt len < 99
+                                                if (len < 99) // total of 200, so if 100 characters must remain for the time value, len must be < 99
                                                 {
                                                     timeLeftText[len++] = ' ';
                                                     SalamanderGeneral->PrintTimeLeft(timeLeftText + len, secs);
@@ -672,7 +673,7 @@ void CFTPWorker::GetListViewData(LVITEM* itemData, char* buf, int bufSize)
                             }
                         }
                         if (prefixLen != -1 && *bufRest == 0)
-                            *(bufRest - 2) = 0; // na prefixem neni potreba ": "
+                            *(bufRest - 2) = 0; // the prefix does not need ": "
                     }
                     else
                         TRACE_E("Unexpected situation 2 in CFTPWorker::GetListViewData(): missing active operation item!");
@@ -725,11 +726,11 @@ BOOL CFTPWorker::GetErrorDescr(char* buf, int bufSize, BOOL* postActivate, CCert
     {
         if (State == fwsWaitingForReconnect)
         {
-            State = fwsConnectionError; // aby behem userova reseni problemu nezacal provadet dalsi reconnect
+            State = fwsConnectionError; // so the worker does not start another reconnect while the user resolves the problem
             operStatusMaybeChanged = TRUE;
-            // ErrorOccurenceTime se zde nenastavuje - nejde o chybu, ktera by nastala sama - user si ji vynutil
+            // ErrorOccurenceTime is not set here - this is not an error that happened on its own - the user forced it
             SubState = fwssNone;
-            *postActivate = TRUE; // fweActivate se postne po dokonceni metody, v fwsConnectionError se musi vratit polozka do fronty
+            *postActivate = TRUE; // fweActivate is posted after the method finishes; in fwsConnectionError the item must return to the queue
             Oper->ReportWorkerChange(ID, FALSE);
         }
         lstrcpyn(buf, ErrorDescr, bufSize);
@@ -751,7 +752,7 @@ BOOL CFTPWorker::CanDeleteFromRetCons()
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     BOOL ret = CanDeleteSocket;
-    ReturnToControlCon = FALSE; // uz jsme se ptali z metod CReturningConnections
+    ReturnToControlCon = FALSE; // we already asked from CReturningConnections methods
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
     return ret;
 }
@@ -762,7 +763,7 @@ BOOL CFTPWorker::CanDeleteFromDelWorkers()
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     BOOL ret = !ReturnToControlCon;
-    CanDeleteSocket = TRUE; // uz jsme se ptali z DeleteWorkers
+    CanDeleteSocket = TRUE; // we already asked from DeleteWorkers
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
     return ret;
 }
@@ -773,7 +774,7 @@ BOOL CFTPWorker::InformAboutStop()
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     BOOL ret = FALSE;
-    if (!ShouldStop) // pokud nejde o opakovane volani
+    if (!ShouldStop) // if this is not a repeated call
     {
         ShouldStop = TRUE;
         Oper->ReportWorkerChange(ID, FALSE);
@@ -783,11 +784,11 @@ BOOL CFTPWorker::InformAboutStop()
                                                       SubState == fwssWorkCopyWaitForListen ||
                                                       SubState == fwssWorkUploadWaitForListen) ||
                               State == fwsLookingForWork && ShouldBePaused))
-        { // "idle" stav s otevrenym spojenim -> potrebujeme postnout WORKER_SHOULDSTOP
+        { // "idle" state with an open connection -> we need to post WORKER_SHOULDSTOP
             ret = TRUE;
         }
         else
-        { // pokud existuje "data-connection" a necekame na spojeni se serverem, potrebujeme "data-connection" zavrit
+        { // if a "data-connection" exists and we are not waiting for the server connection, we need to close the "data-connection"
             ret = WorkerDataConState == wdcsOnlyAllocated || WorkerDataConState == wdcsTransferingData ||
                   WorkerDataConState == wdcsTransferFinished;
         }
@@ -802,7 +803,7 @@ void CFTPWorker::CloseDataConnectionOrPostShouldStop()
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
     HANDLES(EnterCriticalSection(&WorkerCritSect));
-    // pokud existuje "data-connection" a necekame na spojeni se serverem, potrebujeme "data-connection" zavrit
+    // if a "data-connection" exists and we are not waiting for the server connection, we need to close the "data-connection"
     CDataConnectionSocket* workerDataCon = NULL;
     CUploadDataConnectionSocket* workerUploadDataCon = NULL;
     if (WorkerDataConState == wdcsOnlyAllocated || WorkerDataConState == wdcsTransferingData ||
@@ -825,20 +826,20 @@ void CFTPWorker::CloseDataConnectionOrPostShouldStop()
 
     if (workerDataCon != NULL)
     {
-        if (workerDataCon->IsConnected()) // zavreme "data connection", system se pokusi o "graceful"
+        if (workerDataCon->IsConnected()) // close the "data connection"; the system will attempt a "graceful" shutdown
         {
-            workerDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
-            postShouldStop = TRUE;              // musime "rozhybat" workera, aby se ukoncil (WORKER_DATACON_CLOSED nedorazi)
+            workerDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
+            postShouldStop = TRUE;              // we must "get the worker moving" so it terminates (WORKER_DATACON_CLOSED will not arrive)
         }
         workerDataCon->FreeFlushData();
         DeleteSocket(workerDataCon);
     }
     if (workerUploadDataCon != NULL)
     {
-        if (workerUploadDataCon->IsConnected()) // zavreme "data connection", system se pokusi o "graceful"
+        if (workerUploadDataCon->IsConnected()) // close the "data connection"; the system will attempt a "graceful" shutdown
         {
-            workerUploadDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
-            postShouldStop = TRUE;                    // musime "rozhybat" workera, aby se ukoncil (WORKER_UPLDATACON_CLOSED nedorazi)
+            workerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
+            postShouldStop = TRUE;                    // we must "get the worker moving" so it terminates (WORKER_UPLDATACON_CLOSED will not arrive)
         }
         workerUploadDataCon->FreeBufferedData();
         DeleteSocket(workerUploadDataCon);
@@ -861,12 +862,12 @@ BOOL CFTPWorker::InformAboutPause(BOOL pause)
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     BOOL ret = FALSE;
-    if (ShouldBePaused != pause) // pokud nejde o zbytecne nebo opakovane volani
+    if (ShouldBePaused != pause) // if this is not a redundant or repeated call
     {
         Logs.LogMessage(LogUID, LoadStr(pause ? IDS_LOGMSGPAUSE : IDS_LOGMSGRESUME), -1, TRUE);
         ShouldBePaused = pause;
         Oper->ReportWorkerChange(ID, FALSE);
-        ret = TRUE; // budeme volat PostShouldPauseOrResume()
+        ret = TRUE; // we will call PostShouldPauseOrResume()
     }
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
     return ret;
@@ -891,8 +892,8 @@ void CFTPWorker::PostShouldPauseOrResume()
         {
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
             leaveWorkerCS = FALSE;
-            if (WorkerDataCon->IsTransfering(NULL)) // prenos dat jeste probiha
-            {                                       // ziskame status informace z data-connectiony
+            if (WorkerDataCon->IsTransfering(NULL)) // data transfer is still in progress
+            {                                       // obtain status information from the data connection
                 WorkerDataCon->GetStatus(&statusTransferred, &statusTotal, &statusConnectionIdleTime, &statusSpeed);
                 writeNewStatus = TRUE;
             }
@@ -903,7 +904,7 @@ void CFTPWorker::PostShouldPauseOrResume()
             {
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                 leaveWorkerCS = FALSE;
-                // ziskame status informace z data-connectiony
+                // obtain status information from the data connection
                 WorkerUploadDataCon->GetStatus(&statusTransferred, &statusTotal, &statusConnectionIdleTime, &statusSpeed);
                 writeNewStatus = TRUE;
             }
@@ -932,7 +933,7 @@ BOOL CFTPWorker::SocketClosedAndDataConDoesntExist()
     CALL_STACK_MESSAGE1("CFTPWorker::SocketClosedAndDataConDoesntExist()");
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
-    BOOL ret = SocketClosed && WorkerDataConState == wdcsDoesNotExist; // nelze pouzit IsConnected(), nesmi vstoupit do sekce CSocket::SocketCritSect
+    BOOL ret = SocketClosed && WorkerDataConState == wdcsDoesNotExist; // cannot use IsConnected(); must not enter the CSocket::SocketCritSect section
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
     return ret;
 }
@@ -963,38 +964,38 @@ void CFTPWorker::ForceClose()
 
     if (workerDataCon != NULL)
     {
-        if (workerDataCon->IsConnected())       // zavreme "data connection", system se pokusi o "graceful"
-            workerDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
+        if (workerDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
+            workerDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
         workerDataCon->FreeFlushData();
         DeleteSocket(workerDataCon);
     }
     if (workerUploadDataCon != NULL)
     {
-        if (workerUploadDataCon->IsConnected())       // zavreme "data connection", system se pokusi o "graceful"
-            workerUploadDataCon->CloseSocketEx(NULL); // shutdown (nedozvime se o vysledku)
+        if (workerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
+            workerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
         workerUploadDataCon->FreeBufferedData();
         DeleteSocket(workerUploadDataCon);
     }
 
-    HANDLES(EnterCriticalSection(&SocketCritSect)); // optimalizace: zajisteni prubehu IsConnected a CloseSocket najednou
+    HANDLES(EnterCriticalSection(&SocketCritSect)); // optimization: ensure IsConnected and CloseSocket run together
     if (IsConnected())
-        CloseSocket(NULL); // zavreme socket
+        CloseSocket(NULL); // close the socket
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-    // simulace zavreni socketu ze strany serveru (pro sychr udelame vzdy, nejen pri otevrenem socketu)
+    // simulate the server closing the socket (for safety always do it, not only with an open socket)
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     SocketClosed = TRUE;
-    int logUID = LogUID; // UID logu workera
+    int logUID = LogUID; // worker's log UID
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
     Logs.SetIsConnected(logUID, IsConnected());
-    Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
-    ReportWorkerMayBeClosed();         // ohlasime zavreni socketu (pro ostatni cekajici thready)
+    Logs.RefreshListOfLogsInLogsDlg(); // show the "connection inactive" notification
+    ReportWorkerMayBeClosed();         // announce the socket closure (for other waiting threads)
 }
 
 void CFTPWorker::ForceCloseDiskWork()
 {
     CALL_STACK_MESSAGE1("CFTPWorker::ForceCloseDiskWork()");
-    // POZOR: muze se volat opakovane (viz volani CFTPWorkersList::ForceCloseWorkers())
+    // WARNING: may be called repeatedly (see calls from CFTPWorkersList::ForceCloseWorkers())
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     if (DiskWorkIsUsed)
     {
@@ -1002,16 +1003,16 @@ void CFTPWorker::ForceCloseDiskWork()
         if (FTPDiskThread->CancelWork(&DiskWork, &workIsInProgress))
         {
             if (workIsInProgress)
-                DiskWork.FlushDataBuffer = NULL; // prace je rozdelana, nemuzeme uvolnit buffer se zapisovanymi/testovanymi daty (nebo pro nacitana data), nechame to na disk-work threadu (viz cast cancelovani prace) - do DiskWork muzeme zapisovat, protoze po Cancelu do nej uz disk-thread nesmi pristupovat (napr. uz vubec nemusi existovat)
+                DiskWork.FlushDataBuffer = NULL; // work is in progress; we cannot free the buffer with data being written/verified (or for read data), leave it to the disk-work thread (see the cancellation section) - we may write into DiskWork because after Cancel the disk thread must no longer access it (for example, it might no longer exist)
             else
-            { // prace byla zcanclovana pred tim, nez ji disk-thread zacal provadet - provedeme dealokaci flush bufferu (pro download i pro upload)
+            { // the work was cancelled before the disk thread started executing it - deallocate the flush buffer (for both download and upload)
                 if (DiskWork.FlushDataBuffer != NULL)
                 {
                     free(DiskWork.FlushDataBuffer);
                     DiskWork.FlushDataBuffer = NULL;
                 }
             }
-            DiskWorkIsUsed = FALSE; // pokud je jiz prace hotova, pockame az se worker ukonci sam o sobe (jinak praci na disku prerusime)
+            DiskWorkIsUsed = FALSE; // if the work is already finished, wait until the worker terminates on its own (otherwise interrupt the disk work)
         }
     }
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
@@ -1022,9 +1023,9 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
     CALL_STACK_MESSAGE1("CFTPWorker::ReleaseData()");
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
-    if (CommandState == fwcsWaitForCmdError) // worker byl ukoncen drive nez stihl dojit timer WORKER_CMDERRORTIMERID, chybove hlaseni musime tedy vypsat zde
+    if (CommandState == fwcsWaitForCmdError) // the worker was terminated before the WORKER_CMDERRORTIMERID timer fired, so we must print the error message here
     {
-        if (WaitForCmdErrError != NO_ERROR) // je-li co zobrazit, zobrazime to
+        if (WaitForCmdErrError != NO_ERROR) // if there is something to show, display it
         {
             char errBuf[300];
             FTPGetErrorTextForLog(WaitForCmdErrError, errBuf, 300);
@@ -1051,7 +1052,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
         char hostBuf[HOST_MAX_SIZE];
         unsigned short port;
         if (UploadDirGetTgtPathListing)
-        { // listovani selhalo, informujeme o tom pripadne cekajici workery
+        { // listing failed; inform waiting workers about it
             UploadDirGetTgtPathListing = FALSE;
             Oper->GetUserHostPort(userBuf, hostBuf, &port);
             char* tgtPath = NULL;
@@ -1078,7 +1079,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 case fwssWorkDelDirWaitForRMDRes:
                 case fwssWorkCopyMoveWaitForDELERes:
                 {
-                    // pokud nevime jak dopadl vymaz souboru/linku/adresare, zneplatnime listing v cache
+                    // if we do not know how deleting the file/link/directory ended, invalidate the listing in the cache
                     Oper->GetUserHostPort(userBuf, hostBuf, &port);
                     UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                     Oper->GetFTPServerPathType(CurItem->Path),
@@ -1090,7 +1091,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 {
                     if (CurItem->Type == fqitUploadCopyExploreDir || CurItem->Type == fqitUploadMoveExploreDir) // "always true"
                     {
-                        // pokud nevime jak dopadlo vytvoreni adresare, zneplatnime listing v cache
+                        // if we do not know how creating the directory ended, invalidate the listing in the cache
                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                         CFTPQueueItemCopyMoveUploadExplore* curItem = (CFTPQueueItemCopyMoveUploadExplore*)CurItem;
                         UploadListingCache.ReportCreateDirs(userBuf, hostBuf, port, curItem->TgtPath,
@@ -1104,7 +1105,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 {
                     if (CurItem->Type == fqitUploadCopyExploreDir || CurItem->Type == fqitUploadMoveExploreDir) // "always true"
                     {
-                        // pokud nevime jak dopadlo vytvoreni adresare, zneplatnime listing v cache
+                        // if we do not know how creating the directory ended, invalidate the listing in the cache
                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                         CFTPQueueItemCopyMoveUploadExplore* curItem = (CFTPQueueItemCopyMoveUploadExplore*)CurItem;
                         UploadListingCache.ReportCreateDirs(userBuf, hostBuf, port, curItem->TgtPath,
@@ -1114,22 +1115,21 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                     break;
                 }
 
-                case fwssWorkUploadActivateDataCon: // je mezistav mezi fwssWorkUploadSendSTORCmd a fwssWorkUploadWaitForSTORRes
+                case fwssWorkUploadActivateDataCon: // intermediate state between fwssWorkUploadSendSTORCmd and fwssWorkUploadWaitForSTORRes
                 case fwssWorkUploadWaitForSTORRes:
                 {
                     if (CurItem->Type == fqitUploadCopyFile || CurItem->Type == fqitUploadMoveFile) // "always true"
                     {
-                        // vysledek prikazu STOR nezname, invalidatneme listing
+                        // STOR command result is unknown; invalidate the listing
                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                         CFTPQueueItemCopyOrMoveUpload* curItem = (CFTPQueueItemCopyOrMoveUpload*)CurItem;
                         UploadListingCache.ReportFileUploaded(userBuf, hostBuf, port, curItem->TgtPath,
                                                               Oper->GetFTPServerPathType(curItem->TgtPath),
                                                               curItem->TgtName, UPLOADSIZE_UNKNOWN, TRUE);
 
-                        // krome pripadu, kdy STOR hlasi chybu "cannot create target file name" (coz je kdyz STOR hlasi
-                        // nejakou chybu + nic se neuploadlo) povazujeme poslani prikazu STOR/APPE za dokonceni
-                        // forcovane akce: "overwrite", "resume" a "resume or overwrite"
-                        if (CurItem->ForceAction != fqiaNone) // vynucena akce timto prestava platit
+                        // except when STOR reports "cannot create target file name" (i.e. STOR reports an error and nothing was uploaded) we consider sending the STOR/APPE command as completion
+                        // forced actions: "overwrite", "resume", and "resume or overwrite"
+                        if (CurItem->ForceAction != fqiaNone) // the forced action stops applying
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                     }
                     break;
@@ -1140,7 +1140,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 {
                     if (CurItem->Type == fqitUploadCopyFile || CurItem->Type == fqitUploadMoveFile) // "always true"
                     {
-                        // pokud nevime jak dopadl vymaz souboru/linku/adresare, zneplatnime listing v cache
+                        // if we do not know how deleting the file/link/directory ended, invalidate the listing in the cache
                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                         CFTPQueueItemCopyOrMoveUpload* curItem = (CFTPQueueItemCopyOrMoveUpload*)CurItem;
                         UploadListingCache.ReportDelete(userBuf, hostBuf, port, curItem->TgtPath,
@@ -1156,14 +1156,14 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
             ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->RenamedName != NULL)
         {
             if (State == fwsWorking && SubState == fwssWorkUploadWaitForSTORRes)
-                Queue->ChangeTgtNameToRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem); // i kdyby jeste STOR neprobehl, porad je vic pravda, ze se soubor ukladal pod novym jmenem, nez pod puvodnim - napr. u prepisu existujiciho souboru je to zrejme
+                Queue->ChangeTgtNameToRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem); // even if STOR has not yet run, it is still more accurate that the file was stored under the new name than under the original one - obvious for overwriting an existing file
             else
                 Queue->UpdateRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem, NULL);
         }
-        ReturnCurItemToQueue(); // vratime polozku do fronty
+        ReturnCurItemToQueue(); // return the item to the queue
     }
-    // vycistime data workera
-    State = fwsStopped; // neni nutne volat Oper->OperationStatusMaybeChanged(), zavola se z CFTPOperation::DeleteWorkers()
+    // clear the worker data
+    State = fwsStopped; // no need to call Oper->OperationStatusMaybeChanged(); CFTPOperation::DeleteWorkers() will call it
     SubState = fwssNone;
     ErrorDescr[0] = 0;
     if (UnverifiedCertificate != NULL)
@@ -1179,22 +1179,22 @@ void CFTPWorker::SocketWasClosed(DWORD error)
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     SocketClosed = TRUE;
-    int logUID = LogUID; // UID logu workera
+    int logUID = LogUID; // worker's log UID
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
     Logs.SetIsConnected(logUID, IsConnected());
-    Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+    Logs.RefreshListOfLogsInLogsDlg(); // show the "connection inactive" notification
 
     HandleSocketEvent(fwseClose, error, 0);
 
-    ReportWorkerMayBeClosed(); // ohlasime zavreni socketu (pro ostatni cekajici thready)
+    ReportWorkerMayBeClosed(); // announce the socket closure (for other waiting threads)
 }
 
 void CFTPWorker::ReturnCurItemToQueue()
 {
 #ifdef _DEBUG
-    if (WorkerCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (WorkerCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::ReturnCurItemToQueue(): not from section WorkerCritSect!");
 #endif
@@ -1202,7 +1202,7 @@ void CFTPWorker::ReturnCurItemToQueue()
     {
         int uid = CurItem->UID;
         Queue->ReturnToWaitingItems(CurItem, Oper);
-        Oper->ReportItemChange(uid); // pozadame o redraw polozky
+        Oper->ReportItemChange(uid); // request to redraw the item
         CurItem = NULL;
     }
     else
@@ -1213,8 +1213,8 @@ void CFTPWorker::CloseOpenedFile(BOOL transferAborted, BOOL setDateAndTime, cons
                                  const CFTPTime* time, BOOL deleteFile, CQuadWord* setEndOfFile)
 {
 #ifdef _DEBUG
-    if (WorkerCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (WorkerCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::CloseOpenedFile(): not from section WorkerCritSect!");
 #endif
@@ -1224,17 +1224,17 @@ void CFTPWorker::CloseOpenedFile(BOOL transferAborted, BOOL setDateAndTime, cons
         {
             switch (CurItem->Type)
             {
-            case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-            case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
+            case fqitCopyFileOrFileLink: // copying a file or link to a file (object of class CFTPQueueItemCopyOrMove)
+            case fqitMoveFileOrFileLink: // moving a file or link to a file (object of class CFTPQueueItemCopyOrMove)
             {
-                // nechame soubor zavrit (pri chybe pridani do disk-threadu soubor zustane otevreny,
-                // protoze ho nemuzeme zavrit primo z duvodu, ze disk-thread muze jeho handle prave pouzivat)
+                // let the file be closed (if adding to the disk thread fails the file remains open,
+                // because we cannot close it directly; the disk thread might be using its handle)
                 BOOL delEmptyFile = (transferAborted ? CanDeleteEmptyFile : FALSE);
                 FTPDiskThread->AddFileToClose(((CFTPQueueItemCopyOrMove*)CurItem)->TgtPath,
                                               ((CFTPQueueItemCopyOrMove*)CurItem)->TgtName,
                                               OpenedFile, delEmptyFile, setDateAndTime, date,
                                               time, deleteFile, setEndOfFile, NULL);
-                if (deleteFile || delEmptyFile && OpenedFileSize == CQuadWord(0, 0)) // temer jiste dojde k vymazu souboru - bud na primy prikaz nebo prenos vubec nezacal, takze resetneme stav v TgtFileState (nebudeme otravovat s "transfer has failed")
+                if (deleteFile || delEmptyFile && OpenedFileSize == CQuadWord(0, 0)) // the file will almost certainly be deleted - either by direct command or because the transfer never started, so reset TgtFileState (avoid bothering with "transfer has failed")
                     Queue->UpdateTgtFileState((CFTPQueueItemCopyOrMove*)CurItem, TGTFILESTATE_UNKNOWN);
                 OpenedFile = NULL;
                 OpenedFileSize.Set(0, 0);
@@ -1261,8 +1261,8 @@ void CFTPWorker::CloseOpenedFile(BOOL transferAborted, BOOL setDateAndTime, cons
 void CFTPWorker::CloseOpenedInFile()
 {
 #ifdef _DEBUG
-    if (WorkerCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (WorkerCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::CloseOpenedInFile(): not from section WorkerCritSect!");
 #endif
@@ -1272,18 +1272,18 @@ void CFTPWorker::CloseOpenedInFile()
         {
             switch (CurItem->Type)
             {
-            case fqitUploadCopyFile: // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-            case fqitUploadMoveFile: // upload: presun souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
+            case fqitUploadCopyFile: // upload: copying a file (object of class CFTPQueueItemCopyOrMoveUpload)
+            case fqitUploadMoveFile: // upload: moving a file (object of class CFTPQueueItemCopyOrMoveUpload)
             {
-                // nechame soubor zavrit (pri chybe pridani do disk-threadu soubor zustane otevreny,
-                // protoze ho nemuzeme zavrit primo z duvodu, ze disk-thread muze jeho handle prave pouzivat)
+                // let the file be closed (if adding to the disk thread fails the file remains open,
+                // because we cannot close it directly; the disk thread might be using its handle)
                 FTPDiskThread->AddFileToClose(CurItem->Path, CurItem->Name, OpenedInFile, FALSE, FALSE, NULL,
                                               NULL, FALSE, NULL, NULL);
                 OpenedInFile = NULL;
                 OpenedInFileSize.Set(0, 0);
                 OpenedInFileCurOffset.Set(0, 0);
-                // OpenedInFileNumberOfEOLs.Set(0, 0);      // pouziva se po zavreni souboru, takze nesmime nulovat
-                // OpenedInFileSizeWithCRLF_EOLs.Set(0, 0); // pouziva se po zavreni souboru, takze nesmime nulovat
+                // OpenedInFileNumberOfEOLs.Set(0, 0);      // used after closing the file, so we must not zero it
+                // OpenedInFileSizeWithCRLF_EOLs.Set(0, 0); // used after closing the file, so we must not zero it
                 FileOnServerResumedAtOffset.Set(0, 0);
                 ResumingFileOnServer = FALSE;
                 break;
@@ -1299,7 +1299,7 @@ void CFTPWorker::CloseOpenedInFile()
         else
             TRACE_E("Unexpected situation in CFTPWorker::CloseOpenedInFile(): CurItem is NULL!");
     }
-    UploadType = utNone; // jen tak pro poradek (nulovani neni nutne, ale...)
+    UploadType = utNone; // just for completeness (resetting is not necessary, but ...)
 }
 
 void CFTPWorker::PostActivateMsg()
@@ -1341,13 +1341,13 @@ void CFTPWorker::GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker)
     HANDLES(EnterCriticalSection(&(sourceWorker->WorkerCritSect)));
     if (sourceWorker->State != fwsConnecting)
         TRACE_E("Unexpected situation in CFTPWorker::GiveWorkToSleepingConWorker(): source worker is not in state fwsConnecting!");
-    sourceWorker->State = fwsLookingForWork; // post activate by mel provest prechod na fwsSleeping (pokud mezitim nevznikla nejaka prace)
-    sourceWorker->SubState = fwssNone;       // neni nutne volat Oper->OperationStatusMaybeChanged(), protoze predani prace nemuze zmenit stav operace (neni paused a nebude ani po prohozeni)
+    sourceWorker->State = fwsLookingForWork; // post activate should transition to fwsSleeping (unless some work appeared in the meantime)
+    sourceWorker->SubState = fwssNone;       // no need to call Oper->OperationStatusMaybeChanged(); handing over the work cannot change the operation state (it is not paused and will not be after the swap)
     sourceWorker->CloseOpenedFile(TRUE, FALSE, NULL, NULL, FALSE, NULL);
     sourceWorker->CloseOpenedInFile();
     CFTPQueueItem* curItem = sourceWorker->CurItem;
     sourceWorker->CurItem = NULL;
-    Oper->ReportWorkerChange(sourceWorker->ID, FALSE); // pozadame o redraw workera
+    Oper->ReportWorkerChange(sourceWorker->ID, FALSE); // request to redraw the worker
     HANDLES(LeaveCriticalSection(&(sourceWorker->WorkerCritSect)));
 
     HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -1356,7 +1356,7 @@ void CFTPWorker::GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker)
     State = fwsPreparing;
     SubState = fwssNone;
     CurItem = curItem;
-    Oper->ReportWorkerChange(ID, FALSE); // pozadame o redraw workera
+    Oper->ReportWorkerChange(ID, FALSE); // request to redraw the worker
     HANDLES(LeaveCriticalSection(&WorkerCritSect));
 }
 
@@ -1430,7 +1430,7 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
     if (allBytesWritten != NULL)
         *allBytesWritten = FALSE;
 
-    if (bytesToWrite == 0) // zapis prazdneho bufferu
+    if (bytesToWrite == 0) // writing an empty buffer
     {
         if (allBytesWritten != NULL)
             *allBytesWritten = TRUE;
@@ -1440,9 +1440,9 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     BOOL ret = FALSE;
-    if (Socket != INVALID_SOCKET) // socket je pripojeny
+    if (Socket != INVALID_SOCKET) // socket is connected
     {
-        if (BytesToWriteCount == BytesToWriteOffset) // nic neceka na poslani, muzeme posilat
+        if (BytesToWriteCount == BytesToWriteOffset) // nothing is waiting to be sent; we can send
         {
             if (BytesToWriteCount != 0)
                 TRACE_E("Unexpected value of BytesToWriteCount.");
@@ -1450,64 +1450,64 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
             int len = 0;
             if (!SSLConn)
             {
-                while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                while (1) // loop needed because 'send' does not emit FD_WRITE when 'sentLen' < 'bytesToWrite'
                 {
-                    // POZOR: pokud se nekdy zase bude zavadet TELNET protokol, je nutne predelat posilani IAC+IP
-                    // pred abortovanim prikazu v metode SendFTPCommand()
+                    // WARNING: if the TELNET protocol is introduced again, sending IAC+IP must be reworked
+                    // before aborting the command in SendFTPCommand()
 
                     if (!SSLConn)
                     {
                         int sentLen = send(Socket, buffer + len, bytesToWrite - len, 0);
-                        if (sentLen != SOCKET_ERROR) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                        if (sentLen != SOCKET_ERROR) // at least something was successfully sent (or rather accepted by Windows; delivery is uncertain)
                         {
                             len += sentLen;
-                            if (len >= bytesToWrite) // uz je poslano vsechno?
+                            if (len >= bytesToWrite) // has everything been sent?
                             {
                                 ret = TRUE;
-                                break; // prestaneme posilat (jiz neni co)
+                                break; // stop sending (nothing left)
                             }
                         }
                         else
                         {
                             DWORD err = WSAGetLastError();
-                            if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                            if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer has buffer space)
                             {
                                 ret = TRUE;
-                                break; // prestaneme posilat (dodela se po FD_WRITE)
+                                break; // stop sending (will finish after FD_WRITE)
                             }
-                            else // chyba posilani
+                            else // send error
                             {
                                 if (error != NULL)
                                     *error = err;
-                                break; // vratime chybu
+                                break; // return the error
                             }
                         }
                     }
                     else
                     {
                         int sentLen = SSLLib.SSL_write(SSLConn, buffer + len, bytesToWrite - len);
-                        if (sentLen >= 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                        if (sentLen >= 0) // at least something was successfully sent (or rather accepted by Windows; delivery is uncertain)
                         {
                             len += sentLen;
-                            if (len >= bytesToWrite) // uz je poslano vsechno?
+                            if (len >= bytesToWrite) // has everything been sent?
                             {
                                 ret = TRUE;
-                                break; // prestaneme posilat (jiz neni co)
+                                break; // stop sending (nothing left)
                             }
                         }
                         else
                         {
                             DWORD err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
-                            if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                            if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer has buffer space)
                             {
                                 ret = TRUE;
-                                break; // prestaneme posilat (dodela se po FD_WRITE)
+                                break; // stop sending (will finish after FD_WRITE)
                             }
-                            else // chyba posilani
+                            else // send error
                             {
                                 if (error != NULL)
                                     *error = err;
-                                break; // vratime chybu
+                                break; // return the error
                             }
                         }
                     }
@@ -1515,49 +1515,49 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
             }
             else
             {
-                while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                while (1) // loop needed because 'send' does not emit FD_WRITE when 'sentLen' < 'bytesToWrite'
                 {
-                    // POZOR: pokud se nekdy zase bude zavadet TELNET protokol, je nutne predelat posilani IAC+IP
-                    // pred abortovanim prikazu v metode SendFTPCommand()
+                    // WARNING: if the TELNET protocol is introduced again, sending IAC+IP must be reworked
+                    // before aborting the command in SendFTPCommand()
 
                     int sentLen = SSLLib.SSL_write(SSLConn, buffer + len, bytesToWrite - len);
-                    if (sentLen > 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                    if (sentLen > 0) // at least something was successfully sent (or rather accepted by Windows; delivery is uncertain)
                     {
                         len += sentLen;
-                        if (len >= bytesToWrite) // uz je poslano vsechno?
+                        if (len >= bytesToWrite) // has everything been sent?
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (jiz neni co)
+                            break; // stop sending (nothing left)
                         }
                     }
                     else
                     {
                         DWORD err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
-                        if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                        if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer has buffer space)
                         {
                             ret = TRUE;
-                            break; // prestaneme posilat (dodela se po FD_WRITE)
+                            break; // stop sending (will finish after FD_WRITE)
                         }
-                        else // chyba posilani
+                        else // send error
                         {
                             if (error != NULL)
                                 *error = err;
-                            break; // vratime chybu
+                            break; // return the error
                         }
                     }
                 }
             }
 
-            if (ret) // uspesne odeslani, v 'len' je pocet poslanych bytu (zbytek posleme po prijeti FD_WRITE)
+            if (ret) // successfully sent; 'len' is the number of sent bytes (the rest will be sent after FD_WRITE)
             {
                 if (allBytesWritten != NULL)
                     *allBytesWritten = (len >= bytesToWrite);
-                if (len < bytesToWrite) // zbytek vlozime do bufferu 'BytesToWrite'
+                if (len < bytesToWrite) // put the remainder into the 'BytesToWrite' buffer
                 {
                     const char* buf = buffer + len;
                     int size = bytesToWrite - len;
 
-                    if (BytesToWriteAllocatedSize - BytesToWriteCount < size) // malo mista v bufferu 'BytesToWrite'
+                    if (BytesToWriteAllocatedSize - BytesToWriteCount < size) // not enough space in the 'BytesToWrite' buffer
                     {
                         int newSize = BytesToWriteCount + size + FTPWORKER_BYTESTOWRITEONSOCKETPREALLOC;
                         char* newBuf = (char*)realloc(BytesToWrite, newSize);
@@ -1566,14 +1566,14 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
                             BytesToWrite = newBuf;
                             BytesToWriteAllocatedSize = newSize;
                         }
-                        else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                        else // insufficient memory to store the data in our buffer (only TRACE reports the error)
                         {
                             TRACE_E(LOW_MEMORY);
                             ret = FALSE;
                         }
                     }
 
-                    if (ret) // muzeme zapsat (v bufferu je dost mista)
+                    if (ret) // we can write (there is enough space in the buffer)
                     {
                         memcpy(BytesToWrite + BytesToWriteCount, buf, size);
                         BytesToWriteCount += size;
@@ -1581,7 +1581,7 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
                 }
             }
         }
-        else // jeste nebylo odeslano vse -> chybne pouziti Write
+        else // not everything was sent yet -> incorrect use of Write
         {
             TRACE_E("Incorrect use of CFTPWorker::Write(): called again before waiting for fwseWriteDone event.");
         }
@@ -1599,8 +1599,8 @@ BOOL CFTPWorker::ReadFTPReply(char** reply, int* replySize, int* replyCode)
     CALL_STACK_MESSAGE1("CFTPWorker::ReadFTPReply(, ,)");
 
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::ReadFTPReply: not from section SocketCritSect!");
 #endif
@@ -1613,14 +1613,14 @@ void CFTPWorker::SkipFTPReply(int replySize)
     CALL_STACK_MESSAGE2("CFTPWorker::SkipFTPReply(%d)", replySize);
 
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::SkipFTPReply: not from section SocketCritSect!");
 #endif
 
     ReadBytesOffset += replySize;
-    if (ReadBytesOffset >= ReadBytesCount) // uz jsme precetli vse - resetneme buffer
+    if (ReadBytesOffset >= ReadBytesCount) // we have already read everything - reset the buffer
     {
         if (ReadBytesOffset > ReadBytesCount)
             TRACE_E("Error in call to CFTPWorker::SkipFTPReply(): trying to skip more bytes than is read");
@@ -1643,17 +1643,17 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
     DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
     switch (WSAGETSELECTEVENT(lParam))            // extract event
     {
-    case FD_CLOSE: // nekdy chodi pred poslednim FD_READ, nezbyva tedy nez napred zkusit FD_READ a pokud uspeje, poslat si FD_CLOSE znovu (muze pred nim znovu uspet FD_READ)
+    case FD_CLOSE: // sometimes arrives before the last FD_READ, so we must first try FD_READ and if it succeeds, post FD_CLOSE again (another FD_READ may succeed before it)
     case FD_READ:
     {
-        BOOL sendFDCloseAgain = FALSE; // TRUE = prisel FD_CLOSE + bylo co cist (provedl se jako FD_READ) => posleme si znovu FD_CLOSE (soucasny FD_CLOSE byl plany poplach)
+        BOOL sendFDCloseAgain = FALSE; // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ) => post FD_CLOSE again (the current FD_CLOSE was a false alarm)
         HANDLES(EnterCriticalSection(&SocketCritSect));
 
-        if (!EventConnectSent) // pokud prisla FD_READ pred FD_CONNECT, posleme fwseConnect jeste pred ctenim
+        if (!EventConnectSent) // if FD_READ arrived before FD_CONNECT, post fwseConnect before reading
         {
             EventConnectSent = TRUE;
             HANDLES(LeaveCriticalSection(&SocketCritSect));
-            HandleSocketEvent(fwseConnect, eventError, 0); // posleme si udalost s vysledkem pripojeni
+            HandleSocketEvent(fwseConnect, eventError, 0); // post the event with the connection result
             HANDLES(EnterCriticalSection(&SocketCritSect));
         }
 
@@ -1662,19 +1662,19 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
         BOOL genEvent = FALSE;
         if (eventError == NO_ERROR)
         {
-            if (Socket != INVALID_SOCKET) // socket je pripojeny
+            if (Socket != INVALID_SOCKET) // socket is connected
             {
                 BOOL lowMem = FALSE;
-                if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // maly buffer 'ReadBytes'
+                if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // small 'ReadBytes' buffer
                 {
-                    if (ReadBytesOffset > 0) // je mozny sesun dat v bufferu?
+                    if (ReadBytesOffset > 0) // can we shift data inside the buffer?
                     {
                         memmove(ReadBytes, ReadBytes + ReadBytesOffset, ReadBytesCount - ReadBytesOffset);
                         ReadBytesCount -= ReadBytesOffset;
                         ReadBytesOffset = 0;
                     }
 
-                    if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // stale maly buffer 'ReadBytes'
+                    if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // still a small 'ReadBytes' buffer
                     {
                         int newSize = ReadBytesCount + FTPWORKER_BYTESTOREADONSOCKET +
                                       FTPWORKER_BYTESTOREADONSOCKETPREALLOC;
@@ -1684,7 +1684,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                             ReadBytes = newBuf;
                             ReadBytesAllocatedSize = newSize;
                         }
-                        else // nedostatek pameti pro ulozeni dat v nasem bufferu (chybu hlasi jen TRACE)
+                        else // insufficient memory to store the data in our buffer (only TRACE reports the error)
                         {
                             TRACE_E(LOW_MEMORY);
                             lowMem = TRUE;
@@ -1693,16 +1693,16 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                 }
 
                 if (!lowMem)
-                { // precteme co nejvice bytu do bufferu, necteme cyklicky, aby se data zpracovavala postupne
-                    // (staci mensi buffery); je-li jeste neco ke cteni, dostaneme znovu FD_READ
+                { // read as many bytes as possible into the buffer; do not read cyclically so the data is processed sequentially
+                    // (smaller buffers are enough); if there is still data to read we receive FD_READ again
                     if (!SSLConn)
                     {
                         int len = recv(Socket, ReadBytes + ReadBytesCount, ReadBytesAllocatedSize - ReadBytesCount, 0);
-                        if (len != SOCKET_ERROR) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                        if (len != SOCKET_ERROR) // we may have read something (0 = connection already closed)
                         {
                             if (len > 0)
                             {
-                                ReadBytesCount += len; // upravime pocet jiz nactenych bytu o nove nactene
+                                ReadBytesCount += len; // adjust the number of bytes already read by the newly read ones
                                 ret = TRUE;
                                 genEvent = TRUE;
                                 if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
@@ -1713,19 +1713,19 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                         {
                             err = WSAGetLastError();
                             if (err != WSAEWOULDBLOCK)
-                                genEvent = TRUE; // budeme generovat udalost s chybou
+                                genEvent = TRUE; // generate an event with the error
                         }
                     }
                     else
                     {
-                        if (SSLLib.SSL_pending(SSLConn) > 0) // je-li neprazdny interni SSL buffer nedojde vubec k volani recv() a tudiz neprijde dalsi FD_READ, tedy musime si ho poslat sami, jinak se prenos dat zastavi
+                        if (SSLLib.SSL_pending(SSLConn) > 0) // if the internal SSL buffer is not empty recv() is never called, so no additional FD_READ arrives; post it ourselves, otherwise the transfer stops
                             PostMessage(SocketsThread->GetHiddenWindow(), Msg, (WPARAM)Socket, FD_READ);
                         int len = SSLLib.SSL_read(SSLConn, ReadBytes + ReadBytesCount, ReadBytesAllocatedSize - ReadBytesCount);
-                        if (len >= 0) // mozna jsme neco precetli (0 = spojeni uz je zavrene)
+                        if (len >= 0) // we may have read something (0 = connection already closed)
                         {
                             if (len > 0)
                             {
-                                ReadBytesCount += len; // upravime pocet jiz nactenych bytu o nove nactene
+                                ReadBytesCount += len; // adjust the number of bytes already read by the newly read ones
                                 ret = TRUE;
                                 genEvent = TRUE;
                                 if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
@@ -1736,21 +1736,21 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                         {
                             err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, len));
                             if (err != WSAEWOULDBLOCK)
-                                genEvent = TRUE; // budeme generovat udalost s chybou
+                                genEvent = TRUE; // generate an event with the error
                         }
                     }
                 }
             }
             else
             {
-                // muze nastat: hlavni nebo operation-dialog thread stihne zavolat CloseSocket() pred dorucenim FD_READ
+                // can happen: the main or operation-dialog thread manages to call CloseSocket() before FD_READ is delivered
                 // TRACE_E("Unexpected situation in CFTPWorker::ReceiveNetEvent(FD_READ): Socket is not connected.");
-                // udalost s touto necekanou chybou nebudeme generovat (reseni: user pouzije ESC)
+                // we will not generate an event for this unexpected error (solution: user presses ESC)
             }
         }
-        else // hlaseni chyby v FD_READ (podle helpu jen WSAENETDOWN)
+        else // FD_READ error report (documentation says only WSAENETDOWN)
         {
-            if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // chybu si osetri FD_CLOSE sam
+            if (WSAGETSELECTEVENT(lParam) != FD_CLOSE) // FD_CLOSE handles its own error
             {
                 genEvent = TRUE;
                 err = eventError;
@@ -1758,22 +1758,22 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-        if (genEvent) // vygenerujeme udalost fwseNewBytesRead
+        if (genEvent) // generate the fwseNewBytesRead event
         {
             HandleSocketEvent(fwseNewBytesRead, (!ret ? err : NO_ERROR), 0);
         }
 
-        // ted zpracujeme FD_CLOSE
+        // now process FD_CLOSE
         if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
         {
-            if (sendFDCloseAgain) // FD_CLOSE byl misto FD_READ => posleme FD_CLOSE znovu
+            if (sendFDCloseAgain) // FD_CLOSE acted instead of FD_READ => post FD_CLOSE again
             {
                 PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                             (WPARAM)GetSocket(), lParam);
             }
-            else // korektni FD_CLOSE
+            else // proper FD_CLOSE
             {
-                CSocket::ReceiveNetEvent(lParam, index); // zavolame metodu predka
+                CSocket::ReceiveNetEvent(lParam, index); // call the base method
             }
         }
         break;
@@ -1788,108 +1788,108 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
         BOOL genEvent = FALSE;
         if (eventError == NO_ERROR)
         {
-            if (BytesToWriteCount > BytesToWriteOffset) // mame nejaky restiky, budeme posilat zbyla data z bufferu 'BytesToWrite'
+            if (BytesToWriteCount > BytesToWriteOffset) // some data remains; send the rest from the 'BytesToWrite' buffer
             {
-                if (Socket != INVALID_SOCKET) // socket je pripojeny
+                if (Socket != INVALID_SOCKET) // socket is connected
                 {
                     int len = 0;
                     if (!SSLConn)
                     {
-                        while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                        while (1) // loop needed because 'send' does not emit FD_WRITE when 'sentLen' < 'bytesToWrite'
                         {
                             int sentLen = send(Socket, BytesToWrite + BytesToWriteOffset + len,
                                                BytesToWriteCount - BytesToWriteOffset - len, 0);
-                            if (sentLen != SOCKET_ERROR) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                            if (sentLen != SOCKET_ERROR) // at least something was successfully sent (or rather accepted by Windows; delivery is uncertain)
                             {
                                 len += sentLen;
-                                if (len >= BytesToWriteCount - BytesToWriteOffset) // uz je poslano vsechno?
+                                if (len >= BytesToWriteCount - BytesToWriteOffset) // has everything been sent?
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (jiz neni co)
+                                    break; // stop sending (nothing left)
                                 }
                             }
                             else
                             {
                                 err = WSAGetLastError();
-                                if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                                if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer has buffer space)
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (dodela se po FD_WRITE)
+                                    break; // stop sending (will finish after FD_WRITE)
                                 }
-                                else // jina chyba - resetneme buffer
+                                else // another error - reset the buffer
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // vratime chybu
+                                    break; // return the error
                                 }
                             }
                         }
                     }
                     else
                     {
-                        while (1) // cyklus nutny kvuli funkci 'send' (neposila FD_WRITE pri 'sentLen' < 'bytesToWrite')
+                        while (1) // loop needed because 'send' does not emit FD_WRITE when 'sentLen' < 'bytesToWrite'
                         {
                             int sentLen = SSLLib.SSL_write(SSLConn, BytesToWrite + BytesToWriteOffset + len,
                                                            BytesToWriteCount - BytesToWriteOffset - len);
-                            if (sentLen >= 0) // aspon neco je uspesne odeslano (nebo spis prevzato Windowsama, doruceni je ve hvezdach)
+                            if (sentLen >= 0) // at least something was successfully sent (or rather accepted by Windows; delivery is uncertain)
                             {
                                 len += sentLen;
-                                if (len >= BytesToWriteCount - BytesToWriteOffset) // uz je poslano vsechno?
+                                if (len >= BytesToWriteCount - BytesToWriteOffset) // has everything been sent?
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (jiz neni co)
+                                    break; // stop sending (nothing left)
                                 }
                             }
                             else
                             {
                                 err = SSLtoWS2Error(SSLLib.SSL_get_error(SSLConn, sentLen));
-                                if (err == WSAEWOULDBLOCK) // nic dalsiho uz poslat nejde (Windowsy jiz nemaji buffer space)
+                                if (err == WSAEWOULDBLOCK) // nothing else can be sent (Windows no longer has buffer space)
                                 {
                                     ret = TRUE;
-                                    break; // prestaneme posilat (dodela se po FD_WRITE)
+                                    break; // stop sending (will finish after FD_WRITE)
                                 }
-                                else // jina chyba - resetneme buffer
+                                else // another error - reset the buffer
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // vratime chybu
+                                    break; // return the error
                                 }
                             }
                         }
                     }
 
-                    if (ret && len > 0) // aspon neco bylo odeslano -> zmena 'BytesToWriteOffset'
+                    if (ret && len > 0) // something was sent -> adjust 'BytesToWriteOffset'
                     {
                         BytesToWriteOffset += len;
-                        if (BytesToWriteOffset >= BytesToWriteCount) // vsechno poslano, reset bufferu
+                        if (BytesToWriteOffset >= BytesToWriteCount) // everything sent, reset the buffer
                         {
                             BytesToWriteOffset = 0;
                             BytesToWriteCount = 0;
                         }
                     }
 
-                    genEvent = (!ret || BytesToWriteCount == BytesToWriteOffset); // chyba nebo se jiz podarilo poslat vse
+                    genEvent = (!ret || BytesToWriteCount == BytesToWriteOffset); // error or everything has already been sent
                 }
                 else
                 {
-                    // muze nastat: hlavni nebo operation-dialog thread stihne zavolat CloseSocket() pred dorucenim FD_WRITE
+                    // can happen: the main or operation-dialog thread manages to call CloseSocket() before FD_WRITE is delivered
                     //TRACE_E("Unexpected situation in CFTPWorker::ReceiveNetEvent(FD_WRITE): Socket is not connected.");
-                    BytesToWriteCount = 0; // chyba -> resetneme buffer
+                    BytesToWriteCount = 0; // error -> reset the buffer
                     BytesToWriteOffset = 0;
-                    // udalost s touto necekanou chybou nebudeme generovat (reseni: user pouzije ESC)
+                    // we will not generate an event for this unexpected error (solution: user presses ESC)
                 }
             }
         }
-        else // hlaseni chyby v FD_WRITE (podle helpu jen WSAENETDOWN)
+        else // FD_WRITE error report (documentation says only WSAENETDOWN)
         {
             genEvent = TRUE;
             err = eventError;
-            BytesToWriteCount = 0; // chyba -> resetneme buffer
+            BytesToWriteCount = 0; // error -> reset the buffer
             BytesToWriteOffset = 0;
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-        if (genEvent) // vygenerujeme udalost fwseWriteDone
+        if (genEvent) // generate the fwseWriteDone event
         {
             HandleSocketEvent(fwseWriteDone, (!ret ? err : NO_ERROR), 0);
         }
@@ -1907,7 +1907,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
         if (call)
-            HandleSocketEvent(fwseConnect, eventError, 0); // posleme si udalost s vysledkem pripojeni
+            HandleSocketEvent(fwseConnect, eventError, 0); // post the event with the connection result
         break;
     }
     }
@@ -1943,7 +1943,7 @@ void CFTPWorker::ReceiveTimer(DWORD id, void* param)
     }
 
     case WORKER_STATUSUPDATETIMID:
-    { // postarame se o pravidelny update statusu v dialogu operace + pripadne o zruseni tohoto pravidelneho updatu v pripade, ze uz neni potreba
+    { // perform regular status updates in the operation dialog and cancel them when no longer needed
         HANDLES(EnterCriticalSection(&SocketCritSect));
         HANDLES(EnterCriticalSection(&WorkerCritSect));
         BOOL clearStatusType = TRUE;
@@ -1957,9 +1957,9 @@ void CFTPWorker::ReceiveTimer(DWORD id, void* param)
             if (StatusType == wstDownloadStatus && WorkerDataCon != NULL)
             {
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                if (WorkerDataCon->IsTransfering(NULL)) // prenos dat jeste probiha
+                if (WorkerDataCon->IsTransfering(NULL)) // data transfer is still in progress
                 {
-                    // ziskame status informace z data-connectiony
+                    // obtain status information from the data connection
                     WorkerDataCon->GetStatus(&statusTransferred, &statusTotal, &statusConnectionIdleTime, &statusSpeed);
                     writeNewStatus = TRUE;
                 }
@@ -1970,7 +1970,7 @@ void CFTPWorker::ReceiveTimer(DWORD id, void* param)
                 if (StatusType == wstUploadStatus && WorkerUploadDataCon != NULL)
                 {
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                    // ziskame status informace z data-connectiony
+                    // obtain status information from the data connection
                     WorkerUploadDataCon->GetStatus(&statusTransferred, &statusTotal, &statusConnectionIdleTime, &statusSpeed);
                     writeNewStatus = TRUE;
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -1983,16 +1983,16 @@ void CFTPWorker::ReceiveTimer(DWORD id, void* param)
                 StatusTransferred = statusTransferred;
                 StatusTotal = statusTotal;
 
-                // pozadame o redraw workera (zobrazeni prave ziskaneho statusu)
+                // request to redraw the worker (to display the newly obtained status)
                 Oper->ReportWorkerChange(ID, TRUE);
 
-                // vyzadame si dalsi cyklus updatu statusu
+                // request another status update cycle
                 clearStatusType = FALSE;
 
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                // since we are already in the CSocketsThread::CritSect section, this call
+                // is possible even from the CSocket::SocketCritSect and CFTPWorker::WorkerCritSect sections (no deadlock risk)
                 SocketsThread->AddTimer(Msg, UID, GetTickCount() + WORKER_STATUSUPDATETIMEOUT,
-                                        WORKER_STATUSUPDATETIMID, NULL); // chybu ignorujeme, max. se nebude updatit status
+                                        WORKER_STATUSUPDATETIMID, NULL); // ignore errors; at worst the status will not update
             }
         }
         if (clearStatusType)
@@ -2081,42 +2081,42 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_DATACON_CONNECTED:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // prisla zprava od aktualni data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConConnectedToServer, NULL, 0, 0);
-        //      else   // muze prijit az po zavreni WorkerDataCon (pokud prijde odpoved na LIST hned a je take hned zavrena data-connectina - kratky listing)
+        //      else   // may arrive after WorkerDataCon is closed (if the LIST reply arrives immediately and the data connection is also immediately closed - short listing)
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_DATACON_CONNECTED for nonexistent data-connection!");
         break;
     }
 
     case WORKER_DATACON_CLOSED:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // prisla zprava od aktualni data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConConnectionClosed, NULL, 0, 0);
-        //      else   // muze prijit az po zavreni WorkerDataCon (pokud prijde odpoved na LIST hned a je take hned zavrena data-connectina - kratky listing)
+        //      else   // may arrive after WorkerDataCon is closed (if the LIST reply arrives immediately and the data connection is also immediately closed - short listing)
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_DATACON_CLOSED for nonexistent data-connection!");
         break;
     }
 
     case WORKER_DATACON_FLUSHDATA:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // prisla zprava od aktualni data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConFlushData, NULL, 0, 0);
-        //      else   // muze prijit az po zavreni WorkerDataCon
+        //      else   // may arrive after WorkerDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_DATACON_FLUSHDATA for nonexistent data-connection!");
         break;
     }
 
     case WORKER_DATACON_LISTENINGFORCON:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // prisla zprava od aktualni data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConListeningForCon, NULL, 0, 0);
         else
             TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_DATACON_LISTENINGFORCON for nonexistent data-connection!");
@@ -2125,9 +2125,9 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_LISTENINGFORCON:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // prisla zprava od aktualni data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweUplDataConListeningForCon, NULL, 0, 0);
         else
             TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_LISTENINGFORCON for nonexistent data-connection!");
@@ -2136,33 +2136,33 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_CONNECTED:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // prisla zprava od aktualni upload data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConConnectedToServer, NULL, 0, 0);
-        //      else  // muze prijit az po zavreni WorkerUploadDataCon
+        //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_CONNECTED for nonexistent data-connection!");
         break;
     }
 
     case WORKER_UPLDATACON_CLOSED:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // prisla zprava od aktualni upload data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConConnectionClosed, NULL, 0, 0);
-        //      else  // muze prijit az po zavreni WorkerUploadDataCon
+        //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_CLOSED for nonexistent data-connection!");
         break;
     }
 
     case WORKER_UPLDATACON_PREPAREDATA:
     {
-        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je toto volani
-        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // prisla zprava od aktualni upload data-connectiony (jine rovnou zahazujeme)
+        // since we are already in the CSocketsThread::CritSect section, this call
+        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConPrepareData, NULL, 0, 0);
-        //      else  // muze prijit az po zavreni WorkerUploadDataCon
+        //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_PREPAREDATA for nonexistent data-connection!");
         break;
     }
@@ -2179,12 +2179,12 @@ void CFTPWorker::ReadFTPErrorReplies()
     CALL_STACK_MESSAGE1("CFTPWorker::ReadFTPErrorReplies(, ,)");
 
 #ifdef _DEBUG
-    if (SocketCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (SocketCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::ReadFTPErrorReplies: not from section SocketCritSect!");
-    if (WorkerCritSect.RecursionCount == 0 /* nechytne situaci, kdy
-      sekci pouziva jiny thread */
+    if (WorkerCritSect.RecursionCount == 0 /* does not catch the situation where
+      another thread uses the section */
     )
         TRACE_E("Incorrect call to CFTPWorker::ReadFTPErrorReplies: not from section WorkerCritSect!");
 #endif
@@ -2192,13 +2192,13 @@ void CFTPWorker::ReadFTPErrorReplies()
     char* reply;
     int replySize;
     int replyCode;
-    while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
-    {                                                    // vypiseme pripadne error hlasky ze serveru do logu
+    while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have a server reply
+    {                                                    // log any error messages from the server
         Logs.LogMessage(LogUID, reply, replySize, TRUE);
-        if (ErrorDescr[0] == 0 &&                               // zatim nemame popis chyby
-            (replyCode == -1 ||                                 // neni FTP odpoved
-             FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // popis docasne chyby
-             FTP_DIGIT_1(replyCode) == FTP_D1_ERROR))           // popis chyby
+        if (ErrorDescr[0] == 0 &&                               // we do not have an error description yet
+            (replyCode == -1 ||                                 // not an FTP response
+             FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // transient error description
+             FTP_DIGIT_1(replyCode) == FTP_D1_ERROR))           // error description
         {
             CopyStr(ErrorDescr, FTPWORKER_ERRDESCR_BUFSIZE, reply, replySize);
         }
@@ -2213,12 +2213,12 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
     char errBuf[300];
     char errText[200];
 
-    if (event == fwseIPReceived) // ulozime IP adresu do operace a vyvolame HandleEvent
+    if (event == fwseIPReceived) // store the IP address in the operation and call HandleEvent
     {
         CFTPWorkerEvent resEvent = fweIPReceived;
         if (data1 != INADDR_NONE)
-            Oper->SetServerIP(data1); // ulozime IP adresu, vsichni workeri si ji vyzvedavaji z operace
-        else                          // chyba, ulozime ji do ErrorDescr pro dalsi pouziti
+            Oper->SetServerIP(data1); // store the IP address; all workers fetch it from the operation
+        else                          // error, store it in ErrorDescr for later use
         {
             HANDLES(EnterCriticalSection(&WorkerCritSect));
             _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_WORKERGETIPERROR),
@@ -2233,10 +2233,10 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
     }
     else
     {
-        if (event == fwseConnect) // prijmeme vysledek pokusu o navazani spojeni
+        if (event == fwseConnect) // receive the result of the connection attempt
         {
             CFTPWorkerEvent resEvent = fweConnected;
-            if (data1 != NO_ERROR) // chyba, ulozime ji do ErrorDescr pro dalsi pouziti
+            if (data1 != NO_ERROR) // error, store it in ErrorDescr for later use
             {
                 if (!GetProxyError(errBuf, 300, NULL, 0, TRUE))
                     GetWorkerErrorTxt(data1, errBuf, 300);
@@ -2250,7 +2250,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
             HandleEvent(resEvent, NULL, 0, 0);
             HANDLES(LeaveCriticalSection(&SocketCritSect));
         }
-        else // zpracovani ostatnich zprav
+        else // handling of other messages
         {
             HANDLES(EnterCriticalSection(&SocketCritSect));
             int uid = UID;
@@ -2263,11 +2263,11 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
             BOOL deleteTimerTimeout = FALSE;
             switch (CommandState)
             {
-            case fwcsIdle: // neocekavana odpoved, bud error ("timeout, closing connection", atp.) nebo interni chyba serveru (zdvojena odpoved, atp.)
+            case fwcsIdle: // unexpected reply, either an error ("timeout, closing connection", etc.) or a server bug (duplicate reply, etc.)
             {
                 switch (event)
                 {
-                case fwseNewBytesRead: // pokud je to error, chceme znat jeho text
+                case fwseNewBytesRead: // if it is an error, we want its text
                 {
                     ReadFTPErrorReplies();
                     break;
@@ -2275,12 +2275,12 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
 
                 case fwseClose:
                 {
-                    if (data1 != NO_ERROR) // jen pokud mame nejakou chybu
+                    if (data1 != NO_ERROR) // only if we have an error
                     {
                         FTPGetErrorTextForLog(data1, errBuf, 300);
                         Logs.LogMessage(LogUID, errBuf, -1, TRUE);
                     }
-                    if (ErrorDescr[0] == 0) // pri zavreni spojeni musime naplnit ErrorDescr (i kdyby hlaskou "unknown error")
+                    if (ErrorDescr[0] == 0) // when closing the connection we must fill ErrorDescr (even with "unknown error")
                     {
                         lstrcpyn(ErrorDescr, GetWorkerErrorTxt(data1, errBuf, 300), FTPWORKER_ERRDESCR_BUFSIZE);
                         CorrectErrorDescr();
@@ -2303,33 +2303,33 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     int replySize;
                     int replyCode;
                     BOOL firstRound = TRUE;
-                    while (BytesToWriteOffset == BytesToWriteCount &&    // test "write done" (odpoved serveru cekame az po odeslani kompletniho prikazu)
-                           ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru (v jednom cteni jich muze byt vic najednou)
+                    while (BytesToWriteOffset == BytesToWriteCount &&    // test "write done" (we wait for the server reply only after the full command is sent)
+                           ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have some server reply (one read may contain several at once)
                     {
                         if (!firstRound)
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
                         firstRound = FALSE;
-                        Logs.LogMessage(LogUID, reply, replySize, CommandState == fwcsIdle); // odpoved na prikaz dame do logu (cas se vypisuje u "unexpected replies")
-                        if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS)                   // odpoved na prikaz
-                        {                                                                    // timto je prikaz dokoncen
-                            CommandState = fwcsIdle;                                         // v HandleEvent() se nejspis posle dalsi prikaz, musime prejit do "idle" jiz nyni
+                        Logs.LogMessage(LogUID, reply, replySize, CommandState == fwcsIdle); // put the command reply into the log (time is printed for "unexpected replies")
+                        if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS)                   // command reply
+                        {                                                                    // this completes the command
+                            CommandState = fwcsIdle;                                         // HandleEvent() will probably send another command, so switch to "idle" immediately
                             CommandTransfersData = FALSE;
                         }
-                        ErrorDescr[0] = 0; // opatreni proti zdvojenym hlaskam (prichod ocekavane odpovedi = connectina je OK, takze text domnele chyby zlikvidujeme)
+                        ErrorDescr[0] = 0; // guard against duplicate messages (receiving the expected reply = connection OK, so discard the supposed error text)
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                        if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS) // odpoved na prikaz
+                        if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS) // command reply
                         {
-                            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
-                            SocketsThread->DeleteTimer(uid, WORKER_TIMEOUTTIMERID); // v HandleEvent() se nejspis posle dalsi prikaz, timer musime smazat "predem"
+                            // since we are already in the CSocketsThread::CritSect section, this call
+                            // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                            SocketsThread->DeleteTimer(uid, WORKER_TIMEOUTTIMERID); // HandleEvent() will probably send another command, so delete the timer "in advance"
 
                             HandleEvent(fweCmdReplyReceived, reply, replySize, replyCode);
                         }
-                        else // server posila informace (odpovedi typu 1xx)
+                        else // server is sending information (1xx replies)
                         {
                             HandleEvent(fweCmdInfoReceived, reply, replySize, replyCode);
                         }
-                        SkipFTPReply(replySize); // odpoved serveru vyhodime z bufferu (uz je zpracovana)
+                        SkipFTPReply(replySize); // discard the server reply from the buffer (already processed)
                     }
                     if (firstRound)
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
@@ -2340,7 +2340,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
 
                 case fwseClose:
                 {
-                    if (data1 != NO_ERROR) // jen pokud mame nejakou chybu
+                    if (data1 != NO_ERROR) // only if we have an error
                     {
                         FTPGetErrorTextForLog(data1, errBuf, 300);
                         Logs.LogMessage(LogUID, errBuf, -1, TRUE);
@@ -2352,27 +2352,27 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     break;
                 }
 
-                case fwseTimeout: // timeout, zavreme connectionu a ohlasime zavreni
+                case fwseTimeout: // timeout, close the connection and report the closure
                 {
                     if (CommandTransfersData && (WorkerDataCon != NULL || WorkerUploadDataCon != NULL))
                     {
-                        // nastavime novy timeout timer
+                        // set a new timeout timer
                         int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                         if (serverTimeout < 1000)
-                            serverTimeout = 1000; // aspon sekundu
+                            serverTimeout = 1000; // at least one second
 
                         BOOL trFinished;
                         DWORD start;
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                        // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                        // since we are already in the CSocketsThread::CritSect section, this call
+                        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
                         BOOL isTransfering = WorkerDataCon != NULL ? WorkerDataCon->IsTransfering(&trFinished) : WorkerUploadDataCon->IsTransfering(&trFinished);
                         if (isTransfering)
-                        { // cekame na data, takze to neni timeout
-                            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                        { // waiting for data, so this is not a timeout
+                            // since we are already in the CSocketsThread::CritSect section, this call
+                            // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
                             SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
-                                                    WORKER_TIMEOUTTIMERID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                                    WORKER_TIMEOUTTIMERID, NULL); // ignore the error; at worst the user will press Stop
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
                             break;
                         }
@@ -2380,26 +2380,26 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                         {
                             if (trFinished)
                             {
-                                // timeout se meri od zavreni connectiony (okamzik odkdy muze server reagovat - take se dozvi
-                                // o zavreni connectiony)
-                                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                                // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                // the timeout is measured from closing the connection (moment when the server can react - it also learns
+                                // about the connection closing)
+                                // since we are already in the CSocketsThread::CritSect section, this call
+                                // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
                                 start = WorkerDataCon != NULL ? WorkerDataCon->GetSocketCloseTime() : WorkerUploadDataCon->GetSocketCloseTime();
-                                if ((GetTickCount() - start) < (DWORD)serverTimeout) // od zavreni connectiony jeste neubehnul timeout
+                                if ((GetTickCount() - start) < (DWORD)serverTimeout) // the timeout since closing the connection has not yet expired
                                 {
-                                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                                    // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+                                    // since we are already in the CSocketsThread::CritSect section, this call
+                                    // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
                                     SocketsThread->AddTimer(Msg, UID, start + serverTimeout,
-                                                            WORKER_TIMEOUTTIMERID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                                            WORKER_TIMEOUTTIMERID, NULL); // ignore the error; at worst the user will press Stop
                                     HANDLES(EnterCriticalSection(&WorkerCritSect));
                                     break;
                                 }
-                                // else ;  // od zavreni connectiony uz ubehnul timeout -> timeoutneme
+                                // else ;  // the timeout since closing the connection already expired -> time out
                             }
-                            // else ;  // spojeni se jeste neotevrelo -> timeoutneme
+                            // else ;  // the connection has not opened yet -> time out
 
                             if (WorkerDataCon != NULL ? WorkerDataCon->GetProxyTimeoutDescr(errText, 200) : WorkerUploadDataCon->GetProxyTimeoutDescr(errText, 200))
-                            { // pokud mame nejaky popis timeoutu na data-connectione, vypiseme ho do logu
+                            { // if we have any timeout description for the data connection, write it to the log
                                 HANDLES(EnterCriticalSection(&WorkerCritSect));
                                 sprintf(errBuf, LoadStr(IDS_LOGMSGDATCONERROR), errText);
                                 Logs.LogMessage(LogUID, errBuf, -1, TRUE);
@@ -2415,7 +2415,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     leaveSect = FALSE;
 
-                    ForceClose(); // "rucne" zavreme socket
+                    ForceClose(); // manually close the socket
 
                     handleClose = TRUE;
                     isTimeout = TRUE;
@@ -2442,7 +2442,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
 
                 case fwseClose:
                 {
-                    if (data1 != NO_ERROR) // jen pokud mame nejakou chybu
+                    if (data1 != NO_ERROR) // only if we have an error
                     {
                         FTPGetErrorTextForLog(data1, errBuf, 300);
                         Logs.LogMessage(LogUID, errBuf, -1, TRUE);
@@ -2457,9 +2457,9 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     break;
                 }
 
-                case fwseWaitForCmdErr: // timeout, zavreme connectionu "rucne"
+                case fwseWaitForCmdErr: // timeout, close the connection manually
                 {
-                    if (WaitForCmdErrError != NO_ERROR) // jen pokud mame nejakou chybu
+                    if (WaitForCmdErrError != NO_ERROR) // only if we have an error
                     {
                         FTPGetErrorTextForLog(WaitForCmdErrError, errBuf, 300);
                         Logs.LogMessage(LogUID, errBuf, -1, TRUE);
@@ -2469,7 +2469,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     HANDLES(LeaveCriticalSection(&SocketCritSect));
                     leaveSect = FALSE;
 
-                    ForceClose(); // "rucne" zavreme socket
+                    ForceClose(); // manually close the socket
 
                     handleClose = TRUE;
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -2506,7 +2506,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
                 HANDLES(EnterCriticalSection(&SocketCritSect));
-                HandleEvent(fweCmdConClosed, NULL, 0, 0); // oznamime zavreni socketu do HandleEvent()
+                HandleEvent(fweCmdConClosed, NULL, 0, 0); // report the socket closure to HandleEvent()
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
             }
         }

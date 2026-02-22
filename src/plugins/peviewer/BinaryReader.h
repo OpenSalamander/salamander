@@ -179,7 +179,7 @@ public:
         // CR...
         if (TryReadUntil('\r', pstart, length))
         {
-            // Preskocit CR.
+            // Skip CR.
             if (m_p < m_pMax)
             {
                 ++m_p;

@@ -19,8 +19,8 @@
 #define SF_IOERRORS 0x00040000
 #define SF_CONTINUED 0x00080000
 
-#define FF_EXTRFILE 0x0001 //soubor, ktery je rozbalovan, ne CAB soubor
-#define FF_SKIPFILE 0x0002 //soubor, ktery je preskakovan, ale musi se vybalit bez zapisu na disk
+#define FF_EXTRFILE 0x0001 // file that is being unpacked, not a CAB file
+#define FF_SKIPFILE 0x0002 // file that is skipped but must be extracted without writing to disk
 
 struct CFile
 {
@@ -30,7 +30,7 @@ struct CFile
     DWORD cabOffset; // for sfx archives
 };
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is unloaded
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
 //CAB action
@@ -189,14 +189,14 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) {}
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
-// zatim staci tohleto misto konfigurace
-#define OP_SKIPCONTINUED 0x01    // budeme preskakovat vsechny soubory, ktere zacinaji na predchozim volumu?
-#define OP_NO_VOL_ATTENTION 0x02 // nebudeme upozornovat, kdyz nejde vylistovat cely archive
+// for now this is sufficient instead of configuration
+#define OP_SKIPCONTINUED 0x01    // will we skip all files that start on the previous volume?
+#define OP_NO_VOL_ATTENTION 0x02 // do not warn when the entire archive cannot be listed
 
-extern DWORD Options; // konfigurace
+extern DWORD Options; // configuration
 
 char* LoadStr(int resID);
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size);

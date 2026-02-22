@@ -1,24 +1,25 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-#define WM_APP_ACTIVATEPARENT WM_APP + 1 // [0, 0] - aktivace parenta (pouzivaji vsechna wait-window)
-#define WM_APP_STATUSCHANGED WM_APP + 2  // [0, 0] - zmena stavu "data connection" (pouziva list-wait-window)
+#define WM_APP_ACTIVATEPARENT WM_APP + 1 // [0, 0] - activate parent (used by all wait-windows)
+#define WM_APP_STATUSCHANGED WM_APP + 2  // [0, 0] - status change of "data connection" (used by list-wait-window)
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
-#define WAITWND_SHOWTIMER 1              // ID timeru pro zobrazeni wait-okna
-#define LISTWAITWND_AUTOUPDATETIMER 2    // ID timeru pro automaticky update list-wait-okna (po 1 sekunde)
-#define LISTWAITWND_DELAYEDUPDATETIMER 3 // ID timeru pro zpozdeny update list-wait-okna (po 1/10 sekundy)
-#define LOGSDLG_DELAYEDUPDATETIMER 4     // ID timeru pro zpozdeny update logs-okna (po 1/10 sekundy)
+#define WAITWND_SHOWTIMER 1              // timer ID for showing the wait window
+#define LISTWAITWND_AUTOUPDATETIMER 2    // timer ID for automatic update of the list-wait window (after 1 second)
+#define LISTWAITWND_DELAYEDUPDATETIMER 3 // timer ID for delayed update of the list-wait window (after 1/10 second)
+#define LOGSDLG_DELAYEDUPDATETIMER 4     // timer ID for delayed update of the logs window (after 1/10 second)
 
-extern TIndirectArray<CDialog> ModelessDlgs; // pole nemodalnich dialogu (Welcome Message)
+extern TIndirectArray<CDialog> ModelessDlgs; // array of modeless dialogs (Welcome Message)
 
-extern ATOM AtomObject2; // atom pro CSetWaitCursorWindow
+extern ATOM AtomObject2; // atom for CSetWaitCursorWindow
 
-// pole retezcu popisujicich defaultni chovani pri chybach behem operaci
+// array of strings describing default behavior on errors during operations
 extern int OperDefFileAlreadyExists[];
 extern int OperDefDirAlreadyExists[];
 extern int OperDefCannotCreateFileOrDir[];
@@ -28,42 +29,42 @@ extern int OperDefAsciiTrModeForBinFile[];
 extern int OperDefUnknownAttrs[];
 extern int OperDefDeleteArr[];
 
-// podpora pro comboboxy s historii
+// support for combo boxes with history
 void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* text,
                      int textLen, int historySize, char* history[], BOOL secretValue);
 
-// podpora pro plneni comboboxu s defaultnim chovanim pri chybach behem operaci
+// support for filling combo boxes with default behavior on errors during operations
 void HandleOperationsCombo(int* value, CTransferInfo& ti, int resID, int arrValuesResID[]);
 
-// podpora pro comboboxy s Proxy servery
+// support for combo boxes with Proxy servers
 void ProxyComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, int& proxyUID, BOOL addDefault,
                    CFTPProxyServerList* proxyServerList);
 
-// 'lastCheck' (in/out) obsahuje posledni hodnotu stavu checkboxu, 'lastCheck' se inicializuje na -1;
-// 'valueBuf' je buffer pro hodnotu ve stavu "checked" o velikosti aspon 31 znaku,
-// 'valueBuf' se inicializuje na prazdny retezec;
-// 'checkedVal' je pocatecni hodnota ve stavu "checked";
-// 'globValUsed'+'globVal' - hodnota pro treti stav checkboxu (pouziva se? + hodnota)
+// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
+// 'valueBuf' is a buffer for the value in the "checked" state with size of at least 31 characters,
+// 'valueBuf' initializes to an empty string;
+// 'checkedVal' is the initial value in the "checked" state;
+// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
 void CheckboxEditLineInteger(HWND dlg, int checkboxID, int editID, int* lastCheck, char* valueBuf,
                              int checkedVal, BOOL globValUsed, int globVal);
 
-// 'lastCheck' (in/out) obsahuje posledni hodnotu stavu checkboxu, 'lastCheck' se inicializuje na -1;
-// 'valueBuf' je buffer pro hodnotu ve stavu "checked" o velikosti aspon 31 znaku,
-// 'valueBuf' se inicializuje na prazdny retezec;
-// 'checkedVal' je pocatecni hodnota ve stavu "checked";
-// 'globValUsed'+'globVal' - hodnota pro treti stav checkboxu (pouziva se? + hodnota)
+// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
+// 'valueBuf' is a buffer for the value in the "checked" state with size of at least 31 characters,
+// 'valueBuf' initializes to an empty string;
+// 'checkedVal' is the initial value in the "checked" state;
+// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
 void CheckboxEditLineDouble(HWND dlg, int checkboxID, int editID, int* lastCheck, char* valueBuf,
                             double checkedVal, BOOL globValUsed, double globVal);
 
-// 'lastCheck' (in/out) obsahuje posledni hodnotu stavu checkboxu, 'lastCheck' se inicializuje na -1;
-// 'valueBuf' je buffer pro hodnotu ve stavu "checked" (index v comboboxu),
-// 'valueBuf' se inicializuje na -1;
-// 'checkedVal' je pocatecni hodnota ve stavu "checked" (index v comboboxu);
-// 'globValUsed'+'globVal' - hodnota pro treti stav checkboxu (pouziva se? + hodnota)
+// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
+// 'valueBuf' is a buffer for the value in the "checked" state (index in the combo box),
+// 'valueBuf' initializes to -1;
+// 'checkedVal' is the initial value in the "checked" state (index in the combo box);
+// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
 void CheckboxCombo(HWND dlg, int checkboxID, int comboID, int* lastCheck, int* valueBuf,
                    int checkedVal, BOOL globValUsed, int globVal);
 
-// pomocna funkce: enablovani prikazu v menu
+// helper function: enabling commands in a menu
 void MyEnableMenuItem(HMENU subMenu, int cmd, BOOL enable);
 
 //
@@ -114,8 +115,8 @@ protected:
 class CConfigPageGeneral : public CCommonPropSheetPage
 {
 protected:
-    int LastTotSpeed;     // posledni hodnota checkboxu "total speed limit"
-    char TotSpeedBuf[31]; // buffer pro zachovani obsahu radky "total speed limit"
+    int LastTotSpeed;     // last value of the "total speed limit" checkbox
+    char TotSpeedBuf[31]; // buffer to keep the contents of the "total speed limit" line
 
 public:
     CConfigPageGeneral();
@@ -137,11 +138,11 @@ protected:
 class CConfigPageDefaults : public CCommonPropSheetPage
 {
 protected:
-    int LastMaxCon;                             // posledni hodnota checkboxu "max concurrent connections"
-    char MaxConBuf[31];                         // buffer pro zachovani obsahu radky "max concurrent connections"
-    int LastSrvSpeed;                           // posledni hodnota checkboxu "server speed limit"
-    char SrvSpeedBuf[31];                       // buffer pro zachovani obsahu radky "server speed limit"
-    CFTPProxyServerList* TmpFTPProxyServerList; // docasna kopie seznamu uzivatelem nadefinovanych proxy serveru
+    int LastMaxCon;                             // last value of the "max concurrent connections" checkbox
+    char MaxConBuf[31];                         // buffer to keep the contents of the "max concurrent connections" line
+    int LastSrvSpeed;                           // last value of the "server speed limit" checkbox
+    char SrvSpeedBuf[31];                       // buffer to keep the contents of the "server speed limit" line
+    CFTPProxyServerList* TmpFTPProxyServerList; // temporary copy of the list of user-defined proxy servers
 
 public:
     CConfigPageDefaults();
@@ -191,10 +192,10 @@ public:
 class CConfigPageLogs : public CCommonPropSheetPage
 {
 protected:
-    int LastLogMaxSize;           // posledni hodnota checkboxu "log max size"
-    char LogMaxSizeBuf[31];       // buffer pro zachovani obsahu radky "log max size"
-    int LastMaxClosedConLogs;     // posledni hodnota checkboxu "max disconnected connection logs"
-    char MaxClosedConLogsBuf[31]; // buffer pro zachovani obsahu radky "max disconnected connection logs"
+    int LastLogMaxSize;           // last value of the "log max size" checkbox
+    char LogMaxSizeBuf[31];       // buffer to keep the contents of the "log max size" line
+    int LastMaxClosedConLogs;     // last value of the "max disconnected connection logs" checkbox
+    char MaxClosedConLogsBuf[31]; // buffer to keep the contents of the "max disconnected connection logs" line
 
 public:
     CConfigPageLogs();
@@ -232,7 +233,7 @@ protected:
 class CConfigPageServers : public CCommonPropSheetPage
 {
 protected:
-    CServerTypeList* TmpServerTypeList; // docasna pracovni kopie Config.ServerTypeList
+    CServerTypeList* TmpServerTypeList; // temporary working copy of Config.ServerTypeList
 
 public:
     CConfigPageServers();
@@ -243,12 +244,12 @@ public:
 protected:
     void EnableControls();
 
-    // posun polozky v listboxu, parametry musi byt overene
+    // move an item in the listbox; parameters must already be validated
     void MoveItem(HWND list, int fromIndex, int toIndex);
 
-    // obnova listboxu; je-li 'focusLast' TRUE, fokusne posledni polozku, jinak drzi fokus
-    // od minula; neni-li 'focusIndex' -1, jde o index, ktery se ma fokusnout
-    void RefreshList(BOOL focusLast, int focusIndex = -1);
+    // refresh the listbox; if 'focusLast' is TRUE, focus the last item, otherwise keep the previous focus
+    // from before; if 'focusIndex' is not -1, it is the index that should receive focus
+    void RefreshList(BOOL focusLast, int focusIndex = -1); // if 'focusLast' is TRUE, focuses the last item, otherwise keeps the previous focus; if 'focusIndex' is not -1, that index gets focus
 
     void OnExportServer(CServerType* serverType);
     void OnImportServer();
@@ -330,21 +331,21 @@ protected:
 class CConnectDlg : public CCenteredDialog
 {
 protected:
-    BOOL OK;                                   // TRUE pokud se podarila inicializace objektu dialogu
-    CFTPServerList TmpFTPServerList;           // docasna kopie dat bookmark na FTP serverech (aby sel cancel)
-    CFTPProxyServerList TmpFTPProxyServerList; // docasna kopie seznamu proxy serveru (aby sel cancel)
-    BOOL CanChangeFocus;                       // TRUE pokud se ma menit fokus na tlacitka Connect a Close (obrana proti nekonecnemu cyklu)
-    int DragIndex;                             // index pro drag&drop v listboxu
-    BOOL ExtraDragDropItemAdded;               // TRUE pokud je pridana prazdna polozka v listboxu (pro drag&drop na konec seznamu)
-    int AddBookmarkMode;                       // 0 - connect, 1 - organize bookmarks, 2 - org. bookmarks + focus last bookmark
+    BOOL OK;                                   // TRUE if initialization of the dialog object succeeded
+    CFTPServerList TmpFTPServerList;           // temporary copy of bookmark data on FTP servers (to allow cancel)
+    CFTPProxyServerList TmpFTPProxyServerList; // temporary copy of the proxy server list (to allow cancel)
+    BOOL CanChangeFocus;                       // TRUE if focus may move to the Connect and Close buttons (protection against an endless loop)
+    int DragIndex;                             // index used for drag&drop in the listbox
+    BOOL ExtraDragDropItemAdded;               // TRUE if an empty listbox item is added (for drag&drop to the end of the list)
+    int AddBookmarkMode;                       // 0 - connect, 1 - organize bookmarks, 2 - organize bookmarks + focus last bookmark
 
-    char LastRawHostAddress[HOST_MAX_SIZE]; // posledni hodnota zadana do editboxu "Address" (po opusteni editboxu se splitne, proto ji drzime v tomto bufferu)
+    char LastRawHostAddress[HOST_MAX_SIZE]; // last value entered into the "Address" edit box (after leaving the edit box it is split, so we keep it in this buffer)
 
 public:
     CConnectDlg(HWND parent, int addBookmarkMode = 0);
     ~CConnectDlg()
     {
-        memset(LastRawHostAddress, 0, HOST_MAX_SIZE); // mazeme pamet, ve ktere se objevil password
+        memset(LastRawHostAddress, 0, HOST_MAX_SIZE); // wipe memory where the password appeared
     }
 
     virtual void Validate(CTransferInfo& ti);
@@ -376,16 +377,16 @@ class CConnectAdvancedDlg : public CCenteredDialog
 {
 protected:
     CFTPServer* Server;
-    CFTPProxyServerList* SourceTmpFTPProxyServerList; // zdroj pro TmpFTPProxyServerList (zaroven po OK v dialogu do nej ulozime zpet zmenena data)
-    CFTPProxyServerList* TmpFTPProxyServerList;       // docasna kopie seznamu proxy serveru (aby sel cancel)
-    int LastUseMaxCon;                                // posledni hodnota checkboxu "max. concurrent connections"
-    char MaxConBuf[31];                               // buffer pro zachovani obsahu radky "max. concurrent connections"
-    int LastUseTotSpeed;                              // posledni hodnota checkboxu "total speed limit for this server"
-    char TotSpeedBuf[31];                             // buffer pro zachovani obsahu radky "total speed limit for this server"
-    int LastKeepConnectionAlive;                      // posledni hodnota checkboxu "keep connection alive"
-    int KASendCmd;                                    // hodnota pro zachovani stavu comba "keep-alive send command"
-    char KASendEveryBuf[31];                          // buffer pro zachovani obsahu radky "keep-alive send every"
-    char KAStopAfterBuf[31];                          // buffer pro zachovani obsahu radky "keep-alive stop after"
+    CFTPProxyServerList* SourceTmpFTPProxyServerList; // source for TmpFTPProxyServerList (after OK in the dialog we write the modified data back into it)
+    CFTPProxyServerList* TmpFTPProxyServerList;       // temporary copy of the proxy server list (to allow cancel)
+    int LastUseMaxCon;                                // last value of the "max. concurrent connections" checkbox
+    char MaxConBuf[31];                               // buffer to keep the contents of the "max. concurrent connections" line
+    int LastUseTotSpeed;                              // last value of the "total speed limit for this server" checkbox
+    char TotSpeedBuf[31];                             // buffer to keep the contents of the "total speed limit for this server" line
+    int LastKeepConnectionAlive;                      // last value of the "keep connection alive" checkbox
+    int KASendCmd;                                    // value to keep the state of the "keep-alive send command" combo
+    char KASendEveryBuf[31];                          // buffer to keep the contents of the "keep-alive send every" line
+    char KAStopAfterBuf[31];                          // buffer to keep the contents of the "keep-alive stop after" line
 
 public:
     CConnectAdvancedDlg(HWND parent, CFTPServer* server,
@@ -405,8 +406,8 @@ protected:
 // ****************************************************************************
 // CRenameDlg
 //
-// podpora pro pet dialogu: Connect/New, Rename a Add Bookmark
-//                          Configuration/Servers/New a Rename
+// support for five dialogs: Connect/New, Rename and Add Bookmark
+//                           Configuration/Servers/New and Rename
 
 class CRenameDlg : public CCenteredDialog
 {
@@ -414,11 +415,11 @@ public:
     BOOL CopyDataFromFocusedServer;
 
 protected:
-    char* Name;         // jmeno polozky z listboxu (pro editline+checkbox)
+    char* Name;         // listbox item name (for edit line + checkbox)
     BOOL NewServer;     // TRUE/FALSE: dialog New/Rename
-    BOOL AddBookmark;   // TRUE/FALSE: dialog Connect:Add Bookmark / plati NewServer
-    BOOL ServerTypes;   // FALSE/TRUE: dialog Connect/Configuration:Servers
-    char* CopyFromName; // jen pro ServerTypes==TRUE: jmeno pro checkbox (lisi se od jmena pro editline)
+    BOOL AddBookmark;   // TRUE/FALSE: Connect:Add Bookmark dialog / applies to NewServer
+    BOOL ServerTypes;   // FALSE/TRUE: Connect/Configuration:Servers dialog
+    char* CopyFromName; // only if ServerTypes==TRUE: name for the checkbox (differs from the name for the edit line)
 
 public:
     CRenameDlg(HWND parent, char* name, BOOL newServer, BOOL addBookmark = FALSE,
@@ -454,10 +455,10 @@ public:
 //
 // CWaitWindow
 //
-// nemodalni okenko (disablovani parenta a spousteni message-loopy je na volajicim);
-// umisteni objektu na stacku (nealokovat - zbytecne);
-// slouzi k zobrazeni informace o probihajicim deji, text muze byt viceradkovy, oddeleny
-// znaky CRLF/LF, text je mozne behem zobrazeni menit
+// modeless window (disabling the parent and starting the message loops is up to the caller);
+// place the object on the stack (do not allocate - unnecessary);
+// used to display information about an ongoing action, the text can have multiple lines separated
+// by CRLF/LF characters, the text can be changed while it is displayed
 //
 
 class CWaitWindow : public CWindow
@@ -477,8 +478,8 @@ public:
     CWaitWindow(HWND hParent, BOOL showCloseButton);
     ~CWaitWindow();
 
-    // vraci TRUE pokud user stiskl mysi close button wait-okenka; TRUE vrati jen
-    // jednou, dalsi TRUE vrati az po dalsim stisku close buttonu
+    // returns TRUE if the user clicked the wait-window close button with the mouse; it returns TRUE
+    // only once and the next TRUE comes only after another click of the close button
     BOOL GetWindowClosePressed()
     {
         BOOL ret = WindowClosePressed;
@@ -487,24 +488,24 @@ public:
         return ret;
     }
 
-    // nastaveni captionu; pokud nebude zavolano, caption bude LoadStr(IDS_FTPPLUGINTITLE)
+    // set caption; if not called, the caption will be LoadStr(IDS_FTPPLUGINTITLE)
     void SetCaption(const char* text);
 
-    // nastaveni textu (mozne i behem zobrazeni - pozor: nedochazi ke zmene velikosti
-    // okenka, mozne jen drobne zmeny - napr. countdouwn: 60s -> 50s -> 40s)
+    // set text (possible even while displayed - note: the window size does not change,
+    // only minor changes are possible - e.g. countdown: 60s -> 50s -> 40s)
     void SetText(const char* text);
 
-    // vytvoreni okenka, zobrazeni za 'showTime' milisekund
+    // create the window, show it after 'showTime' milliseconds
     HWND Create(DWORD showTime);
 
-    // je-li 'show' FALSE a okenko je otevrene, schova ho; je-li 'show' TRUE a okenko je
-    // schovane, ukaze ho
+    // if 'show' is FALSE and the window is open it hides it; if 'show' is TRUE and the window is
+    // hidden it shows it
     void Show(BOOL show);
 
-    // vola se po zmene viditelnosti okna a nastavuje promennou Visible
+    // called after a change of window visibility and sets the Visible variable
     virtual void SetVisible(BOOL visible) { Visible = visible; }
 
-    // zrusi (zavre) okno
+    // destroy (close) the window
     void Destroy();
 
 protected:
@@ -515,9 +516,9 @@ protected:
 //
 // CListWaitWindow
 //
-// slouzi k zobrazeni informace o probihajicim listovani cesty na serveru;
-// nemodalni okenko (disabluje parenta, ale spousteni message-loopy je na volajicim);
-// umisteni objektu na stacku (nealokovat - zbytecne);
+// used to display information about browsing a path on the server;
+// modeless window (disables the parent, but starting the message loops is up to the caller);
+// place the object on the stack (do not allocate - unnecessary);
 //
 
 class CDataConnectionSocket;
@@ -525,8 +526,8 @@ class CDataConnectionSocket;
 class CListWaitWindow : public CWaitWindow
 {
 protected:
-    CDataConnectionSocket* DataConnection; // sledovana "data connection"
-    BOOL* Aborted;                         // ukazatel na BOOL, ve kterem je po abortnuti "data connection" TRUE
+    CDataConnectionSocket* DataConnection; // monitored "data connection"
+    BOOL* Aborted;                         // pointer to a BOOL that is TRUE after the "data connection" is aborted
 
     CGUIStaticTextAbstract* PathOnFTPText;
     CGUIStaticTextAbstract* EstimatedTimeText;
@@ -539,34 +540,34 @@ protected:
     char Status[100];
     char TimeLeft[20];
     char TimeElapsed[20];
-    BOOL HasRefreshStatusTimer; // TRUE = nahozeny timer LISTWAITWND_AUTOUPDATETIMER
-    BOOL HasDelayedUpdateTimer; // TRUE = nahozeny timer LISTWAITWND_DELAYEDUPDATETIMER
-    BOOL NeedDelayedUpdate;     // TRUE = zpozdeny update je potreba
+    BOOL HasRefreshStatusTimer; // TRUE = timer LISTWAITWND_AUTOUPDATETIMER is running
+    BOOL HasDelayedUpdateTimer; // TRUE = timer LISTWAITWND_DELAYEDUPDATETIMER is running
+    BOOL NeedDelayedUpdate;     // TRUE = a delayed update is needed
 
-    DWORD LastTimeEstimation;          // -1==neplatny, jinak zaokrouhleny pocet sekund do konce operace
-    DWORD ElapsedTime;                 // cas od zacatku operace v sekundach
-    DWORD LastTickCountForElapsedTime; // -1==neplatny, jinak GetTickCount posledniho updatu ElapsedTime
+    DWORD LastTimeEstimation;          // -1==invalid, otherwise rounded number of seconds until the end of the operation
+    DWORD ElapsedTime;                 // time since the start of the operation in seconds
+    DWORD LastTickCountForElapsedTime; // -1==invalid, otherwise GetTickCount of the last ElapsedTime update
 
 public:
-    // 'dataConnection' je sledovana "data connection"; 'aborted' (nesmi byt NULL) ukazuje
-    // na BOOL, ve kterem je po abortnuti "data connection" TRUE
+    // 'dataConnection' is the monitored "data connection"; 'aborted' (must not be NULL)
+    // points to a BOOL that is TRUE after the "data connection" is aborted
     CListWaitWindow(HWND hParent, CDataConnectionSocket* dataConnection, BOOL* aborted);
     ~CListWaitWindow();
 
-    // nastaveni textu v prvni radce okna (mozne i behem zobrazeni)
+    // set the text in the first line of the window (possible even while displayed)
     void SetText(const char* text);
 
-    // nastaveni cesty (za textem "path:") v okne (druhy radek; mozne i behem zobrazeni)
+    // set the path (after the "path:" text) in the window (second line; possible even while displayed)
     void SetPath(const char* path, CFTPServerPathType pathType);
 
-    // vytvoreni okenka, zobrazeni za 'showTime' milisekund
+    // create the window, show it after 'showTime' milliseconds
     HWND Create(DWORD showTime);
 
-    // vola se po zmene viditelnosti okna a nastavuje promennou Visible
+    // called after a change of window visibility and sets the Visible variable
     virtual void SetVisible(BOOL visible);
 
-    // vytahne nove udaje o prenosu (velikost, rychlost, atd.) z "data connection"
-    // a obnovi je v okne; 'fromTimer' je TRUE pokud je volani zpusobeno timerem
+    // retrieves new transfer data (size, speed, etc.) from the "data connection"
+    // and refreshes them in the window; 'fromTimer' is TRUE if the call is caused by a timer
     void RefreshTimeAndStatusAndProgress(BOOL fromTimer);
 
 protected:
@@ -620,7 +621,7 @@ public:
     BOOL DisableUser;
     BOOL HideApplyToAll;
     BOOL ApplyToAll;
-    BOOL ProxyUsed; // TRUE = pouziva se proxy server (editace proxy host/port/user/password)
+    BOOL ProxyUsed; // TRUE = a proxy server is used (editing proxy host/port/user/password)
 
 public:
     CLoginErrorDlg(HWND parent, const char* serverReply, CProxyScriptParams* proxyScriptParams,
@@ -640,11 +641,11 @@ protected:
 // CWelcomeMsgDlg
 //
 
-// pomocny objekt pro ovladani controlu nemodalniho dialogu bez IsDialogMessage
+// helper object for handling a control in a modeless dialog without IsDialogMessage
 class CSimpleDlgControlWindow : public CWindow
 {
 protected:
-    BOOL HandleKeys; // TRUE => zpracovani Enter, ESC a Tab klaves
+    BOOL HandleKeys; // TRUE => handle Enter, ESC and Tab keys
 
 public:
     CSimpleDlgControlWindow(HWND hDlg, int ctrlID, BOOL handleKeys = TRUE) : CWindow(hDlg, ctrlID)
@@ -660,16 +661,16 @@ class CWelcomeMsgDlg : public CCenteredDialog
 {
 public:
     const char* Text;
-    int TextSize;            // -1 = null-terminated retezec
-    const char* SentCommand; // na jaky prikaz je toto odpoved (jen u ServerReply==TRUE)
-    HWND SizeBox;            // okno size-boxu
+    int TextSize;            // -1 = null-terminated string
+    const char* SentCommand; // which command this is a response to (only if ServerReply==TRUE)
+    HWND SizeBox;            // size-box window
 
-    BOOL ServerReply; // TRUE => jde o dialog "FTP Server Reply" (odpoved na poslany FTP command)
-    BOOL RawListing;  // TRUE => jde o dialog "Raw Listing" (pouziva prikaz Show Raw Listing)
+    BOOL ServerReply; // TRUE => this is the "FTP Server Reply" dialog (response to a sent FTP command)
+    BOOL RawListing;  // TRUE => this is the "Raw Listing" dialog (uses the Show Raw Listing command)
 
-    // layoutovaci parametry
-    int MinDlgHeight; // min. vyska dialogu
-    int MinDlgWidth;  // min. sirka dialogu
+    // layout parameters
+    int MinDlgHeight; // minimum dialog height
+    int MinDlgWidth;  // minimum dialog width
     int EditBorderWidth;
     int EditBorderHeight;
     int ButtonWidth;
@@ -682,7 +683,7 @@ public:
 public:
     CWelcomeMsgDlg(HWND parent, const char* text, BOOL serverReply = FALSE,
                    const char* sentCommand = NULL, BOOL rawListing = FALSE,
-                   int textSize = -1); // je-li 'textSize' -1 je 'text' null-terminated retezec
+                   int textSize = -1); // if 'textSize' is -1, 'text' is a null-terminated string
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -695,29 +696,29 @@ protected:
 // CLogsDlg
 //
 
-#define WM_APP_UPDATELISTOFLOGS WM_APP + 1 // [0, 0] - update seznamu logu
-#define WM_APP_UPDATELOG WM_APP + 2        // [UID, 0] - update logu s UID 'UID'
-#define WM_APP_ACTIVATELOG WM_APP + 3      // [UID, 0] - aktivace logu s UID 'UID'
+#define WM_APP_UPDATELISTOFLOGS WM_APP + 1 // [0, 0] - update list of logs
+#define WM_APP_UPDATELOG WM_APP + 2        // [UID, 0] - update log with UID 'UID'
+#define WM_APP_ACTIVATELOG WM_APP + 3      // [UID, 0] - activate log with UID 'UID'
 
 class CLogsDlg : public CDialog
 {
 public:
-    BOOL* SendWMClose; // zapis TRUE zajisti poslani WM_CLOSE tomuto dialogu (popis viz COperationDlgThread::Body())
-    BOOL CloseDlg;     // TRUE = ma se co nejdrive zavrit dialog (vyuziva se jen pri zadosti o zavreni jeste pred otevrenim dialogu)
+    BOOL* SendWMClose; // writing TRUE ensures WM_CLOSE is sent to this dialog (see COperationDlgThread::Body())
+    BOOL CloseDlg;     // TRUE = the dialog should close as soon as possible (used only when close is requested before the dialog opens)
 
 protected:
-    HWND CenterToWnd; // okno, ke kteremu se na zacatku dialog centruje (NULL = necentruje se)
-    HWND SizeBox;     // okno size-boxu
-    int ShowLogUID;   // pri otevreni dialogu vybira log s UID 'ShowLogUID' (neni-li -1)
-    BOOL Empty;       // TRUE pokud neexistuji zadne logy
-    int LastLogUID;   // UID logu zobrazeneho v editu
+    HWND CenterToWnd; // window the dialog centers to when opened (NULL = no centering)
+    HWND SizeBox;     // size-box window
+    int ShowLogUID;   // selects the log with UID 'ShowLogUID' when the dialog opens (if not -1)
+    BOOL Empty;       // TRUE if no logs exist
+    int LastLogUID;   // UID of the log displayed in the edit
 
-    BOOL HasDelayedUpdateTimer; // TRUE = nahozeny timer LOGSDLG_DELAYEDUPDATETIMER
-    int DelayedUpdateLogUID;    // UID logu pro zpozdeny update (-1 = zatim se nema updatovat zadny log)
+    BOOL HasDelayedUpdateTimer; // TRUE = timer LOGSDLG_DELAYEDUPDATETIMER is running
+    int DelayedUpdateLogUID;    // UID of the log for a delayed update (-1 = no log should be updated yet)
 
-    // layoutovaci parametry
-    int MinDlgHeight; // min. vyska dialogu
-    int MinDlgWidth;  // min. sirka dialogu
+    // layout parameters
+    int MinDlgHeight; // minimum dialog height
+    int MinDlgWidth;  // minimum dialog width
     int ComboBorderWidth;
     int ComboHeight;
     int EditBorderWidth;
@@ -734,9 +735,9 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void LoadListOfLogs(BOOL update); // je-li 'update' FALSE jde o init comba, jinak jde o update
+    void LoadListOfLogs(BOOL update); // if 'update' is FALSE it initializes the combo, otherwise it updates it
 
-    // je-li 'updateUID' -1, jde o zmenu fokusu, jinak jde o update logu s UID 'updateUID'
+    // if 'updateUID' is -1 it is a focus change, otherwise it updates the log with UID 'updateUID'
     void LoadLog(int updateUID);
 };
 
@@ -769,8 +770,8 @@ protected:
 // CEditServerTypeDlg
 //
 
-// pomocny objekt pro edit control Rules for Parsing (vlastni kontextove menu + nedela
-// pri fokusu controlu select-all)
+// helper object for the Rules for Parsing edit control (custom context menu + does not
+// select-all when the control gets focus)
 class CEditRulesControlWindow : public CWindow
 {
 public:
@@ -783,13 +784,13 @@ protected:
 class CEditServerTypeDlg : public CCenteredDialog
 {
 protected:
-    HWND HListView;                             // listview se sloupcema
-    BOOL CanReadListViewChanges;                // TRUE = zaznamenavat zmeny checkboxu v list-view, FALSE=pri plneni list-view je to nezadouci
-    CServerType* ServerType;                    // editovany server type (ke zmenam muze dojit az pri stisku tlacitka OK)
-    TIndirectArray<CSrvTypeColumn> ColumnsData; // sloupce zobrazene v dialogu (data pro listview se sloupcema)
+    HWND HListView;                             // listview with columns
+    BOOL CanReadListViewChanges;                // TRUE = record checkbox changes in the list-view, FALSE = undesirable while filling the list-view
+    CServerType* ServerType;                    // edited server type (changes may occur only after pressing the OK button)
+    TIndirectArray<CSrvTypeColumn> ColumnsData; // columns shown in the dialog (data for the listview with columns)
 
-    char* RawListing;       // listing pro testy parseru (text v dialogu Test of Parser je pro vetsi pohodli persistentni)
-    BOOL RawListIncomplete; // checkbox "act as if listing is incomplete" pro testy parseru (hodnota v dialogu Test of Parser je pro vetsi pohodli persistentni)
+    char* RawListing;       // listing for parser tests (text in the Test of Parser dialog stays persistent for convenience)
+    BOOL RawListIncomplete; // checkbox "act as if listing is incomplete" for parser tests (its value stays persistent in the Test of Parser dialog for convenience)
 
 public:
     CEditServerTypeDlg(HWND parent, CServerType* serverType);
@@ -801,8 +802,8 @@ public:
 protected:
     void EnableControls();
 
-    void InitColumns();     // do listview prida sloupce
-    void SetColumnWidths(); // nastavi optimalni sirky sloupcu
+    void InitColumns();     // add columns to the listview
+    void SetColumnWidths(); // set optimal column widths
     void RefreshListView(BOOL onlySet, int selIndex = -1);
 
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -816,14 +817,14 @@ protected:
 class CEditSrvTypeColumnDlg : public CCenteredDialog
 {
 protected:
-    TIndirectArray<CSrvTypeColumn>* ColumnsData; // vsechny sloupce (menit az na OK)
-    BOOL Edit;                                   // TRUE = editace, FALSE = pridani noveho sloupce
-    int* EditedColumn;                           // IN: index (v 'ColumnsData') editovaneho sloupce, OUT: focus index
+    TIndirectArray<CSrvTypeColumn>* ColumnsData; // all columns (modify only on OK)
+    BOOL Edit;                                   // TRUE = editing, FALSE = adding a new column
+    int* EditedColumn;                           // IN: index (in 'ColumnsData') of the edited column, OUT: focus index
 
-    int LastUsedIndexForName;  // -1==neplatne, jinak index v combu posledni volby Name
-    int LastUsedIndexForDescr; // -1==neplatne, jinak index v combu posledni volby Description
+    int LastUsedIndexForName;  // -1==invalid, otherwise index in the combo of the last Name selection
+    int LastUsedIndexForDescr; // -1==invalid, otherwise index in the combo of the last Description selection
 
-    BOOL FirstSelNotifyAfterTransfer; // TRUE = prave se do dialogu nastavila data, postnuty CBN_SELCHANGE pro combo Type nesmi zmenit hodnotu Alignment
+    BOOL FirstSelNotifyAfterTransfer; // TRUE = data were just set into the dialog, the posted CBN_SELCHANGE for combo Type must not change Alignment
 
 public:
     CEditSrvTypeColumnDlg(HWND parent, TIndirectArray<CSrvTypeColumn>* columnsData,
@@ -846,18 +847,18 @@ class CFTPParser;
 class CSrvTypeTestParserDlg : public CCenteredDialog
 {
 protected:
-    HWND HListView;                          // listview se sloupcema
-    CFTPParser* Parser;                      // testovany parser listingu
-    TIndirectArray<CSrvTypeColumn>* Columns; // testovana definice sloupcu pro parsovani
-    char** RawListing;                       // buffer pro text listingu (alokovany retezec vlastni nadrazeny dialog Edit Server Type - listing prezije zavreni/otevreni tohoto dialogu)
-    int AllocatedSizeOfRawListing;           // aktualni alokovana velikost bufferu *RawListing
-    BOOL* RawListIncomplete;                 // checkbox "act as if listing is incomplete" (vlastni nadrazeny dialog Edit Server Type - nastaveni prezije zavreni/otevreni tohoto dialogu)
-    TDirectArray<DWORD> Offsets;             // dvojice offsetu (zacatek+konec radky, ze ktere vznikla polozka (soubor/adresar) v list-view
-    int LastSelectedOffset;                  // index posledni zvolene dvojice offsetu (jen optimalizace nastavovani editboxu)
+    HWND HListView;                          // listview with columns
+    CFTPParser* Parser;                      // parser of the listing being tested
+    TIndirectArray<CSrvTypeColumn>* Columns; // tested column definition for parsing
+    char** RawListing;                       // buffer for listing text (allocated string owned by the parent Edit Server Type dialog - the listing survives closing/reopening this dialog)
+    int AllocatedSizeOfRawListing;           // currently allocated size of the *RawListing buffer
+    BOOL* RawListIncomplete;                 // checkbox "act as if listing is incomplete" (owned by the parent Edit Server Type dialog - the setting survives closing/reopening this dialog)
+    TDirectArray<DWORD> Offsets;             // pairs of offsets (start+end of the line that produced the item (file/directory) in the list-view
+    int LastSelectedOffset;                  // index of the last selected offset pair (just an optimization for setting the edit boxes)
 
-    HIMAGELIST SymbolsImageList; // image list pro listview
+    HIMAGELIST SymbolsImageList; // image list for the listview
 
-    // parametry pro layoutovani dialogu
+    // parameters for dialog layouting
     int MinDlgHeight;
     int MinDlgWidth;
     int ListingHeight;
@@ -884,9 +885,9 @@ public:
     virtual void Transfer(CTransferInfo& ti);
 
 protected:
-    void InitColumns();            // do listview prida sloupce
-    void SetColumnWidths();        // nastavi optimalni sirky sloupcu
-    void ParseListingToListView(); // parsuje *RawListing a dava vysledky primo do listview
+    void InitColumns();            // add columns to the listview
+    void SetColumnWidths();        // set optimal column widths
+    void ParseListingToListView(); // parse *RawListing and put the results directly into the listview
 
     void LoadTextFromFile();
 
@@ -957,14 +958,14 @@ public:
     BOOL SelFiles;       // change attributes of files
     BOOL SelDirs;        // change attributes of dirs
     BOOL IncludeSubdirs; // include subdirs
-    DWORD AttrAndMask;   // vysledna AND maska atributu (nulovani atributu)
-    DWORD AttrOrMask;    // vysledna OR maska atributu (zapinani atributu)
+    DWORD AttrAndMask;   // resulting attribute AND mask (clearing attributes)
+    DWORD AttrOrMask;    // resulting attribute OR mask (enabling attributes)
 
 public:
     CChangeAttrsDlg(HWND parent, const char* subject, DWORD attr, DWORD attrDiff,
                     BOOL selDirs);
 
-    void RefreshNumValue(); // podle checkboxu nastavi cislo
+    void RefreshNumValue(); // set the number according to the checkbox
 
     virtual void Validate(CTransferInfo& ti);
     virtual void Transfer(CTransferInfo& ti);
@@ -978,32 +979,32 @@ protected:
 // COperationDlg
 //
 
-#define OPERDLG_UPDATEPERIOD 100 // nejkratsi interval (v ms) mezi dvemi obnovami informaci v dialogu operace
-#define OPERDLG_UPDATETIMER 1    // ID timeru pro zpozdenou obnovu informaci v dialogu
+#define OPERDLG_UPDATEPERIOD 100 // shortest interval (in ms) between two refreshes of information in the operation dialog
+#define OPERDLG_UPDATETIMER 1    // timer ID for delayed refresh of information in the dialog
 #ifdef _DEBUG
-#define OPERDLG_CHECKCOUNTERSTIMER 2    // ID timeru pro test pocitadel ve fronte
-#define OPERDLG_CHECKCOUNTERSPERIOD 300 // perioda timeru pro test pocitadel ve fronte
+#define OPERDLG_CHECKCOUNTERSTIMER 2    // timer ID for testing counters in the queue
+#define OPERDLG_CHECKCOUNTERSPERIOD 300 // timer period for testing counters in the queue
 #endif
-#define OPERDLG_STATUSUPDATETIMER 3      // ID timeru pro zpozdenou obnovu status/progres informaci v dialogu (prilis rychle updaty od workeru (v pripade ze jich bezi vic nez jeden) se vynechavaji)
-#define OPERDLG_STATUSUPDATEPERIOD 1000  // perioda timeru pro obnovu status/progres informaci v dialogu (pravidelny update, probiha jen tehdy, kdyz neprobihaji updaty od workeru)
-#define OPERDLG_STATUSMINIDLETIME 950    // minimalni casovy odstup dalsiho updatu (periodickeho i od workera) od posledniho updatu od workera - POZOR: vazba na WORKER_STATUSUPDATETIMEOUT
-#define OPERDLG_GETDISKSPACEPERIOD 3000  // cas, po kterem se znovu ziska volne misto na cilovem disku
-#define OPERDLG_SHOWERRMINIDLETIME 10000 // minimalni doba bez aktivity v dialogu, aby se ukazala chyba samocinne (viz Config.OpenSolveErrIfIdle)
-#define OPERDLG_AUTOSHOWERRTIMER 4       // ID timeru pro periodicky test jestli se nema ukazat nejaky Show Error dialog
-#define OPERDLG_AUTOSHOWERRPERIOD 1000   // perioda timeru pro test jestli se nema ukazat nejaky Show Error dialog
-#define OPERDLG_AUTOSHOWERRTIMER2 5      // pomocny timer: zajisti "okamzite" doruceni OPERDLG_AUTOSHOWERRTIMER
-#define OPERDLG_CORRECTBTNSTIMER 6       // ID timeru pro kontrolu stavu buttonu v dialogu kratce po aktivaci dialogu (pri aktivaci jeste bohuzel neni znamy focus)
+#define OPERDLG_STATUSUPDATETIMER 3      // timer ID for delayed refresh of status/progress info in the dialog (too fast updates from workers (if more than one runs) are skipped)
+#define OPERDLG_STATUSUPDATEPERIOD 1000  // timer period for refreshing status/progress info in the dialog (regular update, happens only when no worker updates are running)
+#define OPERDLG_STATUSMINIDLETIME 950    // minimum time gap for the next update (periodic or from a worker) after the last worker update - WARNING: tied to WORKER_STATUSUPDATETIMEOUT
+#define OPERDLG_GETDISKSPACEPERIOD 3000  // time after which free space on the target disk is fetched again
+#define OPERDLG_SHOWERRMINIDLETIME 10000 // minimum idle time in the dialog before an error is shown automatically (see Config.OpenSolveErrIfIdle)
+#define OPERDLG_AUTOSHOWERRTIMER 4       // timer ID for a periodic test whether a Show Error dialog should appear
+#define OPERDLG_AUTOSHOWERRPERIOD 1000   // timer period for testing whether a Show Error dialog should appear
+#define OPERDLG_AUTOSHOWERRTIMER2 5      // helper timer: ensures "immediate" delivery of OPERDLG_AUTOSHOWERRTIMER
+#define OPERDLG_CORRECTBTNSTIMER 6       // timer ID for checking button states shortly after the dialog is activated (focus is unfortunately unknown at activation)
 
-#define WM_APP_DISABLEDETAILED WM_APP + 1   // [0, 0] - disablovani butonu Detailed po maximalizaci
-#define WM_APP_ACTIVATEWORKERS WM_APP + 2   // [0, 0] - aktivace workeru po otevreni dialogu
-#define WM_APP_WORKERCHANGEREP WM_APP + 3   // [0, 0] - doslo ke hlaseni zmeny ve workerovi, mame si precist z operace kde ke zmene doslo (viz CFTPOperation::GetChangedWorker())
-#define WM_APP_ITEMCHANGEREP WM_APP + 4     // [0, 0] - doslo ke hlaseni zmeny v polozkach, mame si precist z operace kde ke zmenam doslo (viz CFTPOperation::GetChangedItems())
-#define WM_APP_OPERSTATECHANGE WM_APP + 5   // [0, 0] - doslo ke zmene stavu operace (hotovo/provadi se/dokonceno s chybami), mame si precist z operace stav (viz CFTPOperation::GetOperationState())
-#define WM_APP_HAVEDISKFREESPACE WM_APP + 6 // [0, 0] - thread zjistujici volne misto na disku hlasi, ze ma vysledek
-#define WM_APP_CLOSEDLG WM_APP + 7          // [0, 0] - ma dojit k zavreni progress dialogu (vyuziva auto-close)
+#define WM_APP_DISABLEDETAILED WM_APP + 1   // [0, 0] - disable the Detailed button after maximizing
+#define WM_APP_ACTIVATEWORKERS WM_APP + 2   // [0, 0] - activate workers after opening the dialog
+#define WM_APP_WORKERCHANGEREP WM_APP + 3   // [0, 0] - a worker change was reported, we must read from the operation where the change happened (see CFTPOperation::GetChangedWorker())
+#define WM_APP_ITEMCHANGEREP WM_APP + 4     // [0, 0] - an item change was reported, we must read from the operation where the changes happened (see CFTPOperation::GetChangedItems())
+#define WM_APP_OPERSTATECHANGE WM_APP + 5   // [0, 0] - the operation state changed (done/in progress/completed with errors), we must read the state from the operation (see CFTPOperation::GetOperationState())
+#define WM_APP_HAVEDISKFREESPACE WM_APP + 6 // [0, 0] - the thread checking disk free space reports that it has a result
+#define WM_APP_CLOSEDLG WM_APP + 7          // [0, 0] - the progress dialog should close (uses auto-close)
 
-#define OPERDLG_CONSTEXTBUFSIZE 1000  // max. delka textu ve sloupci listview Connections
-#define OPERDLG_ITEMSTEXTBUFSIZE 1000 // max. delka textu ve sloupci listview Operations
+#define OPERDLG_CONSTEXTBUFSIZE 1000  // max text length in the Connections listview column
+#define OPERDLG_ITEMSTEXTBUFSIZE 1000 // max text length in the Operations listview column
 
 class CFTPQueue;
 class CFTPWorkersList;
@@ -1012,31 +1013,31 @@ class COperationDlg;
 class CGetDiskFreeSpaceThread : public CThread
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
+    // critical section for accessing object data
     CRITICAL_SECTION GetFreeSpaceCritSect;
 
-    char Path[MAX_PATH]; // cesta, na ktere zjistujeme volne misto
-    CQuadWord FreeSpace; // zjistene volne misto; -1 = nezname volne misto
-    HWND Dialog;         // handle dialogu operace, ktery ma prijmout
+    char Path[MAX_PATH]; // path where we check free space
+    CQuadWord FreeSpace; // detected free space; -1 = free space unknown
+    HWND Dialog;         // handle of the operation dialog that should receive it
 
-    HANDLE WorkOrTerminate; // "signaled" pokud ma thread zjistit volne misto na disku nebo pokud se ma ukoncit
-    BOOL TerminateThread;   // TRUE = thread se ma terminovat
+    HANDLE WorkOrTerminate; // "signaled" if the thread should check disk free space or terminate
+    BOOL TerminateThread;   // TRUE = the thread should terminate
 
 public:
     CGetDiskFreeSpaceThread(const char* path, HWND dialog);
     ~CGetDiskFreeSpaceThread();
 
-    // volat po konstruktoru, pokud vrati FALSE, neni mozne dale objekt pouzivat
+    // call after the constructor; if it returns FALSE the object cannot be used further
     BOOL IsGood() { return WorkOrTerminate != NULL; }
 
-    // dialog touto metodou naplanuje ukonceni threadu
+    // the dialog schedules thread termination via this method
     void ScheduleTerminate();
 
-    // dialog touto metodou naplanuje zjisteni volneho mista na disku; po zjisteni
-    // mu prijde WM_APP_HAVEDISKFREESPACE, pak si muze precist vysledek
+    // the dialog schedules checking disk free space via this method; after the check it
+    // receives WM_APP_HAVEDISKFREESPACE and can read the result
     void ScheduleGetDiskFreeSpace();
 
-    // vraci posledni zjisteny udaj o volnem miste
+    // returns the last detected free space value
     CQuadWord GetResult();
 
     virtual unsigned Body();
@@ -1046,14 +1047,14 @@ class COperDlgListView : public CWindow
 {
 public:
     HWND HToolTip;
-    COperationDlg* OperDlg; // dialog, ve kterem listview existuje
-    BOOL ConsOrItems;       // TRUE/FALSE = data brat z Connections/Operations listview
+    COperationDlg* OperDlg; // dialog in which the listview exists
+    BOOL ConsOrItems;       // TRUE/FALSE = take data from the Connections/Operations listview
 
     int LastItem;
     int LastSubItem;
     int LastWidth;
 
-    BOOL Scrolling; // TRUE/FALSE = user prave pouziva/nepouziva scrollbaru
+    BOOL Scrolling; // TRUE/FALSE = the user is currently using/not using the scrollbar
 
     DWORD LastLButtonDownTime;
     LPARAM LastLButtonDownLParam;
@@ -1063,7 +1064,7 @@ public:
     ~COperDlgListView();
 
     void Attach(HWND hListView, COperationDlg* operDlg, BOOL consOrItems);
-    void HideToolTip(int onlyIfOnIndex = -1); // neni-li 'onlyIfOnIndex' -1, jde o index, ktery se meni a tudiz je-li nad nim otevreny tooltip, musime ho zavrit
+    void HideToolTip(int onlyIfOnIndex = -1); // if 'onlyIfOnIndex' is not -1 it is the index being changed, so an open tooltip above it must be closed
 
 protected:
     LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1072,84 +1073,84 @@ protected:
 class COperationDlg : public CDialog
 {
 public:
-    CFTPOperation* Oper;               // operace, pro kterou je dialog otevreny (existuje vzdy dele nez dialog, proto si dovolime primi pristup a ne pres operUID) (nemuze byt NULL)
-    CFTPQueue* Queue;                  // fronta polozek operace (kopie Oper->Queue - ukazatel na frontu se behem operace nemeni)
-    CFTPWorkersList* WorkersList;      // seznam workeru operace (ukazatel na seznam se behem operace nemeni)
-    BOOL* SendWMClose;                 // zapis TRUE zajisti poslani WM_CLOSE tomuto dialogu (popis viz COperationDlgThread::Body())
-    BOOL CloseDlg;                     // TRUE = ma se co nejdrive zavrit dialog (vyuziva se jen pri zadosti o zavreni jeste pred otevrenim dialogu)
-    BOOL DlgWillCloseIfOpFinWithSkips; // TRUE = pokud se operace dokonci jen se skipnutymi polozkami, okno operace se zavre (a s nim i vsichni workeri) - pouziva se pro rozhodnuti jaky refresh pouzit (okamzity nebo az po aktivaci hlavniho okna)
+    CFTPOperation* Oper;               // operation for which the dialog is open (always exists longer than the dialog, so direct access is allowed instead of via operUID) (cannot be NULL)
+    CFTPQueue* Queue;                  // queue of operation items (copy of Oper->Queue - the pointer to the queue does not change during the operation)
+    CFTPWorkersList* WorkersList;      // list of operation workers (the pointer to the list does not change during the operation)
+    BOOL* SendWMClose;                 // writing TRUE ensures WM_CLOSE is sent to this dialog (see COperationDlgThread::Body())
+    BOOL CloseDlg;                     // TRUE = the dialog should close as soon as possible (used only when close is requested before the dialog opens)
+    BOOL DlgWillCloseIfOpFinWithSkips; // TRUE = if the operation finishes with skipped items only, the operation window closes (and with it all workers) - used to decide which refresh to use (immediate or after activating the main window)
 
 protected:
-    HWND CenterToWnd;                    // okno, ke kteremu se na zacatku dialog centruje (NULL = necentruje se)
-    HWND SizeBox;                        // okno size-boxu
-    CGUIStaticTextAbstract* Source;      // text zdrojove cesty (nemuze byt NULL)
-    CGUIStaticTextAbstract* Target;      // text cilove cesty (nemuze byt NULL)
-    CGUIStaticTextAbstract* TimeLeft;    // time left text (nemuze byt NULL)
-    CGUIStaticTextAbstract* ElapsedTime; // elapsed time text (nemuze byt NULL)
-    CGUIStaticTextAbstract* Status;      // status text (nemuze byt NULL)
-    CGUIProgressBarAbstract* Progress;   // progress-bar (nemuze byt NULL)
-    DWORD ProgressValue;                 // posledni nastavena hodnota na progresu 'Progress'; -2 == progres je v klidu, ma zobrazeny napis "done", "errors", "stopped" nebo "paused"
-    HWND ConsListView;                   // listview Connections
-    COperDlgListView ConsListViewObj;    // objekt listview Connections (dela tooltip)
-    HIMAGELIST ConsImageList;            // image list pro listview Connections
-    HWND ItemsListView;                  // listview Operations
-    COperDlgListView ItemsListViewObj;   // objekt listview Operations (dela tooltip)
-    HIMAGELIST ItemsImageList;           // image list pro listview Operations
+    HWND CenterToWnd;                    // window the dialog centers to when opened (NULL = no centering)
+    HWND SizeBox;                        // size-box window
+    CGUIStaticTextAbstract* Source;      // source path text (cannot be NULL)
+    CGUIStaticTextAbstract* Target;      // target path text (cannot be NULL)
+    CGUIStaticTextAbstract* TimeLeft;    // time left text (cannot be NULL)
+    CGUIStaticTextAbstract* ElapsedTime; // elapsed time text (cannot be NULL)
+    CGUIStaticTextAbstract* Status;      // status text (cannot be NULL)
+    CGUIProgressBarAbstract* Progress;   // progress bar (cannot be NULL)
+    DWORD ProgressValue;                 // last value set on the 'Progress' bar; -2 == progress is idle, showing "done", "errors", "stopped" or "paused"
+    HWND ConsListView;                   // Connections listview
+    COperDlgListView ConsListViewObj;    // Connections listview object (provides tooltip)
+    HIMAGELIST ConsImageList;            // image list for the Connections listview
+    HWND ItemsListView;                  // Operations listview
+    COperDlgListView ItemsListViewObj;   // Operations listview object (provides tooltip)
+    HIMAGELIST ItemsImageList;           // image list for the Operations listview
 
-    char ConsTextBuf[3][OPERDLG_CONSTEXTBUFSIZE];   // buffery pro text pro LVN_GETDISPINFO pro listview Connections
-    int ConsActTextBuf;                             // ktery ze tri bufferu je prave mozne pouzit pro LVN_GETDISPINFO pro listview Connections
-    char ItemsTextBuf[3][OPERDLG_ITEMSTEXTBUFSIZE]; // buffery pro text pro LVN_GETDISPINFO pro listview Operations
-    int ItemsActTextBuf;                            // ktery ze tri bufferu je prave mozne pouzit pro LVN_GETDISPINFO pro listview Operations
+    char ConsTextBuf[3][OPERDLG_CONSTEXTBUFSIZE];   // buffers for LVN_GETDISPINFO text in the Connections listview
+    int ConsActTextBuf;                             // which of the three buffers is currently free for LVN_GETDISPINFO in the Connections listview
+    char ItemsTextBuf[3][OPERDLG_ITEMSTEXTBUFSIZE]; // buffers for LVN_GETDISPINFO text in the Operations listview
+    int ItemsActTextBuf;                            // which of the three buffers is currently free for LVN_GETDISPINFO in the Operations listview
 
-    BOOL SimpleLook; // TRUE/FALSE = simple (po split-baru) / detailed (kompletni) vzhled dialogu
+    BOOL SimpleLook; // TRUE/FALSE = simple (after the split bar) / detailed (complete) dialog look
 
-    char* TitleText; // text pro titulek dialogu (bez uvodniho "(XX%) ")
+    char* TitleText; // text for the dialog title (without the initial "(XX%) ")
 
-    BOOL IsDirtyStatus;                 // TRUE = je potreba updatnout status/progres operace (je treba prekreslit status/progres v dialogu)
-    BOOL IsDirtyProgress;               // TRUE = doslo ke zmene workera, mozna (pokud se worker menil z duvodu zmeny progresu) je potreba updatnout status/progres operace (je treba prekreslit status/progres v dialogu)
-    DWORD LastUpdateOfProgressByWorker; // GetTickCount z okamziku posledniho updatu progresu z popudu workera (pouziva se pro vynechani zbytecne castych updatu pri vice spustenych workerech + vynechani pravidelnych updatu)
-    BOOL IsDirtyConsListView;           // TRUE = obsah listview Connections se zmenil (je treba ho prekreslit v dialogu)
-    BOOL IsDirtyItemsListView;          // TRUE = obsah listview Operations se zmenil (je treba ho prekreslit v dialogu)
-    BOOL HasDelayedUpdateTimer;         // TRUE = je nahozeny timer OPERDLG_UPDATETIMER
+    BOOL IsDirtyStatus;                 // TRUE = status/progress of the operation needs update (the dialog must redraw status/progress)
+    BOOL IsDirtyProgress;               // TRUE = a worker changed; maybe (if the worker changed due to progress) status/progress needs update (the dialog must redraw status/progress)
+    DWORD LastUpdateOfProgressByWorker; // GetTickCount at the last update of progress triggered by a worker (used to skip unnecessarily frequent updates with multiple workers + skip periodic updates)
+    BOOL IsDirtyConsListView;           // TRUE = the Connections listview content changed (needs repaint in the dialog)
+    BOOL IsDirtyItemsListView;          // TRUE = the Operations listview content changed (needs repaint in the dialog)
+    BOOL HasDelayedUpdateTimer;         // TRUE = timer OPERDLG_UPDATETIMER is running
 
-    int ConErrorIndex;           // listview Connections: index prvni chyby; -1=zadna chyba neexistuje
-    BOOL EnableChangeFocusedCon; // TRUE = pri zmene fokusu v Connections aktivovat Log workera (FALSE se pouziva pri refreshi listviewevu pro zabraneni nechtenych zmen)
+    int ConErrorIndex;           // Connections listview: index of the first error; -1 = no error exists
+    BOOL EnableChangeFocusedCon; // TRUE = when focus changes in Connections activate the worker log (FALSE is used during listview refresh to avoid unwanted changes)
 
-    BOOL ShowOnlyErrors;               // TRUE = listview Operations obsahuje jen polozky ve stavu "wait for user" (jinak obsahuje vsechny polozky)
-    TDirectArray<DWORD> ErrorsIndexes; // listview Operations: pole indexu polozek ve stavu "wait for user" v Queue
-    BOOL EnableShowOnlyErrors;         // TRUE = checkbox "show only errors" ma byt enaled, jinak disabled
+    BOOL ShowOnlyErrors;               // TRUE = the Operations listview contains only items in "wait for user" state (otherwise it contains all items)
+    TDirectArray<DWORD> ErrorsIndexes; // Operations listview: array of indices of items in "wait for user" state in the Queue
+    BOOL EnableShowOnlyErrors;         // TRUE = the "show only errors" checkbox should be enabled, otherwise disabled
 
-    int FocusedItemUID;              // UID polozky s fokusem v listview Operations (-1 = nezname)
-    BOOL EnableChangeFocusedItemUID; // TRUE = pri zmene fokusu menit i FocusedItemUID (FALSE se pouziva pri refreshi listviewevu pro zabraneni nechtenych zmen FocusedItemUID)
+    int FocusedItemUID;              // UID of the focused item in the Operations listview (-1 = unknown)
+    BOOL EnableChangeFocusedItemUID; // TRUE = change FocusedItemUID when focus changes (FALSE is used during listview refresh to prevent unwanted changes to FocusedItemUID)
 
-    BOOL UserWasActive;       // TRUE = nedovolime oknu, aby se automaticky zavrelo po uspesnem dokonceni operace (user neco delal, zmizel by mu dialog pod rukama)
-    BOOL DelayAfterCancel;    // TRUE = nenechame okamzite otevrit dalsi Solve Error dialog po Cancelu v predchozim Solve Error dialogu
-    BOOL CloseDlgWhenOperFin; // FALSE = nemame zavirat okno po dokonceni operace = okno se muze zavrit je-li Config.CloseOperationDlgIfSuccessfullyFinished==TRUE
+    BOOL UserWasActive;       // TRUE = prevent the window from closing automatically after the operation finishes successfully (the user was doing something and the dialog would vanish)
+    BOOL DelayAfterCancel;    // TRUE = do not open another Solve Error dialog immediately after Cancel in the previous Solve Error dialog
+    BOOL CloseDlgWhenOperFin; // FALSE = do not close the window after operation completion = the window may close only if Config.CloseOperationDlgIfSuccessfullyFinished==TRUE
     DWORD ClearChkboxTime;
-    HWND LastFocusedControl; // posledni vyfocusenej control v dialogu
-    DWORD LastActivityTime;  // GetTickCount() z okamziku posledni aktivity usera
+    HWND LastFocusedControl; // last focused control in the dialog
+    DWORD LastActivityTime;  // GetTickCount() from the time of the user's last activity
 
-    DWORD LastTimeEstimation; // -1==neplatny, jinak zaokrouhleny pocet sekund do konce operace
+    DWORD LastTimeEstimation; // -1==invalid, otherwise rounded number of seconds until the operation finishes
 
-    char* OperationsTextOrig;        // puvodni text titulku listview "Operations:"
-    int DisplayedDoneOrSkippedCount; // pocet skip+done polozek zobrazeny v titulku listview za "Operations:" (-1 = neznamy)
-    int DisplayedTotalCount;         // celkovy pocet polozek zobrazeny v titulku listview za "Operations:" (-1 = neznamy)
+    char* OperationsTextOrig;        // original text of the "Operations:" listview title
+    int DisplayedDoneOrSkippedCount; // number of skipped+done items displayed after "Operations:" in the listview title (-1 = unknown)
+    int DisplayedTotalCount;         // total number of items displayed after "Operations:" in the listview title (-1 = unknown)
 
-    BOOL DisableAddWorkerButton; // TRUE = vsechny polozky jsou "done", takze pridavani dalsich workeru nema smysl
+    BOOL DisableAddWorkerButton; // TRUE = all items are "done", so adding more workers makes no sense
 
-    BOOL ShowLowDiskWarning;       // TRUE = ukazuje se ikona+hint "low disk space", FALSE = status je az do praveho okraje + ikona s hintem jsou schovane
-    CQuadWord LastNeededDiskSpace; // hodnota velikosti potrebneho mista na cilovem disku (z okamziku posledniho naplanovani ziskani volneho mista na disku)
-    DWORD LastGetDiskFreeSpace;    // GetTickCount() z posledniho naplanovani ziskani volneho mista na disku (v threadu GetDiskFreeSpaceThread)
+    BOOL ShowLowDiskWarning;       // TRUE = the "low disk space" icon+hint is shown, FALSE = the status stretches to the right edge and the icon with hint is hidden
+    CQuadWord LastNeededDiskSpace; // value of the required space on the target disk (from the last scheduling of the disk free space check)
+    DWORD LastGetDiskFreeSpace;    // GetTickCount() from the last scheduling of the disk free space check (in the GetDiskFreeSpaceThread)
     CGUIHyperLinkAbstract* LowDiskSpaceHint;
     CGetDiskFreeSpaceThread* GetDiskFreeSpaceThread;
 
-    HWND CurrentFlashWnd; // je-li != NULL, jde o okno, ktere se ma pri zmene titulku flashnout (volat FlashWindow; pri zmene titulku se totiz flash ztraci, musime ho obnovovat)
+    HWND CurrentFlashWnd; // if != NULL, window that should flash when the title changes (call FlashWindow; the flash is lost when the title changes so we must restore it)
 
-    // layoutovaci parametry (suffix "1" = "simple", suffix "2" = "detailed")
-    int MinDlgHeight1;  // minimalni vyse dialogu pri simple vzhledu
-    int MinDlgHeight2;  // minimalni vyse dialogu pri detailed vzhledu
-    int MinDlgWidth;    // minimalni sire dialogu
-    int LastDlgHeight1; // vyska posledne zobrazene "detailed" varianty
+    // layout parameters (suffix "1" = "simple", suffix "2" = "detailed")
+    int MinDlgHeight1;  // minimum dialog height in simple look
+    int MinDlgHeight2;  // minimum dialog height in detailed look
+    int MinDlgWidth;    // minimum dialog width
+    int LastDlgHeight1; // height of the last shown "detailed" variant
     int MinClientHeight;
     int SizeBoxWidth;
     int SizeBoxHeight;
@@ -1193,22 +1194,22 @@ protected:
     int ShowOnlyErrXOffset;
     int ShowOnlyErrYOffset;
 
-    int ConnectionsActWidth;       // aktualni sirka listview Connections
-    int ConnectionsActHeight;      // aktualni vyska listview Connections
-    int ConsAddActYOffset;         // aktualni y-offset tlacitka Add pod listviewem Connections
-    int ConnectionsActHeightLimit; // aktualni limit pro vysku listviewu Connections
-    BOOL InListViewSplit;          // TRUE = mys je v oblasti, kde se da tazenim menit vyska listview Connections proti vysce listview Operations
-    BOOL Captured;                 // TRUE = mys je nase (captured)
-    int DragOriginY;               // y-ova souradnice stisknuti l-buttonu mysi (pocatek tazeni)
-    double ListviewSplitRatio;     // pomer mezi vyskou listview Connections a celkovou vyskou pro listviewy
+    int ConnectionsActWidth;       // current width of the Connections listview
+    int ConnectionsActHeight;      // current height of the Connections listview
+    int ConsAddActYOffset;         // current y-offset of the Add button below the Connections listview
+    int ConnectionsActHeightLimit; // current height limit for the Connections listview
+    BOOL InListViewSplit;          // TRUE = the mouse is in the area where dragging changes the Connections listview height against the Operations listview
+    BOOL Captured;                 // TRUE = the mouse is captured by us
+    int DragOriginY;               // Y coordinate of the left-button press (start of the drag)
+    double ListviewSplitRatio;     // ratio between the Connections listview height and the total height for the listviews
 
-    BOOL RestoreToMaximized; // TRUE pokud user dal minimize pri maximized stavu -> restore provede maximize
+    BOOL RestoreToMaximized; // TRUE if the user minimized while maximized -> restore performs maximize
 
-    BOOL PauseButtonIsEnabled;        // tlacitko Pause/Resume nad Connections listviewem: TRUE = enablovano, FALSE = disablovano
-    BOOL PauseButtonIsResume;         // aktualni text tlacitka Pause/Resume nad Connections listviewem: TRUE = Resume, FALSE = Pause
-    char PauseButtonPauseText[50];    // buffer pro text "Pause" z resourcu dialogu (text "Resume" je IDS_OPERDLGRESUMEBUTTON)
-    BOOL ConPauseButtonIsResume;      // aktualni text tlacitka Pause/Resume pod Connections listviewem: TRUE = Resume, FALSE = Pause
-    char ConPauseButtonPauseText[50]; // buffer pro text "Pause" z resourcu dialogu (text "Resume" je IDS_OPERDLGRESUMECONBUTTON)
+    BOOL PauseButtonIsEnabled;        // Pause/Resume button above the Connections listview: TRUE = enabled, FALSE = disabled
+    BOOL PauseButtonIsResume;         // current text of the Pause/Resume button above the Connections listview: TRUE = Resume, FALSE = Pause
+    char PauseButtonPauseText[50];    // buffer for the "Pause" text from dialog resources (the "Resume" text is IDS_OPERDLGRESUMEBUTTON)
+    BOOL ConPauseButtonIsResume;      // current text of the Pause/Resume button below the Connections listview: TRUE = Resume, FALSE = Pause
+    char ConPauseButtonPauseText[50]; // buffer for the "Pause" text from dialog resources (the "Resume" text is IDS_OPERDLGRESUMECONBUTTON)
 
 public:
     COperationDlg(HWND parent, HWND centerToWnd, CFTPOperation* oper, CFTPQueue* queue,
@@ -1220,7 +1221,7 @@ protected:
 
     void LayoutDialog(BOOL showSizeBox);
 
-    // zmeni promennou ShowLowDiskWarning + schova/ukaze hint+ikonu (ale nedela layoutovani)
+    // changes ShowLowDiskWarning and hides/shows the hint+icon (but does not perform layout)
     void SetShowLowDiskWarning(BOOL show);
 
     void ToggleSimpleLook();
@@ -1237,26 +1238,26 @@ protected:
 
     void InitColumns();
     void SetColumnWidths();
-    void RefreshConnections(BOOL init, int newFocusIndex = -1, int refreshOnlyIndex = -1); // 'init' je TRUE jen pri volani z WM_INITDIALOG
-    void RefreshItems(BOOL init, int refreshOnlyIndex1 = -1, int refreshOnlyIndex2 = -1);  // 'init' je TRUE jen pri volani z WM_INITDIALOG
+    void RefreshConnections(BOOL init, int newFocusIndex = -1, int refreshOnlyIndex = -1); // 'init' is TRUE only when called from WM_INITDIALOG
+    void RefreshItems(BOOL init, int refreshOnlyIndex1 = -1, int refreshOnlyIndex2 = -1);  // 'init' is TRUE only when called from WM_INITDIALOG
     void EnableErrorsButton();
     void EnablePauseButton();
-    void EnableSolveConError(int index);  // je-li 'index' -1, provede se pro focus index z listview Connections
-    void EnableRetryItem(int index);      // je-li 'index' -1, provede se pro focus index z listview Operations
-    void EnablePauseConButton(int index); // je-li 'index' -1, provede se pro focus index z listview Connections
+    void EnableSolveConError(int index);  // if 'index' is -1, it uses the focus index from the Connections listview
+    void EnableRetryItem(int index);      // if 'index' is -1, it uses the focus index from the Operations listview
+    void EnablePauseConButton(int index); // if 'index' is -1, it uses the focus index from the Connections listview
 
-    // zajisti update (prekresleni) dat dialogu z vnitrnich promennych dialogu
-    // (vola na to metodu UpdateDataInDialog()); nejkratsi perioda dvou po sobe
-    // jdoucich updatu je OPERDLG_UPDATEPERIOD milisekund
+    // ensures data update (redraw) in the dialog from the dialog's internal variables
+    // (calls UpdateDataInDialog()); the shortest interval between two consecutive
+    // updates is OPERDLG_UPDATEPERIOD milliseconds
     void ScheduleDelayedUpdate();
 
-    // vykresli (ukaze) nove hodnoty vsech zmenenych dat zobrazenych v dialogu
-    // (pouziva se pri zpozdenem refreshovani udaju); vraci TRUE pokud bylo
-    // potreba neco updatnout
+    // draws (shows) new values of all changed data displayed in the dialog
+    // (used for delayed data refresh); returns TRUE if
+    // something needed updating
     BOOL UpdateDataInDialog();
 
-    // zajisti nastaveni tlacitka pro zavreni dialogu (Close/Cancel); 'flashTitle' je TRUE
-    // pri volani ze zpracovani WM_APP_OPERSTATECHANGE (zmenu hlasi operace)
+    // ensures setting the close button (Close/Cancel); 'flashTitle' is TRUE
+    // when called from WM_APP_OPERSTATECHANGE handling (operation reports the change)
     void SetupCloseButton(BOOL flashTitle);
 
     friend class CFTPOperation;
@@ -1302,11 +1303,11 @@ protected:
     BOOL* ApplyToAll;
     char** NewName;
 
-    BOOL DontTransferName; // TRUE = nema se z dialogu ziskavat jmeno (ani validovat, ani transfer)
+    BOOL DontTransferName; // TRUE = the name should not be obtained from the dialog (no validation or transfer)
 
-    int UsedButtonID; // ID tlacitka, kterym user zavira dialog (pouziva se v Transfer())
+    int UsedButtonID; // ID of the button the user used to close the dialog (used in Transfer())
 
-    CSolveItemErrorDlgType DlgType; // typ zobrazovaneho dialogu
+    CSolveItemErrorDlgType DlgType; // type of dialog being shown
 
 public:
     CSolveItemErrorDlg(HWND parent, CFTPOperation* oper, DWORD winError,
@@ -1336,7 +1337,7 @@ protected:
     const char* OrigRights;
     WORD NewAttr;
     BOOL* ApplyToAll;
-    int UsedButtonID; // ID tlacitka, kterym user zavira dialog (pouziva se v Transfer())
+    int UsedButtonID; // ID of the button the user used to close the dialog (used in Transfer())
 
 public:
     CSolveItemErrUnkAttrDlg(HWND parent, CFTPOperation* oper, const char* path, const char* name,
@@ -1388,7 +1389,7 @@ protected:
     const char* FtpPath;
     const char* FtpName;
     BOOL* ApplyToAll;
-    int TitleID; // je-li ruzne od -1, jde o resource ID titulku dialogu
+    int TitleID; // if not equal to -1, resource ID of the dialog title
 
 public:
     CSolveLowMemoryErr(HWND parent, const char* ftpPath, const char* ftpName, BOOL* applyToAll,
@@ -1407,7 +1408,7 @@ protected:
 
 enum CSolveItemErrorSimpleDlgType
 {
-    sisdtNone,           // jen inicializacni hodnota
+    sisdtNone,           // only an initial value
     sisdtDelHiddenDir,   // Delete: directory is hidden
     sisdtDelHiddenFile,  // Delete: file or link is hidden
     sisdtDelNonEmptyDir, // Delete: directory is non-empty
@@ -1420,9 +1421,9 @@ protected:
     const char* FtpPath;
     const char* FtpName;
     BOOL* ApplyToAll;
-    int UsedButtonID; // ID tlacitka, kterym user zavira dialog (pouziva se v Transfer())
+    int UsedButtonID; // ID of the button the user used to close the dialog (used in Transfer())
 
-    CSolveItemErrorSimpleDlgType DlgType; // typ zobrazovaneho dialogu
+    CSolveItemErrorSimpleDlgType DlgType; // type of dialog being shown
 
 public:
     CSolveItemErrorSimpleDlg(HWND parent, CFTPOperation* oper,
@@ -1442,7 +1443,7 @@ protected:
 
 enum CSolveItemErrorSrvCmdDlgType
 {
-    siscdtSimple,     // zadne menu na Retry buttonu
+    siscdtSimple,     // no menu on the Retry button
     siscdtDeleteFile, // Delete: unable to delete file
     siscdtDeleteDir,  // Delete: unable to delete directory
 };
@@ -1456,7 +1457,7 @@ protected:
     const char* ErrorDescr;
     BOOL* ApplyToAll;
 
-    CSolveItemErrorSrvCmdDlgType DlgType; // typ zobrazovaneho dialogu
+    CSolveItemErrorSrvCmdDlgType DlgType; // type of dialog being shown
 
 public:
     CSolveServerCmdErr(HWND parent, int titleID, const char* ftpPath,
@@ -1476,11 +1477,11 @@ protected:
 
 enum CSolveItemErrorSrvCmdDlgType2
 {
-    siscdt2Simple,               // zadne menu na Retry buttonu
-    siscdt2ResumeFile,           // Copy/Move: unable to resume file (nabidka overwrite/resume/atd.)
-    siscdt2ResumeTestFailed,     // Copy/Move: resume test fail (nabidka reduce-file/overwrite/resume/atd.)
-    siscdt2UploadUnableToStore,  // upload: unable to store file to server + resume not supported in ASCII transfer mode + unable to resume (server does not support resuming + neni znama velikost ciloveho souboru + cilovy soubor je vetsi nez zdrojovy soubor)
-    siscdt2UploadTestIfFinished, // upload: nelze overit jestli se soubor uspesne uploadnul
+    siscdt2Simple,               // no menu on the Retry button
+    siscdt2ResumeFile,           // Copy/Move: unable to resume file (menu offers overwrite/resume/etc.)
+    siscdt2ResumeTestFailed,     // Copy/Move: resume test failed (menu offers reduce-file/overwrite/resume/etc.)
+    siscdt2UploadUnableToStore,  // upload: unable to store file to server + resume not supported in ASCII transfer mode + unable to resume (server does not support resuming + target file size is unknown + target file is larger than source)
+    siscdt2UploadTestIfFinished, // upload: cannot verify whether the file uploaded successfully
 };
 
 class CSolveServerCmdErr2 : public CCenteredDialog
@@ -1494,7 +1495,7 @@ protected:
     const char* ErrorDescr;
     BOOL* ApplyToAll;
 
-    CSolveItemErrorSrvCmdDlgType2 DlgType; // typ zobrazovaneho dialogu
+    CSolveItemErrorSrvCmdDlgType2 DlgType; // type of dialog being shown
 
 public:
     CSolveServerCmdErr2(HWND parent, int titleID, const char* ftpPath,
@@ -1527,8 +1528,8 @@ protected:
 // CProxyServerDlg
 //
 
-// pomocny objekt pro edit control Script (vlastni kontextove menu + nedela
-// pri fokusu controlu select-all)
+// helper object for the Script edit control (custom context menu + does not
+// select-all when the control gets focus)
 class CProxyScriptControlWindow : public CWindow
 {
 public:
@@ -1541,9 +1542,9 @@ protected:
 class CProxyServerDlg : public CCenteredDialog
 {
 public:
-    CFTPProxyServerList* TmpFTPProxyServerList; // seznam proxy serveru z parent dialogu
-    CFTPProxyServer* Proxy;                     // data proxy serveru (zapis mozny jen pres CFTPProxyServerList::SetProxyServer(), cteni mozne bez sekce, protoze se zapisuje jen v hl. threadu, ve kterem zrovna jsme)
-    BOOL Edit;                                  // TRUE = editujeme, FALSE = pridavame
+    CFTPProxyServerList* TmpFTPProxyServerList; // proxy server list from the parent dialog
+    CFTPProxyServer* Proxy;                     // proxy server data (write allowed only via CFTPProxyServerList::SetProxyServer(), reading without a section because writing happens only in the main thread we are currently in)
+    BOOL Edit;                                  // TRUE = editing, FALSE = adding
 
 public:
     CProxyServerDlg(HWND parent, CFTPProxyServerList* tmpFTPProxyServerList,
@@ -1553,9 +1554,9 @@ public:
     virtual void Transfer(CTransferInfo& ti);
 
 protected:
-    // je-li 'initScriptText' TRUE, nastavi obsah editboxu Script, "read-only-flag"
-    // nastavuje vzdy; je-li 'initProxyPort' TRUE, nastavi defaultni port proxy serveru;
-    // dale enabluje dalsi controly v dialogu po zmene typu proxy serveru
+    // if 'initScriptText' is TRUE it sets the Script edit box contents, the "read-only flag"
+    // is always adjusted; if 'initProxyPort' is TRUE it sets the default proxy server port;
+    // afterwards it enables other controls in the dialog after changing the proxy server type
     void EnableControls(BOOL initScriptText, BOOL initProxyPort);
 
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1568,10 +1569,10 @@ protected:
 // ****************************************************************************
 // CPasswordEditLine
 //
-// subclass pro edit line obsahujici heslo; na ctrl+rclick postne do parenta
-// command WM_APP_SHOWPASSWORD
+// subclass for an edit line containing a password; on ctrl+right-click it posts
+// command WM_APP_SHOWPASSWORD to the parent
 
-#define WM_APP_SHOWPASSWORD WM_APP + 50 // [hWnd, lParam] - uzivatel cltrl+rclicknul do edit line, hWnd je handle okna edit line, lParam jsou souradnice kliknuti, viz WM_RBUTTONDOWN/lParam
+#define WM_APP_SHOWPASSWORD WM_APP + 50 // [hWnd, lParam] - user ctrl+right-clicked in the edit line, hWnd is the edit window handle, lParam is the click position, see WM_RBUTTONDOWN/lParam
 
 class CPasswordEditLine : public CWindow
 {

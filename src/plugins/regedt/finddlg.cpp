@@ -7,7 +7,7 @@ LPWSTR PatternHistory[MAX_HISTORY_ENTRIES];
 LPWSTR LookInHistory[MAX_HISTORY_ENTRIES];
 
 #ifdef _DEBUG
-// statiskita cetnosti typu hodnot
+// statistics of value type frequency
 DWORD TypeStat[12];
 #endif
 
@@ -46,7 +46,7 @@ void CStatusBar::AllocateBitmap()
         if (HBitmap != NULL)
             DeleteObject(HBitmap);
         HBitmap = (HBITMAP)CreateCompatibleBitmap(screenDC, Width, Height);
-        // predkreslime si do bitmapy ramecek a sizing grip
+        // pre-draw the frame and sizing grip into the bitmap
         HDC dc = CreateCompatibleDC(screenDC);
         if (dc)
         {
@@ -84,7 +84,7 @@ void CStatusBar::SetBase(LPCWSTR text, BOOL updateInIdle)
     Section.Enter();
     lstrcpynW(Text, text, MAX_FULL_KEYNAME + 50);
     BaseLen = (int)wcslen(Text);
-    // neceka se na prekresleni
+    // do not wait for a repaint
     if (!Dirty)
     {
         if (updateInIdle)
@@ -107,7 +107,7 @@ void CStatusBar::Set(LPCWSTR text, BOOL updateInIdle)
     //  CALL_STACK_MESSAGE2("CStatusBar::Set(, %d)", updateInIdle);
     Section.Enter();
     lstrcpynW(Text + BaseLen, text, MAX_FULL_KEYNAME + 49 - BaseLen);
-    // neceka se na prekresleni
+    // do not wait for a repaint
     if (!Dirty)
     {
         if (updateInIdle)
@@ -129,11 +129,11 @@ void CStatusBar::OnEnterIdle()
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE1("CStatusBar::OnEnterIdle()");
     Section.Enter();
-    // ma se v idle provadet update?
+    // should we perform the update while idle?
     if (UpdateInIdle)
     {
         UpdateInIdle = FALSE;
-        // neceka se na prekresleni
+        // do not wait for a repaint
         if (!Dirty)
         {
             Dirty = TRUE;
@@ -250,7 +250,7 @@ void PrintHexValueW(unsigned char* data, int size, LPWSTR buffer, int bufSize)
     }
     if (i != size)
     {
-        // neveslo se, doplnime elipsou
+        // if it does not fit, append an ellipsis
         wcscpy(buffer + bufSize - 4, L"...");
     }
     else
@@ -278,12 +278,12 @@ CFoundFilesData::CFoundFilesData(LPWSTR name, int root, LPWSTR key, DWORD type,
 
     if (!IsDir && data)
     {
-        // upravime data pro zobrazeni
+        // adjust the data for display
         switch (type)
         {
         case REG_MULTI_SZ:
         {
-            // nahradime separacni NULL charactery mezerama
+            // replace separator NULL characters with spaces
             WCHAR* ptr = (WCHAR*)data;
             while (ptr < (WCHAR*)data + min(size / 2, MAX_DATASIZE))
             {
@@ -291,7 +291,7 @@ CFoundFilesData::CFoundFilesData(LPWSTR name, int root, LPWSTR key, DWORD type,
                 {
                     if (ptr + 2 >= (WCHAR*)data + size / 2)
                     {
-                        size -= 2; // nepozitame posledni '\0', jsou tam dva
+                        size -= 2; // do not count the last '\0'; there are two of them
                         break;
                     }
                     else
@@ -301,7 +301,7 @@ CFoundFilesData::CFoundFilesData(LPWSTR name, int root, LPWSTR key, DWORD type,
                 }
                 ptr++;
             }
-            // pokracujem dal
+            // keep going
         }
         case REG_EXPAND_SZ:
         case REG_SZ:
@@ -436,7 +436,7 @@ CFoundFilesData::GetText(int i, LPWSTR buffer)
     {
         if (!IsDir)
         {
-            // jeto hodnota vypiseme typ
+            // if it is a value, output its type
             switch (Type)
             {
             case REG_BINARY:
@@ -703,7 +703,7 @@ void CFoundFilesListView::QuickSort(int left, int right, int sortBy)
 LABEL_QuickSort:
 
     //  CALL_STACK_MESSAGE4("CFoundFilesListView::QuickSort(%d, %d, %d)", left,
-    //                      right, sortBy);  // Petr: prilis pomaly call-stack
+    //                      right, sortBy);  // Petr: call stack too slow
     int i = left, j = right;
     CFoundFilesData* pivot = Data[(i + j) / 2];
 
@@ -724,7 +724,7 @@ LABEL_QuickSort:
         }
     } while (i <= j);
 
-    // nasledujici "hezky" kod jsme nahradili kodem podstatne setricim stack (max. log(N) zanoreni rekurze)
+    // the following "nice" code was replaced with one that saves a lot of stack (maximum log(N) recursion depth)
     //  if (left < j) QuickSort(left, j, sortBy);
     //  if (i < right) QuickSort(i, right, sortBy);
 
@@ -732,7 +732,7 @@ LABEL_QuickSort:
     {
         if (i < right)
         {
-            if (j - left < right - i) // je potreba seradit obe "poloviny", tedy do rekurze posleme tu mensi, tu druhou zpracujeme pres "goto"
+            if (j - left < right - i) // both "halves" must be sorted, so recurse into the smaller one and handle the other via "goto"
             {
                 QuickSort(left, j, sortBy);
                 left = i;
@@ -767,15 +767,15 @@ void CFoundFilesListView::SortItems(int sortBy)
     HCURSOR hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
     DataCriticalSection.Enter();
 
-    // pokud mame nejake polozky v datech a nejsou v listview, preneseme je
+    // if we have any items in the data that are not in the list view, transfer them
     SearchDialog->UpdateListViewItems();
 
     if (Data.Count > 0)
     {
-        // ulozime stav slected a focused polozek
+        // save the state of the selected and focused items
         StoreItemsState();
 
-        // seradim pole podle pozadovaneho kriteria
+        // sort the array according to the requested criterion
         QuickSort(0, Data.Count - 1, sortBy);
 
         RestoreItemsState();
@@ -794,7 +794,7 @@ CFoundFilesData*
 CFoundFilesListView::At(int index)
 {
     CALL_STACK_MESSAGE_NONE
-    //  CALL_STACK_MESSAGE2("CFoundFilesListView::At(%d)", index);  // Petr: prilis pomaly call-stack
+    //  CALL_STACK_MESSAGE2("CFoundFilesListView::At(%d)", index);  // Petr: call stack too slow
     CFoundFilesData* ptr;
     DataCriticalSection.Enter();
     ptr = Data[index];
@@ -825,7 +825,7 @@ int CFoundFilesListView::GetCount()
 int CFoundFilesListView::Add(CFoundFilesData* item)
 {
     CALL_STACK_MESSAGE_NONE
-    //  CALL_STACK_MESSAGE1("CFoundFilesListView::Add()"); // Petr: prilis pomaly call-stack
+    //  CALL_STACK_MESSAGE1("CFoundFilesListView::Add()"); // Petr: call stack too slow
     int index;
     DataCriticalSection.Enter();
     index = Data.Add(item);
@@ -856,7 +856,7 @@ BOOL CFoundFilesListView::InitColumns()
     lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_SUBITEM;
     lvc.fmt = LVCFMT_LEFT;
     int i;
-    for (i = 0; i < 7; i++) // vytvorim sloupce
+    for (i = 0; i < 7; i++) // create the columns
     {
         lvc.pszText = (LPSTR)LoadStr(header[i]);
         lvc.iSubItem = i;
@@ -925,7 +925,7 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (lParam != NULL)
         {
-            // pokud jde o Enter, tak ho chceme zpracovat
+            // if it is Enter, we want to process it
             MSG* msg = (LPMSG)lParam;
             if (msg->message == WM_KEYDOWN && msg->wParam == VK_RETURN)
                 return DLGC_WANTMESSAGE;
@@ -935,8 +935,8 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEACTIVATE:
     {
-        // pokud je Find neaktivni a uzivatel chce pres drag&drop odtahnout
-        // nekterou z polozek, nesmi Find vyskocit nahoru
+        // if Find is inactive and the user wants to drag and drop
+        // one of the items, Find must not pop up
         return MA_NOACTIVATE;
     }
 
@@ -1017,7 +1017,7 @@ CComboboxEdit::GetSel(DWORD *start, DWORD *end)
 void
 CComboboxEdit::ReplaceText(const char *text)
 {
-  // musime ozivit selection, protoze dementni combobox ji zapomel
+  // we have to revive the selection because the dumb combobox forgot it
   SendMessage(HWindow, EM_SETSEL, SelStart, SelEnd);
   SendMessage(HWindow, EM_REPLACESEL, TRUE, (LPARAM)text);
 }
@@ -1032,7 +1032,7 @@ CComboboxEdit::ReplaceText(const char *text)
 BOOL CFindThread::TestTime(FILETIME& ft)
 {
     CALL_STACK_MESSAGE_NONE
-    //  CALL_STACK_MESSAGE1("CFindThread::TestTime()");  // Petr: prilis pomaly call-stack
+    //  CALL_STACK_MESSAGE1("CFindThread::TestTime()");  // Petr: call stack too slow
 
     if (!UseMinTime && !UseMaxTime)
         return TRUE;
@@ -1081,24 +1081,24 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
 {
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE4("CFindThread::Test(, %d, %d, 0x%X)", len, name, type);
-    // prazdny retezec je obsazen v kazdem retezu
+    // an empty string is contained in every string
     if (PatternALen == 0 && PatternWLen == 0)
         return TRUE;
 
     if (RegExp)
     {
-        // prelozime retezec na ascii
+        // translate the string to ASCII
         if (name || type == REG_SZ || type == REG_EXPAND_SZ || type == REG_MULTI_SZ)
         {
             if (!name)
             {
                 if (type == REG_SZ || type == REG_EXPAND_SZ)
                 {
-                    len = max(0, len - 2); // orizneme zakoncovaci NULL
+                    len = max(0, len - 2); // trim the terminating NULL
                 }
                 else
                 {
-                    len = max(0, len - 4); // orizneme zakoncovaci NULL
+                    len = max(0, len - 4); // trim the terminating NULL
                 }
             }
 
@@ -1116,7 +1116,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
             }
         }
 
-        // rozparsujem jednotlive radky a otestujem regexp
+        // parse individual lines and test the regexp
         char* start;
         char* end = text;
         do
@@ -1126,7 +1126,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
             while (end < text + len && *end != '\n' && *end != '\r' && *end != '\0')
                 end++;
 
-            // otestujem radku
+            // test the line
             SalRegExp->SetLine(start, end);
             int pos = 0;
             do
@@ -1138,17 +1138,17 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
                         matchLen > 0 && (pos == 0 || isspace(text[pos - 1])) &&
                             (pos + matchLen == end - start || isspace(text[pos + matchLen])))
                         return TRUE;
-                    pos++; // zkusime to o kousek dal, treba to vyjde
+                    pos++; // try a little further; maybe it will work
                 }
                 else
                     break;
             } while (pos < end - start);
 
-            // pro CRLF je nutne preskocit dva znaky
+            // for CRLF we must skip two characters
             if (end + 1 < text + len && end[0] == '\r' && end[1] == '\n')
                 end++;
 
-            // prejdem na zatek dalsi radky
+            // move to the start of the next line
             end++;
         } while (end < text + len);
     }
@@ -1156,8 +1156,8 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
     {
         if (name)
         {
-            // jmeno prohledavame jen proti unicodovemu vzoru, v pripade hex
-            // searche je unicode vzor stejny jako ASCII
+            // we search the name only against the Unicode pattern; in a hex
+            // search the Unicode pattern is the same as ASCII
             int pos = 0;
             do
             {
@@ -1167,7 +1167,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
                         (pos < 2 || iswspace(*(LPWSTR)(text + pos - 2))) &&
                             (pos + PatternWLen > len - 2 || iswspace(*(LPWSTR)(text + pos + PatternWLen))))
                         return TRUE;
-                    pos += 2; // zkusime to o kousek dal, treba to vyjde
+                    pos += 2; // try a little further; maybe it will work
                 }
                 else
                     break;
@@ -1181,8 +1181,8 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
             case REG_EXPAND_SZ:
             case REG_SZ:
             {
-                // SZ prohledavame jen proti unicodovemu vzoru, v pripade hex
-                // searche je unicode vzor stejny jako ASCII
+                // we search SZ only against the Unicode pattern; in a hex
+                // search the Unicode pattern is the same as ASCII
                 int pos = 0;
                 do
                 {
@@ -1192,7 +1192,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
                             (pos < 2 || iswspace(*(LPWSTR)(text + pos - 2))) &&
                                 (pos + PatternWLen > len - 2 || iswspace(*(LPWSTR)(text + pos + PatternWLen))))
                             return TRUE;
-                        pos += 2; // zkusime to o kousek dal, treba to vyjde
+                        pos += 2; // try a little further; maybe it will work
                     }
                     else
                         break;
@@ -1201,26 +1201,26 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
             }
 
             case REG_DWORD_BIG_ENDIAN:
-                // cisla porovnaname s ciselnou hodnotou
+                // compare numbers with their numeric value
                 if (UseNumber)
                     return (DWORD)(text[3] | (text[2] << 8) | (text[1] << 16) | (text[0] << 24)) == Number;
                 break;
 
             case REG_DWORD:
-                // cisla porovnaname s ciselnou hodnotou
+                // compare numbers with their numeric value
                 if (UseNumber)
                     return *(LPDWORD)text == Number;
                 break;
 
             case REG_QWORD:
-                // cisla porovnaname s ciselnou hodnotou
+                // compare numbers with their numeric value
                 if (UseNumber)
                     return *(LPQWORD)text == Number;
                 break;
 
             default:
             {
-                // v binarnich hodnotach zkousime hledat jak unicode a tak ASCI vzor
+                // in binary values we try to match both the Unicode and ASCII pattern
                 int pos = 0;
                 do
                 {
@@ -1230,7 +1230,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
                             (pos < 2 || iswspace(*(LPWSTR)(text + pos - 2))) &&
                                 (pos + PatternWLen > len - 2 || iswspace(*(LPWSTR)(text + pos + PatternWLen))))
                             return TRUE;
-                        pos += 2; // zkusime to o kousek dal, treba to vyjde
+                        pos += 2; // try a little further; maybe it will work
                     }
                     else
                         break;
@@ -1238,7 +1238,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
 
                 if (BMForPatternA != BMForPatternW)
                 {
-                    // jeste zkusime ASCII vzor
+                    // also try the ASCII pattern
                     do
                     {
                         if ((pos = BMForPatternA->SearchForward(text, len, pos)) != -1)
@@ -1247,7 +1247,7 @@ BOOL CFindThread::Test(char* text, int len, BOOL name, DWORD type)
                                 (pos == 0 || isspace(text[pos - 1])) &&
                                     (pos + PatternALen == len || isspace(text[pos + PatternALen])))
                                 return TRUE;
-                            pos++; // zkusime to o kousek dal, treba to vyjde
+                            pos++; // try a little further; maybe it will work
                         }
                         else
                             break;
@@ -1274,22 +1274,22 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
         NextStatusUpdate = GetTickCount() + 1;
     }
 
-    // test na preruseni uzivatelem
+    // check for cancellation by the user
     if (WaitForSingleObject(CancelEvent, 0) == WAIT_OBJECT_0)
         return skip = FALSE;
 
-    HKEY hKey; // aktualni prohledavany klic
+    HKEY hKey; // currently searched key
 
-    // otevreme prohledavany klic
+    // open the key being searched
     if (!SafeOpenKey(root, key, KEY_READ, hKey, IDS_SEARCHERROR, &skip, &skipAllErrors))
         return FALSE;
 
-    // otestujeme hodnoty
+    // test the values
     FILETIME time, localFileTime;
     DWORD maxData;
     void* data = NULL;
 
-    // nacteme si max data a cas klice
+    // load the maximum data size and time of the key
     if (!SafeQueryInfoKey(hKey, root, key, NULL, &maxData, &time, IDS_SEARCHERROR, skip, skipAllErrors))
     {
         RegCloseKey(hKey);
@@ -1299,8 +1299,8 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
 
     if (LookAtData)
     {
-        // MS nekdy vraci polovicni velikost (pozorovano na MULTI_SZ v
-        // klici HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
+        // MS sometimes returns half the size (observed on MULTI_SZ in
+        // the key HKEY_LOCAL_MACHINE\SYSTEM\ControlSet002\Services\NetBT\Linkage
         maxData *= 2;
         data = malloc(maxData);
         if (!data)
@@ -1329,12 +1329,12 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
                      LookAtData && Test((LPSTR)data, size, FALSE, type)))
                 {
 #ifdef _DEBUG
-                    // statiskita cetnosti typu hodnot
-                    if (type >= 0 && type < 12) // Petr: mam na masine value s type==0x397e7d0 (HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Explorer Bars\{32683183-48a0-441b-a342-7c2a440a9478}\BarSize)
+                    // statistics of value type frequency
+                    if (type >= 0 && type < 12) // Petr: I have a value on my machine with type==0x397e7d0 (HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Explorer Bars\{32683183-48a0-441b-a342-7c2a440a9478}\BarSize)
                         TypeStat[type]++;
 #endif
 
-                    // pridame polozku do listview
+                    // add the item to the list view
 
                     CFoundFilesData* fd =
                         new CFoundFilesData(name,
@@ -1350,7 +1350,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
                         RegCloseKey(hKey);
                         return Error(IDS_LOWMEM);
                     }
-                    // po kazdych 100 pridanych polozkach pozadam listview o prekresleni
+                    // every 100 added items ask the list view to repaint
                     if (FindDialog->FoundVisibleCount + 100 < FindDialog->List->GetCount())
                         PostMessage(FindDialog->HWindow, WM_USER_ADDFILE, 0, 0);
                 }
@@ -1358,7 +1358,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
             else
                 skip = FALSE;
 
-            // test na preruseni uzivatelem
+            // check for cancellation by the user
             if (WaitForSingleObject(CancelEvent, 0) == WAIT_OBJECT_0)
             {
                 if (data)
@@ -1378,13 +1378,13 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
         return FALSE;
     }
 
-    // jeste rekurzivne prohledame podklice
+    // recursively search the subkeys as well
 
-    // nejprve naenumerujeme vsechny klice na stack
+    // first enumerate all keys onto the stack
     int len = (int)wcslen(key);
     int maxSubkey = MAX_KEYNAME - len - 2;
     index = 0;
-    int top = stack.Count; // ulozime si ukazatel na vrsek zasobniku
+    int top = stack.Count; // remember the pointer to the top of the stack
     while (SafeEnumKey(hKey, root, key, index, name, &time,
                        IDS_SEARCHERROR, skip, skipAllErrors, noMore) ||
            skip)
@@ -1421,7 +1421,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
             FileTimeToLocalFileTime(&time, &localFileTime);
             if (LookAtKeys && TestTime(localFileTime) && Test((LPSTR)name, (int)wcslen(name) * 2, TRUE, 0))
             {
-                // pridame klic do vysledku
+                // add the key to the result
                 CFoundFilesData* fd =
                     new CFoundFilesData(name, root, key, 0, 0, NULL, localFileTime, TRUE);
                 if (!fd || FindDialog->List->Add(fd) == ULONG_MAX)
@@ -1432,7 +1432,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
                     RegCloseKey(hKey);
                     return Error(IDS_LOWMEM);
                 }
-                // po kazdych 100 pridanych polozkach pozadam listview o prekresleni
+                // every 100 added items ask the list view to repaint
                 if (FindDialog->FoundVisibleCount + 100 < FindDialog->List->GetCount())
                     PostMessage(FindDialog->HWindow, WM_USER_ADDFILE, 0, 0);
             }
@@ -1454,7 +1454,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
         else
             skip = FALSE;
 
-        // test na preruseni uzivatelem
+        // check for cancellation by the user
         if (WaitForSingleObject(CancelEvent, 0) == WAIT_OBJECT_0)
         {
             RegCloseKey(hKey);
@@ -1472,7 +1472,7 @@ BOOL CFindThread::ScanKeyAux(int root, LPWSTR key, BOOL& skip, BOOL& skipAllErro
     if (len > 0)
         *subkey++ = L'\\';
 
-    // prohledame klice ulozene na stacku
+    // search the keys stored on the stack
     int i;
     for (i = stack.Count - 1; i >= top; i--)
     {
@@ -1536,7 +1536,7 @@ BOOL CFindThread::Init()
     CALL_STACK_MESSAGE1("CFindThread::Init()");
     if (PatternALen || PatternWLen)
     {
-        // inicializujeme search objekty
+        // initialize the search objects
         WORD flags = SASF_FORWARD | (CaseSensitive ? SASF_CASESENSITIVE : 0);
         if (RegExp)
         {
@@ -1584,13 +1584,13 @@ unsigned
 CFindThread::Body()
 {
     CALL_STACK_MESSAGE1("CFindThread::Body()");
-    Sleep(50); // nez petr ostrani chybu v auxtools
+    Sleep(50); // until Petr removes the bug in auxtools
 
     PARENT(FindDialog->HWindow);
     TRACE_I("Starting search for files");
 
 #ifdef _DEBUG
-    // statistika cetnosti typu hodnot
+    // statistics of value type frequency
     int i;
     for (i = 0; i < 12; i++)
         TypeStat[i] = 0;
@@ -1618,13 +1618,13 @@ CFindThread::Body()
 
             if (root == -1)
             {
-                // prohledame cely registry
+                // search the entire registry
                 if (!ScanRegistry(skipAllErrors))
                     break;
             }
             else
             {
-                // prohledame vybrany klic
+                // search the selected key
                 BOOL skip = FALSE;
                 WCHAR keyBuffer[MAX_KEYNAME];
                 WCHAR nameBuffer[MAX_KEYNAME];
@@ -1636,7 +1636,7 @@ CFindThread::Body()
     }
 
 #ifdef _DEBUG
-    // statiskita cetnosti typu hodnot
+    // statistics of value type frequency
     for (i = 0; i < 12; i++)
         TRACE_I("Type " << i << " frequency = " << TypeStat[i]);
 #endif

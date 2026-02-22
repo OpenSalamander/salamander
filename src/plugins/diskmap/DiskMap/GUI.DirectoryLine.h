@@ -47,45 +47,45 @@ protected:
     BOOL _trackingMouse;
     BOOL _isActive;
 
-    //Data
+    // Data
     CZStringBuffer* _path;
     int _rootLen;
     INT64 _disksize;
 
-    //cached values - size
+    // Cached values - size
     BOOL _sizeCached;
-    TCHAR const* _pathstr; //points to this->_path (whole path) or this->_pathtemp (elipsis)
+    TCHAR const* _pathstr; // Points to this->_path (whole path) or this->_pathtemp (ellipsis)
     int _pathlen;
 
     int _rootX;
 
     int _sizeX;
-    CZStringBuffer* _sizestr;      //vybrany retezec
-    CZStringBuffer* _sizestrlong;  //dlouha verze "1 234 567 bytes (1,23MB)"
-    CZStringBuffer* _sizestrshort; //kratka verze "1,23MB"
+    CZStringBuffer* _sizestr;      //selected string
+    CZStringBuffer* _sizestrlong;  //long version "1 234 567 bytes (1,23MB)"
+    CZStringBuffer* _sizestrshort; //short version "1,23MB"
 
     TDIRNODE _nodes[MAX_PATH / 2];
     int _nodeCount;
     int _mouseNode;
 
-    //string for storing path copy with elispis
+    // string for storing a copy of the path with an ellipsis
     TCHAR _pathtemp[MAX_PATH + 3];
 
-    //cached values - colors: active/inactive
+    // Cached values - colors: active/inactive
     COLORREF _backColor;
     COLORREF _rootColor;
     COLORREF _textColor;
     COLORREF _rootColorHot;
     COLORREF _textColorHot;
 
-    //cached values - system
+    // Cached values - system
     int _textTop;
     int _iconTop;
     int _dotsWidth;
     int _cxSmIcon;
     int _cySmIcon;
 
-    //shared objects
+    // Shared objects
     CLogger* _logger;
     CFileInfoTooltip* _tooltip;
     CShellMenu* _shellmenu;
@@ -149,8 +149,8 @@ protected:
 
     void GetPathRect(RECT* rect)
     {
-        //POZOR! potreba synchronizovat s DoPaint()
-        //TODO: pouzit i v DoPaint()
+        //WARNING! Needs to stay in sync with DoPaint()
+        //TODO: use this in DoPaint() as well
         GetClientRect(this->_hWnd, rect);
         rect->left += this->_cxSmIcon + 7 + /* margin */ 1 + /* inner border */ 1 + /* padding */ 1;
         rect->right -= /* margin */ 1 + /* inner border */ 1 + /* padding */ 1;
@@ -278,7 +278,7 @@ protected:
                     int rp = p;
                     int miswidth = pathwidth - width + this->_dotsWidth + dx[p - 1];
 
-                    dx[strlen] = miswidth; //zarazka
+                    dx[strlen] = miswidth; //stopper
                     while (miswidth > dx[rp])
                         rp++;
 
@@ -319,7 +319,7 @@ protected:
             else
             {
                 this->_rootX = -1;
-                //TODO: node clean - nic!
+                //TODO: node clean - nothing!
                 this->_nodes[0].xright = LAST_NODEX;
             }
             ostr[ostrlen] = TEXT('\0');
@@ -401,7 +401,7 @@ protected:
         trct.right = rct.right;
         ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &trct, NULL, 0, NULL);
 
-        //left (behind icon) - ?TODO?: draw by parts to remove all flicker
+        // left section (behind the icon) - TODO: draw in segments to remove all flicker
         trct.top = rct.top + 3;
         trct.bottom = rct.bottom - 3;
         trct.right = rct.left + this->_cxSmIcon + 7 + 1;
@@ -677,7 +677,7 @@ public:
         this->UpdateValues();
         return TRUE;
     }
-    BOOL SetSubPath(CZString const* subpath) //subpath NEzacina lomitkem
+    BOOL SetSubPath(CZString const* subpath) //subpath does NOT start with a backslash
     {
         if (subpath->GetLength() == 0)
         {
@@ -685,14 +685,14 @@ public:
         }
         else
         {
-            //pokud root "C:\", tak jiz konci zpetnym lomitkem
-            if (this->_path->IsCharAt(TEXT('\\'), this->_rootLen - 1)) //pokud by nahodou _rootLen bylo 0, tak pretece na MAX_INT a vrati FALSE
+            //if the root "C:\" already ends with a trailing backslash
+            if (this->_path->IsCharAt(TEXT('\\'), this->_rootLen - 1)) //if _rootLen happened to be 0, it would overflow to MAX_INT and return FALSE
             {
                 this->_path->AppendAt(subpath, this->_rootLen);
             }
             else
             {
-                //normalni cesty nekonci lomitkem, tak pridame
+                //normal paths do not end with a backslash, so append one
                 this->_path->AppendAt(TEXT('\\'), this->_rootLen);
                 this->_path->AppendAt(subpath, this->_rootLen + 1);
             }
@@ -715,7 +715,7 @@ public:
             if (this->_hicon)
                 DestroyIcon(this->_hicon);
             this->_hicon = hicon;
-            this->Repaint(TRUE); //kresli se jen ikona pres prazdne misto
+            this->Repaint(TRUE); //only the icon is drawn over the empty space
         }
         else
         {
@@ -738,14 +738,14 @@ public:
 
         LOGFONT lf;
         SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof lf, &lf, 0);
-        lf.lfItalic = FALSE; //HACK: natvrdo potlacena kurziva, aby nepretekaly znaky pres sirku (Overhang/Underhang: GetCharABCWidths() a GetCharABCWidthsFloat() )
+        lf.lfItalic = FALSE; //HACK: force italics off so characters do not overflow the width (Overhang/Underhang: GetCharABCWidths() and GetCharABCWidthsFloat())
         this->_hfont = CreateFontIndirect(&lf);
 
-        HDC hdc = GetDC(this->_hWnd); //pokud NULL, tak neva
+        HDC hdc = GetDC(this->_hWnd); //if NULL, that is fine
         HFONT hfold = SelectFont(hdc, this->_hfont);
 
         SIZE sz;
-        GetTextExtentPoint32(hdc, TEXT("..."), 3, &sz); //ziskani sirky "..." a vysky znaku
+        GetTextExtentPoint32(hdc, TEXT("..."), 3, &sz); //obtain the width of "..." and character height
         this->_dotsWidth = sz.cx;
         this->_height = max(sz.cy, this->_cySmIcon) + 8;
 

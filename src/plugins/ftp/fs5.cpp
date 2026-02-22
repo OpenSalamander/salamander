@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -17,19 +18,19 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
     if (ControlConnection == NULL)
     {
         TRACE_E("Unexpected situation in CPluginFSInterface::ChangeAttributes(): ControlConnection == NULL!");
-        return FALSE; // preruseni
+        return FALSE; // cancellation
     }
 
-    // otestujeme jestli neni v panelu jen simple listing -> v tom pripade aspon zatim nic neumime
+    // test whether the panel has only a simple listing -> in that case we cannot do anything yet
     CPluginDataInterfaceAbstract* pluginDataIface = SalamanderGeneral->GetPanelPluginData(panel);
     if (pluginDataIface != NULL && (void*)pluginDataIface == (void*)&SimpleListPluginDataInterface)
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_NEEDPARSEDLISTING),
                                          LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONINFORMATION);
-        return FALSE; // preruseni
+        return FALSE; // cancellation
     }
 
-    // sestaveni popisu s cim se bude pracovat pro dialog Change Attributes
+    // build a description of what will be processed for the Change Attributes dialog
     char subjectSrc[MAX_PATH + 100];
     SalamanderGeneral->GetCommonFSOperSourceDescr(subjectSrc, MAX_PATH + 100, panel,
                                                   selectedFiles, selectedDirs, NULL, FALSE, FALSE);
@@ -41,42 +42,42 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
 
     DWORD attr = -1;
     DWORD attrDiff = 0;
-    BOOL displayWarning = TRUE; // varovani, ze nejspis nejde o Unixovy server, takze chmod nebude slapat
+    BOOL displayWarning = TRUE; // warning that this is probably not a Unix server, so chmod will not work
     if (pluginDataIface != NULL && pluginDataIface != &SimpleListPluginDataInterface)
-    { // zajima nas jen data iface typu CFTPListingPluginDataInterface
+    { // we only care about data iface objects of type CFTPListingPluginDataInterface
         CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)pluginDataIface;
         int rightsCol = dataIface->FindRightsColumn();
-        if (rightsCol != -1) // pokud Rights column existuje (nemusi byt Unixovy, to se resi dale)
+        if (rightsCol != -1) // if the Rights column exists (it does not have to be Unix, that is handled later)
         {
             displayWarning = FALSE;
-            const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
+            const CFileData* f = NULL; // pointer to the file/directory in the panel that should be processed
             BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
-            BOOL isDir = FALSE; // TRUE pokud 'f' je adresar
+            BOOL isDir = FALSE; // TRUE if 'f' is a directory
             int index = 0;
             while (1)
             {
-                // vyzvedneme data o zpracovavanem souboru/adresari
+                // fetch data about the processed file/directory
                 if (focused)
                     f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
                 else
                     f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-                // zjistime atributy souboru/adresare
+                // determine attributes of the file/directory
                 if (f != NULL)
                 {
                     char* rights = dataIface->GetStringFromColumn(*f, rightsCol);
                     DWORD actAttr;
-                    if (GetAttrsFromUNIXRights(&actAttr, &attrDiff, rights)) // prevod stringu na cislo
+                    if (GetAttrsFromUNIXRights(&actAttr, &attrDiff, rights)) // convert the string to a number
                     {
                         if (attr == -1)
-                            attr = actAttr; // prvni soubor/adresar
+                            attr = actAttr; // first file/directory
                         else
                         {
-                            if (attr != actAttr) // pokud se lisi, ulozime v cem se lisi
+                            if (attr != actAttr) // if they differ, store the differences
                                 attrDiff |= (attr ^ actAttr);
                         }
                     }
-                    else // neni (normalni) Unix, kasleme na to
+                    else // not a (normal) Unix system, give up
                     {
                         displayWarning = TRUE;
                         attr = -1;
@@ -85,14 +86,14 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                     }
                 }
 
-                // zjistime jestli ma cenu pokracovat (pokud existuje jeste nejaka dalsi oznacena polozka)
+                // determine whether it makes sense to continue (if there is another selected item)
                 if (focused || f == NULL)
                     break;
             }
         }
     }
 
-    if (!displayWarning || // pripadne zobrazime warning, ze nejde o UNIXovy server s tradicnim modelem prav (napr. ACL nepodporujeme)
+    if (!displayWarning || // optionally display a warning that this is not a UNIX server with the traditional rights model (e.g. we do not support ACL)
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_CHATTRNOTUNIXSRV),
                                          LoadStr(IDS_FTPPLUGINTITLE),
                                          MB_YESNO | MSGBOXEX_ESCAPEENABLED |
@@ -104,8 +105,8 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
         CChangeAttrsDlg dlg(parent, subject, attr, attrDiff, selDirs);
         if (dlg.Execute() == IDOK)
         {
-            BOOL failed = TRUE; // predpripravime error operace
-            // zalozime objekt operace
+            BOOL failed = TRUE; // pre-initialize the operation error
+            // create the operation object
             CFTPOperation* oper = new CFTPOperation;
             if (oper != NULL)
             {
@@ -116,7 +117,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                 if (cert)
                     cert->Release();
                 oper->SetCompressData(ControlConnection->GetCompressData());
-                if (ControlConnection->InitOperation(oper)) // inicializace spojeni se serverem podle "control connection"
+                if (ControlConnection->InitOperation(oper)) // initialize the connection to the server according to the "control connection"
                 {
                     oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
                     char path[2 * MAX_PATH];
@@ -133,31 +134,31 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                         BOOL ok = TRUE;
                         BOOL emptyQueue = FALSE;
 
-                        // sestavime frontu polozek operace
+                        // build the queue of operation items
                         CFTPQueue* queue = new CFTPQueue;
                         if (queue != NULL)
                         {
                             CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)pluginDataIface;
                             if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
-                                dataIface = NULL; // zajima nas jen data iface typu CFTPListingPluginDataInterface
-                            int rightsCol = -1;   // index sloupce s pravy (pouziva se pro detekci linku)
+                                dataIface = NULL; // we only care about data iface objects of type CFTPListingPluginDataInterface
+                            int rightsCol = -1;   // index of the column with rights (used to detect links)
                             if (dataIface != NULL)
                                 rightsCol = dataIface->FindRightsColumn();
-                            const CFileData* f = NULL; // ukazatel na soubor/adresar/link v panelu, ktery se ma zpracovat
-                            BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+                            const CFileData* f = NULL; // pointer to the file/directory/link in the panel that should be processed
+                            BOOL isDir = FALSE;        // TRUE if 'f' is a directory
                             BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
-                            int skippedItems = 0;  // pocet skipnutych polozek vlozenych do fronty
-                            int uiNeededItems = 0; // pocet user-input-needed polozek vlozenych do fronty
+                            int skippedItems = 0;  // number of skipped items inserted into the queue
+                            int uiNeededItems = 0; // number of user-input-needed items inserted into the queue
                             int index = 0;
                             while (1)
                             {
-                                // vyzvedneme data o zpracovavanem souboru
+                                // fetch data about the processed file
                                 if (focused)
                                     f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
                                 else
                                     f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-                                // zpracujeme soubor/adresar/link
+                                // process the file/directory/link
                                 if (f != NULL)
                                 {
                                     CFTPQueueItemType type;
@@ -175,7 +176,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                                     {
                                         if (ok)
                                             item->SetItem(-1, type, state, problemID, Path, f->Name);
-                                        if (!ok || !queue->AddItem(item)) // pridani operace do fronty
+                                        if (!ok || !queue->AddItem(item)) // add the operation to the queue
                                         {
                                             ok = FALSE;
                                             delete item;
@@ -183,14 +184,14 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                                     }
                                     else
                                     {
-                                        if (!skip) // jen pokud nejde o skipnuti polozky, ale o chybu nedostatku pameti
+                                        if (!skip) // only if this is not skipping the item but a low-memory error
                                         {
                                             TRACE_E(LOW_MEMORY);
                                             ok = FALSE;
                                         }
                                     }
                                 }
-                                // zjistime jestli ma cenu pokracovat (pokud neni chyba a existuje jeste nejaka dalsi oznacena polozka)
+                                // determine whether it makes sense to continue (if there is no error and another selected item exists)
                                 if (!ok || focused || f == NULL)
                                     break;
                             }
@@ -210,26 +211,26 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                             ok = FALSE;
                         }
 
-                        if (ok) // mame naplnenou frontu s polozkama operace
+                        if (ok) // the queue with operation items has been filled
                         {
-                            if (!emptyQueue) // jen pokud neni prazdna fronta s polozkama operace
+                            if (!emptyQueue) // only if the queue of operation items is not empty
                             {
-                                oper->SetQueue(queue); // nastavime operaci frontu jejich polozek
+                                oper->SetQueue(queue); // set the queue of its items for the operation
                                 queue = NULL;
                                 if (Config.ChAttrAddToQueue)
-                                    failed = FALSE; // provest operaci pozdeji -> prozatim jde o uspech operace
-                                else                // provest operaci v aktivni "control connection"
+                                    failed = FALSE; // perform the operation later -> for now the operation is successful
+                                else                // perform the operation in the active "control connection"
                                 {
-                                    // otevreme okno s progresem operace a spustime operaci
+                                    // open the operation progress window and start the operation
                                     if (RunOperation(SalamanderGeneral->GetMsgBoxParent(), operUID, oper, NULL))
-                                        failed = FALSE; // uspech operace
+                                        failed = FALSE; // operation succeeded
                                     else
                                         ok = FALSE;
                                 }
                             }
                             else
                             {
-                                failed = FALSE; // uspech operace (ale neni co delat)
+                                failed = FALSE; // operation succeeded (but there is nothing to do)
                                 FTPOperationsList.DeleteOperation(operUID, TRUE);
                                 delete queue;
                                 queue = NULL;
@@ -237,7 +238,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                         }
                         if (!ok)
                             FTPOperationsList.DeleteOperation(operUID, TRUE);
-                        oper = NULL; // operace uz je pridana v poli, nebudeme ji uvolnovat pres 'delete' (viz nize)
+                        oper = NULL; // the operation is already added in the array, do not free it with 'delete' (see below)
                     }
                 }
                 if (oper != NULL)
@@ -245,10 +246,10 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
             }
             else
                 TRACE_E(LOW_MEMORY);
-            return !failed; // vraci uspech operace (TRUE = zrusit oznaceni v panelu)
+            return !failed; // return the operation success (TRUE = clear the selection in the panel)
         }
     }
-    return FALSE; // preruseni
+    return FALSE; // cancellation
 }
 
 BOOL CPluginFSInterface::RunOperation(HWND parent, int operUID, CFTPOperation* oper, HWND dropTargetWnd)
@@ -257,38 +258,38 @@ BOOL CPluginFSInterface::RunOperation(HWND parent, int operUID, CFTPOperation* o
 
     BOOL ok = TRUE;
 
-    CFTPWorker* workerWithCon = NULL; // pokud jsme predali connectionu, zde je ukazatel na to komu
+    CFTPWorker* workerWithCon = NULL; // if we passed the connection, this points to who received it
     int i;
-    for (i = 0; i < 1; i++) // FIXME: casem treba do konfigurace dame pocatecni pocet workeru operace: staci nahradit "1" za prislusny pocet...
+    for (i = 0; i < 1; i++) // FIXME: eventually we may place the initial number of operation workers into the configuration: just replace "1" with the appropriate count...
     {
         CFTPWorker* newWorker = oper->AllocNewWorker();
         if (newWorker != NULL)
         {
-            if (!SocketsThread->AddSocket(newWorker) ||   // pridani do sockets-threadu
-                !newWorker->RefreshCopiesOfUIDAndMsg() || // obnovime kopie UID+Msg (doslo k jejich zmene)
-                !oper->AddWorker(newWorker))              // pridani mezi workery operace
+            if (!SocketsThread->AddSocket(newWorker) ||   // add it to the sockets thread
+                !newWorker->RefreshCopiesOfUIDAndMsg() || // refresh copies of UID+Msg (they changed)
+                !oper->AddWorker(newWorker))              // add it among the operation workers
             {
                 DeleteSocket(newWorker);
                 ok = FALSE;
                 break;
             }
-            else // worker byl uspesne vytvoren a zarazen mezi workery operace
+            else // the worker was successfully created and placed among the operation workers
             {
-                if (i == 0) // predani aktualni "control connection" do prvniho workera
+                if (i == 0) // hand over the current "control connection" to the first worker
                 {
                     ControlConnection->GiveConnectionToWorker(newWorker, parent);
                     workerWithCon = newWorker;
                 }
             }
         }
-        else // error, canclujeme operaci
+        else // error, cancel the operation
         {
             ok = FALSE;
             break;
         }
     }
 
-    // otevreni okna operace
+    // open the operation window
     if (ok)
     {
         BOOL success;
@@ -296,12 +297,12 @@ BOOL CPluginFSInterface::RunOperation(HWND parent, int operUID, CFTPOperation* o
             ok = FALSE;
     }
 
-    // pri chybe musime stopnout vsechny workery (nutne pred vymazem operace)
+    // in case of an error we must stop all workers (necessary before deleting the operation)
     if (!ok)
     {
-        if (workerWithCon != NULL) // pripadne vratime zpet "control connection" z workera
+        if (workerWithCon != NULL) // optionally take back the "control connection" from the worker
             ControlConnection->GetConnectionFromWorker(workerWithCon);
-        FTPOperationsList.StopWorkers(parent, operUID, -1 /* vsechny workery */);
+        FTPOperationsList.StopWorkers(parent, operUID, -1 /* all workers */);
     }
 
     return ok;
@@ -318,7 +319,7 @@ void CPluginFSInterface::ActivateWelcomeMsg()
 {
     CALL_STACK_MESSAGE1("CPluginFSInterface::ActivateWelcomeMsg()");
     if (ControlConnection != NULL)
-        ControlConnection->ActivateWelcomeMsg(); // aktivujeme okno welcome-msg (z klavesnice nelze, aby ho user mohl vubec zavrit)
+        ControlConnection->ActivateWelcomeMsg(); // activate the welcome-msg window (the keyboard cannot do it, so the user can actually close it)
 }
 
 BOOL CPluginFSInterface::IsFTPS()
@@ -336,9 +337,9 @@ BOOL CPluginFSInterface::ContainsConWithUID(int controlConUID)
 BOOL CPluginFSInterface::ContainsHost(const char* host, int port, const char* user)
 {
     CALL_STACK_MESSAGE1("CPluginFSInterface::ContainsHost()");
-    return host != NULL && SalamanderGeneral->StrICmp(host, Host) == 0 && // stejny hostitel (je case-insensitive - Internetove konvence)
-           Port == port &&                                                // shodny port
-           user != NULL && strcmp(user, User) == 0;                       // stejne uzivatelske jmeno (je case-sensitive - Unixovy konta)
+    return host != NULL && SalamanderGeneral->StrICmp(host, Host) == 0 && // same host (case-insensitive - Internet conventions)
+           Port == port &&                                                // identical port
+           user != NULL && strcmp(user, User) == 0;                       // same user name (case-sensitive - Unix accounts)
 }
 
 void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
@@ -351,32 +352,32 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     if (ControlConnection == NULL)
     {
         TRACE_E("Unexpected situation in CPluginFSInterface::ViewFile(): ControlConnection == NULL!");
-        return; // koncime
+        return; // we are done
     }
 
-    // otestujeme jestli neni v panelu jen simple listing -> v tom pripade aspon zatim nic neumime
-    CPluginDataInterfaceAbstract* pluginDataIface = SalamanderGeneral->GetPanelPluginData(PANEL_SOURCE); // mame jistotu, ze je FS ve zdrojovem panelu
+    // test whether the panel contains only a simple listing -> in that case we cannot do anything yet
+    CPluginDataInterfaceAbstract* pluginDataIface = SalamanderGeneral->GetPanelPluginData(PANEL_SOURCE); // we are sure the FS is in the source panel
     if (pluginDataIface != NULL && (void*)pluginDataIface == (void*)&SimpleListPluginDataInterface)
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_NEEDPARSEDLISTING),
                                          LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONINFORMATION);
-        return; // koncime
+        return; // we are done
     }
 
-    BOOL doNotCacheDownload = !ControlConnection->GetUseListingsCache(); // FALSE = cachovat; TRUE = cachovat jen pro tento otevreny viewer (dalsi View bude soubor tahat znovu)
+    BOOL doNotCacheDownload = !ControlConnection->GetUseListingsCache(); // FALSE = cache it; TRUE = cache only for this open viewer (the next View will download the file again)
 
-    // sestavime unikatni jmeno souboru pro disk-cache (standardni salamanderovsky format cesty)
-    char uniqueFileName[FTP_USERPART_SIZE + 50]; // +50 je rezerva pro FS name; jmena v cache jsou case-sensitive
+    // build a unique file name for the disk cache (standard Salamander path format)
+    char uniqueFileName[FTP_USERPART_SIZE + 50]; // +50 is a reserve for the FS name; cache names are case-sensitive
     strcpy(uniqueFileName, SalamanderGeneral->StrICmp(fsName, AssignedFSNameFTPS) == 0 ? AssignedFSNameFTPS : AssignedFSName);
     strcat(uniqueFileName, ":");
     int len = (int)strlen(uniqueFileName);
     if (doNotCacheDownload ||
-        !GetFullName(file, 0 /* u View jde vzdy o soubor */, uniqueFileName + len, FTP_USERPART_SIZE + 50 - len))
+        !GetFullName(file, 0 /* View always works with a file */, uniqueFileName + len, FTP_USERPART_SIZE + 50 - len))
     {
         doNotCacheDownload = TRUE;
     }
 
-    // ziskame jmeno kopie souboru v disk-cache
+    // obtain the name of the file copy in the disk cache
     BOOL fileExists;
     const char* tmpFileName;
     char nameInCache[MAX_PATH];
@@ -394,7 +395,7 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
         if (!doNotCacheDownload || !fileExists)
             break;
 
-        // nemame cachovat + soubor jiz existuje (nepravdepodobne, ale stejne osetrime) - nutna zmena uniqueFileName
+        // no caching + the file already exists (unlikely, but handled anyway) - we must change uniqueFileName
         Sleep(20);
         salamander->FreeFileNameInCache(uniqueFileName, fileExists, FALSE, CQuadWord(0, 0), NULL, FALSE, TRUE);
     }
@@ -403,26 +404,26 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     _snprintf_s(logBuf, _TRUNCATE, LoadStr(fileExists ? IDS_LOGMSGVIEWCACHEDFILE : IDS_LOGMSGVIEWFILE), file.Name);
     ControlConnection->LogMessage(logBuf, -1, TRUE);
 
-    // zjistime jestli je treba pripravit kopii souboru do disk-cache (download)
+    // determine whether a copy of the file needs to be prepared in the disk cache (download)
     BOOL newFileCreated = FALSE;
     BOOL newFileIncomplete = FALSE;
     CQuadWord newFileSize(0, 0);
-    if (!fileExists) // priprava kopie souboru (download) je nutna
+    if (!fileExists) // preparing a copy of the file (download) is required
     {
-        TotalConnectAttemptNum = 1; // zahajeni uzivatelem pozadovane akce -> je-li treba znovu pripojit, jde o 1. pokus reconnect
+        TotalConnectAttemptNum = 1; // start of a user-requested action -> if reconnecting is needed, this is the first reconnect attempt
         int panel;
         BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
 
         CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)pluginDataIface;
         if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
-            dataIface = NULL; // zajima nas jen data iface typu CFTPListingPluginDataInterface
+            dataIface = NULL; // we only care about data iface objects of type CFTPListingPluginDataInterface
 
         BOOL asciiMode = FALSE;
-        char *name, *ext;      // pomocne promenne pro auto-detect-transfer-mode
-        char buffer[MAX_PATH]; // pomocna promenna pro auto-detect-transfer-mode
+        char *name, *ext;      // helper variables for auto-detect-transfer-mode
+        char buffer[MAX_PATH]; // helper variable for auto-detect-transfer-mode
         if (TransferMode == trmAutodetect)
         {
-            if (dataIface != NULL) // na VMS si musime nechat jmeno "oriznout" na zaklad (cislo verze pri porovnani s maskami vadi)
+            if (dataIface != NULL) // on VMS we must have the name trimmed to the base (the version number would break mask comparison)
                 dataIface->GetBasicName(file, &name, &ext, buffer);
             else
             {
@@ -435,7 +436,7 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
             else
             {
                 TRACE_E("Unexpected situation in CPluginFSInterface::ViewFile(): Config.ASCIIFileMasks->PrepareMasks() failed!");
-                asciiMode = FALSE; // binarni rezim je kazdopadne mensi zlo
+                asciiMode = FALSE; // the binary mode is still the lesser evil
             }
         }
         else
@@ -444,7 +445,7 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
         CQuadWord fileSizeInBytes;
         BOOL sizeInBytes;
         if (dataIface == NULL || !dataIface->GetSize(file, fileSizeInBytes, sizeInBytes) || !sizeInBytes)
-            fileSizeInBytes.Set(-1, -1); // nezname velikost souboru
+            fileSizeInBytes.Set(-1, -1); // the file size is unknown
 
         ControlConnection->DownloadOneFile(parent, file.Name, fileSizeInBytes, asciiMode, Path,
                                            tmpFileName, &newFileCreated, &newFileIncomplete, &newFileSize,
@@ -452,18 +453,18 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
                                            User, USER_MAX_SIZE);
     }
 
-    // otevreme viewer
+    // open the viewer
     HANDLE fileLock;
     BOOL fileLockOwner;
-    if (!fileExists && !newFileCreated || // viewer otevreme jen pokud je kopie souboru v poradku
+    if (!fileExists && !newFileCreated || // open the viewer only if the copy of the file is fine
         !salamander->OpenViewer(parent, tmpFileName, &fileLock, &fileLockOwner))
-    { // pri chybe nulujeme "lock"
+    { // on error reset the "lock"
         fileLock = NULL;
         fileLockOwner = FALSE;
     }
 
-    // jeste musime zavolat FreeFileNameInCache do paru k AllocFileNameInCache (propojime
-    // viewer a disk-cache)
+    // we still have to call FreeFileNameInCache as a pair to AllocFileNameInCache (link
+    // the viewer and the disk cache)
     salamander->FreeFileNameInCache(uniqueFileName, fileExists, newFileCreated,
                                     newFileSize, fileLock, fileLockOwner,
                                     doNotCacheDownload || newFileIncomplete);
@@ -476,9 +477,9 @@ BOOL CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, ch
     parent = SalamanderGeneral->GetMsgBoxParent();
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // nechame otevrit std. dialog
+        return FALSE; // let the standard dialog open
 
-    if (mode == 2) // prislo jmeno ze std. dialogu v 'newName'
+    if (mode == 2) // a name came from the standard dialog in 'newName'
     {
         if (ControlConnection == NULL)
             TRACE_E("Unexpected situation in CPluginFSInterface::CreateDir(): ControlConnection == NULL!");
@@ -488,7 +489,7 @@ BOOL CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, ch
             _snprintf_s(logBuf, _TRUNCATE, LoadStr(IDS_LOGMSGCREATEDIR), newName);
             ControlConnection->LogMessage(logBuf, -1, TRUE);
 
-            TotalConnectAttemptNum = 1; // zahajeni uzivatelem pozadovane akce -> je-li treba znovu pripojit, jde o 1. pokus reconnect
+            TotalConnectAttemptNum = 1; // start of a user-requested action -> if reconnecting is needed, this is the first reconnect attempt
             int panel;
             BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
             char changedPath[FTP_MAX_PATH];
@@ -505,9 +506,9 @@ BOOL CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, ch
                 SalamanderGeneral->PostChangeOnPathNotification(postChangedPath, TRUE | 0x02 /* soft refresh */);
             }
             if (res)
-                return TRUE; // uspech, pristi refresh vyfokusi 'newName'
+                return TRUE; // success, the next refresh will focus on 'newName'
             else
-                return FALSE; // vraci v 'newName' chybne jmeno adresare (otevre se znovu std. dialog)
+                return FALSE; // returns the incorrect directory name in 'newName' (the standard dialog opens again)
         }
     }
     cancel = TRUE;
@@ -522,23 +523,23 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
     parent = SalamanderGeneral->GetMsgBoxParent();
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // nechame otevrit std. dialog
+        return FALSE; // let the standard dialog open
 
-    if (mode == 2) // prislo jmeno ze std. dialogu v 'newName'
+    if (mode == 2) // a name came from the standard dialog in 'newName'
     {
         if (ControlConnection == NULL)
             TRACE_E("Unexpected situation in CPluginFSInterface::QuickRename(): ControlConnection == NULL!");
         else
         {
-            int renameAction = 1; // 1 = prejmenovat, 2 = neprejmenovat a vratit jmeno k editaci, 3 = cancel
+            int renameAction = 1; // 1 = rename, 2 = do not rename and return the name for editing, 3 = cancel
             CFTPServerPathType pathType = ControlConnection->GetFTPServerPathType(Path);
-            BOOL isVMS = pathType == ftpsptOpenVMS; // zjistime jestli nejde nahodou o VMS listing
+            BOOL isVMS = pathType == ftpsptOpenVMS; // determine whether this might be a VMS listing
 
-            // pripravime si hlasku do logu, vypiseme ji jen pokud dojde k prejmenovani
+            // prepare the message for the log, print it only if the rename actually happens
             char logBuf[200 + 2 * MAX_PATH];
             _snprintf_s(logBuf, _TRUNCATE, LoadStr(IDS_LOGMSGQUICKRENAME), file.Name, newName);
 
-            // zpracovani masky v newName (vynechavame pokud nejde o masku (neobsahuje '*' ani '?') - aby slo prejmenovat na "test^.")
+            // process the mask in newName (skip if it is not a mask (contains neither '*' nor '?') - so that renaming to "test^." works)
             if (strchr(newName, '*') != NULL || strchr(newName, '?') != NULL)
             {
                 char targetName[2 * MAX_PATH];
@@ -548,15 +549,15 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
 
             if (!Config.AlwaysOverwrite)
             {
-                BOOL tgtFileExists = FALSE; // prejmenovani prepise existujici soubor
-                BOOL tgtDirExists = FALSE;  // prejmenovani nejspis selze, protoze jiz existuje adresar tohoto jmena
+                BOOL tgtFileExists = FALSE; // the rename would overwrite an existing file
+                BOOL tgtDirExists = FALSE;  // the rename would most likely fail, because a directory with that name already exists
 
                 BOOL caseSensitive = FTPIsCaseSensitive(pathType);
 
-                // najdeme cim se parsoval listing
+                // find which parser handled the listing
                 CServerTypeList* serverTypeList = Config.LockServerTypeList();
                 int serverTypeListCount = serverTypeList->Count;
-                BOOL err = TRUE; // TRUE = nejsme schopni zjistit jestli nedojde k prepisu ciloveho souboru
+                BOOL err = TRUE; // TRUE = we cannot determine whether the target file will be overwritten
                 int i;
                 for (i = 0; i < serverTypeListCount; i++)
                 {
@@ -566,7 +567,7 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
                         s++;
                     if (SalamanderGeneral->StrICmp(LastServerType, s) == 0)
                     {
-                        // nasli jsme serverType uspesne pouzity pro listovani, jdeme na parsovani listingu
+                        // we found the serverType successfully used for listing, now parse the listing
                         if (!ParseListing(NULL, NULL, serverType, &err, isVMS, newName, caseSensitive,
                                           &tgtFileExists, &tgtDirExists))
                             err = TRUE;
@@ -592,11 +593,11 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
                 }
             }
 
-            if (renameAction == 1) // prejmenovat
+            if (renameAction == 1) // rename
             {
                 ControlConnection->LogMessage(logBuf, -1, TRUE);
 
-                TotalConnectAttemptNum = 1; // zahajeni uzivatelem pozadovane akce -> je-li treba znovu pripojit, jde o 1. pokus reconnect
+                TotalConnectAttemptNum = 1; // start of a user-requested action -> if reconnecting is needed, this is the first reconnect attempt
                 int panel;
                 BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
                 char changedPath[FTP_MAX_PATH];
@@ -614,14 +615,14 @@ BOOL CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, 
                     SalamanderGeneral->PostChangeOnPathNotification(postChangedPath, TRUE | 0x02 /* soft refresh */);
                 }
                 if (res)
-                    return TRUE; // uspech, pristi refresh vyfokusi 'newName'
+                    return TRUE; // success, the next refresh will focus on 'newName'
                 else
-                    return FALSE; // vraci v 'newName' chybne jmeno (otevre se znovu std. dialog)
+                    return FALSE; // returns an incorrect name in 'newName' (the standard dialog opens again)
             }
             else
             {
                 if (renameAction == 2)
-                    return FALSE; // neprejmenovat a vratit v 'newName' existujici jmeno (otevre se znovu std. dialog)
+                    return FALSE; // do not rename and return the existing name in 'newName' (the standard dialog opens again)
                 else              // cancel
                 {
                     cancel = TRUE;
@@ -642,7 +643,7 @@ CFTPQueueItem* CreateItemForCopyOrMoveUploadOperation(const char* name, BOOL isD
 {
     CFTPQueueItem* item = NULL;
     *type = fqitNone;
-    if (isDir) // adresar
+    if (isDir) // directory
     {
         *type = copy ? fqitUploadCopyExploreDir : fqitUploadMoveExploreDir;
         item = new CFTPQueueItemCopyMoveUploadExplore;
@@ -651,13 +652,13 @@ CFTPQueueItem* CreateItemForCopyOrMoveUploadOperation(const char* name, BOOL isD
             ((CFTPQueueItemCopyMoveUploadExplore*)item)->SetItemCopyMoveUploadExplore(targetPath, targetName, UPLOADTGTDIRSTATE_UNKNOWN);
         }
     }
-    else // soubor
+    else // file
     {
         BOOL asciiTransferMode;
         if (transferMode == trmAutodetect)
         {
             char buffer[MAX_PATH];
-            if (isVMS) // na VMS si musime nechat jmeno "oriznout" na zaklad (cislo verze pri porovnani s maskami vadi)
+            if (isVMS) // on VMS we must have the name trimmed to the base (the version number would break mask comparison)
             {
                 lstrcpyn(buffer, name, MAX_PATH);
                 FTPVMSCutFileVersion(buffer, -1);
@@ -665,7 +666,7 @@ CFTPQueueItem* CreateItemForCopyOrMoveUploadOperation(const char* name, BOOL isD
             }
 
             const char* ext = strrchr(name, '.');
-            //      if (ext == NULL || ext == name) ext = name + strlen(name);   // ".cvspass" ve Windows je pripona ...
+            //      if (ext == NULL || ext == name) ext = name + strlen(name);   // ".cvspass" is a file extension in Windows ...
             if (ext == NULL)
                 ext = name + strlen(name);
             else
@@ -696,34 +697,34 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
 
     if (mode == 1)
     {
-        // zjistime jestli nebezi nejaka operace, ktera by mohla poskodit aktualni listing v panelu
-        // (tento test provedeme jeste tesne pred pouzitim listingu pro upload-listing-cache, ale
-        // pokud by takova operace stihla skoncit pred timto druhym testem, uz bysme poskozeni
-        // nezjistili); toto neresi pripad, kdy takova operace skonci behem drag&dropu (behem tazeni
-        // mysi) z disku do panelu (jde o relativne kratkou dobu, takze to proste neresime)
+        // find out whether an operation that could damage the current listing in the panel is running
+        // (we perform this test again right before using the listing for the upload-listing-cache, but
+        // if such an operation finished before this second test, we would not detect the damage);
+        // this does not solve the case when such an operation finishes during drag&drop (while dragging
+        // the mouse) from disk to the panel (it is a relatively short time, so we simply ignore it)
         CFTPServerPathType pathType = GetFTPServerPathType(Path);
         if (!PathListingMayBeOutdated && FTPOperationsList.CanMakeChangesOnPath(User, Host, Port, Path, pathType, -1))
             PathListingMayBeOutdated = TRUE;
 
-        // pridame k cil. ceste masku *.* nebo * (budeme zpracovavat operacni masky)
+        // add the *.* or * mask to the target path (we will process operation masks)
         FTPAddOperationMask(pathType, targetPath, 2 * MAX_PATH, sourceFiles == 0);
         return TRUE;
     }
 
     if (mode == 2 || mode == 3)
     {
-        // v 'targetPath' je neupravena cesta zadana uzivatelem (jedine co o ni vime je, ze je
-        // na FTP, jinak by tuto metodu Salamander nevolal)
+        // 'targetPath' contains the raw path entered by the user (the only thing we know about it
+        // is that it points to the FTP, otherwise Salamander would not call this method)
         int isFTPS = SalamanderGeneral->StrNICmp(targetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 &&
                      targetPath[AssignedFSNameLenFTPS] == ':';
 
-        // overime, zda bude mozne rozsifrovat pripadne heslo pro default proxy (do SetConnectionParameters() smime vstoupit pouze v pripade, ze je to mozne)
+        // verify whether it will be possible to decrypt a potential password for the default proxy (we may enter SetConnectionParameters() only if it is possible)
         if (!Config.FTPProxyServerList.EnsurePasswordCanBeDecrypted(SalamanderGeneral->GetMsgBoxParent(), Config.DefaultProxySrvUID))
         {
             return FALSE; // fatal error
         }
 
-        char* userPart = strchr(targetPath, ':') + 1; // v 'targetPath' musi byt fs-name + ':'
+        char* userPart = strchr(targetPath, ':') + 1; // 'targetPath' must contain fs-name + ':'
         char newUserPart[FTP_USERPART_SIZE + 1];
         lstrcpyn(newUserPart, userPart, FTP_USERPART_SIZE);
         char *u, *host, *p, *path, *password;
@@ -743,32 +744,32 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
         if (p != NULL && *p != 0)
             port = atoi(p);
 
-        if (ControlConnection == NULL) // otevreni spojeni (otevreni cesty na FTP server)
+        if (ControlConnection == NULL) // open the connection (open the path on the FTP server)
         {
-            TotalConnectAttemptNum = 1; // otevirame spojeni = 1. pokus o otevreni spojeni
+            TotalConnectAttemptNum = 1; // opening the connection = first attempt to open the connection
 
             ControlConnection = new CControlConnectionSocket;
             if (ControlConnection == NULL || !ControlConnection->IsGood())
             {
-                if (ControlConnection != NULL) // nedostatek systemovych prostredku pro alokaci objektu
+                if (ControlConnection != NULL) // insufficient system resources for allocating the object
                 {
                     DeleteSocket(ControlConnection);
                     ControlConnection = NULL;
                 }
                 else
                     TRACE_E(LOW_MEMORY);
-                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
+                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
                 return TRUE;                                   // fatal error
             }
 
-            AutodetectSrvType = TRUE; // pouzivame automatickou detekci typu serveru
+            AutodetectSrvType = TRUE; // use automatic detection of the server type
             LastServerType[0] = 0;
 
             if (host == NULL || *host == 0)
             {
                 SalamanderGeneral->ShowMessageBox(LoadStr(IDS_HOSTNAMEMISSING),
                                                   LoadStr(IDS_FTPERRORTITLE), MSGBOX_ERROR);
-                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
+                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
                 return FALSE;                                  // fatal error
             }
 
@@ -790,32 +791,32 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                                        isFTPS, isFTPS, Config.CompressData);
             TransferMode = Config.TransferMode;
 
-            // pripojime se na server
+            // connect to the server
             ControlConnection->SetStartTime();
             if (!ControlConnection->StartControlConnection(SalamanderGeneral->GetMsgBoxParent(),
                                                            User, USER_MAX_SIZE, FALSE, RescuePath,
                                                            FTP_MAX_PATH, &TotalConnectAttemptNum,
                                                            NULL, FALSE, -1, FALSE))
-            { // nepodarilo se pripojit, uvolnime objekt socketu (signalizuje stav "nikdy nebylo pripojeno")
+            { // connection failed, release the socket object (signals the "never connected" state)
                 DeleteSocket(ControlConnection);
                 ControlConnection = NULL;
                 Logs.RefreshListOfLogsInLogsDlg();
-                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
+                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
                 return TRUE;                                   // cancel
             }
-            lstrcpyn(HomeDir, RescuePath, FTP_MAX_PATH); // ulozime si aktualni cestu po loginu na server (home-dir)
+            lstrcpyn(HomeDir, RescuePath, FTP_MAX_PATH); // store the current path after logging in to the server (home dir)
         }
-        else // overime, jestli je cilova cesta na server, ktery je otevreny v tomto FS
+        else // verify whether the target path is on the server opened in this FS
         {
-            if (isFTPS != ControlConnection->GetEncryptControlConnection() ||  // ma/nema byt FTPS, ale neni/je
-                strcmp(user, User) != 0 ||                                     // jine uzivatelske jmeno (je case-sensitive - Unixovy konta)
-                host == NULL || SalamanderGeneral->StrICmp(host, Host) != 0 || // jiny hostitel (je case-insensitive - Internetove konvence - casem mozna lepsi test IP adres)
-                port != Port)                                                  // jiny port
+            if (isFTPS != ControlConnection->GetEncryptControlConnection() ||  // should be FTPS or not, but the state differs
+                strcmp(user, User) != 0 ||                                     // different user name (case-sensitive - Unix accounts)
+                host == NULL || SalamanderGeneral->StrICmp(host, Host) != 0 || // different host (case-insensitive - Internet conventions - maybe test IP addresses later)
+                port != Port)                                                  // different port
             {
                 if (invalidPathOrCancel != NULL)
                     *invalidPathOrCancel = FALSE;
-                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
-                return FALSE;                                  // je potreba najit jiny FS
+                memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
+                return FALSE;                                  // need to find another FS
             }
             ControlConnection->SetStartTime();
         }
@@ -828,18 +829,18 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             BOOL isSpecRootPath = FALSE;
             tgtPath[0] = firstCharOfPath;
             lstrcpyn(tgtPath + 1, path, FTP_MAX_PATH - 1);
-            memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
+            memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
 
-            // zjistime typ cesty + pripadne preskocime '/' nebo '\\' na zacatku cesty (za host-name)
+            // determine the path type and optionally skip '/' or '\\' at the beginning of the path (after the host name)
             CFTPServerPathType pathType = ftpsptEmpty;
             if (HomeDir[0] == 0 || HomeDir[0] != '/' && HomeDir[0] != '\\')
-            { // preskakovani '/' nebo '\\' na zacatku cesty zkousime jen pokud na ne nezacina home-dir serveru (vysledek PWD po loginu)
+            { // we try skipping '/' or '\\' at the beginning of the path only if the server home dir does not start with them (the PWD result after login)
                 pathType = GetFTPServerPathType(tgtPath + 1);
                 if (pathType == ftpsptOpenVMS || pathType == ftpsptMVS || pathType == ftpsptIBMz_VM ||
-                    pathType == ftpsptOS2 && GetFTPServerPathType("") == ftpsptOS2) // OS/2 cesty se pletou s unixovou cestou "/C:/path", proto rozlisujeme OS/2 cesty i jen podle SYST-reply
-                {                                                                   // VMS + MVS + IBM_z/VM + OS/2 nemaji '/' ani '\\' na zacatku cesty
-                    memmove(tgtPath, tgtPath + 1, strlen(tgtPath) + 1);             // vyhodime znak '/' nebo '\\' ze zacatku cesty
-                    if (tgtPath[0] == 0)                                            // obecny root -> doplnime podle typu systemu
+                    pathType == ftpsptOS2 && GetFTPServerPathType("") == ftpsptOS2) // OS/2 paths clash with the Unix path "/C:/path", so we distinguish OS/2 paths even just by the SYST reply
+                {                                                                   // VMS + MVS + IBM_z/VM + OS/2 do not have '/' or '\\' at the beginning of the path
+                    memmove(tgtPath, tgtPath + 1, strlen(tgtPath) + 1);             // remove the '/' or '\\' character from the start of the path
+                    if (tgtPath[0] == 0)                                            // generic root -> fill in according to the system type
                     {
                         isSpecRootPath = TRUE;
                         if (pathType == ftpsptOpenVMS)
@@ -854,7 +855,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                 {
                                     if (HomeDir[0] == 0 || !FTPGetIBMz_VMRootPath(tgtPath, FTP_MAX_PATH, HomeDir))
                                     {
-                                        lstrcpyn(tgtPath, "/", FTP_MAX_PATH); // testovany server podporoval Unixovy root "/", mozna se nekdo ozve, pak budeme resit dale...
+                                        lstrcpyn(tgtPath, "/", FTP_MAX_PATH); // tested server supported the Unix root "/", someone might report otherwise and we will handle it later...
                                     }
                                 }
                                 else
@@ -863,7 +864,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                     {
                                         if (HomeDir[0] == 0 || !FTPGetOS2RootPath(tgtPath, FTP_MAX_PATH, HomeDir))
                                         {
-                                            lstrcpyn(tgtPath, "/", FTP_MAX_PATH); // zkusime aspon Unixovy root "/", nic jineho neumime, mozna se nekdo ozve, pak budeme resit dale...
+                                            lstrcpyn(tgtPath, "/", FTP_MAX_PATH); // try at least the Unix root "/", we cannot do anything else, someone might report otherwise and we will handle it later...
                                         }
                                     }
                                 }
@@ -884,12 +885,12 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                 return FALSE; // invalid path
             }
 
-            // pokud jde o root (jen specialni pripady, dalsi typy root cest projdou dale), nemaji dalsi upravy
-            // a analyza cesty smysl - pouzijeme cestu jak je + masku "*"
+            // if this is a root (only specific cases, other types of root paths continue further), no more adjustments
+            // nor path analysis make sense - use the path as is plus the "*" mask
             if (!isSpecRootPath)
             {
-                // pokud cesta konci separatorem, chapeme ji jako cestu bez masky (napr. "/pub/dir/" nebo
-                // "PUB$DEVICE:[PUB.VMS.]"), jinak pokracujeme v analyze cesty
+                // if the path ends with a separator, treat it as a path without a mask (e.g. "/pub/dir/" or
+                // "PUB$DEVICE:[PUB.VMS.]"); otherwise continue with path analysis
                 if (!FTPPathEndsWithDelimiter(pathType, tgtPath))
                 {
                     char cutTgtPath[FTP_MAX_PATH];
@@ -897,7 +898,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                     char cutMask[MAX_PATH];
                     BOOL cutMaybeFileName = FALSE;
                     if (FTPCutDirectory(pathType, cutTgtPath, FTP_MAX_PATH, cutMask, MAX_PATH, &cutMaybeFileName))
-                    { // pokud se da cast cesty oriznout, budeme zjistovat jestli nejde o masku (jinak to je nejspis root-cesta, pouzijeme masku "*")
+                    { // if a part of the path can be trimmed, we will determine whether it is a mask (otherwise it is probably a root path, use the "*" mask)
                         char cutTgtPathIBMz_VM[FTP_MAX_PATH];
                         cutTgtPathIBMz_VM[0] = 0;
                         char cutMaskIBMz_VM[MAX_PATH];
@@ -912,7 +913,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                 char* ast = strchr(cutMaskIBMz_VM, '*');
                                 char* exc = strchr(cutMaskIBMz_VM, '?');
                                 if (ast != NULL && ast < sep || exc != NULL && exc < sep)
-                                { // odrizla cast obsahuje '*' nebo '?' (wildcardy) pred '.' (urcite maska pro soubor napr. "*.*")
+                                { // the trimmed part contains '*' or '?' (wildcards) before '.' (definitely a file mask such as "*.*")
                                     lstrcpyn(tgtPath, cutTgtPathIBMz_VM, FTP_MAX_PATH);
                                     lstrcpyn(mask, cutMaskIBMz_VM, MAX_PATH);
                                     done = TRUE;
@@ -926,16 +927,16 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                         }
                         if (!done)
                         {
-                            if (cutTgtPathIBMz_VM[0] == 0 && // potrebujeme testnout jestli je v 'cutMaskIBMz_VM' maska
+                            if (cutTgtPathIBMz_VM[0] == 0 && // we need to test whether 'cutMaskIBMz_VM' contains a mask
                                     (strchr(cutMask, '*') != NULL || strchr(cutMask, '?') != NULL) ||
                                 pathType == ftpsptOpenVMS && cutMaybeFileName)
-                            { // odrizla cast obsahuje '*' nebo '?' (wildcardy) nebo jde o VMS jmeno souboru (musi byt maska, cilova cesta je cesta k tomuto souboru)
+                            { // the trimmed part contains '*' or '?' (wildcards) or it is a VMS file name (must be a mask, the target path is the path to that file)
                                 lstrcpyn(tgtPath, cutTgtPath, FTP_MAX_PATH);
                                 lstrcpyn(mask, cutMask, MAX_PATH);
                             }
                             else
                             {
-                                TotalConnectAttemptNum = 1; // zahajeni uzivatelem pozadovane akce -> je-li treba znovu pripojit, jde o 1. pokus reconnect
+                                TotalConnectAttemptNum = 1; // start of a user-requested action -> if reconnecting is needed, this is the first reconnect attempt
                                 int panel;
                                 BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
                                 BOOL success = FALSE;
@@ -947,7 +948,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                                                              &success, replyBuf, 700, NULL, &TotalConnectAttemptNum,
                                                                              NULL, FALSE, NULL))
                                 {
-                                    if (!success) // pokud je 'tgtPath' platna cesta, je maska "*"; jinak pokracujeme
+                                    if (!success) // if 'tgtPath' is a valid path, the mask is "*"; otherwise continue
                                     {
                                         if (ControlConnection->SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT,
                                                                                      SalamanderGeneral->GetMsgBoxParent(),
@@ -955,12 +956,12 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                                                                      &success, replyBuf, 700, NULL, &TotalConnectAttemptNum,
                                                                                      NULL, FALSE, NULL))
                                         {
-                                            if (success) // 'cutTgtPath' je platna cesta - maska je 'cutMask'
+                                            if (success) // 'cutTgtPath' is a valid path - the mask is 'cutMask'
                                             {
                                                 lstrcpyn(tgtPath, cutTgtPath, FTP_MAX_PATH);
                                                 lstrcpyn(mask, cutMask, MAX_PATH);
                                             }
-                                            else // jinak pokracujeme
+                                            else // otherwise continue
                                             {
                                                 if (cutTgtPathIBMz_VM[0] != 0)
                                                 {
@@ -970,19 +971,19 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                                                                                  &success, replyBuf, 700, NULL, &TotalConnectAttemptNum,
                                                                                                  NULL, FALSE, NULL))
                                                     {
-                                                        if (success) // 'cutTgtPathIBMz_VM' je platna cesta - maska je 'cutMaskIBMz_VM'
+                                                        if (success) // 'cutTgtPathIBMz_VM' is a valid path - the mask is 'cutMaskIBMz_VM'
                                                         {
                                                             lstrcpyn(tgtPath, cutTgtPathIBMz_VM, FTP_MAX_PATH);
                                                             lstrcpyn(mask, cutMaskIBMz_VM, MAX_PATH);
                                                             done = TRUE;
                                                         }
                                                     }
-                                                    else // nelze navazat spojeni (i pokud si user nepreje reconnect)
+                                                    else // connection cannot be established (even if the user does not want to reconnect)
                                                     {
                                                         return TRUE; // cancel
                                                     }
                                                 }
-                                                if (!done) // vypis chyby cesty userovi
+                                                if (!done) // show the path error to the user
                                                 {
                                                     char errBuf[900 + FTP_MAX_PATH];
                                                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR),
@@ -992,13 +993,13 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                                 }
                                             }
                                         }
-                                        else // nelze navazat spojeni (i pokud si user nepreje reconnect)
+                                        else // connection cannot be established (even if the user does not want to reconnect)
                                         {
                                             return TRUE; // cancel
                                         }
                                     }
                                 }
-                                else // nelze navazat spojeni (i pokud si user nepreje reconnect)
+                                else // connection cannot be established (even if the user does not want to reconnect)
                                 {
                                     return TRUE; // cancel
                                 }
@@ -1008,10 +1009,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                 }
             }
         }
-        else // cilova cesta je home-dir
+        else // the target path is the home dir
         {
-            memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // mazeme pamet, ve ktere se objevil password
-            if (HomeDir[0] == 0)                           // home-dir neni definovan (nektere servery nuti nejprve volat CWD, az pak ma PWD co vracet)
+            memset(newUserPart, 0, FTP_USERPART_SIZE + 1); // wipe the memory where the password appeared
+            if (HomeDir[0] == 0)                           // home dir is not defined (some servers require calling CWD first before PWD returns anything)
             {
                 SalamanderGeneral->ShowMessageBox(LoadStr(IDS_HOMEDIRNOTDEFINED),
                                                   LoadStr(IDS_FTPERRORTITLE), MSGBOX_ERROR);
@@ -1020,7 +1021,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             lstrcpyn(tgtPath, HomeDir, FTP_MAX_PATH);
         }
 
-        // presun/kopie vice souboru/adresaru do jednoho jmena (budou se prepisovat) je nejspis nesmysl
+        // moving/copying multiple files/directories into one name (they would overwrite each other) is probably nonsense
         if (sourceFiles + sourceDirs > 1 && strchr(mask, '*') == NULL && strchr(mask, '?') == NULL)
         {
             if (SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_COPYMOVE_NONSENSE),
@@ -1031,12 +1032,12 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             }
         }
 
-        // cesta je rozanalyzovana, zacneme operaci:
-        // 'tgtPath' je cilova cesta, 'mask' je operacni maska
-        BOOL success = FALSE; // predpripravime cancel/error operace
+        // the path is analyzed, start the operation:
+        // 'tgtPath' is the target path, 'mask' is the operation mask
+        BOOL success = FALSE; // pre-initialize cancel/error state of the operation
 
         char dlgSubjectSrc[MAX_PATH + 100];
-        if (sourceFiles + sourceDirs <= 1) // jedna oznacena polozka
+        if (sourceFiles + sourceDirs <= 1) // one selected item
         {
             BOOL isDir;
             const char* name = next(parent, 0, NULL, &isDir, NULL, NULL, NULL, nextParam, NULL);
@@ -1050,15 +1051,15 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                 TRACE_E("Unexpected situation in CPluginFSInterface::CopyOrMoveFromDiskToFS()!");
                 dlgSubjectSrc[0] = 0;
             }
-            next(NULL, -1, NULL, NULL, NULL, NULL, NULL, nextParam, NULL); // reset enumerace
+            next(NULL, -1, NULL, NULL, NULL, NULL, NULL, nextParam, NULL); // reset enumeration
         }
-        else // nekolik adresaru a souboru
+        else // several directories and files
         {
             SalamanderGeneral->GetCommonFSOperSourceDescr(dlgSubjectSrc, MAX_PATH + 100, -1,
                                                           sourceFiles, sourceDirs, NULL, FALSE, TRUE);
         }
 
-        // zalozime objekt operace
+        // create the operation object
         CFTPOperation* oper = new CFTPOperation;
         if (oper != NULL)
         {
@@ -1069,7 +1070,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             if (cert)
                 cert->Release();
             oper->SetCompressData(ControlConnection->GetCompressData());
-            if (ControlConnection->InitOperation(oper)) // inicializace spojeni se serverem podle "control connection"
+            if (ControlConnection->InitOperation(oper)) // initialize the connection to the server according to the "control connection"
             {
                 oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
                 char targetPath2[2 * MAX_PATH];
@@ -1099,11 +1100,11 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                     {
                         BOOL ok = TRUE;
 
-                        // sestavime frontu polozek operace
+                        // build the queue of operation items
                         CFTPQueue* queue = new CFTPQueue;
                         if (queue != NULL)
                         {
-                            CQuadWord totalSize(0, 0); // celkova velikost (v bytech nebo blocich)
+                            CQuadWord totalSize(0, 0); // total size (in bytes or blocks)
                             BOOL isDir;
                             const char* name;
                             const char* dosName; // dummy
@@ -1117,8 +1118,8 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                             BOOL ignoreAll = FALSE;
                             while ((name = next(parent, 0, &dosName, &isDir, &size, &attr, NULL, nextParam, NULL)) != NULL)
                             {
-                                // vytvorime cilove jmeno podle operacni masky (vynechavame pokud nejde
-                                // o masku (neobsahuje '*' ani '?') - aby slo prejmenovat na "test^.")
+                                // create the target name according to the operation mask (skip if it is not
+                                // a mask (contains neither '*' nor '?') - so that renaming to "test^." works)
                                 char targetName[2 * MAX_PATH];
                                 if (useMask)
                                     SalamanderGeneral->MaskName(targetName, 2 * MAX_PATH, name, mask);
@@ -1127,11 +1128,11 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                 if (is_AS_400_QSYS_LIB_Path)
                                     FTPAS400AddFileNamePart(targetName);
 
-                                // linky: size == 0, velikost souboru se musi ziskat pres GetLinkTgtFileSize() dodatecne
+                                // links: size == 0, the file size must be obtained via GetLinkTgtFileSize() later
                                 BOOL cancel = FALSE;
                                 if (!isDir && (attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0 &&
                                     linkNameEnd - linkName + strlen(name) < _countof(linkName))
-                                { // jde o link na soubor a jmeno linku neni prilis dlouhe (to se pripadne ohlasi jinde)
+                                { // this is a link to a file and the link name is not too long (otherwise reported elsewhere)
                                     CQuadWord linkSize;
                                     strcpy(linkNameEnd, name);
                                     if (SalamanderGeneral->GetLinkTgtFileSize(parent, linkName, &linkSize, &cancel, &ignoreAll))
@@ -1144,7 +1145,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                 {
                                     if (ok)
                                         item->SetItem(-1, type, sqisWaiting, ITEMPR_OK, sourcePath, name);
-                                    if (!ok || !queue->AddItem(item)) // pridani operace do fronty
+                                    if (!ok || !queue->AddItem(item)) // add the operation to the queue
                                     {
                                         ok = FALSE;
                                         delete item;
@@ -1156,7 +1157,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                         TRACE_E(LOW_MEMORY);
                                     ok = FALSE;
                                 }
-                                // zjistime jestli ma cenu pokracovat (pokud neni chyba)
+                                // determine whether it makes sense to continue (if there is no error)
                                 if (!ok)
                                     break;
                             }
@@ -1177,10 +1178,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                             ok = FALSE;
                         }
 
-                        if (ok) // mame naplnenou frontu s polozkama operace
+                        if (ok) // the queue with operation items has been filled
                         {
-                            // naplnime UploadListingCache soucasnym obsahem panelu (pokud je cilova cesta v panelu
-                            // a panel obsahuje nepreruseny, neporuseny a up-to-date listing)
+                            // populate the UploadListingCache with the current panel contents (if the target path is in the panel
+                            // and the panel contains an uninterrupted, intact, and up-to-date listing)
                             int panel;
                             if (SalamanderGeneral->GetPanelWithPluginFS(this, panel) &&
                                 FTPIsTheSameServerPath(pathType, Path, tgtPath) &&
@@ -1204,21 +1205,21 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                                     SalamanderGeneral->Free(systReply);
                             }
 
-                            oper->SetQueue(queue); // nastavime operaci frontu jejich polozek
+                            oper->SetQueue(queue); // set the queue of its items for the operation
                             queue = NULL;
-                            // FIXME: asi neni kam dat checkbox "only add to queue": if (Config.UploadAddToQueue) success = TRUE;  // provest operaci pozdeji -> prozatim jde o uspech operace
-                            // else // provest operaci v aktivni "control connection"
+                            // FIXME: there is probably no place for an "only add to queue" checkbox: if (Config.UploadAddToQueue) success = TRUE;  // perform the operation later -> for now the operation is successful
+                            // else // perform the operation in the active "control connection"
                             // {
-                            // otevreme okno s progresem operace a spustime operaci
+                            // open the operation progress window and start the operation
                             if (RunOperation(SalamanderGeneral->GetMsgBoxParent(), operUID, oper, NULL))
-                                success = TRUE; // uspech operace
+                                success = TRUE; // operation succeeded
                             else
                                 ok = FALSE;
                             // }
                         }
                         if (!ok)
                             FTPOperationsList.DeleteOperation(operUID, TRUE);
-                        oper = NULL; // operace uz je pridana v poli, nebudeme ji uvolnovat pres 'delete' (viz nize)
+                        oper = NULL; // the operation is already added in the array, do not free it with 'delete' (see below)
                     }
                 }
             }
@@ -1229,10 +1230,10 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             TRACE_E(LOW_MEMORY);
 
         if (success && invalidPathOrCancel != NULL)
-            *invalidPathOrCancel = FALSE; // vracime "uspech" (jinak "chyba/cancel")
+            *invalidPathOrCancel = FALSE; // report "success" (otherwise "error/cancel")
         return TRUE;
     }
-    return FALSE; // neznamy 'mode'
+    return FALSE; // unknown 'mode'
 }
 
 void CPluginFSInterface::ShowSecurityInfo(HWND hParent)
@@ -1247,7 +1248,7 @@ void CPluginFSInterface::ShowSecurityInfo(HWND hParent)
             char errBuf[300];
             int panel;
             if (SalamanderGeneral->GetPanelWithPluginFS(this, panel))
-            { // uzivatel mohl certifikat importovat nebo naopak smazat z MS storu, overime stav a ukazeme v panelu
+            { // the user might have imported the certificate or deleted it from the MS store, verify the state and show it in the panel
                 bool verified = cert->CheckCertificate(errBuf, 300);
                 cert->SetVerified(verified);
                 SalamanderGeneral->ShowSecurityIcon(panel, TRUE, verified,

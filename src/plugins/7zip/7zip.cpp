@@ -18,33 +18,33 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL module - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG module - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// CPluginInterface section for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// cast interfacu CPluginInterface pro viewer
+// CPluginInterface section for the viewer
 //CPluginInterfaceForViewer InterfaceForViewer;
 
-// interface pro menu
+// interface for the menu
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin is unloaded
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// define the variable for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// define the variable for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
 int ConfigVersion = 0;
@@ -52,18 +52,18 @@ int ConfigVersion = 0;
 // CURRENT_CONFIG_VERSION history
 // 1: ?
 // 2: ?
-// 3: Igor zmenil default hodnoty pro LZMA kompresi (velikost slovniku, atd). Zmen je vice
-//    takze jsme se Honzou Paterou dohodli, ze pri importu starych konfiguraci budeme
-//    nastaveni komprese ignorovat a pouziji se tako nove defaulty.
+// 3: Igor changed the default values for LZMA compression (dictionary size, etc.). There are more changes,
+//    so Honza Patera and I agreed that when importing old configurations we will
+//    ignore compression settings and use the new defaults instead.
 #define CURRENT_CONFIG_VERSION 3
 const char* CONFIG_VERSION = "Version";
 
 CConfig Config;
 
-int SortByExtDirsAsFiles = FALSE; // aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+int SortByExtDirsAsFiles = FALSE; // current value of the Salamander configuration variable SALCFG_SORTBYEXTDIRSASFILES
 
-// globalni promenne, do ktery si ulozim ukazatele na globalni promenne v Salamanderovi
-// pro archiv i pro FS - promenne se sdileji
+// global variables used to store pointers to Salamander's global variables
+// shared for both the archiver and FS
 const CFileData** TransferFileData = NULL;
 int* TransferIsDir = NULL;
 char* TransferBuffer = NULL;
@@ -72,7 +72,7 @@ DWORD* TransferRowData = NULL;
 CPluginDataInterfaceAbstract** TransferPluginDataIface = NULL;
 DWORD* TransferActCustomData = NULL;
 
-// nazvy polozek v registrech
+// names of the entries in the registry
 const char* CONFIG_SHOW_EXTENDED_OPTIONS = "Show Extended Options";
 const char* CONFIG_EXTENDED_LIST_INFO = "Extended List Info";
 const char* CONFIG_LIST_INFO_PACKED_SIZE = "List Info Packed Size";
@@ -127,34 +127,34 @@ void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current version of Salamander and newer - verify that
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "7-Zip" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "7-Zip" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface that provides customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("7zip.chm");
 
     SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &SortByExtDirsAsFiles,
@@ -168,7 +168,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     SetWinLibStrings("Invalid number!", LoadStr(IDS_PLUGINNAME));
     SetupWinLibHelp(HTMLHelpCallback);
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_PANELARCHIVEREDIT | FUNCTION_CUSTOMARCHIVERPACK |
@@ -234,7 +234,7 @@ BOOL
 SysError(char *msg, DWORD err, BOOL quiet)
 {
   if (!quiet)
-    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES)  // jde o chybu
+    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES)  // this is an error
     {
       char buf[1024];
       sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
@@ -444,7 +444,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
             ConfigVersion = 0; // default configuration
@@ -457,7 +457,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     // set config defaults
     SetDefaultConfiguration();
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from registry
     {
         registry->GetValue(regKey, CONFIG_SHOW_EXTENDED_OPTIONS, REG_DWORD, &Config.ShowExtendedOptions, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_EXTENDED_LIST_INFO, REG_DWORD, &Config.ExtendedListInfo, sizeof(DWORD));
@@ -474,7 +474,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             // compress params
             registry->GetValue(regKey, CONFIG_SOLID_ARCHIVE, REG_DWORD, &Config.CompressParams.SolidArchive, sizeof(DWORD));
             if (registry->GetValue(regKey, CONFIG_COMPRESS_METHOD, REG_DWORD, &Config.CompressParams.Method, sizeof(DWORD)) &&
-                (Config.CompressParams.Method != CCompressParams::LZMA || ConfigVersion >= 3)) // na konfiguraci verze 3 jsme udelali reset defaultu pro LZMA, protoze jsou jine
+                (Config.CompressParams.Method != CCompressParams::LZMA || ConfigVersion >= 3)) // for configuration version 3 we reset the defaults for LZMA because they differ
             {
                 registry->GetValue(regKey, CONFIG_COMPRESS_LEVEL, REG_DWORD, &Config.CompressParams.CompressLevel, sizeof(DWORD));
                 registry->GetValue(regKey, CONFIG_DICT_SIZE, REG_DWORD, &Config.CompressParams.DictSize, sizeof(DWORD));
@@ -529,19 +529,19 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // pri pridavani dalsich pripon, je treba zvedat CURRENT_CONFIG_VERSION
+    // when adding more extensions we must raise CURRENT_CONFIG_VERSION
 
-    // ZAKLADNI CAST
-    // AddViewer a AddPanelArchiver budou podlehat CASTI PRO UPGRADY
-    //  salamander->AddViewer("*.7z", FALSE); // default (install pluginu), jinak Salam ignoruje
+    // BASIC SECTION
+    // AddViewer and AddPanelArchiver will fall under the UPGRADE SECTION
+    //  salamander->AddViewer("*.7z", FALSE); // default (plugin install), otherwise Salamander ignores it
 
     salamander->AddPanelArchiver("7z", TRUE, FALSE);
 
     salamander->AddCustomPacker("7-Zip (Plugin)", "7z", ConfigVersion < 1);
     salamander->AddCustomUnpacker("7-Zip (Plugin)", "*.7z", ConfigVersion < 1);
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script, which generates salmenu.mnu for the Translator
+   keep it synchronized with the calls to salamander->AddMenuItem() below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
   {MNTT_PB, 0
@@ -550,12 +550,12 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
 };
 */
 
-    // do menu dame ladici polozku, ktera umozni uzivatelum snadno snadno zaslat prvni 1MB z ISO image
-    // do menu dame polozku pro testovani integrity archivu
+    // add a diagnostic menu item that lets users easily send the first 1 MB of an ISO image
+    // add a menu item for testing archive integrity
     salamander->AddMenuItem(-1, LoadStr(IDS_TESTARCHIVE), 0, IDM_TESTARCHIVE, FALSE, MENU_EVENT_ARCHIVE_FOCUSED,
                             MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
 
-    // nastavime ikonku pluginu
+    // set the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_7ZIP),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -564,14 +564,14 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     salamander->SetPluginMenuAndToolbarIcon(0);
 
     /*
-  // CAST PRO UPGRADY
-  if (ConfigVersion < 2) // pridani nrg, pdi, cdi, cif, ncd
+  // UPGRADE SECTION
+  if (ConfigVersion < 2) // add nrg, pdi, cdi, cif, ncd
   {
     salamander->AddViewer("*.nrg;*.pdi;*.cdi;*.cif;*.ncd", TRUE);
     salamander->AddPanelArchiver("nrg;pdi;cdi;cif;ncd", FALSE, TRUE);
   }
 
-  if (ConfigVersion < 3) // pridani c2d
+  if (ConfigVersion < 3) // add c2d
   {
     salamander->AddViewer("*.c2d", TRUE);
     salamander->AddPanelArchiver("c2d", FALSE, TRUE);
@@ -648,8 +648,8 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
         return Error(IDS_INSUFFICIENT_MEMORY);
     }
 
-    // otevrit archiv
-    // predat kompletni listing jadru Salamandera
+    // open the archive
+    // pass the complete listing to the Salamander core
     if (!client->ListArchive(fileName, dir, pluginData, pluginData->Password))
     {
         delete pluginData;
@@ -685,16 +685,16 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
     }
 
     BOOL ret = FALSE;
-    // spocitat 'totalSize' pro progress dialog
+    // compute 'totalSize' for the progress dialog
     BOOL isDir;
     CQuadWord size;
     CQuadWord totalSize(0, 0);
-    int itemCount = 0; // pocet zpracovavanych polozek
+    int itemCount = 0; // number of processed items
     const char* name;
     const CFileData* fileData;
     int errorOccured;
 
-    // nejdriv si spocitame, kolik toho budeme zpracovavat a jak to bude veliky
+    // first compute how much we will process and how large it will be
     while ((name = next(SalamanderGeneral->GetMsgBoxParent(), 1, &isDir, &size, &fileData, nextParam, &errorOccured)) != NULL)
     {
         if (fileData->PluginData != 0)
@@ -702,7 +702,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
         totalSize += size;
     }
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci
+    // check whether an error occurred and the user did not request cancellation
     if (errorOccured == SALENUM_CANCEL)
         return FALSE;
 
@@ -714,10 +714,10 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
         salamander->OpenProgressDialog(LoadStr(IDS_UNPACKING_ARCHIVE), FALSE, NULL, FALSE);
         salamander->ProgressDialogAddText(LoadStr(IDS_READING_ARCHIVEITEMS), FALSE);
 
-        // ulozime si zpracovavane polozky do pole
+        // store the processed items in an array
         TIndirectArray<CArchiveItemInfo> itemList(itemCount, 10, dtDelete);
         next(NULL, -1, NULL, NULL, NULL, nextParam, NULL);
-        while ((name = next(NULL /* podruhe uz chyby nepiseme */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
+        while ((name = next(NULL /* we do not log errors the second time */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
         {
             if (fileData->PluginData != 0)
             {
@@ -820,7 +820,7 @@ void CalcSize(CSalamanderDirectoryAbstract const* dir, const char* mask, CQuadWo
 int GatherItems(CSalamanderDirectoryAbstract const* dir, const char* mask, TIndirectArray<CArchiveItemInfo>* archiveItems, char* archivePath)
 {
     int archivePathLen = lstrlen(archivePath);
-    // soubory
+    // files
     int count = dir->GetFilesCount();
     int i;
     for (i = 0; i < count; i++)
@@ -828,7 +828,7 @@ int GatherItems(CSalamanderDirectoryAbstract const* dir, const char* mask, TIndi
         CFileData const* fileData = dir->GetFile(i);
         if (SalamanderGeneral->AgreeMask(fileData->Name, mask, fileData->Ext[0] != 0) &&
             fileData->PluginData != 0 &&
-            SalamanderGeneral->SalPathAppend(archivePath, fileData->Name, MAX_PATH)) // zneuzijeme archivePath, pro nazev souboru v archivu
+            SalamanderGeneral->SalPathAppend(archivePath, fileData->Name, MAX_PATH)) // reuse archivePath for the file name in the archive
         {
             CArchiveItemInfo* aii = new CArchiveItemInfo(archivePath, fileData, FALSE);
             archivePath[archivePathLen] = '\0';
@@ -849,9 +849,9 @@ int GatherItems(CSalamanderDirectoryAbstract const* dir, const char* mask, TIndi
         CSalamanderDirectoryAbstract const* subDir = dir->GetSalDir(j);
         if (SalamanderGeneral->SalPathAppend(archivePath, fileData->Name, MAX_PATH))
         {
-            // do zpracovani pridat i adresare (ale jen ty co maji definovano PluginData)
+            // include directories in processing (but only those that have PluginData defined)
             if (SalamanderGeneral->AgreeMask(fileData->Name, mask,
-                                             strchr(fileData->Name, '.') != NULL) && // u adresare v Ext nemusi byt pripona, proto hledame tecku pres strchr
+                                             strchr(fileData->Name, '.') != NULL) && // for a directory the extension may be missing, so we look for the dot via strchr
                 fileData->PluginData != 0)
             {
                 CArchiveItemInfo* aii = new CArchiveItemInfo(archivePath, fileData, TRUE);
@@ -880,7 +880,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
                         fileName, mask, targetDir, delArchiveWhenDone);
 
     if (delArchiveWhenDone)
-        archiveVolumes->Add(fileName, -2); // FIXME: az 7-zip plugin doucime multi-volume archivy (.7z.001, .7z.002, atd.), musime sem napridavat vsechny svazky archivu (aby se smazal kompletni archiv)
+        archiveVolumes->Add(fileName, -2); // FIXME: once the 7-zip plugin learns multi-volume archives (.7z.001, .7z.002, etc.), we must add all archive volumes here (so the entire archive is deleted)
     CSalamanderDirectoryAbstract* dir = SalamanderGeneral->AllocSalamanderDirectory(FALSE);
     if (dir == NULL)
         return Error(IDS_INSUFFICIENT_MEMORY);
@@ -893,7 +893,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
         CPluginDataInterface* pluginData = new CPluginDataInterface(client);
         if (pluginData)
         {
-            // otevrit archiv
+            // open the archive
             if (client->ListArchive(fileName, dir, pluginData, pluginData->Password))
             {
                 CQuadWord totalSize(0, 0);
@@ -969,14 +969,14 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     CALL_STACK_MESSAGE5("CPluginInterfaceForArchiver::PackToArchive(, %s, %s, %d, %s, ,)", fileName,
                         archiveRoot, move, sourcePath);
 
-    // otestovat existenci archivu (potrebujeme rozlisit update a createnew archive)
+    // test whether the archive exists (we need to distinguish between update and create new archive)
     BOOL isNewArchive = FALSE;
     HANDLE hArchive = ::CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hArchive == INVALID_HANDLE_VALUE)
     {
-        isNewArchive = TRUE; // soubor neexistuje, je to novy archiv
+        isNewArchive = TRUE; // the file does not exist; this is a new archive
 
-        // test, zda lze zapisovat do cilove cesty
+        // check whether the target path is writable
         hArchive = INVALID_HANDLE_VALUE;
         hArchive = ::CreateFile(fileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hArchive == INVALID_HANDLE_VALUE)
@@ -989,24 +989,24 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     }
     else
     {
-        ::CloseHandle(hArchive); // soubor existuje, zavreme ho, budeme aktualizovat
+        ::CloseHandle(hArchive); // the file exists; close it, we will update it
 
-        // test na read-only attribute
+        // check for the read-only attribute
         DWORD attrs = SalamanderGeneral->SalGetFileAttributes(fileName);
         if (attrs != -1)
         {
             if (attrs & FILE_ATTRIBUTE_READONLY)
                 return Error(IDS_READONLY_ARCHIVE);
         }
-        // tady soubor nema READ-ONLY attribut, nebo se nepodarilo ziskat atributy a mel by zabrat nasledujici test
+        // at this point the file has no READ-ONLY attribute, or retrieving the attributes failed and the next test should catch it
 
-        // test, zda lze do souboru psat
+        // check whether the file is writable
         hArchive = INVALID_HANDLE_VALUE;
         hArchive = ::CreateFile(fileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hArchive == INVALID_HANDLE_VALUE)
             return SysError(IDS_CANT_UPDATE_ARCHIVE, ::GetLastError(), FALSE, fileName);
         else
-            ::CloseHandle(hArchive); // soubor existuje, zavreme ho, budeme aktualizovat
+            ::CloseHandle(hArchive); // the file exists; close it, we will update it
     }
 
     CCompressParams compressParams;
@@ -1014,7 +1014,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     char password[PASSWORD_LEN];
     if (Config.ShowExtendedOptions)
     {
-        // zobrazit dialog box s exteneded options
+        // show the extended options dialog box
         CExtOptionsDialog dlg(SalamanderGeneral->GetMsgBoxParent());
         if (isNewArchive)
             dlg.SetTitle(LoadStr(IDS_CREATE_NEW_ARCHIVE));
@@ -1033,7 +1033,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
 
             Config.ShowExtendedOptions = dlg.GetNotAgain() == FALSE;
 
-            // vzit config z ext. dialogu
+            // take the config from the extended dialog
             compressParams = dlg.CompressParams;
         }
     }
@@ -1057,32 +1057,32 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     FILETIME lastWrite;
     int errorOccured;
 
-    // spocitat kolik polozek budeme komprimovat
-    // (mohli bysme sice rovnou pouzit nafukovaci pole, ale pri velkym poctu bysme fragmentovali pamet. a 2x iterovat
-    // seznamem nas nezabije)
+    // count how many items we will compress
+    // (we could use a growing array right away, but with a large number it would fragment memory, and iterating the list twice
+    // will not kill us)
     int itemCount = 0;
     while ((name = next(SalamanderGeneral->GetMsgBoxParent(), 3, &dosName, &isDir, &size,
                         &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
         itemCount++;
     }
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci
+    // check whether an error occurred and the user did not request cancellation
     if (errorOccured == SALENUM_CANCEL)
     {
         salamander->CloseProgressDialog();
         return FALSE;
     }
 
-    // pripravit seznam komprimovanych polozek
+    // prepare the list of items to compress
     TIndirectArray<CFileItem> fileList(itemCount, 20, dtDelete);
     next(NULL, -1, NULL, NULL, NULL, NULL, NULL, nextParam, NULL);
-    while ((name = next(NULL /* podruhe uz chyby nepiseme */, 3, &dosName, &isDir, &size,
+    while ((name = next(NULL /* we do not log errors the second time */, 3, &dosName, &isDir, &size,
                         &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
         if (errorOccured == SALENUM_ERROR)
             TRACE_I("Not all files and directories from disk will be packed.");
 
-        // vytvareni listu souboru, ktery se maji zapakovat
+        // building the list of files that should be packed
         CFileItem* fi = new CFileItem(sourcePath, archiveRoot, name, attr, size.Value, lastWrite, isDir == TRUE);
         if (fi == NULL)
         {
@@ -1097,7 +1097,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     if (errorOccured != SALENUM_SUCCESS)
         TRACE_I("Not all files and directories from disk will be packed.");
 
-    // vytvorit archiv
+    // create the archive
     C7zClient client;
     if (isNewArchive)
         salamander->ProgressDialogAddText(LoadStr(IDS_PACKING), FALSE);
@@ -1106,12 +1106,12 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     BOOL ret = client.Update(salamander, fileName, sourcePath, isNewArchive, &fileList, &compressParams, passwordDefined,
                              GetUnicodeString(password)) == OPER_OK;
 
-    // smazat po sobe soubory, pokud presouvame do archivu
+    // delete files afterwards if we are moving them into the archive
     if (move && ret)
-    { // nejprve zamkneme soubor archivu, abysme si ho nemohli sami smazat (bug: https://forum.altap.cz/viewtopic.php?f=3&t=3859)
+    { // first lock the archive file so we cannot delete it ourselves (bug: https://forum.altap.cz/viewtopic.php?f=3&t=3859)
         while (1)
         {
-            hArchive = ::CreateFile(fileName, GENERIC_READ /* zkousel jsem 0, ale system pak dovolil smazani souboru */,
+            hArchive = ::CreateFile(fileName, GENERIC_READ /* I tried 0, but the system then allowed deleting the file */,
                                     FILE_SHARE_READ | FILE_SHARE_WRITE,
                                     NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -1135,22 +1135,22 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
             salamander->ProgressSetTotalSize(CQuadWord(itemCount, 0), CQuadWord(-1, -1));
             salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), FALSE);
 
-            // nejdriv smazneme soubory (ty co maji CanDelete)
+            // delete the files first (those that have CanDelete)
             int i;
             for (i = 0; i < fileList.Count; i++)
             {
                 CFileItem* fi = fileList[i];
                 if (fi->CanDelete && !fi->IsDir)
                 {
-                    // smazat soubor
+                    // delete the file
                     CSysString name2 = GetAnsiString(fi->FullPath);
 
-                    // shodit prip read-only attribut
+                    // drop the read-only attribute if needed
                     SalamanderGeneral->ClearReadOnlyAttr(name2);
 
                     if (!SafeDeleteFile(name2, fileSilent))
                     {
-                        // nepodarilo se smazat soubor a user dal cancel
+                        // failed to delete the file and the user pressed cancel
                         ret = FALSE;
                         break;
                     }
@@ -1159,31 +1159,31 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
                     {
                         salamander->ProgressDialogAddText(LoadStr(IDS_CANCELING_OPERATION), FALSE);
                         salamander->ProgressEnableCancel(FALSE);
-                        // pri mazani dal user cancel
+                        // the user canceled during deletion
                         ret = FALSE;
                         break;
                     }
                 }
             }
 
-            // soubory smazany (zadny cancel), pokracujeme v mazani, nyni jsou na rade prazdne adresare
+            // files deleted (no cancel); continue with deletion, now empty directories are next
             if (ret)
             {
-                // priprava bufferu pro jmena
-                char sourceName[MAX_PATH + 1]; // buffer pro plne jmeno na disku
+                // prepare the buffer for names
+                char sourceName[MAX_PATH + 1]; // buffer for the full name on disk
                 strcpy(sourceName, sourcePath);
-                char* endSource = sourceName + strlen(sourceName); // misto pro jmena z enumerace 'next'
+                char* endSource = sourceName + strlen(sourceName); // space for the names from the 'next' enumeration
                 if (endSource > sourceName && *(endSource - 1) != '\\')
                 {
                     *endSource++ = '\\';
                     *endSource = 0;
                 }
-                int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // max. pocet znaku pro jmeno z enumerace 'next'
+                int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // maximum number of characters for a name from the 'next' enumeration
 
-                // smazeme adresare, pokud v nich neco zbylo, tak se nesmazou a to je dobre :)
-                // protoze se iteruje od listu ke koreni, tak muzeme mazat timto zpusobem
+                // delete directories; if something remains inside they will not be removed and that's fine :)
+                // because we iterate from leaves to the root, we can delete them this way
                 next(NULL, -1, NULL, NULL, NULL, NULL, NULL, nextParam, NULL);
-                while ((name = next(NULL /* podruhe uz chyby nepiseme */, 3, &dosName, &isDir, &size,
+                while ((name = next(NULL /* we do not log errors the second time */, 3, &dosName, &isDir, &size,
                                     &attr, &lastWrite, nextParam, NULL)) != NULL)
                 {
                     if (isDir)
@@ -1191,7 +1191,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
                         if ((int)strlen(name) < endSourceSize)
                         {
                             strcpy_s(endSource, endSourceSize, name);
-                            // shodit prip read-only attribut
+                            // drop the read-only attribute if needed
                             SalamanderGeneral->ClearReadOnlyAttr(sourceName, attr);
                             ::RemoveDirectory(sourceName);
                         }
@@ -1201,7 +1201,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
                         {
                             salamander->ProgressDialogAddText(LoadStr(IDS_CANCELING_OPERATION), FALSE);
                             salamander->ProgressEnableCancel(FALSE);
-                            // pri mazani dal user cancel
+                            // the user canceled during deletion
                             ret = FALSE;
                             break;
                         }
@@ -1243,7 +1243,7 @@ BOOL CPluginInterfaceForArchiver::DeleteFromArchive(CSalamanderForOperationsAbst
         if (fileData->PluginData != 0)
             itemCount++;
     }
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci
+    // check whether an error occurred and the user did not request cancellation
     BOOL ret = TRUE;
     if (errorOccured == SALENUM_CANCEL)
         ret = FALSE;
@@ -1251,7 +1251,7 @@ BOOL CPluginInterfaceForArchiver::DeleteFromArchive(CSalamanderForOperationsAbst
     {
         TIndirectArray<CArchiveItemInfo> archiveItems(itemCount, 20, dtDelete);
         next(NULL, -1, NULL, NULL, NULL, nextParam, NULL);
-        while ((name = next(NULL /* podruhe uz chyby nepiseme */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
+        while ((name = next(NULL /* we do not log errors the second time */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
         {
             if (fileData->PluginData != 0)
             {
@@ -1287,8 +1287,8 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
                       "0x%X, %d, %d, , , , %d, %d)", name, left, top, width, height,
                       showCmd, alwaysOnTop, returnLock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-  // 'lock' ani 'lockOwner' nenastavujeme, staci nam platnost souboru 'name' jen
-  // v ramci teto metody
+  // we do not set 'lock' or 'lockOwner'; we only need the lifetime of the file 'name'
+  // within this method
 
   HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
@@ -1313,17 +1313,16 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
     int err;
     CSalamanderPluginInternalViewerData viewerData;
 
-    // vytvorim docasny soubor a naleju do nej dump modulu
+    // create a temporary file and pour the module dump into it
     FILE *outStream = fopen(tempFileName, "w");
     if (!image->DumpInfo(outStream))
     {
-      // ?muze vubec nastat?
+      // can this even happen?
     }
     fclose(outStream);
     delete image;
 
-    // soubor predam Salamanderovi - ten si jej presune do cache a az ho prestane
-    // pouzivat, smaze ho
+    // hand the file over to Salamander - it moves it to cache and deletes it when it is done
     viewerData.Size = sizeof(viewerData);
     viewerData.FileName = tempFileName;
     viewerData.Mode = 0;  // text mode
@@ -1332,7 +1331,7 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
     viewerData.WholeCaption = TRUE;
     if (!SalamanderGeneral->ViewFileInPluginViewer(NULL, &viewerData, TRUE, "iso_dump.txt", err))
     {
-      // soubor je smazan i v pripade neuspechu
+      // the file is deleted even if the operation fails
     }
   }
   else
@@ -1375,7 +1374,7 @@ CPluginInterfaceForViewer::CanViewFile(const char *name)
 
 static BOOL TestArchive(CSalamanderForOperationsAbstract* salamander, HWND hParent)
 {
-    // vytahneme cestu na FOCUSED 7z archiv
+    // get the path to the focused 7z archive
     const CFileData* cfd = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, NULL);
     if (cfd == NULL)
         return FALSE;
@@ -1455,8 +1454,8 @@ BOOL CPluginInterfaceForMenuExt::HelpForMenuItem(HWND parent, int id)
 // CPluginDataInterface
 //
 
-// callback volany ze Salamandera pro ziskani textu
-// popis viz. spl_com.h / FColumnGetText
+// callback invoked by Salamander to obtain text
+// see spl_com.h / FColumnGetText for a description
 void WINAPI GetPackedSizeText()
 {
     if (*TransferIsDir)
@@ -1515,11 +1514,11 @@ CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, c
     view->GetTransferVariables(TransferFileData, TransferIsDir, TransferBuffer, TransferLen, TransferRowData,
                                TransferPluginDataIface, TransferActCustomData);
 
-    // sloupce upravujeme jen v detailed rezimu
+    // adjust columns only in detailed mode
     if (view->GetViewMode() == VIEW_MODE_DETAILED)
     {
-        // zkusime najit std. Size a zaradit se za nej; pokud ho nenajdeme,
-        // zaradime se na konec
+        // try to find the standard Size column and insert ourselves after it; if it is not found,
+        // append at the end
         int sizeIndex = view->GetColumnsCount();
         int i;
         for (i = 0; i < sizeIndex; i++)
@@ -1532,7 +1531,7 @@ CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, c
         CColumn column;
         if (Config.ListInfoPackedSize)
         {
-            // sloupec pro zobrazeni komprimovane velikosti
+            // column for displaying the compressed size
             lstrcpy(column.Name, LoadStr(IDS_LISTINFO_PAKEDSIZE));
             lstrcpy(column.Description, LoadStr(IDS_LISTINFO_PAKEDSIZE_DESC));
             column.GetText = GetPackedSizeText;
@@ -1547,7 +1546,7 @@ CPluginDataInterface::SetupView(BOOL leftPanel, CSalamanderViewAbstract* view, c
 
         if (Config.ListInfoMethod)
         {
-            // sloupec pro zobrazeni metody
+            // column for displaying the method
             sizeIndex = view->GetColumnsCount();
             lstrcpy(column.Name, LoadStr(IDS_LISTINFO_METHOD));
             lstrcpy(column.Description, LoadStr(IDS_LISTINFO_METHOD_DESC));

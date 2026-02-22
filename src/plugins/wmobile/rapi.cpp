@@ -95,7 +95,7 @@ public:
         if (m_hLib != NULL)
             return TRUE;
 
-        // nacteme knihovnu
+        // Load the library
         UINT fuError;
         fuError = SetErrorMode(SEM_NOOPENFILEERRORBOX);
         m_hLib = LoadLibrary("rapi.dll");
@@ -107,12 +107,12 @@ public:
             return FALSE;
         }
 
-// napojime ukazatele na jeji exporty
+// Hook pointers to its exports
 #define Func_Operator(Name) Name = (RapiNS::Name*)GetProcAddress(m_hLib, #Name);
         RAPI_FUNCTIONS
 #undef Func_Operator
 
-        if (!IsGood()) // A vse zkontrolujeme
+        if (!IsGood()) // And verify everything
         {
             Unload();
             return FALSE;
@@ -136,11 +136,11 @@ public:
 
     static BOOL IsGood()
     {
-        // knihovna musi byt nactena
+        // The library must be loaded
         if (m_hLib == NULL)
             return FALSE;
 
-// vsechny exporty musi byt nalinkovane
+// All exports must be linked
 #define Func_Operator(Name) \
     if (Name == NULL) \
     { \
@@ -208,14 +208,14 @@ BOOL CRAPI::ReInit()
         CDynRapi::CeRapiUninit();
         initialized = FALSE;
 
-        CPluginFSInterface::EmptyCache(); //Je mozne, ze doslo k vymene zarizeni a proto cache vyprázdníme
+        CPluginFSInterface::EmptyCache(); // The device might have been swapped, so clear the cache
     }
 
-    //JR REVIEW: please wait + cancel dialog?
+    //JR REVIEW: Should we show a "Please wait" dialog with a Cancel button?
     SalamanderGeneral->CreateSafeWaitWindow(LoadStr(IDS_CONNECTING), TitleWMobile,
                                             500, FALSE, SalamanderGeneral->GetMainWindowHWND());
 
-    //  Sleep(500); //JR REVIEW: Proc to tady je?
+    //  Sleep(500); // JR REVIEW: Why was this needed?
 
     HANDLE hExit = CreateEvent(NULL, FALSE, FALSE, NULL);
     HRESULT hRapiResult = InitRapi(hExit, 3000);
@@ -442,8 +442,8 @@ CRAPI::RapiGetError(void)
 /////////////////////////////////////////////////////////////////////////////
 // Helpers
 
-//SalPathAppend nefunguje uplne podle nasich potreb
-//SalPathAppend("\\", "dir") vraci "dir", moje verze vrati "\dir"
+// SalPathAppend does not quite match our needs
+// SalPathAppend("\\", "dir") returns "dir"; this version returns "\dir"
 BOOL CRAPI::PathAppend(char* path, const char* name, int pathSize)
 {
     if (path == NULL || name == NULL)
@@ -464,7 +464,7 @@ BOOL CRAPI::PathAppend(char* path, const char* name, int pathSize)
     if (*name != 0)
     {
         int n = (int)strlen(name);
-        if (l + 1 + n < pathSize) // vejdeme se i s nulou na konci?
+        if (l + 1 + n < pathSize) // do we still fit including the terminating null?
             memcpy(path + l, name, n + 1);
         else
             return FALSE;
@@ -586,10 +586,10 @@ BOOL CRAPI::FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
     find = FindFirstFile(fullPath, &data);
     if (find == INVALID_HANDLE_VALUE)
     {
-        //JR Nektere storage vraceji ERROR_FILE_NOT_FOUND místo ERROR_NO_MORE_FILES
+        // JR Some storage implementations return ERROR_FILE_NOT_FOUND instead of ERROR_NO_MORE_FILES
         int nError = CDynRapi::CeGetLastError();
         if (nError == ERROR_NO_MORE_FILES || nError == ERROR_FILE_NOT_FOUND)
-            return TRUE; //JR prazdny adresar, koncim
+            return TRUE; // JR empty directory, stop
 
         char buf[2 * MAX_PATH + 100];
         DWORD err = GetLastError();
@@ -600,7 +600,7 @@ BOOL CRAPI::FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
 
     for (;;)
     {
-        //JR TODO: Toto nefunguje!
+        // JR TODO: This does not work!
         if (SalamanderGeneral->GetSafeWaitWindowClosePressed())
         {
             if (SalamanderGeneral->ShowMessageBox(LoadStr(IDS_YESNO_CANCEL), TitleWMobileQuestion,
@@ -609,7 +609,7 @@ BOOL CRAPI::FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
         }
 
         if (data.cFileName[0] != 0 &&
-            (data.cFileName[0] != '.' || //JR Windows Mobile nevraci "." a ".." cesty, ale pro jistotu to osetrim
+            (data.cFileName[0] != '.' || // JR Windows Mobile does not return "." and ".." paths, but handle it just in case
              (data.cFileName[1] != 0 && (data.cFileName[1] != '.' || data.cFileName[2] != 0))))
         {
             char cFileName[MAX_PATH];
@@ -644,7 +644,7 @@ BOOL CRAPI::FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
                     goto ONERROR_TOOLONG;
 
                 if (!FindAllFilesInTree(rootPath, path, "*", array, block, dirFirst))
-                    goto ONERROR; //JR Chyba uz byla hlasena
+                    goto ONERROR; // JR The error has already been reported
 
                 path[len] = 0;
             }
@@ -664,7 +664,7 @@ BOOL CRAPI::FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
         if (!FindNextFile(find, &data))
         {
             if (CDynRapi::CeGetLastError() == ERROR_NO_MORE_FILES)
-                break; //JR Vse v poradku, koncim
+                break; // JR Everything is fine, stop
 
             DWORD err = GetLastError();
             SalamanderGeneral->ShowMessageBox(SalamanderGeneral->GetErrorText(err), TitleWMobileError, MSGBOX_ERROR);
@@ -702,7 +702,7 @@ CRAPI::CopyFileToPC(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFai
     if (srcHandle == INVALID_HANDLE_VALUE)
         goto ONERROR_SRC;
 
-    size = GetFileSize(srcHandle, NULL); //JR REVIEW: Na Windows Mobile asi nebudou soubory > 4 GB
+    size = GetFileSize(srcHandle, NULL); // JR REVIEW: Files larger than 4 GB likely won't exist on Windows Mobile
     if (size == 0xFFFFFFFF)
         goto ONERROR_SRC;
 
@@ -748,7 +748,7 @@ CRAPI::CopyFileToPC(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFai
         }
     } while (read >= sizeof(buffer));
 
-    ::SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); //JR REVIEW: ignorovat pripadne chyby?
+    ::SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); // JR REVIEW: should we ignore potential errors?
     ::SetFileAttributes(lpNewFileName, attr);
 
 RETURN:
@@ -762,7 +762,7 @@ RETURN:
 ONERROR_SRC:
     err = GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpExistingFileName;
     goto RETURN;
@@ -770,7 +770,7 @@ ONERROR_SRC:
 ONERROR_DST:
     err = ::GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpNewFileName;
     goto RETURN;
@@ -793,7 +793,7 @@ CRAPI::CopyFileToCE(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFai
     if (srcHandle == INVALID_HANDLE_VALUE)
         goto ONERROR_SRC;
 
-    size = ::GetFileSize(srcHandle, NULL); //JR REVIEW: Na Windows Mobile asi nebudou soubory > 4 GB
+    size = ::GetFileSize(srcHandle, NULL); // JR REVIEW: Files larger than 4 GB likely won't exist on Windows Mobile
     if (size == 0xFFFFFFFF)
         goto ONERROR_SRC;
 
@@ -839,7 +839,7 @@ CRAPI::CopyFileToCE(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFai
         }
     } while (read >= sizeof(buffer));
 
-    SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); //JR REVIEW: ignorovat pripadne chyby?
+    SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); // JR REVIEW: should we ignore potential errors?
     SetFileAttributes(lpNewFileName, attr);
 
 RETURN:
@@ -856,7 +856,7 @@ RETURN:
 ONERROR_SRC:
     err = ::GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpExistingFileName;
     goto RETURN;
@@ -864,7 +864,7 @@ ONERROR_SRC:
 ONERROR_DST:
     err = GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpNewFileName;
     goto RETURN;
@@ -887,7 +887,7 @@ CRAPI::CopyFile(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFailIfE
     if (srcHandle == INVALID_HANDLE_VALUE)
         goto ONERROR_SRC;
 
-    size = GetFileSize(srcHandle, NULL); //JR REVIEW: Na Windows Mobile asi nebudou soubory > 4 GB
+    size = GetFileSize(srcHandle, NULL); // JR REVIEW: Files larger than 4 GB likely won't exist on Windows Mobile
     if (size == 0xFFFFFFFF)
         goto ONERROR_SRC;
 
@@ -933,7 +933,7 @@ CRAPI::CopyFile(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, BOOL bFailIfE
         }
     } while (read >= sizeof(buffer));
 
-    SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); //JR REVIEW: ignorovat pripadne chyby?
+    SetFileTime(dstHandle, &creationTime, &accessedTime, &writeTime); // JR REVIEW: should we ignore potential errors?
     SetFileAttributes(lpNewFileName, attr);
 
 RETURN:
@@ -950,7 +950,7 @@ RETURN:
 ONERROR_SRC:
     err = GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpExistingFileName;
     goto RETURN;
@@ -958,7 +958,7 @@ ONERROR_SRC:
 ONERROR_DST:
     err = GetLastError();
     if (!err)
-        err = E_FAIL; //pro jistotu
+        err = E_FAIL; // just in case
     if (errorFileName)
         *errorFileName = lpNewFileName;
     goto RETURN;
@@ -1037,10 +1037,10 @@ BOOL CRAPI::CheckAndCreateDirectory(const char* dir, HWND parent, BOOL quiet, ch
     if (newDir != NULL)
         newDir[0] = 0;
     //  if (parent == NULL) parent = MainWindow->HWindow;
-    if (attrs == 0xFFFFFFFF) // asi neexistuje, umoznime jej vytvorit
+    if (attrs == 0xFFFFFFFF) // probably does not exist; allow creation
     {
-        char root[MAX_PATH] = "\\";      //GetRootPath(root, dir);
-        if (strlen(dir) <= strlen(root)) // dir je root adresar
+        char root[MAX_PATH] = "\\";      // GetRootPath(root, dir);
+        if (strlen(dir) <= strlen(root)) // dir is the root directory
         {
             sprintf(buf, LoadStr(IDS_ERR_CREATEDIR), dir);
             if (errBuf != NULL)
@@ -1060,7 +1060,7 @@ BOOL CRAPI::CheckAndCreateDirectory(const char* dir, HWND parent, BOOL quiet, ch
         {
             strcpy(name, dir);
             char* s;
-            while (1) // najdeme prvni existujici adresar
+            while (1) // find the first existing directory
             {
                 s = strrchr(name, '\\');
                 if (s == NULL)
@@ -1082,14 +1082,14 @@ BOOL CRAPI::CheckAndCreateDirectory(const char* dir, HWND parent, BOOL quiet, ch
                 else
                 {
                     strcpy(name, root);
-                    break; // uz jsme na root-adresari
+                    break; // already at the root directory
                 }
                 attrs = GetFileAttributes(name);
-                if (attrs != 0xFFFFFFFF) // jmeno existuje
+                if (attrs != 0xFFFFFFFF) // the name exists
                 {
                     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-                        break; // budeme stavet od tohoto adresare
-                    else       // je to soubor, to by neslo ...
+                        break; // we will build from this directory
+                    else       // it is a file, that would not work...
                     {
                         sprintf(buf, LoadStr(IDS_ERR_DIRNAMEISFILE), name);
                         if (errBuf != NULL)
@@ -1154,7 +1154,7 @@ BOOL CRAPI::CheckAndCreateDirectory(const char* dir, HWND parent, BOOL quiet, ch
     }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
         return TRUE;
-    else // soubor, to by neslo ...
+    else // file, that would not work...
     {
         sprintf(buf, LoadStr(IDS_ERR_DIRNAMEISFILE), dir);
         if (errBuf != NULL)

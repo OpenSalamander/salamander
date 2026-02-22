@@ -5,35 +5,34 @@
 #ifndef __EXIF_H
 #define __EXIF_H
 
-// EXIF_DLL_VERSION: zvysovat pro kazde nove releasnute EXIF.DLL
+// EXIF_DLL_VERSION: increase it for each newly released EXIF.DLL
 // Version 6: 2007.05.15: ConvertUTF8ToUCS2 is exported
 
-// POZOR: verzi je potreba zvysit jeste v souboru exif.def
+// NOTE: the version also needs to be increased in the exif.def file
 #define EXIF_DLL_VERSION 8
 
 #ifndef RC_INVOKED
 
-// vraci verzi EXIF.DLL (1, 2, ...)
+// returns the EXIF.DLL version (1, 2, ...)
 typedef DWORD(WINAPI* EXIFGETVERSION)();
 
-// EXIFENUMPROC je callback volany z EXIFGETINFO pro jednotlive pary [tag, value] z EXIF zaznamu
-// 'tagNum' je numericka reprezentace tagu
-// 'tagTitle' je kratky nazev tagu
-// 'tagDescription' je dlouhy popis tagu (pro napovedu)
-// 'value' je hodnota tagu
-// 'lParam' je uzivatelska hodnota z volani EXIFGETINFO
+// EXIFENUMPROC is a callback called from EXIFGETINFO for individual [tag, value] pairs from the EXIF record
+// 'tagNum' is a numeric representation of the tag
+// 'tagTitle' is a short tag name
+// 'tagDescription' is a long description of the tag (for help)
+// 'value' is the tag value
+// 'lParam' is the user value from the EXIFGETINFO call
 typedef BOOL(CALLBACK* EXIFENUMPROC)(DWORD tagNum,
                                      const char* tagTitle,
                                      const char* tagDescription,
                                      const char* value,
                                      LPARAM lParam);
 
-// EXIFGETINFO je export exif.dll, ktery vytahne EXIF informace z obrazku
-// 'fileName' a bude volat 'enumFunc' pro jednotlive tagy; pri volani bude
-// predavat uzivatelskou hodnotu 'lParam'
-// fileName je datovy buffer delky dataLen, pokud je dataLen ruzne od nuly.
-// v pripade neuspechu (nenalezeni EXIF zaznamu) vrati FALSE, jinak vola 'enumFunc'
-// a na zaver vrati TRUE
+// EXIFGETINFO is an exif.dll export that extracts EXIF information from the image 'fileName'
+// and calls 'enumFunc' for individual tags; each call passes along the user value 'lParam'
+// fileName is a data buffer of length dataLen if dataLen is non-zero.
+// if unsuccessful (EXIF record not found) it returns FALSE; otherwise it calls 'enumFunc'
+// and finally returns TRUE
 typedef BOOL(WINAPI* EXIFGETINFO)(const char* fileName,
                                   int dataLen,
                                   EXIFENUMPROC enumFunc,

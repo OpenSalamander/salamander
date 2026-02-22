@@ -33,10 +33,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // want focus from DefDlgProc
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -78,7 +78,7 @@ void CConfigPageViewer::Transfer(CTransferInfo& ti)
 // CConfigDialog
 //
 
-// pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
+// helper object for centering the configuration dialog to the parent
 class CCenteredPropertyWindow : public CWindow
 {
 protected:
@@ -98,10 +98,10 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_APP + 1000: // we should detach from the dialog (already centered)
         {
             DetachWindow();
-            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            delete this; // a bit of a hack, but nobody will touch 'this' anymore, so it's fine
             return 0;
         }
         }
@@ -127,24 +127,24 @@ typedef struct DLGTEMPLATEEX
 #include <poppack.h>
 #endif // LPDLGTEMPLATEEX
 
-// pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
+// helper callback for centering the configuration dialog to the parent and removing the '?' button from the caption
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
-    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
+    if (uMsg == PSCB_INITIALIZED) // attach to the dialog
     {
         CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
         if (wnd != NULL)
         {
             wnd->AttachToWindow(HWindow);
             if (wnd->HWindow == NULL)
-                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+                delete wnd; // window is not attached, destroy it right here
             else
             {
-                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // to detach CCenteredPropertyWindow from the dialog
             }
         }
     }
-    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    if (uMsg == PSCB_PRECREATE) // remove the '?' button from the property sheet header
     {
         // Remove the DS_CONTEXTHELP style from the dialog box template
         if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -9,50 +10,51 @@
 
 //-------------------------------------------------------------------------
 //
-// Poznamky k implentaci IMallocSpy
+// Notes on the implementation of IMallocSpy
 //
-// 1) OLE cachuje (nejen) BSTR, takze pod beznym OS vraci IMallocSpy nesmyslne
-//    leaky. Cachovani lze odstavit nastavenim ENV promenne OANOCACHE=1 a pouzitim
-//    debug (Checked) verze OLE. Idealni je cely Checked Build W2K nebo vytahnout
-//    patricna DLL ze Service Packu v Checked verzi, ktery je volne k mani.
+// 1) OLE caches (among other things) BSTRs, so under a normal OS it returns
+//    nonsensical leaks via IMallocSpy. Caching can be disabled by setting the environment
+//    variable OANOCACHE=1 and using the debug (Checked) version of OLE. Ideally,
+//    use the complete Checked Build of W2K or extract the appropriate DLL from the
+//    Checked version of the Service Pack which is freely available.
 //
-// 2) Pokud v OLE zustanou nejake leaky, vrati pri pokusu o odregistraci spye
-//    pomoci CoRevokeMallocSpy hodnotu E_ACCESSDENIED a odlozi volani metody
-//    Release na pozdeji. V realu uz nam Release nezavola nikdy (W2K). Protoze
-//    nektere alokace se uvolnuji az behem DLL_PROCESS_DETACH v OLEAUT32.DLL,
-//    bude je nam spy hlasit jako leaky. Je sikovne hlasene leaky porovnat
-//    s tim, co pod W2K Checked Build hlasi CairOLE system do debug okna.
+// 2) If there are any remaining leaks in OLE, when trying to unregister the spy via
+//    CoRevokeMallocSpy, it returns E_ACCESSDENIED value and postpones the Release call.
+//    In practice, Release is never going to call us (W2K). Because some allocations are
+//    freed only during DLL_PROCESS_DETACH in OLEAUT32.DLL, the spy reports
+//    them as leaks. It is useful to compare the reported leaks with what the
+//    CairOLE system outputs to the debug window under the W2K Checked Build.
 //
-// 3) Bylo treba predejit dvoum problemum: nechceme, aby nam CRT hlasil memory
-//    leak, ktery by vzniknul alokovani instance CMallocSpy na heapu.
-//    Zaroven potrebujeme zahovat instanci tohoto obejktu co nejdele, protoze
-//    OLE bude volat nase metody (zejmena PredFree a PostFree s fSpy == FALSE)
-//    i po zavolani CoRevokeMallocSpy. Resime to kopii objektu do staticke
-//    pameti, viz OleSpyRegister(). Nebude tak nikdy zavolan destruktor a
-//    kriticka sekce nebude zrusena.
+// 3) Two issues had to be avoided: we do not want the CRT to report a memory
+//    leak caused by allocating the CMallocSpy instance on the heap. At the same
+//    time, we need to keep the instance of this object alive as long as possible because OLE will
+//    call our methods (especially PreFree and PostFree with fSpy == FALSE) even
+//    after CoRevokeMallocSpy is called. We solve it by copying the object into static
+//    memory in OleSpyRegister(). The destructor is thus never called and the
+//    critical section is never destroyed.
 //
-// 4) Pokud testujeme pod W2K Checked Build, lze z OLE dostat vetsi mnozstvi
-//    hlaseni pomoci pridani sekce do souboru win.ini:
+// 4) When testing under W2K Checked Build, more reports can be obtained from OLE by
+//    adding a section to win.ini file:
 //    [CairOLE InfoLevels]
 //    cairole=7
 //    heap=7
 //
-//    pokud chceme zobrazit detailni hlasky vcetne callstacku jednotlivych alokaci,
-//    je treba do obou hodnot nastavit dekadicky ekvivalent k 0xffffffff:
+//    if we want to display detailed messages including call stacks of individual allocations
+//    we have to set both values to the decimal equivalent of 0xffffffff:
 //    [CairOLE InfoLevels]
 //    cairole=4294967295
 //    heap=4294967295
 //
-//    CairOLE casto hlasi vetsi pocet leaku nez ktery nam detekuje spy. Bezne take
-//    je, ze CairOLE hlasi leaky, zatimco spy hlasi ze je vse OK. Podstatne je, aby
-//    tyto leaky byly konstantni (napriklad na start/exit Salamandera hlasi CairOLE
-//    13 leaku a ~800 bajtu pameti). Toto cislo vsak nijak neroste, takze to povazuji
-//    za nezajimavou informaci.
+//    CairOLE often reports a higher amount of leaks than our spy detects. It is also common
+//    that CairOLE reports leaks while the spy reports that everything is OK. What
+//    matters is that these leaks are consistent (for example on Salamander
+//    start/exit CairOLE reports 13 leaks and about 800 bytes of memory). Since this number
+//    does not increase, I consider it unimportant.
 //
-// 5) Spy bude hlasit leaky z volani funkci jako je SHBrowseForFolder nebo
-//    SHGetSpecialFolderLocation. Nejedna se o leaky, ale o cachovane PIDLy,
-//    ktere shell32.dll uvolnuje az pri svem odpojeni od procesu. Rozpozname
-//    je tak, ze pri opakovanem volani funkci se nebudou leaky mnozit.
+// 5) The spy will report leaks from calls to functions like SHBrowseForFolder or
+//    SHGetSpecialFolderLocation. These are not real leaks but cached PIDLs which
+//    shell32.dll frees only when it detaches from the process. We can recognize
+//    them by the fact that repeated calls do not increase the number of leaks.
 //
 
 //-------------------------------------------------------------------------
@@ -122,7 +124,7 @@
 #define IS_VALID_READ_BUFFER(ptr, type, len) (!IsBadReadPtr((ptr), sizeof(type)*(len)))
 #define IS_VALID_PIDL(ptr) (IsValidPIDL(ptr))
 
-// IsBadReadPtr hazi v debug verzi exceptions a to nechceme
+// IsBadReadPtr throws exceptions in the debug version and we don't want that
 BOOL
 IsValidPIDL(LPCITEMIDLIST pidl)
 {
@@ -132,7 +134,7 @@ IsValidPIDL(LPCITEMIDLIST pidl)
 }
 */
 
-// IsBadReadPtr hazi v debug verzi exceptions a to nechceme
+// IsBadReadPtr throws exceptions in the debug version and we don't want that
 BOOL IsGoodPIDL(LPCITEMIDLIST pidl, int cb)
 {
     if (cb < sizeof(USHORT) || cb < (int)(pidl->mkid.cb + sizeof(USHORT)))
@@ -141,7 +143,7 @@ BOOL IsGoodPIDL(LPCITEMIDLIST pidl, int cb)
     if (pidl->mkid.cb > 512)
         return FALSE;
 
-    if (_ILNext(pidl)->mkid.cb == 0) // terminator == validni
+    if (_ILNext(pidl)->mkid.cb == 0) // terminator == valid
         return TRUE;
 
     cb -= pidl->mkid.cb;
@@ -320,38 +322,38 @@ void _OutputDebugString(BOOL useTServer, const char* text)
 
 #define SPYSIG 0x66FFAA55
 
-// nas pomocny datovy blok umistovany pred vlastni alokovana data
+// our helper data block placed before the actual allocated data
 
-#define SPYBLK_STACKLEN 100 // pocet znaku z callstacku, vcetne terminatoru
+#define SPYBLK_STACKLEN 100 // number of characters from the call stack including the terminator
 
 struct SPYBLK
 {
-    DWORD dwSig;                       // signatura
-    SPYBLK* psbNext;                   // nasledujici alokovany blok
-    SPYBLK* psbPrev;                   // predchozi alokovany blok
-    SIZE_T cbRequest;                  // pozadovana velikost
-    DWORD cRealloc;                    // kolikrat byla polozka realokovana
-    DWORD cOrder;                      // kolikata alokace celkem to byla (pro break)
-    DWORD dwThreadId;                  // ze ktereho threadu je leak?
-    char szStackHead[SPYBLK_STACKLEN]; // prvni radek z call stacku
-    char szStackTail[SPYBLK_STACKLEN]; // posledni radek z call stacku
+    DWORD dwSig;                       // signature
+    SPYBLK* psbNext;                   // next allocated block
+    SPYBLK* psbPrev;                   // previous allocated block
+    SIZE_T cbRequest;                  // required size
+    DWORD cRealloc;                    // how many times the item was reallocated
+    DWORD cOrder;                      // overall allocation count (used for breakpoints)
+    DWORD dwThreadId;                  // which thread leaked?
+    char szStackHead[SPYBLK_STACKLEN]; // the first line from the call stack
+    char szStackTail[SPYBLK_STACKLEN]; // the last line from the call stack
 };
 
 class CMallocSpy : public IMallocSpy
 {
 private:
-    ULONG _ulRef;      // pocet referenci objektu CMallocSpy
-    SIZE_T _iAllocs;   // pocet alokaci
-    SIZE_T _iBytes;    // aktualni alokovana velikost
-    SPYBLK* _psbHead;  // prvni ze seznamu alokaci
-    SIZE_T _cbRequest; // cache z PRE -> POST
-    //void             *_pvRequest;   // cache z PRE -> POST
-    LONG _iTotalAllocs;   // celkovy pocet alokaci
-    SIZE_T _iTotalBytes;  // celkovy pocet bajtu
-    SIZE_T _iPeakAllocs;  // maximalni pocet alokaci v jednu chvili
-    SIZE_T _iPeakBytes;   // maximalni pocet bajtu v jedni chvili
-    LONG _iBreakAlloc;    // alokace, na ktere mame vyvolat break (-1 == no break)
-    CRITICAL_SECTION _CS; // kriticka sekce pro pristup k nasim datum (napriklad behem dumpu)
+    ULONG _ulRef;      // number of CMallocSpy object references
+    SIZE_T _iAllocs;   // number of allocations
+    SIZE_T _iBytes;    // currently allocated size
+    SPYBLK* _psbHead;  // first in the list of allocations
+    SIZE_T _cbRequest; // cache from PRE -> POST
+    //void             *_pvRequest;   // cache from PRE -> POST
+    LONG _iTotalAllocs;   // total number of allocations
+    SIZE_T _iTotalBytes;  // total number of bytes
+    SIZE_T _iPeakAllocs;  // maximum number of allocations at one time
+    SIZE_T _iPeakBytes;   // maximum number of bytes at one time
+    LONG _iBreakAlloc;    // allocation on which we have to trigger a break (-1 == no break)
+    CRITICAL_SECTION _CS; // critical section for access to our data (for example during a dump)
 
 public:
     CMallocSpy();
@@ -439,8 +441,8 @@ CMallocSpy::CMallocSpy()
 
 CMallocSpy::~CMallocSpy()
 {
-    // POZOR, tento destruktor bude zavolan pro templateSpy, viz dole
-    // nesmi zrusit kritickou sekci
+    // NOTE: this destructor will be called for templateSpy, see below
+    // it must not destroy the critical section
     //  DeleteCriticalSection(&_CS);
 }
 
@@ -534,7 +536,7 @@ STDMETHODIMP_(void)
 CMallocSpy::PostFree(BOOL fSpyed)
 {
 
-    // Tyto dealokace chodi pravidelne, nebudeme s nima spinit log
+    // These deallocations occur regularly; we won't pollute the log with them
     //  if (!fSpyed)
     //  {
     //    char buff[200];
@@ -657,13 +659,13 @@ void CMallocSpy::SpyEnqueue(SPYBLK* psb)
     _iTotalAllocs++;
     _iTotalBytes += psb->cbRequest;
 
-    // pouze pro statisticke ucely
+    // for statistical purposes only
     if (_iBytes > _iPeakBytes)
         _iPeakBytes = _iBytes;
     if (_iAllocs > _iPeakAllocs)
         _iPeakAllocs = _iAllocs;
 
-    // zapojime na zacatek
+    // insert at the beginning
     psb->psbPrev = NULL;
     psb->psbNext = _psbHead;
     if (_psbHead != NULL)
@@ -740,8 +742,8 @@ CMallocSpy::SpyPreFree(void* pvRequest)
 size_t
 CMallocSpy::SpyPreRealloc(void* pvRequest, size_t cbRequest, void** ppv)
 {
-    ASSERT(pvRequest != NULL); // v tomto pripade vola OLE IMallocSpy::PreAlloc
-    ASSERT(cbRequest != 0);    // v tomto pripade vola OLE IMallocSpy::PreFree
+    ASSERT(pvRequest != NULL); // in this case OLE calls IMallocSpy::PreAlloc
+    ASSERT(cbRequest != 0);    // in this case OLE calls IMallocSpy::PreFree
 
     size_t cb;
 
@@ -822,7 +824,7 @@ STDAPI _StrRetToBuf(STRRET* psr, LPCITEMIDLIST pidl, LPSTR pszBuf, UINT cchBuf)
 
     if (cchBuf == 0)
     {
-        TRACE_E("_StrRetToBuf cchBuf=0"); // na tohle nejsme staveni
+        TRACE_E("_StrRetToBuf cchBuf=0"); // we are not built for this
         return hres;
     }
 
@@ -902,15 +904,15 @@ BOOL CMallocSpy::DumpLeaks()
     int leakedAllocs = 0;
     SPYBLK* psbWalk = _psbHead;
 
-    // dojedem na konec a pojedem dopredu
+    // reach the end and move forward
     if (psbWalk != NULL)
         while (psbWalk->psbNext != NULL)
             psbWalk = psbWalk->psbNext;
 
     while (psbWalk != NULL)
     {
-        // FIXME_X64 psbWalk->cbRequest je typu size_t, ale tiskneme ho jako %d, coz je zrejme chyba
-        // projit zbytek kodu, kde by se chyba jeste mohla vyskytovat, zrejme by melo byt (%Id) - http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
+        // FIXME_X64 psbWalk->cbRequest is of type size_t, yet we print it as %d which is likely wrong
+        // check the rest of the code where the bug might appear; it probably should be (%Id) - http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
         sprintf(buff, "[%u] Leaked %Iu bytes at 0x%p, from thread 0x%X",
                 psbWalk->cOrder, psbWalk->cbRequest,
                 (BYTE*)psbWalk + sizeof(SPYBLK), psbWalk->dwThreadId);
@@ -932,14 +934,14 @@ BOOL CMallocSpy::DumpLeaks()
         }
         __try
         {
-            int iUniFlags = IS_TEXT_UNICODE_ASCII16 | IS_TEXT_UNICODE_STATISTICS;  // kazde volani IsTextUnicode musi mit svoji promennou, protoze ji prepise
+            int iUniFlags = IS_TEXT_UNICODE_ASCII16 | IS_TEXT_UNICODE_STATISTICS;  // each IsTextUnicode call needs its own variable because the function modifies it
             int iUniFlags2 = IS_TEXT_UNICODE_ASCII16 | IS_TEXT_UNICODE_STATISTICS; // --||--
             void* pvRequest = (BYTE*)psbWalk + sizeof(SPYBLK);
             if (psbWalk->cbRequest >= *((USHORT*)pvRequest) &&
-                *((USHORT*)pvRequest) != 0 && // dve nuly na zacatku pameti nebudeme povazovat za PIDL
+                *((USHORT*)pvRequest) != 0 && // two zeros at the start of memory are not considered a PIDL
                 IsGoodPIDL((LPCITEMIDLIST)pvRequest, (int)psbWalk->cbRequest))
             {
-                // nejaky PIDL
+                // some PIDL
                 sprintf(buff, "  Data is pidl %s", DumpPidl((LPITEMIDLIST)pvRequest));
                 _OutputDebugString(TRUE, buff);
 
@@ -987,7 +989,7 @@ BOOL CMallocSpy::DumpLeaks()
                 }
             }
             else if (psbWalk->cbRequest > 8 &&
-                     *((DWORD*)pvRequest) != 0 && // prvni 4 bajty jsou 0 -> to precni neni UNICODE string
+                     *((DWORD*)pvRequest) != 0 && // the first 4 bytes are 0 -> so this is certainly not a UNICODE string
                      IsTextUnicode((LPWSTR)pvRequest, (int)psbWalk->cbRequest - 2, &iUniFlags))
             {
                 sprintf(buff, "  Data is UNICODE string '%ls'", (LPWSTR)pvRequest);
@@ -1044,15 +1046,16 @@ BOOL OleSpyRegister()
         return FALSE;
     }
 
-    // korekrni instance objetku
+    // a correct instance of the object
     CMallocSpy templateSpy;
 
-    // cunarna: nechceme memory leaky v CRT, takze objekt nealokujeme na heapu
-    // zaroven chceme korektne nakonstruovanou VMT, takze okopirujeme obsah predlohy
+    // dirty hack: we do not want memory leaks in the CRT so the object is not
+    // allocated on the heap, and we also need a correctly constructed VMT, so
+    // we copy the contents of the template
     static byte _Spy[sizeof(templateSpy)];
     memcpy(_Spy, &templateSpy, sizeof(templateSpy));
 
-    // CRT nevi, ze OleSpy je objekt, takze nikdy nezavola jeho destruktor
+    // the CRT does not know that OleSpy is an object, so it never calls its destructor
     OleSpy = (CMallocSpy*)_Spy;
     HRESULT hr = CoRegisterMallocSpy(OleSpy);
     if (hr == CO_E_OBJISREG)
@@ -1160,7 +1163,7 @@ DWORD WINAPI OleSpyStressTestF(void *param)
 
 void OleSpyStressTest()
 {
-  // nahodime thready, ve kterych potrapime IMalloc
+  // start threads that stress IMalloc
 
   DWORD threadID;
   HANDLE thread1 = HANDLES(CreateThread(NULL, 0, OleSpyStressTestF, 0, 0, &threadID));

@@ -12,38 +12,38 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// part of the CPluginInterface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is unloaded
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing modified Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 // PluginDataInterface
 CPluginDataInterface PluginDataInterface;
 
-// konfigurace
+// configuration
 SGlobals G;
 
-// jmena klicu v Registry
+// registry key names
 LPCTSTR KEY_LISTMAILHEADERS = _T("List Mail Headers");
 LPCTSTR KEY_LISTMESSAGEBODIES = _T("List Message Bodies");
 LPCTSTR KEY_APPENDCHARSET = _T("Append Charset");
 LPCTSTR KEY_LISTATTACHMENTS = _T("List Attachments");
 LPCTSTR KEY_DONTSHOWANYMORE = _T("DontShowAnymore");
 
-// ConfigVersion: 0 - default (bez loadu),
-//                1 - verze s konfiguraci v registry (uz byla pouzivana, jen bez cisla konfigurace)
-//                2 - verze po zavedeni cisla konfigurace + yEnc
-//                3 - Pridana podpora CNM (Mercury + Pegasus Mail (PMail))
+// ConfigVersion: 0 - default (before any configuration is loaded),
+//                1 - version with configuration in the registry (used before, only without a configuration number)
+//                2 - version after introducing the configuration number + yEnc
+//                3 - Added support for CNM (Mercury + Pegasus Mail (PMail))
 
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 3
@@ -74,31 +74,31 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current version of Salamander and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "UnMIME" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnMIME" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
@@ -136,11 +136,11 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     G.bAppendCharset = TRUE;
     G.bListAttachments = TRUE;
     G.nDontShowAnymore = 0;
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = 1; // verze s konfiguraci v registry (uz byla pouzivana, jen bez cisla konfigurace)
+            ConfigVersion = 1; // version with configuration in the registry (used before, only without a configuration number)
         }
         registry->GetValue(regKey, KEY_LISTMAILHEADERS, REG_DWORD, &G.bListMailHeaders, sizeof(DWORD));
         registry->GetValue(regKey, KEY_LISTMESSAGEBODIES, REG_DWORD, &G.bListMessageBodies, sizeof(DWORD));
@@ -207,19 +207,19 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // zakladni cast:
+    // base section:
     salamander->AddCustomUnpacker("UnMIME (Plugin)", "*.eml;*.b64;*.uue;*.xxe;*.hqx;*.ntx;*.cnm",
                                   ConfigVersion < 3);
     salamander->AddPanelArchiver("eml;b64;uue;xxe;hqx;ntx;cnm", FALSE, FALSE);
 
-    // cast pro upgrady:
-    if (ConfigVersion < 2) // verze po zavedeni cisla konfigurace + yEnc
+    // upgrade section:
+    if (ConfigVersion < 2) // version after introducing the configuration number + yEnc
     {
-        salamander->AddPanelArchiver("ntx", FALSE, TRUE); // pridani pripony "ntx"
+        salamander->AddPanelArchiver("ntx", FALSE, TRUE); // add the "ntx" extension
     }
     if (ConfigVersion < 3) // cnm: file format used by Mercury & PMail emailing system
     {
-        salamander->AddPanelArchiver("cnm", FALSE, TRUE); // pridani pripony "cnm"
+        salamander->AddPanelArchiver("cnm", FALSE, TRUE); // add the "cnm" extension
     }
 }
 
@@ -254,11 +254,11 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     CALL_STACK_MESSAGE2("CPluginInterfaceForArchiver::ListArchive(, %s, ,)", fileName);
     pluginData = &PluginDataInterface;
 
-    // alokace ArchiveData - bude obsahovat data o obsahu "archivu"
+    // allocate ArchiveData - it will hold data about the contents of the "archive"
     CArchiveData* ArchiveData = new CArchiveData;
     ArchiveData->RefCount = 0;
 
-    // zjistim filetime "archivu" - stejny budou mit i soubory uvnitr
+    // get the filetime of the "archive" - files inside will have the same time
     HANDLE hFile = CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if (hFile != INVALID_HANDLE_VALUE)
     {
@@ -266,7 +266,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
         CloseHandle(hFile);
     }
 
-    // analyza souboru
+    // analyze the file
     if (!ParseMailFile(fileName, &ArchiveData->ParserOutput, G.bAppendCharset))
     {
         delete ArchiveData;
@@ -278,7 +278,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     CFileData fd;
     int ret = TRUE;
     BOOL bDontShow[2][2] = {{0, 0}, {0, 0}}, bDontShowAgainUnknown = FALSE;
-    // vylistovani nalezenych souboru
+    // list the files that were found
     int i;
     for (i = 0; i < ArchiveData->ParserOutput.Markers.Count; i++)
     {
@@ -311,7 +311,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
                     fd.NameLen = strlen(fd.Name);
                     fd.Ext = strrchr(fd.Name, '.');
                     if (fd.Ext != NULL)
-                        fd.Ext++; // ".cvspass" ve Windows je pripona
+                        fd.Ext++; // ".cvspass" is an extension in Windows
                     else
                         fd.Ext = fd.Name + fd.NameLen;
                     fd.Size = CQuadWord(m->iSize, 0);
@@ -384,7 +384,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
     CQuadWord size, totalSize(0, 0);
     const CFileData* fileData;
     CArchiveData* pAD = NULL;
-    // oznacim pozadovane soubory
+    // select the requested files
     while ((nextName = next(NULL, 0, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
     {
         if (pAD == NULL)
@@ -395,14 +395,14 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
         pAD->ParserOutput.SelectBlock(nextName);
         totalSize += size;
     }
-    // test volneho mista
+    // check for free space
     if (!SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(), targetDir, totalSize, LoadStr(IDS_PLUGINNAME)))
         return FALSE;
     // openprogressdialog
     char title[MAX_PATH + 32];
     sprintf(title, LoadStr(IDS_EXTRTITLE), SalamanderGeneral->SalPathFindFileName(fileName));
     Salamander->OpenProgressDialog(title, TRUE, NULL, FALSE);
-    // vypakovani
+    // extraction
     int ret = TRUE;
     BOOL bAborted;
     if (!DecodeSelectedBlocks(fileName, &pAD->ParserOutput, targetDir,
@@ -427,7 +427,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     CALL_STACK_MESSAGE5("CPluginInterfaceForArchiver::UnpackWholeArchive(, %s, %s, %s, %d,)",
                         fileName, mask, targetDir, delArchiveWhenDone);
     CArchiveData ArchiveData;
-    // zjistim filetime "archivu" - stejny budou mit i soubory uvnitr
+    // get the filetime of the "archive" - files inside will have the same time
     HANDLE hFile = CreateFile(fileName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
     if (hFile != INVALID_HANDLE_VALUE)
     {
@@ -439,7 +439,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     sprintf(title, LoadStr(IDS_EXTRTITLE), SalamanderGeneral->SalPathFindFileName(fileName));
     Salamander->OpenProgressDialog(title, TRUE, NULL, FALSE);
     Salamander->ProgressDialogAddText(LoadStr(IDS_PARSE), FALSE);
-    // analyza souboru
+    // analyze the file
     if (!ParseMailFile(fileName, &ArchiveData.ParserOutput, G.bAppendCharset))
     {
         if (iErrorStr != -1)
@@ -449,7 +449,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     }
     if (delArchiveWhenDone)
         archiveVolumes->Add(fileName, -2);
-    // oznacim soubory - stejnym zpusobem jako pri listovani
+    // select the files - the same way as when listing
     ArchiveData.ParserOutput.UnselectAll();
     CQuadWord totalSize(0, 0);
     BOOL bDontShow[2][2] = {{0, 0}, {0, 0}};
@@ -478,7 +478,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             }
         }
     }
-    // vypakovani
+    // extraction
     int ret = TRUE;
     BOOL bAborted;
     if (!DecodeSelectedBlocks(fileName, &ArchiveData.ParserOutput, targetDir,

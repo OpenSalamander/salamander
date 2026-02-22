@@ -1,10 +1,11 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 #include <shlwapi.h>
-#undef PathIsPrefix // jinak kolize s CSalamanderGeneral::PathIsPrefix
+#undef PathIsPrefix // otherwise conflicts with CSalamanderGeneral::PathIsPrefix
 
 #include "htmlhelp.h"
 #include "stswnd.h"
@@ -38,17 +39,17 @@ extern "C"
 #include "find.h"
 #include "viewer.h"
 
-// critical shutdown: kolik maximalne casu muzeme stravit ve WM_QUERYENDSESSION (pak prijde
-// KILL od woken), je to 5s (5s pri otevrenem msgboxu, 10s bez pumpovani zprav), nechal jsem
-// rezervu 500ms, zkousel jsem na Vista, Win7, Win8, Win10
+// critical shutdown: the maximum time we can spend in WM_QUERYENDSESSION (after that,
+// KILL comes from Windows). It is 5s (5s with an open message box, 10s without pumping
+// messages). I left a 500ms reserve. Tested on Vista, Win7, Win8, Win10.
 #define QUERYENDSESSION_TIMEOUT 4500
 
-// promenne pouzite behem ukladani konfigurace pri shutdownu, log-offu nebo restartu (musime
-// pumpovat zpravy, aby nas system nesestrelil jako "not responding" softik)
-CWaitWindow* GlobalSaveWaitWindow = NULL; // pokud existuje globalni wait okenko pro Save, je zde (jinak je zde NULL)
-int GlobalSaveWaitWindowProgress = 0;     // aktualni hodnota progresu globalniho wait okenka pro Save
+// variables used when saving configuration during shutdown, log-off or restart
+// we must pump messages so the system does not kill us as "not responding"
+CWaitWindow* GlobalSaveWaitWindow = NULL; // if a global wait window for Save exists, it's here (otherwise NULL)
+int GlobalSaveWaitWindowProgress = 0;     // current progress value of the global wait window for Save
 
-// pujcime si konstanty z novejsiho SDK
+// borrow constants from a newer SDK
 #define WM_APPCOMMAND 0x0319
 #define FAPPCOMMAND_MOUSE 0x8000
 #define FAPPCOMMAND_KEY 0
@@ -57,7 +58,7 @@ int GlobalSaveWaitWindowProgress = 0;     // aktualni hodnota progresu globalnih
 #define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
 #define APPCOMMAND_BROWSER_BACKWARD 1
 #define APPCOMMAND_BROWSER_FORWARD 2
-/* zatim nepodporujeme
+/* not supported yet
 #define APPCOMMAND_BROWSER_SEARCH         5
 #define APPCOMMAND_HELP                   27
 #define APPCOMMAND_BROWSER_REFRESH        3
@@ -67,16 +68,16 @@ int GlobalSaveWaitWindowProgress = 0;     // aktualni hodnota progresu globalnih
 #define APPCOMMAND_PASTE                  38
 */
 
-const int SPLIT_LINE_WIDTH = 3; // sirka Split line v bodech
-// pokud je zobrazena middle toolbar, bude slozeni SPLIT_LINE_WIDTH + toolbar + SPLIT_LINE_WIDTH
+const int SPLIT_LINE_WIDTH = 3; // width of the split line in points
+// if the middle toolbar is visible, the composition will be SPLIT_LINE_WIDTH + toolbar + SPLIT_LINE_WIDTH
 
-const int MIN_WIN_WIDTH = 2; // minimalni sirka panelu
+const int MIN_WIN_WIDTH = 2; // minimal panel width
 
 extern BOOL CacheNextSetFocus;
 
 BOOL MainFrameIsActive = FALSE;
 
-// kod pro testovani casovych ztrat
+// code for testing time losses
 /*
   const char *s1 = "aj hjka sakjSJKAHS AJKSH JKDSHFJSDH FJS HDFJSD HFJS";
   const char *s2 = "Aj hjka sakjSJKAHS AJKSH JKDSHFJSDH FJS HDFJSD HFJS";
@@ -110,8 +111,8 @@ BOOL MainFrameIsActive = FALSE;
 // HtmlHelp support
 //
 
-// univerzalni callback pro nas MessagBox, kdyz uzivatel klikne na tlacitko HELP
-// je treba volat napr takto:
+// universal callback for our MessageBox when the user clicks the HELP button
+// should be called, for example, like this:
 //    MSGBOXEX_PARAMS params;
 //    params.Flags = MSGBOXEX_OK | MSGBOXEX_HELP | MSGBOXEX_ICONEXCLAMATION;
 //    params.ContextHelpId = IDH_LICENSE;
@@ -175,15 +176,15 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
             lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
             if (!SalPathAppend(helpPath, helpSubdir, MAX_PATH) ||
                 !DirExists(helpPath))
-            { // neexistuje adresar ziskany z aktualniho .slg souboru Salamandera
+            { // the directory from the current .slg file does not exist
                 lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
-                if (_stricmp(helpSubdir, "english") == 0 || // "english" uz jsme testovali a neexistuje, takze znovu to zkouset nema smysl
+                if (_stricmp(helpSubdir, "english") == 0 || // we already tested "english" and it does not exist so no point in trying again
                     !SalPathAppend(helpPath, "english", MAX_PATH) ||
                     !DirExists(helpPath))
-                { // neexistuje adresar ENGLISH
+                { // the ENGLISH directory does not exist
                     lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
                     if (SalPathAppend(helpPath, "*", MAX_PATH))
-                    { // zkusime najit aspon nejaky jiny adresar
+                    { // try to find at least some other directory
                         WIN32_FIND_DATA data;
                         HANDLE find = HANDLES_Q(FindFirstFile(helpPath, &data));
                         if (find != INVALID_HANDLE_VALUE)
@@ -191,7 +192,7 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
                             do
                             {
                                 if (strcmp(data.cFileName, ".") != 0 && strcmp(data.cFileName, "..") != 0 &&
-                                    (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) // jen pokud jde o adresar
+                                    (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) // only if it is a directory
                                 {
                                     lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
                                     if (SalPathAppend(helpPath, data.cFileName, MAX_PATH))
@@ -273,14 +274,14 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
     }
     }
 
-    if (helpFileName != NULL) // jde o help pluginu - aby se otevrelo okno helpu na spravne pozici + se
-    {                         // zapamatovanymi Favourites, je nutne ho otevrit pro "salamand.chm" (nasledne
-                              // se otevre help pro plugin v tomto stejnem okne)
+    if (helpFileName != NULL) // plugin help: to open the window in the right position
+    {                         // with remembered Favorites, we must open "salamand.chm" first (then
+                              // the plugin help opens in this same window)
         lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
         if (SalPathAppend(helpPath, "salamand.chm", MAX_PATH) &&
             FileExists(helpPath))
         {
-            HtmlHelp(NULL, helpPath, HH_DISPLAY_TOC, 0); // pripadnou chybu ignorujeme
+            HtmlHelp(NULL, helpPath, HH_DISPLAY_TOC, 0); // ignore potential error
         }
     }
 
@@ -344,13 +345,13 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
 //
 // CMWDropTarget
 //
-// slouzi pouze pro posouvani tazenych obrazku
+// used only for moving dragged images
 //
 
 class CMWDropTarget : public IDropTarget
 {
 private:
-    long RefCount; // zivotnost objektu
+    long RefCount; // object lifetime
 
 public:
     CMWDropTarget()
@@ -388,7 +389,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // nesmime sahnout do objektu, uz neexistuje
+            return 0; // cannot touch the object anymore, it no longer exists
         }
         return RefCount;
     }
@@ -433,7 +434,7 @@ public:
 // ****************************************************************************
 // MyShutdownBlockReasonCreate a MyShutdownBlockReasonDestroy
 //
-// Vista+: dynamicky vytahneme funkce pro nastavovani / cisteni duvodu blokace shutdownu
+// Vista+: dynamically obtain functions for setting/clearing shutdown block reasons
 //
 
 BOOL MyShutdownBlockReasonCreate(HWND hWnd, LPCWSTR pwszReason)
@@ -492,14 +493,14 @@ void CMainWindow::SafeHandleMenuNewMsg2(UINT uMsg, WPARAM wParam, LPARAM lParam,
                 return;
             }
         }
-        // Menu je zdestruovano primo z menu, do ktereho bylo pripojeno
-        ContextMenuNew->GetMenu2()->HandleMenuMsg(uMsg, wParam, lParam); // toto volani sem tam pada
+        // the menu is destroyed directly from the menu it was attached to
+        ContextMenuNew->GetMenu2()->HandleMenuMsg(uMsg, wParam, lParam); // this call occasionally crashes
     }
     __except (CCallStack::HandleException(GetExceptionInformation(), 11))
     {
         MenuNewExceptionHasOccured++;
         if (ContextMenuNew != NULL)
-            ContextMenuNew->Release(); // nahrada za volani ReleaseMenuNew
+            ContextMenuNew->Release(); // substitute for calling ReleaseMenuNew
                                        //    ReleaseMenuNew();
     }
 }
@@ -510,15 +511,15 @@ void CMainWindow::PostChangeOnPathNotification(const char* path, BOOL includingS
 
     HANDLES(EnterCriticalSection(&DispachChangeNotifCS));
 
-    // pridame tuto notifikaci do pole (pro pozdejsi zpracovani)
+    // add this notification to the array (for later processing)
     CChangeNotifData data;
     lstrcpyn(data.Path, path, MAX_PATH);
     data.IncludingSubdirs = includingSubdirs;
     ChangeNotifArray.Add(data);
     if (!ChangeNotifArray.IsGood())
-        ChangeNotifArray.ResetState(); // chyby ignorujeme (prinejhorsim nerefreshnem)
+        ChangeNotifArray.ResetState(); // ignore errors (at worst we won't refresh)
 
-    // postneme zadost o rozeslani zprav o zmenach na cestach
+    // post a request to distribute path change notifications
     HANDLES(EnterCriticalSection(&TimeCounterSection));
     int t1 = MyTimeCounter++;
     HANDLES(LeaveCriticalSection(&TimeCounterSection));
@@ -531,8 +532,8 @@ void CMainWindowWindowProcAux(IContextMenu* menu2, CMINVOKECOMMANDINFO& ici)
 {
     CALL_STACK_MESSAGE_NONE
 
-    // docasne snizime prioritu threadu, aby nam nejaka zmatena shell extension nesezrala CPU
-    HANDLE hThread = GetCurrentThread(); // pseudo-handle, neni treba uvolnovat
+    // temporarily lower the thread priority so a misbehaving shell extension does not hog the CPU
+    HANDLE hThread = GetCurrentThread(); // pseudo-handle, no need to release
     int oldThreadPriority = GetThreadPriority(hThread);
     SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
 
@@ -550,7 +551,7 @@ void CMainWindowWindowProcAux(IContextMenu* menu2, CMINVOKECOMMANDINFO& ici)
 
 void BroadcastConfigChanged()
 {
-    // Internal Viewer a Find: obnova vsech oken (doslo napr ke zmene globalnich fontu)
+    // Internal Viewer and Find: refresh all windows (for example after global font change)
     ViewerWindowQueue.BroadcastMessage(WM_USER_CFGCHANGED, 0, 0);
     FindDialogQueue.BroadcastMessage(WM_USER_CFGCHANGED, 0, 0);
 }
@@ -600,7 +601,7 @@ void CMainWindow::FillViewModeMenu(CMenuPopup* popup, int firstIndex, int type)
     int i;
     for (i = 0; i < VIEW_TEMPLATES_COUNT; i++)
     {
-        if (i == 0) // tree zatim nezobrazujeme
+        if (i == 0) // tree view is not shown yet
             continue;
 
         CViewTemplate* tmpl = &ViewTemplates.Items[i];
@@ -640,11 +641,11 @@ void CMainWindow::SetDoNotLoadAnyPlugins(BOOL doNotLoad)
 
             if (LeftPanel->GetViewMode() == vmThumbnails)
             {
-                PostMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1); // postarame se o nove naplneni icon-cache (thumbnaily uz jsou zase mozne)
+                PostMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1); // ensure the icon cache is refilled (thumbnails can be shown again)
             }
             if (RightPanel->GetViewMode() == vmThumbnails)
             {
-                PostMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t2); // postarame se o nove naplneni icon-cache (thumbnaily uz jsou zase mozne)
+                PostMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t2); // ensure the icon cache is refilled (thumbnails can be shown again)
             }
         }
     }
@@ -704,7 +705,7 @@ BOOL CMainWindow::IsPanelZoomed(BOOL leftPanel)
 
 void CMainWindow::ToggleSmartColumnMode(CFilesWindow* panel)
 {
-    if (panel->GetViewMode() == vmDetailed) // panel musi bezet v detailed rezimu
+    if (panel->GetViewMode() == vmDetailed) // the panel must be running in detailed mode
     {
         if (panel->Columns.Count < 1)
             return;
@@ -714,7 +715,7 @@ void CMainWindow::ToggleSmartColumnMode(CFilesWindow* panel)
                            (leftPanel && panel->ViewTemplate->LeftSmartMode ||
                             !leftPanel && panel->ViewTemplate->RightSmartMode));
         if (smartMode && column->FixedWidth)
-        { // smart mode je jen pro elasticke sloupce (musime to zmenit v sablone pohledu)
+        { // smart mode works only for elastic columns (must be changed in the view template)
             if (leftPanel)
                 panel->ViewTemplate->Columns[0].LeftFixedWidth = 0;
             else
@@ -771,15 +772,15 @@ void CMainWindow::ApplyCommandLineParams(const CCommandLineParams* cmdLineParams
 {
     if (setActivePanelAndPanelPaths)
     {
-        // napred nastavime aktivni panel
+        // first set the active panel
         if (cmdLineParams->ActivatePanel == 1 && GetActivePanel() == RightPanel ||
             cmdLineParams->ActivatePanel == 2 && GetActivePanel() == LeftPanel)
         {
             ChangePanel(FALSE);
         }
-        // potom muzeme nastavit cestu v aktivnim panelu
+        // then we can set the path in the active panel
         if (cmdLineParams->LeftPath[0] == 0 && cmdLineParams->RightPath[0] == 0 && cmdLineParams->ActivePath[0] != 0)
-            GetActivePanel()->ChangeDir(cmdLineParams->ActivePath); // nema smysl kombinovat s nastavenim leveho/praveho panelu
+            GetActivePanel()->ChangeDir(cmdLineParams->ActivePath); // makes no sense to combine with setting the left/right panel
         else
         {
             if (cmdLineParams->LeftPath[0] != 0)
@@ -821,13 +822,13 @@ BOOL CMainWindow::SHChangeNotifyInitialize()
     entry.pidl = pidl;
     entry.fRecursive = TRUE;
 
-    // message WM_USER_SHCHANGENOTIFY, ktera nam bude dorucena pri notifikacich prekracuje hranice procesu
-    // konstantou SHCNRF_NewDelivery (zname take jako SHCNF_NO_PROXY) rikame, ze prebirame odpovednost
-    // za pristup do pameti predavane zpravou (pomoci SHChangeNotification_Lock) a ze OS nema vytvaret
-    // proxy windows (pozor, je hlasen bug pod XP, kde se proxy okno vytvori, ale nedestrukti):
+    // message WM_USER_SHCHANGENOTIFY, which will be delivered to us on notifications, crosses process boundaries
+    // by using the constant SHCNRF_NewDelivery (also known as SHCNF_NO_PROXY) we assume responsibility
+    // for accessing the memory passed with the message (via SHChangeNotification_Lock) and tell the OS not to
+    // create proxy windows (note: a bug has been reported on XP where the proxy window is created but not destroyed):
     // http://groups.google.com/groups?selm=3CDFD449.6BA0CDB4%40ic.ac.uk&output=gplain
     //
-    // pres SHCNE_ASSOCCHANGED si nechame dorucit informaci o zmene asociaci
+    // through SHCNE_ASSOCCHANGED we receive notifications about association changes
     SHChangeNotifyRegisterID = SHChangeNotifyRegister(HWindow, SHCNRF_ShellLevel | SHCNRF_NewDelivery,
                                                       SHCNE_MEDIAINSERTED | SHCNE_MEDIAREMOVED | SHCNE_DRIVEREMOVED |
                                                           SHCNE_DRIVEADD | SHCNE_NETSHARE | SHCNE_NETUNSHARE |
@@ -861,20 +862,20 @@ typedef WINSHELLAPI BOOL(WINAPI* FT_FileIconInit)(
 
 BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
 {
-    // zahejbeme s velikosti ikonek
+    // tweak the icon size
 
-    LoadSaveToRegistryMutex.Enter(); // lidem se zmensovaly ikonky, viz https://forum.altap.cz/viewtopic.php?t=638
-    // touto synchronizaci zajistime, ze si dva Salamandery nepolezou do zeli
-    // bohuzel trik se zmenou "Shell Icon Size" pro rebuild cache pouziva kde kdo (vcetne Tweak UI),
-    // takze pokud budou refreshovat ve stejnou dobou jako Salamander, dojde ke konfliktu
-    // teto situaci se snazime predchazet odlozeni nasledujici prasarny pomoci IDT_ASSOCIATIONSCHNG
+    LoadSaveToRegistryMutex.Enter(); // users reported shrunken icons, see https://forum.altap.cz/viewtopic.php?t=638
+    // this synchronization ensures that two Salamanders do not interfere with each other
+    // unfortunately the trick with changing "Shell Icon Size" to rebuild the cache is used by many tools (including Tweak UI),
+    // so if they refresh at the same time as Salamander, conflicts occur
+    // we try to avoid this by postponing the following mess using IDT_ASSOCIATIONSCHNG
 
     HKEY hKey;
     if (HANDLES(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\Desktop\\WindowMetrics", 0, KEY_READ | KEY_WRITE, &hKey)) == ERROR_SUCCESS)
     {
-        // starsi SHELL32.DLL nemuseji tento export mit a fileIconInit bude NULL
+        // older SHELL32.DLL versions may not export this, fileIconInit will be NULL
         FT_FileIconInit fileIconInit = NULL;
-        fileIconInit = (FT_FileIconInit)GetProcAddress(Shell32DLL, MAKEINTRESOURCE(660)); // nema header
+        fileIconInit = (FT_FileIconInit)GetProcAddress(Shell32DLL, MAKEINTRESOURCE(660)); // no header available
 
         char size[50];
         BOOL deleteVal = FALSE;
@@ -893,7 +894,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
             deleteVal = TRUE;
         }
         int val = atoi(size);
-        if (val > 0) // bohuzel si (podle netu) lidi nastavuji velikost ikonek nahodile (72, 96, 128, atd), takze neni mozne odfiltrovat "divne velikosti"
+        if (val > 0) // unfortunately (according to net) users set icon sizes randomly (72, 96, 128, etc.) so we cannot filter out "strange" sizes
         {
             IgnoreWM_SETTINGCHANGE = TRUE;
 
@@ -908,7 +909,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
             if (fileIconInit != NULL)
                 fileIconInit(TRUE);
             if (deleteVal)
-                RegDeleteValue(hKey, "Shell Icon Size"); // zameteme po sobe
+                RegDeleteValue(hKey, "Shell Icon Size"); // clean up after ourselves
             HANDLES(RegCloseKey(hKey));
 
             IgnoreWM_SETTINGCHANGE = FALSE;
@@ -921,7 +922,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
   if (fileIconInit != NULL)
     fileIconInit(TRUE);
 
-  // ladici zobrazeni ikonky
+  // debug icon display
   SHFILEINFO shi;
   HIMAGELIST systemIL = (HIMAGELIST)SHGetFileInfo("C:\\TEST.QWE", 0, &shi, sizeof(shi),
                                        SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_SHELLICONSIZE);
@@ -935,7 +936,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
   }
   */
 
-    // vlastni refresh asociaci
+    // our own associations refresh
     BOOL lCanDrawItems = LeftPanel->CanDrawItems;
     LeftPanel->CanDrawItems = FALSE;
     BOOL rCanDrawItems = RightPanel->CanDrawItems;
@@ -961,7 +962,7 @@ void CMainWindow::RebuildDriveBarsIfNeeded(BOOL useDrivesMask, DWORD drivesMask,
     {
         if (!useDrivesMask)
         {
-            DWORD netDrives; // bitove pole network disku
+            DWORD netDrives; // bit array of network drives
             GetNetworkDrives(netDrives, NULL);
             drivesMask = GetLogicalDrives() | netDrives;
         }
@@ -972,7 +973,7 @@ void CMainWindow::RebuildDriveBarsIfNeeded(BOOL useDrivesMask, DWORD drivesMask,
             if (DriveBar->GetCachedDrivesMask() != drivesMask ||
                 checkCloudStorages && DriveBar->GetCachedCloudStoragesMask() != cloudStoragesMask)
             {
-                // nefunguji notifikace o zmenach disku nebo zmena v dostupnosti cloud storages, prebuildime drive bar "rucne"
+                // notifications about drive changes or cloud storage availability do not work; rebuild the drive bar manually
                 TRACE_I("Forced drives rebuild for DriveBar!");
                 DriveBar->RebuildDrives();
                 copyDrivesListFrom = DriveBar;
@@ -983,7 +984,7 @@ void CMainWindow::RebuildDriveBarsIfNeeded(BOOL useDrivesMask, DWORD drivesMask,
             if (DriveBar2->GetCachedDrivesMask() != drivesMask ||
                 checkCloudStorages && DriveBar2->GetCachedCloudStoragesMask() != cloudStoragesMask)
             {
-                // nefunguji notifikace o zmenach disku nebo zmena v dostupnosti cloud storages, prebuildime drive bar "rucne"
+                // notifications about drive changes or cloud storage availability do not work; rebuild the drive bar manually
                 TRACE_I("Forced drives rebuild for DriveBar2!");
                 DriveBar2->RebuildDrives(copyDrivesListFrom);
             }
@@ -999,25 +1000,25 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        SHChangeNotifyInitialize(); // nechame si dorucovat Shell Notifications
+        SHChangeNotifyInitialize(); // request receiving Shell Notifications
 
-        SetTimer(HWindow, IDT_ADDNEWMODULES, 15000, NULL); // timer po 15 sekundach pro AddNewlyLoadedModulesToGlobalModulesStore()
+        SetTimer(HWindow, IDT_ADDNEWMODULES, 15000, NULL); // timer after 15 seconds for AddNewlyLoadedModulesToGlobalModulesStore()
 
         CMWDropTarget* dropTarget = new CMWDropTarget();
         if (dropTarget != NULL)
         {
             HANDLES(RegisterDragDrop(HWindow, dropTarget));
-            dropTarget->Release(); // RegisterDragDrop volala AddRef()
+            dropTarget->Release(); // RegisterDragDrop called AddRef()
         }
 
         HMENU h = GetSystemMenu(HWindow, FALSE);
         if (h != NULL)
         {
             int items = GetMenuItemCount(h);
-            int pos = items; // pripojime nove polozky na konec seznamu
+            int pos = items; // append new items at the end of the menu
 
-            // pokud posledni dve polozky menu jsou separator a Close, vlozime se nad ne
-            // (uzivatele si dlouhodobe stezovali, ze omylem klikaji na nase AOT mito na chtene Close)
+            // if the last two menu items are a separator and Close, insert above them
+            // (users have long complained they accidentally click our AOT instead of the intended Close)
             if (items > 2)
             {
                 UINT predLastCmd = GetMenuItemID(h, items - 2);
@@ -1026,8 +1027,8 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     pos = items - 2;
             }
 
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+            /* used by the export_mnu.py script which generates salmenu.mnu for Translator.
+   Keep this synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM AddToSystemMenu[] = 
 {
   {MNTT_PB, 0
@@ -1057,11 +1058,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return -1;
         }
 
-        // nechceme vizualni styly pro rebar
-        // zakazeme je
+        // we do not want visual styles for the rebar
+        // disable them
         SetWindowTheme(HTopRebar, (L" "), (L" "));
 
-        // vynutime si WS_BORDER, ktery se nekam "ztratil"
+        // enforce WS_BORDER which somehow "disappeared"
         DWORD style = (DWORD)GetWindowLongPtr(HTopRebar, GWL_STYLE);
         style |= WS_BORDER;
         SetWindowLongPtr(HTopRebar, GWL_STYLE, style);
@@ -1157,8 +1158,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return -1;
         }
 
-        //      AnimateBar = new CAnimate(HWorkerBitmap, 50, 0, RGB(255, 255, 255)); // celkem 50 policek, pri smycce jedeme od 0, bile pozadi
-        //      AnimateBar = new CAnimate(HWorkerBitmap, 43, 3, RGB(0, 0, 0)); // celkem 43 policek, pri smycce jedeme od 3, cerne pozadi
+        //      AnimateBar = new CAnimate(HWorkerBitmap, 50, 0, RGB(255, 255, 255)); // 50 frames total, loop from 0, white background
+        //      AnimateBar = new CAnimate(HWorkerBitmap, 43, 3, RGB(0, 0, 0)); // 43 frames total, loop from 3, black background
         //      if (AnimateBar == NULL)
         //      {
         //        TRACE_E(LOW_MEMORY);
@@ -1224,7 +1225,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         return 0;
     }
 
-    // case WM_CHANGEUISTATE: // zda se, ze chodi vzdy obe zpravy
+    // case WM_CHANGEUISTATE: // it seems both messages always arrive
     case WM_UPDATEUISTATE:
     {
         if (MenuBar != NULL && MenuBar->HWindow != NULL)
@@ -1237,56 +1238,54 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         UserMenuIconBkgndReader.SetSysColorsChanged();
 
-        // informaci o zmene barev napropagujeme do rebaru
+        // propagate the color change to the rebar
         if (HTopRebar != NULL)
             SendMessage(HTopRebar, uMsg, wParam, lParam);
 
-        // mohlo dojit ke zmene barevne hloubky - nechame rebuildnout imagelisty a ziskat
-        // nove ikony
-        ColorsChanged(TRUE, FALSE, TRUE); // nechame rebuildnout vse; casu je dost
+        // the color depth may have changed - rebuild image lists to obtain new icons
+        ColorsChanged(TRUE, FALSE, TRUE); // rebuild everything; we have enough time
         return 0;
     }
 
     case WM_SETTINGCHANGE:
     {
-        if (IgnoreWM_SETTINGCHANGE || LeftPanel == NULL || RightPanel == NULL) // prisel bug-report, kde je videt, ze se WM_SETTINGCHANGE dorucilo hned z WM_CREATE hlavniho okna (panelu jeste neexistovali, takze to spadlo na pristupu na NULL)
+        if (IgnoreWM_SETTINGCHANGE || LeftPanel == NULL || RightPanel == NULL) // a bug report showed that WM_SETTINGCHANGE was delivered immediately from WM_CREATE of the main window (panels didn't exist yet, causing a NULL access)
             return 0;
 
-        // detekce dle EXPLORER.EXE pod NT4
+        // detection based on EXPLORER.EXE on NT4
         if (lParam != 0 && stricmp((LPCTSTR)lParam, "Environment") == 0)
         {
-            // doslo ke zmene environment variables, nechame je refreshnout
+            // environment variables changed, refresh them
             if (Configuration.ReloadEnvVariables)
                 RegenEnvironmentVariables();
             return 0;
         }
         if (lParam != 0 && stricmp((LPCTSTR)lParam, "Extensions") == 0)
         {
-            // doslo ke zmene asociaci, nechame je refreshnout
-            //
-            // tato cesta uz se asi nepouziva, je to nejaka stara vetev, ted se
-            // informace rozesila pres SHCNE_ASSOCCHANGED, ale v NT4 EXPLORERu
-            // maji chycenou i tuto vetev
+            // file associations changed, refresh them
+            // this path is probably no longer used, it's some old branch,
+            // nowadays SHCNE_ASSOCCHANGED broadcasts the change, but NT4 Explorer
+            // still handles this branch
 
-            // odlozime o vterinu, at se nepotkame s ostatnim SW pouzivajici zmenu velikosti ikon pro reset icon cache
+            // delay one second so we don't collide with other software using the icon size change trick to reset the icon cache
             if (!SetTimer(HWindow, IDT_ASSOCIATIONSCHNG, 1000, NULL))
                 OnAssociationsChangedNotification(FALSE);
             return 0;
         }
 
-        // neznama zmena, rebuildneme vse
+        // unknown change, rebuild everything
 
-        GotMouseWheelScrollLines = FALSE; //nechame znovu nacist pocet radek k rolovani
+        GotMouseWheelScrollLines = FALSE; // reload number of lines for wheel scrolling
         InitLocales();
-        SetFont(); // font panelu se standardne ridi fontem ze systemu
+        SetFont(); // panel font follows the system font by default
         SetEnvFont();
 
         GetShortcutOverlay();
-        // Internal Viewer a Find:  obnova vsech oken (font se jiz zmenil)
+        // Internal Viewer and Find: refresh all windows (font already changed)
         BroadcastConfigChanged();
         if (!IsIconic(HWindow))
         {
-            // zajistime layoutnuti child oken - napriklad se mohly zmenit rozmery toolbar
+            // ensure child windows are laid out again - toolbar sizes may have changed
             RECT wr;
             GetWindowRect(HWindow, &wr);
             int width = wr.right - wr.left;
@@ -1300,34 +1299,34 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         RightPanel->RefreshListBox(-1, -1, RightPanel->FocusedIndex, FALSE, FALSE);
         RefreshDiskFreeSpace();
 
-        // doslo ke zmene fontu, dame pluginum vedet, ze maji toolbaram a menubaram zavolat SetFont()
+        // the font changed; notify plugins so their toolbars and menu bars call SetFont()
         Plugins.Event(PLUGINEVENT_SETTINGCHANGE, 0);
 
         return 0;
     }
 
-    case WM_USER_SHCHANGENOTIFY: // dostavame diky SHChangeNotifyRegister
+    case WM_USER_SHCHANGENOTIFY: // received thanks to SHChangeNotifyRegister
     {
         LONG wEventId;
         HANDLE hLock = NULL;
 
         //      TRACE_E("WM_USER_SHCHANGENOTIFY lParam="<<hex<<lParam<<" wParam="<<hex<<wParam);
 
-        // pod novejsima shell32.dll je treba vyzadat pristup do mapovane pameti, kde jsou predany parametry
-        // (mezi procesy nelze predavat pamet a tato message prisla z Explorera)
-        // viz doc\interesting.zip\Shell Notifications.mht (http://www.geocities.com/SiliconValley/4942/notify.html)
+        // with newer shell32.dll we must request access to mapped memory containing the parameters
+        // (memory cannot be passed between processes and this message came from Explorer)
+        // see doc\interesting.zip\Shell Notifications.mht (http://www.geocities.com/SiliconValley/4942/notify.html)
 
         LPITEMIDLIST* ppidl;
-        hLock = SHChangeNotification_Lock((HANDLE)wParam, (DWORD)lParam, &ppidl, &wEventId); // FIXME_X64 - overit pretypovani na (DWORD)
+        hLock = SHChangeNotification_Lock((HANDLE)wParam, (DWORD)lParam, &ppidl, &wEventId); // FIXME_X64 - verify casting to (DWORD)
         if (hLock == NULL)
         {
             TRACE_E("SHChangeNotification_Lock failed");
             break;
         }
 
-        // prevedeme pidl -> cestu
+        // convert PIDL to a path
         char szPath[2 * MAX_PATH];
-        szPath[0] = 0; // prazdna cesta znamena zmenu vseho
+        szPath[0] = 0; // an empty path means everything changed
         if (ppidl != NULL)
         {
             switch (wEventId)
@@ -1355,7 +1354,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             }
         }
-        SHChangeNotification_Unlock(hLock); // ppidl je prelozen, muzeme uvolnit pamet
+        SHChangeNotification_Unlock(hLock); // ppidl is translated, we can free the memory
         ppidl = NULL;
 
         if (wEventId == SHCNE_UPDATEITEM)
@@ -1376,17 +1375,17 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             if (wEventId == SHCNE_ASSOCCHANGED)
             {
-                // zmena v asociacich
-                // odlozime o vterinu, at se nepotkame s ostatnim SW pouzivajici zmenu velikosti ikon pro reset icon cache
+                // change in associations
+                // delay one second so we don't collide with other software using the icon size change trick to reset the icon cache
                 if (!SetTimer(HWindow, IDT_ASSOCIATIONSCHNG, 1000, NULL))
                     OnAssociationsChangedNotification(FALSE);
             }
             else
             {
-                // zmena v mediich nebo discich
+                // change in media or drives
 
-                // po vlozeni media provedeme automaticky Retry v messageboxu "drive not ready"
-                // (je-li zobrazen pro drive s vlozenym mediem)
+                // after media insertion, automatically perform Retry in the "drive not ready" message box
+                // (if it is displayed for the drive with inserted media)
                 if (wEventId == SHCNE_MEDIAINSERTED)
                 {
                     if (CheckPathRootWithRetryMsgBox[0] != 0 &&
@@ -1397,12 +1396,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                 }
 
-                // pokud je otevrene Alt+F1/F2 menu, udelame refresh (cteme volume name)
+                // if the Alt+F1/F2 menu is open, refresh (read the volume name)
                 CFilesWindow* panel = GetActivePanel();
                 if (panel != NULL)
                     PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-                // pokud jsou v panelech CD-ROM nebo vymenna media, udelame u nich refresh
+                // if the panels show CD-ROM or removable media, refresh them
                 while (1)
                 {
                     if ((panel->Is(ptDisk) || panel->Is(ptZIPArchive)) && !IsUNCPath(panel->GetPath()))
@@ -1410,12 +1409,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         UINT type = MyGetDriveType(panel->GetPath());
                         if (type == DRIVE_CDROM || type == DRIVE_REMOVABLE)
                         {
-                            HANDLES(EnterCriticalSection(&TimeCounterSection)); // sejmeme cas, kdy je treba refreshe
+                            HANDLES(EnterCriticalSection(&TimeCounterSection)); // capture the time when a refresh is needed
                             int t1 = MyTimeCounter++;
                             HANDLES(LeaveCriticalSection(&TimeCounterSection));
                             PostMessage(panel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
                         }
-                        if (type == DRIVE_NO_ROOT_DIR) // zmizel device (drive je neplatny)
+                        if (type == DRIVE_NO_ROOT_DIR) // device disappeared (the drive is invalid)
                         {
                             if (LeftPanel == panel)
                             {
@@ -1440,28 +1439,28 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     }
 
         /*
-    // WM_DEVICECHANGE nechodila dobre napriklad pod Win XP pri pripojovani fotaku DSC F707
-    // prisla sice informace o pripojeni zarizeni, ale nasledna detekce nazvu zarizeni
-    // (pokud bylo zobrazeno Alt+F1/2 menu) pres SHGetFileInfo vracela prazdny retezec.
-    // Na google jsem nasel thread, kde si manik stezuje na stejny problem
+    // WM_DEVICECHANGE didn't work well, for example under Win XP when connecting the DSC F707 camera.
+    // A notification about device connection arrived, but the subsequent device name detection
+    // (if the Alt+F1/2 menu was displayed) via SHGetFileInfo returned an empty string.
+    // I found a thread on Google where someone complains about the same problem
     //
     // http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&threadm=99a435fa.0203280715.69a286a8%40posting.
     // google.com&rnum=1&prev=/groups%3Fhl%3Den%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26q%3Ddevice%2Bname%2Bshgetfileinfo
     //
-    // a resil to waitem. Lidi mu doporucili odchod z WM_DEVICECHANGE a prechod na
-    // nedokumentovanou funkci SHChangeNotifyRegister...
+    // and he solved it with a wait. People recommended abandoning WM_DEVICECHANGE and switching to
+    // the undocumented function SHChangeNotifyRegister...
     // (http://www.geocities.com/SiliconValley/4942/notify.html)
     case WM_DEVICECHANGE:
     {
       if (wParam == DBT_DEVICEARRIVAL || wParam == DBT_DEVICEREMOVECOMPLETE ||
-          wParam == DBT_CONFIGCHANGED)  // vymena CD-ROM media
+          wParam == DBT_CONFIGCHANGED)  // CD-ROM media change
       {
-        // pokud je otevrene Alt+F1/F2 menu, udelame refresh (cteme volume name)
+        // if the Alt+F1/F2 menu is open, refresh (read volume name)
         CFilesWindow *panel = GetActivePanel();
         if (panel != NULL)
           PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-        // pokud jsou v panelech CD-ROM nebo vymenna media, udelame u nich refresh
+        // if the panels show CD-ROM or removable media, refresh them
         while (1)
         {
           if (panel->Is(ptDisk) || panel->Is(ptZIPArchive))
@@ -1469,7 +1468,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             UINT type = MyGetDriveType(panel->GetPath());
             if (type == DRIVE_CDROM || type == DRIVE_REMOVABLE)
             {
-              HANDLES(EnterCriticalSection(&TimeCounterSection));  // sejmeme cas, kdy je treba refreshe
+              HANDLES(EnterCriticalSection(&TimeCounterSection));  // capture the time when a refresh is needed
               int t1 = MyTimeCounter++;
               HANDLES(LeaveCriticalSection(&TimeCounterSection));
               PostMessage(panel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
@@ -1485,10 +1484,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_PROCESSDELETEMAN:
     {
-        // odkladame zpracovani dat kvuli aktivaci hl. okna po ESC z vieweru pod WinXP (bez tyhle
-        // opicarny se to nejak nestihalo - hl. okno nebylo aktivni -> safe-wait-okenko se neukazovalo)
+        // delay data processing due to the main window activation after ESC from the viewer on WinXP;
+        // without this hack, it somehow did not catch up - the main window stayed inactive and the safe-wait window never appeared
         if (!SetTimer(HWindow, IDT_DELETEMNGR_PROCESS, 200, NULL))
-            DeleteManager.ProcessData(); // kdyz nevyjde timer, udelame to hned, kasleme na WinXP
+            DeleteManager.ProcessData(); // if the timer fails, run immediately; forget about WinXP
         return 0;
     }
 
@@ -1497,7 +1496,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         CFilesWindow* panel = GetActivePanel();
         if (panel->OpenedDrivesList != NULL)
         {
-            // nechame rebuildnout menu
+            // rebuild the menu
             panel->OpenedDrivesList->RebuildMenu();
         }
         CDriveBar* copyDrivesListFrom = NULL;
@@ -1514,17 +1513,17 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_USER_ENTERMENULOOP:
     case WM_USER_LEAVEMENULOOP:
     {
-        // zhasnu pripadny tooltip
+        // turn off any tooltip
         SetCurrentToolTip(NULL, 0);
 
-        // pokud nekdo monitoruje mys, ukoncim monitoring
+        // if someone is monitoring the mouse, end the monitoring
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(tme);
         tme.dwFlags = TME_QUERY;
         if (TrackMouseEvent(&tme) && tme.hwndTrack != NULL)
             SendMessage(tme.hwndTrack, WM_MOUSELEAVE, 0, 0);
 
-        // nechame zhasnou (zase zobrazit) existujici caret, aby nerusil usera
+        // let the existing caret hide (or show again) so it does not distract the user
         CancelPanelsUI(); // cancel QuickSearch and QuickEdit
         if (EditMode)
         {
@@ -1539,8 +1538,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         else
             UserMenuIconBkgndReader.EndUserMenuIconsInUse();
 
-        // Zajisti spravne nastaveni enableru, aby enablene polozky v menu odpovidaly
-        // skutecnemu stavu. Zaroven nastavi stav spodni toolbary.
+        // Ensure the enablers are set correctly so enabled items in the menu reflect
+        // the real state. Also update the bottom toolbar status.
         OnEnterIdle();
         return 0;
     }
@@ -1583,9 +1582,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             UserMenuIconBkgndReader.BeginUserMenuIconsInUse();
             CMenuPopup menu;
             FillUserMenu(&menu);
-            // dalsi kolo zamykani (BeginUserMenuIconsInUse+EndUserMenuIconsInUse) bude
-            // v WM_USER_ENTERMENULOOP+WM_USER_LEAVEMENULOOP, ale to uz je vnorene, zadna rezie,
-            // takze ignorujeme, nebudeme proti tomu nijak bojovat
+            // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
+            // will occur in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP, but
+            // it is nested and lightweight, so we ignore it and do not fight it
             menu.Track(0, r.left, r.bottom, HWindow, &r);
             UserMenuIconBkgndReader.EndUserMenuIconsInUse();
             break;
@@ -1672,7 +1671,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         if (id >= CM_USERMENU_MIN && id <= CM_USERMENU_MAX)
         {
-            // user kliknul na grupu v User Menu Toolbar
+            // user clicked a group in the User Menu Toolbar
             int iterator = id - CM_USERMENU_MIN;
             int endIndex = UserMenuItems->GetSubmenuEndIndex(iterator);
             if (endIndex != -1)
@@ -1681,9 +1680,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 iterator++;
                 CMenuPopup menu;
                 FillUserMenu2(&menu, &iterator, endIndex);
-                // dalsi kolo zamykani (BeginUserMenuIconsInUse+EndUserMenuIconsInUse) bude
-                // v WM_USER_ENTERMENULOOP+WM_USER_LEAVEMENULOOP, ale to uz je vnorene, zadna rezie,
-                // takze ignorujeme, nebudeme proti tomu nijak bojovat
+                // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
+                // will occur in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP,
+                // but it is nested and lightweight, so we ignore it
                 menu.Track(0, r.left, r.bottom, HWindow, &r);
                 UserMenuIconBkgndReader.EndUserMenuIconsInUse();
             }
@@ -1691,8 +1690,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         if (id >= CM_PLUGINCMD_MIN && id <= CM_PLUGINCMD_MAX)
         {
-            // user kliknul na ikonku pluginu v PluginsBar;
-            int index2 = id - CM_PLUGINCMD_MIN; // index pluginu v CPlugions::Data
+            // user clicked on the plugin icon in the PluginsBar;
+            int index2 = id - CM_PLUGINCMD_MIN; // index of the plugin in CPlugions::Data
             CMenuPopup menu(CML_PLUGINS_SUBMENU);
             if (Plugins.InitPluginMenuItemsForBar(HWindow, index2, &menu))
                 menu.Track(0, r.left, r.bottom, HWindow, &r);
@@ -1708,9 +1707,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_USER_REPAINTALLICONS:
     {
         if (LeftPanel != NULL)
-            LeftPanel->RepaintIconOnly(-1); // vsechny
+            LeftPanel->RepaintIconOnly(-1); // all
         if (RightPanel != NULL)
-            RightPanel->RepaintIconOnly(-1); // vsechny
+            RightPanel->RepaintIconOnly(-1); // all
         return 0;
     }
 
@@ -1727,14 +1726,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         if (!SalamanderBusy)
         {
-            SalamanderBusy = TRUE; // ted uz je BUSY
+            SalamanderBusy = TRUE; // now BUSY
             LastSalamanderIdleTime = GetTickCount();
-            BringWindowToTop(HWindow); // tohle asi neni dulezite, ale videl jsem to v jednom samplu, takze to taky pridavam
+            BringWindowToTop(HWindow); // probably not important, but I saw it in a sample so I am adding it here too
             if (IsIconic(HWindow))
             {
-                // SetForegroundWindow: tohle je veledulezite. Pokud tohle nezavolame a mame nastaveno
-                // only one instance a tray, tak salamander (nekdy) vyskakuje na pozadi a teprve
-                // potom se dostane nahoru - do popredi.
+                // SetForegroundWindow: this is crucial. If we don't call it and
+                // "only one instance" with the tray is active, Salamander sometimes
+                // appears in the background and only later moves to the front.
                 SetForegroundWindow(HWindow);
                 ShowWindow(HWindow, SW_RESTORE);
             }
@@ -1756,12 +1755,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         /*
     case WM_USER_SETPATHS:
     {
-      if (!SalamanderBusy && MainWindow != NULL && MainWindow->CanClose)  // neni "busy" a uz je nastartovany, jinak ignorujeme vyzvy ostatnich procesu
+      if (!SalamanderBusy && MainWindow != NULL && MainWindow->CanClose)  // not BUSY and already started, otherwise ignore requests from other processes
       {
-        SalamanderBusy = TRUE;   // ted uz je BUSY
+        SalamanderBusy = TRUE;   // now BUSY
         LastSalamanderIdleTime = GetTickCount();
         CSetPathsParams params;
-        ZeroMemory(&params, sizeof(params)); // default hodnoty
+        ZeroMemory(&params, sizeof(params)); // default values
         HANDLE sendingProcess = HANDLES_Q(OpenProcess(PROCESS_DUP_HANDLE, FALSE, wParam));
         HANDLE sendingFM = (HGLOBAL)lParam;
 
@@ -1772,7 +1771,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                     GetCurrentProcess(), &fm,           // this process file-mapping
                                     0, FALSE, DUPLICATE_SAME_ACCESS)))
         {
-          CSetPathsParams *unsafe = (CSetPathsParams *)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, sizeof(CSetPathsParams))); // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+          CSetPathsParams *unsafe = (CSetPathsParams *)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, sizeof(CSetPathsParams))); // FIXME_X64 are we passing x86/x64 incompatible data?
           if (unsafe != NULL)
           {
             alreadyDone = unsafe->Received;
@@ -1783,12 +1782,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
               if (unsafe->MagicSignature1 == 0x07f2ab13 && unsafe->MagicSignature2 == 0x471e0901)
               {
-                // novinky od 2.52
-                // WORD version = unsafe->StructVersion; // zatim nepouzivame, prvni verzi rozpozname podle existence signatur
+                // new features since 2.52
+                // WORD version = unsafe->StructVersion; // not used yet, the first version is recognized by the presence of signatures
                 lstrcpyn(params.ActivePath, unsafe->ActivePath, MAX_PATH);
                 params.ActivatePanel = unsafe->ActivatePanel;
               }
-              // vratime navratovou hodnotu, prevzali jsme data
+              // we return the result value having taken over the data
               unsafe->Received = TRUE;
             }
             HANDLES(UnmapViewOfFile(unsafe));
@@ -1813,15 +1812,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_USER_VIEWERCONFIG:
     {
         if (GetForegroundWindow() != HWindow)
-            SetForegroundWindow(HWindow); // abychom se dostali nad viewer
+            SetForegroundWindow(HWindow); // so we rise above the viewer
         WindowProc(WM_USER_CONFIGURATION, 3, 0);
         HWND hCaller = (HWND)wParam;
         if (IsWindow(hCaller))
         {
-            // Pokud okno, ktere nas vyvolalo, stale existuje, pokusim se ho vytahnout
-            // nahoru. Je to vyprasene, protoze pokud mezi tim otevre modalni dialog,
-            // nedostane aktivaci on. Ale na to pecu, protoze viewer stejne (doufam)
-            // pujde do salamu - tedy do pluginu ;-)
+            // If the window that invoked us still exists, try to bring it to
+            // the foreground. This is a bit dirty because if it opens a modal
+            // dialog in the meantime, it won't get activation. But I don't care,
+            // the viewer will (hopefully) end up inside Salamander - in the plugin ;-)
             SetForegroundWindow(hCaller);
         }
         return 0;
@@ -1831,19 +1830,19 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         if (!SalamanderBusy)
         {
-            SalamanderBusy = TRUE; // ted uz je BUSY
+            SalamanderBusy = TRUE; // now BUSY
             LastSalamanderIdleTime = GetTickCount();
         }
 
-        BeginStopRefresh(); // cmuchal si da pohov
+        BeginStopRefresh(); // snooper takes a break
 
         BOOL oldStatusArea = Configuration.StatusArea;
         BOOL oldPanelCaption = Configuration.ShowPanelCaption;
         BOOL oldPanelZoom = Configuration.ShowPanelZoom;
 
-        UserMenuIconBkgndReader.ResetSysColorsChanged(); // ted zaciname sledovat zmenu systemovych barev (pri zmene je nutny reload ikon user menu)
+        UserMenuIconBkgndReader.ResetSysColorsChanged(); // now, we start watching system color changes (icon reload required)
         BOOL readingUMIcons = UserMenuIconBkgndReader.IsReadingIcons();
-        if (readingUMIcons) // nove ikony jsou na ceste do user menu, ukazeme je az po dokonceni cfg (pri OK nechame ikony nacist znovu, aby se necetly i pripadne pridane ikony)
+        if (readingUMIcons) // new icons are on their way to the user menu; show them after configuration is done (on OK reload icons again so newly added ones are read as well)
             UserMenuIconBkgndReader.BeginUserMenuIconsInUse();
         BOOL oldUseCustomPanelFont = UseCustomPanelFont;
         LOGFONT oldLogFont = LogFont;
@@ -1853,15 +1852,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         if (readingUMIcons)
             UserMenuIconBkgndReader.EndUserMenuIconsInUse();
 
-        // zavrel se dialog - user v nem mohl zmenit clipboard, overime to ...
-        IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-        IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+        // dialog closed - the user could have changed the clipboard, check it
+        IdleRefreshStates = TRUE;  // force status variable check on next Idle
+        IdleCheckClipboard = TRUE; // also check the clipboard
 
-        if (res == IDOK) // zmena hodnot -> refresh vseho moznyho
+        if (res == IDOK) // values changed -> refresh everything possible
         {
             if (dlg.PageView.IsDirty())
             {
-                // user cosi menil v konfiguraci pohledu - nechame znovu sestavit sloupce
+                // user changed something in the view configuration - rebuild the columns
                 LeftPanel->SelectViewTemplate(LeftPanel->GetViewTemplateIndex(), TRUE, FALSE);
                 RightPanel->SelectViewTemplate(RightPanel->GetViewTemplateIndex(), TRUE, FALSE);
             }
@@ -1869,7 +1868,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 oldUseCustomPanelFont != UseCustomPanelFont)
             {
                 SetFont();
-                // je-li zobrazena headerline, musime ji nastavit spravnou velikost
+                // if the header line is shown, we must set its correct size
                 LeftPanel->LayoutListBoxChilds();
                 RightPanel->LayoutListBoxChilds();
             }
@@ -1877,7 +1876,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (Configuration.ThumbnailSize != LeftPanel->GetThumbnailSize() ||
                 Configuration.ThumbnailSize != RightPanel->GetThumbnailSize())
             {
-                // pokud se zmenil rozmer thumbnailu, je treba ho napropagovat do panelu
+                // if the thumbnail size changed, it must be propagated to the panels
                 LeftPanel->SetThumbnailSize(Configuration.ThumbnailSize);
                 RightPanel->SetThumbnailSize(Configuration.ThumbnailSize);
             }
@@ -1899,11 +1898,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (Windows7AndLater)
                 CreateJumpList();
 
-            // uzivatel mohl zapnout/vypnout Documents
+            // the user could have enabled/disabled Documents
             CDriveBar* copyDrivesListFrom = NULL;
             if (DriveBar != NULL && DriveBar->HWindow != NULL)
             {
-                DriveBar->RebuildDrives(DriveBar); // nepotrebujeme pomalou enumeraci disku
+                DriveBar->RebuildDrives(DriveBar); // we don't need slow drive enumeration
                 copyDrivesListFrom = DriveBar;
             }
             if (DriveBar2 != NULL && DriveBar2->HWindow != NULL)
@@ -1917,26 +1916,26 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     RightPanel->DirectoryLine->Repaint();
             }
 
-            // ikonka hlavniho okna
+            // main window icon
             SetWindowIcon();
-            // ikonka v progress oknech
+            // icon in progress windows
             ProgressDlgArray.PostIconChange();
 
-            // nastavime oboum panelum, ze se maji refreshnout
+            // tell both panels they need to refresh
             LeftPanel->RefreshForConfig();
             RightPanel->RefreshForConfig();
 
-            // zrusime ulozena data v SalShExtPastedData (mohlo dojit ke zmene archiveru)
+            // clear stored data in SalShExtPastedData (the archiver may have changed)
             SalShExtPastedData.ReleaseStoredArchiveData();
 
-            // Internal Viewer a Find:  obnova vsech oken (font se jiz zmenil)
+            // Internal Viewer and Find: refresh all windows (font already changed)
             BroadcastConfigChanged();
 
-            // rozesleme tuto novinku i mezi plug-iny
+            // distribute this news among plugins as well
             Plugins.Event(PLUGINEVENT_CONFIGURATIONCHANGED, 0);
         }
 
-        EndStopRefresh(); // ted uz zase cmuchal nastartuje
+        EndStopRefresh(); // snooper starts again now
         return 0;
     }
 
@@ -1945,10 +1944,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         if (HasLockedUI())
             break;
 
-        // pokud uzivatel stisknul tlacitko Alt behem zobrazeneho uvodniho Splash okenka,
-        // doslo ke vstupu do systemoveho menu jeste nezobrazeneho MainWindow a Splash
-        // okenko zustalo otevrene do doby, kdy user stisknul Escape
-        // pokud MainWindow jeste neni zobrazeno, zakazu vstup do Window menu
+        // if the user pressed the Alt button while the initial splash window was shown,
+        // the system menu could be entered before MainWindow appeared and the splash
+        // window remained open until the user pressed Escape
+        // if MainWindow is not yet visible, disable entering the Window menu
         if (wParam == SC_KEYMENU && !IsWindowVisible(HWindow))
             return 0;
 
@@ -1983,7 +1982,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
 
         if (wParam == CM_ALWAYSONTOP)
-            WindowProc(WM_COMMAND, wParam, lParam); // predame dale
+            WindowProc(WM_COMMAND, wParam, lParam); // pass it on
 
         if (Configuration.StatusArea && wParam == SC_MINIMIZE)
         {
@@ -2004,8 +2003,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_APPCOMMAND:
     {
-        // pochytame zpravy prichazejici zejmena z novych mysi (4 a dalsi tlacitko)
-        // a multimedialnich klavesnic
+        // we catch messages coming especially from newer mice (4th button and above)
+        // and multimedia keyboards
         // viz https://forum.altap.cz/viewtopic.php?t=192
         DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
         switch (cmd)
@@ -2032,14 +2031,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             DWORD id = LOWORD(wParam);
 
             if (id >= CM_PLUGINCMD_MIN && id <= CM_PLUGINCMD_MAX)
-            { // prikaz pluginu (submenu pluginu v menu Plugins)
+            { // command of a plugin (submenu of Plugins menu)
                 if (Plugins.HelpForMenuItem(HWindow, LOWORD(wParam)))
                     return 0;
                 else
-                    id = CM_LAST_PLUGIN_CMD; // pokud plugin nema zadny svuj help, zobrazime Salamanderi help "Using Plugins"
+                    id = CM_LAST_PLUGIN_CMD; // if the plugin has no help, show Salamander's help "Using Plugins"
             }
 
-            // upravime intervaly na jejich prvni hodnotu
+            // adjust ranges to their first value
             if (id > CM_USERMENU_MIN && id <= CM_USERMENU_MAX)
                 id = CM_USERMENU_MIN;
             if (id > CM_DRIVEBAR_MIN && id <= CM_DRIVEBAR_MAX)
@@ -2090,24 +2089,24 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return 0;
         }
 
-        // ukoncime quick-search mode
-        if (LOWORD(wParam) != CM_ACTIVEREFRESH &&         // krom refreshe v aktivnim panelu
-            LOWORD(wParam) != CM_LEFTREFRESH &&           // krom refreshe v levem panelu
-            LOWORD(wParam) != CM_RIGHTREFRESH &&          // krom refreshe v pravem panelu
-            (HIWORD(wParam) == 0 || HIWORD(wParam) == 1)) // jen z menu nebo akceleratoru
+        // exit quick-search mode
+        if (LOWORD(wParam) != CM_ACTIVEREFRESH &&         // except refresh in the active panel
+            LOWORD(wParam) != CM_LEFTREFRESH &&           // except refresh in the left panel
+            LOWORD(wParam) != CM_RIGHTREFRESH &&          // except refresh in the right panel
+            (HIWORD(wParam) == 0 || HIWORD(wParam) == 1)) // only from menu or accelerator
         {
             CancelPanelsUI(); // cancel QuickSearch and QuickEdit
         }
 
         if (LOWORD(wParam) >= CM_NEWMENU_MIN && LOWORD(wParam) <= CM_NEWMENU_MAX)
-        { // prikaz z menu New
+        { // command from the New menu
             if (ContextMenuNew->MenuIsAssigned() && activePanel->CheckPath(TRUE) == ERROR_SUCCESS)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
                 {
                     CALL_STACK_MESSAGE1("CMainWindow::WindowProc::menu_new");
                     IContextMenu* menu2 = ContextMenuNew->GetMenu2();
-                    menu2->AddRef(); // kdybychom nahodou priseli o ContextMenuNew (asynchroni zavreni - message-loopa)
+                    menu2->AddRef(); // just in case ContextMenuNew vanishes asynchronously (message loop)
                     CShellExecuteWnd shellExecuteWnd;
                     CMINVOKECOMMANDINFO ici;
                     ici.cbSize = sizeof(CMINVOKECOMMANDINFO);
@@ -2119,14 +2118,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     ici.nShow = SW_SHOWNORMAL;
                     ici.dwHotKey = 0;
                     ici.hIcon = 0;
-                    activePanel->FocusFirstNewItem = TRUE; // aby doslo k vyberu nove nagenerovaneho souboru/adresare
+                    activePanel->FocusFirstNewItem = TRUE; // select the newly generated file/directory
 
                     CMainWindowWindowProcAux(menu2, ici);
 
                     menu2->Release();
                 }
-                //---  refresh neautomaticky refreshovanych adresaru
-                // ohlasime zmenu v aktualnim adresari (novy soubor/adresar lze vytvorit snad jen v nem)
+                //---  refresh directories that are not automatically refreshed
+                // announce a change in the current directory (a new file or directory is most likely created there)
                 MainWindow->PostChangeOnPathNotification(activePanel->GetPath(), FALSE);
             }
             else
@@ -2147,42 +2146,42 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
 
         if (LOWORD(wParam) >= CM_PLUGINCMD_MIN && LOWORD(wParam) <= CM_PLUGINCMD_MAX)
-        { // prikaz z menu nektereho plug-inu
-            // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+        { // command from a plugin menu
+            // lower the thread priority to "normal" (so operations don't burden the system)
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
             if (Plugins.ExecuteMenuItem(activePanel, HWindow, LOWORD(wParam)))
             {
-                activePanel->StoreSelection();                               // ulozime selection pro prikaz Restore Selection
-                activePanel->SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                activePanel->StoreSelection();                               // save selection for Restore Selection command
+                activePanel->SetSel(FALSE, -1, TRUE);                        // explicit redraw
                 PostMessage(activePanel->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
             }
 
-            // opet zvysime prioritu threadu, operace dobehla
+            // raise the thread priority again, the operation has finished
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-            // obnova obsahu neautomatickych panelu je na plug-inech
+            // restoring the contents of non-automatic panels is up to plugins
 
             UpdateWindow(HWindow);
             return 0;
         }
 
         if (LOWORD(wParam) == CM_LAST_PLUGIN_CMD)
-        { // prikaz plugins/last command
-            // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+        { // Plugins/Last Command action
+            // lower the thread priority to "normal" (so operations don't burden the system)
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
             if (Plugins.OnLastCommand(activePanel, HWindow))
             {
-                activePanel->StoreSelection();                               // ulozime selection pro prikaz Restore Selection
-                activePanel->SetSel(FALSE, -1, TRUE);                        // explicitni prekresleni
+                activePanel->StoreSelection();                               // save selection for Restore Selection command
+                activePanel->SetSel(FALSE, -1, TRUE);                        // explicit redraw
                 PostMessage(activePanel->HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
             }
 
-            // opet zvysime prioritu threadu, operace dobehla
+            // raise the thread priority again, the operation has finished
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-            // obnova obsahu neautomatickych panelu je na plug-inech
+            // restoring the contents of non-automatic panels is up to plugins
 
             UpdateWindow(HWindow);
             return 0;
@@ -2193,7 +2192,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
 
                 CUserMenuAdvancedData userMenuAdvancedData;
 
@@ -2223,7 +2222,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     if (i < count)
                         smallBuf = TRUE;
                 }
-                else // bereme fokuslou polozku
+                else // take the focused item
                 {
                     BOOL subDir;
                     if (activePanel->Dirs->Count > 0)
@@ -2241,7 +2240,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
                 if (smallBuf)
                 {
-                    userMenuAdvancedData.ListOfSelNames[0] = 0; // maly buffer pro seznam vybranych jmen
+                    userMenuAdvancedData.ListOfSelNames[0] = 0; // small buffer for the list of selected names
                     userMenuAdvancedData.ListOfSelNamesIsEmpty = FALSE;
                 }
                 else
@@ -2279,7 +2278,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     if (i < count)
                         smallBuf = TRUE;
                 }
-                else // bereme fokuslou polozku
+                else // take the focused item
                 {
                     BOOL subDir;
                     if (activePanel->Dirs->Count > 0)
@@ -2301,7 +2300,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
                 if (smallBuf)
                 {
-                    userMenuAdvancedData.ListOfSelFullNames[0] = 0; // maly buffer pro seznam vybranych plnych jmen
+                    userMenuAdvancedData.ListOfSelFullNames[0] = 0; // small buffer for the list of selected full names
                     userMenuAdvancedData.ListOfSelFullNamesIsEmpty = FALSE;
                 }
                 else
@@ -2340,12 +2339,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 BOOL focusOnUpDir = (focus == 0 && activePanel->Dirs->Count > 0 &&
                                      strcmp(activePanel->Dirs->At(0).Name, "..") == 0);
                 int indexes[3];
-                int selCount = activePanel->GetSelItems(3, indexes); // zajima nas: 0-2=pocet oznacenych, 3=vic nez dva
+                int selCount = activePanel->GetSelItems(3, indexes); // interested in: 0-2=number selected, 3=more than two
                 int tgtIndexes[2];
-                int tgtSelCount = inactivePanel->Is(ptDisk) ? inactivePanel->GetSelItems(2, tgtIndexes) : 0; // zajima nas: 0-1=pocet oznacenych, 2=vic nez jeden
-                if (selCount == 2)                                                                           // dve oznacene polozky ve zdrojovem panelu
+                int tgtSelCount = inactivePanel->Is(ptDisk) ? inactivePanel->GetSelItems(2, tgtIndexes) : 0; // interested in: 0-1=number selected, 2=more than one
+                if (selCount == 2)                                                                           // two selected items in the source panel
                 {
-                    if ((indexes[0] < activePanel->Dirs->Count) == (indexes[1] < activePanel->Dirs->Count)) // obe polozky jsou soubory/adresare
+                    if ((indexes[0] < activePanel->Dirs->Count) == (indexes[1] < activePanel->Dirs->Count)) // both items are files/directories
                     {
                         f1 = (indexes[0] < activePanel->Dirs->Count) ? &activePanel->Dirs->At(indexes[0]) : &activePanel->Files->At(indexes[0] - activePanel->Dirs->Count);
                         f2 = (indexes[1] < activePanel->Dirs->Count) ? &activePanel->Dirs->At(indexes[1]) : &activePanel->Files->At(indexes[1] - activePanel->Dirs->Count);
@@ -2354,13 +2353,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
                 else
                 {
-                    if (selCount == 1) // jedna oznacena polozka ve zdrojovem panelu
+                    if (selCount == 1) // one selected item in the source panel
                     {
                         f1 = (indexes[0] < activePanel->Dirs->Count) ? &activePanel->Dirs->At(indexes[0]) : &activePanel->Files->At(indexes[0] - activePanel->Dirs->Count);
                         userMenuAdvancedData.CompareNamesAreDirs = (indexes[0] < activePanel->Dirs->Count);
                         if (!focusOnUpDir && focus != indexes[0] && tgtSelCount != 1)
                         {
-                            if ((focus < activePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // obe polozky jsou soubory/adresare
+                            if ((focus < activePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // both items are files/directories
                             {
                                 f2 = (focus < activePanel->Dirs->Count) ? &activePanel->Dirs->At(focus) : &activePanel->Files->At(focus - activePanel->Dirs->Count);
                             }
@@ -2368,7 +2367,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     else
                     {
-                        if (selCount == 0) // zadna oznacena polozka ve zdrojovem panelu, bereme fokus
+                        if (selCount == 0) // no selected item in the source panel, take the focus
                         {
                             if (!focusOnUpDir)
                             {
@@ -2384,7 +2383,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 if (f1 != NULL && f2 == NULL)
                 {
                     if (tgtSelCount == 1 &&
-                        (tgtIndexes[0] < inactivePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // obe polozky jsou soubory/adresare
+                        (tgtIndexes[0] < inactivePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // both items are files/directories
                     {
                         f2 = (tgtIndexes[0] < inactivePanel->Dirs->Count) ? &inactivePanel->Dirs->At(tgtIndexes[0]) : &inactivePanel->Files->At(tgtIndexes[0] - inactivePanel->Dirs->Count);
                         f2FromInactPanel = TRUE;
@@ -2401,7 +2400,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                 if (f->NameLen == f1->NameLen &&
                                     StrICmp(f->Name, f1->Name) == 0)
                                 {
-                                    if ((i < inactivePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // obe polozky jsou soubory/adresare
+                                    if ((i < inactivePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // both items are files/directories
                                     {
                                         f2 = f;
                                         f2FromInactPanel = TRUE;
@@ -2563,7 +2562,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             {
             case CM_HELP_CONTENTS:
             {
-                OpenHtmlHelp(NULL, HWindow, HHCDisplayTOC, 0, TRUE); // nechceme dva messageboxy za sebou
+                OpenHtmlHelp(NULL, HWindow, HHCDisplayTOC, 0, TRUE); // we don't want two message boxes in a row
                 command = HHCDisplayContext;
                 dwData = IDH_INTRODUCTION;
                 break;
@@ -2624,7 +2623,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
               {
                 delete TipOfTheDayDialog;
                 TipOfTheDayDialog = NULL;
-                // soubor asi neexistuje - priste uz to ani nebudeme pri startu zkouset
+                // the file probably does not exist - next time we won't even try at startup
                 if (openQuiet)
                   Configuration.ShowTipOfTheDay = FALSE;
               }
@@ -2714,7 +2713,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_PLUGINS:
         {
-            BeginStopRefresh(); // cmuchal si da pohov
+            BeginStopRefresh(); // snooper takes a break
 
             CPluginsDlg dlg(HWindow);
             dlg.Execute();
@@ -2742,8 +2741,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 SendMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
                 SendMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t2);
             }
-            if (dlg.GetRefreshPanels() || // refreshneme i drivebary kvuli Nethood pluginu (mizi/objevuje se Network Neigborhood ikona)
-                dlg.GetDrivesBarChange()) // zmena viditelnosti FS polozky v Drives barach
+            if (dlg.GetRefreshPanels() || // also refresh drive bars because of the Nethood plugin (Network Neighborhood icon appears/disappears)
+                dlg.GetDrivesBarChange()) // change in visibility of the FS item in the Drive bars
             {
                 PostMessage(HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
             }
@@ -2766,13 +2765,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 SendMessage(GetActivePanel()->HWindow, WM_USER_FOCUSFILE, (WPARAM)newName, (LPARAM)newPath);
             }
 
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(); // snooper starts again now
             return 0;
         }
 
         case CM_SAVECONFIG:
         {
-            // pokud existuje exportovana konfigurace, zobrazim varovani
+            // if an exported configuration already exists, show a warning
             if (FileExists(ConfigurationName))
             {
                 char buff[3000];
@@ -2781,7 +2780,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                         MB_ICONINFORMATION | MB_OKCANCEL);
                 if (ret == IDCANCEL)
                 {
-                    // hodime usera do spravneho adresare a vyfokusime konfiguracni souborf, aby to mel snazsi
+                    // navigate the user to the correct directory and focus the configuration file to make it easier
                     char path[MAX_PATH];
                     char* s = strrchr(ConfigurationName, '\\');
                     if (s != NULL)
@@ -2844,7 +2843,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             ofn.hwndOwner = HWindow;
             char* s = LoadStr(IDS_REGFILTER);
             ofn.lpstrFilter = s;
-            while (*s != 0) // vytvoreni double-null terminated listu
+            while (*s != 0) // create a double-null-terminated list
             {
                 if (*s == '|')
                     *s = 0;
@@ -2862,7 +2861,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             {
                 if (SalGetFullName(file))
                 {
-                    // provedeme export
+                    // perform the export
                     if (ExportConfiguration(HWindow, file, clearKeyBeforeImport))
                     {
                         SalMessageBox(HWindow, LoadStr(IDS_CONFIGEXPORTED), LoadStr(IDS_INFOTITLE),
@@ -2887,7 +2886,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             CSharesDialog dlg(HWindow);
             if (dlg.Execute() == IDOK)
             {
-                // user zvolil Focus
+                // user chose Focus
                 const char* path = dlg.GetFocusedPath();
                 if (path != NULL)
                 {
@@ -2919,7 +2918,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_CONFIGURATION:
         {
-            PostMessage(HWindow, WM_USER_CONFIGURATION, 0, 0); // normalni konfigurace
+            PostMessage(HWindow, WM_USER_CONFIGURATION, 0, 0); // standard configuration
             break;
         }
 
@@ -2970,7 +2969,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             LeftPanel->ChangeSortType(stAttr, TRUE);
             return 0;
         }
-            // zmena setrideni v pravem panelu
+            // change sorting in the right panel
         case CM_RIGHTNAME:
         {
             RightPanel->ChangeSortType(stName, TRUE);
@@ -3000,7 +2999,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             RightPanel->ChangeSortType(stAttr, TRUE);
             return 0;
         }
-            // zmena setrideni v aktualnim
+            // change sorting in the current panel
         case CM_ACTIVENAME:
             activePanel->ChangeSortType(stName, TRUE);
             return 0;
@@ -3023,7 +3022,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return 0;
         }
 
-        // prepnuti Smart Mode (Ctrl+N)
+        // toggle Smart Mode (Ctrl+N)
         case CM_ACTIVE_SMARTMODE:
             ToggleSmartColumnMode(activePanel);
             return 0;
@@ -3034,15 +3033,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             ToggleSmartColumnMode(RightPanel);
             return 0;
 
-            // zmena prohlizeneho disku v levem panelu
+            // change the current drive in the left panel
         case CM_LCHANGEDRIVE:
         {
             if (activePanel != LeftPanel)
             {
                 ChangePanel();
                 if (GetActivePanel() != LeftPanel)
-                    return 0;          // panel nejde aktivovat
-                UpdateWindow(HWindow); // aby doslo u vykresleni focusu jeste pred zobrazenim menu
+                    return 0;          // the panel cannot be activated
+                UpdateWindow(HWindow); // render the focus before the menu appears
             }
             if (LeftPanel->DirectoryLine != NULL)
                 LeftPanel->DirectoryLine->SetDrivePressed(TRUE);
@@ -3051,15 +3050,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 LeftPanel->DirectoryLine->SetDrivePressed(FALSE);
             return 0;
         }
-            // zmena prohlizeneho disku v pravem panelu
+            // change of the current drive in the right panel
         case CM_RCHANGEDRIVE:
         {
             if (activePanel != RightPanel)
             {
                 ChangePanel();
                 if (GetActivePanel() != RightPanel)
-                    return 0;          // panel nejde aktivovat
-                UpdateWindow(HWindow); // aby doslo u vykresleni focusu jeste pred zobrazenim menu
+                    return 0;          // the panel cannot be activated
+                UpdateWindow(HWindow); // render the focus before the menu appears
             }
             if (RightPanel->DirectoryLine != NULL)
                 RightPanel->DirectoryLine->SetDrivePressed(TRUE);
@@ -3068,7 +3067,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 RightPanel->DirectoryLine->SetDrivePressed(FALSE);
             return 0;
         }
-            // zmena filteru na soubory
+            // change the file filter
         case CM_LCHANGEFILTER:
         {
             LeftPanel->ChangeFilter();
@@ -3120,32 +3119,32 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             RightPanel->GotoRoot();
             return 0;
         }
-            // zapinani/vypinani status liny leveho panelu
+            // enabling/diabling the left panel status line
         case CM_LEFTSTATUS:
         {
             LeftPanel->ToggleStatusLine();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             return 0;
         }
-            // zapinani/vypinani status liny praveho panelu
+            // enabling/disabling the right panel status line
         case CM_RIGHTSTATUS:
         {
             RightPanel->ToggleStatusLine();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             return 0;
         }
-            // zapinani/vypinani directory liny leveho panelu
+            // enabling/disabling the left panel directory line
         case CM_LEFTDIRLINE:
         {
             LeftPanel->ToggleDirectoryLine();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             return 0;
         }
-            // zapinani/vypinani directory liny praveho panelu
+            // enabling/disabling the right panel directory line
         case CM_RIGHTDIRLINE:
         {
             RightPanel->ToggleDirectoryLine();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             return 0;
         }
 
@@ -3163,54 +3162,54 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return 0;
         }
 
-        case CM_LEFTREFRESH: // refresh leveho panelu
+        case CM_LEFTREFRESH: // refresh the left panel
         {
             LeftPanel->NextFocusName[0] = 0;
             while (SnooperSuspended)
-                EndSuspendMode(); // pojistka pro rozbeh refreshovani
+                EndSuspendMode(); // safety catch to resume refreshing
             while (StopRefresh)
-                EndStopRefresh(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopRefresh(FALSE); // safety catch to resume refreshing
             while (StopIconRepaint)
-                EndStopIconRepaint(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopIconRepaint(FALSE); // safety catch to resume refreshing
             HANDLES(EnterCriticalSection(&TimeCounterSection));
             int t1 = MyTimeCounter++;
             HANDLES(LeaveCriticalSection(&TimeCounterSection));
             SendMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
-            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // mozna uzivatel vyvolal refresh, aby obnovil listu s disky?
+            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // maybe the user refreshed to update the drives list?
             return 0;
         }
 
-        case CM_RIGHTREFRESH: // refresh praveho panelu
+        case CM_RIGHTREFRESH: // refresh the right panel
         {
             RightPanel->NextFocusName[0] = 0;
             while (SnooperSuspended)
-                EndSuspendMode(); // pojistka pro rozbeh refreshovani
+                EndSuspendMode(); // safety catch to resume refreshing
             while (StopRefresh)
-                EndStopRefresh(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopRefresh(FALSE); // safety catch to resume refreshing
             while (StopIconRepaint)
-                EndStopIconRepaint(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopIconRepaint(FALSE); // safety catch to resume refreshing
             HANDLES(EnterCriticalSection(&TimeCounterSection));
             int t1 = MyTimeCounter++;
             HANDLES(LeaveCriticalSection(&TimeCounterSection));
             SendMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
-            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // mozna uzivatel vyvolal refresh, aby obnovil listu s disky?
+            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // maybe the user refreshed to update the drives list?
             return 0;
         }
 
-        case CM_ACTIVEREFRESH: // refresh praveho panelu
+        case CM_ACTIVEREFRESH: // refresh the right panel
         {
             activePanel->NextFocusName[0] = 0;
             while (SnooperSuspended)
-                EndSuspendMode(); // pojistka pro rozbeh refreshovani
+                EndSuspendMode(); // safety catch to resume refreshing
             while (StopRefresh)
-                EndStopRefresh(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopRefresh(FALSE); // safety catch to resume refreshing
             while (StopIconRepaint)
-                EndStopIconRepaint(FALSE); // pojistka pro rozbeh refreshovani
+                EndStopIconRepaint(FALSE); // safety catch to resume refreshing
             HANDLES(EnterCriticalSection(&TimeCounterSection));
             int t1 = MyTimeCounter++;
             HANDLES(LeaveCriticalSection(&TimeCounterSection));
             SendMessage(activePanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
-            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // mozna uzivatel vyvolal refresh, aby obnovil listu s disky?
+            RebuildDriveBarsIfNeeded(FALSE, 0, FALSE, 0); // maybe the user refreshed to update the drives list?
             return 0;
         }
 
@@ -3250,55 +3249,55 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return 0;
         }
 
-        case CM_REFRESHASSOC: // znovunacteni asociaci z Registry
+        case CM_REFRESHASSOC: // reload associations from the Registry
         {
             OnAssociationsChangedNotification(TRUE);
             return 0;
         }
 
-        case CM_EMAILFILES: // emailovani souboru a adresaru
+        case CM_EMAILFILES: // emailing files and directories
         {
             if (!EnablerFilesOnDisk)
                 return 0;
             activePanel->UserWorkedOnThisPath = TRUE;
-            activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+            activePanel->StoreSelection(); // save selection for Restore Selection command
 
-            // pokud neni vybrana zadna polozka, vybereme tu pod focusem a ulozime jeji jmeno
+            // if no item is selected, select the focused one and store its name
             char temporarySelected[MAX_PATH];
             activePanel->SelectFocusedItemAndGetName(temporarySelected, MAX_PATH);
 
             activePanel->EmailFiles();
 
-            // pokud jsme nejakou polozku vybrali, zase ji odvyberem
+            // if we selected an item, deselect it again
             activePanel->UnselectItemWithName(temporarySelected);
 
             return 0;
         }
 
-        case CM_COPYFILES: // kopirovani souboru a adresaru
+        case CM_COPYFILES: // copy files and directories
             if (!EnablerFilesCopy)
                 return 0;
-        case CM_MOVEFILES: // presun/prejmenovani souboru a adresaru
+        case CM_MOVEFILES: // move/rename files and directories
             if (LOWORD(wParam) == CM_MOVEFILES && !EnablerFilesMove)
                 return 0;
-        case CM_DELETEFILES: // vymaz souboru a adresaru
+        case CM_DELETEFILES: // delete files and directories
             if (LOWORD(wParam) == CM_DELETEFILES && !EnablerFilesDelete)
                 return 0;
-        case CM_OCCUPIEDSPACE: // vypocet zabraneho mista na disku
+        case CM_OCCUPIEDSPACE: // calculate occupied disk space
             if (LOWORD(wParam) == CM_OCCUPIEDSPACE && !EnablerOccupiedSpace)
                 return 0;
-        case CM_CHANGECASE: // zmena velikosti pismen v nazvech
+        case CM_CHANGECASE: // change case in names
         {
             if (LOWORD(wParam) == CM_CHANGECASE && !EnablerFilesOnDisk)
                 return 0;
             activePanel->UserWorkedOnThisPath = TRUE;
-            activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+            activePanel->StoreSelection(); // save selection for Restore Selection command
 
-            // pokud neni vybrana zadna polozka, vybereme tu pod focusem a ulozime jeji jmeno
+            // if no item is selected, select the focused one and store its name
             char temporarySelected[MAX_PATH];
             activePanel->SelectFocusedItemAndGetName(temporarySelected, MAX_PATH);
 
-            if (activePanel->Is(ptDisk)) // zdroj je disk - jdou sem vsechny operace
+            if (activePanel->Is(ptDisk)) // source is disk - all operations go here
             {
                 CActionType type;
                 switch (LOWORD(wParam))
@@ -3320,12 +3319,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     break;
                 }
 
-                // provedeme akci
+                // perform the action
                 activePanel->FilesAction(type, GetNonActivePanel());
             }
             else
             {
-                if (activePanel->Is(ptZIPArchive)) // zdroj je archiv - jdou sem vsechny operace
+                if (activePanel->Is(ptZIPArchive)) // source is an archive - all operations go here
                 {
                     BOOL archMaybeUpdated;
                     activePanel->OfferArchiveUpdateIfNeeded(HWindow, IDS_ARCHIVECLOSEEDIT2, &archMaybeUpdated);
@@ -3347,7 +3346,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
                 else
                 {
-                    if (activePanel->Is(ptPluginFS)) // zdroj je FS - jdou sem vsechny operace
+                    if (activePanel->Is(ptPluginFS)) // source is a FS - all operations go here
                     {
                         CPluginFSActionType type;
                         switch (LOWORD(wParam))
@@ -3370,7 +3369,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
             }
 
-            // pokud jsme nejakou polozku vybrali, zase ji odvyberem
+            // if we selected an item temporarily, deselect it again
             activePanel->UnselectItemWithName(temporarySelected);
 
             return 0;
@@ -3389,9 +3388,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
 
         case CM_CONTEXTMENU:
-        { // testy na typ panelu jsou az v ShellAction
+        { // panel type checks are done later in ShellAction
             activePanel->UserWorkedOnThisPath = TRUE;
-            activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+            activePanel->StoreSelection(); // save selection for Restore Selection command
             ShellAction(activePanel, saContextMenu, TRUE, FALSE);
             return 0;
         }
@@ -3415,7 +3414,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (EnablerChangeAttrs)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ChangeAttr();
             }
             return 0;
@@ -3426,15 +3425,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
 
-                // pokud neni vybrana zadna polozka, vybereme tu pod focusem a ulozime jeji jmeno
+                // if no item is selected, choose the one under the focus and store its name
                 char temporarySelected[MAX_PATH];
                 activePanel->SelectFocusedItemAndGetName(temporarySelected, MAX_PATH);
 
                 activePanel->Convert();
 
-                // pokud jsme nejakou polozku vybrali, zase ji odvyberem
+                // if we selected an item temporarily, deselect it again
                 activePanel->UnselectItemWithName(temporarySelected);
             }
             return 0;
@@ -3445,7 +3444,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ChangeAttr(TRUE, TRUE);
             }
             return 0;
@@ -3456,7 +3455,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ChangeAttr(TRUE, FALSE);
             }
             return 0;
@@ -3467,7 +3466,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ChangeAttr(FALSE, FALSE, TRUE, TRUE);
             }
             return 0;
@@ -3478,7 +3477,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ChangeAttr(FALSE, FALSE, TRUE, FALSE);
             }
             return 0;
@@ -3489,7 +3488,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->Pack(GetNonActivePanel());
             }
             return 0;
@@ -3500,7 +3499,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->Unpack(GetNonActivePanel());
             }
             return 0;
@@ -3508,9 +3507,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_AFOCUSSHORTCUT:
         {
-            if (EnablerFileOrDirLinkOnDisk) // enabler pro activePanel
+            if (EnablerFileOrDirLinkOnDisk) // enabler for activePanel
             {
-                //            activePanel->UserWorkedOnThisPath = TRUE; // jedna se o navigaci, nebudeme cestu spinit
+                //            activePanel->UserWorkedOnThisPath = TRUE; // it's just navigation, don't mark the path dirty
                 activePanel->FocusShortcutTarget(activePanel);
             }
             return 0;
@@ -3521,7 +3520,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (EnablerShowProperties)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 ShellAction(activePanel, saProperties, TRUE, FALSE);
             }
             return 0;
@@ -3614,7 +3613,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_FINDFILE:
         {
-            if (activePanel->Is(ptDisk)) // ma Find vztah k aktualni ceste? (u archivu a FS zatim ne)
+            if (activePanel->Is(ptDisk)) // does Find relate to the current path? (archives and FS not yet)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
             }
@@ -3777,19 +3776,19 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_COMPAREDIRS:
         {
-            // zatim umime pouze ptDisk<->ptDisk, ptDisk<->ptZIPArchive a ptZIPArchive<->ptZIPArchive
+            // currently we support only ptDisk<->ptDisk, ptDisk<->ptZIPArchive and ptZIPArchive<->ptZIPArchive
             //if (LeftPanel->Is(ptPluginFS) || RightPanel->Is(ptPluginFS))
             //{
             //  SalMessageBox(HWindow, LoadStr(IDS_COMPARE_FS), LoadStr(IDS_COMPAREDIRSTITLE), MB_OK | MB_ICONINFORMATION);
             //  return 0;
             //}
 
-            // pokud oba panely vedou na stejnou cestu, vypadneme
+            // if both panels point to the same path, exit
             char leftPath[2 * MAX_PATH];
             char rightPath[2 * MAX_PATH];
             LeftPanel->GetGeneralPath(leftPath, 2 * MAX_PATH);
             RightPanel->GetGeneralPath(rightPath, 2 * MAX_PATH);
-            if (strcmp(leftPath, rightPath) == 0) // case sensitive, kdyz tato podminka selze, nevadi
+            if (strcmp(leftPath, rightPath) == 0) // case sensitive; if this condition fails, it's fine
             {
                 SalMessageBox(HWindow, LoadStr(IDS_COMPARE_SAMEPATH), LoadStr(IDS_COMPAREDIRSTITLE), MB_OK | MB_ICONINFORMATION);
                 return 0;
@@ -3826,7 +3825,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     if (Configuration.CompareOnePanelDirs)
                     {
                         flags |= COMPARE_DIRECTORIES_ONEPANELDIRS;
-                        Configuration.CompareSubdirs = FALSE; // resi situaci, kdy je zaply CompareSubdirs a pusti se porovnavani pro FS a user zapne CompareOnePanelDirs - bez tohoto radku pri dalsim otevreni dialogu pro disky dostane prednost CompareSubdirs pred CompareOnePanelDirs, coz neni uplne koser...
+                        Configuration.CompareSubdirs = FALSE; // handles case when CompareSubdirs is enabled and a compare is run for FS and the user toggles CompareOnePanelDirs - without this line, on the next open of the disk dialog, CompareSubdirs would take precedence over CompareOnePanelDirs, which isn’t quite right...
                     }
                 }
                 if (enableCompAttrsOfSubdirs && Configuration.CompareSubdirsAttr)
@@ -3865,7 +3864,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 return 0;
             MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
-            BeginStopRefresh(); // cmuchal si da pohov
+            BeginStopRefresh(); // snooper takes a break
 
             RECT r;
             GetWindowRect(HWindow, &r);
@@ -3879,7 +3878,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (cmd != 0)
                 FileHistory->Execute(cmd);
 
-            EndStopRefresh(); // ted uz zase cmuchal nastartuje
+            EndStopRefresh(); // snooper starts again now
 
             return 0;
         }
@@ -3894,7 +3893,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             if (activePanel->Is(ptDisk))
             {
-                BeginStopRefresh(); // zadne refreshe nepotrebujeme
+                BeginStopRefresh(); // no refreshes needed
 
                 MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
@@ -3903,9 +3902,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 FillUserMenu(&menu);
                 POINT p;
                 activePanel->GetContextMenuPos(&p);
-                // dalsi kolo zamykani (BeginUserMenuIconsInUse+EndUserMenuIconsInUse) bude
-                // v WM_USER_ENTERMENULOOP+WM_USER_LEAVEMENULOOP, ale to uz je vnorene, zadna rezie,
-                // takze ignorujeme, nebudeme proti tomu nijak bojovat
+                // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse) will occur
+                // in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP, but it is nested and lightweight,
+                // so we ignore it and do not fight it
                 menu.Track(0, p.x, p.y, HWindow, NULL);
                 UserMenuIconBkgndReader.EndUserMenuIconsInUse();
 
@@ -3916,7 +3915,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_OPENHOTPATHS:
         {
-            BeginStopRefresh(); // zadne refreshe nepotrebujeme
+            BeginStopRefresh(); // no refreshes needed
 
             MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
 
@@ -3966,7 +3965,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             else
             {
-                if (EditPermanentVisible || EditWindow->IsEnabled()) // v panelu muze byt archiv
+                if (EditPermanentVisible || EditWindow->IsEnabled()) // there may be an archive in the panel
                     ShowCommandLine();
             }
             return 0;
@@ -4026,7 +4025,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CM_TOGGLEUSERMENUTOOLBAR:
         {
             ToggleUserMenuToolBar();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                                       //          LayoutWindows();
             break;
         }
@@ -4034,7 +4033,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CM_TOGGLEHOTPATHSBAR:
         {
             ToggleHotPathsBar();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                                       //          LayoutWindows();
             break;
         }
@@ -4050,7 +4049,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CM_TOGGLEBOTTOMTOOLBAR:
         {
             ToggleBottomToolBar();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             LayoutWindows();
             break;
         }
@@ -4078,7 +4077,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (TopToolBar->HWindow == NULL)
             {
                 ToggleTopToolBar();
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                 LayoutWindows();
             }
             TopToolBar->Customize();
@@ -4092,7 +4091,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 TogglePluginsBar();
                 LayoutWindows();
             }
-            // nechame otevrit Plugins Manager
+            // let the Plugins Manager open
             PostMessage(MainWindow->HWindow, WM_COMMAND, CM_PLUGINS, 0);
             break;
         }
@@ -4102,7 +4101,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (MiddleToolBar->HWindow == NULL)
             {
                 ToggleMiddleToolBar();
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                 LayoutWindows();
             }
             MiddleToolBar->Customize();
@@ -4114,10 +4113,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (UMToolBar->HWindow == NULL)
             {
                 ToggleUserMenuToolBar();
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                 LayoutWindows();
             }
-            // nechame vybalit stranku UserMenu a rozeditovat polozku index
+            // expand the UserMenu page and edit the item at the given index
             PostMessage(HWindow, WM_USER_CONFIGURATION, 2, 0);
             break;
         }
@@ -4127,10 +4126,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (HPToolBar->HWindow == NULL)
             {
                 ToggleHotPathsBar();
-                IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+                IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
                 LayoutWindows();
             }
-            // nechame vybalit stranku HotPaths
+            // let the HotPaths page expand
             PostMessage(HWindow, WM_USER_CONFIGURATION, 1, -1);
             break;
         }
@@ -4176,7 +4175,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 return 0;
             }
 
-            AddDoubleQuotesIfNeeded(cmd, MAX_PATH); // CreateProcess chce mit jmeno s mezerama v uvozovkach (jinak zkousi ruzny varianty, viz help)
+            AddDoubleQuotesIfNeeded(cmd, MAX_PATH); // CreateProcess requires the name with spaces in quotes (otherwise it tries various options; see help)
 
             SetDefaultDirectories();
 
@@ -4184,17 +4183,17 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             memset(&si, 0, sizeof(STARTUPINFO));
             si.cb = sizeof(STARTUPINFO);
             si.lpTitle = LoadStr(IDS_COMMANDSHELL);
-            // existuje nedokumentovany flag 0x400, kdy do si.hStdOutput predame handle monitoru
-            // bohuzel funguje treba se SOL.EXE, ale ne s CMD.EXE, takze jedeme starym zpusobem
-            // pres konstrukci dummy okenka
-            // pod w2k falgu rikaji #define STARTF_HASHMONITOR       0x00000400  // same as HASSHELLDATA
-            // na netu jsem nasel STARTF_MONITOR v nejakem clanku o nedokumentovanych funkcich
+            // There is an undocumented flag 0x400 where we can pass the monitor handle into si.hStdOutput
+            // Unfortunately it works with SOL.EXE but not with CMD.EXE, so we use the old method
+            // with a dummy window
+            // On W2K the flag appears as #define STARTF_HASHMONITOR 0x00000400  // same as HASSHELLDATA
+            // STARTF_MONITOR was mentioned online in an article about undocumented features
             si.dwFlags = STARTF_USESHOWWINDOW;
             POINT p;
             if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
             {
-                // pokud je hlavni okno na jinem monitoru, meli bychom tam take otevrit
-                // okno vznikajici a nejlepe na default pozici (stejne jako na primaru)
+                // if the main window is on another monitor we should open
+                // the new window there as well, preferably at the default position (same as on the primary)
                 si.dwFlags |= STARTF_USEPOSITION;
                 si.dwX = p.x;
                 si.dwY = p.y;
@@ -4224,7 +4223,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CM_FILELIST:
         {
             activePanel->UserWorkedOnThisPath = TRUE;
-            activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+            activePanel->StoreSelection(); // save selection for Restore Selection command
             MakeFileList();
             return 0;
         }
@@ -4237,27 +4236,27 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_SWAPPANELS:
         {
-            // prohodime panely
+            // swap panels
             CFilesWindow* swap = LeftPanel;
             LeftPanel = RightPanel;
             RightPanel = swap;
-            // prohodime zaznamy toolbar
+            // swap toolbar records
             char buff[1024];
             lstrcpy(buff, Configuration.LeftToolBar);
             lstrcpy(Configuration.LeftToolBar, Configuration.RightToolBar);
             lstrcpy(Configuration.RightToolBar, buff);
-            // nastavime panelum promenne a nechame nacist toolbary
+            // set panel variables and load the toolbars
             LeftPanel->DirectoryLine->SetLeftPanel(TRUE);
             RightPanel->DirectoryLine->SetLeftPanel(FALSE);
-            // ikonka se musi zmenit v imagelistu
+            // the icon must be changed in the image list
             LeftPanel->UpdateDriveIcon(FALSE);
             RightPanel->UpdateDriveIcon(FALSE);
 
-            // pokud byl aktivni panel ZOOMed, po Ctrl+U by zustal aktivni minimalizovany panel
+            // if the active panel was ZOOMed, after Ctrl+U, the minimized panel would remain active
             if (GetActivePanel() == LeftPanel && IsPanelZoomed(FALSE) ||
                 GetActivePanel() == RightPanel && IsPanelZoomed(TRUE))
             {
-                // aktivujeme tedy ten viditelny
+                // so activate the visible one
                 ChangePanel(TRUE);
             }
 
@@ -4265,11 +4264,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             LayoutWindows();
             LockWindowUpdate(NULL);
 
-            // nechame znovu nacist sloupce (sirky sloupcu se neprohazuji)
+            // reload columns again (column widths are not swapped)
             LeftPanel->SelectViewTemplate(LeftPanel->GetViewTemplateIndex(), TRUE, FALSE);
             RightPanel->SelectViewTemplate(RightPanel->GetViewTemplateIndex(), TRUE, FALSE);
 
-            // rozesleme tuto novinku i mezi plug-iny
+            // distribute this news among plugins as well
             Plugins.Event(PLUGINEVENT_PANELSSWAPPED, 0);
 
             return 0;
@@ -4370,7 +4369,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk) || activePanel->Is(ptZIPArchive))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ClipboardCopy();
             }
             return 0;
@@ -4381,7 +4380,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel->Is(ptDisk))
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 activePanel->ClipboardCut();
             }
             return 0;
@@ -4390,12 +4389,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CM_CLIPPASTE:
         {
             activePanel->UserWorkedOnThisPath = TRUE;
-            if (!activePanel->Is(ptDisk) || !activePanel->ClipboardPaste()) // zkusim pastnout soubory na disk
+            if (!activePanel->Is(ptDisk) || !activePanel->ClipboardPaste()) // attempt to paste files to disk
             {
                 if (!activePanel->Is(ptZIPArchive) && !activePanel->Is(ptPluginFS) ||
-                    !activePanel->ClipboardPasteToArcOrFS(FALSE, NULL)) // zkusim pastnout soubory do archivu nebo FS
+                    !activePanel->ClipboardPasteToArcOrFS(FALSE, NULL)) // attempt to paste files into an archive or the file system
                 {
-                    activePanel->ClipboardPastePath(); // nebo zmenit aktualni cestu
+                    activePanel->ClipboardPastePath(); // or change the current path
                 }
             }
             return 0;
@@ -4427,7 +4426,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             SendMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
             SendMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t2);
 
-            // rozesleme tuto novinku i mezi plug-iny
+            // distribute this news among plug-ins as well
             Plugins.Event(PLUGINEVENT_CONFIGURATIONCHANGED, 0);
             return 0;
         }
@@ -4437,7 +4436,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (EnablerPermissions)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
-                activePanel->StoreSelection(); // ulozime selection pro prikaz Restore Selection
+                activePanel->StoreSelection(); // save selection for Restore Selection command
                 ShellAction(activePanel, saPermissions, TRUE, FALSE);
             }
             return 0;
@@ -4450,7 +4449,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (IsPanelZoomed(TRUE) || IsPanelZoomed(FALSE))
             {
                 SplitPosition = BeforeZoomSplitPosition;
-                // radeji se ochranime pred spatnou hodnotou v BeforeZoomSplitPosition
+                // better protect ourselves against a bad value in BeforeZoomSplitPosition
                 if (IsPanelZoomed(TRUE) || IsPanelZoomed(FALSE))
                     SplitPosition = 0.5;
             }
@@ -4491,7 +4490,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_DISPACHCHANGENOTIF:
     {
-        if (LastDispachChangeNotifTime < lParam) // nejde o starou zpravu
+        if (LastDispachChangeNotifTime < lParam) // not an outdated message
         {
             if (AlreadyInPlugin || StopRefresh > 0)
                 NeedToResentDispachChangeNotif = TRUE;
@@ -4519,7 +4518,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     else
                         ok = FALSE;
-                    if (!ok) // ulozime si cas posledniho refreshe (jeste v kriticke sekci)
+                    if (!ok) // store the time of the last refresh (still in the critical section)
                     {
                         HANDLES(EnterCriticalSection(&TimeCounterSection));
                         LastDispachChangeNotifTime = MyTimeCounter++;
@@ -4527,24 +4526,24 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     HANDLES(LeaveCriticalSection(&DispachChangeNotifCS));
 
-                    if (ok) // rozesleme zpravu o zmene na 'path' s 'includingSubdirs'
+                    if (ok) // distribute a notification about the change on 'path' with 'includingSubdirs'
                     {
-                        // posleme zpravu do vsech loadlych pluginu
+                        // send the message to all loaded plugins
                         Plugins.AcceptChangeOnPathNotification(path, includingSubdirs);
 
-                        if (GetNonActivePanel() != NULL) // nejprve neaktivni (kvuli casum zmen v podadresarich na NTFS)
+                        if (GetNonActivePanel() != NULL) // non-active panel first (due to timestamps of subdirectory changes on NTFS)
                         {
                             GetNonActivePanel()->AcceptChangeOnPathNotification(path, includingSubdirs);
                         }
-                        if (GetActivePanel() != NULL) // pak aktivni panel
+                        if (GetActivePanel() != NULL) // then the active panel
                         {
                             GetActivePanel()->AcceptChangeOnPathNotification(path, includingSubdirs);
                         }
 
                         if (DetachedFSList->Count > 0)
                         {
-                            // pro optimalizaci vstupu/vystupu do plug-inu je sekce EnterPlugin+LeavePlugin
-                            // vyvezena az sem (neni v zapouzdreni ifacu)
+                            // for better input/output optimization with plugins, the EnterPlugin/LeavePlugin section
+                            // is exported here (not inside the interface encapsulation)
                             EnterPlugin();
                             int i;
                             for (i = 0; i < DetachedFSList->Count; i++)
@@ -4556,7 +4555,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         }
                     }
                     else
-                        break; // konec smycky
+                        break; // end of loop
                 }
             }
         }
@@ -4565,7 +4564,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_DISPACHCFGCHANGE:
     {
-        // rozesleme zpravu o zmenach v konfiguraci mezi plug-iny
+        // broadcast a message about configuration changes to the plugins
         Plugins.Event(PLUGINEVENT_CONFIGURATIONCHANGED, 0);
         return 0;
     }
@@ -4591,13 +4590,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             RightPanel->DirectoryLine->LayoutWindow();
             RightPanel->DirectoryLine->ToolBar->Save(Configuration.RightToolBar);
         }
-        return FALSE; // nemame zadna tlacitka
+        return FALSE; // we have no buttons
     }
 
     case WM_USER_TBENUMBUTTON2:
     {
         HWND hToolBar = (HWND)wParam;
-        // predame do nasi toolbary
+        // we forward it to our toolbar
         if (TopToolBar != NULL && hToolBar == TopToolBar->HWindow)
             return TopToolBar->OnEnumButton(lParam);
         if (MiddleToolBar != NULL && hToolBar == MiddleToolBar->HWindow)
@@ -4606,13 +4605,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             return LeftPanel->DirectoryLine->ToolBar->OnEnumButton(lParam);
         if (RightPanel->DirectoryLine->ToolBar != NULL && hToolBar == RightPanel->DirectoryLine->ToolBar->HWindow)
             return RightPanel->DirectoryLine->ToolBar->OnEnumButton(lParam);
-        return FALSE; // nemame zadna tlacitka
+        return FALSE; // we have no buttons
     }
 
     case WM_USER_TBRESET:
     {
         HWND hToolBar = (HWND)wParam;
-        // predame do nasi toolbary
+        // forward to our toolbar
         if (TopToolBar != NULL && hToolBar == TopToolBar->HWindow)
             TopToolBar->OnReset();
         if (MiddleToolBar != NULL && hToolBar == MiddleToolBar->HWindow)
@@ -4621,13 +4620,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             LeftPanel->DirectoryLine->ToolBar->OnReset();
         if (RightPanel->DirectoryLine->ToolBar != NULL && hToolBar == RightPanel->DirectoryLine->ToolBar->HWindow)
             RightPanel->DirectoryLine->ToolBar->OnReset();
-        return FALSE; // nemame zadna tlacitka
+        return FALSE; // we have no buttons
     }
 
     case WM_USER_TBGETTOOLTIP:
     {
         HWND hToolBar = (HWND)wParam;
-        // predame do nasi toolbary
+        // we forward it to our toolbar
         if (TopToolBar != NULL && hToolBar == TopToolBar->HWindow)
             TopToolBar->OnGetToolTip(lParam);
         if (MiddleToolBar != NULL && hToolBar == MiddleToolBar->HWindow)
@@ -4648,12 +4647,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             RightPanel->DirectoryLine->ToolBar->OnGetToolTip(lParam);
         if (BottomToolBar != NULL && hToolBar == BottomToolBar->HWindow)
             BottomToolBar->OnGetToolTip(lParam);
-        return FALSE; // nemame zadna tlacitka
+        return FALSE; // we have no buttons
     }
 
     case WM_USER_TBENDADJUST:
     {
-        // nektera z toolbar byla konfigurovana - forcneme update
+        // some toolbar was configured - force an update
         IdleForceRefresh = TRUE;
         IdleRefreshStates = TRUE;
         return 0;
@@ -4661,7 +4660,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_LEAVEMENULOOP2:
     {
-        // tato message chodi az po commandu, takze pripadny command z menu new uz je zpracovan
+        // this message arrives after the command, so any New menu command has already been processed
         if (ContextMenuNew != NULL)
             ContextMenuNew->Release();
         return 0;
@@ -4683,16 +4682,16 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             HIMAGELIST hIcons = popup->GetImageList();
             if (hIcons != NULL)
             {
-                popup->SetImageList(NULL); // pro jistotu, at popup nevlastni invalidni handle
+                popup->SetImageList(NULL); // just to be safe, so the popup doesn't own an invalid handle
                 ImageList_Destroy(hIcons);
             }
             hIcons = popup->GetHotImageList();
             if (hIcons != NULL)
             {
-                popup->SetHotImageList(NULL); // pro jistotu, at popup nevlastni invalidni handle
+                popup->SetHotImageList(NULL); // just to be safe, so the popup doesn't own an invalid handle
                 ImageList_Destroy(hIcons);
             }
-            if (popupID == CML_PLUGINS) // zavirame Plugins menu, dynamicky ikony uz muzeme zahodit (buildi se znovu pred kazdym dalsim otevrenim menu)
+            if (popupID == CML_PLUGINS) // closing the Plugins menu; dynamic icons can be freed (they are rebuilt before each next menu opening)
                 Plugins.ReleasePluginDynMenuIcons();
             break;
         }
@@ -4700,7 +4699,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CML_FILES_NEW:
         {
             popup->SetTemplateMenu(NULL);
-            EndStopRefresh(); // zavirame v WM_USER_UNINITMENUPOPUP/WM_USER_INITMENUPOPUP
+            EndStopRefresh(); // closed in WM_USER_UNINITMENUPOPUP/WM_USER_INITMENUPOPUP
             break;
         }
         }
@@ -4724,7 +4723,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             DWORD firstID = left ? CML_LEFT_VIEWS1 : CML_RIGHT_VIEWS1;
             DWORD lastID = left ? CML_LEFT_VIEWS2 : CML_RIGHT_VIEWS2;
-            // vyhledam separator nad a pod pohledama
+            // find the separator above and below the views
             int firstIndex = popup->FindItemPosition(firstID);
             int lastIndex = popup->FindItemPosition(lastID);
             if (firstIndex == -1 || lastIndex == -1)
@@ -4733,11 +4732,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             else
             {
-                // sestrelim stavajici obsah
+                // remove the current contents
                 if (firstIndex + 1 < lastIndex - 1)
                     popup->RemoveItemsRange(firstIndex + 1, lastIndex - 1);
 
-                // naleju seznam pohledu
+                // populate the list of views
                 FillViewModeMenu(popup, firstIndex + 1, left ? 1 : 2);
             }
             break;
@@ -4754,15 +4753,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             if (count > GO_ITEMS_COUNT)
             {
-                // sestrelim stavajici obsah
+                // remove the existing contents
                 popup->RemoveItemsRange(GO_ITEMS_COUNT, count - 1);
             }
 
-            // pripojime hotpaths, existuji-li
+            // append hot paths, if any exist
             DWORD firstID = popupID == CML_LEFT_GO ? CM_LEFTHOTPATH_MIN : CM_RIGHTHOTPATH_MIN;
             HotPaths.FillHotPathsMenu(popup, firstID, FALSE, FALSE, FALSE, TRUE);
 
-            // pripojime dir history, maximalne 10 polozek
+            // append directory history, at most 10 items
             firstID = popupID == CML_LEFT_GO ? CM_LEFTHISTORYPATH_MIN : CM_RIGHTHISTORYPATH_MIN;
             DirHistory->FillHistoryPopupMenu(popup, firstID, 10, TRUE);
             break;
@@ -4801,7 +4800,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CML_EDIT:
         {
-            // Pokud jde o paste typu "zmena adresare", zobrazime to do polozky Paste
+            // If this is a "change directory" paste operation, show it in the Paste item
             char text[220];
             char tail[50];
             tail[0] = 0;
@@ -4811,8 +4810,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             CFilesWindow* activePanel = GetActivePanel();
             BOOL activePanelIsDisk = (activePanel != NULL && activePanel->Is(ptDisk));
             if (EnablerPastePath &&
-                (!activePanelIsDisk || !EnablerPasteFiles) && // PasteFiles je prioritni
-                !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS je prioritni
+                (!activePanelIsDisk || !EnablerPasteFiles) && // PasteFiles has higher priority
+                !EnablerPasteFilesToArcOrFS)                  // PasteFilesToArcOrFS has higher priority
             {
                 char* p = strrchr(text, '\t');
                 if (p != NULL)
@@ -4835,20 +4834,20 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             CFilesWindow* activePanel = GetActivePanel();
             if (activePanel == NULL)
                 break;
-            BeginStopRefresh(); // uzavreme v WM_USER_UNINITMENUPOPUP/CML_FILES_NEW, ktera
-                                // ma garantovane parovani s timto vstupem
+            BeginStopRefresh(); // we close in WM_USER_UNINITMENUPOPUP/CML_FILES_NEW,
+                                // which is guaranteed to pair with this entry
 
-            // pokud menu neexistuje, nechame ho vytvorit
+            // if the menu does not exist, let it be created
             if ((!ContextMenuNew->MenuIsAssigned()) && activePanel->Is(ptDisk) &&
                 activePanel->CheckPath(FALSE) == ERROR_SUCCESS)
                 GetNewOrBackgroundMenu(HWindow, activePanel->GetPath(), ContextMenuNew, CM_NEWMENU_MIN, CM_NEWMENU_MAX, FALSE);
 
-            // pokud menu existuje, nechame na jeho zaklade postavit nase menu
+            // if the menu exists, build our menu based on it
             if (ContextMenuNew->MenuIsAssigned())
                 popup->SetTemplateMenu(ContextMenuNew->GetMenu());
             else
             {
-                // jinak vlozim retezec, ze menu new neni k dispozici
+                // otherwise insert a message that the New menu is unavailable
                 popup->RemoveAllItems();
                 MENU_ITEM_INFO mii;
                 mii.Mask = MENU_MASK_TYPE | MENU_MASK_STRING | MENU_MASK_STATE;
@@ -4866,7 +4865,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (activePanel == NULL)
                 break;
 
-            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // destrukce imagelistu se provede v WM_USER_UNINITMENUPOPUP
+            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // the image list will be destroyed in WM_USER_UNINITMENUPOPUP
             HIMAGELIST hIconsGray = Plugins.CreateIconsList(TRUE);
             popup->SetImageList(hIconsGray);
             popup->SetHotImageList(hIcons);
@@ -4887,14 +4886,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case CML_COMMANDS_USERMENU:
         {
             popup->RemoveAllItems();
-            FillUserMenu(popup); // toto vybaleni user menu je osetreno z WM_USER_ENTERMENULOOP/WM_USER_LEAVEMENULOOP (vola se UserMenuIconBkgndReader.BeginUserMenuIconsInUse / EndUserMenuIconsInUse)
+            FillUserMenu(popup); // expanding the user menu here is handled via WM_USER_ENTERMENULOOP/WM_USER_LEAVEMENULOOP (UserMenuIconBkgndReader.BeginUserMenuIconsInUse / EndUserMenuIconsInUse)
             break;
         }
 
         case CML_PLUGINS:
         {
-            // inicializace menu Plugins
-            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // destrukce imagelistu se provede v WM_USER_UNINITMENUPOPUP
+            // initialize the Plugins menu
+            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // the image list will be destroyed in WM_USER_UNINITMENUPOPUP
             HIMAGELIST hIconsGray = Plugins.CreateIconsList(TRUE);
             popup->SetImageList(hIconsGray);
             popup->SetHotImageList(hIcons);
@@ -4906,7 +4905,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CML_PLUGINS_SUBMENU:
         {
-            // inicializace submenu nektereho z pluginu
+            // initialize a submenu of one of the plugins
             Plugins.InitSubMenuItems(HWindow, popup);
             break;
         }
@@ -4921,11 +4920,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             popup->RemoveAllItems();
 
-            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // destrukce imagelistu se provede v WM_USER_UNINITMENUPOPUP
+            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // the image list will be destroyed in WM_USER_UNINITMENUPOPUP
             HIMAGELIST hIconsGray = Plugins.CreateIconsList(TRUE);
             popup->SetImageList(hIconsGray);
             popup->SetHotImageList(hIcons);
-            // chceme pouze pluginy s moznosti konfigurace
+            // we want only plugins with configuration options
             if (Plugins.AddNamesToMenu(popup, CM_PLUGINCFG_MIN, CM_PLUGINCFG_MAX - CM_PLUGINCFG_MIN, TRUE))
                 popup->AssignHotKeys();
             break;
@@ -4951,11 +4950,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             popup->RemoveAllItems();
 
-            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // destrukce imagelistu se provede v WM_USER_UNINITMENUPOPUP
+            HIMAGELIST hIcons = Plugins.CreateIconsList(FALSE); // the image list will be destroyed in WM_USER_UNINITMENUPOPUP
             HIMAGELIST hIconsGray = Plugins.CreateIconsList(TRUE);
             popup->SetImageList(hIconsGray);
             popup->SetHotImageList(hIcons);
-            // chceme vsechny pluginy
+            // we want all plugins
             if (Plugins.AddNamesToMenu(popup, CM_PLUGINABOUT_MIN, CM_PLUGINABOUT_MAX - CM_PLUGINABOUT_MIN, FALSE))
                 popup->AssignHotKeys();
             break;
@@ -4964,7 +4963,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         return 0;
     }
 
-    case WM_INITMENUPOPUP: // pozor, obdobny kod je jeste v CFilesBox
+    case WM_INITMENUPOPUP: // note: similar code is also in CFilesBox
     case WM_DRAWITEM:
     case WM_MEASUREITEM:
     case WM_MENUCHAR:
@@ -4972,7 +4971,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         LRESULT plResult = 0;
         if (ContextMenuChngDrv != NULL)
         {
-            // pokud uzivatel klikne pravym tlacitkem na HotPath v ChangeDrive menu, prijde to sem
+            // if the user right-clicks HotPath in the ChangeDrive menu, it comes here
             CALL_STACK_MESSAGE1("CMainWindow::WindowProc::ContextMenuChngDrv");
             SafeHandleMenuChngDrvMsg2(uMsg, wParam, lParam, &plResult);
         }
@@ -5042,13 +5041,13 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         if (PtInRect(&r, p))
         {
-            if (uMsg == WM_LBUTTONDOWN) // klik -> pocatek tazeni
+            if (uMsg == WM_LBUTTONDOWN) // click -> start dragging
             {
-                UpdateWindow(HWindow);        // pokud je Salamander dole, nechame prekreslit vsechna okna
+                UpdateWindow(HWindow);        // if Salamander is underneath, repaint all windows
                 MainWindow->CancelPanelsUI(); // cancel QuickSearch and QuickEdit
-                BeginStopIconRepaint();       // neprejeme si zadne repainty ikon
+                BeginStopIconRepaint();       // we do not want any icon repaints
                 if (!DragFullWindows)
-                    BeginStopStatusbarRepaint(); // neprejeme si prekreslovani throbberu, pokud tahame xorovany splitbar
+                    BeginStopStatusbarRepaint(); // skip throbber repaints when dragging the XOR split bar
 
                 DragMode = TRUE;
                 DragAnchorX = p.x - r.left;
@@ -5121,7 +5120,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             int splitWidth = MainWindow->GetSplitBarWidth();
 
-            // zarazka na stredu
+            // stopper at the center
             double splitPosition = (double)(x - DragAnchorX) / (WindowWidth - splitWidth);
 
             if (splitPosition >= 0.49 && splitPosition <= 0.51)
@@ -5201,10 +5200,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             r2.right = r.right;
             DrawSplitLine(HWindow, -1, DragSplitX, r2);
             SendMessage(ToolTipWindow.HWindow, TTM_ACTIVATE, FALSE, 0);
-            DestroyWindow(ToolTipWindow.HWindow); // jen odpoji toolTip od objektu
+            DestroyWindow(ToolTipWindow.HWindow); // just detaches the tooltip from the control
             if (uMsg == WM_LBUTTONUP)
             {
-                // pouze pri legalnim potrvrzeni prijmeme umisteni
+                // accept the position only when the drag finishes legally
                 //          int splitWidth = MainWindow->GetSplitBarWidth();
                 //          SplitPosition = (double)DragSplitX / (WindowWidth - splitWidth);
                 SplitPosition = DragSplitPosition;
@@ -5213,9 +5212,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             DragMode = FALSE;
             ReleaseCapture();
             FocusPanel(GetActivePanel());
-            EndStopIconRepaint(TRUE); // uvolnime prekreslovani ikon a nechame je prekreslit
+            EndStopIconRepaint(TRUE); // resume icon repainting and repaint them now
             if (!DragFullWindows)
-                EndStopStatusbarRepaint(); // uvolnime prekreslovani throbberu, pokud tahame xorovany splitbar
+                EndStopStatusbarRepaint(); // resume throbber repaints when dragging the XOR split bar
             return 0;
         }
         break;
@@ -5318,7 +5317,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (RightPanel->DirectoryLine->ToolBar != NULL &&
                 lphdr->hwndFrom == RightPanel->DirectoryLine->ToolBar->HWindow)
                 RightPanel->DirectoryLine->LayoutWindow();
-            IdleRefreshStates = TRUE; // pri pristim Idle vynutime kontrolu stavovych promennych
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
             return 0;
         }
         if (lphdr->code == RBN_AUTOSIZE)
@@ -5335,14 +5334,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         if (lphdr->code == RBN_BEGINDRAG && DriveBar2->HWindow != NULL)
         {
-            // po dobu tazeni bandu schovame drive bary
+            // hide the drive bars while dragging bands
             ShowHideTwoDriveBarsInternal(FALSE);
             return 0;
         }
 
         if (lphdr->code == RBN_ENDDRAG && DriveBar2->HWindow != NULL)
         {
-            // po tazeni bandu zase zobrazime nase dva bandy a soupneme je na konec
+            // after dragging, show our two bands again and move them to the end
             ShowHideTwoDriveBarsInternal(TRUE);
             return 0;
         }
@@ -5356,9 +5355,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         break;
     }
 
-    case WM_SIZE: // uprava velikosti panelu
+    case WM_SIZE: // panel size adjustment
     {
-        // u Tondy nam prichazi WM_SIZE jeste pred dokoncenim WM_CREATE
+        // at Tonda's, WM_SIZE arrives before WM_CREATE finishes
         // (bug report execution address = 0x004743C3)
         if (!Created)
         {
@@ -5436,7 +5435,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             if (MiddleToolBar->HWindow != NULL)
             {
-                // toolbar posuneme dolu, pokud ma nektery z panelu directory line
+                // move the toolbar down if any panel has a directory line
                 int offset1 = 0;
                 int offset2 = 0;
                 if (LeftPanel->DirectoryLine != NULL && LeftPanel->DirectoryLine->HWindow != NULL)
@@ -5450,8 +5449,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                               SWP_NOACTIVATE | SWP_NOZORDER));
             }
 
-            // HWND_BOTTOM - aby nedochazelo k blikani pri resize okna
-            // pokud se dolu dostane bottom toolbar, blika pri resize
+            // HWND_BOTTOM - prevents flickering during window resize
+            // if the bottom toolbar ends up down there, it flickers when resizing
             if (EditWindow->HWindow != NULL)
                 hdwp = HANDLES(DeferWindowPos(hdwp, EditWindow->HWindow, HWND_BOTTOM,
                                               0, TopRebarHeight + PanelsHeight + 2, WindowWidth, EditHeight + 150,
@@ -5470,8 +5469,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             rbi.fMask = RBBIM_SIZE;
 
             RECT r;
-            // u Tomase Jelinka se dokazal po maximalizaci hlavniho okna druhy band pruh
-            // nalepit na pravou stranu a nechtel se pohnout, tohle by mohlo problem resit
+            // at Tomas Jelinek the second band strip could stick to the right side after maximizing the main window
+            // and refused to move; this might solve the problem
             GetClientRect(RightPanel->HWindow, &r);
             rbi.cx = r.right;
             int index = (int)SendMessage(HTopRebar, RB_IDTOINDEX, BANDID_DRIVEBAR2, 0);
@@ -5487,19 +5486,19 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_NCACTIVATE:
     {
-        // nastavime globalni promennou, ktera udava stav ramecku hlavniho ona
+        // set the global variable indicating the main window frame state
         CaptionIsActive = (BOOL)wParam;
 
-        // nechame premalovat directory line aktivniho okna
-        // pokud se jedna o ztratu selectu, vyzadame si update - spechame, abychom
-        // oteviranemu oknu s CS_SAVEBITS nesestrelili buffer
+        // repaint the directory line of the active window
+        // if selection is being lost, request an update quickly so we don't
+        // destroy the buffer of the opening window with CS_SAVEBITS
         CFilesWindow* panel = GetActivePanel();
         if (panel != NULL && panel->DirectoryLine != NULL)
             panel->DirectoryLine->InvalidateAndUpdate(!CaptionIsActive);
 
         if (!CaptionIsActive)
         {
-            // nechame bottom toolbar nastavit do zakladni polohy
+            // let the bottom toolbar reset to its default position
             UpdateBottomToolBar();
         }
         break;
@@ -5509,10 +5508,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         if (WindowsVistaAndLater)
         {
-            // patch pro Windows Vista UAC: pri spusteni souboru z panelu, ktere zpusobilo zobrazeni UAC elevacniho
-            // promptu a jeho naslednem zavreni pomoci Cancel dochazelo ke stavu, kdy Salamander ztratil focus z panelu
-            // Hlavni okno je zakazane v dobe, kdy prijdou zpravy jako WM_ACTIVATE nebo WM_SETFOCUS a focus obdrzi
-            // Microsofti IME podporune popupy.
+            // Windows Vista UAC patch: when starting a file from the panels caused the UAC elevation prompt to appear
+            // and then was closed using Cancel, Salamander would lose focus from the panel.
+            // The main window is disabled at the time messages like WM_ACTIVATE or WM_SETFOCUS arrive, and the focus is received by Microsoft IME-supported popups.
             BOOL enabled = (BOOL)wParam;
             if (enabled)
             {
@@ -5534,12 +5532,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         int active = LOWORD(wParam);
         if (active == WA_INACTIVE)
-            CacheNextSetFocus = TRUE; // pro hladke prepnuti do Salama (jinak by se agresivne predne nakreslil focus (viz stare Salamy))
+            CacheNextSetFocus = TRUE; // for a smooth switch to Salamander; otherwise focus would be drawn aggressively (like old versions)
         else
-            SuppressToolTipOnCurrentMousePos(); // potlaceni nechteneho tooltipu pri prepnuti do okna
+            SuppressToolTipOnCurrentMousePos(); // suppress an unwanted tooltip when switching to the window
         ExitHelpMode();
 
-        // zajistime schovani/zobrazeni Wait okenka (pokud existuje)
+        // ensure hiding/showing the Wait window if it exists
         ShowSafeWaitWindow(active != WA_INACTIVE);
 
         if (active != WA_INACTIVE)
@@ -5573,19 +5571,19 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         if (data != NULL && data->GetLoaded())
         {
             if (lParam == 0)
-                data->ShouldUnload = TRUE; // nastaveni flagu pro unload plug-inu
+                data->ShouldUnload = TRUE; // set the flag to unload the plugin
             else
             {
                 if (lParam == 1)
-                    data->ShouldRebuildMenu = TRUE; // nastaveni flagu pro rebuild menu plug-inu
+                    data->ShouldRebuildMenu = TRUE; // set the flag to rebuild the plugin menu
                 else
-                    data->Commands.Add(LOWORD(lParam - 2)); // pridani salCmd/menuCmd
+                    data->Commands.Add(LOWORD(lParam - 2)); // add salCmd/menuCmd
             }
-            ExecCmdsOrUnloadMarkedPlugins = TRUE; // informujeme Salama, ze ma prohledat data vsech plug-inu
+            ExecCmdsOrUnloadMarkedPlugins = TRUE; // inform Salamander to scan all plugin data
         }
         else
         {
-            // muze nastat, pokud se ceka na dokonceni metody Release(force==TRUE) plug-inu
+            // may occur while waiting for Release(force==TRUE) method of the plugin to finish
             //        TRACE_E("Unexpected situation in WM_USER_POSTCMDORUNLOADPLUGIN.");
         }
         return 0;
@@ -5601,12 +5599,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 CALL_STACK_MESSAGE4("CPluginInterfaceForMenuExt::ExecuteMenuItem(, , %d,) (%s v. %s)",
                                     (int)lParam, data->DLLName, data->Version);
 
-                // snizime prioritu threadu na "normal" (aby operace prilis nezatezovaly stroj)
+                // lower the thread priority to "normal" (so operations don't burden the system)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
                 data->GetPluginInterfaceForMenuExt()->ExecuteMenuItem(NULL, HWindow, (int)lParam, 0);
 
-                // opet zvysime prioritu threadu, operace dobehla
+                // raise the thread priority again, the operation has finished
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
             }
             else
@@ -5617,8 +5615,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
         else
         {
-            // musi byt naloaden, protoze post-menu-ext-cmd se volalo z naloadenyho plug-inu...
-            // post-unload se spousti az v "idle", takze tim se unload take "nemohl" udelat...
+            // it must be loaded because post-menu-ext-cmd was invoked from a loaded plugin...
+            // post-unload runs during "idle", so the unload couldn't have happened yet...
             TRACE_E("Unexpected situation in WM_USER_POSTMENUEXTCMD.");
         }
         return 0;
@@ -5627,7 +5625,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_USER_SALSHEXT_TRYRELDATA:
     {
         //      TRACE_I("WM_USER_SALSHEXT_TRYRELDATA: begin");
-        if (SalShExtSharedMemView != NULL) // sdilena pamet je k dispozici (pri chybe cut/copy&paste neumime)
+        if (SalShExtSharedMemView != NULL) // shared memory is available (we cannot handle cut/copy&paste errors)
         {
             WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
             BOOL needRelease = TRUE;
@@ -5679,7 +5677,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_USER_SALSHEXT_PASTE:
     {
         //      TRACE_I("WM_USER_SALSHEXT_PASTE: begin");
-        if (SalShExtSharedMemView != NULL) // sdilena pamet je k dispozici (pri chybe cut/copy&paste neumime)
+        if (SalShExtSharedMemView != NULL) // shared memory is available (we cannot handle cut/copy&paste errors)
         {
             BOOL tmpPasteDone = FALSE;
             char tgtPath[MAX_PATH];
@@ -5687,25 +5685,25 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             int operation = 0;
             DWORD dataID = -1;
             WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
-            if (SalShExtSharedMemView->PostMsgIndex == (int)wParam) // bereme jen "aktualni" zpravy
+            if (SalShExtSharedMemView->PostMsgIndex == (int)wParam) // process only the "current" messages
             {
                 if (SalamanderBusy)
-                    SalShExtSharedMemView->SalBusyState = 2 /* Salamander je "busy", paste odlozime na pozdeji */;
+                    SalShExtSharedMemView->SalBusyState = 2 /* Salamander is busy, postpone paste for later */;
                 else
                 {
                     SalamanderBusy = TRUE;
                     SalShExtPastedData.SetLock(TRUE);
                     LastSalamanderIdleTime = GetTickCount();
-                    SalShExtSharedMemView->SalBusyState = 1 /* Salamander neni "busy" a uz ceka na zadani operace paste */;
+                    SalShExtSharedMemView->SalBusyState = 1 /* Salamander is not busy and now is waiting for a paste operation */;
                     SalShExtSharedMemView->PasteDone = FALSE;
 
                     int count = 0;
-                    while (count++ < 50) // dele nez 5 sekund cekat nebudeme
+                    while (count++ < 50) // wait no longer than 5 seconds
                     {
                         ReleaseMutex(SalShExtSharedMemMutex);
-                        Sleep(100); // dame copyhooku 100ms na reakci
+                        Sleep(100); // give the copy hook 100 ms to respond
                         WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
-                        if (SalShExtSharedMemView->PasteDone) // copyhook nam predal cilovy adresar pro Paste a dalsi data
+                        if (SalShExtSharedMemView->PasteDone) // copy hook supplied the target path for Paste and other data
                         {
                             //                TRACE_I("WM_USER_SALSHEXT_PASTE: copy hook returned: paste done!");
                             lstrcpyn(tgtPath, SalShExtSharedMemView->TargetPath, MAX_PATH);
@@ -5720,20 +5718,20 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             ReleaseMutex(SalShExtSharedMemMutex);
 
-            if (tmpPasteDone && operation == SALSHEXT_COPY && SalShExtPastedData.GetDataID() == dataID) // provedeme Paste operaci
+            if (tmpPasteDone && operation == SALSHEXT_COPY && SalShExtPastedData.GetDataID() == dataID) // perform the Paste operation
             {
                 SalamanderBusy = TRUE;
                 LastSalamanderIdleTime = GetTickCount();
                 //          TRACE_I("WM_USER_SALSHEXT_PASTE: calling SalShExtPastedData.DoPasteOperation");
                 ProgressDialogActivateDrop = LastWndFromPasteGetData;
                 SalShExtPastedData.DoPasteOperation(operation == SALSHEXT_COPY, tgtPath);
-                ProgressDialogActivateDrop = NULL; // pro dalsi pouziti progress dialogu musime globalku vycistit
-                LastWndFromPasteGetData = NULL;    // pro dalsi Paste to budeme nulovat zde
+                ProgressDialogActivateDrop = NULL; // clear global variable for next use of the progress dialog
+                LastWndFromPasteGetData = NULL;    // reset for the next Paste operation here
                 SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_PATH, tgtPath, NULL);
                 SalamanderBusy = FALSE;
             }
             SalShExtPastedData.SetLock(FALSE);
-            PostMessage(HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // po odemceni pripadne provedeme uvolneni dat
+            PostMessage(HWindow, WM_USER_SALSHEXT_TRYRELDATA, 0, 0); // after unlocking, optionally release the data
         }
         //      TRACE_I("WM_USER_SALSHEXT_PASTE: end");
         return 0;
@@ -5759,24 +5757,24 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_END_SUSPMODE:
     {
-        // pokud je hlavni okno minimalizovano (pomaly restore nebo otevreni kontextoveho menu),
-        // odlozime kontrolu obsahu panelu (hrozi "retry" pri vyndani diskety, atd.)
+        // if the main window is minimized (slow restore or opening a context menu),
+        // postpone panel content check ("retry" may occur when removing a disk, etc.)
         if (IsIconic(HWindow))
         {
             SetTimer(HWindow, IDT_POSTENDSUSPMODE, 500, NULL);
-            //      puvodne misto timeru: PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0);
+            //      originally instead of using a timer: PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0);
             return 0;
         }
 
         if (--ActivateSuspMode < 0)
         {
             ActivateSuspMode = 0;
-            // TRACE_E("WM_USER_END_SUSPMODE: problem 2");  // pri otevreni messageboxu s NULL parentem dojde k opakovanemu poslani WM_ACTIVATEAPP "activate" (Salamander uz je aktivovany)
-            return 0; // zprava uz byla stornovana
+            // TRACE_E("WM_USER_END_SUSPMODE: problem 2");  // opening a message box with a NULL parent resends WM_ACTIVATEAPP "activate" (Salamander is already active)
+            return 0; // the message was already cancelled
         }
         HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-        // nejprve musime dokoncit aktivaci okna
+        // first we must finish activating the window
         static BOOL recursion = FALSE;
         if (!recursion)
         {
@@ -5784,7 +5782,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             MSG msg;
             CanCloseButInEndSuspendMode = CanClose;
             BOOL oldCanClose = CanClose;
-            CanClose = FALSE; // nenechame se zavrit, jsme uvnitr metody
+            CanClose = FALSE; // don't let ourselves be closed; we are inside the method
             BOOL postWM_USER_CLOSE_MAINWND = FALSE;
             BOOL postWM_USER_FORCECLOSE_MAINWND = FALSE;
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -5814,18 +5812,18 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
         //      else
         //      {
-        //#pragma message (__FILE__ " (2120): vyhodit")
-        //        SalMessageBox(HWindow, "pruser3", "pruser3", MB_OK);
+        //#pragma message (__FILE__ " (2120): remove")
+        //        SalMessageBox(HWindow, "problem3", "problem3", MB_OK); // debug message
         //      }
 
-        // okno je aktivovano, provedeme refresh
-        // EndSuspendMode();   // vyhozeno, chceme refreshovat i pri neaktivnim hl. okne
+        // window is activated, perform a refresh
+        // EndSuspendMode();   // removed, we want to refresh even when the main window is inactive
 
         LeftPanel->Activate(FALSE);
         RightPanel->Activate(FALSE);
 
-        // pokud byl OneDrive Personal/Business pripojen/odpojen, provedeme refresh Drive bary,
-        // at zmizne/objevi se ikona nebo drop down menu
+        // if OneDrive Personal/Business was connected or disconnected, refresh the Drive bars
+        // so the icon or drop down menu disappears or appears
         BOOL oneDrivePersonal = OneDrivePath[0] != 0;
         int oneDriveBusinessStoragesCount = OneDriveBusinessStorages.Count;
         InitOneDrivePath();
@@ -5853,7 +5851,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         case IDT_POSTENDSUSPMODE:
         {
             KillTimer(HWindow, IDT_POSTENDSUSPMODE);
-            PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0); // neni-li ActivateSuspMode >= 1, nedojde
+            PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0); // if ActivateSuspMode < 1, nothing happens
             break;
         }
 
@@ -5903,14 +5901,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         DWORD threadID = (DWORD)lParam;
         if (bkgndReaderData != NULL && // "always true"
             UserMenuIconBkgndReader.EnterCSIfCanUpdateUMIcons(&bkgndReaderData, threadID))
-        { // pokud user menu stale jeste stoji o tyto ikony:
-            // pokud muzeme updatnout ikonky hned, zamkneme pristup k user menu z Findu a provedeme update ikon, jinak se
-            // update musi odlozit az po zavreni menu s ikonama (nemuzeme jim je podriznout pod nohama) nebo po zavreni
-            // cfg (po OK by se nove nactene ikony premazaly a nezacalo by nove cteni ikon = zustaly by nenactene ikony)
+        { // if the user menu still wants these icons:
+            // if icons can be updated immediately, lock user menu access from Find and update them; otherwise
+            // postpone the update until the menu with icons closes (we cannot pull the rug from under it) or after closing
+            // configuration dialog: after OK the newly loaded icons would be overwritten and reloading wouldn't start, leaving icons unloaded
             for (int i = 0; i < UserMenuItems->Count; i++)
                 UserMenuItems->At(i)->GetIconHandle(bkgndReaderData, TRUE);
             UserMenuIconBkgndReader.LeaveCSAfterUMIconsUpdate();
-            if (UMToolBar != NULL && UMToolBar->HWindow != NULL) // refreshneme user menu toolbar
+            if (UMToolBar != NULL && UMToolBar->HWindow != NULL) // refresh the user menu toolbar
                 UMToolBar->CreateButtons();
         }
         if (bkgndReaderData != NULL)
@@ -5929,8 +5927,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 break;
         }
 
-        // odvedeme praci za ztracene a nedorucene zpravy
-        int actSusMode = (wParam == TRUE) ? 1 : 0; // ActivateSuspMode by melo byt pri aktivaci 1, jinak 0
+        // do the work for lost and undelivered messages
+        int actSusMode = (wParam == TRUE) ? 1 : 0; // ActivateSuspMode should be 1 when activating, otherwise 0
         if (ActivateSuspMode < 0)
         {
             ActivateSuspMode = 0;
@@ -5938,25 +5936,25 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
         else
         {
-            if (ActivateSuspMode != actSusMode) // napr. dve deaktivace za sebou nebo nestihnuty activate
+            if (ActivateSuspMode != actSusMode) // e.g. two deactivations in a row or missed activation
             {
-                KillTimer(HWindow, IDT_POSTENDSUSPMODE); // pokud se jeste nestihl activate, zrusime ho (prip. se nahodi znovu)
+                KillTimer(HWindow, IDT_POSTENDSUSPMODE); // if activation hasn't happened yet, cancel (it may start again)
 
-                MSG msg; // vypumpujeme WM_USER_END_SUSPMODE z message queue (jinak dojde v zapeti k ukonceni suspend-modu: situace: staci otevreni File Comparator okna - je tam aktivace+deaktivace po 10ms)
+                MSG msg; // pump WM_USER_END_SUSPMODE from the queue, otherwise suspend mode ends shortly (e.g. opening File Comparator triggers activation+deactivation after 10ms)
                 while (PeekMessage(&msg, HWindow, WM_USER_END_SUSPMODE, WM_USER_END_SUSPMODE, PM_REMOVE))
                     ;
 
                 while (ActivateSuspMode > actSusMode)
                 {
-                    // EndSuspendMode();  // vyhozeno, chceme refreshovat i pri neaktivnim hl. okne
+                    // EndSuspendMode();  // removed, we want to refresh even when the main window is inactive
                     ActivateSuspMode--;
                 }
             }
         }
 
-        //      if (IsWindowVisible(HWindow))    // nyni vyreseno pres FirstActivateApp
+        //      if (IsWindowVisible(HWindow))    // now handled by FirstActivateApp
         //      {
-        if (wParam == TRUE) // aktivace app
+        if (wParam == TRUE) // activating the app
         {
             if (!LeftPanel->DontClearNextFocusName)
                 LeftPanel->NextFocusName[0] = 0;
@@ -5968,32 +5966,32 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 RightPanel->DontClearNextFocusName = FALSE;
             if (Windows7AndLater && IsIconic(HWindow))
             {
-                SetTimer(HWindow, IDT_POSTENDSUSPMODE, 200, NULL); // doufam, ze nezjistime, proc tu byl tenhle timer, no, kdyby jo, tak: zakomentovan byl protoze brzdi (o 200ms) refresh adresare po diskove operaci (napr. Move souboru do podadresare, je to dobre videt i na lokalnim disku)
+                SetTimer(HWindow, IDT_POSTENDSUSPMODE, 200, NULL); // hopefully we'll never find out why this timer existed; commented out because it delays directory refresh by 200 ms after operations (e.g. moving a file into a subdirectory, it is visible on a local disk)
             }
             else
             {
-                // do 2.53b1 zde byla pouze tato vetev a verze s timerem byla v komentari
-                // pod W7 nam vsak uzivatele zacali hlasit problem s aktivaci Salamandera v pripade, ze je zapnute groupovani ikon
-                // a Salamander je minimalizovany; nekdy potom kliknuti na jeho nahled (nebo pri Alt+Tab prepnuti) Salama nerestorne,
-                // pouze se ozve pipnuti; vice viz https://forum.altap.cz/viewtopic.php?f=6&t=3791
+                // until 2.53b1 only this branch existed and the timer version was commented out
+                // on Windows 7 users reported activation issues when icon grouping was enabled
+                // and Salamander was minimized; sometimes clicking its preview (or Alt+Tab)
+                // would not restore Salamander, only a beep; see https://forum.altap.cz/viewtopic.php?f=6&t=3791
                 //
-                // takze odlozenou variantu o 200ms zase povolujeme, ale pouze od W7 a pouze pokud je okno minimalizovane
-                PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0); // neni-li ActivateSuspMode >= 1, nedojde
+                // so we enable the delayed variant (200ms) again, but only on W7 and only if the window is minimized
+                PostMessage(HWindow, WM_USER_END_SUSPMODE, 0, 0); // if ActivateSuspMode is not >= 1, nothing happens
             }
-            IdleRefreshStates = TRUE;  // pri pristim Idle vynutime kontrolu stavovych promennych
-            IdleCheckClipboard = TRUE; // nechame kontrolovat take clipboard
+            IdleRefreshStates = TRUE;  // on the next Idle, force a check of status variables
+            IdleCheckClipboard = TRUE; // also let it check the clipboard
         }
-        else // deaktivace app
+        else // deactivating the app
         {
-            // pri deaktivaci hlavniho okna zrusime rezim quick search a quick rename
+            // when the main window deactivates, cancel quick search and quick rename modes
             CancelPanelsUI();
 
-            //        BeginSuspendMode();    // vyhozeno, chceme refreshovat i pri neaktivnim hl. okne
+            //        BeginSuspendMode();    // removed, we want refresh even with inactive main window
             ActivateSuspMode++;
             //        }
             //      }
-            //      if (wParam == FALSE)  // pri deaktivaci uteceme z adresaru zobrazenych v panelech,
-            //      {                     // aby sly mazat, odpojovat atd. z jinych softu
+            //      if (wParam == FALSE)  // when deactivating, leave directories displayed in panels
+            //      {                     // so other software can delete or disconnect them
             if (CanChangeDirectory())
             {
                 SetCurrentDirectoryToSystem();
@@ -6011,77 +6009,73 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     case WM_ENDSESSION:
     {
         if (!wParam)
-            return 0; // nema se delat shut down / log off, neni co resit
+            return 0; // no shutdown or log off requested, nothing to handle
 
-        // bezny shutdown / log off sem vubec nema prijit, cely se vyresi pri prijmu
-        // WM_QUERYENDSESSION, na jejim konci se zavre hl. okno a tim dojde k zabiti
-        // Salamandera, teoreticky se pak vraci TRUE = zavolat WM_ENDSESSION, takze to
-        // sem prijit muze, uz je vse hotove, jen vratime 0 dle MSDN, ale zatim vsechny
-        // verze Windows uprednostnily zabiti
+        // normal shutdown/log off should not come here at all; it is handled when
+        // WM_QUERYENDSESSION arrives, at its end the main window closes and Salamander
+        // is killed. Theoretically, TRUE should be returned to call WM_ENDSESSION so this
+        // could arrive, everything is already done, just return 0 according to MSDN, but so far all Windows versions prefer killing the app.
         //
-        // tady resime tzv. "critical shutdown" (i log off), ma flag ENDSESSION_CRITICAL
-        // v lParam, vyvolat ho umime volanim (zasadni je EWX_FORCE):
+        // here we handle so-called "critical shutdown" (including log off) which
+        // has the ENDSESSION_CRITICAL flag in lParam; it can be triggered using calling (EWX_FORCE is crucial):
         // ExitWindowsEx(EWX_LOGOFF | EWX_FORCE, SHTDN_REASON_MAJOR_OPERATINGSYSTEM |
         //               SHTDN_REASON_MINOR_UPGRADE | SHTDN_REASON_FLAG_PLANNED);
-        // kod je zde (hledat SE_SHUTDOWN_NAME): https://msdn.microsoft.com/en-us/library/windows/desktop/aa376871%28v=vs.85%29.aspx
+        // the code is here (search for SE_SHUTDOWN_NAME): https://msdn.microsoft.com/en-us/library/windows/desktop/aa376871%28v=vs.85%29.aspx
         //
-        // jen Vista+: jeste tady resime shutdown s flagem EWX_FORCEIFHUNG, nema nastaveny
-        // flag ENDSESSION_CRITICAL, ale nuti soft k ukonceni, bez ohledu na navratovou hodnotu
-        // z WM_QUERYENDSESSION posle WM_ENDSESSION a po jejim dokonceni soft zabije (pokud
-        // mezitim uzivatel akci neprerusi Cancelem ze systemoveho okna, ktere se ukaze po 5s):
-        // - tenhle rezim jsem nazval "forced shutdown"
-        // - system nas proces nezabije, nebezi nam zadny timeout, nebudeme nic nasilne ukoncovat
-        // - o pripadne preruseni shutdownu ale musime rict uzivateli - pokud ho prerusi, bude
-        //   po dokonceni zpracovani teto WM_ENDSESSION soft normalne pokracovat dale v behu
+        // Vista+ only: we also handle shutdown with EWX_FORCEIFHUNG flag here; it doesn't have
+        // the ENDSESSION_CRITICAL flag set but forces the application to exit regardless of the return value
+        // WM_QUERYENDSESSION is followed by WM_ENDSESSION and after it completes the app is killed
+        // (unless the user interrupts the action with Cancel from the system dialog shown after 5s):
+        // - I call this mode "forced shutdown"
+        // - the system won't kill our process, no timeout is running, we won't forcibly terminate anything
+        // - we must notify the user if they want to interrupt the shutdown; if they cancel, after processing this WM_ENDSESSION, the software will continue running normally
         //
-        // pri "critical shutdown" (i log off):
-        // - pod W2K nas proces zabiji bez varovani, neni co resit
-        // - pod XP je neprijemne, ze ve WM_QUERYENDSESSION nevime, ze jde o "critical shutdown", takze
-        //   pokud tomu nic nezabrani, zacneme normalne ukladat konfiguraci a pokud to do 5s nestihneme,
-        //   Windows nas proces zabiji = konfigurace je ztracena, prirozene by to slo delat kopii konfigurace
-        //   pri kazdem shutdownu, ale tak vazne problemy pod XP se ztratami konfigurace nejsou;
-        //   pod XP nam bez ohledu na navratovku z WM_QUERYENDSESSION (i kdyz se navratovky nedockaji do 5s,
-        //   napr. kdyz tam visi dotaz na cancelovani bezicich diskovych operaci) poslou WM_ENDSESSION,
-        //   takze zadne ukladani konfigurace ve WM_ENDSESSION nedelame, jen provedeme nejhorsi uklid
-        //   (zastaveni probihajicich diskovych operaci)
-        // - pod Vista+ nejprve provedeme zalohu klice s konfiguraci v registry, mame na to 5s
-        //   ve WM_QUERYENDSESSION, pak z ni vratime TRUE (pokracovat v shutdownu) a system nam
-        //   da dalsich 5s na ukonceni zde ve WM_ENDSESSION a to venujeme ukladani konfigurace,
-        //   nemusi se to stihnout, pak prijde zabiti a konfigurace zustane rozbita = pri dalsim
-        //   startu ji smazneme a nakopirujeme posledni konfiguraci ze zalohy vytvorene ve WM_QUERYENDSESSION;
-        //   pod Vista+ pri zavirani bez ukladani konfigurace nejprve pockame 5s ve WM_QUERYENDSESSION
-        //   na dokonceni diskovych operaci, a pak dalsich 5s zde ve WM_ENDSESSION
+        // during a "critical shutdown" (including log off):
+        // - on W2K the system kills our process without warning, nothing to handle
+        // - on XP it's annoying that WM_QUERYENDSESSION doesn't reveal it's "critical shutdown",
+        //   so unless something stops it we'll start saving the configuration and if we don't finish within 5s
+        //   Windows kills the process and the configuration is lost; theoretically, making a copy each during every shutdown would solve it,
+        //   but XP rarely loses configuration,
+        //   on XP, regardless of WM_QUERYENDSESSION's return value (even if no response comes within 5s,
+        //   e.g. a prompt asking to cancel ongoing disk operations), WM_ENDSESSION is still sent,
+        //   so we don't save configuration in WM_ENDSESSION, only perform the worst-case cleanup
+        //   (stop ongoing disk operations)
+        // - on Vista+ we first back up the configuration registry key in WM_QUERYENDSESSION (5s limit),
+        //   then return TRUE to continue shutdown, and the system gives us another 5s to finish in WM_ENDSESSION, which we dedicate to saving the configuration,
+        //   it might not finish in time, then we get killed and the configuration is left broken;
+        //   on the next start we delete it and copy the last configuration from the backup created in WM_QUERYENDSESSION;
+        //   on Vista+ when closing without saving configuration, we first wait 5s in WM_QUERYENDSESSION
+        //   for disk operations to finish and then another 5s here in WM_ENDSESSION
 
-        // Experimentalne zjisteno toto chovani pri shutdownech tri druhu:
+        // Experimentally determined behavior during three types of shutdowns:
         //
-        // EWX_FORCE:  (od Vista+ je nahozeny flag ENDSESSION_CRITICAL)
-        // W2K: kill bez cehokoliv
-        // XP: WM_QUERYENDSESSION, bez odpovedi: za 5s prijde WM_ENDSESSION, za 5s pak kill
-        //     WM_QUERYENDSESSION vraci TRUE/FALSE: prijde WM_ENDSESSION, za 5s pak kill
-        // Win7-10: WM_QUERYENDSESSION, bez odpovedi: za 5s kill
-        // +Vista   WM_QUERYENDSESSION vraci TRUE/FALSE: prijde WM_ENDSESSION, za 5s pak kill
+        // EWX_FORCE:  (since Vista the ENDSESSION_CRITICAL flag is set)
+        // W2K: kill without anything
+        // XP: WM_QUERYENDSESSION, without a reply: WM_ENDSESSION arrives after 5s and after another 5s a kill
+        //     WM_QUERYENDSESSION returns TRUE/FALSE: WM_ENDSESSION follows, kill after 5s
+        // Win7-10: WM_QUERYENDSESSION, if there is no response: in 5s -> kill
+        // +Vista   WM_QUERYENDSESSION returns TRUE/FALSE: WM_ENDSESSION will follow, then a kill after 5s
         //
-        // EWX_FORCEIFHUNG:  (neni nahozeny flag ENDSESSION_CRITICAL)
-        // W2K: jako Log Off ze start menu
-        // XP: jako W2K: Log Off ze start menu
-        // Win7-10: WM_QUERYENDSESSION, bez odpovedi: za 5s black screen Kill/Cancel (Cancel prerusi shutdown),
-        // +Vista   POZOR: bez disablovaneho hl. okna (kdyz neni parent msgboxu ani wait-okna) po 5s kill,
-        //          WM_QUERYENDSESSION vrati TRUE/FALSE: prijde WM_ENDSESSION,
-        //                                               po 5s black screen Kill/Cancel (Cancel prerusi shutdown)
+        // EWX_FORCEIFHUNG:  (when the ENDSESSION_CRITICAL flag is not set)
+        // W2K: behaves like Log Off from the Start menu
+        // XP: same as W2K: Log Off from the Start menu
+        // Win7-10: WM_QUERYENDSESSION, if there is no response in 5s: a black screen and Kill/Cancel (Cancel aborts the shutdown)
+        // +Vista   WARNING: if the main window is not disabled (no parent message box or wait window) it kills after 5s,
+        //          WM_QUERYENDSESSION returns TRUE/FALSE: WM_ENDSESSION follows,
+        //                                               after 5s a black screen Kill/Cancel (Cancel aborts the shutdown)
         //
-        // Log Off ze start menu:
-        // W2K: WM_QUERYENDSESSION, po 5s msgbox Kill/Cancel (Cancel prerusi shutdown),
-        //      WM_QUERYENDSESSION vrati TRUE -> prijde WM_ENDSESSION, po 5s msgbox Kill/Cancel (Cancel funguje jako KILL)
-        //      WM_QUERYENDSESSION vrati FALSE - prerusi shutdown
-        // XP: stejne s W2K
-        // Win7-10: WM_QUERYENDSESSION, bez odpovedi: za 5s black screen Kill/Cancel (Cancel prerusi shutdown),
-        // +Vista   WM_QUERYENDSESSION vrati TRUE: prijde WM_ENDSESSION,
-        //                                         po 5s black screen Kill/Cancel (Cancel prerusi shutdown)
-        //          WM_QUERYENDSESSION vrati FALSE: ihned ukaze black screen Kill/Cancel (Cancel prerusi shutdown)
+        // Log Off from the Start menu:
+        // W2K: WM_QUERYENDSESSION, after 5s a message box Kill/Cancel (Cancel aborts the shutdown),
+        //      WM_QUERYENDSESSION returns TRUE -> WM_ENDSESSION arrives, after 5s a Kill/Cancel message box (Cancel acts like Kill)
+        //      WM_QUERYENDSESSION returns FALSE - aborts shutdown
+        // XP: same as W2K
+        // Win7-10: WM_QUERYENDSESSION, if there is no response: after 5s a black screen with Kill/Cancel (Cancel aborts the shutdown),
+        // +Vista   WM_QUERYENDSESSION returns TRUE: WM_ENDSESSION arrives,
+        //                                         after 5s a black screen with Kill/Cancel (Cancel aborts the shutdown)
+        //          WM_QUERYENDSESSION returns FALSE: immediately shows a black screen with Kill/Cancel (Cancel aborts the shutdown)
 
-        // popis viz vyse u "forced shutdown", dame uzivateli prilezitost shutdown zastavit rucne,
-        // pokud si to nepreje, muze aspon zastavit probihajici diskove operace, pak uz prijde jen
-        // o ulozeni konfigurace
+        // see above for "forced shutdown" description; give the user a chance to stop the shutdown manually,
+        // if they refuse, they can at least cancel running disk operations and will only lose configuration saving
         if (!SaveCfgInEndSession && !WaitInEndSession && WindowsVistaAndLater &&
             (lParam & ENDSESSION_CRITICAL) == 0)
         {
@@ -6097,41 +6091,41 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 if (SalMessageBox(HWindow, LoadStr(IDS_FORCEDSHUTDOWNDISKOPER),
                                   SALAMANDER_TEXT_VERSION, MB_YESNO | MB_ICONQUESTION) == IDYES)
                 {
-                    ProgressDlgArray.PostCancelToAllDlgs(); // dialogy i workeri bezi ve svych threadech, je sance, ze se ukonci
+                    ProgressDlgArray.PostCancelToAllDlgs(); // dialogs and workers run in their own threads, they may exit
                     while (ProgressDlgArray.RemoveFinishedDlgs() > 0)
-                        Sleep(200); // pockame az se diskove operace zcanceluji
+                        Sleep(200); // wait until disk operations cancel
                 }
 
                 MyShutdownBlockReasonDestroy(HWindow);
             }
             else
                 SalMessageBox(HWindow, LoadStr(IDS_FORCEDSHUTDOWN), SALAMANDER_TEXT_VERSION, MB_OK | MB_ICONINFORMATION);
-            // bohuzel jsem nenasel, jak prijit na to, jestli shutdown stale probiha nebo jestli
-            // ho user zrusil (cerne full screen okno pod Win7), pokud ne, killnou soft, upozorneni
-            // na to user dostal, neni co dal resit;
-            // muzou probihat diskove operace, pokud se nezcanceluji, soubory zustanou v mezistavu,
-            // napr. pri kopirovani bude alokovana plna velikost souboru, ale obsah neni nakopirovany,
-            // pouze vyplneny nulami + kazdopadne nebude ulozena konfigurace
+            // unfortunately there's no way to tell whether shutdown is still running or the user
+            // has cancelled it (black full screen window on Win7). If not, the OS kills the app; we
+            // already warned the user, nothing more to do.
+            // Disk operations may still be running; if they don't get canceled, files remain in an
+            // incomplete state, e.g. during copying the full file size is allocated but the content is not
+            // copied, just filled with zeros, and the configuration won't be saved.
             return 0;
         }
 
-        if (!SaveCfgInEndSession) // nema se provest ulozeni konfigurace (to se resi az dale)
-        {                         // WaitInEndSession nebo XP "critical shutdown": pockame na dokonceni diskovych operaci (bezi-li nejake)
+        if (!SaveCfgInEndSession) // configuration should not be saved (handled later)
+        {                         // WaitInEndSession or XP "critical shutdown": wait for disk operations to complete (if any are running)
             if (!WindowsVistaAndLater && ProgressDlgArray.RemoveFinishedDlgs() > 0)
-                ProgressDlgArray.PostCancelToAllDlgs(); // dialogy i workeri bezi ve svych threadech, je sance, ze se ukonci
+                ProgressDlgArray.PostCancelToAllDlgs(); // dialogs and workers run in their own threads; there is a chance that they might exit
 
             while (ProgressDlgArray.RemoveFinishedDlgs() > 0)
                 Sleep(200);
-            return 0; // nechame zavrit soft
+            return 0; // let the software close
         }
 
-        if ((lParam & ENDSESSION_CRITICAL) == 0) // teoreticky nemuze nastat (SaveCfgInEndSession je vzdy TRUE)
+        if ((lParam & ENDSESSION_CRITICAL) == 0) // theoretically cannot happen (SaveCfgInEndSession is always TRUE)
         {
             TRACE_E("WM_ENDSESSION: unexpected SaveCfgInEndSession: it is not ENDSESSION_CRITICAL!");
             return 0;
         }
 
-        // break; // tady break nechybi !!! dal pokracuje jen "critical shutdown" (i log off), jde se ukladat konfigurace
+        // break; // this break is not missing! only "critical shutdown" (including log off) continues below to save configuration
     }
     case WM_QUERYENDSESSION:
     case WM_USER_CLOSE_MAINWND:
@@ -6139,7 +6133,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         CALL_STACK_MESSAGE1("WM_USER_CLOSE_MAINWND::1");
 
-        DWORD msgArrivalTime = GetTickCount(); // critical shutdown trva 5s + 5s, pri prekroceni nas zabiji, takze merime cas
+        DWORD msgArrivalTime = GetTickCount(); // critical shutdown lasts 5s + 5s; if exceeded, we are killed, so we measure the time
 
         if (uMsg == WM_QUERYENDSESSION)
         {
@@ -6149,35 +6143,35 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             if ((lParam & ENDSESSION_CRITICAL) != 0)
             {
-                // opatreni proti tomu, aby WM_ENDSESSION prisel z kodu resiciho IdleCheckClipboard
-                // v OnEnterIdle() a CannotCloseSalMainWnd bylo TRUE (WM_ENDSESSION se pak odmita vykonat)
-                // konec softu se rychle blizi, IDLE vazne nema smysl resit, jen zdrzuje
+                // precaution against WM_ENDSESSION being triggered from the code handling IdleCheckClipboard
+                // when OnEnterIdle() and CannotCloseSalMainWnd were TRUE (WM_ENDSESSION would refuse to run)
+                // the program is about to terminate; handling IDLE makes no sense here, and it only causes delays
                 DisableIdleProcessing = TRUE;
             }
         }
 
-        // Windows XP: pri critical shutdown nenastavuji ENDSESSION_CRITICAL, W2K: pri critical
-        // shutdown neposilaji ani WM_QUERYENDSESSION, vice viz vyse u WM_ENDSESSION
+        // Windows XP: during critical shutdown they don't set ENDSESSION_CRITICAL, W2K: during critical
+        // shutdown they don't even send WM_QUERYENDSESSION, see above at WM_ENDSESSION
 
-        // Vista+: endAfterCleanup: TRUE = critical shutdown (zabiti do 5s) nelze odmitnout, soft
-        // se 100% ukonci, udelame aspon nejhorsi uklid: cancel bezicich diskovych operaci
-        // (zastaveni hledani + zavreni Find oken a vieweru nema smysl resit, jen se cte)
+        // Vista+: endAfterCleanup: TRUE = critical shutdown (killed within 5s) cannot be refused, the app
+        // will 100% terminate, so perform at least the worst-case cleanup: cancel ongoing disk operations
+        // (stopping searches and closing Find windows and viewers is pointless, just read)
         BOOL endAfterCleanup = FALSE;
 
         if (!CanClose)
         {
             if (CanCloseButInEndSuspendMode &&
                 (uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION))
-            { // CanClose je FALSE jen kvuli aktivaci okna, shutdownu to nijak nebrani
+            { // CanClose is FALSE only because of window activation; it doesn't prevent shutdown
             }
-            else // "neprobehl kompletni start" nebo "close okna je odlozeny, provede se az po aktivaci okna", ted koncime
+            else // "startup not completed" or "window close postponed until activation", exit now
             {
                 if (uMsg == WM_QUERYENDSESSION)
                     TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: CanClose is FALSE");
                 if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
-                    endAfterCleanup = TRUE; // nelze odmitnout = udelame aspon uklid
+                    endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
                 else
-                    return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                    return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
             }
         }
 
@@ -6187,22 +6181,22 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (uMsg == WM_QUERYENDSESSION)
                 TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: CannotCloseSalMainWnd is TRUE");
             if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
-                endAfterCleanup = TRUE; // nelze odmitnout = udelame aspon uklid
+                endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
             else
-                return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
         }
 
         if (!endAfterCleanup && uMsg != WM_ENDSESSION)
-        { // u WM_ENDSESSION uz je to busy z WM_QUERYENDSESSION, test musime preskocit
+        { // with WM_ENDSESSION the busy state was set in WM_QUERYENDSESSION, skip the test
             if (!SalamanderBusy)
             {
-                SalamanderBusy = TRUE; // uz je BUSY, pokracujeme ve zpracovani WM_USER_CLOSE_MAINWND
+                SalamanderBusy = TRUE; // already BUSY, continue processing WM_USER_CLOSE_MAINWND
                 LastSalamanderIdleTime = GetTickCount();
             }
             else
             {
                 if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
-                    endAfterCleanup = TRUE; // nelze odmitnout = udelame aspon uklid
+                    endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
                 else
                 {
                     if (LockedUIReason != NULL && HasLockedUI())
@@ -6211,7 +6205,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         TRACE_E("WM_USER_CLOSE_MAINWND: SalamanderBusy == TRUE!");
                     if (uMsg == WM_QUERYENDSESSION)
                         TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: SalamanderBusy is TRUE");
-                    return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                    return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
                 }
             }
         }
@@ -6222,12 +6216,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (uMsg == WM_QUERYENDSESSION)
                 TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: AlreadyInPlugin > 0");
             if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
-                endAfterCleanup = TRUE; // nelze odmitnout = udelame aspon uklid
-            else                        // nelze unloadnout plugin, kdyz jsme v nem!
-                return 0;               // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
+            else                        // cannot unload the plugin while we are in it!
+                return 0;               // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
         }
 
-        // pokud je zapnuta konfirmace OnClose, nechame usera potvrdit zavreni programu
+        // if OnClose confirmation is enabled, ask the user to confirm closing the program
         if (uMsg == WM_USER_CLOSE_MAINWND && Configuration.CnfrmOnSalClose)
         {
             MSGBOXEX_PARAMS params;
@@ -6246,17 +6240,17 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 return 0;
         }
 
-        // mame nastartovane nejake dialogy s diskovymi operacemi
+        // we have some dialogs with disk operations running
         WCHAR blockReason[MAX_STR_BLOCKREASON];
         if (ProgressDlgArray.RemoveFinishedDlgs() > 0)
         {
             if ((uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION) && (lParam & ENDSESSION_CRITICAL) != 0)
-            {                                               // "critical shutdown" (i log off) = neni cas na diskuze, vse zcancelovat, aby nezustal
-                                                            // "nedokonceny" bordel na disku
-                if (uMsg == WM_QUERYENDSESSION)             // cancelujeme jen pri prvni zprave o critical shutdownu
-                    ProgressDlgArray.PostCancelToAllDlgs(); // dialogy i workeri bezi ve svych threadech, je sance, ze se ukonci
+            {                                               // "critical shutdown" (including log off) = no time to discuss, cancel everything so
+                                                            // no "unfinished" mess remains on disk
+                if (uMsg == WM_QUERYENDSESSION)             // cancel only upon the first critical shutdown message
+                    ProgressDlgArray.PostCancelToAllDlgs(); // dialogs and workers run in their own threads, there is a chance that they may exit
             }
-            else // ohlasime to v okne a pockame az se vse ukonci, sem WM_ENDSESSION nemuze prijit
+            else // report it in a window and wait for everything to finish; WM_ENDSESSION cannot arrive here
             {
                 if (uMsg == WM_QUERYENDSESSION && HLanguage != NULL &&
                     LoadStringW(HLanguage, IDS_BLOCKSHUTDOWNDISKOPER, blockReason, _countof(blockReason)))
@@ -6271,34 +6265,34 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 {
                     if (uMsg == WM_QUERYENDSESSION)
                         TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: user rejects to close all disk operation progress dialogs");
-                    // user jeste nechce koncit
-                    return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                    // the user does not want to exit yet
+                    return 0; // refuse closing/shutdown/logoff; any "forced shutdown" will be detected later in WM_ENDSESSION
                 }
                 UpdateWindow(HWindow);
             }
         }
 
-        // critical shutdown nelze odmitnout, nahradni reseni: nebudeme ukladat konfiguraci, provedeme jen
-        // nejhorsi uklid, a pak soft ukoncime (mozna nas sestreli drive, aktualni rezim: zabiti do 5s),
-        // pro jednoduchost nepokracujeme na zavirani oken Findu a vieweru, prvni je zbytecne,
-        // druhe by neskodilo (zmizely by soubory z TEMPu)
+        // critical shutdown cannot be refused; alternative solution: don't save the configuration, do only
+        // the bare minimum cleanup and then terminate the app (the system may kill us sooner, current mode: kill within 5s),
+        // for simplicity we do not proceed with closing Find and viewer windows, the first is unnecessary,
+        // the second would be nice (temporary files in TEMP would vanish)
         if (endAfterCleanup)
-        { // vzdy plati: uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0
-            // cekame na dokonceni diskovych operaci max. 5s od prijmu WM_QUERYENDSESSION
+        { // always true: uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0
+            // wait up to five seconds from receiving WM_QUERYENDSESSION for disk operations to finish
             while (ProgressDlgArray.RemoveFinishedDlgs() > 0 &&
                    GetTickCount() - msgArrivalTime <= QUERYENDSESSION_TIMEOUT - 200)
                 Sleep(200);
             WaitInEndSession = TRUE;
-            return TRUE; // pokracujeme do WM_ENDSESSION, kde to skoncime nebo nas zabijou pri dalsim cekani
+            return TRUE; // continue to WM_ENDSESSION where we will either finish or be killed while waiting
         }
 
         int i = 0;
-        TDirectArray<HWND> destroyArray(10, 5); // pole oken urcenych k destrukci
+        TDirectArray<HWND> destroyArray(10, 5); // array of windows to destroy
         if (uMsg != WM_ENDSESSION)
         {
-            BeginStopRefresh(); // uz si neprejeme zadne refreshe panelu
+            BeginStopRefresh(); // we no longer want any panel refreshes
 
-            // vybereme vsechna okna findu
+            // gather all Find windows
             FindDialogQueue.AddToArray(destroyArray);
         }
 
@@ -6322,54 +6316,54 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 EnableWindow(HWindow, FALSE);
             }
 
-            // zeptame se, jestli okna Findu pujdou zavrit, rozjeta hledani zastavime (na dotaz)
+            // ask whether Find windows can be closed; running searches will be stopped if requested
             BOOL endProcessing = FALSE;
             for (i = 0; i < destroyArray.Count; i++)
             {
-                if (IsWindow(destroyArray[i])) // pokud jeste okno existuje
+                if (IsWindow(destroyArray[i])) // if the window still exists
                 {
-                    BOOL canclose = TRUE; // pro pripad, ze by nasl. SendMessage nevysla
+                    BOOL canclose = TRUE; // in case the upcoming SendMessage fails
 
-                    WindowsManager.CS.Enter(); // nechceme zadne zmeny nad WindowsManager
+                    WindowsManager.CS.Enter(); // we do not want any changes to WindowsManager
                     CFindDialog* findDlg = (CFindDialog*)WindowsManager.GetWindowPtr(destroyArray[i]);
-                    if (findDlg != NULL) // pokud okno jeste existuje, posleme mu dotaz na zavreni (jinak uz je to zbytecne)
+                    if (findDlg != NULL) // if the window still exists, we send it a close query (otherwise it is pointless)
                     {
                         BOOL myPost = findDlg->StateOfFindCloseQuery == sofcqNotUsed;
-                        if (myPost) // pokud nejde o zanoreni (asi je mozne, nezkoumal jsem, ale nepravdepodobne)
+                        if (myPost) // if this is not nesting (maybe possible, not verified but unlikely)
                         {
                             findDlg->StateOfFindCloseQuery = sofcqSentToFind;
                             PostMessage(destroyArray[i], WM_USER_QUERYCLOSEFIND, 0,
-                                        uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0); // pri critical shutdown se neptame, rovnou cancelujeme
+                                        uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0); // during critical shutdown we don't ask, we just cancel
                         }
                         BOOL cont = TRUE;
                         while (cont)
                         {
                             cont = FALSE;
                             WindowsManager.CS.Leave();
-                            // jdeme se tvarit jako "responding" soft, takze pumpovat zpravy
+                            // pretend we are responding software by pumping messages
                             MSG msg;
                             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
                             {
                                 TranslateMessage(&msg);
                                 DispatchMessage(&msg);
                             }
-                            // dame threadu Findu nejaky cas na reakci
+                            // give the Find thread some time to react
                             Sleep(50);
-                            // cas na test, jestli uz neni nas dotaz zodpovezeny
-                            WindowsManager.CS.Enter(); // nechceme zadne zmeny nad WindowsManager
+                            // time to check whether our query has been answered
+                            WindowsManager.CS.Enter(); // no changes to WindowsManager allowed
                             findDlg = (CFindDialog*)WindowsManager.GetWindowPtr(destroyArray[i]);
-                            if (findDlg != NULL) // resime jen pokud okno jeste existuje (jinak uz je to zbytecne)
+                            if (findDlg != NULL) // handle only if the window still exists (otherwise it is pointless)
                             {
                                 if (findDlg->StateOfFindCloseQuery == sofcqCanClose ||
                                     findDlg->StateOfFindCloseQuery == sofcqCannotClose)
-                                { // je rozhodnuto, koncime
+                                { // decision made, we are done
                                     if (findDlg->StateOfFindCloseQuery == sofcqCannotClose)
                                         canclose = FALSE;
                                     if (myPost)
                                         findDlg->StateOfFindCloseQuery = sofcqNotUsed;
                                 }
                                 else
-                                    cont = TRUE; // cekame dale na odpoved z Find threadu
+                                    cont = TRUE; // keep waiting for a response from the Find thread
                             }
                         }
                     }
@@ -6384,8 +6378,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         }
                         if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
                         {
-                            // EndStopRefresh(); // pri critical shutdown neukoncime stop-refreshe (rozesilaji se refreshe do panelu)
-                            endAfterCleanup = TRUE; // nelze odmitnout = udelame aspon uklid
+                            // EndStopRefresh(); // during critical shutdown we don't end stop-refresh (refreshes are sent to panels)
+                            endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
                         }
                         else
                         {
@@ -6405,18 +6399,18 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
 
             if (endProcessing)
-                return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected later in WM_ENDSESSION
 
-            // necham okna Findu zavrit v jejich threadu
-            // nedelame pri critical shutdown: zavirani oken Findu je zbytecne (sice se neulozi
-            // sirky sloupcu, velikost okna a par dalsich blbin, ale to ignorujeme)
-            // pozn.: test !endAfterCleanup je zde zbytecny, protoze mimo criticky shutdown
-            // je endAfterCleanup vzdy FALSE
+            // let Find windows close in their own thread
+            // not done during critical shutdown: closing Find windows is pointless (column widths,
+            // window size and a few other minor things won't be saved, but we ignore that)
+            // note: the !endAfterCleanup check here is unnecessary because outside critical shutdown
+            // endAfterCleanup is always FALSE
             if (uMsg != WM_QUERYENDSESSION || (lParam & ENDSESSION_CRITICAL) == 0) // mimo criticky shutdown
             {
                 for (i = 0; i < destroyArray.Count; i++)
                 {
-                    if (IsWindow(destroyArray[i])) // pokud jeste okno existuje
+                    if (IsWindow(destroyArray[i])) // if the window still exists
                         SendMessage(destroyArray[i], WM_USER_CLOSEFIND, 0, 0);
                 }
             }
@@ -6426,23 +6420,23 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
             if (!endAfterCleanup)
             {
-                // zruseni oken viewru (nejsou child-okna -> neprijde jim automaticky WM_DESTROY)
-                // delame i pri critical shutdown, aby se podmazly soubory v TEMPu,
-                // mohlo by to byt skodlive (napr. viewer s desifrovanym souborem po zavreni
-                // spusti shredovani docasneho souboru a behem shredovani nas system zabije,
-                // lepsi varianta je to shredovani nechat udelat poradne po restartu systemu,
-                // to se ale resi v metode DeleteTmpCopy(), pri critical shutdown se neshreduje)
+                // close viewer windows (they are not child windows -> WM_DESTROY is not sent automatically)
+                // we also do this during critical shutdown so TEMP files get cleaned up,
+                // which might otherwise be harmful (e.g. a viewer with a decrypted file starts
+                // shredding the temporary file after closing and the system kills us during shredding).
+                // A better approach is to shred properly after system restart, handled in DeleteTmpCopy() method;
+                // shredding does not happen during critical shutdown
                 ViewerWindowQueue.BroadcastMessage(WM_CLOSE, 0, 0);
 
-                // dodame cekani pred volanim unloadu pluginu - pokud existuji okna Findu a interniho vieweru,
-                // tady maji cas na sve zavreni (muzou drzet soubory Encryptu)
+                // add a delay before calling plugin unload  - if there are Find windows or the internal viewer
+                // they have time to close here (they might hold Encrypt files)
                 int winsCount = ViewerWindowQueue.GetWindowCount() + FindDialogQueue.GetWindowCount();
                 int timeOut = 3;
                 while (winsCount > 0 && timeOut--)
                 {
                     Sleep(100);
                     int c = ViewerWindowQueue.GetWindowCount() + FindDialogQueue.GetWindowCount();
-                    if (winsCount > c) // zatim jeste ubyvaji okna, budeme cekat dale aspon 300 ms
+                    if (winsCount > c) // windows are still closing; wait at least another 300 ms
                     {
                         winsCount = c;
                         timeOut = 3;
@@ -6451,26 +6445,26 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
         }
 
-        // critical shutdown nelze odmitnout, nahradni reseni: nebudeme ukladat konfiguraci, provedeme jen
-        // nejhorsi uklid, a pak soft ukoncime (mozna nas sestreli drive, aktualni rezim: zabiti do 5s),
+        // a critical shutdown cannot be refused; workaround: skip saving the configuration,
+        // perform the bare minimum cleanup and then exit the software (the system may kill us earlier, current mode: kill within 5s),
         if (endAfterCleanup)
         {
-            // vzdy plati: uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0
-            // cekame na dokonceni diskovych operaci max. 5s od prijmu WM_QUERYENDSESSION
+            // always true: uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0
+            // wait up to five seconds from WM_QUERYENDSESSION for disk operations to finish
             while (ProgressDlgArray.RemoveFinishedDlgs() > 0 &&
                    GetTickCount() - msgArrivalTime <= QUERYENDSESSION_TIMEOUT - 200)
                 Sleep(200);
 
             WaitInEndSession = TRUE;
-            return TRUE; // pokracujeme do WM_ENDSESSION, kde to skoncime nebo nas zabijou pri dalsim cekani
+            return TRUE; // continue to WM_ENDSESSION where we finish or are killed if we wait longer
         }
 
-        if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0) // jde o Vista+
+        if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0) // this applies to Vista+
         {
             BOOL cfgOK = FALSE;
             if (SALAMANDER_ROOT_REG != NULL)
             {
-                // zajistime si exkluzivni pristup ke konfiguraci v registry
+                // ensure exclusive access to the configuration in the registry
                 LoadSaveToRegistryMutex.Enter();
 
                 HKEY salamander;
@@ -6478,30 +6472,30 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 {
                     DWORD saveInProgress;
                     if (!GetValueAux(NULL, salamander, SALAMANDER_SAVE_IN_PROGRESS, REG_DWORD, &saveInProgress, sizeof(DWORD)))
-                    { // nejde o poskozenou konfiguraci
+                    { // configuration is not corrupted
                         cfgOK = TRUE;
                     }
                     CloseKeyAux(salamander);
                 }
                 if (!cfgOK)
-                    LoadSaveToRegistryMutex.Leave(); // s konfiguraci dale uz nepracujeme, opustime sekci
-                                                     // POZNAMKA: LoadSaveToRegistryMutex.Leave() zavolame az ve WM_ENDSESSION po dokonceni ukladani CFG (je nize)
+                    LoadSaveToRegistryMutex.Leave(); // done with the configuration; exit the section
+                                                     // NOTE: LoadSaveToRegistryMutex.Leave() is called again in WM_ENDSESSION after saving the config (see below)
             }
 
             BOOL backupOK = FALSE;
-            if (cfgOK) // stara konfigurace vypada OK, zalohujeme ji pro pripad selhani ukladani konfigurace
+            if (cfgOK) // old configuration seems OK; back it up in case saving the new configuration fails
             {
                 char backup[200];
-                sprintf_s(backup, "%s.backup.63A7CD13", SALAMANDER_ROOT_REG); // "63A7CD13" je prevence shody jmena klice s uzivatelskym
-                SHDeleteKey(HKEY_CURRENT_USER, backup);                       // smazneme stary backup, pokud nejaky existuje
+                sprintf_s(backup, "%s.backup.63A7CD13", SALAMANDER_ROOT_REG); // "63A7CD13" prevents the key name from matching a user key
+                SHDeleteKey(HKEY_CURRENT_USER, backup);                       // delete the old backup if one exists
                 HKEY salBackup;
-                if (!OpenKeyAux(NULL, HKEY_CURRENT_USER, backup, salBackup)) // test neexistence backupu
+                if (!OpenKeyAux(NULL, HKEY_CURRENT_USER, backup, salBackup)) // check that no backup exists
                 {
-                    if (CreateKeyAux(NULL, HKEY_CURRENT_USER, backup, salBackup)) // vytvoreni klice pro backup
+                    if (CreateKeyAux(NULL, HKEY_CURRENT_USER, backup, salBackup)) // create a key for the backup
                     {
-                        // zkousel jsem i RegCopyTree (bez KEY_ALL_ACCESS neslapalo) a rychlost byla stejna jako SHCopyKey
+                        // I tried RegCopyTree (without KEY_ALL_ACCESS it failed) and it was as fast as SHCopyKey
                         if (SHCopyKey(HKEY_CURRENT_USER, SALAMANDER_ROOT_REG, salBackup, 0) == ERROR_SUCCESS)
-                        { // vytvoreni backupu
+                        { // creating the backup
                             DWORD copyIsOK = 1;
                             if (SetValueAux(NULL, salBackup, SALAMANDER_COPY_IS_OK, REG_DWORD, &copyIsOK, sizeof(DWORD)))
                                 backupOK = TRUE;
@@ -6512,22 +6506,22 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 else
                     CloseKeyAux(salBackup);
                 if (!backupOK)
-                    LoadSaveToRegistryMutex.Leave(); // s konfiguraci dale uz nepracujeme, opustime sekci
+                    LoadSaveToRegistryMutex.Leave(); // done with the configuration; exit the section
             }
 
-            // cekame na dokonceni diskovych operaci max. 5s od prijmu WM_QUERYENDSESSION
+            // wait up to five seconds from WM_QUERYENDSESSION for disk operations to finish
             while (ProgressDlgArray.RemoveFinishedDlgs() > 0 &&
                    GetTickCount() - msgArrivalTime <= QUERYENDSESSION_TIMEOUT - 200)
                 Sleep(200);
 
-            if (backupOK)                   // je zazalohovano, konfiguraci ulozime ve WM_ENDSESSION,
-                SaveCfgInEndSession = TRUE; // pokud nas pri tom zabiji, nacte se konfigurace ze zalohy
+            if (backupOK)                   // backup done, configuration will be saved in WM_ENDSESSION,
+                SaveCfgInEndSession = TRUE; // if we get killed during it, the configuration will load from the backup
             else
             {
-                // EndStopRefresh();  // pri critical shutdown neukoncime stop-refreshe (rozesilaji se refreshe do panelu)
-                WaitInEndSession = TRUE; // nepodarilo se zazalohovat, ukladani konfigurace nebudeme riskovat
+                // EndStopRefresh();  // during critical shutdown we don't end stop-refresh (refreshes are sent to panels)
+                WaitInEndSession = TRUE; // backup failed, we won't risk saving the configuration
             }
-            return TRUE; // chceme 5s ve WM_ENDSESSION, tak vratime TRUE
+            return TRUE; // we want 5s in WM_ENDSESSION, so return TRUE
         }
 
         if ((uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION) && HLanguage != NULL &&
@@ -6540,29 +6534,29 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         CWaitWindow analysing(HWindow, IDS_SAVINGCONFIGURATION, FALSE, ooStatic, TRUE);
         HWND oldPluginMsgBoxParent = PluginMsgBoxParent;
         BOOL shutdown = uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION;
-        if (shutdown) // pri shutdown / log-off / restart ukazeme wait-okenko pro vsechny Save (i pluginu) + budeme zpracovavat message-loopu (aby nas neprohlasili za "not responding" a nezabili predcasne)
+        if (shutdown) // during shutdown/log-off/restart show a wait window for all Saves (including plugins) and process the message loop (so we aren't marked as "not responding" and killed early)
         {
-            // nahodime thread, ktery bude provadet praci s registry behem ukladani konfigurace,
-            // tento (hlavni) thread bude mezitim pumpovat zpravy v message loope
+            // start a thread that will handle registry work while saving the configuration;
+            // meanwhile this (main) thread will pump messages in the message loop
             RegistryWorkerThread.StartThread();
 
             hOldCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-            analysing.SetProgressMax(7 /* pocet z CMainWindow::SaveConfig() -- NUTNE SYNCHRONIZOVAT !!! */ +
-                                     Plugins.GetPluginSaveCount()); // o jednu min, at si uzijou pohled na 100%
+            analysing.SetProgressMax(7 /* number from CMainWindow::SaveConfig() -- MUST stay in sync! */ +
+                                     Plugins.GetPluginSaveCount()); // minus one so they can enjoy a viewing 100%
             analysing.Create();
             GlobalSaveWaitWindow = &analysing;
             GlobalSaveWaitWindowProgress = 0;
             EnableWindow(HWindow, FALSE);
 
-            // bude se volat i SaveConfiguration plug-inu -> nutne nastaveni parenta pro jejich messageboxy
+            // SaveConfiguration of plugins will be called too -> parent must be set for their message boxes
             PluginMsgBoxParent = analysing.HWindow;
         }
 
-        // vyhlasime "critical shutdown", vsechny rutiny by se podle toho meli chovat a ukoncit vse co mozna nejrychleji
+        // declare a "critical shutdown" so all routines should respect it and terminate everything as quickly as possible
         CriticalShutdown = uMsg == WM_ENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0;
 
-        // unloadneme vsechny plug-iny (cesty v panelech se prip. daji na fixed-drive)
-        SetDoNotLoadAnyPlugins(TRUE); // prozatim kvuli thumbnailum
+        // unload all plugins (paths in panels may point to fixed drives)
+        SetDoNotLoadAnyPlugins(TRUE); // for now due to thumbnails
         if (!Plugins.UnloadAll(shutdown ? analysing.HWindow : HWindow))
         {
             SetDoNotLoadAnyPlugins(FALSE);
@@ -6580,112 +6574,114 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 DestroyWindow(analysing.HWindow);
                 SetCursor(hOldCursor);
 
-                // stopneme thread, ktery provadel praci s registry behem ukladani konfigurace...
+                // stop the thread that handled registry work during configuration saving...
                 RegistryWorkerThread.StopThread();
             }
             if (uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION)
                 MyShutdownBlockReasonDestroy(HWindow);
 
-            if (uMsg != WM_ENDSESSION) // pri critical shutdown neukoncime stop-refreshe (rozesilaji se refreshe do panelu)
+            if (uMsg != WM_ENDSESSION) // during critical shutdown we don't end stop-refresh (refreshes are sent to the panels)
             {
                 EndStopRefresh();
-                return 0; // zavreni/shutdown/logoff odmitneme, pripadny "forced shutdown" detekujeme az ve WM_ENDSESSION
+                return 0; // refuse close/shutdown/logoff; any "forced shutdown" will be detected in WM_ENDSESSION
             }
             else
             {
-                // cekame na dokonceni diskovych operaci, mozna drive system zabije nas proces
+                // wait for disk operations to finish; the drive system might kill our process before that
                 while (ProgressDlgArray.RemoveFinishedDlgs() > 0)
                     Sleep(200);
-                CriticalShutdown = FALSE; // jen tak pro sychr
-                return 0;                 // ukonceni softu
+                CriticalShutdown = FALSE; // just to be safe
+                return 0;                 // application exit
             }
         }
 
-        // pokud existuji okna CShellExecuteWnd, nabidneme preruseni zavirani nebo zaslani bug reportu + terminate
-        char reason[BUG_REPORT_REASON_MAX]; // pricina problemu + seznam oken (multiline)
+        // if CShellExecuteWnd windows exist, offer to abort closing or send a bug report and terminate
+        char reason[BUG_REPORT_REASON_MAX]; // problem reason + list of windows (multiline)
         strcpy(reason, "Some faulty shell extension has locked our main window.");
         if (EnumCShellExecuteWnd(shutdown ? analysing.HWindow : HWindow,
                                  reason + (int)strlen(reason), BUG_REPORT_REASON_MAX - ((int)strlen(reason) + 1)) > 0)
         {
-            // zeptame se, zda ma Salamander pokracovat nebo jestli ma vygenerovat bug report
-            if (CriticalShutdown || // pri critical shutdown se nema smysl na nic ptat, nechame se v klidu ukoncit
+            // ask whether Salamander should continue or generate a bug report
+            if (CriticalShutdown || // during critical shutdown there's no point in asking anything, let the system terminate us quietly
                 SalMessageBox(shutdown ? analysing.HWindow : HWindow,
                               LoadStr(IDS_SHELLEXTBREAK3), SALAMANDER_TEXT_VERSION,
                               MSGBOXEX_CONTINUEABORT | MB_ICONINFORMATION) != IDABORT)
             {
                 if (uMsg == WM_QUERYENDSESSION)
                     TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: some faulty shell extension has locked our main window");
-                goto EXIT_WM_USER_CLOSE_MAINWND; // mame pokracovat
+                goto EXIT_WM_USER_CLOSE_MAINWND; // we should continue
             }
 
-            // breakneme se
+            // and break here
             strcpy(BugReportReasonBreak, reason);
             TaskList.FireEvent(TASKLIST_TODO_BREAK, GetCurrentProcessId());
-            // zamrazime tento thread
+            // freeze this thread
             while (1)
                 Sleep(1000);
         }
 
         CALL_STACK_MESSAGE1("WM_USER_CLOSE_MAINWND::3");
 
-        // optame se panelu, jestli muzeme koncit
+        // ask the panels whether we can exit
         if (LeftPanel != NULL && RightPanel != NULL)
         {
             BOOL canClose = FALSE;
             BOOL detachFS1, detachFS2;
-            if (LeftPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, FALSE, detachFS1, FSTRYCLOSE_UNLOADCLOSEFS /* zbytecne - pluginy (i FS) uz jsou unloadle */))
+            if (LeftPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, FALSE, detachFS1, FSTRYCLOSE_UNLOADCLOSEFS /* unnecessary - plugins (including FS) already unloaded */))
             {
-                if (RightPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, TRUE, FALSE, detachFS2, FSTRYCLOSE_UNLOADCLOSEFS /* zbytecne - pluginy (i FS) uz jsou unloadle */))
+                if (RightPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, TRUE, FALSE, detachFS2, FSTRYCLOSE_UNLOADCLOSEFS /* unnecessary - plugins (including FS) already unloaded */))
                 {
-                    canClose = TRUE; // jen oba najednou, jinak nezavirame ani jeden
+                    canClose = TRUE; // close both panels at the same time or none
                     if (RightPanel->UseSystemIcons || RightPanel->UseThumbnails)
                         RightPanel->SleepIconCacheThread();
-                    RightPanel->CloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, FALSE, detachFS2, FALSE, FALSE, TRUE); // zavreme pravy panel
+                    RightPanel->CloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, FALSE, detachFS2, FALSE, FALSE, TRUE); // close the right panel
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // protect the list box from errors caused by redraw requests (we just cut its data)
                     RightPanel->ListBox->SetItemsCount(0, 0, 0, TRUE);
                     RightPanel->SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                    // If WM_USER_UPDATEPANEL is delivered, the panel contents are redrawn
+                    // and scroll bars adjusted. The message loop may deliver it when creating
+                    // a message box. Otherwise the panel would appear unchanged and the message
+                    // would be removed from the queue.
                     PostMessage(RightPanel->HWindow, WM_USER_UPDATEPANEL, 0, 0);
                 }
                 if (canClose)
                 {
                     if (LeftPanel->UseSystemIcons || LeftPanel->UseThumbnails)
                         LeftPanel->SleepIconCacheThread();
-                    LeftPanel->CloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, FALSE, detachFS1, FALSE, FALSE, TRUE); // zavreme levy panel
+                    LeftPanel->CloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, FALSE, detachFS1, FALSE, FALSE, TRUE); // close the left panel
 
-                    // zabezpecime listbox proti chybam vzniklym zadosti o prekresleni (prave jsme podrizli data)
+                    // Protect the list box from errors caused by redraw requests (after we just cut the data)
                     LeftPanel->ListBox->SetItemsCount(0, 0, 0, TRUE);
                     LeftPanel->SelectedCount = 0;
-                    // Pokud se doruci WM_USER_UPDATEPANEL, dojde k prekreslnei obsahu panelu a nastaveni
-                    // scrollbary. Dorucit ji muze message loopa pri vytvoreni message boxu.
-                    // Jinak se panel bude tvarit jako nezmeneny a message bude vyjmuta z fronty.
+                    // If WM_USER_UPDATEPANEL is delivered, the panel contents are redrawn
+                    // and scroll bars adjusted. The message loop may deliver it when creating
+                    // a message box. Otherwise the panel would appear unchanged and the message
+                    // would be removed from the queue.
                     PostMessage(LeftPanel->HWindow, WM_USER_UPDATEPANEL, 0, 0);
                 }
                 else
-                    LeftPanel->CloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, detachFS1, FALSE, FALSE, TRUE); // cancel na close leveho panelu
+                    LeftPanel->CloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, detachFS1, FALSE, FALSE, TRUE); // cancel closing the left panel
             }
             if (!canClose)
             {
                 SetDoNotLoadAnyPlugins(FALSE);
                 if (uMsg == WM_QUERYENDSESSION)
                     TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: unable to close paths in panels");
-                goto EXIT_WM_USER_CLOSE_MAINWND; // panely nejdou uzavrit
+                goto EXIT_WM_USER_CLOSE_MAINWND; // panels cannot be closed
             }
         }
 
         CALL_STACK_MESSAGE1("WM_USER_CLOSE_MAINWND::4");
 
-        // !!! POZOR: od tohoto bodu (az po DestroyWindow) jiz nesmi dojit k preruseni,
-        // pri vybaleni okna user zjisti, ze jsou oba panely prazdne (listing je uvolneny)
-        // (toto uz je porusene pri Shutdown / Log Off / Restart, protoze musime distribuovat
-        // zpravy, jinak nas povazuji za "not responding" a zabije nas system predcasne)
+        // !!! WARNING: from this point (until DestroyWindow) no interruption must occur,
+        // if the window opens up, the user would find both panels empty (listing released).
+        // This is already violated during Shutdown / Log Off / Restart because we must distribute
+        // messages, otherwise we are considered "not responding" and the system kills us prematurely.
 
-        if (StrICmp(Configuration.SLGName, Configuration.LoadedSLGName) != 0) // pokud user zmenil jazyk Salama
+        if (StrICmp(Configuration.SLGName, Configuration.LoadedSLGName) != 0) // if the user changed Salamander's language
         {
-            Plugins.ClearLastSLGNames(); // aby pripadne doslo k nove volbe nahradniho jazyka u vsech pluginu
+            Plugins.ClearLastSLGNames(); // so that a new fallback language will be selected for all plugins if needed
             Configuration.UseAsAltSLGInOtherPlugins = FALSE;
             Configuration.AltPluginSLGName[0] = 0;
         }
@@ -6694,7 +6690,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             SaveConfig();
 
         if (uMsg == WM_ENDSESSION)
-            LoadSaveToRegistryMutex.Leave(); // paruje k Enter() volanemu pri prijmu WM_QUERYENDSESSION
+            LoadSaveToRegistryMutex.Leave(); // pairs with Enter() called when WM_QUERYENDSESSION was received
 
         if (shutdown)
         {
@@ -6705,36 +6701,36 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             DestroyWindow(analysing.HWindow);
             SetCursor(hOldCursor);
 
-            // stopneme thread, ktery provadel praci s registry behem ukladani konfigurace...
+            // stop the thread that handled registry work during configuration saving...
             RegistryWorkerThread.StopThread();
         }
 
         CALL_STACK_MESSAGE1("WM_USER_CLOSE_MAINWND::5");
 
-        DiskCache.PrepareForShutdown(); // jeste vycistime z disku prazdne tmp-adresare
+        DiskCache.PrepareForShutdown(); // clean any empty tmp directories from disk
 
         //      if (TipOfTheDayDialog != NULL)
-        //        DestroyWindow(TipOfTheDayDialog->HWindow);  // dialog uz ma sva data ulozena (transfer tam probiha runtime)
+        //        DestroyWindow(TipOfTheDayDialog->HWindow);  // the dialog already saved its data (transfer happens there at runtime)
 
         MainWindowCS.SetClosed();
 
-        CanDestroyMainWindow = TRUE; // nyni lze beztrestne zavolat DestroyWindow na MainWindow
+        CanDestroyMainWindow = TRUE; // it's now safe to call DestroyWindow on MainWindow
 
         DestroyWindow(HWindow);
 
-        // WM_QUERYENDSESSION a WM_ENDSESSION: vsechny Windows killnou process jakmile se pri shutdownu
-        // zrusi hl. okno, takze nize uvedene je pri shutdownu dead code
+        // WM_QUERYENDSESSION and WM_ENDSESSION: all Windows versions kill the process as soon as
+        // the main window is destroyed during shutdown, so the following code is dead code in that case
 
-        CriticalShutdown = FALSE; // jen tak pro sychr
+        CriticalShutdown = FALSE; // just to be safe
 
         if (uMsg == WM_QUERYENDSESSION)
         {
             TRACE_I("WM_QUERYENDSESSION: allowing shutdown...");
-            // hl. okno uz je zavrene = neni komu dorucit WM_ENDSESSION, WaitInEndSession
-            // ani SaveCfgInEndSession neni potreba nastavovat
-            return TRUE; // pokud to doslo az sem, povolime shut-down
+            // main window already closed - nobody to deliver WM_ENDSESSION to, neither WaitInEndSession
+            // and SaveCfgInEndSession needs to be set
+            return TRUE; // if it gets this far, allow the shutdown
         }
-        return 0; // navratovka z WM_USER_CLOSE_MAINWND, WM_USER_FORCECLOSE_MAINWND a WM_ENDSESSION
+        return 0; // return value for WM_USER_CLOSE_MAINWND, WM_USER_FORCECLOSE_MAINWND and WM_ENDSESSION
     }
 
     case WM_ERASEBKGND:
@@ -6816,37 +6812,37 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     {
         if (!CanDestroyMainWindow)
         {
-            // nektera silena shell extension prave zavolala DestroyWindow na hlavni okno Salamandera
+            // some crazy shell extension has just called DestroyWindow on Salamander's main window
 
-            MSG msg; // vypumpujeme message queue (WMP9 bufferoval Enter a odmacknul nam OK)
-            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: nahradil jsem jen zahozenim zprav z klavesky (bez TranslateMessage a DispatchMessage hrozi nekonecny cyklus, zjisteno pri unloadu Automationu s memory leaky, pred zobrazenim msgboxu s hlaskou o leakach doslo k nekonecnemu cyklu, do fronty porad pridavali WM_PAINT a my ho z ni zase zahazovali)
+            MSG msg; // flush the message queue (WMP9 buffered Enter and dismissed our OK)
+            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: I replaced it by discarding key messages only; without TranslateMessage and DispatchMessage we risk an endless loop (discovered during unloading Automation with memory leaks; before showing the leak message box, an infinite loop occurred because WM_PAINT kept being added to the queue and we kept discarding it)
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
 
-            // pozadame uzivatele, aby nam poslal break-report
+            // ask the user to send us a break report
             SalMessageBox(HWindow, LoadStr(IDS_SHELLEXTBREAK), SALAMANDER_TEXT_VERSION,
                           MB_OK | MB_ICONSTOP);
 
-            // a breakneme se
+            // and break here
             strcpy(BugReportReasonBreak, "Some faulty shell extension destroyed our main window.");
             TaskList.FireEvent(TASKLIST_TODO_BREAK, GetCurrentProcessId());
-            // zamrazime tento thread
-            // MainWindow uz stejne neexistuje, spadli bychom pri nejblizsi mozne prilezitosti
+            // freeze this thread
+            // MainWindow no longer exists anyway; we would crash at the next opportunity
             while (1)
                 Sleep(1000);
         }
 
-        // dame seznamu procesu vedet, ze koncime
+        // notify the task list that we are exiting
         TaskList.SetProcessState(PROCESS_STATE_ENDING, NULL);
 
         UserMenuIconBkgndReader.EndProcessing();
 
-        SHChangeNotifyRelease(); // nadale neprijimame Shell Notifications
+        SHChangeNotifyRelease(); // we no longer accept Shell Notifications
         KillTimer(HWindow, IDT_ADDNEWMODULES);
         HANDLES(RevokeDragDrop(HWindow));
         if (Configuration.StatusArea)
             RemoveTrayIcon();
-        //--- zruseni child-oken
+        //--- destroy child windows
         if (EditWindow != NULL)
         {
             if (EditWindow->HWindow != NULL)
@@ -6951,8 +6947,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
         if (uMouseMsg == WM_RBUTTONDOWN)
         {
-            /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volanim InsertMenu() dole...
+            /* used by the export_mnu.py script which generates salmenu.mnu for the Translator;
+               keep synchronized with the InsertMenu() call below...
 MENU_TEMPLATE_ITEM TaskBarIconMenu[] = 
 {
   {MNTT_PB, 0
@@ -6976,7 +6972,7 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
     }
 
 #if (_MSC_VER < 1700)
-    // osetrim zpravy posilane z file manager extenzi
+    // handle messages sent from the file manager extension
     case FM_GETDRIVEINFOW:
     {
         TRACE_E("FM_GETDRIVEINFOW not implemented");
@@ -6992,7 +6988,7 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
     case FM_GETFILESELLFNW:
     {
         if (!GetActivePanel()->Is(ptDisk))
-            return 0; // chodime pouze nad diskem
+            return 0; // we operate only on the disk
 
         int index = (int)wParam;
         FMS_GETFILESELW* fs = (FMS_GETFILESELW*)lParam;
@@ -7001,7 +6997,7 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
         int count = activePanel->GetSelCount();
         if (count != 0)
         {
-            // vytahnu index n-te (index) selected polozky
+            // determine the index of the nth (index) selected item
             int totalCount = activePanel->Dirs->Count + activePanel->Files->Count;
             if (totalCount == 0 || index >= totalCount)
                 return 0;
@@ -7056,7 +7052,7 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
     case FM_GETSELCOUNTLFN:
     {
         if (!GetActivePanel()->Is(ptDisk))
-            return 0; // chodime pouze nad diskem
+            return 0; // we operate only on the disk
 
         CFilesWindow* activePanel = GetActivePanel();
 
@@ -7080,8 +7076,8 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
         CFilesWindow* panel = GetActivePanel();
         if (panel != NULL && panel->Is(ptDisk))
         {
-            //---  refresh neautomaticky refreshovanych adresaru
-            // zmena v adresari zobrazenem v panelu a radsi i v podadresarich (buh vi co system provadi)
+            //--- refresh directories that are not automatically refreshed
+            // a change in the directory shown in the panel and preferably its subdirectories (who knows what the system does)
             PostChangeOnPathNotification(panel->GetPath(), TRUE);
         }
         break;

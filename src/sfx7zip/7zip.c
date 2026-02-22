@@ -203,13 +203,13 @@ int Extract(char *fileName, char *targetPath) {
 }
 */
 
-// over, ze jde o podporovany archiv a priprav dekompresi
+// verify that this is a supported archive and prepare decompression
 int DecompressInit(struct SCabinet* cabinet)
 {
     /*  unsigned long header;
   unsigned long read;
 
-  // precti prvni 4 bajty a zkontroluj header
+  // read the first 4 bytes and verify the header
   if (!ReadFile(cabinet->file, &header, 4, &read, NULL) || read != 4)
     if (read != 4)
       return HandleError(ERROR_TITLE, ARC_INEOF, 0);
@@ -223,22 +223,22 @@ int DecompressInit(struct SCabinet* cabinet)
     unsigned char data[8]; // sizeof(k7zSignature)
     DWORD read;
 
-    // najit v archivu signaturu 7zip souboru (tam zacina 7zip archiv)
+    // find the 7zip file signature in the archive (that is where the 7zip archive starts)
     if (!ReadFile(cabinet->file, data + 1, sizeof(k7zSignature) - 1, &read, NULL) || read != sizeof(k7zSignature) - 1)
         return 0;
 
     do
     {
-        // posun bufferu o jednu pozici vlevo
+        // shift the buffer one position to the left
         for (i = 0; i < sizeof(k7zSignature) - 1; i++)
             data[i] = data[i + 1];
-        // pridat 1 znak
+        // append one character
         if (!ReadFile(cabinet->file, data + sizeof(k7zSignature) - 1, 1, &read, NULL) || read != 1)
             return 0;
-        // otestovat
+        // test the signature candidate
     } while (!TestSignatureCandidate(data));
 
-    // posunout se v souboru pred nactenou hlavicku
+    // move the file position back before the header we just read
     SetFilePointer(cabinet->file, -(signed)sizeof(k7zSignature), NULL, FILE_CURRENT);
 
     cabinet->offset = GetFilePointer(cabinet->file);
@@ -340,7 +340,7 @@ int UnpackArchive(struct SCabinet* cabinet)
   }
 */
 
-    // nastavit handle predany ve strukture cabinet
+    // use the handle provided in the cabinet structure
     archiveStream.File = cabinet->file;
     archiveStream.Offset = cabinet->offset;
 
@@ -400,7 +400,7 @@ int UnpackArchive(struct SCabinet* cabinet)
                 break;
             }
 
-            // jry: soubory zrejme jiz davno nezobrazujeme
+            // jry: apparently we haven't displayed the files here in ages
             // RefreshName(f->Name);
 
             if ((szRes = SzExtract(&archiveStream.InStream, &db, i, &blockIndex, &outBuffer,
@@ -411,7 +411,7 @@ int UnpackArchive(struct SCabinet* cabinet)
                 break;
             }
 
-            // jmena jsou v UTF-8, prevedeme na Unicode
+            // file names are UTF-8, convert them to Unicode
             uNameLen = MultiByteToWideChar(CP_UTF8, 0, f->Name, -1, uName, MAX_PATH);
             uName[MAX_PATH - 1] = 0;
 
@@ -436,8 +436,8 @@ int UnpackArchive(struct SCabinet* cabinet)
                     break;
                 }
 
-                // zapisujeme po mensich balikach, protoze pokus o zapsani 4MB souboru byl zablokovan
-                // konkurencnim rozbalovani z archivu (i kdyz jsem se pokusil zvednout prioritu threadu)
+                // Write in smaller chunks; a 4 MB write was blocked by a concurrent extraction
+                // from the archive even after attempting to raise the thread priority
                 writeSize = outSizeProcessed;
                 writeOffset = offset;
 #define WRITE_BUFFER_SIZE (32 * 1024)
@@ -454,7 +454,7 @@ int UnpackArchive(struct SCabinet* cabinet)
                     writeSize -= writeNow;
                     writeOffset += writeNow;
                 }
-                if (writeSize > 0) // chyba
+                if (writeSize > 0) // error
                     break;
 
                 actualProgress += f->Size + 1;

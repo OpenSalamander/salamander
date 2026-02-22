@@ -162,7 +162,7 @@ void CControl::LoadFrom(CControl* src)
 
 BOOL IsStyleStaticText(DWORD style, BOOL onlyLeft, BOOL onlyRight)
 {
-    return (!onlyRight && (style & SS_TYPEMASK) == SS_LEFT || // neni ikona, frame, atd.
+    return (!onlyRight && (style & SS_TYPEMASK) == SS_LEFT || // not an icon, frame, etc.
             !onlyLeft && !onlyRight && (style & SS_TYPEMASK) == SS_CENTER ||
             !onlyLeft && (style & SS_TYPEMASK) == SS_RIGHT ||
             !onlyRight && (style & SS_TYPEMASK) == SS_SIMPLE ||
@@ -171,21 +171,21 @@ BOOL IsStyleStaticText(DWORD style, BOOL onlyLeft, BOOL onlyRight)
 
 BOOL CControl::IsStaticText(BOOL onlyLeft, BOOL onlyRight) const
 {
-    return ClassName == (wchar_t*)0x0082FFFF &&             // je static
-           IsStyleStaticText(Style, onlyLeft, onlyRight) && // neni ikona, frame, atd.
-           OCY > 1;                                         // eliminace horizontalnich car (jsou vedene jako textove statiky), do nich se texty nepisou
+    return ClassName == (wchar_t*)0x0082FFFF &&             // is a static control
+           IsStyleStaticText(Style, onlyLeft, onlyRight) && // not an icon, frame, etc.
+           OCY > 1;                                         // eliminate horizontal lines (they are handled as text statics); no text is written into them
 }
 
 BOOL CControl::IsIcon() const
 {
-    return ClassName == (wchar_t*)0x0082FFFF && // je static
-           (Style & SS_TYPEMASK) == SS_ICON;    // je ikona
+    return ClassName == (wchar_t*)0x0082FFFF && // is a static control
+           (Style & SS_TYPEMASK) == SS_ICON;    // is an icon
 }
 
 BOOL CControl::IsWhiteFrame() const
 {
-    return ClassName == (wchar_t*)0x0082FFFF &&    // je static
-           (Style & SS_TYPEMASK) == SS_WHITEFRAME; // je white-frame
+    return ClassName == (wchar_t*)0x0082FFFF &&    // is a static control
+           (Style & SS_TYPEMASK) == SS_WHITEFRAME; // is a white frame
 }
 
 BOOL CControl::IsComboBox() const
@@ -206,7 +206,7 @@ BOOL CControl::IsGroupBox() const
 
 BOOL CControl::IsHorizLine() const
 {
-    return ClassName == (wchar_t*)0x0082FFFF &&    // je static
+    return ClassName == (wchar_t*)0x0082FFFF &&    // is a static control
            (Style & SS_TYPEMASK) == SS_ETCHEDHORZ; // etched-horizontal
 }
 
@@ -216,19 +216,19 @@ BOOL IsCheckBox(int bt);
 
 BOOL CControl::IsRadioOrCheckBox() const
 {
-    return ClassName == (wchar_t*)0x0080FFFF && // je button
-           ::IsRadioOrCheckBox(Style);          // je check nebo radio
+    return ClassName == (wchar_t*)0x0080FFFF && // is a button
+           ::IsRadioOrCheckBox(Style);          // is a check or radio button
 }
 
 BOOL CControl::IsRadioBox() const
 {
-    return ClassName == (wchar_t*)0x0080FFFF && // je button
+    return ClassName == (wchar_t*)0x0080FFFF && // is a button
            ::IsRadioBox(Style);
 }
 
 BOOL CControl::IsCheckBox() const
 {
-    return ClassName == (wchar_t*)0x0080FFFF && // je button
+    return ClassName == (wchar_t*)0x0080FFFF && // is a button
            ::IsCheckBox(Style);
 }
 
@@ -236,8 +236,8 @@ BOOL IsPushButton(int bt);
 
 BOOL CControl::IsPushButton() const
 {
-    return ClassName == (wchar_t*)0x0080FFFF && // je button
-           ::IsPushButton(Style);               // je push button
+    return ClassName == (wchar_t*)0x0080FFFF && // is a button
+           ::IsPushButton(Style);               // is a push button
 }
 
 BOOL CControl::IsTContainedIn(CControl const* c) const
@@ -254,22 +254,22 @@ BOOL CControl::IsTVertContainedIn(CControl const* c) const
 BOOL CControl::ShowInLVWithControls(int i)
 {
     return OWindowName != NULL && HIWORD(OWindowName) != 0x0000 &&
-           (IsTranslatableControl(OWindowName) || // vse krome ikon a dalsich neprelozitelnych prvku
-            i > 0 && IsStaticText());             // u staticu s textem delame vyjimku, je mozne prelozit i prazdny text (napr. "" -> "Prelozil (c) 2010 Ferda" v About dialogu PictView)
+           (IsTranslatableControl(OWindowName) || // everything except icons and other non-translatable elements
+            i > 0 && IsStaticText());             // we make an exception for statics with text: it is possible to translate even an empty string (e.g., "" -> "Translated (c) 2010 Ferda" in the PictView About dialog)
 }
 
 void CControl::GetTRect(RECT* r, BOOL adjustZeroSize)
 {
     r->left = TX;
     r->top = TY;
-    // 0 jednotek siroke nebo vysoke controly rozsirime na 1 jednotku
+    // expand controls with 0 width or height to one unit
     int w = TCX;
     if (adjustZeroSize && w == 0)
         w = 1;
     int h = TCY;
     if (adjustZeroSize && h == 0)
         h = 1;
-    if (IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+    if (IsComboBox()) // for combo boxes we use their "collapsed" size
         h = COMBOBOX_BASE_HEIGHT;
     r->right = TX + w;
     r->bottom = TY + h;
@@ -399,17 +399,17 @@ void CDialogData::LoadFrom(CDialogData* src, BOOL keepLangID)
     TCY = src->TCY;
 
     if (HIWORD(src->MenuName) != 0)
-        MenuName = dupstr(src->MenuName); // alokovany retezec
+        MenuName = dupstr(src->MenuName); // allocated string
     else
         MenuName = src->MenuName;
 
     if (HIWORD(src->ClassName) != 0)
-        ClassName = dupstr(src->ClassName); // alokovany retezec
+        ClassName = dupstr(src->ClassName); // allocated string
     else
         ClassName = src->ClassName;
 
     FontSize = src->FontSize;
-    FontName = dupstr(src->FontName); // alokovany retezec
+    FontName = dupstr(src->FontName); // allocated string
 
     IsEX = src->IsEX;
     ExDlgVer = src->ExDlgVer;
@@ -466,7 +466,7 @@ BOOL CDialogData::DoesLayoutChanged(CDialogData* orgDialogData)
 
 BOOL IsFilteredDialogStyleSame(DWORD style1, DWORD style2)
 {
-    DWORD mask = DS_3DLOOK | DS_FIXEDSYS; // do masky pridat styly, u kterych budeme ignorovat jejich rozdilnost
+    DWORD mask = DS_3DLOOK | DS_FIXEDSYS; // add styles to the mask for which we ignore differences
     return (style1 & ~mask) == (style2 & ~mask);
 }
 
@@ -482,12 +482,12 @@ BOOL IsFilteredControlStyleSame(CControl* control, CControl* controlOrg)
         IsEmptyWindowName(controlOrg->OWindowName) &&
         IsEmptyWindowName(controlOrg->TWindowName) &&
         control->Style == (controlOrg->Style & ~(WS_BORDER | SS_WHITEFRAME)))
-    { // Petr: u staticu pro progress-bar ignorujeme ztratu WS_BORDER | SS_WHITEFRAME (prechod na flat variantu progresu)
+    { // Petr: for progress-bar statics ignore losing WS_BORDER | SS_WHITEFRAME (switching to the flat progress variant)
         return TRUE;
     }
 
     DWORD editMask = ES_AUTOHSCROLL;
-    if (control->IsEditBox() && controlOrg->IsEditBox() && // Petr: u editu ignorujeme zmenu ES_AUTOHSCROLL, nema zadny vliv na layout
+    if (control->IsEditBox() && controlOrg->IsEditBox() && // Petr: for edits ignore changes to ES_AUTOHSCROLL; they do not affect the layout
         (control->Style & ~editMask) == (controlOrg->Style & ~editMask))
     {
         return TRUE;
@@ -501,7 +501,7 @@ BOOL CDialogData::DoesLayoutChanged2(CDialogData* orgDialogData)
     CDialogData* dataOrg = orgDialogData;
     BOOL changed = FALSE;
 
-    if (ID != dataOrg->ID) // Petr: tohle snad nemuze nastat, ne? Vzdyt se podle ID ty dialogy sparovaly, tak musi byt shodna.
+    if (ID != dataOrg->ID) // Petr: This should not happen, right? The dialogs were paired by ID, so they must match.
     {
         swprintf_s(buff, L"Dialog %hs: ID changed, original ID:%d, new ID:%d",
                    DataRH.GetIdentifier(ID),
@@ -520,7 +520,7 @@ BOOL CDialogData::DoesLayoutChanged2(CDialogData* orgDialogData)
     else
     {
         if (dataOrg->Style != Style)
-            dataOrg->Style = Style; // Petr: pri importu se kopiruji komplet data z puvodniho dialogu, tedy nakopiroval by se "spatny" styl, tohle je reseni, i kdyz trochu prasarna
+            dataOrg->Style = Style; // Petr: during import we copy the original dialog data completely, so the "wrong" style would be copied; this fixes it, even if it's a bit of a hack
     }
 
     if (OX != dataOrg->OX || OY != dataOrg->OY || OCX != dataOrg->OCX || OCY != dataOrg->OCY)
@@ -608,9 +608,9 @@ BOOL CDialogData::DoesLayoutChanged2(CDialogData* orgDialogData)
                     OutWindow.AddLine(buff, mteInfo, rteDialog, ID);
                     changed = TRUE;
                 }
-                else // lisi se jen Style, ale neni to podstatny pro layout, takze to ignorujeme
+                else // only the Style differs and it is irrelevant for the layout, so we ignore it
                 {
-                    controlOrg->Style = control->Style; // Petr: trochu prasarna: pri importu se kopiruje kompletni puvodni dialog, ale styl potrebujeme z nove verze dialogu, tedy ho prevezmeme do puvodni verze a je to vyresene
+                    controlOrg->Style = control->Style; // Petr: a bit of a hack: import copies the original dialog, but we need the style from the new version, so we take it over into the original and resolve it
                 }
             }
 
@@ -652,14 +652,14 @@ BOOL CDialogData::DoesLayoutChanged2(CDialogData* orgDialogData)
 
 int CDialogData::FindControlIndex(WORD id, BOOL isDlgTitle)
 {
-    if (isDlgTitle) // ID nazvu dialogu srovnavame jen ID nazvu dialogu (ID se muze mezi controly opakovat)
+    if (isDlgTitle) // for the dialog title compare only title IDs (control IDs can repeat)
     {
         if (Controls.Count > 0 && Controls[0]->ID == id)
             return 0;
     }
     else
     {
-        for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+        for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
         {
             if (Controls[i]->ID == id)
                 return i;
@@ -670,11 +670,11 @@ int CDialogData::FindControlIndex(WORD id, BOOL isDlgTitle)
 
 BOOL CDialogData::GetControlIndexInLV(int controlIndex, int* lvIndex)
 {
-    if (Controls.Count > 0 && (Controls[0]->OWindowName == NULL || Controls[0]->OWindowName[0] == 0)) // prazdny nazev dialogu
+    if (Controls.Count > 0 && (Controls[0]->OWindowName == NULL || Controls[0]->OWindowName[0] == 0)) // empty dialog title
         *lvIndex = 0;
     else
         *lvIndex = 1;
-    for (int x = 1; x < Controls.Count; x++) // 0 je nazev dialogu, zacneme tedy od 1
+    for (int x = 1; x < Controls.Count; x++) // index 0 is the dialog title, so start at 1
     {
         CControl* control = Controls[x];
         if (!control->ShowInLVWithControls(x))
@@ -759,7 +759,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
     tBuff++;
 
     if ((oStyle & ~(DS_3DLOOK | (oIsEX != tIsEX ? DS_FIXEDSYS : 0))) !=
-            (tStyle & ~(DS_3DLOOK | (oIsEX != tIsEX ? DS_FIXEDSYS : 0))) || // rozdily v DS_3DLOOK ignorujeme, pokud je jeden dialog DLG a druhy DLG-EX, ignorujeme jeste taky DS_FIXEDSYS
+            (tStyle & ~(DS_3DLOOK | (oIsEX != tIsEX ? DS_FIXEDSYS : 0))) || // ignore DS_3DLOOK differences; if one dialog is DLG and the other DLG-EX, also ignore DS_FIXEDSYS
         oExStyle != tExStyle ||
         oCount != tCount)
     {
@@ -902,7 +902,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
     }
 
     // window name
-    // nulty control bude nazev dialogu
+    // control 0 holds the dialog title
     CControl* control = new CControl();
     if (control == NULL)
     {
@@ -917,7 +917,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
     if (tLen > 0 && !data->MUIMode)
         control->State = data->QueryTranslationState(tteDialogs, 0, ID, (wchar_t*)oBuff, (wchar_t*)tBuff);
     else
-        control->State = PROGRESS_STATE_TRANSLATED; // prazdny retezec je "prelozeny"
+        control->State = PROGRESS_STATE_TRANSLATED; // an empty string counts as "translated"
 
     if (!DecodeString((wchar_t*)oBuff, oLen, &control->OWindowName))
         return FALSE;
@@ -967,10 +967,10 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
         tBuff += tLen + 1;
     }
 
-    // nacteme controls
+    // load the controls
     for (int i = 0; i < oCount; i++)
     {
-        // control je zarovnany na DWORDy
+        // controls are aligned to DWORDs
         oBuff = (WORD*)((((int)oBuff) + 3) & ~3);
         tBuff = (WORD*)((((int)tBuff) + 3) & ~3);
 
@@ -1063,7 +1063,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
         }
 
         if (data->MUIMode)
-            oControlID = i + 1 + 1000; // pokud jsem ID sazel od 1, osklive se na nekterych resourcech podelala okna, failnulo vytvoreni dialogu a dochazelo k prepisum pameti; zrejme se jedna o ID vyhrazena tlacitkum OK a spol??
+            oControlID = i + 1 + 1000; // when I numbered IDs from 1, some resources broke badly: dialog creation failed and memory was overwritten; apparently those IDs are reserved for OK buttons and similar controls??
 
         if (tIsEX)
         {
@@ -1087,7 +1087,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
         }
 
         if (data->MUIMode)
-            control->ID = i + 1 + 1000; // pokud jsem ID sazel od 1, osklive se na nekterych resourcech podelala okna, failnulo vytvoreni dialogu a dochazelo k prepisum pameti; zrejme se jedna o ID vyhrazena tlacitkum OK a spol??
+            control->ID = i + 1 + 1000; // when I numbered IDs from 1, some resources broke badly: dialog creation failed and memory was overwritten; apparently those IDs are reserved for OK buttons and similar controls??
 
         BOOL sameIDs = oControlID == control->ID;
 
@@ -1175,7 +1175,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
         if (!data->MUIMode && (GET_WORD(tBuff) == 0xffff || HIWORD(control->TWindowName) != 0x0000 && wcslen(control->TWindowName) > 0))
             control->State = data->QueryTranslationState(tteDialogs, Controls.Count, ID, oWinName, tWinName);
         else
-            control->State = PROGRESS_STATE_TRANSLATED; // prazdny retezec je "prelozeny"
+            control->State = PROGRESS_STATE_TRANSLATED; // an empty string counts as "translated"
 
         // control data
         WORD oExtraCount = GET_WORD(oBuff);
@@ -1322,7 +1322,7 @@ BOOL CDialogData::LoadDialog(WORD* oBuff, WORD* tBuff, BOOL* showStyleWarning,
     DWORD oExStyle = GET_DWORD(oBuff); oBuff += 2;
     DWORD tExStyle = GET_DWORD(tBuff); tBuff += 2;
 
-    // prepiseme style
+    // overwrite the style
     oStyle = GET_DWORD(oBuff); oBuff += 2;
     tStyle = GET_DWORD(tBuff); tBuff += 2;
 
@@ -1365,7 +1365,7 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
         return 0;
     }
 
-    // prvni control je virtualni (nazev dialogu)
+    // the first control is virtual (the dialog title)
 
     WORD* p = buff;
     if (IsEX)
@@ -1402,7 +1402,7 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
     p++;
 
     // menu name
-    if (MenuName == NULL || forPreview) // pro preview nepropojime s menu, protoze by se nepodarilo dialog vytvorit
+    if (MenuName == NULL || forPreview) // do not attach a menu for preview, otherwise the dialog could not be created
     {
         PUT_WORD(p, 0);
         p++;
@@ -1420,7 +1420,7 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
     }
 
     // class name
-    if (ClassName == NULL || forPreview) // ve win jsem potkal dialogy, ktere mely nejaky custom class a nebylo mozne je nasledne vytvorit pro preview
+    if (ClassName == NULL || forPreview) // in Windows I encountered dialogs with a custom class that could not be created for preview
     {
         PUT_WORD(p, 0);
         p++;
@@ -1457,14 +1457,14 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
 
     // controls
 
-    RECT maxControlsRect; // pri preview "nafoukneme" dialog tak, aby byly vydet i prvky mimo (pouzivame to jak my, tak hojne Honza Patera)
+    RECT maxControlsRect; // for preview we "inflate" the dialog so elements outside are visible (used by us and often by Honza Patera)
     ZeroMemory(&maxControlsRect, sizeof(maxControlsRect));
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* control = Controls[i];
         *p = 0;
         *(p + 1) = 0;
-        // zarovnat na DWORDy
+        // align to DWORDs
         p = (WORD*)((((int)p) + 3) & ~3);
 
         if (IsEX)
@@ -1515,7 +1515,7 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
             int ctrlW = control->TCX;
             int ctrlY = control->TY;
             int ctrlH = control->TCY;
-            if (control->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (control->IsComboBox()) // for combo boxes we use their "collapsed" size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
             if (ctrlX + ctrlW > maxControlsRect.right)
                 maxControlsRect.right = ctrlX + ctrlW;
@@ -1541,9 +1541,9 @@ CDialogData::PrepareTemplate(WORD* buff, BOOL addProgress, BOOL forPreview, BOOL
             wchar_t* className = control->ClassName;
             if (forPreview)
             {
-                // pro ucely preview je potreba, aby vsechny class childu byly registrovany
-                // snadnejsi pro nas je zmenit class v takovem pripade na static nez ho registrovat
-                // pokud se ho casem rozhodneme registrovat, muzeme si do nej posadit treba napis s nazvem tridy
+                // for preview every child class needs to be registered
+                // easier for us to change the class to static instead of registering it
+                // if we decide to register it later, we can put a label with the class name into it
                 WNDCLASSW wc;
                 if (!GetClassInfoW(HInstance, className, &wc))
                 {
@@ -1621,7 +1621,7 @@ int CDialogData::GetNearestControlInDirection(int fromIndex, CSearchDirection di
         TRACE_E("fromIndex == 0");
 
     RECT fR;
-    RECT fRProjected; // obdelnik prodlouzeny do nekonecna ve smeru hledani
+    RECT fRProjected; // rectangle extended to infinity in the search direction
     Controls[fromIndex]->GetTRect(&fR, TRUE);
     fRProjected = fR;
 
@@ -1643,7 +1643,7 @@ int CDialogData::GetNearestControlInDirection(int fromIndex, CSearchDirection di
 
     if (wideScan)
     {
-        // obdelnik rozsirime az k hranicim dialogu
+        // extend the rectangle to the dialog bounds
         if (direction == esdRight || direction == esdLeft)
         {
             fRProjected.top = 0;
@@ -1665,8 +1665,8 @@ int CDialogData::GetNearestControlInDirection(int fromIndex, CSearchDirection di
     }
     else
     {
-        // prodlouzeny obdelnik zuzime na jednu jednotku kvuli dialogum jako IDD_CFGPAGE_GENERAL,
-        // kde mezi checkboxy mame napriklad edit line, ktera nam prerusovala vyber skupiny
+        // narrow the extended rectangle to a single unit for dialogs such as IDD_CFGPAGE_GENERAL,
+        // where an edit line between check boxes interrupted the group selection
         if (direction == esdRight || direction == esdLeft)
         {
             fRProjected.bottom = fRProjected.top + 1;
@@ -1682,7 +1682,7 @@ int CDialogData::GetNearestControlInDirection(int fromIndex, CSearchDirection di
 
     int distance = -1;
     int distanceIndex = -1;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         if (i == fromIndex)
             continue;
@@ -1706,18 +1706,18 @@ int CDialogData::GetNearestControlInDirection(int fromIndex, CSearchDirection di
 BOOL CDialogData::GetFooterSeparatorAndButtons(TDirectArray<DWORD>* footer)
 {
     footer->DetachMembers();
-    // v prvni fazi prohledame vsechny prvky, ktere nejsou push button a urcime jejich nejspodnejsi hranu
-    // pro push buttons dohledame nejspodnejsi Y pozici
+    // first pass: scan all non-push-button controls and determine the lowest edge
+    // for push buttons find the lowest Y position
     int ctrlBottom = -1;
     int buttonsY = -1;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         if (!ctrl->IsPushButton())
         {
             int ctrlY = ctrl->TY;
             int ctrlH = ctrl->TCY;
-            if (ctrl->IsComboBox()) // u comboboxu chceme jejich "zabaleny" rozmer
+            if (ctrl->IsComboBox()) // for combo boxes we use their "collapsed" size
                 ctrlH = COMBOBOX_BASE_HEIGHT;
             if (ctrlY + ctrlH >= ctrlBottom)
                 ctrlBottom = ctrlY + ctrlH;
@@ -1729,26 +1729,26 @@ BOOL CDialogData::GetFooterSeparatorAndButtons(TDirectArray<DWORD>* footer)
         }
     }
 
-    // ve druhe fazi hledame vsechny push button prvky, ktere lezi pod spodni hranou,
-    // jsou umistene na buttonsY souradnici a maji shodne rozestupy
+    // second pass: look for push buttons that lie below the bottom edge,
+    // located on the buttonsY coordinate with equal spacing
     TDirectArray<DWORD> indexes(10, 10);
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         if (ctrl->IsPushButton() && ctrl->TY > ctrlBottom && ctrl->TY == buttonsY)
             indexes.Add(i);
     }
 
-    // omerime vzdalenosti mezi tlacitky, v nekterych dialozich je spodni rada tlacitek
-    // roztrzena na dve casti (jedna zarovnana vlevo, jedna vpravo) - takovou verzi automaticky
-    // neucesavame
+    // measure the distances between buttons; in some dialogs the bottom row of buttons
+    // is split into two parts (one left aligned, one right aligned) - we do not tidy that automatically
+    // we do not tidy it automatically
     BOOL spacingIsOK = TRUE;
     if (indexes.Count > 2)
     {
-        // prvky seradime zleva doprava
+        // sort the controls from left to right
         SortControlsByEdge(&indexes, TRUE);
         int firstSpace = -1;
-        // zkontrolujeme, ze jsou mezi nimy konstantni mezery
+        // verify that the gaps between them are constant
         for (int i = 1; i < indexes.Count; i++)
         {
             int space = Controls[indexes[i]]->TX - (Controls[indexes[i - 1]]->TX + Controls[indexes[i - 1]]->TCX);
@@ -1758,24 +1758,24 @@ BOOL CDialogData::GetFooterSeparatorAndButtons(TDirectArray<DWORD>* footer)
             }
             else
             {
-                // tolerujeme malou odchylku mezi tlacitky +- 1 dlg unit
+                // allow a small deviation between buttons of +/- 1 dialog unit
                 if (space < firstSpace - 1 || space > firstSpace + 1)
                     spacingIsOK = FALSE;
             }
         }
     }
 
-    // pokud jsme nasli tlacitka, ale nemaji shodne mezery, nechame zobrazit varovani
+    // if we found buttons but their spacing differs, show a warning
     if (indexes.Count > 0 && !spacingIsOK)
         return FALSE;
 
     if (indexes.Count > 0)
     {
-        // podivame se, zda nad tlacitky lezi vodorovny oddelovac a pokud ano, pridame ho na prvni pozici
+        // check whether a horizontal separator lies above the buttons and add it first if so
         int topIndex = GetNearestControlInDirection(indexes[0], esdUp, TRUE);
         if (topIndex != -1 && Controls[topIndex]->IsHorizLine())
         {
-            // nesmi mit vlevo text
+            // it must not have text on the left
             if (GetNearestControlInDirection(topIndex, esdLeft, FALSE) == -1)
                 footer->Add(topIndex);
         }
@@ -1794,7 +1794,7 @@ void CDialogData::AdjustFooter(BOOL wide, TDirectArray<DWORD>* footer)
 
     int marginHeight = wide ? DIALOG_WIDE_MARGIN_HEIGHT : DIALOG_STD_MARGIN_HEIGHT;
 
-    // dohledame posledni prvek nad patickou
+    // find the last control above the footer
     int bottomCtrl = GetNearestControlInDirection(footer->At(0), esdUp, TRUE);
     if (bottomCtrl == -1)
         return;
@@ -1838,7 +1838,7 @@ BOOL CDialogData::BelongsToSameSelectionGroup(int fromIndex, int testIndex)
     CControl* fromCtrl = Controls[fromIndex];
     CControl* testCtrl = Controls[testIndex];
 
-    // pokud se ClassName lisi (retezce nebo IDcka), nepatri prvky do stejne skupiny
+    // if the ClassName differs (string or ID), the controls are not in the same group
     if (LOWORD(fromCtrl->ClassName) != 0xFFFF && LOWORD(testCtrl->ClassName) != 0xFFFF)
     {
         if (wcscmp(fromCtrl->ClassName, testCtrl->ClassName) != 0)
@@ -1850,7 +1850,7 @@ BOOL CDialogData::BelongsToSameSelectionGroup(int fromIndex, int testIndex)
             return FALSE;
     }
 
-    // zde jsou ClassName obou prvku shodne, budeme testovat styly
+    // the ClassName matches for both controls, so compare styles
     if (fromCtrl->IsStaticText(TRUE, FALSE) != testCtrl->IsStaticText(TRUE, FALSE))
         return FALSE;
     if (fromCtrl->IsStaticText(FALSE, TRUE) != testCtrl->IsStaticText(FALSE, TRUE))
@@ -1900,7 +1900,7 @@ BOOL CDialogData::ControlsHasSameGroupEdge(int fromIndex, int testIndex, CSearch
 
 BOOL CDialogData::HasOuterControls()
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         RECT cr;
@@ -1914,7 +1914,7 @@ BOOL CDialogData::HasOuterControls()
 BOOL CDialogData::GetControlsRect(BOOL ignoreSeparators, BOOL ignoreOuterControls, RECT* r)
 {
     BOOL first = TRUE;
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
 
@@ -1948,12 +1948,12 @@ BOOL CDialogData::GetControlsRect(BOOL ignoreSeparators, BOOL ignoreOuterControl
 
 BOOL CDialogData::CanNormalizeLayout()
 {
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         RECT cr;
         ctrl->GetTRect(&cr, FALSE);
-        // pokud control spodni hranou presahuje pres TCY, normalizace neni nakodovana
+        // if a control extends past TCY, normalization is not implemented
         if (cr.bottom > TCY)
             return FALSE;
     }
@@ -1963,12 +1963,12 @@ BOOL CDialogData::CanNormalizeLayout()
 void CDialogData::AdjustSeparatorsWidth(CStringList* errors)
 {
     char buff[1000];
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         if (!ctrl->IsHorizLine())
             continue;
-        // pokud vpravo od separatoru nalezneme element, informujeme
+        // if we find an element to the right of the separator, report it
         int rightIndex = GetNearestControlInDirection(i, esdRight, FALSE);
         if (rightIndex != -1)
         {
@@ -1976,19 +1976,19 @@ void CDialogData::AdjustSeparatorsWidth(CStringList* errors)
             errors->AddString(buff);
             continue;
         }
-        // pokud je pravy konec separatory prilis daleko od prave hrany dialogu, informujeme
+        // if the separator's right edge is too far from the dialog's right edge, report it
         if (ctrl->TX + ctrl->TCX < TCX - DIALOG_MARGIN_WIDTH * 2)
         {
             sprintf_s(buff, "Cannot adjust separator <%d>. It is too far from the right dialog box side.", ctrl->ID);
             errors->AddString(buff);
             continue;
         }
-        // pokud vlevo od separatoru nic neni a separator zacina priblizne na hrane dialogu,
-        // usadime jeho levou pozici presne na margin
+        // if nothing is to the left and the separator starts roughly at the dialog edge,
+        // align its left position exactly to the margin
         int leftIndex = GetNearestControlInDirection(i, esdLeft, FALSE);
         if (leftIndex == -1)
         {
-            // pokud je leva strana separatoru prilis vzdalena od leve hrany dialogu, informujeme
+            // if the separator's left edge is too far from the dialog's left edge, report it
             if (ctrl->TX > DIALOG_MARGIN_WIDTH * 2)
             {
                 sprintf_s(buff, "Cannot adjust separator <%d>. It is too far from the left dialog box side.", ctrl->ID);
@@ -2005,24 +2005,24 @@ void CDialogData::AdjustSeparatorsWidth(CStringList* errors)
 void CDialogData::NormalizeLayout(BOOL wide, CStringList* errors)
 {
     int marginHeight = wide ? DIALOG_WIDE_MARGIN_HEIGHT : DIALOG_STD_MARGIN_HEIGHT;
-    // v prvni fazi najdeme rozmery obdelniku opsaneho kolem prvku dialogu
-    // ignorujeme vodorovne separatory a prvky lezici za hranici dialogu (pouzivame pro ruzne real-time zmeny layoutu)
+    // first find the bounding rectangle around the dialog controls
+    // ignore horizontal separators and controls outside the dialog (used for various real-time layout changes)
     RECT r;
     GetControlsRect(TRUE, TRUE, &r);
     CtrlsMove(FALSE, DIALOG_MARGIN_WIDTH - r.left, marginHeight - r.top);
     SIZE dlgSize;
     dlgSize.cx = r.right - r.left + 2 * DIALOG_MARGIN_WIDTH;
     dlgSize.cy = r.bottom - r.top + (marginHeight + DIALOG_STD_MARGIN_HEIGHT);
-    // property pages nikdy nezmensujeme, protoze je udrzujeme stejne velike kvuli pohodlnesimu
-    // layoutovani (clovek vidi, jaky prostor ma diky nejvetsi strance k dispozici)
+    // never shrink property pages; we keep them the same size for convenience
+    // when laying out, you can see how much space the largest page provides
     if (Style & DS_CONTROL)
     {
         dlgSize.cx = max(TCX, dlgSize.cx);
         dlgSize.cy = max(TCY, dlgSize.cy);
     }
-    // tato funkce je volana pouze pro dialogy bez prvku mimo hranici dialogu, pripadne s prvky za jeho pravou hranici
-    // prvkum lezicim vpravo vnutime jejich puvodni offset od prave hrany dialogu
-    for (int i = 1; i < Controls.Count; i++) // 0-ty prvek preskocime, obsahuje nazev dialogu
+    // this function is called only for dialogs without controls outside the bounds or with controls beyond the right edge
+    // controls on the right keep their original offset from the dialog's right edge
+    for (int i = 1; i < Controls.Count; i++) // skip element 0; it contains the dialog title
     {
         CControl* ctrl = Controls[i];
         RECT cr;
@@ -2030,9 +2030,9 @@ void CDialogData::NormalizeLayout(BOOL wide, CStringList* errors)
         if (cr.left >= TCX)
             ctrl->TX = (short)dlgSize.cx + (ctrl->TX - TCX) - (DIALOG_MARGIN_WIDTH - (short)r.left);
     }
-    // nova velikost dialogu
+    // new dialog size
     DialogSetSize(dlgSize.cx, dlgSize.cy);
-    // uceseme paticku dialogu (spodni rada tlacitek, pripadne separator nad nima)
+    // tidy the footer (the bottom row of buttons and any separator above them)
 
     TDirectArray<DWORD> footerIndexes(10, 10);
     if (!GetFooterSeparatorAndButtons(&footerIndexes))
@@ -2040,7 +2040,7 @@ void CDialogData::NormalizeLayout(BOOL wide, CStringList* errors)
     if (footerIndexes.Count > 0)
         AdjustFooter(wide, &footerIndexes);
 
-    // protahneme vodorovne separatory az k prave hrane dialogu (minus margin)
+    // stretch horizontal separators to the dialog's right edge (minus the margin)
     AdjustSeparatorsWidth(errors);
 }
 
@@ -2074,7 +2074,7 @@ BOOL CData::SaveDialogs(HANDLE hUpdateRes)
         CDialogData* dlgData = DlgData[i];
         DWORD size = dlgData->PrepareTemplate((WORD*)buff, TRUE, FALSE, FALSE);
         BOOL result = TRUE;
-        if (dlgData->TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // resource neni "neutral", musime ho smaznout, aby ve vyslednem .SLG nebyly dialogy dva
+        if (dlgData->TLangID != MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) // resource is not "neutral"; delete it so the resulting .SLG does not contain the dialog twice
         {
             result = UpdateResource(hUpdateRes, RT_DIALOG, MAKEINTRESOURCE(dlgData->ID),
                                     dlgData->TLangID,

@@ -3,9 +3,9 @@
 
 #include "precomp.h"
 
-// projekt Salamander obsahuje ctyri skupiny modulu
+// the Salamander project contains four groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi salamand.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici salamand.pch (/Yu"precomp.h")
-// 3) commony a tasklist.cpp maji vlastni, automaticky generovany
+// 1) the precomp.cpp module, which builds salamand.pch (/Yc"precomp.h")
+// 2) modules using salamand.pch (/Yu"precomp.h")
+// 3) common files and tasklist.cpp have their own automatically generated
 //    WINDOWS.PCH (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

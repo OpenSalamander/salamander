@@ -19,7 +19,7 @@ CPluginFSInterface::CPluginFSInterface()
     // Desktop -> CurrentPIDL
     if (FAILED(SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOP, &CurrentPIDL)))
     {
-        // PIDL Desktopu je prazdny PIDL, ale ziskame ho ciste
+        // the Desktop PIDL is empty, but we obtain it cleanly
         CurrentPIDL = NULL;
         TRACE_E("SHGetSpecialFolderLocation failed on CSIDL_DESKTOP");
     }
@@ -90,7 +90,7 @@ BOOL WINAPI
 CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSize)
 {
     buf[0] = 0;
-    //  lstrcpyn(buf, Path, bufSize);  // pokud se nevejde cesta, jmeno se urcite take nevejde (ohlasi chybu)
+    //  lstrcpyn(buf, Path, bufSize);  // if the path does not fit, the name definitely will not either (an error will be reported)
     if (isDir == 2)
         return SalamanderGeneral->CutDirectory(buf, NULL); // up-dir
     else
@@ -100,7 +100,7 @@ CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSi
 BOOL WINAPI
 CPluginFSInterface::GetFullFSPath(HWND parent, const char* fsName, char* path, int pathSize, BOOL& success)
 {
-    return FALSE; // preklad neni mozny, at si chybu ohlasi sam Salamander
+    return FALSE; // translation is not possible, let Salamander report the error itself
 }
 
 BOOL WINAPI
@@ -132,7 +132,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     if (ErrorState == fesFatal)
     {
         ErrorState = fesOK;
-        return FALSE; // ListCurrentPath selhala kvuli pameti, fatal error
+        return FALSE; // ListCurrentPath failed due to memory, fatal error
     }
 
     return TRUE;
@@ -159,7 +159,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
         currentPIDL = ChangePathNewPIDL;
     }
 
-    // pokud nejde o Desktop (prazdny PIDL), vlozime ".."
+    // if this is not the Desktop (empty PIDL), insert ".."
     if (!ILIsEmpty(currentPIDL))
     {
         file.Name = SalamanderGeneral->DupStr("..");
@@ -217,12 +217,12 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                     }
 
                     if (!sortByExtDirsAsFiles && isDir)
-                        file.Ext = file.Name + file.NameLen; // foldery nemaji pripony
+                        file.Ext = file.Name + file.NameLen; // folders do not have extensions
                     else
                     {
                         char* s = strrchr(file.Name, '.');
                         if (s != NULL)
-                            file.Ext = s + 1; // ".cvspass" ve Windows je pripona
+                            file.Ext = s + 1; // ".cvspass" is treated as an extension in Windows
                         else
                             file.Ext = file.Name + file.NameLen;
                     }
@@ -230,10 +230,10 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                     file.Attr = 0;
                     file.LastWrite.dwLowDateTime = 0;
                     file.LastWrite.dwHighDateTime = 0;
-                    file.PluginData = (DWORD_PTR)idList; // destrukce se provede v CPluginDataInterface::ReleasePluginData
+                    file.PluginData = (DWORD_PTR)idList; // destruction is performed in CPluginDataInterface::ReleasePluginData
                     file.DosName = NULL;
 
-                    // FIXME: tady by to casem asi chtelo nejakou sofistikovanejsi metodu (folder o svych polozkach bude vedet jestli maji mit overlay nebo ne)
+                    // FIXME: in time this will probably need a more sophisticated method (the folder will know whether its items should have an overlay)
                     if (isDir)
                         file.IsLink = 0;
                     else
@@ -252,7 +252,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
         }
         enumIDList->Release();
 
-        // predavani cesty pres globalky
+        // passing the path through globals
         if (ChangePathNewFolder != NULL && ChangePathNewPIDL != NULL)
         {
             if (CurrentPIDL != NULL)
@@ -260,7 +260,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
             if (CurrentFolder != NULL)
                 CurrentFolder->Release();
 
-            // nastavime nove hodnoty
+            // set the new values
             CurrentFolder = ChangePathNewFolder;
             CurrentPIDL = ChangePathNewPIDL;
             ChangePathNewFolder = NULL;
@@ -383,7 +383,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                                      char* targetPath, BOOL& operationMask,
                                      BOOL& cancelOrHandlePath, HWND dropTarget)
 {
-    return TRUE; // uspech nebo error/cancel
+    return TRUE; // success or error/cancel
 }
 
 BOOL WINAPI
@@ -392,7 +392,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                                            void* nextParam, int sourceFiles, int sourceDirs,
                                            char* targetPath, BOOL* invalidPathOrCancel)
 {
-    return FALSE; // neznamy 'mode'
+    return FALSE; // unknown 'mode'
 }
 
 BOOL WINAPI
@@ -464,7 +464,7 @@ void RemoveUselessSeparatorsFromMenu(HMENU h)
         mi.fMask = MIIM_TYPE;
         if (GetMenuItemInfo(h, i, TRUE, &mi) && (mi.fType & MFT_SEPARATOR))
         {
-            if (lastSep != -1 && lastSep == i + 1) // dva separatory po sobe, jeden smazeme, je nadbytecny
+            if (lastSep != -1 && lastSep == i + 1) // two separators in a row, delete one because it is redundant
                 DeleteMenu(h, i, MF_BYPOSITION);
             lastSep = i;
         }
@@ -488,7 +488,7 @@ CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX, int 
                 contextMenu2->QueryContextMenu(hMenu, 0, CMD_ID_FIRST, CMD_ID_LAST, CMF_NORMAL | CMF_EXPLORE);
                 RemoveUselessSeparatorsFromMenu(hMenu);
 
-                ContextMenu2 = contextMenu2; // aby nam fungoval forward zprav z HandleMenuMsg
+                ContextMenu2 = contextMenu2; // so that forwarding messages from HandleMenuMsg works
                 DWORD cmd = TrackPopupMenuEx(hMenu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, menuX, menuY,
                                              parent, NULL);
                 ContextMenu2 = NULL;
@@ -529,8 +529,8 @@ CPluginFSInterface::HandleMenuMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESU
 BOOL CPluginFSInterface::CreateIDListFromSelection(int panel, int selectedFiles, int selectedDirs,
                                                    LPCITEMIDLIST** pidlArray, int* itemsInArray)
 {
-    const CFileData* f = NULL; // ukazatel na soubor/adresar v panelu, ktery se ma zpracovat
-    BOOL isDir = FALSE;        // TRUE pokud 'f' je adresar
+    const CFileData* f = NULL; // pointer to the file/folder in the panel to be processed
+    BOOL isDir = FALSE;        // TRUE if 'f' is a directory
     BOOL focused = (selectedFiles == 0 && selectedDirs == 0);
     int index = 0;
 
@@ -542,20 +542,20 @@ BOOL CPluginFSInterface::CreateIDListFromSelection(int panel, int selectedFiles,
     *itemsInArray = 0;
     do
     {
-        // vyzvedneme data o zpracovavanem souboru
+        // retrieve the data about the file being processed
         if (focused)
             f = SalamanderGeneral->GetPanelFocusedItem(panel, &isDir);
         else
             f = SalamanderGeneral->GetPanelSelectedItem(panel, &index, &isDir);
 
-        // provedeme operaci na souboru/adresari
+        // perform the operation on the file/directory
         if (f != NULL)
         {
             (*pidlArray)[*itemsInArray] = (LPCITEMIDLIST)f->PluginData;
             (*itemsInArray)++;
         }
 
-        // zjistime jestli ma cenu pokracovat (pokud neni cancel a existuje jeste nejaka dalsi oznacena polozka)
+        // determine whether it makes sense to continue (if there is no cancel and another selected item exists)
     } while (!focused && f != NULL);
     return TRUE;
 }

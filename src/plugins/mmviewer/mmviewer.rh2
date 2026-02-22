@@ -7,7 +7,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 13000
-#include "statics.rh2"   // 13000 az 13039 jsou timto zabrane !!!
+#include "statics.rh2"   // 13000 to 13039 are reserved by this include!!!
 
 #define IDI_MAIN                        9991
 #define IDI_DISKEXPLORER                9992

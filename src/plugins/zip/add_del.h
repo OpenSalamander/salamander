@@ -156,7 +156,7 @@ public:
     void NTFSCompressFile(HANDLE file);
     int EnumFiles2(SalEnumSelection2 next, void* param);
     int LoadCentralDirectory();
-    int MatchFiles(int& count); // count je predpokladany pocet souboru po operaci
+    int MatchFiles(int& count); // count is the expected number of files after the operation
     int BackupZip();
     int PackFiles();
     int FinishPack(int reason = FPR_NORMAL);

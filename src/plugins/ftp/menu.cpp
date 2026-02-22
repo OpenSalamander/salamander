@@ -1,10 +1,11 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-int GlobalShowLogUID = -1;      // UID logu, ktery ma FTPCMD_SHOWLOGS zobrazit (-1 == zadny)
-int GlobalDisconnectPanel = -1; // panel, pro ktery se vola disconnect (-1 == aktivni panel - source)
+int GlobalShowLogUID = -1;      // UID of the log FTPCMD_SHOWLOGS should display (-1 == none)
+int GlobalDisconnectPanel = -1; // panel for which disconnect is called (-1 == active panel - source)
 
 //
 // ****************************************************************************
@@ -21,7 +22,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
     case FTPCMD_TRMODEBINARY:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             return ((CPluginFSInterface*)fs)->GetTransferModeCmdState(id);
         }
@@ -36,7 +37,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
     case FTPCMD_LISTHIDDENFILES:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             return MENU_ITEM_STATE_ENABLED |
                    (((CPluginFSInterface*)fs)->IsListCommandLIST_a() ? MENU_ITEM_STATE_CHECKED : 0);
@@ -47,7 +48,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
     case FTPCMD_SHOWCERT:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
             return ((CPluginFSInterface*)fs)->IsFTPS() ? MENU_ITEM_STATE_ENABLED : 0;
         return 0; // disabled
     }
@@ -69,19 +70,19 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
     case FTPCMD_CONNECTFTPSERVER:
     {
         ConnectFTPServer(parent, PANEL_SOURCE);
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_ORGANIZEBOOKMARKS:
     {
         OrganizeBookmarks(parent);
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_DISCONNECT_F12:
     {
         SalamanderGeneral->PostSalamanderCommand(SALCMD_DISCONNECT);
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_DISCONNECT:
@@ -91,34 +92,34 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         SalamanderGeneral->DisconnectFSFromPanel(parent, panel);
         Config.DisconnectCommandUsed = FALSE;
         GlobalDisconnectPanel = -1;
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_ADDBOOKMARK:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             ((CPluginFSInterface*)fs)->AddBookmark(parent);
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_REFRESHPATH:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             SalamanderGeneral->PostRefreshPanelFS(fs, FALSE);
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_SHOWLOGS:
     case FTPCMD_SHOWLOGSLEFT:
     case FTPCMD_SHOWLOGSRIGHT:
     {
-        if (id != FTPCMD_SHOWLOGS || GlobalShowLogUID == -1) // pokud neni jine, vezmeme aspon aktivni panel, at userovi trochu pomuzeme
+        if (id != FTPCMD_SHOWLOGS || GlobalShowLogUID == -1) // if there is no other one, use at least the active panel to help the user a little
         {
             CPluginFSInterface* fs = (CPluginFSInterface*)(SalamanderGeneral->GetPanelPluginFS(id == FTPCMD_SHOWLOGSLEFT ? PANEL_LEFT : id == FTPCMD_SHOWLOGSRIGHT ? PANEL_RIGHT
                                                                                                                                                                    : PANEL_SOURCE));
@@ -131,23 +132,23 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         }
         Logs.ActivateLogsDlg(GlobalShowLogUID);
         GlobalShowLogUID = -1;
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
-    case FTPCMD_CLOSECONNOTIF: // postnuty pomocny prikaz ('salamander' a 'eventMask' jsou prazdne)
-    {                          // zkontroluje jestli uz se uzivatel dozvedel o zavreni "control connection"
+    case FTPCMD_CLOSECONNOTIF: // posted helper command ('salamander' and 'eventMask' are empty)
+    {                          // checks whether the user has already learned about the closing of the "control connection"
         ClosedCtrlConChecker.Check(parent);
-        return FALSE; // ignoruje se
+        return FALSE; // ignored
     }
 
     case FTPCMD_SENDFTPCOMMAND:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             ((CPluginFSInterface*)fs)->SendUserFTPCommand(SalamanderGeneral->GetMsgBoxParent());
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_CHANGETGTPANELPATH:
@@ -157,28 +158,28 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
             SalamanderGeneral->ChangePanelPath(TargetPanelPathPanel, TargetPanelPath);
             TargetPanelPath[0] = 0;
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_SHOWRAWLISTING:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             ((CPluginFSInterface*)fs)->ShowRawListing(SalamanderGeneral->GetMsgBoxParent());
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_LISTHIDDENFILES:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             ((CPluginFSInterface*)fs)->ToggleListHiddenFiles(parent);
             SalamanderGeneral->PostRefreshPanelFS(fs, FALSE);
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_TRMODEAUTO:
@@ -186,38 +187,38 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
     case FTPCMD_TRMODEBINARY:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
         {
             ((CPluginFSInterface*)fs)->SetTransferModeByMenuCmd2(id);
         }
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
     case FTPCMD_SHOWCERT:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // jde o nas FS, jinak by byl NULL
+        if (fs != NULL) // it is our FS; otherwise it would be NULL
             ((CPluginFSInterface*)fs)->ShowSecurityInfo(parent);
-        return FALSE; // neodznacovat
+        return FALSE; // do not uncheck
     }
 
-    case FTPCMD_CANCELOPERATION: // postnuty pomocny prikaz ('salamander' a 'eventMask' jsou prazdne)
-    {                            // uvolni objekt FTP operace
+    case FTPCMD_CANCELOPERATION: // posted helper command ('salamander' and 'eventMask' are empty)
+    {                            // releases the FTP operation object
         int uid;
         if (CanceledOperations.GetFirstUID(uid))
         {
-            HANDLE dlgThread;                                         // zavreme dialog operace
-            if (FTPOperationsList.CloseOperationDlg(uid, &dlgThread)) // je 'uid' platne?
+            HANDLE dlgThread;                                         // close the operation dialog
+            if (FTPOperationsList.CloseOperationDlg(uid, &dlgThread)) // is 'uid' valid?
             {
                 if (dlgThread != NULL)
                 {
                     CALL_STACK_MESSAGE1("AuxThreadQueue.WaitForExit()");
-                    AuxThreadQueue.WaitForExit(dlgThread, INFINITE); // pockame na dokonceni threadu dialogu operace
+                    AuxThreadQueue.WaitForExit(dlgThread, INFINITE); // wait for the operation dialog thread to finish
                 }
-                FTPOperationsList.DeleteOperation(uid, FALSE); // smazeme operaci
+                FTPOperationsList.DeleteOperation(uid, FALSE); // delete the operation
             }
         }
-        return FALSE; // ignoruje se
+        return FALSE; // ignored
     }
 
     case FTPCMD_RETURNCONNECTION:
@@ -225,40 +226,40 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         int controlConUID;
         CFTPWorker* workerWithCon;
         while (ReturningConnections.GetFirstCon(&controlConUID, &workerWithCon))
-        { // pro vsechny workery vracejici spojeni do "control connection" FS v panelu (mozne i do detached FS)
+        { // for all workers returning the connection to the "control connection" FS in the panel (possibly also to detached FS)
             int i;
-            for (i = 0; i < FTPConnections.Count; i++) // zkusime najit FS vyuzivajici "control connection" s UID 'controlConUID' (FS uz ale muze byt zavreny)
+            for (i = 0; i < FTPConnections.Count; i++) // try to find the FS using the "control connection" with UID 'controlConUID' (the FS might already be closed)
             {
                 CPluginFSInterface* fs = FTPConnections[i];
-                if (fs->ContainsConWithUID(controlConUID)) // nasli jsme FS s hledanou "control connection"
+                if (fs->ContainsConWithUID(controlConUID)) // found the FS with the requested "control connection"
                 {
-                    fs->GetConnectionFromWorker(workerWithCon); // nechame prevzit spojeni od workera
+                    fs->GetConnectionFromWorker(workerWithCon); // let it take over the connection from the worker
                     break;
                 }
             }
-            workerWithCon->ForceClose(); // tvrde zavreme socket (sice by na close socketu nic nemelo cekat (stacilo by volat CloseSocket()), ale sychrujeme se - SocketClosed se hned po pridani do ReturningConnections dava na TRUE)
+            workerWithCon->ForceClose(); // force-close the socket (nothing should be waiting on close socket; CloseSocket() would be enough, but we play it safe - SocketClosed is set to TRUE immediately after adding to ReturningConnections)
             if (workerWithCon->CanDeleteFromRetCons())
                 DeleteSocket(workerWithCon);
         }
-        return FALSE; // ignoruje se
+        return FALSE; // ignored
     }
 
     case FTPCMD_REFRESHLEFTPANEL:
     case FTPCMD_REFRESHRIGHTPANEL:
     {
         SalamanderGeneral->RefreshPanelPath(id == FTPCMD_REFRESHLEFTPANEL ? PANEL_LEFT : PANEL_RIGHT);
-        return FALSE; // ignoruje se
+        return FALSE; // ignored
     }
 
     case FTPCMD_ACTIVWELCOMEMSG:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_TARGET);
-        if (fs != NULL)                                      // jde o nas FS, jinak by byl NULL
-            ((CPluginFSInterface*)fs)->ActivateWelcomeMsg(); // pokud nejaky msg-box deaktivoval okno welcome-msg, aktivujeme ho zpet
+        if (fs != NULL)                                      // it is our FS; otherwise it would be NULL
+            ((CPluginFSInterface*)fs)->ActivateWelcomeMsg(); // if some message box deactivated the welcome-msg window, activate it again
         fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL)                                      // jde o nas FS, jinak by byl NULL
-            ((CPluginFSInterface*)fs)->ActivateWelcomeMsg(); // pokud nejaky msg-box deaktivoval okno welcome-msg, aktivujeme ho zpet
-        return FALSE;                                        // ignoruje se
+        if (fs != NULL)                                      // it is our FS; otherwise it would be NULL
+            ((CPluginFSInterface*)fs)->ActivateWelcomeMsg(); // if some message box deactivated the welcome-msg window, activate it again
+        return FALSE;                                        // ignored
     }
     }
     TRACE_E("Unknown command with ID=" << id);

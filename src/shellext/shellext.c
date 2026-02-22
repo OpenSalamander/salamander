@@ -13,7 +13,7 @@
 // Global variables
 //
 UINT g_cRefThisDll = 0;         // Reference count of this DLL.
-UINT g_cLocksCount = 0;         // pocet locku serveru
+UINT g_cLocksCount = 0;         // number of server locks
 HINSTANCE g_hmodThisDll = NULL; // Handle to this DLL itself.
 
 #ifdef SHEXT_LOG_ENABLED
@@ -137,7 +137,7 @@ BOOL SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD w
                                                                                VER_MINORVERSION, VER_GREATER_EQUAL),
                                                            VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-    SecureZeroMemory(&osvi, sizeof(osvi)); // nahrada za memset (nevyzaduje RTLko)
+    SecureZeroMemory(&osvi, sizeof(osvi)); // replacement for memset (does not require the RTL)
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;
@@ -186,7 +186,7 @@ DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
     }
     else if (dwReason == DLL_PROCESS_DETACH)
     {
-        // uvolnim data z registry
+        // release the data from the registry
 
 #ifdef ENABLE_SH_MENU_EXT
 
@@ -266,7 +266,7 @@ HRESULT CreateShellExtClassFactory(REFIID riid, LPVOID* ppvOut)
     // Get interface, whichs calls AddRef
     hr = secf->lpVtbl->QueryInterface((IShellExtClassFactory*)secf, riid, ppvOut);
     if (secf->m_cRef == 0)
-        SECF_Destructor(secf); // pokud QueryInterface nezabral, uvolnime objekt
+        SECF_Destructor(secf); // if QueryInterface failed, release the object
     return hr;
 }
 
@@ -293,10 +293,10 @@ ShellExtClassFactory* SECF_Constructor()
         g_vtShellExtClassFactoryInitialized = TRUE;
     }
 
-    // provedem inicializaci vtbl
+    // initialize the vtbl
     secf->lpVtbl = &vtShellExtClassFactory;
 
-    // inicializace dalsich dat
+    // initialize additional data
     secf->m_cRef = 0;
 
     g_cRefThisDll++;
@@ -405,7 +405,7 @@ HRESULT CreateShellExt(REFIID riid, LPVOID* ppvOut)
     // Get interface, whichs calls AddRef
     hr = se->lpVtbl->QueryInterface((IShellExt*)se, riid, ppvOut);
     if (se->m_cRef == 0)
-        SE_Destructor(se); // pokud QueryInterface nezabral, uvolnime objekt
+        SE_Destructor(se); // if QueryInterface failed, release the object
     return hr;
 }
 
@@ -470,7 +470,7 @@ ShellExt* SE_Constructor()
         g_vtShellExtInitialized = TRUE;
     }
 
-    // provedem inicializaci vtbl
+    // initialize the vtbl
     se->lpVtbl = &vtShellExt;
     se->m_pSEI->lpVtbl = &vtShellExtInit;
     se->m_pSEI->m_pObj = se;
@@ -479,7 +479,7 @@ ShellExt* SE_Constructor()
     se->m_pCHW->lpVtbl = &vtCopyHookW;
     se->m_pCHW->m_pObj = se;
 
-    // inicializace dalsich dat
+    // initialize additional data
     se->m_cRef = 0;
     //  se->m_pIDFolder = NULL;
     se->m_pDataObj = NULL;
@@ -487,7 +487,7 @@ ShellExt* SE_Constructor()
 
 #ifdef ENABLE_SH_MENU_EXT
 
-    // nacucnu registry
+    // load the registry entries
     SECLoadRegistry();
 
 #endif // ENABLE_SH_MENU_EXT

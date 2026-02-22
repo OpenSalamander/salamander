@@ -85,7 +85,7 @@ void* MemZero(void* dst, unsigned count)
 
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 BOOL PathAppend(LPTSTR pPath, LPCTSTR pMore)
@@ -239,7 +239,7 @@ BOOL PathMerge(char* fullPath, const char* relativePath)
                     dest = StrRChr(fullPath, dest - 1, '\\') + 1;
                 sour += 2;
                 if (*sour)
-                    sour++; //preskocime jeste lomitko nejsme-li  na konci
+                    sour++; // skip the slash as well unless we are at the end
                 continue;
             }
             if (sour[1] == '\\')
@@ -310,7 +310,7 @@ char* NumberToStr(char* buffer, const __int64 number)
     else
     {
         ThousandsSeparatorLen--;
-        ThousandsSeparator[ThousandsSeparatorLen] = 0; // posychrujeme nulu na konci
+        ThousandsSeparator[ThousandsSeparatorLen] = 0; // ensure the terminator stays in place
     }
 
     i64toa(number, buffer);
@@ -520,9 +520,10 @@ DWORD SalGetFileAttributes(const char* fileName)
 {
     int fileNameLen = (int)lstrlen(fileName);
     char fileNameCopy[3 * MAX_PATH];
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak GetFileAttributes mezery/tecky
-    // orizne a pracuje tak s jinou cestou + u souboru to sice nefunguje, ale porad lepsi nez ziskat
-    // atributy jineho souboru/adresare (pro "c:\\file.txt   " pracuje se jmenem "c:\\file.txt")
+    // if the path ends with a trailing space or dot we must append '\\'; otherwise GetFileAttributes
+    // trims that character and works with a different path; the fix does not help for files, but it is still
+    // better than retrieving attributes of another file or directory (for "c:\\file.txt   " it works
+    // with "c:\\file.txt").
     if (fileNameLen > 0 && (fileName[fileNameLen - 1] <= ' ' || fileName[fileNameLen - 1] == '.') &&
         fileNameLen + 1 < _countof(fileNameCopy))
     {
@@ -531,7 +532,7 @@ DWORD SalGetFileAttributes(const char* fileName)
         fileNameCopy[fileNameLen + 1] = 0;
         return GetFileAttributes(fileNameCopy);
     }
-    else // obycejna cesta, neni co resit, jen zavolame windowsovou GetFileAttributes
+    else // ordinary path, nothing special here, just call the Windows GetFileAttributes
     {
         return GetFileAttributes(fileName);
     }
@@ -985,7 +986,7 @@ int Extract()
         OutFile = SafeCreateFile(TargetPath, header->ExternAttr & 0x0000FFFF, &ft, header->Size);
         if (header->ExternAttr & FILE_ATTRIBUTE_DIRECTORY)
         {
-            //ExtractedFiles++; budem pocitat i adresare jakou soubory do vysledku?
+            //ExtractedFiles++; should we count directories as files in the result as well?
             OutFile = INVALID_HANDLE_VALUE;
             ok = true; //don't erase the file
             goto next;

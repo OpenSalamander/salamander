@@ -243,7 +243,7 @@ protected:
 public:
     CUDF(CISOImage* image, DWORD extent, int trackno);
     virtual ~CUDF();
-    // metody
+    // methods
 
     virtual BOOL Open(BOOL quiet);
     virtual BOOL DumpInfo(FILE* outStream);

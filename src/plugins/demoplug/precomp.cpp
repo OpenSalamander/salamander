@@ -11,9 +11,9 @@
 
 #include "precomp.h"
 
-// projekt DemoPlug obsahuje tri skupiny modulu
+// the DemoPlug project contains three groups of modules
 //
-// 1) modul precomp.cpp, ktery postavi demoplug.pch (/Yc"precomp.h")
-// 2) moduly vyuzivajici demoplug.pch (/Yu"precomp.h")
-// 3) commony maji vlastni, automaticky generovany WINDOWS.PCH
+// 1) module precomp.cpp, which builds demoplug.pch (/Yc"precomp.h")
+// 2) modules that use demoplug.pch (/Yu"precomp.h")
+// 3) the common sources have their own automatically generated WINDOWS.PCH
 //    (/YX"windows.h" /Fp"$(OutDir)\WINDOWS.PCH")

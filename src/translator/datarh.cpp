@@ -12,7 +12,7 @@
 
 CDataRH DataRH;
 
-// propojeni na OPENEDIT pro otevirani souboru v MSVC
+// integration with OPENEDIT for opening files in MSVC
 
 BOOL CALLBACK FindMSVCEnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
@@ -22,7 +22,7 @@ BOOL CALLBACK FindMSVCEnumWindowsProc(HWND hwnd, LPARAM lParam)
         if (strstr(title, "Microsoft Visual C++") != NULL)
         {
             *((HWND*)lParam) = hwnd;
-            return FALSE; // uz jsme ho nasli
+            return FALSE; // we have already found it
         }
     }
     return TRUE;
@@ -34,7 +34,7 @@ void GotoEditor(const char* fileName, int row)
                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (mailSlot != INVALID_HANDLE_VALUE)
     {
-        // povolime pouziti SetForegroundWindow, jinak se MSVC nebude moct fokusnout
+        // allow SetForegroundWindow so MSVC can take focus
         HMODULE USER32DLL = LoadLibrary("user32.dll");
         if (USER32DLL != NULL)
         {
@@ -52,19 +52,19 @@ void GotoEditor(const char* fileName, int row)
             FreeLibrary(USER32DLL);
         }
 
-        COpenEditPacket packet; // packet s informacemi pro server
+        COpenEditPacket packet; // packet with information for the server
         lstrcpyn(packet.File, fileName, MAX_PATH);
         packet.File[MAX_PATH - 1] = 0;
         packet.Line = row;
         packet.Column = 0;
         DWORD written;
         if (WriteFile(mailSlot, &packet, sizeof(packet), &written, NULL) &&
-            written == sizeof(packet)) // zapis packetu
+            written == sizeof(packet)) // write the packet
         {
             HANDLE check = OpenEvent(EVENT_MODIFY_STATE, FALSE, CHECK_MAILSLOT_EVENT_NAME);
             if (check != NULL)
             {
-                SetEvent(check); // notifikace o pridani zpravy do slotu
+                SetEvent(check); // notify the server that a message arrived
                 CloseHandle(check);
             }
             else
@@ -179,7 +179,7 @@ BOOL CDataRH::GetIDIndex(WORD id, int& index)
         if (res == 0)
         {
             index = m;
-            return TRUE; // nalezeno
+            return TRUE; // found
         }
         else
         {
@@ -188,7 +188,7 @@ BOOL CDataRH::GetIDIndex(WORD id, int& index)
                 if (l == r || l > m - 1)
                 {
                     ContainsUnknownIdentifier = TRUE;
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 r = m - 1;
             }
@@ -197,7 +197,7 @@ BOOL CDataRH::GetIDIndex(WORD id, int& index)
                 if (l == r)
                 {
                     ContainsUnknownIdentifier = TRUE;
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 l = m + 1;
             }
@@ -210,9 +210,9 @@ CDataRH::GetIdentifier(WORD id, BOOL inclNum)
 {
     static char buff[5000];
     static char* actBuf = buff;
-    // musime vypnout plneni celeho bufferu v sprintf_s bajtem 0xFD, jinak pri
-    // presunu 'actBuf' zpet na zacatek 'buff' dojde k promaznuti celeho bufferu buff
-    // a tim ke ztrate predchozich retezcu
+    // we must disable filling the entire buffer in sprintf_s with 0xFD, otherwise
+    // moving 'actBuf' back to the start of 'buff' would wipe the entire buffer
+    // and we would lose the previously parsed strings
     size_t prevFillTr = _CrtSetDebugFillThreshold(0);
     int index;
     if (GetIDIndex(id, index))
@@ -287,7 +287,7 @@ BOOL CDataRH::FindEqualItems()
 
 BOOL CDataRH::GetIDForIdentifier(const char* identifier, WORD* id)
 {
-    // cache s jednim prvkem (jinak kvadraticka slozitost)
+    // cache with a single item (otherwise quadratic complexity)
     int static LastIDIndex = -1;
     if (LastIDIndex > 0 && LastIDIndex < Items.Count)
     {
@@ -315,7 +315,7 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
 {
     *isIncomplete = FALSE;
 
-    // vyhodime white spaces na zacatku
+    // trim whitespace at the beginning
     const char* p = param;
     while (*p == ' ' || *p == '\t')
         p++;
@@ -329,7 +329,7 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
     char buff[1000];
     strcpy_s(buff, p);
 
-    // a na konci
+    // and at the end
     char* p2 = buff + strlen(buff) - 1;
     while (p2 >= buff && (*p2 == ' ' || *p2 == '\t'))
         p2--;
@@ -337,7 +337,7 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
     {
         *(p2 + 1) = 0;
 
-        // jde o cislo?
+        // is this a number?
         BOOL isNumber = TRUE;
         p = buff;
         while (*p != 0)
@@ -356,16 +356,16 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
             return TRUE;
         }
 
-        // jde pravdepodobne o symbolickou hodnotu, zkusime ji urcit
+        // likely a symbolic value, try to resolve it
         if (*p2 == ')')
         {
             if (openParenthesis)
                 *p2 = 0;
             else
-                return FALSE; // mame zaviraci zavorku, ale ne oteviraci
+                return FALSE; // closing parenthesis without an opening counterpart
         }
 
-        // podporujeme tvar "SYMBOLIC_CONST" a "SYMBOLIC_CONST + xxx"
+        // support "SYMBOLIC_CONST" and "SYMBOLIC_CONST + xxx"
         char symbolicName[1000];
         p = buff;
 
@@ -409,7 +409,7 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
             while (*p == ' ' || *p == '\t')
                 p++;
 
-            // nyni musi nasledovat cislo
+            // a number must follow now
             isNumber = TRUE;
             const char* p3 = p;
             while (*p3 != 0)
@@ -442,10 +442,10 @@ BOOL CDataRH::GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CD
 
 BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
 {
-    // pokud jde o komentar nebo prazdny radek, ignorujeme jej
+    // ignore comments and blank lines
     const char* p = line;
 
-    // preskocim uvodni mezery
+    // skip leading spaces
     while (p < lineEnd && (*p == ' ' || *p == '\t'))
         p++;
 
@@ -466,7 +466,7 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
                     // file mark
 
                     p++;
-                    // preskocim uvodni mezery
+                    // skip leading spaces
                     while (p < lineEnd && (*p == ' ' || *p == '\t'))
                         p++;
 
@@ -484,7 +484,7 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
                         }
                         strncpy_s(mark.Name, filePathLen + 1, p, filePathLen);
 
-                        //orizneme mezery z konce
+                        // trim trailing spaces
                         while (filePathLen - 1 > 0 && (mark.Name[filePathLen - 1] == ' ' || mark.Name[filePathLen - 1] == '\t'))
                         {
                             filePathLen--;
@@ -501,19 +501,19 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
                     }
                 }
             }
-            return TRUE; // jde o komentar
+            return TRUE; // it is a comment
         }
     }
     else
     {
         if (*p == '#')
         {
-            // napocitam pocet znaku do mezery nebo konce radku
+            // count characters until a space or end of line
             const char* iter = p;
             while (iter < lineEnd && *iter != ' ' && *iter != '\t')
                 iter++;
 
-            // zahodime vybrana klicova slova
+            // drop selected keywords
             if (p + 6 < lineEnd && strncmp(p + 1, "pragma", 6) == 0)
                 return TRUE;
             if (p + 6 < lineEnd && strncmp(p + 1, "ifndef", 6) == 0)
@@ -527,13 +527,13 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
             if (p + 7 < lineEnd && strncmp(p + 1, "include", 7) == 0)
                 return TRUE;
 
-            // zahodime pomocne konstanty MSVC resource editoru
+            // drop helper constants emitted by the MSVC resource editor
             if (p + 17 < lineEnd && strncmp(p + 1, "define _APS_NEXT_", 17) == 0)
                 return TRUE;
 
             if (p + 6 < lineEnd && strncmp(p + 1, "define", 6) == 0)
             {
-                // hledame nazev konstanty
+                // look for the constant name
                 while (iter < lineEnd && (*iter == ' ' || *iter == '\t'))
                     iter++;
                 if (iter < lineEnd && *iter != '/')
@@ -547,7 +547,7 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
                     if (*iter == '/')
                         return TRUE;
 
-                    // hledame konstantu
+                    // look for the constant
                     while (iter < lineEnd && (*iter == ' ' || *iter == '\t'))
                         iter++;
                     if (iter < lineEnd)
@@ -634,7 +634,7 @@ BOOL CDataRH::ProcessLine(const char* line, const char* lineEnd, int row)
     return FALSE;
 }
 
-// preskoci mezery, tabelatory a EOLy, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skip spaces, tabs, and EOLs; return TRUE if 's' has not reached the end of the string
 BOOL SkipWSAndEOLs(const char*& s, const char* end, int* line)
 {
     while (s < end && (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n'))
@@ -648,8 +648,8 @@ BOOL SkipWSAndEOLs(const char*& s, const char* end, int* line)
     return s < end;
 }
 
-// preskoci mezery, tabelatory, EOLy a komentare, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
-// po EOLu musi nalsedovat radek uvedeny sekvenci "//*"
+// skip spaces, tabs, EOLs, and comments; return TRUE if 's' has not reached the end of the string
+// after an EOL the next line must start with "//*"
 BOOL SkipWSAndEOLAndCmnt(const char*& s, const char* end, int* line)
 {
 AGAIN:
@@ -657,7 +657,7 @@ AGAIN:
         s++;
     if (s < end)
     {
-        if (*s == '#') // sezobneme komentare
+        if (*s == '#') // consume single-line comments
         {
             while (s < end && *s != '\r' && *s != '\n')
                 s++;
@@ -693,7 +693,7 @@ AGAIN:
     return FALSE;
 }
 
-// preskoci mezery a tabelatory, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skip spaces and tabs; return TRUE if 's' has not reached the end of the string
 BOOL SkipWS(const char*& s, const char* end)
 {
     while (s < end && (*s == ' ' || *s == '\t'))
@@ -701,7 +701,7 @@ BOOL SkipWS(const char*& s, const char* end)
     return s < end;
 }
 
-// preskoci zbytek radky, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skip the rest of the line; return TRUE if 's' has not reached the end of the string
 BOOL SkipRestOfLine(const char*& s, const char* end)
 {
     while (s < end && *s != '\r' && *s != '\n')
@@ -709,23 +709,23 @@ BOOL SkipRestOfLine(const char*& s, const char* end)
     return s < end;
 }
 
-// preskoci komentar // nebo /* */, vraci TRUE pokud 's' nedospelo ke konci retezce ('end')
+// skip // or /* */ comments; return TRUE if 's' has not reached the end of the string
 BOOL SkipComment(const char*& s, const char* end, int* line)
 {
-    // s ukazuje na prvni znak '/', ktery preskocime
+    // 's' points to the first '/' which we skip
     s++;
-    // nasledovat muze znak '/' nebo '*'
+    // the next character can be '/' or '*'
     if (s < end)
     {
         if (*s == '/')
-            SkipRestOfLine(s, end); // preskocime "// ---"
+            SkipRestOfLine(s, end); // skip "// ---"
         else
         {
-            if (*s == '*') // preskocime "/* --- */"
+            if (*s == '*') // skip "/* --- */"
             {
                 while (s < end)
                 {
-                    if (*s == '*' && (s + 1) < end && *(s + 1) == '/') // konec komentare
+                    if (*s == '*' && (s + 1) < end && *(s + 1) == '/') // end of comment
                         break;
                     if (*s == '\r' || *s == '\n')
                         *line += 1;
@@ -765,8 +765,8 @@ static const char* FunctionNames[] =
         NULL // terminator!
 };
 
-// v poli FunctionNames vyhleda funkci a vrati jeji 'index' a TRUE
-// pokud ji nenajde, vrati FALSE
+// look up the function in FunctionNames and return its index plus TRUE
+// return FALSE when it is missing
 BOOL FindFunction(const char* name, int* index)
 {
     for (int i = 0; FunctionNames[i] != NULL; i++)
@@ -780,7 +780,7 @@ BOOL FindFunction(const char* name, int* index)
     return FALSE;
 }
 
-// zpracuje jednotliva pravidla "xxx = yyyyy(....)" nebo "yyyyy(...)"
+// process rules such as "xxx = yyyyy(....)" or "yyyyy(...)"
 BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
 {
     const char* beg = rh;
@@ -797,8 +797,8 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
         return FALSE;
     }
 
-    // muze nasledovat '=' (pak byl ident1 nazev promenne)
-    //            nebo '(' (pak slo o nazev funkce)
+    // '=' may follow (ident1 was a variable name)
+    // or '(' (ident1 was a function name)
     const char* result;
     const char* function;
     if (*rh == '=')
@@ -825,7 +825,7 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
         function = ident1;
     }
 
-    // funkce musi byt ze seznamu znamych funkci
+    // the function must be one of the known functions
     int fncIndex;
     if (!FindFunction(function, &fncIndex))
     {
@@ -833,7 +833,7 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
         return FALSE;
     }
 
-    // ted uz musi nasledovat zavorka '('
+    // an opening parenthesis must follow now
     if (!SkipWSAndEOLAndCmnt(rh, rhEnd, line) || *rh != '(')
     {
         *errorResID = IDS_ERR_MISSINGFUNCPARS;
@@ -841,24 +841,24 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
     }
     rh++;
 
-    // 'lastItem' funguje k rizeni stavoveho automatu
-    BOOL lastItem = 0; // 0:oteviraci_zavorka 1:konstanta 2:carka 3:zaviraci_zavorka
+    // 'lastItem' controls the parser state machine
+    BOOL lastItem = 0; // 0:opening parenthesis 1:constant 2:comma 3:closing parenthesis
 
-    // nasleduji parametry funkce oddelene znakem ',' a ukoncene zavorkou ')'
+    // function parameters follow, separated by ',' and terminated by ')'
     while (*rh != ')')
     {
-        // preskocime smeti
+        // skip any junk
         if (!SkipWSAndEOLAndCmnt(rh, rhEnd, line))
         {
             *errorResID = IDS_ERR_MISSINGBLOCKEND;
             return FALSE;
         }
-        // zaviraci zavorku preskocime, ukonci se while cyklus
+        // skip the closing parenthesis to end the loop
         if (*rh != ')')
         {
             if (*rh == ',')
             {
-                if (lastItem == 0 || lastItem == 2) // carka nesmi nasledovat po oteviraci zavorce nebo jine carce
+                if (lastItem == 0 || lastItem == 2) // a comma cannot follow an opening parenthesis or another comma
                 {
                     *errorResID = IDS_ERR_MISSINGFUNCPAR;
                     return FALSE;
@@ -868,7 +868,7 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
             }
             else
             {
-                // neni to carka, mel by to byt identifikator
+                // otherwise it should be an identifier
                 char par1[100];
                 beg = rh;
                 if (!SkipIdentifier(rh, rhEnd, errorResID, IDS_ERR_MISSINGFUNCPAR))
@@ -881,7 +881,7 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
             lastItem = 3;
     }
     rh++;
-    // jeste overime, ze nedoslo k predcasnemu zavreni seznamu
+    // ensure the list was not closed prematurely
     if (lastItem == 2)
     {
         *errorResID = IDS_ERR_MISSINGFUNCPAR;
@@ -891,10 +891,10 @@ BOOL CompileRule(const char*& rh, const char* rhEnd, int* line, int* errorResID)
     return TRUE;
 }
 
-// zpracuje blok { .... }
+// process a { .... } block
 BOOL CompileRulesBlock(const char*& rh, const char* rhEnd, int* line, int* errorResID)
 {
-    // seznam musi byt uveden zavorkou '{'
+    // the list must start with '{'
     if (!SkipWSAndEOLAndCmnt(rh, rhEnd, line) || *rh != '{')
     {
         *errorResID = IDS_ERR_MISSINGBLOCKBEGIN;
@@ -902,7 +902,7 @@ BOOL CompileRulesBlock(const char*& rh, const char* rhEnd, int* line, int* error
     }
     rh++;
 
-    // nasleduji jednotliva pravidla pripadne zaviraci zavorka '}'
+    // followed by individual rules or a closing '}'
     while (*rh != '}')
     {
         if (!SkipWSAndEOLAndCmnt(rh, rhEnd, line))
@@ -910,7 +910,7 @@ BOOL CompileRulesBlock(const char*& rh, const char* rhEnd, int* line, int* error
             *errorResID = IDS_ERR_MISSINGBLOCKEND;
             return FALSE;
         }
-        if (*rh != '}') // zaviraci zavorka
+        if (*rh != '}') // expecting a closing brace
         {
             if (!CompileRule(rh, rhEnd, line, errorResID))
                 return FALSE;
@@ -918,7 +918,7 @@ BOOL CompileRulesBlock(const char*& rh, const char* rhEnd, int* line, int* error
     }
     rh++;
 
-    // za blokem { } uz by nemelo nic nasledovat
+    // nothing should follow after the { } block
     if (SkipWSAndEOLAndCmnt(rh, rhEnd, line))
     {
         *errorResID = IDS_ERR_UNEXPECTEDSYMBOL;
@@ -930,7 +930,7 @@ BOOL CompileRulesBlock(const char*& rh, const char* rhEnd, int* line, int* error
 
 BOOL CompileLayout(const char*& rh, const char* rhEnd, int* line, int* errorResID)
 {
-    // sezobneme Layout ( IDD_xxx )
+    // consume Layout (IDD_xxx)
     if (SkipWS(rh, rhEnd))
     {
         if (*rh == '(')
@@ -944,7 +944,7 @@ BOOL CompileLayout(const char*& rh, const char* rhEnd, int* line, int* errorResI
                     char dlgName[100];
                     lstrcpyn(dlgName, beg, min(100, rh - beg + 1));
 
-                    // overim, ze je identifikator definovany
+                    // ensure the identifier is defined
                     if (!DataRH.GetIDForIdentifier(dlgName, NULL))
                     {
                         *errorResID = IDS_ERR_UNKNOWNIDENTIFIER;
@@ -956,7 +956,7 @@ BOOL CompileLayout(const char*& rh, const char* rhEnd, int* line, int* errorResI
                         {
                             rh++;
 
-                            // nyni musi nasledovat seznam pravidel ohranicenych v { } zavorkach
+                            // a list of rules enclosed in { } must follow
                             return CompileRulesBlock(rh, rhEnd, line, errorResID);
                         }
                     }
@@ -970,16 +970,16 @@ BOOL CompileLayout(const char*& rh, const char* rhEnd, int* line, int* errorResI
 
 BOOL CompileSlash(const char*& rh, const char* rhEnd, int* line, int* errorResID)
 {
-    rh++; // preskocime prvni '/'
+    rh++; // skip the first '/'
     if (rh < rhEnd && *rh == '/')
     {
-        rh++; // preskocime druhy '/'
+        rh++; // skip the second '/'
         if (rh < rhEnd && *rh == '*')
         {
-            rh++;                         // preskocime '*'
-            if (rh < rhEnd && *rh == ' ') // Petr: .rh soubory obsahuji radky "//*******", aby se nepletly s layoutovacimi pravidly, musi pravidla zacinat "//* "
+            rh++;                         // skip '*'
+            if (rh < rhEnd && *rh == ' ') // .rh files contain lines "//*******"; rules must therefore start with "//* "
             {
-                rh++; // preskocime ' '
+                rh++; // skip the space
                 if (SkipWS(rh, rhEnd))
                 {
                     if (*rh != '#')
@@ -1080,12 +1080,12 @@ BOOL CDataRH::Load(const char* fileName)
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
-    Data[size] = 0; // vlozime terminator
+    Data[size] = 0; // append the terminator
     DataSize = size;
 
     CleanIncompleteItems();
 
-    // vyhledame jednotlive #define a ulozime konstanty do pole Items
+    // find individual #defines and store their constants in Items
     const char* lineStart = Data;
     const char* lineEnd = Data;
     int line = 1;
@@ -1136,15 +1136,15 @@ BOOL CDataRH::Load(const char* fileName)
                 WORD foundID;
                 if (GetIDForIdentifier(incomplItem->SymbVal, &foundID))
                 {
-                    cycle = TRUE; // aspon jedna zmena, dalsi cyklus ma smysl (pokud bude vubec potreba)
+                    cycle = TRUE; // at least one change, another pass may make sense
 
-                    CDataRHItem item; // presuneme jmeno, radek a hodnotu
+                    CDataRHItem item; // move the name, line, and value
                     item.Name = incomplItem->Name;
                     item.Row = incomplItem->Row;
                     item.ID = foundID + incomplItem->AddConst;
 
-                    free(incomplItem->SymbVal);  // uvolnime jiz nepotrebne jmeno symbolicke hodnoty
-                    IncompleteItems.Delete(i--); // zahodime zpracovanou nekompletni hodnotu z pole
+                    free(incomplItem->SymbVal);  // discard the no-longer-needed symbolic value
+                    IncompleteItems.Delete(i--); // remove the processed incomplete value
 
                     Items.Add(item);
                     if (!Items.IsGood())
@@ -1158,7 +1158,7 @@ BOOL CDataRH::Load(const char* fileName)
                 }
             }
         }
-        // nezname hodnoty vypiseme do Output okna
+        // report unknown values to the Output window
         for (int i = 0; i < IncompleteItems.Count; i++)
         {
             CDataRHIncompleteItem* incomplItem = &IncompleteItems[i];
@@ -1171,13 +1171,13 @@ BOOL CDataRH::Load(const char* fileName)
         CleanIncompleteItems();
     }
 
-    // pole seradime
+    // sort the array
     if (Items.Count > 1)
         SortItems(0, Items.Count - 1);
-    // a vyhazime z nej redundance
+    // and remove duplicates
     FindEqualItems();
 
-    // projedeme soubor jeste jednou a hledame //* bloky obsahujici layoutovaci pravidla
+    // scan the file again for //* blocks with layout rules
     int errorResID;
     BOOL error = FALSE;
     const char* rh = Data;
@@ -1240,7 +1240,7 @@ void CDataRH::FillListBox()
     if (Data == NULL)
         return;
 
-    SendMessage(hListBox, WM_SETREDRAW, FALSE, 0); // zakazeme zbytecne kresleni behem pridavani polozek
+    SendMessage(hListBox, WM_SETREDRAW, FALSE, 0); // disable repainting while items are added
 
     const char* lineStart = Data;
     const char* lineEnd = Data;
@@ -1269,7 +1269,7 @@ void CDataRH::FillListBox()
         }
     }
     RHWindow.GetVisibleItems();
-    SendMessage(hListBox, WM_SETREDRAW, TRUE, 0); // povolime prekreslovani
+    SendMessage(hListBox, WM_SETREDRAW, TRUE, 0); // re-enable repainting
 }
 
 int CDataRH::RowToIndex(int row)

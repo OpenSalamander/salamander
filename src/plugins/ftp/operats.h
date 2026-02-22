@@ -1,156 +1,157 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-#pragma pack(push, enter_include_operats_h_dt) // aby byly vsechny struktury co nejmensi (rychlosti netreba, hlavne setrime mistem)
+#pragma pack(push, enter_include_operats_h_dt) // so that all structures are as small as possible (speed is not needed, we mainly save space)
 #pragma pack(1)
 
-// vraci ukazatel na textovy popis chyby 'error'; je-li 'error' NO_ERROR, vraci
-// text typu "unknown, maybe insufficient system resources", jinak vraci std.
-// Windows popis chyby (pro jeho ulozeni pouziva buffer 'errBuf'+'errBufSize')
+// returns a pointer to the textual description of the 'error'; if 'error' is NO_ERROR, returns
+// a text like "unknown, maybe insufficient system resources", otherwise returns the standard
+// Windows description of the error (it uses the buffer 'errBuf'+'errBufSize' to store it)
 const char* GetWorkerErrorTxt(int error, char* errBuf, int errBufSize);
 
 //
 // ****************************************************************************
 // CFTPQueueItem
 //
-// spolecny predek pro vsechny polozky v "FTP Queue"
+// common ancestor for all items in the "FTP Queue"
 
 enum CFTPQueueItemType
 {
-    fqitNone, // prazdna polozka (nutne nastavit na jeden z nasledujicich typu)
+    fqitNone, // empty item (must be set to one of the following types)
 
-    fqitDeleteExploreDir,      // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
-    fqitCopyResolveLink,       // download: kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-    fqitMoveResolveLink,       // download: presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-    fqitCopyExploreDir,        // download: explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-    fqitMoveExploreDir,        // download: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-    fqitMoveExploreDirLink,    // download: explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-    fqitChAttrsExploreDir,     // explore adresare pro zmenu atributu (prida i polozku pro zmenu atributu adresare) (objekt tridy CFTPQueueItemChAttrExplore)
-    fqitChAttrsResolveLink,    // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
-    fqitChAttrsExploreDirLink, // explore linku na adresar pro zmenu atributu (objekt tridy CFTPQueueItem)
-    fqitUploadCopyExploreDir,  // upload: explore adresare pro kopirovani (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
-    fqitUploadMoveExploreDir,  // upload: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
+    fqitDeleteExploreDir,      // explore directory for delete (note: we delete links to directories as a whole, the goal of the operation is fulfilled and nothing "extra" gets deleted) (object of class CFTPQueueItemDelExplore)
+    fqitCopyResolveLink,       // download: copy: find out whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
+    fqitMoveResolveLink,       // download: move: find out whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
+    fqitCopyExploreDir,        // download: explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
+    fqitMoveExploreDir,        // download: explore a directory for moving (after finishing it deletes the directory) (object of class CFTPQueueItemCopyMoveExplore)
+    fqitMoveExploreDirLink,    // download: explore a link to a directory for moving (after finishing it deletes the link to the directory) (object of class CFTPQueueItemCopyMoveExplore)
+    fqitChAttrsExploreDir,     // explore a directory for attribute change (also adds an item for changing the directory attributes) (object of class CFTPQueueItemChAttrExplore)
+    fqitChAttrsResolveLink,    // change attributes: find out whether it is a link to a directory (object of class CFTPQueueItem)
+    fqitChAttrsExploreDirLink, // explore a link to a directory for attribute change (object of class CFTPQueueItem)
+    fqitUploadCopyExploreDir,  // upload: explore a directory for copying (object of class CFTPQueueItemCopyMoveUploadExplore)
+    fqitUploadMoveExploreDir,  // upload: explore a directory for moving (after finishing it deletes the directory) (object of class CFTPQueueItemCopyMoveUploadExplore)
 
-    fqitLastResolveOrExploreItem, // jen ciselna konstanta pro rozliseni typu (priority zpracovani) polozek
+    fqitLastResolveOrExploreItem, // numeric constant only for distinguishing types (processing priority) of items
 
-    fqitDeleteLink,          // delete pro link (objekt tridy CFTPQueueItemDel)
-    fqitDeleteFile,          // delete pro soubor (objekt tridy CFTPQueueItemDel)
-    fqitDeleteDir,           // delete pro adresar (objekt tridy CFTPQueueItemDir)
-    fqitCopyFileOrFileLink,  // download: kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-    fqitMoveFileOrFileLink,  // download: presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-    fqitMoveDeleteDir,       // download: smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-    fqitMoveDeleteDirLink,   // download: smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-    fqitChAttrsFile,         // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-    fqitChAttrsDir,          // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
-    fqitUploadCopyFile,      // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-    fqitUploadMoveFile,      // upload: presun souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-    fqitUploadMoveDeleteDir, // upload: smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+    fqitDeleteLink,          // delete for a link (object of class CFTPQueueItemDel)
+    fqitDeleteFile,          // delete for a file (object of class CFTPQueueItemDel)
+    fqitDeleteDir,           // delete for a directory (object of class CFTPQueueItemDir)
+    fqitCopyFileOrFileLink,  // download: copying a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+    fqitMoveFileOrFileLink,  // download: moving a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+    fqitMoveDeleteDir,       // download: delete a directory after moving its contents (object of class CFTPQueueItemDir)
+    fqitMoveDeleteDirLink,   // download: delete a link to a directory after moving its contents (object of class CFTPQueueItemDir)
+    fqitChAttrsFile,         // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
+    fqitChAttrsDir,          // change directory attributes (object of class CFTPQueueItemChAttrDir)
+    fqitUploadCopyFile,      // upload: copy a file (object of class CFTPQueueItemCopyOrMoveUpload)
+    fqitUploadMoveFile,      // upload: move a file (object of class CFTPQueueItemCopyOrMoveUpload)
+    fqitUploadMoveDeleteDir, // upload: delete a directory after moving its contents (object of class CFTPQueueItemDir)
 };
 
 enum CFTPQueueItemState
 {
-    sqisNone,       // prazdny stav (nutne nastavit na jeden z nasledujicich stavu)
-    sqisDone,       // polozka byla dokoncena
-    sqisWaiting,    // ceka na zpracovani
-    sqisProcessing, // probiha zpracovani polozky
-    sqisDelayed,    // zpracovani polozky je odlozeno (ceka az se zpracuji "child" polozky - napr. smazani adresare az po vymazu vsech obsazenych souboru a adresaru)
+    sqisNone,       // empty state (must be set to one of the following states)
+    sqisDone,       // the item was completed
+    sqisWaiting,    // waiting to be processed
+    sqisProcessing, // the item is being processed
+    sqisDelayed,    // item processing is postponed (waits until the "child" items are processed - e.g. deleting a directory only after removing all contained files and directories)
 
-    // zbyvajici stavy se pouzivaji pro ruzne vyjadreni chyby polozky, POZOR: musi byt na konci enumu !!! (duvod: pouzivaji se podminky: (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisUserInputNeeded nebo sqisForcedToFail */))
-    sqisSkipped,         // polozka byla skipnuta
-    sqisFailed,          // polozka se nedokoncila kvuli chybe (failnula)
-    sqisUserInputNeeded, // pro dokonceni polozky je nutny zasah uzivatele (mame dotaz pro uzivatele)
-    sqisForcedToFail,    // polozka, ktera se dostala do chyboveho stavu kvuli chybam/skipum child polozek
+    // the remaining states are used for various expressions of an item error, WARNING: they must be at the end of the enum !!! (reason: conditions are used such as (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisUserInputNeeded or sqisForcedToFail */))
+    sqisSkipped,         // the item was skipped
+    sqisFailed,          // the item did not finish due to an error (failed)
+    sqisUserInputNeeded, // completing the item requires user intervention (we have a question for the user)
+    sqisForcedToFail,    // item that entered the error state due to errors/skips of child items
 };
 
-// seznam problemu, ktere mohou nastat polozkam ve fronte; pro novou konstantu je potreba:
-// - pridat osetreni do CFTPQueue::SolveErrorOnItem (operats1.cpp) nebo
-//   je-li neresitelny, pridat do podminky v CFTPQueueItem::HasErrorToSolve (operats2.cpp)
-// - pridat textovy popis do CFTPQueueItem::GetProblemDescr (operats2.cpp)
-#define ITEMPR_OK 0                          // zadny problem nenastal
-#define ITEMPR_LOWMEM 1                      // nedostatek systemovych prostredku (napr. pameti)
-#define ITEMPR_CANNOTCREATETGTFILE 2         // problem "cilovy soubor nelze vytvorit nebo otevrit" (pouziva WinError)
-#define ITEMPR_CANNOTCREATETGTDIR 3          // download: problem "cilovy adresar nelze vytvorit" (pouziva WinError)
-#define ITEMPR_TGTFILEALREADYEXISTS 4        // problem "cilovy soubor jiz existuje"
-#define ITEMPR_TGTDIRALREADYEXISTS 5         // problem "cilovy adresar jiz existuje"
-#define ITEMPR_RETRYONCREATFILE 6            // problem "retry na souboru FTP klientem primo vytvorenem nebo prepsanem"
-#define ITEMPR_RETRYONRESUMFILE 7            // problem "retry na souboru FTP klientem resumnutem"
-#define ITEMPR_ASCIITRFORBINFILE 8           // problem "ASCII transfer mode pro binarni soubor"
-#define ITEMPR_UNKNOWNATTRS 9                // problem "soubor/adresar ma nezname atributy, ktere neumime zachovat (jina prava nez 'r'+'w'+'x')"
-#define ITEMPR_INVALIDPATHTODIR 10           // problem "cesta do adresare je prilis dlouha nebo syntakticky nespravna" (nastava pri explore-dir - jak zdrojovy, tak cilovy adresar) (neresitelny problem)
-#define ITEMPR_UNABLETOCWD 11                // problem "chyba pri zmene pracovni cesty na serveru, odpoved serveru: %s" - zmena cesty do Path+Name nebo TgtPath+TgtName (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETOPWD 12                // problem "chyba pri zjistovani pracovni cesty na serveru, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_DIREXPLENDLESSLOOP 13         // problem "pruzkum tohoto adresare by znamenal zahajeni nekonecneho cyklu" (nastava pri explore-dir) (neresitelny problem)
-#define ITEMPR_LISTENFAILURE 14              // problem "chyba pri priprave otevirani aktivniho datoveho spojeni: %s" (pouziva WinError)
-#define ITEMPR_INCOMPLETELISTING 15          // problem "nelze nacist cely seznam souboru a adresaru ze serveru: %s" (pouziva WinError i ErrAllocDescr)
-#define ITEMPR_UNABLETOPARSELISTING 16       // problem "neznamy format seznamu souboru a adresaru ze serveru"
-#define ITEMPR_DIRISHIDDEN 17                // problem "adresar je skryty"
-#define ITEMPR_DIRISNOTEMPTY 18              // problem "adresar neni prazdny"
-#define ITEMPR_FILEISHIDDEN 19               // problem "soubor je skryty"
-#define ITEMPR_INVALIDPATHTOLINK 20          // problem "plne jmeno linku je prilis dlouhe nebo syntakticky nespravne" (nastava pri resolve-link) (neresitelny problem)
-#define ITEMPR_UNABLETORESOLVELNK 21         // problem "nelze rozpoznat jde-li o link na adresar nebo soubor, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETODELETEFILE 22         // problem "nelze smazat soubor, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETODELETEDIR 23          // problem "nelze smazat adresar, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETOCHATTRS 24            // problem "nelze zmenit atributy souboru/adresare, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETORESUME 25             // problem "unable to resume file transfer"
-#define ITEMPR_RESUMETESTFAILED 26           // problem "unable to resume file transfer, unexpected tail of file (file has changed)"
-#define ITEMPR_TGTFILEREADERROR 27           // problem "chyba cteni ciloveho souboru" (pouziva WinError)
-#define ITEMPR_TGTFILEWRITEERROR 28          // problem "chyba zapisu ciloveho souboru" (pouziva WinError)
-#define ITEMPR_INCOMPLETEDOWNLOAD 29         // problem "unable to retrieve file from server: %s" (pouziva WinError i ErrAllocDescr)
-#define ITEMPR_UNABLETODELSRCFILE 30         // problem "Move: nelze smazat zdrojovy soubor, odpoved serveru: %s" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UPLOADCANNOTCREATETGTDIR 31   // upload: problem "cilovy adresar nelze vytvorit" (pokud FTPMayBeValidNameComponent() vrati FALSE, je ErrAllocDescr==NULL a WinError==NO_ERROR; pokud prekazi soubor/link, je WinError==ERROR_ALREADY_EXISTS; jinak pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UPLOADCANNOTLISTTGTPATH 32    // upload: problem "nelze vylistovat cilovou cestu" (nelze zjistit pripadne kolize jmen) (pouziva WinError i ErrAllocDescr)
-#define ITEMPR_UPLOADTGTDIRALREADYEXISTS 33  // upload: problem "cilovy adresar nebo link na adresar jiz existuje"
-#define ITEMPR_UPLOADCRDIRAUTORENFAILED 34   // upload: problem "cilovy adresar neumime vytvorit pod zadnym jmenem" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UPLOADCANNOTLISTSRCPATH 35    // upload: problem "nelze vylistovat zdrojovou cestu" (pouziva WinError)
-#define ITEMPR_UNABLETOCWDONLYPATH 36        // problem "chyba pri zmene pracovni cesty na serveru, odpoved serveru: %s" - zmena cesty do Path nebo TgtPath (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UNABLETODELETEDISKDIR 37      // problem "nelze smazat adresar na disku, chyba:" (pouziva WinError)
-#define ITEMPR_UPLOADCANNOTCREATETGTFILE 38  // upload: problem "cilovy soubor nelze vytvorit nebo otevrit" (pokud FTPMayBeValidNameComponent() vrati FALSE, je ErrAllocDescr==NULL a WinError==NO_ERROR; pokud prekazi adresar/link, je WinError==ERROR_ALREADY_EXISTS; jinak pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_UPLOADCANNOTOPENSRCFILE 39    // problem "zdrojovy soubor nelze otevrit" (pouziva WinError)
-#define ITEMPR_UPLOADTGTFILEALREADYEXISTS 40 // upload: problem "cilovy soubor nebo link na soubor jiz existuje"
-#define ITEMPR_SRCFILEINUSE 41               // problem "zdrojovy soubor nebo link je zamknuty jinou operaci"
-#define ITEMPR_TGTFILEINUSE 42               // problem "cilovy soubor nebo link je zamknuty jinou operaci"
-#define ITEMPR_SRCFILEREADERROR 43           // problem "chyba cteni zdrojoveho souboru" (pouziva WinError)
-#define ITEMPR_INCOMPLETEUPLOAD 44           // problem "unable to store file to server: %s" (pouziva WinError i ErrAllocDescr)
-#define ITEMPR_UNABLETODELETEDISKFILE 45     // problem "nelze smazat soubor na disku, chyba:" (pouziva WinError)
-#define ITEMPR_UPLOADASCIIRESUMENOTSUP 46    // problem "resume v ASCII prenosovem rezimu neni podporovan (zkuste resume v binarnim rezimu)"
-#define ITEMPR_UPLOADUNABLETORESUMEUNKSIZ 47 // problem "nelze resumnout soubor, protoze neni znama velikost ciloveho souboru"
-#define ITEMPR_UPLOADUNABLETORESUMEBIGTGT 48 // problem "nelze resumnout soubor, protoze cilovy soubor je vetsi nez zdrojovy soubor"
-#define ITEMPR_UPLOADFILEAUTORENFAILED 49    // upload: problem "cilovy soubor neumime vytvorit pod zadnym jmenem" (pouziva ErrAllocDescr k ulozeni odpovedi serveru - muze byt i viceradkova)
-#define ITEMPR_SKIPPEDBYUSER 50              // po stisku Skip buttonu na waiting polozce v operacnim dialogu
-#define ITEMPR_UPLOADTESTIFFINISHEDNOTSUP 51 // problem "nelze overit jestli se soubor uspesne uploadnul" (poslali jsme cely soubor + server "jen" neodpovedel, nejspis je soubor OK, ale nejsme schopni to otestovat - duvody: ASCII transfer mode nebo nemame velikost v bytech (ani listing ani prikaz SIZE))
+// list of problems that may occur for items in the queue; for a new constant it is necessary to:
+// - add handling to CFTPQueue::SolveErrorOnItem (operats1.cpp) or
+//   if it cannot be resolved, add it to the condition in CFTPQueueItem::HasErrorToSolve (operats2.cpp)
+// - add a textual description to CFTPQueueItem::GetProblemDescr (operats2.cpp)
+#define ITEMPR_OK 0                          // no problem occurred
+#define ITEMPR_LOWMEM 1                      // insufficient system resources (for example, memory)
+#define ITEMPR_CANNOTCREATETGTFILE 2         // issue "the target file cannot be created or opened" (uses WinError)
+#define ITEMPR_CANNOTCREATETGTDIR 3          // download: issue "the target directory cannot be created" (uses WinError)
+#define ITEMPR_TGTFILEALREADYEXISTS 4        // issue "the target file already exists"
+#define ITEMPR_TGTDIRALREADYEXISTS 5         // issue "the target directory already exists"
+#define ITEMPR_RETRYONCREATFILE 6            // issue "retry on a file created or overwritten directly by the FTP client"
+#define ITEMPR_RETRYONRESUMFILE 7            // issue "retry on a file resumed by the FTP client"
+#define ITEMPR_ASCIITRFORBINFILE 8           // issue "ASCII transfer mode for a binary file"
+#define ITEMPR_UNKNOWNATTRS 9                // issue "the file/directory has unknown attributes we cannot preserve (other permissions than 'r'+'w'+'x')"
+#define ITEMPR_INVALIDPATHTODIR 10           // issue "the path to the directory is too long or syntactically incorrect" (occurs during explore-dir - both source and target directory) (unsolvable issue)
+#define ITEMPR_UNABLETOCWD 11                // issue "error while changing the working directory on the server, server response: %s" - change of the path to Path+Name or TgtPath+TgtName (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETOPWD 12                // issue "error while querying the working directory on the server, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_DIREXPLENDLESSLOOP 13         // issue "exploring this directory would result in an endless loop" (occurs during explore-dir) (unsolvable issue)
+#define ITEMPR_LISTENFAILURE 14              // issue "error while preparing to open an active data connection: %s" (uses WinError)
+#define ITEMPR_INCOMPLETELISTING 15          // issue "unable to read the full list of files and directories from the server: %s" (uses WinError and ErrAllocDescr)
+#define ITEMPR_UNABLETOPARSELISTING 16       // issue "unknown format of the file and directory listing from the server"
+#define ITEMPR_DIRISHIDDEN 17                // issue "the directory is hidden"
+#define ITEMPR_DIRISNOTEMPTY 18              // issue "the directory is not empty"
+#define ITEMPR_FILEISHIDDEN 19               // issue "the file is hidden"
+#define ITEMPR_INVALIDPATHTOLINK 20          // issue "the full name of the link is too long or syntactically incorrect" (occurs during resolve-link) (unsolvable issue)
+#define ITEMPR_UNABLETORESOLVELNK 21         // issue "unable to determine whether it is a link to a directory or a file, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETODELETEFILE 22         // issue "unable to delete the file, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETODELETEDIR 23          // issue "unable to delete the directory, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETOCHATTRS 24            // issue "unable to change file/directory attributes, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETORESUME 25             // issue "unable to resume file transfer"
+#define ITEMPR_RESUMETESTFAILED 26           // issue "unable to resume file transfer, unexpected tail of file (file has changed)"
+#define ITEMPR_TGTFILEREADERROR 27           // issue "error reading the target file" (uses WinError)
+#define ITEMPR_TGTFILEWRITEERROR 28          // issue "error writing the target file" (uses WinError)
+#define ITEMPR_INCOMPLETEDOWNLOAD 29         // issue "unable to retrieve file from server: %s" (uses WinError and ErrAllocDescr)
+#define ITEMPR_UNABLETODELSRCFILE 30         // issue "Move: unable to delete the source file, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UPLOADCANNOTCREATETGTDIR 31   // upload: issue "the target directory cannot be created" (if FTPMayBeValidNameComponent() returns FALSE, ErrAllocDescr==NULL and WinError==NO_ERROR; if a file/link is in the way, WinError==ERROR_ALREADY_EXISTS; otherwise it uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UPLOADCANNOTLISTTGTPATH 32    // upload: issue "unable to list the target path" (unable to detect possible name collisions) (uses WinError and ErrAllocDescr)
+#define ITEMPR_UPLOADTGTDIRALREADYEXISTS 33  // upload: issue "the target directory or a link to the directory already exists"
+#define ITEMPR_UPLOADCRDIRAUTORENFAILED 34   // upload: issue "unable to create the target directory under any name" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UPLOADCANNOTLISTSRCPATH 35    // upload: issue "unable to list the source path" (uses WinError)
+#define ITEMPR_UNABLETOCWDONLYPATH 36        // issue "error while changing the working directory on the server, server response: %s" - change of the path to Path or TgtPath (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UNABLETODELETEDISKDIR 37      // issue "unable to delete directory on disk, error:" (uses WinError)
+#define ITEMPR_UPLOADCANNOTCREATETGTFILE 38  // upload: issue "the target file cannot be created or opened" (if FTPMayBeValidNameComponent() returns FALSE, ErrAllocDescr==NULL and WinError==NO_ERROR; if a directory/link is in the way, WinError==ERROR_ALREADY_EXISTS; otherwise it uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UPLOADCANNOTOPENSRCFILE 39    // issue "the source file cannot be opened" (uses WinError)
+#define ITEMPR_UPLOADTGTFILEALREADYEXISTS 40 // upload: issue "the target file or a link to the file already exists"
+#define ITEMPR_SRCFILEINUSE 41               // issue "the source file or link is locked by another operation"
+#define ITEMPR_TGTFILEINUSE 42               // issue "the target file or link is locked by another operation"
+#define ITEMPR_SRCFILEREADERROR 43           // issue "error reading the source file" (uses WinError)
+#define ITEMPR_INCOMPLETEUPLOAD 44           // issue "unable to store file to server: %s" (uses WinError and ErrAllocDescr)
+#define ITEMPR_UNABLETODELETEDISKFILE 45     // issue "unable to delete file on disk, error:" (uses WinError)
+#define ITEMPR_UPLOADASCIIRESUMENOTSUP 46    // issue "resume in ASCII transfer mode is not supported (try resume in binary mode)"
+#define ITEMPR_UPLOADUNABLETORESUMEUNKSIZ 47 // issue "unable to resume the file because the target file size is unknown"
+#define ITEMPR_UPLOADUNABLETORESUMEBIGTGT 48 // issue "unable to resume the file because the target file is larger than the source file"
+#define ITEMPR_UPLOADFILEAUTORENFAILED 49    // upload: issue "unable to create the target file under any name" (uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_SKIPPEDBYUSER 50              // after pressing the Skip button on a waiting item in the operation dialog
+#define ITEMPR_UPLOADTESTIFFINISHEDNOTSUP 51 // issue "unable to verify whether the file uploaded successfully" (we sent the entire file + the server "just" did not respond, most likely the file is OK, but we are unable to test it - reasons: ASCII transfer mode or we do not have the size in bytes (neither listing nor the SIZE command))
 
 enum CFTPQueueItemAction
 {
-    fqiaNone,                     // zadna vynucena akce (standardni chovani)
-    fqiaUseAutorename,            // ma se pouzit autorename (use alternate name)
-    fqiaUseExistingDir,           // ma se pouzit existujici adresar
-    fqiaResume,                   // ma se resumnout existujici soubor
-    fqiaResumeOrOverwrite,        // ma se resumnout nebo prepsat existujici soubor
-    fqiaOverwrite,                // ma se prepsat existujici soubor
-    fqiaReduceFileSizeAndResume,  // ma se zkratit a pak resumnout existujici soubor
-    fqiaUploadForceAutorename,    // upload: kazdopadne se pouzije autorename (use alternate name)
-    fqiaUploadContinueAutorename, // upload: pokracovani autorenamu (use alternate name)
-    fqiaUploadTestIfFinished,     // upload: poslali jsme cely soubor + server "jen" neodpovedel, nejspis je soubor OK, otestujeme to
+    fqiaNone,                     // no forced action (standard behavior)
+    fqiaUseAutorename,            // autorename (use alternate name) should be used
+    fqiaUseExistingDir,           // an existing directory should be used
+    fqiaResume,                   // an existing file should be resumed
+    fqiaResumeOrOverwrite,        // an existing file should be resumed or overwritten
+    fqiaOverwrite,                // an existing file should be overwritten
+    fqiaReduceFileSizeAndResume,  // the existing file should be truncated and then resumed
+    fqiaUploadForceAutorename,    // upload: autorename (use alternate name) should be used no matter what
+    fqiaUploadContinueAutorename, // upload: continuation of autorename (use alternate name)
+    fqiaUploadTestIfFinished,     // upload: we sent the entire file + the server "just" did not respond, most likely the file is OK, we will test it
 };
 
 class CFTPQueueItemAncestor
 {
 private:
-    CFTPQueueItemState State; // stav polozky (private je kvuli uhlidani zmeny counteru parent polozek pri zmenach stavu)
+    CFTPQueueItemState State; // item state (private is used to ensure updating of parent counters when changing the state)
 
 public:
     CFTPQueueItemAncestor() { State = sqisNone; }
 
-    // vraci State; volat jen z kriticke sekce fronty nebo pred vlozenim do fronty !!!
+    // returns State; call only from the queue critical section or before inserting into the queue!!!
     CFTPQueueItemState GetItemState() const { return State; }
 
-    // interni nastaveni State: pouzivat jen pred pridanim polozky do fronty
+    // internal State setup: use only before adding the item to the queue
     void SetStateInternal(CFTPQueueItemState state) { State = state; }
 
-    // meni 'State' na 'state' a pripadne meni pocitadla parent polozky
-    // POZOR: je mozne volat jen z kriticke sekce QueueCritSect !!!
+    // changes 'State' to 'state' and optionally adjusts parent item counters
+    // CAUTION: can only be called from the QueueCritSect critical section!!!
     void ChangeStateAndCounters(CFTPQueueItemState state, CFTPOperation* oper,
                                 CFTPQueue* queue);
 };
@@ -158,60 +159,59 @@ public:
 class CFTPQueueItem : public CFTPQueueItemAncestor
 {
 public:
-    // pristup k datum objektu:
-    //   - neni-li jeste soucasti fronty (konstrukce): bez omezeni
-    //   - je-li jiz ve fronte: pristup jen z kriticke sekce fronty
+    // access to the object's data:
+    //   - if it is not yet part of the queue (construction): without restrictions
+    //   - if it is already in the queue: access only from the queue critical section
 
-    static CRITICAL_SECTION NextItemUIDCritSect; // kriticka sekce pro pristup k NextItemUID
-    static int NextItemUID;                      // globalni pocitadlo pro UID polozek (pristupovat jen v sekci NextItemUIDCritSect!)
+    static CRITICAL_SECTION NextItemUIDCritSect; // critical section for accessing NextItemUID
+    static int NextItemUID;                      // global counter for item UIDs (access only inside the NextItemUIDCritSect section!)
 
-    int UID;       // unikatni cislo polozky
-    int ParentUID; // UID nadrazene polozky (-1=nadrazena je operace)
+    int UID;       // unique item number
+    int ParentUID; // UID of the parent item (-1 = the parent is the operation)
 
-    CFTPQueueItemType Type; // typ polozky (pro pretypovani na spravny typ objektu)
-    DWORD ProblemID;        // doplnuje State: viz konstanty ITEMPR_XXX
-    DWORD WinError;         // muze obsahovat kod nastale Windows chyby (doplnuje ProblemID)
-    char* ErrAllocDescr;    // muze obsahovat alokovany text s popisem chyby (doplnuje ProblemID)
+    CFTPQueueItemType Type; // item type (for casting to the correct object type)
+    DWORD ProblemID;        // complements State: see the ITEMPR_XXX constants
+    DWORD WinError;         // may contain the code of the occurred Windows error (complements ProblemID)
+    char* ErrAllocDescr;    // may contain an allocated text describing the error (complements ProblemID)
 
-    DWORD ErrorOccurenceTime; // "cas" vzniku chyby (pouziva se pro dodrzeni poradi reseni chyb podle jejich vzniku); -1 = zadna chyba nevznikla
+    DWORD ErrorOccurenceTime; // "time" when the error occurred (used to keep the order of error resolution according to their occurrence); -1 = no error occurred
 
-    CFTPQueueItemAction ForceAction; // userem vynucena akce (napr. zadany autorename ze Solve Error dialogu)
+    CFTPQueueItemAction ForceAction; // action forced by the user (for example an autorename entered from the Solve Error dialog)
 
-    char* Path; // cesta ke zpracovavanemu souboru/adresari (lokalni cesta na serveru nebo Windowsova cesta)
-    char* Name; // jmeno zpracovavaneho souboru/adresare (jmeno bez cesty)
+    char* Path; // path to the processed file/directory (local path on the server or a Windows path)
+    char* Name; // name of the processed file/directory (name without the path)
 
 public:
     CFTPQueueItem();
     virtual ~CFTPQueueItem();
 
-    // vraci TRUE pokud jde o "explore" nebo "resolve" polozku
-    // POZOR: volat jen z kriticke sekce fronty
+    // returns TRUE if this is an "explore" or "resolve" item
+    // CAUTION: call only from the queue critical section
     BOOL IsExploreOrResolveItem() const { return Type < fqitLastResolveOrExploreItem; }
 
-    // vraci TRUE pokud jde o polozku ve stavu sqisFailed nebo sqisUserInputNeeded;
-    // pouziva se misto HasErrorToSolve() pri ukladani ErrorOccurenceTime, protoze
-    // v miste pouziti jeste neni nastaveny ProblemID a tudiz HasErrorToSolve()
-    // nelze pouzit (takhle se oznaci pro zpracovani i neresitelne chyby, coz nevadi,
-    // protoze je v SearchItemWithNewError preskocime)
-    // POZOR: volat jen z kriticke sekce fronty
+    // returns TRUE if the item is in state sqisFailed or sqisUserInputNeeded;
+    // used instead of HasErrorToSolve() when storing ErrorOccurenceTime, because
+    // at the point of use ProblemID is not set yet and therefore HasErrorToSolve()
+    // cannot be used (in this way even unsolvable errors are marked for processing, which does not matter,
+    // because they are skipped in SearchItemWithNewError)
+    // CAUTION: call only from the queue critical section
     BOOL IsItemInSimpleErrorState() const { return GetItemState() == sqisFailed || GetItemState() == sqisUserInputNeeded; }
 
-    // nastavi zakladni parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the basic item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItem(int parentUID, CFTPQueueItemType type, CFTPQueueItemState state,
                  DWORD problemID, const char* path, const char* name);
 
-    // enabler pro tlacitka v operacnim dialogu: vraci TRUE pokud ma smysl tlacitko
-    // "Solve Error"; v 'canSkip' (neni-li NULL) vraci TRUE pokud ma smysl
-    // tlacitko "Skip"; v 'canRetry' (neni-li NULL) vraci TRUE pokud ma smysl
-    // tlacitko "Retry"
-    // POZOR: volat jen z kriticke sekce fronty
+    // enabler for buttons in the operation dialog: returns TRUE if the "Solve Error" button makes sense;
+    // in 'canSkip' (if not NULL) it returns TRUE if the "Skip" button makes sense;
+    // in 'canRetry' (if not NULL) it returns TRUE if the "Retry" button makes sense
+    // CAUTION: call only from the queue critical section
     BOOL HasErrorToSolve(BOOL* canSkip, BOOL* canRetry);
 
-    // vraci textovy popis problemu vyjadreneho ProblemID + WinError + ErrAllocDescr
-    // POZOR: volat jen z kriticke sekce fronty
+    // returns a textual description of the problem expressed by ProblemID + WinError + ErrAllocDescr
+    // CAUTION: call only from the queue critical section
     void GetProblemDescr(char* buf, int bufSize);
 };
 
@@ -223,29 +223,29 @@ public:
 class CFTPQueueItemDir : public CFTPQueueItem
 {
 public:
-    int ChildItemsNotDone;  // pocet nedokoncenych "child" polozek (krome typu sqisDone)
-    int ChildItemsSkipped;  // pocet skipnutych "child" polozek (typ sqisSkipped)
-    int ChildItemsFailed;   // pocet failnutych "child" polozek (typ sqisFailed a sqisForcedToFail)
-    int ChildItemsUINeeded; // pocet user-input-needed "child" polozek (typ sqisUserInputNeeded)
+    int ChildItemsNotDone;  // number of unfinished "child" items (except for type sqisDone)
+    int ChildItemsSkipped;  // number of skipped "child" items (type sqisSkipped)
+    int ChildItemsFailed;   // number of failed "child" items (type sqisFailed and sqisForcedToFail)
+    int ChildItemsUINeeded; // number of user-input-needed "child" items (type sqisUserInputNeeded)
 
 public:
     CFTPQueueItemDir();
 
-    // nastavi pridane parametry polozky; vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters; returns TRUE on success
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetItemDir(int childItemsNotDone, int childItemsSkipped, int childItemsFailed,
                     int childItemsUINeeded);
 
-    // nastavi zadane pocty k jednotlivym pocitadlum a pripadne zmeni stav polozky
-    // (jen z sqisWaiting na sqisDelayed nebo sqisForcedToFail)
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty)
+    // sets the specified counts to the respective counters and optionally changes the item state
+    // (only from sqisWaiting to sqisDelayed or sqisForcedToFail)
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue)
     void SetStateAndNotDoneSkippedFailed(int childItemsNotDone, int childItemsSkipped,
                                          int childItemsFailed, int childItemsUINeeded);
 
-    // vraci stav polozky urceny podle pocitadel (sqisWaiting, sqisDelayed nebo sqisForcedToFail)
+    // returns the item state determined by the counters (sqisWaiting, sqisDelayed or sqisForcedToFail)
     CFTPQueueItemState GetStateFromCounters();
 };
 
@@ -257,15 +257,15 @@ public:
 class CFTPQueueItemDel : public CFTPQueueItem
 {
 public:
-    unsigned IsHiddenFile : 1; // TRUE/FALSE = jde/nejde o skryty soubor nebo link (mozne potvrzovani vymazu, viz CFTPOperation::ConfirmDelOnHiddenFile); POZOR: po potvrzeni dotazu userem se prirazuje FALSE
+    unsigned IsHiddenFile : 1; // TRUE/FALSE = is/is not a hidden file or link (possible delete confirmation, see CFTPOperation::ConfirmDelOnHiddenFile); CAUTION: after the user confirms the prompt it is set to FALSE
 
 public:
     CFTPQueueItemDel();
 
-    // nastavi pridane parametry polozky; vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters; returns TRUE on success
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetItemDel(int isHiddenFile);
 };
 
@@ -277,16 +277,16 @@ public:
 class CFTPQueueItemDelExplore : public CFTPQueueItem
 {
 public:
-    unsigned IsTopLevelDir : 1; // TRUE/FALSE = jde/nejde o adresar primo oznaceny v panelu - problem "mazani neprazdnych adresaru" se tyka jen techto adresaru, viz CFTPOperation::ConfirmDelOnNonEmptyDir; POZOR: po potvrzeni dotazu userem se prirazuje FALSE
-    unsigned IsHiddenDir : 1;   // TRUE/FALSE = jde/nejde o skryty adresar (mozne potvrzovani vymazu, viz CFTPOperation::ConfirmDelOnHiddenDir); POZOR: po potvrzeni dotazu userem se prirazuje FALSE
+    unsigned IsTopLevelDir : 1; // TRUE/FALSE = is/is not a directory selected directly in the panel - the "deleting non-empty directories" problem applies only to these directories, see CFTPOperation::ConfirmDelOnNonEmptyDir; CAUTION: after the user confirms the prompt it is set to FALSE
+    unsigned IsHiddenDir : 1;   // TRUE/FALSE = is/is not a hidden directory (possible delete confirmation, see CFTPOperation::ConfirmDelOnHiddenDir); CAUTION: after the user confirms the prompt it is set to FALSE
 
 public:
     CFTPQueueItemDelExplore();
 
-    // nastavi pridane parametry polozky; vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters; returns TRUE on success
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetItemDelExplore(int isTopLevelDir, int isHiddenDir);
 };
 
@@ -295,37 +295,37 @@ public:
 // CFTPQueueItemCopyOrMove
 //
 
-// stav ciloveho souboru (konstanty pro CFTPQueueItemCopyOrMove::TgtFileState)
-#define TGTFILESTATE_UNKNOWN 0     // stav souboru zatim nebyl zjisten
-#define TGTFILESTATE_TRANSFERRED 1 // soubor byl uspesne prenesen (hodi se pokud se pri presunu nepodaril vymaz zdrojoveho souboru)
-#define TGTFILESTATE_CREATED 2     // soubor byl FTP klientem primo vytvoren nebo resumnut s moznosti overwritu
-#define TGTFILESTATE_RESUMED 3     // soubor byl FTP klientem resumnut bez moznosti overwritu (k overwritu muze dojit jen pokud jiz downloadla cast souboru je prilis mala, viz Config.ResumeMinFileSize)
+// target file state (constants for CFTPQueueItemCopyOrMove::TgtFileState)
+#define TGTFILESTATE_UNKNOWN 0     // the file state has not been determined yet
+#define TGTFILESTATE_TRANSFERRED 1 // the file was transferred successfully (useful if deleting the source file failed during move)
+#define TGTFILESTATE_CREATED 2     // the file was created directly by the FTP client or resumed with the option to overwrite
+#define TGTFILESTATE_RESUMED 3     // the file was resumed by the FTP client without the option to overwrite (overwriting can happen only if the already downloaded part of the file is too small, see Config.ResumeMinFileSize)
 
 class CFTPQueueItemCopyOrMove : public CFTPQueueItem
 {
 public:
-    char* TgtPath; // cesta k cilovemu souboru (Windowsova cesta)
-    char* TgtName; // jmeno ciloveho souboru (jmeno bez cesty)
+    char* TgtPath; // path to the target file (Windows path)
+    char* TgtName; // name of the target file (name without the path)
 
-    CQuadWord Size; // velikost souboru (CQuadWord(-1, -1) = velikost neni znama - napr. linky)
+    CQuadWord Size; // file size (CQuadWord(-1, -1) = size is unknown - e.g. links)
 
-    CFTPDate Date; // datum zdrojoveho souboru (nastavi se po dokonceni operace na cilovem souboru); je-li Date.Day==0, jde o "prazdnou hodnotu" (datum se nema menit)
-    CFTPTime Time; // cas zdrojoveho souboru (nastavi se po dokonceni operace na cilovem souboru); je-li Time.Hour==24, jde o "prazdnou hodnotu" (cas se nema menit)
+    CFTPDate Date; // date of the source file (after finishing the operation it gets set on the target file); if Date.Day==0, it is an "empty value" (the date should not be changed)
+    CFTPTime Time; // time of the source file (after finishing the operation it gets set on the target file); if Time.Hour==24, it is an "empty value" (the time should not be changed)
 
     unsigned AsciiTransferMode : 1;           // TRUE/FALSE = ASCII/Binary transfer mode
-    unsigned IgnoreAsciiTrModeForBinFile : 1; // TRUE/FALSE = ignoruj/kontroluj jestli se neprenasi v ASCII rezimu binarni soubor
-    unsigned SizeInBytes : 1;                 // TRUE/FALSE = Size je v bytech/blocich
-    unsigned TgtFileState : 2;                // viz konstanty TGTFILESTATE_XXX
-    unsigned DateAndTimeValid : 1;            // TRUE/FALSE = Date+Time jsou platne a ma dojit k jejich nastaveni na cilovem souboru po dokonceni operace
+    unsigned IgnoreAsciiTrModeForBinFile : 1; // TRUE/FALSE = ignore/check whether a binary file is being transferred in ASCII mode
+    unsigned SizeInBytes : 1;                 // TRUE/FALSE = Size is in bytes/blocks
+    unsigned TgtFileState : 2;                // see the TGTFILESTATE_XXX constants
+    unsigned DateAndTimeValid : 1;            // TRUE/FALSE = Date+Time are valid and should be set on the target file after finishing the operation
 
 public:
     CFTPQueueItemCopyOrMove();
     virtual ~CFTPQueueItemCopyOrMove();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemCopyOrMove(const char* tgtPath, const char* tgtName, const CQuadWord& size,
                            int asciiTransferMode, int sizeInBytes, int tgtFileState,
                            BOOL dateAndTimeValid, const CFTPDate& date, const CFTPTime& time);
@@ -336,37 +336,37 @@ public:
 // CFTPQueueItemCopyOrMoveUpload
 //
 
-// stav ciloveho souboru (konstanty pro CFTPQueueItemCopyOrMoveUpload::TgtFileState)
-#define UPLOADTGTFILESTATE_UNKNOWN 0     // stav souboru zatim nebyl zjisten
-#define UPLOADTGTFILESTATE_TRANSFERRED 1 // soubor byl uspesne prenesen (hodi se pokud se pri presunu nepodaril vymaz zdrojoveho souboru)
-#define UPLOADTGTFILESTATE_CREATED 2     // soubor byl FTP klientem primo vytvoren nebo resumnut s moznosti overwritu
-#define UPLOADTGTFILESTATE_RESUMED 3     // soubor byl FTP klientem resumnut bez moznosti overwritu (k overwritu muze dojit jen pokud jiz uploadla cast souboru je prilis mala, viz Config.ResumeMinFileSize)
+// target file state (constants for CFTPQueueItemCopyOrMoveUpload::TgtFileState)
+#define UPLOADTGTFILESTATE_UNKNOWN 0     // the file state has not been determined yet
+#define UPLOADTGTFILESTATE_TRANSFERRED 1 // the file was transferred successfully (useful if deleting the source file failed during move)
+#define UPLOADTGTFILESTATE_CREATED 2     // the file was created directly by the FTP client or resumed with the option to overwrite
+#define UPLOADTGTFILESTATE_RESUMED 3     // the file was resumed by the FTP client without the option to overwrite (overwriting can happen only if the already uploaded part of the file is too small, see Config.ResumeMinFileSize)
 
 class CFTPQueueItemCopyOrMoveUpload : public CFTPQueueItem
 {
 public:
-    char* TgtPath; // cesta k cilovemu souboru (lokalni cesta na serveru)
-    char* TgtName; // jmeno ciloveho souboru (jmeno bez cesty)
+    char* TgtPath; // path to the target file (local path on the server)
+    char* TgtName; // name of the target file (name without the path)
 
-    CQuadWord Size;      // velikost souboru
-    int AutorenamePhase; // pri auto-rename jde o fazi generovani jmen
-    char* RenamedName;   // jmeno vytvorene auto-renamem: neni NULL jen kdyz prave probiha upload do noveho jmena
+    CQuadWord Size;      // file size
+    int AutorenamePhase; // when auto-rename is used this is the phase of generating names
+    char* RenamedName;   // name created by auto-rename: not NULL only when an upload to the new name is in progress
 
-    CQuadWord SizeWithCRLF_EOLs; // velikost souboru pri pouziti CRLF koncu radek (nastavuje se jen pro fqiaUploadTestIfFinished)
-    CQuadWord NumberOfEOLs;      // pocet koncu radek (nastavuje se jen pro fqiaUploadTestIfFinished)
+    CQuadWord SizeWithCRLF_EOLs; // file size when using CRLF line endings (set only for fqiaUploadTestIfFinished)
+    CQuadWord NumberOfEOLs;      // number of line endings (set only for fqiaUploadTestIfFinished)
 
     unsigned AsciiTransferMode : 1;           // TRUE/FALSE = ASCII/Binary transfer mode
-    unsigned IgnoreAsciiTrModeForBinFile : 1; // TRUE/FALSE = ignoruj/kontroluj jestli se neprenasi v ASCII rezimu binarni soubor
-    unsigned TgtFileState : 2;                // viz konstanty UPLOADTGTFILESTATE_XXX
+    unsigned IgnoreAsciiTrModeForBinFile : 1; // TRUE/FALSE = ignore/check whether a binary file is being transferred in ASCII mode
+    unsigned TgtFileState : 2;                // see the UPLOADTGTFILESTATE_XXX constants
 
 public:
     CFTPQueueItemCopyOrMoveUpload();
     virtual ~CFTPQueueItemCopyOrMoveUpload();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemCopyOrMoveUpload(const char* tgtPath, const char* tgtName, const CQuadWord& size,
                                  int asciiTransferMode, int tgtFileState);
 };
@@ -376,26 +376,26 @@ public:
 // CFTPQueueItemCopyMoveExplore
 //
 
-// stav ciloveho adresare (konstanty pro CFTPQueueItemCopyMoveExplore::TgtDirState)
-#define TGTDIRSTATE_UNKNOWN 0 // stav adresare zatim nebyl zjisten
-#define TGTDIRSTATE_READY 1   // cilovy adresar uz byl FTP klientem primo vytvoren nebo uz bylo odsouhlaseno pouziti existujiciho adresare
+// target directory state (constants for CFTPQueueItemCopyMoveExplore::TgtDirState)
+#define TGTDIRSTATE_UNKNOWN 0 // the directory state has not been determined yet
+#define TGTDIRSTATE_READY 1   // the target directory has already been created directly by the FTP client or the use of an existing directory has already been approved
 
 class CFTPQueueItemCopyMoveExplore : public CFTPQueueItem
 {
 public:
-    char* TgtPath; // cesta k cilovemu adresari (Windowsova cesta)
-    char* TgtName; // jmeno ciloveho adresare (jmeno bez cesty)
+    char* TgtPath; // path to the target directory (Windows path)
+    char* TgtName; // name of the target directory (name without the path)
 
-    unsigned TgtDirState : 1; // viz konstanty TGTDIRSTATE_XXX
+    unsigned TgtDirState : 1; // see the TGTDIRSTATE_XXX constants
 
 public:
     CFTPQueueItemCopyMoveExplore();
     virtual ~CFTPQueueItemCopyMoveExplore();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemCopyMoveExplore(const char* tgtPath, const char* tgtName, int tgtDirState);
 };
 
@@ -404,26 +404,26 @@ public:
 // CFTPQueueItemCopyMoveUploadExplore
 //
 
-// stav ciloveho adresare (konstanty pro CFTPQueueItemCopyMoveUploadExplore::TgtDirState)
-#define UPLOADTGTDIRSTATE_UNKNOWN 0 // stav adresare zatim nebyl zjisten
-#define UPLOADTGTDIRSTATE_READY 1   // cilovy adresar uz byl FTP klientem primo vytvoren nebo uz bylo odsouhlaseno pouziti existujiciho adresare
+// target directory state (constants for CFTPQueueItemCopyMoveUploadExplore::TgtDirState)
+#define UPLOADTGTDIRSTATE_UNKNOWN 0 // the directory state has not been determined yet
+#define UPLOADTGTDIRSTATE_READY 1   // the target directory has already been created directly by the FTP client or the use of an existing directory has already been approved
 
 class CFTPQueueItemCopyMoveUploadExplore : public CFTPQueueItem
 {
 public:
-    char* TgtPath; // cesta k cilovemu adresari (lokalni cesta na serveru)
-    char* TgtName; // jmeno ciloveho adresare (jmeno bez cesty)
+    char* TgtPath; // path to the target directory (local path on the server)
+    char* TgtName; // name of the target directory (name without the path)
 
-    unsigned TgtDirState : 1; // viz konstanty UPLOADTGTDIRSTATE_XXX
+    unsigned TgtDirState : 1; // see the UPLOADTGTDIRSTATE_XXX constants
 
 public:
     CFTPQueueItemCopyMoveUploadExplore();
     virtual ~CFTPQueueItemCopyMoveUploadExplore();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemCopyMoveUploadExplore(const char* tgtPath, const char* tgtName, int tgtDirState);
 };
 
@@ -435,18 +435,18 @@ public:
 class CFTPQueueItemChAttr : public CFTPQueueItem
 {
 public:
-    WORD Attr;        // pozadovany mod (nutny prevod na retezec do octa-cisla)
-    BYTE AttrErr;     // TRUE = neznamy atribut ma byt zachovan, coz neumime (FALSE = vse OK)
-    char* OrigRights; // puvodni prava souboru (!=NULL jen pokud obsahuji neznama prava + pokud byl vubec nalezen sloupec s pravy)
+    WORD Attr;        // requested mode (conversion to a string in octal digits is necessary)
+    BYTE AttrErr;     // TRUE = an unknown attribute should be preserved, which we cannot do (FALSE = everything OK)
+    char* OrigRights; // original file permissions (!=NULL only if they contain unknown permissions + if a permissions column was found at all)
 
 public:
     CFTPQueueItemChAttr();
     virtual ~CFTPQueueItemChAttr();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemChAttr(WORD attr, const char* origRights, BYTE attrErr);
 };
 
@@ -454,24 +454,24 @@ public:
 // ****************************************************************************
 // CFTPQueueItemChAttrDir
 //
-// neni shodny s CFTPQueueItemChAttr, ma pocitadlo (dedi se od CFTPQueueItemDir)
+// not identical to CFTPQueueItemChAttr, it has a counter (inherited from CFTPQueueItemDir)
 
 class CFTPQueueItemChAttrDir : public CFTPQueueItemDir
 {
 public:
-    WORD Attr;        // pozadovany mod (nutny prevod na retezec do octa-cisla)
-    BYTE AttrErr;     // TRUE = neznamy atribut ma byt zachovan, coz neumime (FALSE = vse OK)
-    char* OrigRights; // puvodni prava adresare (!=NULL jen pokud obsahuji neznama prava + pokud byl vubec nalezen sloupec s pravy)
+    WORD Attr;        // requested mode (conversion to a string in octal digits is necessary)
+    BYTE AttrErr;     // TRUE = an unknown attribute should be preserved, which we cannot do (FALSE = everything OK)
+    char* OrigRights; // original directory permissions (!=NULL only if they contain unknown permissions + if a permissions column was found at all)
 
 public:
     CFTPQueueItemChAttrDir();
     virtual ~CFTPQueueItemChAttrDir();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
-    // POZOR: dedi se od CFTPQueueItemDir - VOLAT I CFTPQueueItemDir::SetItemDir() !!!
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
+    // CAUTION: inherited from CFTPQueueItemDir - CALL CFTPQueueItemDir::SetItemDir() AS WELL!!!
     void SetItemChAttrDir(WORD attr, const char* origRights, BYTE attrErr);
 };
 
@@ -483,16 +483,16 @@ public:
 class CFTPQueueItemChAttrExplore : public CFTPQueueItem
 {
 public:
-    char* OrigRights; // puvodni prava adresare pro vypocet Attr zkoumaneho adresare (!=NULL pokud byl nalezen sloupec s pravy)
+    char* OrigRights; // original directory permissions for computing Attr of the explored directory (!=NULL if a permissions column was found)
 
 public:
     CFTPQueueItemChAttrExplore();
     virtual ~CFTPQueueItemChAttrExplore();
 
-    // nastavi pridane parametry polozky
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim polozky do fronty) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the additional item parameters
+    // CAUTION: does not use a critical section for data access (can only be called before
+    //          adding the item to the queue) + it must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetItemChAttrExplore(const char* origRights);
 };
 
@@ -504,250 +504,250 @@ public:
 class CFTPQueue
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
-    // POZOR: z teto sekce se nesmi vstupovat do zadnych jinych kritickych sekci !!!
+    // critical section for accessing the object's data
+    // CAUTION: do not enter any other critical sections from this section!!!
     CRITICAL_SECTION QueueCritSect;
 
-    TIndirectArray<CFTPQueueItem> Items; // polozky fronty
+    TIndirectArray<CFTPQueueItem> Items; // queue items
 
-    // jednomistna cache pro urychleni FindItemWithUID() - pozor: nemusi byt platna:
-    int LastFoundUID;   // UID posledne nalezene polozky
-    int LastFoundIndex; // index posledne nalezene polozky (vzdy nezaporne cislo, i po inicializaci)
+    // single-entry cache for speeding up FindItemWithUID() - beware: it may not be valid:
+    int LastFoundUID;   // UID of the last found item
+    int LastFoundIndex; // index of the last found item (always a non-negative number, even after initialization)
 
-    int FirstWaitingItemIndex;          // prvni polozka ve fronte (poli Items), ktera muze (ale nemusi) byt ve stavu sqisWaiting a pokud je GetOnlyExploreAndResolveItems==TRUE, zaroven muze byt "explore" a "resolve" (pred timto indexem uz proste nejsou)
-    BOOL GetOnlyExploreAndResolveItems; // TRUE = zatim z fronty vracime jen "explore" a "resolve" polozky (FALSE jen kdyz zadna takova polozka neni ve "waiting" stavu) (Type < fqitLastResolveOrExploreItem)
+    int FirstWaitingItemIndex;          // first item in the queue (array Items) that can (but does not have to) be in state sqisWaiting and if GetOnlyExploreAndResolveItems==TRUE it can also be an "explore" or "resolve" item (there simply are none before this index)
+    BOOL GetOnlyExploreAndResolveItems; // TRUE = for now we return only "explore" and "resolve" items from the queue (FALSE only when no such item is in the "waiting" state) (Type < fqitLastResolveOrExploreItem)
 
-    int ExploreAndResolveItemsCount;            // pocet polozek fronty typu "explore" a "resolve" (Type < fqitLastResolveOrExploreItem)
-    int DoneOrSkippedItemsCount;                // pocet polozek fronty ve stavu sqisDone nebo sqisSkipped
-    int WaitingOrProcessingOrDelayedItemsCount; // pocet polozek fronty ve stavu sqisWaiting, sqisProcessing nebo sqisDelayed
+    int ExploreAndResolveItemsCount;            // number of queue items of type "explore" and "resolve" (Type < fqitLastResolveOrExploreItem)
+    int DoneOrSkippedItemsCount;                // number of queue items in state sqisDone or sqisSkipped
+    int WaitingOrProcessingOrDelayedItemsCount; // number of queue items in state sqisWaiting, sqisProcessing or sqisDelayed
 
-    CQuadWord DoneOrSkippedByteSize;                  // soucet znamych velikosti souboru v bytech polozek typu fqitCopyFileOrFileLink a fqitMoveFileOrFileLink ve stavu sqisDone nebo sqisSkipped
-    CQuadWord DoneOrSkippedBlockSize;                 // soucet znamych velikosti souboru v blocich polozek typu fqitCopyFileOrFileLink a fqitMoveFileOrFileLink ve stavu sqisDone nebo sqisSkipped
-    CQuadWord WaitingOrProcessingOrDelayedByteSize;   // soucet znamych velikosti souboru v bytech polozek typu fqitCopyFileOrFileLink a fqitMoveFileOrFileLink ve stavu sqisWaiting, sqisProcessing nebo sqisDelayed
-    CQuadWord WaitingOrProcessingOrDelayedBlockSize;  // soucet znamych velikosti souboru v blocich polozek typu fqitCopyFileOrFileLink a fqitMoveFileOrFileLink ve stavu sqisWaiting, sqisProcessing nebo sqisDelayed
-    CQuadWord DoneOrSkippedUploadSize;                // soucet velikosti souboru polozek typu fqitUploadCopyFile a fqitUploadMoveFile ve stavu sqisDone nebo sqisSkipped
-    CQuadWord WaitingOrProcessingOrDelayedUploadSize; // soucet velikosti souboru polozek typu fqitUploadCopyFile a fqitUploadMoveFile ve stavu sqisWaiting, sqisProcessing nebo sqisDelayed
-    int CopyUnknownSizeCount;                         // pocet polozek, ktere nemaji znamou velikost pri Copy/Move operaci (explore/delete-dir/resolve/copy-unknown-size-items)
-    int CopyUnknownSizeCountIfUnknownBlockSize;       // pocet polozek, ktere nemaji znamou velikost pokud neni znama velikost bloku v bytech pri Copy/Move operaci (explore/delete-dir/resolve/copy-unknown-size-items)
+    CQuadWord DoneOrSkippedByteSize;                  // sum of known file sizes in bytes of items of type fqitCopyFileOrFileLink and fqitMoveFileOrFileLink in state sqisDone or sqisSkipped
+    CQuadWord DoneOrSkippedBlockSize;                 // sum of known file sizes in blocks of items of type fqitCopyFileOrFileLink and fqitMoveFileOrFileLink in state sqisDone or sqisSkipped
+    CQuadWord WaitingOrProcessingOrDelayedByteSize;   // sum of known file sizes in bytes of items of type fqitCopyFileOrFileLink and fqitMoveFileOrFileLink in state sqisWaiting, sqisProcessing or sqisDelayed
+    CQuadWord WaitingOrProcessingOrDelayedBlockSize;  // sum of known file sizes in blocks of items of type fqitCopyFileOrFileLink and fqitMoveFileOrFileLink in state sqisWaiting, sqisProcessing or sqisDelayed
+    CQuadWord DoneOrSkippedUploadSize;                // sum of file sizes of items of type fqitUploadCopyFile and fqitUploadMoveFile in state sqisDone or sqisSkipped
+    CQuadWord WaitingOrProcessingOrDelayedUploadSize; // sum of file sizes of items of type fqitUploadCopyFile and fqitUploadMoveFile in state sqisWaiting, sqisProcessing or sqisDelayed
+    int CopyUnknownSizeCount;                         // number of items whose size is unknown during a Copy/Move operation (explore/delete-dir/resolve/copy-unknown-size-items)
+    int CopyUnknownSizeCountIfUnknownBlockSize;       // number of items whose size is unknown if the block size in bytes is unknown during a Copy/Move operation (explore/delete-dir/resolve/copy-unknown-size-items)
 
-    DWORD LastErrorOccurenceTime;      // "cas" vzniku posledni chyby (inicializovany na -1)
-    DWORD LastFoundErrorOccurenceTime; // "cas" posledni nalezene polozky s chybou nebo "cas", pred kterym uz zadna polozka s chybou neexistuje
+    DWORD LastErrorOccurenceTime;      // "time" when the last error occurred (initialized to -1)
+    DWORD LastFoundErrorOccurenceTime; // "time" of the last found item with an error or the "time" before which no item with an error exists anymore
 
 public:
     CFTPQueue();
     ~CFTPQueue();
 
-    // prida do fronty novou polozku; vraci TRUE pri uspechu
+    // adds a new item to the queue; returns TRUE on success
     BOOL AddItem(CFTPQueueItem* newItem);
 
-    // vraci pocet polozek ve fronte
+    // returns the number of items in the queue
     int GetCount();
 
-    // pomocna metoda: upravi pocitadla ExploreAndResolveItemsCount, DoneOrSkippedItemsCount
-    // a WaitingOrProcessingOrDelayedItemsCount podle polozky 'item'; 'add' je
-    // TRUE/FALSE pokud se pridava/vyhazuje polozka 'item' z fronty
-    // vola se pri pridani polozky do fronty a pri zmene State polozky
-    // POZOR: je mozne volat jen z kriticke sekce QueueCritSect !!!
+    // helper method: adjusts the counters ExploreAndResolveItemsCount, DoneOrSkippedItemsCount
+    // and WaitingOrProcessingOrDelayedItemsCount according to the item 'item'; 'add' is
+    // TRUE/FALSE when the item 'item' is being added to/removed from the queue
+    // called when adding an item to the queue and when changing the item's State
+    // CAUTION: can only be called from the QueueCritSect critical section!!!
     void UpdateCounters(CFTPQueueItem* item, BOOL add);
 
-    // metody pro zamknuti/odemknuti fronty pro volani vice operaci "najednou"
-    // (jde jen o vstup/vystup z krit. sekce QueueCritSect)
+    // methods for locking/unlocking the queue to call multiple operations "at once"
+    // (this is just entering/leaving the QueueCritSect critical section)
     void LockForMoreOperations();
     void UnlockForMoreOperations();
 
-    // nahradi polozku s UID 'itemUID' seznamem polozek 'items' (pocet polozek je 'itemsCount');
-    // vraci TRUE pri uspechu (v tomto pripade jiz doslo k uvolneni polozky s UID 'itemUID')
-    // POZOR: nutne pouzit LockForMoreOperations() a UnlockForMoreOperations(), protoze po volani
-    //        ReplaceItemWithListOfItems je treba jeste pred pristupem dalsich threadu srovnat
-    //        pocitadla (zajistit konzistenci dat)
+    // replaces the item with UID 'itemUID' with the list of items 'items' (the number of items is 'itemsCount');
+    // returns TRUE on success (in this case the item with UID 'itemUID' has already been released)
+    // CAUTION: it is necessary to use LockForMoreOperations() and UnlockForMoreOperations(), because after calling
+    //          ReplaceItemWithListOfItems the counters must be adjusted before other threads access them
+    //          (to ensure data consistency)
     BOOL ReplaceItemWithListOfItems(int itemUID, CFTPQueueItem** items, int itemsCount);
 
-    // pricte dane pocty k pocitadlum ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded
-    // dir-polozky 'itemDirUID' (polozka musi byt potomek CFTPQueueItemDir); zaroven muze
-    // zmenit stav dir-polozky (na sqisDelayed (provadi se child polozky), sqisWaiting (childy
-    // jsou hotove, muze se provest dir-polozka) nebo sqisForcedToFail (nelze dokoncit childy,
-    // doslo k chybam/skipum)), v tomto pripade zajisti zmenu pocitadel parenta dir-polozky
-    // (funguje rekurzivne, takze pripadne zmeni pocitadla i parentu parentu dir-polozky, atd.)
+    // adds the given counts to the counters ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded
+    // of the dir-item 'itemDirUID' (the item must be a descendant of CFTPQueueItemDir); it can also
+    // change the state of the dir-item (to sqisDelayed (child items are being processed), sqisWaiting (children
+    // are done, the dir-item can be processed) or sqisForcedToFail (the children cannot be completed,
+    // errors/skips occurred)), in that case it ensures updating the counters of the parent of the dir-item
+    // (works recursively, so it will adjust the counters of the parent of the parent of the dir-item, etc.)
     void AddToNotDoneSkippedFailed(int itemDirUID, int notDone, int skipped, int failed,
                                    int uiNeeded, CFTPOperation* oper);
 
-    // vraci pocet polozek ve stavu sqisUserInputNeeded, sqisSkipped, sqisFailed nebo sqisForcedToFail
-    // ve fronte; je-li 'onlyUINeeded' TRUE, plni pole 'UINeededArr' polozkami ve stavu
-    // sqisUserInputNeeded, sqisSkipped, sqisFailed nebo sqisForcedToFail; neni-li 'focusedItemUID' -1,
-    // vraci v 'indexInAll' index polozky s UID 'focusedItemUID' ve fronte + vraci
-    // v 'indexInUIN' index polozky s UID 'focusedItemUID' v poli polozek ve stavu
-    // sqisUserInputNeeded, sqisSkipped, sqisFailed nebo sqisForcedToFail; pokud nenajde
-    // polozku s UID 'focusedItemUID', vraci 'indexInAll' i 'indexInUIN' rovno -1
+    // returns the number of items in state sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail
+    // in the queue; if 'onlyUINeeded' is TRUE, fills the array 'UINeededArr' with items in state
+    // sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail; if 'focusedItemUID' is not -1,
+    // it returns in 'indexInAll' the index of the item with UID 'focusedItemUID' in the queue +
+    // returns in 'indexInUIN' the index of the item with UID 'focusedItemUID' in the array of items in state
+    // sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail; if it does not find
+    // the item with UID 'focusedItemUID', it returns both 'indexInAll' and 'indexInUIN' equal to -1
     int GetUserInputNeededCount(BOOL onlyUINeeded, TDirectArray<DWORD>* UINeededArr,
                                 int focusedItemUID, int* indexInAll, int* indexInUIN);
 
-    // vraci UID polozky na indexu 'index', pri neplatnem indexu vraci -1
+    // returns the UID of the item at index 'index', returns -1 for an invalid index
     int GetItemUID(int index);
 
-    // vraci index polozky s UID 'itemUID', pri neznamem UID vraci -1
+    // returns the index of the item with UID 'itemUID', returns -1 for an unknown UID
     int GetItemIndex(int itemUID);
 
-    // vraci data pro zobrazeni polozky operace s indexem 'index' v listview v dialogu operace;
-    // 'buf'+'bufSize' je buffer pro text vraceny v 'lvdi' (meni se tri cyklicky,
-    // aby se splnily naroky LVN_GETDISPINFO); pokud index neni
-    // platny, nedela nic (refresh listview uz je na ceste)
+    // returns data for displaying the operation item with index 'index' in the list view in the operation dialog;
+    // 'buf'+'bufSize' is a buffer for the text returned in 'lvdi' (it changes three cyclically
+    // to satisfy the requirements of LVN_GETDISPINFO); if the index is not
+    // valid, it does nothing (the list view refresh is already on the way)
     void GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int bufSize);
 
-    // enabler tlacitek v operacnim dialogu pro polozku na indexu 'index':
-    // vraci TRUE pokud ma smysl "Solve Error"; vraci FALSE pro neplatny index;
-    // v 'canSkip' (neni-li NULL) vraci TRUE pokud ma smysl "Skip";
-    // v 'canRetry' (neni-li NULL) vraci TRUE pokud ma smysl "Retry"
+    // button enabler in the operation dialog for the item at index 'index':
+    // returns TRUE if "Solve Error" makes sense; returns FALSE for an invalid index;
+    // in 'canSkip' (if not NULL) it returns TRUE if "Skip" makes sense;
+    // in 'canRetry' (if not NULL) it returns TRUE if "Retry" makes sense
     BOOL IsItemWithErrorToSolve(int index, BOOL* canSkip, BOOL* canRetry);
 
-    // provede Skip polozky s UID 'UID' (zmena na stav "skipped"); vraci index
-    // zmenene polozky nebo -1 pri chybe
+    // performs Skip on the item with UID 'UID' (change to state "skipped"); returns the index
+    // of the changed item or -1 on error
     int SkipItem(int UID, CFTPOperation* oper);
 
-    // provede Retry polozky s UID 'UID' (zmena na stav "waiting"); vraci index
-    // zmenene polozky nebo -1 pri chybe
+    // performs Retry on the item with UID 'UID' (change to state "waiting"); returns the index
+    // of the changed item or -1 on error
     int RetryItem(int UID, CFTPOperation* oper);
 
-    // provede Solve Error polozky s UID 'UID'; vraci index zmenene polozky nebo
-    // -1 pri vice zmenenych polozkach nebo -2 pri zadne zmene; 'oper' je operace,
-    // do ktere polozka (a cela tato fronta) patri
+    // performs Solve Error for the item with UID 'UID'; returns the index of the changed item or
+    // -1 when multiple items changed or -2 when no change happened; 'oper' is the operation
+    // to which the item (and the entire queue) belongs
     int SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper);
 
-    // hleda ve fronte prvni polozku ve stavu sqisWaiting, vraci ukazatel na ni (nebo NULL
-    // pokud takova polozka neexistuje); prepina nalezenou polozku do stavu sqisProcessing
-    // (aby nemohla byt hned znovu nalezena)
+    // searches the queue for the first item in state sqisWaiting, returns a pointer to it (or NULL
+    // if such item does not exist); switches the found item into state sqisProcessing
+    // (so that it cannot be found again immediately)
     CFTPQueueItem* GetNextWaitingItem(CFTPOperation* oper);
 
-    // vraci polozku 'item' do stavu sqisWaiting (worker ji nedokaze zpracovat, timto
-    // umozni jinym workerum aby polozku zpracovali)
+    // returns the item 'item' to state sqisWaiting (the worker cannot process it, this
+    // allows other workers to process the item)
     void ReturnToWaitingItems(CFTPQueueItem* item, CFTPOperation* oper);
 
-    // nastavuje stav polozky 'item'; 'errAllocDescr' je NULL nebo alokovany popis chyby
-    // (volajici predava buffer alokovany funkci malloc, po volani teto metody je jiz
-    // buffer pro volajiciho neplatny)
+    // sets the state of the item 'item'; 'errAllocDescr' is NULL or an allocated error description
+    // (the caller passes a buffer allocated by malloc, after calling this method
+    // the buffer is no longer valid for the caller)
     void UpdateItemState(CFTPQueueItem* item, CFTPQueueItemState state, DWORD problemID,
                          DWORD winError, char* errAllocDescr, CFTPOperation* oper);
 
-    // priradi 'renamedName' do RenamedName polozky 'item' (predchozi hodnotu RenamedName uvolni)
+    // assigns 'renamedName' to the RenamedName of item 'item' (releases the previous value of RenamedName)
     void UpdateRenamedName(CFTPQueueItemCopyOrMoveUpload* item, char* renamedName);
 
-    // priradi 'autorenamePhase' do AutorenamePhase polozky 'item'
+    // assigns 'autorenamePhase' to AutorenamePhase of item 'item'
     void UpdateAutorenamePhase(CFTPQueueItemCopyOrMoveUpload* item, int autorenamePhase);
 
-    // priradi RenamedName do TgtName polozky 'item' (predchozi hodnotu TgtName uvolni)
+    // assigns RenamedName to TgtName of item 'item' (releases the previous value of TgtName)
     void ChangeTgtNameToRenamedName(CFTPQueueItemCopyOrMoveUpload* item);
 
-    // priradi 'tgtName' do TgtName polozky 'item' (predchozi hodnotu TgtName uvolni)
+    // assigns 'tgtName' to TgtName of item 'item' (releases the previous value of TgtName)
     void UpdateTgtName(CFTPQueueItemCopyMoveExplore* item, char* tgtName);
 
-    // priradi 'tgtName' do TgtName polozky 'item' (predchozi hodnotu TgtName uvolni)
+    // assigns 'tgtName' to TgtName of item 'item' (releases the previous value of TgtName)
     void UpdateTgtName(CFTPQueueItemCopyMoveUploadExplore* item, char* tgtName);
 
-    // priradi 'tgtName' do TgtName polozky 'item' (predchozi hodnotu TgtName uvolni)
+    // assigns 'tgtName' to TgtName of item 'item' (releases the previous value of TgtName)
     void UpdateTgtName(CFTPQueueItemCopyOrMove* item, char* tgtName);
 
-    // priradi 'tgtDirState' do TgtDirState polozky 'item'
+    // assigns 'tgtDirState' to TgtDirState of item 'item'
     void UpdateTgtDirState(CFTPQueueItemCopyMoveExplore* item, unsigned tgtDirState);
 
-    // priradi 'tgtDirState' do TgtDirState polozky 'item'
+    // assigns 'tgtDirState' to TgtDirState of item 'item'
     void UpdateUploadTgtDirState(CFTPQueueItemCopyMoveUploadExplore* item, unsigned tgtDirState);
 
-    // priradi 'forceAction' do ForceAction polozky 'item'
+    // assigns 'forceAction' to ForceAction of item 'item'
     void UpdateForceAction(CFTPQueueItem* item, CFTPQueueItemAction forceAction);
 
-    // priradi 'tgtFileState' do TgtFileState polozky 'item'
+    // assigns 'tgtFileState' to TgtFileState of item 'item'
     void UpdateTgtFileState(CFTPQueueItemCopyOrMove* item, unsigned tgtFileState);
 
-    // priradi 'attrErr' do AttrErr polozky 'item'
+    // assigns 'attrErr' to AttrErr of item 'item'
     void UpdateAttrErr(CFTPQueueItemChAttrDir* item, BYTE attrErr);
 
-    // priradi 'attrErr' do AttrErr polozky 'item'
+    // assigns 'attrErr' to AttrErr of item 'item'
     void UpdateAttrErr(CFTPQueueItemChAttr* item, BYTE attrErr);
 
-    // priradi 'isHiddenDir' do IsHiddenDir polozky 'item'
+    // assigns 'isHiddenDir' to IsHiddenDir of item 'item'
     void UpdateIsHiddenDir(CFTPQueueItemDelExplore* item, BOOL isHiddenDir);
 
-    // priradi 'isHiddenFile' do IsHiddenFile polozky 'item'
+    // assigns 'isHiddenFile' to IsHiddenFile of item 'item'
     void UpdateIsHiddenFile(CFTPQueueItemDel* item, BOOL isHiddenFile);
 
-    // priradi 'size' do Size a 'sizeInBytes' do SizeInBytes polozky 'item' + upravi
-    // TotalSizeInBytes a TotalSizeInBlocks v operaci ('oper')
+    // assigns 'size' to Size and 'sizeInBytes' to SizeInBytes of item 'item' + adjusts
+    // TotalSizeInBytes and TotalSizeInBlocks in the operation ('oper')
     void UpdateFileSize(CFTPQueueItemCopyOrMove* item, CQuadWord const& size,
                         BOOL sizeInBytes, CFTPOperation* oper);
 
-    // priradi 'asciiTransferMode' do AsciiTransferMode polozky 'item'
+    // assigns 'asciiTransferMode' to AsciiTransferMode of item 'item'
     void UpdateAsciiTransferMode(CFTPQueueItemCopyOrMove* item, BOOL asciiTransferMode);
 
-    // priradi 'ignoreAsciiTrModeForBinFile' do IgnoreAsciiTrModeForBinFile polozky 'item'
+    // assigns 'ignoreAsciiTrModeForBinFile' to IgnoreAsciiTrModeForBinFile of item 'item'
     void UpdateIgnoreAsciiTrModeForBinFile(CFTPQueueItemCopyOrMove* item, BOOL ignoreAsciiTrModeForBinFile);
 
-    // pro upload: priradi 'asciiTransferMode' do AsciiTransferMode polozky 'item'
+    // for upload: assigns 'asciiTransferMode' to AsciiTransferMode of item 'item'
     void UpdateAsciiTransferMode(CFTPQueueItemCopyOrMoveUpload* item, BOOL asciiTransferMode);
 
-    // pro upload: priradi 'ignoreAsciiTrModeForBinFile' do IgnoreAsciiTrModeForBinFile polozky 'item'
+    // for upload: assigns 'ignoreAsciiTrModeForBinFile' to IgnoreAsciiTrModeForBinFile of item 'item'
     void UpdateIgnoreAsciiTrModeForBinFile(CFTPQueueItemCopyOrMoveUpload* item, BOOL ignoreAsciiTrModeForBinFile);
 
-    // priradi 'tgtFileState' do TgtFileState polozky 'item'
+    // assigns 'tgtFileState' to TgtFileState of item 'item'
     void UpdateTgtFileState(CFTPQueueItemCopyOrMoveUpload* item, unsigned tgtFileState);
 
-    // priradi 'size' do Size polozky 'item' + upravi TotalSizeInBytes v operaci ('oper')
+    // assigns 'size' to Size of item 'item' + adjusts TotalSizeInBytes in the operation ('oper')
     void UpdateFileSize(CFTPQueueItemCopyOrMoveUpload* item, CQuadWord const& size,
                         CFTPOperation* oper);
 
-    // nastavi SizeWithCRLF_EOLs a NumberOfEOLs polozky 'item'
+    // sets SizeWithCRLF_EOLs and NumberOfEOLs of item 'item'
     void UpdateTextFileSizes(CFTPQueueItemCopyOrMoveUpload* item, CQuadWord const& sizeWithCRLF_EOLs,
                              CQuadWord const& numberOfEOLs);
 
-    // jen pro debugovaci ucely: overi pocitadla ChildItemsNotDone+ChildItemsSkipped+
-    // ChildItemsFailed+ChildItemsUINeeded ve vsech polozkach a zaroven i v operaci,
-    // pri chybe hazi TRACE_E
+    // for debugging purposes only: verifies the counters ChildItemsNotDone+ChildItemsSkipped+
+    // ChildItemsFailed+ChildItemsUINeeded in all items and also in the operation,
+    // on error it throws TRACE_E
     void DebugCheckCounters(CFTPOperation* oper);
 
-    // vraci progres na zaklade pomeru mezi hotovymi ('doneOrSkippedCount') a vsemi
-    // polozkami ('totalCount'); v 'unknownSizeCount' vraci pocet nedokoncenych polozek
-    // s neznamou velikosti; ve 'waitingCount' vraci pocet polozek, ktere cekaji na
-    // zpracovani (waiting+delayed+processing)
+    // returns progress based on the ratio between completed ('doneOrSkippedCount') and all
+    // items ('totalCount'); returns in 'unknownSizeCount' the number of unfinished items
+    // with unknown size; returns in 'waitingCount' the number of items waiting for
+    // processing (waiting + delayed + processing)
     int GetSimpleProgress(int* doneOrSkippedCount, int* totalCount, int* unknownSizeCount,
                           int* waitingCount);
 
-    // vraci informace pro download - copy/move progres; v 'downloaded' vraci soucet downloadlych
-    // velikosti v bytech; v 'unknownSizeCount' vraci pocet nedokoncenych polozek s
-    // neznamou velikosti; v 'totalWithoutErrors' vraci soucet velikosti (v bytech)
-    // polozek, ktere nejsou v chybovem stavu (dotaz userovi je tez chybovy stav)
+    // returns information for download - copy/move progress; returns in 'downloaded' the sum of downloaded
+    // sizes in bytes; returns in 'unknownSizeCount' the number of unfinished items with
+    // unknown size; returns in 'totalWithoutErrors' the sum of sizes (in bytes)
+    // of items that are not in an error state (a prompt to the user is also an error state)
     void GetCopyProgressInfo(CQuadWord* downloaded, int* unknownSizeCount,
                              CQuadWord* totalWithoutErrors, int* errorsCount,
                              int* doneOrSkippedCount, int* totalCount, CFTPOperation* oper);
 
-    // vraci informace pro upload - copy/move progres; v 'uploaded' vraci soucet uploadlych
-    // velikosti v bytech; v 'unknownSizeCount' vraci pocet nedokoncenych polozek s
-    // neznamou velikosti; v 'totalWithoutErrors' vraci soucet velikosti (v bytech)
-    // polozek, ktere nejsou v chybovem stavu (dotaz userovi je tez chybovy stav)
+    // returns information for upload - copy/move progress; returns in 'uploaded' the sum of uploaded
+    // sizes in bytes; returns in 'unknownSizeCount' the number of unfinished items with
+    // unknown size; returns in 'totalWithoutErrors' the sum of sizes (in bytes)
+    // of items that are not in an error state (a prompt to the user is also an error state)
     void GetCopyUploadProgressInfo(CQuadWord* uploaded, int* unknownSizeCount,
                                    CQuadWord* totalWithoutErrors, int* errorsCount,
                                    int* doneOrSkippedCount, int* totalCount, CFTPOperation* oper);
 
-    // vraci TRUE pokud jsou vsechny polozky fronty ve stavu sqisDone
+    // returns TRUE if all items in the queue are in state sqisDone
     BOOL AllItemsDone();
 
-    // navysi hodnotu LastErrorOccurenceTime o jednu a vrati novou hodnotu LastErrorOccurenceTime;
-    // POZOR: volat jen v kriticke sekci QueueCritSect !!!
+    // increments LastErrorOccurenceTime by one and returns the new value of LastErrorOccurenceTime;
+    // CAUTION: call only in the QueueCritSect critical section!!!
     DWORD GiveLastErrorOccurenceTime() { return ++LastErrorOccurenceTime; }
 
-    // hleda UID polozky, ktera potrebuje otevrit Solve Error dialog (objevila se
-    // v ni "nova" (user ji jeste nevidel) chyba); vraci TRUE pokud se takovou
-    // polozku podarilo nalezt, jeji UID se vraci v 'itemUID' + jeji index
-    // ve fronte v 'itemIndex' (index se muze ihned zmenit, proto je treba ho
-    // brat jen jako orientacni)
+    // searches for the UID of the item that needs to open the Solve Error dialog (a
+    // "new" error appeared in it (the user has not seen it yet)); returns TRUE if such an
+    // item was found, its UID is returned in 'itemUID' + its index
+    // in the queue in 'itemIndex' (the index may change immediately, so it should
+    // be taken only as indicative)
     BOOL SearchItemWithNewError(int* itemUID, int* itemIndex);
 
 protected:
-    // hleda polozku s UID 'UID'; vraci NULL jen pokud nebyla polozka nalezena
-    // POZOR: volat jen v kriticke sekci QueueCritSect !!!
+    // searches for the item with UID 'UID'; returns NULL only if the item was not found
+    // CAUTION: call only in the QueueCritSect critical section!!!
     CFTPQueueItem* FindItemWithUID(int UID);
 
-    // aktualizuje GetOnlyExploreAndResolveItems a FirstWaitingItemIndex pri zmene polozky
-    // na stav sqisWaiting; 'itemIndex' je index menene polozky; 'exploreOrResolveItem'
-    // je vysledek metody IsExploreOrResolveItem() polozky
-    // POZOR: volat jen v kriticke sekci QueueCritSect !!!
+    // updates GetOnlyExploreAndResolveItems and FirstWaitingItemIndex when changing an item
+    // to state sqisWaiting; 'itemIndex' is the index of the item being changed; 'exploreOrResolveItem'
+    // is the result of the item's IsExploreOrResolveItem() method
+    // CAUTION: call only in the QueueCritSect critical section!!!
     void HandleFirstWaitingItemIndex(BOOL exploreOrResolveItem, int itemIndex);
 };
 
@@ -758,26 +758,26 @@ protected:
 
 enum CFTPDiskWorkType
 {
-    fdwtNone,               // inicializacni hodnota
-    fdwtCreateDir,          // vytvareni adresare
-    fdwtCreateFile,         // vytvareni/otevirani souboru v situaci: stav souboru je neznamy
-    fdwtRetryCreatedFile,   // vytvareni/otevirani souboru v situaci: soubor uz se povedlo vytvorit/prepsat/resumnout_s_moznosti_prepisu
-    fdwtRetryResumedFile,   // vytvareni/otevirani souboru v situaci: soubor uz se povedlo resumnout
-    fdwtCheckOrWriteFile,   // overovani obsahu nebo zapis do souboru (pri "resume" se kontroluje konec souboru, zapisuje se az za koncem souboru)
-    fdwtCreateAndWriteFile, // neni-li soubor otevreny, vytvori ho (prepise pripadny existujici soubor) + zapise flush data do souboru (na pozici aktualniho seeku, takze normalne na konec souboru)
-    fdwtListDir,            // vylistuje adresar na disku
-    fdwtDeleteDir,          // smazani adresare
-    fdwtOpenFileForReading, // otevreni zdrojoveho souboru na disku pro cteni (upload)
-    fdwtReadFile,           // cteni casti souboru do bufferu (pro upload)
-    fdwtReadFileInASCII,    // cteni casti souboru pro ASCII transfer mode (prevod vsech EOLu na CRLF) do bufferu (pro upload)
-    fdwtDeleteFile,         // smazani souboru na disku (zdrojovy soubor pri upload-Move)
+    fdwtNone,               // initialization value
+    fdwtCreateDir,          // creating a directory
+    fdwtCreateFile,         // creating/opening a file in a situation where the file state is unknown
+    fdwtRetryCreatedFile,   // creating/opening a file in a situation where the file has already been created/overwritten/resumed_with_overwrite_option
+    fdwtRetryResumedFile,   // creating/opening a file in a situation where the file has already been resumed
+    fdwtCheckOrWriteFile,   // verifying contents or writing to a file (for "resume" it checks the end of the file, writing happens beyond the end of the file)
+    fdwtCreateAndWriteFile, // if the file is not open, it creates it (overwrites an existing file if any) + writes flush data to the file (at the position of the current seek, so normally at the end of the file)
+    fdwtListDir,            // lists a directory on disk
+    fdwtDeleteDir,          // deleting a directory
+    fdwtOpenFileForReading, // opening the source file on disk for reading (upload)
+    fdwtReadFile,           // reading part of a file into a buffer (for upload)
+    fdwtReadFileInASCII,    // reading part of a file for ASCII transfer mode (converting all EOLs to CRLF) into a buffer (for upload)
+    fdwtDeleteFile,         // deleting a file on disk (source file for upload-Move)
 };
 
 struct CDiskListingItem
 {
-    char* Name;     // jmeno souboru/adresare
-    BOOL IsDir;     // TRUE pro adresar, FALSE pro soubor
-    CQuadWord Size; // jen soubor: velikost (v bytech)
+    char* Name;     // file/directory name
+    BOOL IsDir;     // TRUE for a directory, FALSE for a file
+    CQuadWord Size; // files only: size (in bytes)
 
     CDiskListingItem(const char* name, BOOL isDir, const CQuadWord& size);
     ~CDiskListingItem()
@@ -790,39 +790,39 @@ struct CDiskListingItem
 
 struct CFTPDiskWork
 {
-    int SocketMsg; // parametry pro postnuti zpravy pri dokonceni prace
+    int SocketMsg; // parameters for posting the message when work is finished
     int SocketUID;
     DWORD MsgID;
 
-    CFTPDiskWorkType Type; // typ prace na disku
+    CFTPDiskWorkType Type; // type of disk work
 
-    char Path[MAX_PATH]; // cilova cesta (napr. fdwtCheckOrWriteFile a fdwtCreateAndWriteFile nepouzivaji = "")
-    char Name[MAX_PATH]; // IN/OUT cilove jmeno (jmeno se muze zmenit pri autorename) (napr. fdwtCheckOrWriteFile nepouziva = "") (u fdwtCreateAndWriteFile je zde tgt-full-file-name)
+    char Path[MAX_PATH]; // target path (e.g. fdwtCheckOrWriteFile and fdwtCreateAndWriteFile do not use it = "")
+    char Name[MAX_PATH]; // IN/OUT target name (the name may change during autorename) (e.g. fdwtCheckOrWriteFile does not use it = "") (for fdwtCreateAndWriteFile this holds the tgt-full-file-name)
 
-    CFTPQueueItemAction ForceAction; // userem vynucena akce (napr. zadany autorename ze Solve Error dialogu)
+    CFTPQueueItemAction ForceAction; // action forced by the user (for example an autorename entered from the Solve Error dialog)
 
-    BOOL AlreadyRenamedName; // TRUE pokud je Name jiz prejmenovane jmeno (jmeno zdrojoveho souboru je jine)
+    BOOL AlreadyRenamedName; // TRUE if Name is already the renamed name (the name of the source file is different)
 
-    unsigned CannotCreateDir : 2;    // viz konstanty CANNOTCREATENAME_XXX
-    unsigned DirAlreadyExists : 2;   // viz konstanty DIRALREADYEXISTS_XXX
-    unsigned CannotCreateFile : 2;   // viz konstanty CANNOTCREATENAME_XXX
-    unsigned FileAlreadyExists : 3;  // viz konstanty FILEALREADYEXISTS_XXX
-    unsigned RetryOnCreatedFile : 3; // viz konstanty RETRYONCREATFILE_XXX
-    unsigned RetryOnResumedFile : 3; // viz konstanty RETRYONRESUMFILE_XXX
+    unsigned CannotCreateDir : 2;    // see the CANNOTCREATENAME_XXX constants
+    unsigned DirAlreadyExists : 2;   // see the DIRALREADYEXISTS_XXX constants
+    unsigned CannotCreateFile : 2;   // see the CANNOTCREATENAME_XXX constants
+    unsigned FileAlreadyExists : 3;  // see the FILEALREADYEXISTS_XXX constants
+    unsigned RetryOnCreatedFile : 3; // see the RETRYONCREATFILE_XXX constants
+    unsigned RetryOnResumedFile : 3; // see the RETRYONRESUMFILE_XXX constants
 
-    // info pro fdwtCheckOrWriteFile:
-    // testovat obsah souboru WorkFile od offsetu CheckFromOffset do WriteOrReadFromOffset (jsou-li shodne,
-    // nic se netestuje), jestli se shoduje s obsahem bufferu FlushDataBuffer (data jsou od zacatku);
-    // od offsetu WriteOrReadFromOffset v souboru WorkFile zapisovat FlushDataBuffer (data jsou od
-    // (WriteOrReadFromOffset - CheckFromOffset)); ValidBytesInFlushDataBuffer je pocet bytu v bufferu FlushDataBuffer
+    // info for fdwtCheckOrWriteFile:
+    // test the contents of the WorkFile file from offset CheckFromOffset to WriteOrReadFromOffset (if they match,
+    // nothing is tested) to see whether it matches the contents of the FlushDataBuffer buffer (data start at the beginning);
+    // starting at offset WriteOrReadFromOffset in the WorkFile file write FlushDataBuffer (the data start at
+    // (WriteOrReadFromOffset - CheckFromOffset)); ValidBytesInFlushDataBuffer is the number of bytes in the FlushDataBuffer buffer
     //
-    // info pro fdwtReadFile+fdwtReadFileInASCII:
-    // CheckFromOffset se nepouziva, soubor se cte od offsetu WriteOrReadFromOffset, cte se do bufferu FlushDataBuffer
-    // (u fdwtReadFileInASCII dochazi navic ke konverzi LF -> CRLF), ve ValidBytesInFlushDataBuffer se vraci pocet
-    // bytu umistenych do bufferu FlushDataBuffer (po dosazeni konce souboru zde bude nula), navic se
-    // ve WriteOrReadFromOffset vraci novy offset v souboru (u fdwtReadFileInASCII dochazi ke konverzi LF -> CRLF,
-    // takze novy offset nelze dopocitat z predchoziho offsetu a ValidBytesInFlushDataBuffer), u fdwtReadFileInASCII
-    // se v EOLsInFlushDataBuffer vraci pocet koncu radek v bufferu FlushDataBuffer
+    // info for fdwtReadFile + fdwtReadFileInASCII:
+    // CheckFromOffset is not used, the file is read from offset WriteOrReadFromOffset, it is read into the FlushDataBuffer buffer
+    // (for fdwtReadFileInASCII LF is additionally converted to CRLF), ValidBytesInFlushDataBuffer returns the number of bytes
+    // placed into the FlushDataBuffer buffer (after reaching the end of the file this will be zero), additionally
+    // WriteOrReadFromOffset returns the new offset in the file (for fdwtReadFileInASCII LF is converted to CRLF,
+    // so the new offset cannot be computed from the previous offset and ValidBytesInFlushDataBuffer), for fdwtReadFileInASCII
+    // EOLsInFlushDataBuffer returns the number of line endings in the FlushDataBuffer buffer
     CQuadWord CheckFromOffset;
     CQuadWord WriteOrReadFromOffset;
     char* FlushDataBuffer;
@@ -830,30 +830,30 @@ struct CFTPDiskWork
     int EOLsInFlushDataBuffer;
     HANDLE WorkFile;
 
-    // vysledek operace na disku se vraci v nasledujicich promennych:
-    DWORD ProblemID;                               // neni-li ITEMPR_OK, jde o chybu ktera nastala
-    DWORD WinError;                                // doplnuje nektere hodnoty ProblemID (pri ITEMPR_OK se ignoruje)
-    CFTPQueueItemState State;                      // neni-li sqisNone, jde o pozadovany novy stav polozky
-    char* NewTgtName;                              // neni-li NULL, jde o naalokovane nove jmeno (je nutna dealokace)
-    HANDLE OpenedFile;                             // neni-li NULL, jde o nove otevreny handle souboru (je nutne ho zavrit)
-    CQuadWord FileSize;                            // velikost souboru (u noveho nebo prepisovaneho souboru je nula)
-    BOOL CanOverwrite;                             // TRUE pokud muze dojit k prepisu souboru (pouziva se pro rozliseni "resume" a "resume or overwrite")
-    BOOL CanDeleteEmptyFile;                       // TRUE pokud muze dojit ke smazani prazdneho souboru (pouziva se pri cancelu/chybe polozky pro rozhodnuti zda smazat soubor nulove velikosti)
-    TIndirectArray<CDiskListingItem>* DiskListing; // neni-li NULL (jen Type == fdwtListDir), jde o naalokovany listing
+    // the result of the disk operation is returned in the following variables:
+    DWORD ProblemID;                               // if not ITEMPR_OK, this is the error that occurred
+    DWORD WinError;                                // complements some ProblemID values (ignored when ITEMPR_OK)
+    CFTPQueueItemState State;                      // if not sqisNone, this is the desired new state of the item
+    char* NewTgtName;                              // if not NULL, this is an allocated new name (must be deallocated)
+    HANDLE OpenedFile;                             // if not NULL, this is a newly opened file handle (must be closed)
+    CQuadWord FileSize;                            // file size (for a new or overwritten file it is zero)
+    BOOL CanOverwrite;                             // TRUE if the file can be overwritten (used to distinguish "resume" and "resume or overwrite")
+    BOOL CanDeleteEmptyFile;                       // TRUE if an empty file can be deleted (used when canceling/on item error to decide whether to delete a zero-size file)
+    TIndirectArray<CDiskListingItem>* DiskListing; // if not NULL (only when Type == fdwtListDir), this is an allocated listing
 
-    void CopyFrom(CFTPDiskWork* work); // nakopiruje hodnoty z 'work' do 'this'
+    void CopyFrom(CFTPDiskWork* work); // copies values from 'work' into 'this'
 };
 
 struct CFTPFileToClose
 {
-    char FileName[MAX_PATH]; // jmeno souboru
-    HANDLE File;             // handle souboru, ktery mame zavrit
-    BOOL DeleteIfEmpty;      // TRUE = pokud je zavirany soubor prazdny, smazeme ho
-    BOOL SetDateAndTime;     // TRUE = pred zavrenim souboru nastavit 'Date'+'Time'
-    CFTPDate Date;           // nastavovane datum posledniho zapisu do souboru; je-li Date.Day==0, jde o "prazdnou hodnotu"
-    CFTPTime Time;           // nastavovany cas posledniho zapisu do souboru; je-li Time.Hour==24, jde o "prazdnou hodnotu"
-    BOOL AlwaysDeleteFile;   // TRUE = smazat soubor po uzavreni
-    CQuadWord EndOfFile;     // neni-li CQuadWord(-1, -1), jde o offset, na kterem se soubor orizne
+    char FileName[MAX_PATH]; // file name
+    HANDLE File;             // file handle we should close
+    BOOL DeleteIfEmpty;      // TRUE = if the file being closed is empty, delete it
+    BOOL SetDateAndTime;     // TRUE = set 'Date'+'Time' before closing the file
+    CFTPDate Date;           // date to set as the last write time of the file; if Date.Day==0, it is an "empty value"
+    CFTPTime Time;           // time to set as the last write time of the file; if Time.Hour==24, it is an "empty value"
+    BOOL AlwaysDeleteFile;   // TRUE = delete the file after closing
+    CQuadWord EndOfFile;     // if not CQuadWord(-1, -1), this is the offset at which the file will be truncated
 
     CFTPFileToClose(const char* path, const char* name, HANDLE file, BOOL deleteIfEmpty,
                     BOOL setDateAndTime, const CFTPDate* date, const CFTPTime* time,
@@ -863,22 +863,22 @@ struct CFTPFileToClose
 class CFTPDiskThread : public CThread
 {
 protected:
-    HANDLE ContEvent; // "signaled" pokud je v poli Work nejaka prace nebo pokud se ma thread ukoncit
+    HANDLE ContEvent; // "signaled" if there is work in the Work array or if the thread should terminate
 
-    // kriticka sekce pro pristup k datove casti objektu
-    // POZOR: pristup do kritickych sekci konzultovat v souboru servers\critsect.txt !!!
+    // critical section for accessing the data part of the object
+    // CAUTION: consult access to critical sections in servers\critsect.txt!!!
     CRITICAL_SECTION DiskCritSect;
 
     TIndirectArray<CFTPDiskWork> Work;
     TIndirectArray<CFTPFileToClose> FilesToClose;
-    BOOL ShouldTerminate;  // TRUE = thread se ma ukoncit
-    BOOL WorkIsInProgress; // TRUE = probiha zpracovani polozky Work[0]
+    BOOL ShouldTerminate;  // TRUE = the thread should terminate
+    BOOL WorkIsInProgress; // TRUE = processing of item Work[0] is in progress
 
-    int NextFileCloseIndex; // poradove cislo dalsiho zavirani souboru
-    int DoneFileCloseIndex; // poradove cislo posledniho hotoveho zavreni souboru (-1 = zadny se zatim nezavrel)
+    int NextFileCloseIndex; // sequence number of the next file close operation
+    int DoneFileCloseIndex; // sequence number of the last completed file close (-1 = none closed yet)
 
-    // kriticka sekce je bez synchronizace (pristup mimo DiskCritSect)
-    HANDLE FileClosedEvent; // pulsne se po provedeni zavreni souboru (resi cekani na zavreni souboru)
+    // critical section without synchronization (access outside DiskCritSect)
+    HANDLE FileClosedEvent; // pulsed after a file is closed (handles waiting for file closure)
 
 public:
     CFTPDiskThread();
@@ -888,32 +888,32 @@ public:
 
     void Terminate();
 
-    // prida threadu praci, ukazatel 'work' musi byt platny az do prijeti zpravy o vysledku
-    // nebo do volani CancelWork(); vraci uspech
+    // adds work to the thread, the pointer 'work' must remain valid until the result message is received
+    // or until CancelWork() is called; returns success
     BOOL AddWork(CFTPDiskWork* work);
 
-    // rusi praci 'work' pridanou do threadu; vraci TRUE pokud se prace jeste nezacala provadet
-    // nebo pokud ji jeste lze prerusit (je rozpracovana a az dobehne, provede se k ni opacny
-    // krok); je-li prace rozpracovana, vraci TRUE v 'workIsInProgress' (neni-li NULL); vraci
-    // FALSE pokud jiz prace probehla (je hotova)
+    // cancels the work 'work' added to the thread; returns TRUE if the work has not started yet
+    // or if it can still be interrupted (it is in progress and after finishing the opposite
+    // action will be performed); if the work is in progress, returns TRUE in 'workIsInProgress' (if not NULL); returns
+    // FALSE if the work has already finished
     BOOL CancelWork(const CFTPDiskWork* work, BOOL* workIsInProgress);
 
-    // prida threadu soubor k zavreni, je-li 'deleteIfEmpty' TRUE a soubor ma nulovou
-    // velikost, dojde navic k jeho smazani; 'path'+'name' je plne jmeno souboru;
-    // je-li 'setDateAndTime' TRUE, dojde pred zavrenim souboru k nastaveni casu zapisu
-    // na 'date'+'time' (POZOR: je-li date->Day==0 resp. time->Hour==24, jde o
-    // "prazdne hodnoty" u datumu resp. casu); je-li 'deleteFile' TRUE, smazeme soubor
-    // ihned po jeho uzavreni; neni-li 'setEndOfFile' NULL, dojde po zavreni souboru
-    // k oriznuti na offsetu 'setEndOfFile'; neni-li 'fileCloseIndex' NULL, vraci se
-    // v nem poradove cislo zavreni souboru (pozdeji se na provedeni tohoto zavreni
-    // da cekat, viz WaitForFileClose)
+    // adds a file to close to the thread; if 'deleteIfEmpty' is TRUE and the file has zero
+    // size, it will also be deleted; 'path'+'name' is the full file name;
+    // if 'setDateAndTime' is TRUE, before closing the file the write time
+    // is set to 'date'+'time' (CAUTION: if date->Day==0 or time->Hour==24, these are
+    // "empty values" for the date or time); if 'deleteFile' is TRUE, delete the file
+    // immediately after closing it; if 'setEndOfFile' is not NULL, the file will be truncated
+    // to the offset 'setEndOfFile' after closing; if 'fileCloseIndex' is not NULL, it returns
+    // the sequence number of the file close (you can wait for this closure later,
+    // see WaitForFileClose)
     BOOL AddFileToClose(const char* path, const char* name, HANDLE file, BOOL deleteIfEmpty,
                         BOOL setDateAndTime, const CFTPDate* date, const CFTPTime* time,
                         BOOL deleteFile, CQuadWord* setEndOfFile, int* fileCloseIndex);
 
-    // ceka na zavreni souboru s poradovym cislem 'fileCloseIndex' nebo na timeout
-    // ('timeout' v milisekundach nebo hodnota INFINITE = zadny timeout); vraci TRUE
-    // pokud se dockal zavreni, FALSE pri timeoutu
+    // waits for the file with sequence number 'fileCloseIndex' to be closed or for a timeout
+    // ('timeout' in milliseconds or the value INFINITE = no timeout); returns TRUE
+    // if the closure happened, FALSE on timeout
     BOOL WaitForFileClose(int fileCloseIndex, DWORD timeout);
 
     virtual unsigned Body();
@@ -923,674 +923,671 @@ public:
 // ****************************************************************************
 // CFTPWorker
 //
-// "control connection" zpracovavajici vybranou polozku operace (vybranou
-// z fronty polozek operace)
+// "control connection" processing the selected operation item (selected
+// from the queue of operation items)
 
 class CFTPOperation;
 struct CUploadWaitingWorker;
 
 enum CFTPWorkerState
 {
-    fwsLookingForWork,      // nema praci a mel by si ji najit
-    fwsSleeping,            // nema praci, zadna nebyla k dispozici, po zmene fronty polozek operace provest prechod na fwsLookingForWork
-    fwsPreparing,           // ma praci, overi proveditelnost polozky operace, overi connectionu a provede prechod na fwsWorking
-    fwsConnecting,          // ma praci, nema connectionu, snazi se pripojit na server (timeout = prechod na fwsWaitingForReconnect); pokud se nelze pripojit, vrati praci a provede prechod na fwsConnectionError; POZOR: pri ConnectAttemptNumber > 0 je nutne mit nastaveny duvod pro novy Connect v ErrorDescr
-    fwsWaitingForReconnect, // ma praci, nema connectionu, ceka na dalsi pokus o pripojeni na server (prechod na fwsConnecting); popis chyby je v ErrorDescr
-    fwsConnectionError,     // ma nebo nema praci (snazi se prace zbavit), nema connectionu, ceka na zasah uzivatele (zadani jmena+hesla, pokyn pro dalsi sadu reconnectu, atd.); popis chyby je v ErrorDescr
-    fwsWorking,             // ma praci, ma connectionu, provadi praci (zpracovava polozku operace)
-    fwsStopped,             // zastaveny, ceka se uz jen na dealokaci (worker si uz nesmi nabirat dalsi praci)
+    fwsLookingForWork,      // has no work and should find some
+    fwsSleeping,            // has no work, none was available, after the queue of operation items changes switch to fwsLookingForWork
+    fwsPreparing,           // has work, verifies the feasibility of the operation item, checks the connection and switches to fwsWorking
+    fwsConnecting,          // has work, has no connection, tries to connect to the server (timeout = switch to fwsWaitingForReconnect); if connection fails, returns the work and switches to fwsConnectionError; CAUTION: when ConnectAttemptNumber > 0 a reason for a new Connect must be set in ErrorDescr
+    fwsWaitingForReconnect, // has work, has no connection, waits for the next attempt to connect to the server (switch to fwsConnecting); error description is in ErrorDescr
+    fwsConnectionError,     // may or may not have work (tries to get rid of it), has no connection, waits for user intervention (entering username+password, instruction for another set of reconnects, etc.); error description is in ErrorDescr
+    fwsWorking,             // has work, has a connection, performs the work (processes the operation item)
+    fwsStopped,             // stopped, only waiting for deallocation (the worker must not take any more work)
 };
 
-enum CFTPWorkerSubState // podstavy pro jednotlive stavy z CFTPWorkerState
+enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
 {
-    fwssNone, // zakladni stav kazdeho stavu z CFTPWorkerState
+    fwssNone, // base substate of every state from CFTPWorkerState
 
-    // podstavy stavu fwsLookingForWork:
-    fwssLookFWQuitSent, // po poslani prikazu "QUIT"
+    // substates of fwsLookingForWork:
+    fwssLookFWQuitSent, // after sending the "QUIT" command
 
-    // podstavy stavu fwsSleeping:
-    fwssSleepingQuitSent, // po poslani prikazu "QUIT"
+    // substates of fwsSleeping:
+    fwssSleepingQuitSent, // after sending the "QUIT" command
 
-    // podstavy stavu fwsPreparing:
-    fwssPrepQuitSent,                 // po poslani prikazu "QUIT"
-    fwssPrepWaitForDisk,              // cekame na dokonceni diskove operace (soucast overeni proveditelnosti polozky)
-    fwssPrepWaitForDiskAfterQuitSent, // po poslani prikazu "QUIT" + cekame na dokonceni diskove operace (soucast overeni proveditelnosti polozky)
+    // substates of fwsPreparing:
+    fwssPrepQuitSent,                 // after sending the "QUIT" command
+    fwssPrepWaitForDisk,              // waiting for the disk operation to finish (part of verifying the feasibility of the item)
+    fwssPrepWaitForDiskAfterQuitSent, // after sending the "QUIT" command + waiting for the disk operation to finish (part of verifying the feasibility of the item)
 
-    // podstavy stavu fwsConnecting:
-    // fwssNone,                // zjistime jestli je potreba ziskavat IP adresu
-    fwssConWaitingForIP,        // cekame na prijeti IP adresy (preklad ze jmenne adresy)
-    fwssConConnect,             // provedeme Connect()
-    fwssConWaitForConRes,       // cekame na vysledek Connect()
-    fwssConWaitForPrompt,       // cekame na login prompt od serveru
+    // substates of fwsConnecting:
+    // fwssNone,                // determine whether we need to obtain an IP address
+    fwssConWaitingForIP,        // waiting to receive an IP address (resolving the host name)
+    fwssConConnect,             // perform Connect()
+    fwssConWaitForConRes,       // wait for the result of Connect()
+    fwssConWaitForPrompt,       // wait for the login prompt from the server
     fwssConSendAUTH,            // send AUTH TLS before login script
     fwssConWaitForAUTHCmdRes,   // wait for response to AUTH TLS
     fwssConSendPBSZ,            // send PBSZ before login script
     fwssConWaitForPBSZCmdRes,   // wait for response to PBSZ
     fwssConSendPROT,            // send PROT before login script
     fwssConWaitForPROTCmdRes,   // wait for response to PROT
-    fwssConSendNextScriptCmd,   // posleme dalsi prikaz z login skriptu
-    fwssConWaitForScriptCmdRes, // cekame na vysledek prikazu z login skriptu
+    fwssConSendNextScriptCmd,   // send the next command from the login script
+    fwssConWaitForScriptCmdRes, // wait for the result of the command from the login script
     fwssConSendMODEZ,           // send MODE Z after login script to enable compression
     fwssConWaitForMODEZCmdRes,  // wait for response to MODE Z
-    fwssConSendInitCmds,        // posleme dalsi inicializacni prikaz (user-defined, viz CFTPOperation::InitFTPCommands) - POZOR: pred prvnim volanim nastavit NextInitCmd=0
-    fwssConWaitForInitCmdRes,   // cekame na vysledek provadeneho inicializacniho prikazu
-    fwssConSendSyst,            // zjistime system serveru (posleme prikaz "SYST")
-    fwssConWaitForSystRes,      // cekame na system serveru (vysledek prikazu "SYST")
-    fwssConReconnect,           // vyhodnotime jestli provest reconnect nebo ohlasit chybu workera (POZOR: na vstupu musi byt nastaven ErrorDescr)
+    fwssConSendInitCmds,        // send another initialization command (user-defined, see CFTPOperation::InitFTPCommands) - CAUTION: set NextInitCmd=0 before the first call
+    fwssConWaitForInitCmdRes,   // wait for the result of the executed initialization command
+    fwssConSendSyst,            // determine the server system (send the "SYST" command)
+    fwssConWaitForSystRes,      // wait for the server system information (result of the "SYST" command)
+    fwssConReconnect,           // decide whether to perform reconnect or report a worker error (CAUTION: ErrorDescr must be set on input)
 
-    // podstavy stavu fwsWorking:
-    fwssWorkStopped, // prace zastavena (byla-li otevrena connectiona, byl jiz poslan prikaz "QUIT"), ceka se jen na uvolneni workera (stejne pro vsechny typy praci)
-    // fwssNone,                 // otestujeme ShouldStop + prejdeme do podstavu fwssWorkStartWork (stejne pro vsechny typy praci)
-    fwssWorkStartWork,                         // zacatek prace (stejne pro vsechny typy praci)
-    fwssWorkExplWaitForCWDRes,                 // explore-dir: cekame na vysledek "CWD" (zmena cesty do zkoumaneho adresare)
-    fwssWorkExplWaitForPWDRes,                 // explore-dir: cekame na vysledek "PWD" (zjisteni pracovni cesty zkoumaneho adresare)
-    fwssWorkExplWaitForPASVRes,                // explore-dir: cekame na vysledek "PASV" (zjisteni IP+port pro pasivni data-connectionu)
-    fwssWorkExplOpenActDataCon,                // explore-dir: otevreme aktivni data-connectionu
-    fwssWorkExplWaitForListen,                 // explore-dir: cekame na otevreni "listen" portu (otevirame aktivni data-connectionu) - lokalniho nebo na proxy serveru
-    fwssWorkExplSetTypeA,                      // explore-dir: nastavime prenosovy rezim na ASCII
-    fwssWorkExplWaitForPORTRes,                // explore-dir: cekame na vysledek "PORT" (predani IP+port serveru pro aktivni data-connectionu)
-    fwssWorkExplWaitForTYPERes,                // explore-dir: cekame na vysledek "TYPE" (prepnuti do ASCII rezimu prenosu dat)
-    fwssWorkExplSendListCmd,                   // explore-dir: posleme prikaz LIST
-    fwssWorkExplActivateDataCon,               // explore-dir: aktivujeme data-connectionu (tesne po poslani prikazu LIST)
-    fwssWorkExplWaitForLISTRes,                // explore-dir: cekame na vysledek "LIST" (cekame na konec prenosu dat listingu)
-    fwssWorkExplWaitForDataConFinish,          // explore-dir: cekame na ukonceni "data connection" (odpoved serveru na "LIST" uz prisla)
-    fwssWorkExplProcessLISTRes,                // explore-dir: zpracovani vysledku "LIST" (az po ukonceni "data connection" a zaroven prijeti odpovedi serveru na "LIST")
-    fwssWorkResLnkWaitForCWDRes,               // resolve-link: cekame na vysledek "CWD" (zmena cesty do zkoumaneho linku - podari-li se, je to link na adresar)
-    fwssWorkSimpleCmdWaitForCWDRes,            // jednoduche prikazy (vse krome explore a resolve polozek): cekame na vysledek "CWD" (zmena cesty do adresare zpracovavaneho souboru/linku/podadresare)
-    fwssWorkSimpleCmdStartWork,                // jednoduche prikazy (vse krome explore a resolve polozek): zacatek prace (pracovni adresar uz je nastaveny)
-    fwssWorkDelFileWaitForDELERes,             // mazani souboru/linku: cekame na vysledek "DELE" (smazani souboru/linku)
-    fwssWorkDelDirWaitForRMDRes,               // mazani adresare/linku: cekame na vysledek "RMD" (smazani adresare/linku)
-    fwssWorkChAttrWaitForCHMODRes,             // zmena atributu: cekame na vysledek "SITE CHMOD" (zmena modu souboru/adresare, asi jen pro Unix)
-    fwssWorkChAttrWaitForCHMODQuotedRes,       // zmena atributu (jmeno v uvozovkach): cekame na vysledek "SITE CHMOD" (zmena modu souboru/adresare, asi jen pro Unix)
-    fwssWorkCopyWaitForPASVRes,                // copy/move souboru: cekame na vysledek "PASV" (zjisteni IP+port pro pasivni data-connectionu)
-    fwssWorkCopyOpenActDataCon,                // copy/move souboru: otevreme aktivni data-connectionu
-    fwssWorkCopyWaitForListen,                 // copy/move souboru: cekame na otevreni "listen" portu (otevirame aktivni data-connectionu) - lokalniho nebo na proxy serveru
-    fwssWorkCopySetType,                       // copy/move souboru: nastavime pozadovany prenosovy rezim (ASCII / binary)
-    fwssWorkCopyWaitForPORTRes,                // copy/move souboru: cekame na vysledek "PORT" (predani IP+port serveru pro aktivni data-connectionu)
-    fwssWorkCopyWaitForTYPERes,                // copy/move souboru: cekame na vysledek "TYPE" (prepnuti do ASCII / binary rezimu prenosu dat)
-    fwssWorkCopyResumeFile,                    // copy/move souboru: pripadne zajistime resume souboru (poslani prikazu REST)
-    fwssWorkCopyWaitForResumeRes,              // copy/move souboru: cekame na vysledek "REST" prikazu (resume souboru)
-    fwssWorkCopyResumeError,                   // copy/move souboru: chyba prikazu "REST" (not implemented, atp.) nebo jiz dopredu vime, ze REST selze
-    fwssWorkCopySendRetrCmd,                   // copy/move souboru: posleme prikaz RETR (zahajeni cteni souboru, pripadne od offsetu zadaneho pres Resume)
-    fwssWorkCopyActivateDataCon,               // copy/move souboru: aktivujeme data-connectionu (tesne po poslani prikazu RETR)
-    fwssWorkCopyWaitForRETRRes,                // copy/move souboru: cekame na vysledek "RETR" (cekame na konec cteni souboru)
-    fwssWorkCopyWaitForDataConFinish,          // copy/move souboru: cekame na ukonceni "data connection" (odpoved serveru na "RETR" uz prisla)
-    fwssWorkCopyFinishFlushData,               // copy/move souboru: zajistime dokonceni flushnuti dat z data-connectiony (ta je jiz zavrena)
-    fwssWorkCopyFinishFlushDataAfterQuitSent,  // copy/move souboru: po poslani "QUIT" cekame na zavreni control-connectiony + cekame na dokonceni flushnuti dat na disk
-    fwssWorkCopyProcessRETRRes,                // copy/move souboru: zpracovani vysledku "RETR" (az po ukonceni "data connection", flushnuti dat na disk a zaroven prijeti odpovedi serveru na "RETR")
-    fwssWorkCopyDelayedAutoRetry,              // copy/move souboru: cekame WORKER_DELAYEDAUTORETRYTIMEOUT milisekund na auto-retry (aby mohly prijit vsechny neocekavane odpovedi ze serveru)
-    fwssWorkCopyTransferFinished,              // copy/move souboru: soubor je prenesen, v pripade Move smazeme zdrojovy soubor
-    fwssWorkCopyMoveWaitForDELERes,            // copy/move souboru: cekame na vysledek "DELE" (Move: smazani zdrojoveho souboru/linku po dokonceni prenosu souboru)
-    fwssWorkCopyDone,                          // copy/move souboru: hotovo, zavreme soubor a jdeme na dalsi polozku
-    fwssWorkUploadWaitForListing,              // upload copy/move souboru: cekame az jiny worker dokonci listovani cilove cesty na serveru (pro zjisteni kolizi)
-    fwssWorkUploadResolveLink,                 // upload copy/move souboru: zjistime co je link (soubor/adresar), jehoz jmeno koliduje se jmenem ciloveho adresare/souboru na serveru
-    fwssWorkUploadResLnkWaitForCWDRes,         // upload copy/move souboru: cekame na vysledek "CWD" (zmena cesty do zkoumaneho linku - podari-li se, je to link na adresar)
-    fwssWorkUploadCreateDir,                   // upload copy/move souboru: vytvorime cilovy adresar na serveru - zacneme nastavenim cilove cesty
-    fwssWorkUploadCrDirWaitForCWDRes,          // upload copy/move souboru: cekame na vysledek "CWD" (nastaveni cilove cesty)
-    fwssWorkUploadCrDirWaitForMKDRes,          // upload copy/move souboru: cekame na vysledek "MKD" (vytvoreni ciloveho adresare)
-    fwssWorkUploadCantCreateDirInvName,        // upload copy/move souboru: resime chybu "target directory cannot be created" (invalid name)
-    fwssWorkUploadCantCreateDirFileEx,         // upload copy/move souboru: resime chybu "target directory cannot be created" (name already used for file or link to file)
-    fwssWorkUploadDirExists,                   // upload copy/move souboru: resime chybu "target directory already exists"
-    fwssWorkUploadDirExistsDirLink,            // stejny stav jako fwssWorkUploadDirExists: navic jen to, ze bylo prave provedeno CWD do ciloveho adresare (test jestli je link adresar nebo soubor)
-    fwssWorkUploadAutorenameDir,               // upload copy/move souboru: reseni chyby vytvareni ciloveho adresare - autorename - zacneme nastavenim cilove cesty
-    fwssWorkUploadAutorenDirWaitForCWDRes,     // upload copy/move souboru: autorename - cekame na vysledek "CWD" (nastaveni cilove cesty)
-    fwssWorkUploadAutorenDirSendMKD,           // upload copy/move souboru: autorename - zkusi vygenerovat dalsi nove jmeno pro cilovy adresar a zkusi tento adresar vytvorit
-    fwssWorkUploadAutorenDirWaitForMKDRes,     // upload copy/move souboru: autorename - cekame na vysledek "MKD" (vytvoreni ciloveho adresare pod novym jmenem)
-    fwssWorkUploadGetTgtPath,                  // upload copy/move souboru: zjistime cestu do ciloveho adresare na serveru - zacneme zmenou cesty do nej
-    fwssWorkUploadGetTgtPathWaitForCWDRes,     // upload copy/move souboru: cekame na vysledek "CWD" (nastaveni cesty do ciloveho adresare)
-    fwssWorkUploadGetTgtPathSendPWD,           // upload copy/move souboru: posleme "PWD" (zjisteni cesty do ciloveho adresare)
-    fwssWorkUploadGetTgtPathWaitForPWDRes,     // upload copy/move souboru: cekame na vysledek "PWD" (zjisteni cesty do ciloveho adresare)
-    fwssWorkUploadListDiskDir,                 // upload copy/move souboru: jdeme vylistovat uploadovany adresar na disku
-    fwssWorkUploadListDiskWaitForDisk,         // upload copy/move souboru: cekame na dokonceni diskove operace (listovani adresare)
-    fwssWorkUploadListDiskWaitForDiskAftQuit,  // upload copy/move souboru: po poslani prikazu "QUIT" + cekame na dokonceni diskove operace (listovani adresare)
-    fwssWorkUploadCantCreateFileInvName,       // upload copy/move souboru: resime chybu "target file cannot be created" (invalid name)
-    fwssWorkUploadCantCreateFileDirEx,         // upload copy/move souboru: resime chybu "target file cannot be created" (name already used for directory or link to directory)
-    fwssWorkUploadFileExists,                  // upload copy/move souboru: resime chybu "target file already exists"
-    fwssWorkUploadNewFile,                     // upload copy/move souboru: cilovy soubor neexistuje, jdeme ho uploadnout
-    fwssWorkUploadAutorenameFile,              // upload copy/move souboru: reseni chyby vytvareni ciloveho souboru - autorename
-    fwssWorkUploadResumeFile,                  // upload copy/move souboru: problem "cilovy soubor existuje" - resume
-    fwssWorkUploadTestIfFinished,              // upload copy/move souboru: poslali jsme cely soubor + server "jen" neodpovedel, nejspis je soubor OK, otestujeme to
-    fwssWorkUploadResumeOrOverwriteFile,       // upload copy/move souboru: problem "cilovy soubor existuje" - resume or overwrite
-    fwssWorkUploadOverwriteFile,               // upload copy/move souboru: problem "cilovy soubor existuje" - overwrite
-    fwssWorkUploadFileSetTgtPath,              // upload souboru: nastaveni cilove cesty
-    fwssWorkUploadFileSetTgtPathWaitForCWDRes, // upload souboru: cekame na vysledek "CWD" (nastaveni cilove cesty)
-    fwssWorkUploadGenNewName,                  // upload souboru: autorename: generovani noveho jmena
-    fwssWorkUploadLockFile,                    // upload souboru: otevreni souboru v FTPOpenedFiles
-    fwssWorkUploadDelForOverwrite,             // upload souboru: pokud jde o overwrite a ma se pouzit napred delete, zavolame ho zde
-    fwssWorkUploadDelForOverWaitForDELERes,    // upload souboru: cekani na vysledek DELE pred overwritem
-    fwssWorkUploadFileAllocDataCon,            // upload souboru: alokace data-connectiony
-    fwssWorkUploadGetFileSize,                 // upload souboru: resume: zjisteni velikosti souboru (pres prikaz SIZE nebo z listingu)
-    fwssWorkUploadWaitForSIZERes,              // upload souboru: resume: cekani na odpoved na prikaz SIZE
-    fwssWorkUploadGetFileSizeFromListing,      // upload souboru: resume: prikaz SIZE selhal (nebo neni implementovan), zjistime velikost souboru z listingu
-    fwssWorkUploadTestFileSizeOK,              // upload copy/move souboru: po chybe uploadu test velikosti souboru vysel OK
-    fwssWorkUploadTestFileSizeFailed,          // upload copy/move souboru: po chybe uploadu test velikosti souboru nevysel OK
-    fwssWorkUploadWaitForPASVRes,              // upload copy/move souboru: cekame na vysledek "PASV" (zjisteni IP+port pro pasivni data-connectionu)
-    fwssWorkUploadOpenActDataCon,              // upload copy/move souboru: otevreme aktivni data-connectionu
-    fwssWorkUploadWaitForListen,               // upload copy/move souboru: cekame na otevreni "listen" portu (otevirame aktivni data-connectionu) - lokalniho nebo na proxy serveru
-    fwssWorkUploadWaitForPORTRes,              // upload copy/move souboru: cekame na vysledek "PORT" (predani IP+port serveru pro aktivni data-connectionu)
-    fwssWorkUploadSetType,                     // upload copy/move souboru: nastavime pozadovany prenosovy rezim (ASCII / binary)
-    fwssWorkUploadWaitForTYPERes,              // upload copy/move souboru: cekame na vysledek "TYPE" (prepnuti do ASCII / binary rezimu prenosu dat)
-    fwssWorkUploadSendSTORCmd,                 // upload copy/move souboru: posleme prikaz STOR/APPE (zahajeni ukladani souboru na server)
-    fwssWorkUploadActivateDataCon,             // upload copy/move souboru: aktivujeme data-connectionu (tesne po poslani prikazu STOR)
-    fwssWorkUploadWaitForSTORRes,              // upload copy/move souboru: cekame na vysledek "STOR/APPE" (cekame na konec uploadu souboru)
-    fwssWorkUploadCopyTransferFinished,        // upload copy/move souboru: cilovy soubor je jiz uploadly, jestli jde o Move, zkusime jeste smaznout zdrojovy soubor na disku
-    fwssWorkUploadDelFileWaitForDisk,          // upload copy/move souboru: cekame na dokonceni diskove operace (smazani zdrojoveho souboru)
-    fwssWorkUploadDelFileWaitForDiskAftQuit,   // upload copy/move souboru: po poslani prikazu "QUIT" + cekame na dokonceni diskove operace (smazani zdrojoveho souboru)
-    fwssWorkUploadWaitForDELERes,              // upload copy/move souboru: pderASCIIForBinaryFile: cekame na vysledek prikazu DELE (smazani ciloveho souboru)
-    fwssWorkUploadCopyDone,                    // upload copy/move souboru: hotovo, jdeme na dalsi polozku
+    // substates of fwsWorking:
+    fwssWorkStopped, // work stopped (if the connection was open, the "QUIT" command was already sent), now only waiting for the worker to be released (the same for all work types)
+    // fwssNone,                 // check ShouldStop + transition to substate fwssWorkStartWork (the same for all work types)
+    fwssWorkStartWork,                         // start of work (the same for all work types)
+    fwssWorkExplWaitForCWDRes,                 // explore-dir: waiting for the result of "CWD" (changing to the explored directory)
+    fwssWorkExplWaitForPWDRes,                 // explore-dir: waiting for the result of "PWD" (obtaining the working path of the explored directory)
+    fwssWorkExplWaitForPASVRes,                // explore-dir: waiting for the result of "PASV" (getting IP+port for the passive data connection)
+    fwssWorkExplOpenActDataCon,                // explore-dir: open the active data connection
+    fwssWorkExplWaitForListen,                 // explore-dir: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkExplSetTypeA,                      // explore-dir: set transfer mode to ASCII
+    fwssWorkExplWaitForPORTRes,                // explore-dir: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
+    fwssWorkExplWaitForTYPERes,                // explore-dir: waiting for the result of "TYPE" (switch to ASCII data transfer mode)
+    fwssWorkExplSendListCmd,                   // explore-dir: send the LIST command
+    fwssWorkExplActivateDataCon,               // explore-dir: activate the data connection (right after sending the LIST command)
+    fwssWorkExplWaitForLISTRes,                // explore-dir: waiting for the result of "LIST" (waiting for the end of the listing transfer)
+    fwssWorkExplWaitForDataConFinish,          // explore-dir: waiting for the "data connection" to end (the server response to "LIST" already arrived)
+    fwssWorkExplProcessLISTRes,                // explore-dir: process the result of "LIST" (after ending the "data connection" and receiving the server response to "LIST")
+    fwssWorkResLnkWaitForCWDRes,               // resolve-link: waiting for the result of "CWD" (changing to the explored link - if successful it is a directory link)
+    fwssWorkSimpleCmdWaitForCWDRes,            // simple commands (everything except explore and resolve items): waiting for the result of "CWD" (changing to the directory of the processed file/link/subdirectory)
+    fwssWorkSimpleCmdStartWork,                // simple commands (everything except explore and resolve items): start of work (the working directory is already set)
+    fwssWorkDelFileWaitForDELERes,             // deleting file/link: waiting for the result of "DELE" (delete file/link)
+    fwssWorkDelDirWaitForRMDRes,               // deleting directory/link: waiting for the result of "RMD" (delete directory/link)
+    fwssWorkChAttrWaitForCHMODRes,             // change attributes: waiting for the result of "SITE CHMOD" (change file/directory mode, probably Unix only)
+    fwssWorkChAttrWaitForCHMODQuotedRes,       // change attributes (name in quotes): waiting for the result of "SITE CHMOD" (change file/directory mode, probably Unix only)
+    fwssWorkCopyWaitForPASVRes,                // copy/move file: waiting for the result of "PASV" (getting IP+port for the passive data connection)
+    fwssWorkCopyOpenActDataCon,                // copy/move file: open the active data connection
+    fwssWorkCopyWaitForListen,                 // copy/move file: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkCopySetType,                       // copy/move file: set the required transfer mode (ASCII / binary)
+    fwssWorkCopyWaitForPORTRes,                // copy/move file: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
+    fwssWorkCopyWaitForTYPERes,                // copy/move file: waiting for the result of "TYPE" (switch to ASCII / binary data transfer mode)
+    fwssWorkCopyResumeFile,                    // copy/move file: optionally ensure resume (send the REST command)
+    fwssWorkCopyWaitForResumeRes,              // copy/move file: waiting for the result of the "REST" command (resume file)
+    fwssWorkCopyResumeError,                   // copy/move file: error of the "REST" command (not implemented, etc.) or we already know REST will fail
+    fwssWorkCopySendRetrCmd,                   // copy/move file: send the RETR command (start reading the file, possibly from the offset specified by Resume)
+    fwssWorkCopyActivateDataCon,               // copy/move file: activate the data connection (right after sending the RETR command)
+    fwssWorkCopyWaitForRETRRes,                // copy/move file: waiting for the result of "RETR" (waiting for the file reading to finish)
+    fwssWorkCopyWaitForDataConFinish,          // copy/move file: waiting for the "data connection" to end (the server response to "RETR" already arrived)
+    fwssWorkCopyFinishFlushData,               // copy/move file: ensure flushing the data from the data connection is finished (the connection is already closed)
+    fwssWorkCopyFinishFlushDataAfterQuitSent,  // copy/move file: after sending "QUIT" wait for the control connection to close + wait for the data flush to disk to finish
+    fwssWorkCopyProcessRETRRes,                // copy/move file: process the result of "RETR" (after ending the "data connection", flushing data to disk and receiving the server response to "RETR")
+    fwssWorkCopyDelayedAutoRetry,              // copy/move file: wait WORKER_DELAYEDAUTORETRYTIMEOUT milliseconds for auto-retry (so that all unexpected responses from the server can arrive)
+    fwssWorkCopyTransferFinished,              // copy/move file: file transferred, in case of Move delete the source file
+    fwssWorkCopyMoveWaitForDELERes,            // copy/move file: waiting for the result of "DELE" (Move: delete the source file/link after finishing the file transfer)
+    fwssWorkCopyDone,                          // copy/move file: done, close the file and go to the next item
+    fwssWorkUploadWaitForListing,              // upload copy/move file: wait for another worker to finish listing the target path on the server (to detect collisions)
+    fwssWorkUploadResolveLink,                 // upload copy/move file: determine what the conflicting link is (file/directory) whose name collides with the target directory/file name on the server
+    fwssWorkUploadResLnkWaitForCWDRes,         // upload copy/move file: waiting for the result of "CWD" (change to the explored link - if successful it is a directory link)
+    fwssWorkUploadCreateDir,                   // upload copy/move file: create the target directory on the server - start by setting the target path
+    fwssWorkUploadCrDirWaitForCWDRes,          // upload copy/move file: waiting for the result of "CWD" (setting the target path)
+    fwssWorkUploadCrDirWaitForMKDRes,          // upload copy/move file: waiting for the result of "MKD" (creating the target directory)
+    fwssWorkUploadCantCreateDirInvName,        // upload copy/move file: handle error "target directory cannot be created" (invalid name)
+    fwssWorkUploadCantCreateDirFileEx,         // upload copy/move file: handle error "target directory cannot be created" (name already used for file or link to file)
+    fwssWorkUploadDirExists,                   // upload copy/move file: handle error "target directory already exists"
+    fwssWorkUploadDirExistsDirLink,            // same state as fwssWorkUploadDirExists: additionally CWD to the target directory was just performed (test whether the link is a directory or a file)
+    fwssWorkUploadAutorenameDir,               // upload copy/move file: handle the error when creating the target directory - autorename - start by setting the target path
+    fwssWorkUploadAutorenDirWaitForCWDRes,     // upload copy/move file: autorename - waiting for the result of "CWD" (setting the target path)
+    fwssWorkUploadAutorenDirSendMKD,           // upload copy/move file: autorename - try to generate another new name for the target directory and try to create it
+    fwssWorkUploadAutorenDirWaitForMKDRes,     // upload copy/move file: autorename - waiting for the result of "MKD" (creating the target directory under a new name)
+    fwssWorkUploadGetTgtPath,                  // upload copy/move file: determine the path to the target directory on the server - start by changing to it
+    fwssWorkUploadGetTgtPathWaitForCWDRes,     // upload copy/move file: waiting for the result of "CWD" (setting the path to the target directory)
+    fwssWorkUploadGetTgtPathSendPWD,           // upload copy/move file: send "PWD" (getting the path to the target directory)
+    fwssWorkUploadGetTgtPathWaitForPWDRes,     // upload copy/move file: waiting for the result of "PWD" (getting the path to the target directory)
+    fwssWorkUploadListDiskDir,                 // upload copy/move file: list the directory being uploaded from disk
+    fwssWorkUploadListDiskWaitForDisk,         // upload copy/move file: waiting for the disk operation to finish (listing the directory)
+    fwssWorkUploadListDiskWaitForDiskAftQuit,  // upload copy/move file: after sending the "QUIT" command wait for the disk operation to finish (listing the directory)
+    fwssWorkUploadCantCreateFileInvName,       // upload copy/move file: handle error "target file cannot be created" (invalid name)
+    fwssWorkUploadCantCreateFileDirEx,         // upload copy/move file: handle error "target file cannot be created" (name already used for directory or link to directory)
+    fwssWorkUploadFileExists,                  // upload copy/move file: handle error "target file already exists"
+    fwssWorkUploadNewFile,                     // upload copy/move file: the target file does not exist, start uploading it
+    fwssWorkUploadAutorenameFile,              // upload copy/move file: handle the error when creating the target file - autorename
+    fwssWorkUploadResumeFile,                  // upload copy/move file: problem "target file exists" - resume
+    fwssWorkUploadTestIfFinished,              // upload copy/move file: we sent the entire file + the server "just" did not respond, most likely the file is OK, we will test it
+    fwssWorkUploadResumeOrOverwriteFile,       // upload copy/move file: problem "target file exists" - resume or overwrite
+    fwssWorkUploadOverwriteFile,               // upload copy/move file: problem "target file exists" - overwrite
+    fwssWorkUploadFileSetTgtPath,              // upload file: set the target path
+    fwssWorkUploadFileSetTgtPathWaitForCWDRes, // upload file: waiting for the result of "CWD" (setting the target path)
+    fwssWorkUploadGenNewName,                  // upload file: autorename: generate a new name
+    fwssWorkUploadLockFile,                    // upload file: open the file in FTPOpenedFiles
+    fwssWorkUploadDelForOverwrite,             // upload file: if this is an overwrite and delete should be used first, do it here
+    fwssWorkUploadDelForOverWaitForDELERes,    // upload file: waiting for the DELE result before overwrite
+    fwssWorkUploadFileAllocDataCon,            // upload file: allocate the data connection
+    fwssWorkUploadGetFileSize,                 // upload file: resume: determine the file size (via the SIZE command or from the listing)
+    fwssWorkUploadWaitForSIZERes,              // upload file: resume: waiting for the response to the SIZE command
+    fwssWorkUploadGetFileSizeFromListing,      // upload file: resume: the SIZE command failed (or is not implemented), determine the file size from the listing
+    fwssWorkUploadTestFileSizeOK,              // upload copy/move file: after an upload error the file size test succeeded
+    fwssWorkUploadTestFileSizeFailed,          // upload copy/move file: after an upload error the file size test failed
+    fwssWorkUploadWaitForPASVRes,              // upload copy/move file: waiting for the result of "PASV" (getting IP+port for the passive data connection)
+    fwssWorkUploadOpenActDataCon,              // upload copy/move file: open the active data connection
+    fwssWorkUploadWaitForListen,               // upload copy/move file: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkUploadWaitForPORTRes,              // upload copy/move file: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
+    fwssWorkUploadSetType,                     // upload copy/move file: set the required transfer mode (ASCII / binary)
+    fwssWorkUploadWaitForTYPERes,              // upload copy/move file: waiting for the result of "TYPE" (switch to ASCII / binary data transfer mode)
+    fwssWorkUploadSendSTORCmd,                 // upload copy/move file: send the STOR/APPE command (start storing the file on the server)
+    fwssWorkUploadActivateDataCon,             // upload copy/move file: activate the data connection (right after sending the STOR command)
+    fwssWorkUploadWaitForSTORRes,              // upload copy/move file: waiting for the result of "STOR/APPE" (waiting for the file upload to finish)
+    fwssWorkUploadCopyTransferFinished,        // upload copy/move file: the target file has already been uploaded, if it is a Move try to delete the source file on disk
+    fwssWorkUploadDelFileWaitForDisk,          // upload copy/move file: waiting for the disk operation to finish (deleting the source file)
+    fwssWorkUploadDelFileWaitForDiskAftQuit,   // upload copy/move file: after sending the "QUIT" command wait for the disk operation to finish (deleting the source file)
+    fwssWorkUploadWaitForDELERes,              // upload copy/move file: waiting for the result of the DELE command (deleting the target file)
+    fwssWorkUploadCopyDone,                    // upload copy/move file: done, move on to the next item
 };
 
 enum CFTPWorkerSocketEvent
 {
-    fwseConnect,       // [error, 0], otevreni spojeni na server
-    fwseClose,         // [error, 0], socket byl uzavren
-    fwseNewBytesRead,  // [error, 0], precteni dalsiho bloku dat do bufferu socketu
-    fwseWriteDone,     // [error, 0], dokonceni zapisu bufferu (jen pokud metoda Write vratila 'allBytesWritten'==FALSE)
-    fwseIPReceived,    // [IP, error], dostali jsme IP (pri prekladu jmenne adresy na IP)
-    fwseTimeout,       // [0, 0], prijem timeru hlasi timeout posilani FTP prikazu (viz WORKER_TIMEOUTTIMERID)
-    fwseWaitForCmdErr, // [0, 0], posilani prikazu na server selhalo, cekame jestli prijde FD_CLOSE, kdyz neprijde, zavreme socket "rucne"
+    fwseConnect,       // [error, 0], connection to the server opened
+    fwseClose,         // [error, 0], socket was closed
+    fwseNewBytesRead,  // [error, 0], another block of data read into the socket buffer
+    fwseWriteDone,     // [error, 0], buffer write finished (only if Write returned 'allBytesWritten'==FALSE)
+    fwseIPReceived,    // [IP, error], we received the IP (while resolving the host name)
+    fwseTimeout,       // [0, 0], timer delivery reports timeout while sending FTP commands (see WORKER_TIMEOUTTIMERID)
+    fwseWaitForCmdErr, // [0, 0], sending a command to the server failed, waiting whether FD_CLOSE arrives, if not, close the socket "manually"
 };
 
 enum CFTPWorkerEvent
 {
-    fweActivate, // (re)aktivace workera (zasila se po vytvoreni workera pro zahajeni cinnosti + po zmene stavu workera, aby se pred zpracovanim noveho stavu k "lizu" dostali i ostatni sockety (diky message-loope sockets-threadu))
+    fweActivate, // (re)activation of the worker (sent after creating the worker to start activity + after changing the worker state so that before processing the new state other sockets get their turn as well (thanks to the sockets thread message loop))
 
-    fweWorkerShouldStop,   // upozorneni workera na ukonceni (zasila se pokud ma worker otevrene spojeni a je v "idle" (ceka na zmenu fronty, reakci usera, reconnect, atp.) stavu - obe tyto podminky muze splnit: stav fwsSleeping nebo stav fwsWorking:fwssWorkUploadWaitForListing nebo stav fwsWorking:fwssWorkExplWaitForListen nebo stav fwsWorking:fwssWorkCopyWaitForListen nebo stav fwsWorking:fwssWorkUploadWaitForListen nebo stav fwsLookingForWork pri ShouldBePaused==TRUE)
-    fweWorkerShouldPause,  // upozorneni workera na pause (zasila se resumnutemu (bezicimu) workerovi)
-    fweWorkerShouldResume, // upozorneni workera na resume (zasila se pausnutemu workerovi)
+    fweWorkerShouldStop,   // notify the worker to terminate (sent when the worker has an open connection and is in an "idle" state (waiting for queue changes, user response, reconnect, etc.) - these conditions can be met by: state fwsSleeping or state fwsWorking:fwssWorkUploadWaitForListing or state fwsWorking:fwssWorkExplWaitForListen or state fwsWorking:fwssWorkCopyWaitForListen or state fwsWorking:fwssWorkUploadWaitForListen or state fwsLookingForWork when ShouldBePaused==TRUE)
+    fweWorkerShouldPause,  // notify the worker to pause (sent to a resumed (running) worker)
+    fweWorkerShouldResume, // notify the worker to resume (sent to a paused worker)
 
-    fweCmdReplyReceived, // prijem kompletni odpovedi (krome typu FTP_D1_MAYBESUCCESS) na poslany FTP prikaz (prijde az po zaslani vsech bytu FTP prikazu)
-    fweCmdInfoReceived,  // prijem kompletni odpovedi typu FTP_D1_MAYBESUCCESS na poslany FTP prikaz (prijde az po zaslani vsech bytu FTP prikazu)
-    fweCmdConClosed,     // spojeni bylo uzavreno behem provadeni prikazu (i pri/pred samotnym posilani prikazu + i z duvodu timeoutu); popis chyby je v ErrorDescr; jestli slo o timeout je v CommandReplyTimeout
+    fweCmdReplyReceived, // receive a complete reply (except type FTP_D1_MAYBESUCCESS) to the sent FTP command (arrives only after all bytes of the FTP command have been sent)
+    fweCmdInfoReceived,  // receive a complete reply of type FTP_D1_MAYBESUCCESS to the sent FTP command (arrives only after all bytes of the FTP command have been sent)
+    fweCmdConClosed,     // the connection was closed while executing the command (even during/before sending the command + also due to a timeout); error description is in ErrorDescr; whether it was a timeout is in CommandReplyTimeout
 
-    fweIPReceived,   // nastavili jsme zjistene IP do objektu operace (pri prekladu jmenne adresy na IP)
-    fweIPRecFailure, // chyba pri zjistovani IP (pri prekladu jmenne adresy na IP); popis chyby je v ErrorDescr
+    fweIPReceived,   // we set the discovered IP in the operation object (while resolving the host name)
+    fweIPRecFailure, // error while obtaining the IP (while resolving the host name); error description is in ErrorDescr
 
-    fweConTimeout, // timeout pro akce behem connectu na server (viz WORKER_CONTIMEOUTTIMID)
+    fweConTimeout, // timeout for actions during the connection to the server (see WORKER_CONTIMEOUTTIMID)
 
-    fweConnected,      // pozadovane spojeni bylo navazano (prijem FD_CONNECT)
-    fweConnectFailure, // chyba pri navazovani spojeni (prijem FD_CONNECT s chybou); popis chyby je v ErrorDescr
+    fweConnected,      // requested connection established (FD_CONNECT received)
+    fweConnectFailure, // error while establishing the connection (FD_CONNECT received with an error); error description is in ErrorDescr
 
-    fweReconTimeout, // timeout pro dalsi pokus o connect (viz WORKER_RECONTIMEOUTTIMID)
+    fweReconTimeout, // timeout for the next connect attempt (see WORKER_RECONTIMEOUTTIMID)
 
-    fweNewLoginParams, // upozorneni workera na nove login parametry (password/account) (viz WORKER_NEWLOGINPARAMS)
+    fweNewLoginParams, // notify the worker about new login parameters (password/account) (see WORKER_NEWLOGINPARAMS)
 
-    fweWakeUp, // "sleeping" worker by se mel probudit a jit hledat praci do fronty polozek (viz WORKER_WAKEUP)
+    fweWakeUp, // a "sleeping" worker should wake up and go look for work in the queue (see WORKER_WAKEUP)
 
-    fweDiskWorkFinished,        // prace na disku se dokoncila (viz WORKER_DISKWORKFINISHED)
-    fweDiskWorkWriteFinished,   // prace na disku - zapis - se dokoncila (viz WORKER_DISKWORKWRITEFINISHED)
-    fweDiskWorkListFinished,    // prace na disku - listovani adresare - se dokoncila (viz WORKER_DISKWORKLISTFINISHED)
-    fweDiskWorkReadFinished,    // prace na disku - cteni - se dokoncila (viz WORKER_DISKWORKREADFINISHED)
-    fweDiskWorkDelFileFinished, // prace na disku - mazani souboru - se dokoncila (viz WORKER_DISKWORKDELFILEFINISHED)
+    fweDiskWorkFinished,        // disk work finished (see WORKER_DISKWORKFINISHED)
+    fweDiskWorkWriteFinished,   // disk work - write - finished (see WORKER_DISKWORKWRITEFINISHED)
+    fweDiskWorkListFinished,    // disk work - directory listing - finished (see WORKER_DISKWORKLISTFINISHED)
+    fweDiskWorkReadFinished,    // disk work - read - finished (see WORKER_DISKWORKREADFINISHED)
+    fweDiskWorkDelFileFinished, // disk work - file deletion - finished (see WORKER_DISKWORKDELFILEFINISHED)
 
-    fweDataConConnectedToServer, // data-connection hlasi, ze doslo ke spojeni se serverem (viz WORKER_DATACON_CONNECTED)
-    fweDataConConnectionClosed,  // data-connection hlasi, ze doslo k zavreni/preruseni spojeni se serverem (viz WORKER_DATACON_CLOSED)
-    fweDataConFlushData,         // data-connection hlasi, ze jsou pripravena data ve flush-bufferu pro overeni/zapis na disk (viz WORKER_DATACON_FLUSHDATA)
-    fweDataConListeningForCon,   // data-connection hlasi, ze doslo k otevreni "listen" portu (viz WORKER_DATACON_LISTENINGFORCON)
+    fweDataConConnectedToServer, // data connection reports that it connected to the server (see WORKER_DATACON_CONNECTED)
+    fweDataConConnectionClosed,  // data connection reports that the connection to the server was closed/interrupted (see WORKER_DATACON_CLOSED)
+    fweDataConFlushData,         // data connection reports that data are ready in the flush buffer for verification/write to disk (see WORKER_DATACON_FLUSHDATA)
+    fweDataConListeningForCon,   // data connection reports that the "listen" port was opened (see WORKER_DATACON_LISTENINGFORCON)
 
-    fweDataConStartTimeout, // timeout pro cekani na otevreni data-connectiony po prijeti odpovedi serveru na RETR (viz WORKER_DATACONSTARTTIMID)
+    fweDataConStartTimeout, // timeout for waiting for the data connection to open after receiving the server reply to RETR (see WORKER_DATACONSTARTTIMID)
 
-    fweDelayedAutoRetry, // timer pro zpozdene auto-retry (viz WORKER_DELAYEDAUTORETRYTIMID)
+    fweDelayedAutoRetry, // timer for delayed auto-retry (see WORKER_DELAYEDAUTORETRYTIMID)
 
-    fweTgtPathListingFinished, // UploadListingCache ziskala listing cilove cesty (nebo se dozvedela o chybe pri jeho stahovani) (viz WORKER_TGTPATHLISTINGFINISHED)
+    fweTgtPathListingFinished, // UploadListingCache obtained the listing of the target path (or learned about an error while downloading it) (see WORKER_TGTPATHLISTINGFINISHED)
 
-    fweUplDataConConnectedToServer, // upload data-connection hlasi, ze doslo ke spojeni se serverem (viz WORKER_UPLDATACON_CONNECTED)
-    fweUplDataConConnectionClosed,  // upload data-connection hlasi, ze doslo k zavreni/preruseni spojeni se serverem (viz WORKER_UPLDATACON_CLOSED)
-    fweUplDataConPrepareData,       // upload data-connection hlasi, ze je potreba pripravit dalsi data do flush-bufferu pro poslani na server (viz WORKER_UPLDATACON_PREPAREDATA)
-    fweUplDataConListeningForCon,   // upload data-connection hlasi, ze doslo k otevreni "listen" portu (viz WORKER_UPLDATACON_LISTENINGFORCON)
+    fweUplDataConConnectedToServer, // upload data connection reports that it connected to the server (see WORKER_UPLDATACON_CONNECTED)
+    fweUplDataConConnectionClosed,  // upload data connection reports that the connection to the server was closed/interrupted (see WORKER_UPLDATACON_CLOSED)
+    fweUplDataConPrepareData,       // upload data connection reports that more data need to be prepared in the flush buffer for sending to the server (see WORKER_UPLDATACON_PREPAREDATA)
+    fweUplDataConListeningForCon,   // upload data connection reports that the "listen" port was opened (see WORKER_UPLDATACON_LISTENINGFORCON)
 
-    fweDataConListenTimeout, // timeout pro cekani na otevreni "listen" portu na proxy serveru (pri otevirani aktivni data-connectiony) (viz WORKER_LISTENTIMEOUTTIMID)
+    fweDataConListenTimeout, // timeout for waiting for the "listen" port to open on the proxy server (when opening an active data connection) (see WORKER_LISTENTIMEOUTTIMID)
 };
 
 enum CFTPWorkerCmdState
 {
-    fwcsIdle, // zadny prikaz neprobiha (v tomto stavu provadime jen prijem neocekavanych zprav od serveru)
+    fwcsIdle, // no command is in progress (in this state we only receive unexpected messages from the server)
 
-    // probiha posilani FTP prikazu, HandleSocketEvent() pripravuje pro HandleEvent()
-    // fweCmdReplyReceived (prijem odpovedi na FTP prikaz, krome odpovedi typu FTP_D1_MAYBESUCCESS),
-    // fweCmdInfoReceived (prijem odpovedi typu FTP_D1_MAYBESUCCESS) a fweCmdConClosed (error posilani
-    // prikazu nebo vypadek spojeni behem posilani/cekani na prijem odpovedi nebo timeout - zavreni
-    // spojeni z duvodu, ze jsme se nedockali odpovedi serveru na FTP prikaz)
+    // an FTP command is being sent, HandleSocketEvent() prepares for HandleEvent()
+    // fweCmdReplyReceived (receiving a reply to the FTP command, except replies of type FTP_D1_MAYBESUCCESS),
+    // fweCmdInfoReceived (receiving a reply of type FTP_D1_MAYBESUCCESS) and fweCmdConClosed (error while sending
+    // the command or connection loss while sending/waiting for the reply or a timeout - connection closed
+    // because we did not receive the server's reply to the FTP command)
     fwcsWaitForCmdReply,
-    fwcsWaitForLoginPrompt, // stejna funkcnost jako fwcsWaitForCmdReply, rozlisujeme jen kvuli error-hlaskam
+    fwcsWaitForLoginPrompt, // same functionality as fwcsWaitForCmdReply, we distinguish only because of error messages
 
-    // cekani na duvod chyby vznikle pri posilani prikazu (zapisu na socket): cekame na fwseClose,
-    // kdyz neprijde zavreme socket "rucne" (na timeout fwseWaitForCmdErr); zaroven chytame error
-    // hlasku ze socketu nebo aspon z fwseClose; kdyz nic nechytneme, vypiseme aspon WaitForCmdErrError
+    // waiting for the reason of an error that occurred when sending a command (writing to the socket): waiting for fwseClose,
+    // if it does not arrive we close the socket "manually" (on fwseWaitForCmdErr timeout); at the same time we capture an error
+    // message from the socket or at least from fwseClose; if we capture nothing, we at least print WaitForCmdErrError
     fwcsWaitForCmdError,
 };
 
 enum CWorkerDataConnectionState
 {
-    wdcsDoesNotExist,         // neexistuje (WorkerDataCon == NULL && WorkerUploadDataCon == NULL)
-    wdcsOnlyAllocated,        // jen alokovana (zatim neni pridana v SocketsThread)
-    wdcsWaitingForConnection, // je v SocketsThread, ceka na spojeni se serverem (aktivni/pasivni)
-    wdcsTransferingData,      // spojeni se serverem navazano, je mozne prenaset data
-    wdcsTransferFinished,     // prenos dokoncen (uspesne/neuspesne), spojeni se serverem je uzavrene nebo se vubec nepodarilo ho navazat
+    wdcsDoesNotExist,         // does not exist (WorkerDataCon == NULL && WorkerUploadDataCon == NULL)
+    wdcsOnlyAllocated,        // only allocated (not yet added to SocketsThread)
+    wdcsWaitingForConnection, // in SocketsThread, waiting for connection to the server (active/passive)
+    wdcsTransferingData,      // connection to the server established, data transfer possible
+    wdcsTransferFinished,     // transfer completed (successful/unsuccessful), connection to the server is closed or could not be established at all
 };
 
-enum CWorkerStatusType // typ status informaci ulozenych ve workeru (zobrazovanych v dialogu operace v listview Connections)
+enum CWorkerStatusType // type of status information stored in the worker (displayed in the operation dialog in the Connections listview)
 {
-    wstNone,           // zadny status se nezobrazuje
-    wstDownloadStatus, // zobrazuje se download status (ziskavani listingu + copy & move z FTP na disk)
-    wstUploadStatus,   // zobrazuje se upload status (ziskavani listingu cilovych cest + copy & move z disku na FTP)
+    wstNone,           // no status is displayed
+    wstDownloadStatus, // download status is displayed (retrieving listings + copy & move from FTP to disk)
+    wstUploadStatus,   // upload status is displayed (retrieving listings of target paths + copy & move from disk to FTP)
 };
 
-enum CFlushDataError // druhy chyb pri flushovani dat (Copy a Move operace)
+enum CFlushDataError // types of errors during data flushing (Copy and Move operations)
 {
-    fderNone,               // zadna
-    fderASCIIForBinaryFile, // ASCII transfer mode pouzity pro binarni soubor
-    fderLowMemory,          // nedostatek pameti pro pridani prace do FTPDiskThread
-    fderWriteError,         // chyba zjistena az pri zapisu na disk
+    fderNone,               // none
+    fderASCIIForBinaryFile, // ASCII transfer mode used for a binary file
+    fderLowMemory,          // insufficient memory to add work to FTPDiskThread
+    fderWriteError,         // error detected only when writing to disk
 };
 
-enum CPrepareDataError // druhy chyb pri priprave dat pro poslani na server (upload: Copy a Move operace)
+enum CPrepareDataError // types of errors when preparing data to send to the server (upload: Copy and Move operations)
 {
-    pderNone,               // zadna
-    pderASCIIForBinaryFile, // ASCII transfer mode pouzity pro binarni soubor
-    pderLowMemory,          // nedostatek pameti pro pridani prace do FTPDiskThread
-    pderReadError,          // chyba zjistena uz pri cteni z disku
+    pderNone,               // none
+    pderASCIIForBinaryFile, // ASCII transfer mode used for a binary file
+    pderLowMemory,          // insufficient memory to add work to FTPDiskThread
+    pderReadError,          // error detected already when reading from disk
 };
 
 enum CUploadType
 {
-    utNone,                  // zadny upload souboru neprobiha
-    utNewFile,               // upload do noveho souboru (pred uploadem neexistoval)
-    utAutorename,            // upload do noveho souboru pojmenovaneho automaticky tak, aby se nic neprepsalo
-    utResumeFile,            // resume stavajiciho souboru na serveru (append zatim neuploadnute casti souboru)
-    utResumeOrOverwriteFile, // viz utResumeFile + pokud nelze soubor resumnout, prepise se
-    utOverwriteFile,         // prepis stavajiciho souboru na serveru
-    utOnlyTestFileSize,      // testuje jestli je soubor komplet uploadnuty (na zaklade shody velikosti souboru)
+    utNone,                  // no file upload in progress
+    utNewFile,               // upload to a new file (it did not exist before the upload)
+    utAutorename,            // upload to a new file automatically named so that nothing is overwritten
+    utResumeFile,            // resume an existing file on the server (append the part of the file not yet uploaded)
+    utResumeOrOverwriteFile, // see utResumeFile + if the file cannot be resumed, overwrite it
+    utOverwriteFile,         // overwrite an existing file on the server
+    utOnlyTestFileSize,      // tests whether the file is fully uploaded (based on matching file size)
 };
 
-#define FTPWORKER_ERRDESCR_BUFSIZE 200             // velikost bufferu CFTPWorker::ErrorDescr
-#define FTPWORKER_BYTESTOWRITEONSOCKETPREALLOC 512 // kolik bytu se ma predalokovat pro zapis (aby dalsi zapis zbytecne nealokoval treba kvuli 1 bytovemu presahu)
-#define FTPWORKER_BYTESTOREADONSOCKET 1024         // po minimalne kolika bytech se ma cist socket (take alokovat buffer pro prectena data)
-#define FTPWORKER_BYTESTOREADONSOCKETPREALLOC 512  // kolik bytu se ma predalokovat pro cteni (aby dalsi cteni okamzite nealokovalo znovu)
+#define FTPWORKER_ERRDESCR_BUFSIZE 200             // buffer size of CFTPWorker::ErrorDescr
+#define FTPWORKER_BYTESTOWRITEONSOCKETPREALLOC 512 // how many bytes to preallocate for writing (so that another write does not allocate unnecessarily due to a 1-byte overflow)
+#define FTPWORKER_BYTESTOREADONSOCKET 1024         // minimum number of bytes to read from the socket at once (also allocate the buffer for read data)
+#define FTPWORKER_BYTESTOREADONSOCKETPREALLOC 512  // how many bytes to preallocate for reading (so that another read does not immediately allocate again)
 
-#define WORKER_ACTIVATE 10                   // ID zpravy postnute workerovi v okamziku, kdy se ma aktivovat
-#define WORKER_SHOULDSTOP 11                 // ID zpravy postnute workerovi v "idle" stavu (upozorneni ze ma koncit)
-#define WORKER_NEWLOGINPARAMS 12             // ID zpravy postnute workerovi v okamziku, kdy jsou k dispozici nove login parametry (password/account)
-#define WORKER_WAKEUP 13                     // ID zpravy postnute workerovi v "idle" stavu, kdyz jsou ve fronte k dispozici nove polozky
-#define WORKER_DISKWORKFINISHED 14           // ID zpravy postnute workerovi v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku
-#define WORKER_DATACON_CONNECTED 15          // ID zpravy postnute workerovi v okamziku, kdy v data-connection dojde ke spojeni se serverem
-#define WORKER_DATACON_CLOSED 16             // ID zpravy postnute workerovi v okamziku, kdy v data-connection dojde k zavreni/preruseni spojeni se serverem
-#define WORKER_DATACON_FLUSHDATA 17          // ID zpravy postnute workerovi v okamziku, kdy jsou v data-connection pripravena data ve flush-bufferu pro overeni/zapis na disk
-#define WORKER_DISKWORKWRITEFINISHED 18      // ID zpravy postnute workerovi v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku - zapis
-#define WORKER_TGTPATHLISTINGFINISHED 19     // ID zpravy postnute workerovi v okamziku, kdy UploadListingCache ziska listing cilove cesty (nebo se dozvi o chybe pri jeho stahovani)
-#define WORKER_DISKWORKLISTFINISHED 20       // ID zpravy postnute workerovi v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku - listovani adresare
-#define WORKER_UPLDATACON_CONNECTED 21       // ID zpravy postnute workerovi v okamziku, kdy v upload-data-connection dojde ke spojeni se serverem
-#define WORKER_UPLDATACON_CLOSED 22          // ID zpravy postnute workerovi v okamziku, kdy v upload-data-connection dojde k zavreni/preruseni spojeni se serverem
-#define WORKER_UPLDATACON_PREPAREDATA 23     // ID zpravy postnute workerovi v okamziku, kdy je potreba pripravit dalsi data do flush-bufferu pro poslani na server (do upload data-connectiony)
-#define WORKER_DISKWORKREADFINISHED 24       // ID zpravy postnute workerovi v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku - cteni (pro upload)
-#define WORKER_DISKWORKDELFILEFINISHED 25    // ID zpravy postnute workerovi v okamziku, kdy FTPDiskThread dokonci zadanou praci na disku - mazani souboru
-#define WORKER_SHOULDPAUSE 26                // ID zpravy postnute resumnutemu workerovi (upozorneni ze se ma pausnout)
-#define WORKER_SHOULDRESUME 27               // ID zpravy postnute pausnutemu workerovi (upozorneni ze se ma resumnout)
-#define WORKER_DATACON_LISTENINGFORCON 28    // ID zpravy postnute workerovi v okamziku, kdy v data-connection dojde k otevreni "listen" portu
-#define WORKER_UPLDATACON_LISTENINGFORCON 29 // ID zpravy postnute workerovi v okamziku, kdy v upload-data-connection dojde k otevreni "listen" portu
+#define WORKER_ACTIVATE 10                   // message ID posted to the worker when it should activate
+#define WORKER_SHOULDSTOP 11                 // message ID posted to the worker in the "idle" state (notification that it should stop)
+#define WORKER_NEWLOGINPARAMS 12             // message ID posted to the worker when new login parameters (password/account) are available
+#define WORKER_WAKEUP 13                     // message ID posted to the worker in the "idle" state when new items are available in the queue
+#define WORKER_DISKWORKFINISHED 14           // message ID posted to the worker when FTPDiskThread finishes the requested disk work
+#define WORKER_DATACON_CONNECTED 15          // message ID posted to the worker when the data connection connects to the server
+#define WORKER_DATACON_CLOSED 16             // message ID posted to the worker when the data connection closes/interrupts the connection to the server
+#define WORKER_DATACON_FLUSHDATA 17          // message ID posted to the worker when the data connection has data ready in the flush buffer for verification/write to disk
+#define WORKER_DISKWORKWRITEFINISHED 18      // message ID posted to the worker when FTPDiskThread finishes the requested disk work - write
+#define WORKER_TGTPATHLISTINGFINISHED 19     // message ID posted to the worker when UploadListingCache obtains the target path listing (or learns about an error while downloading it)
+#define WORKER_DISKWORKLISTFINISHED 20       // message ID posted to the worker when FTPDiskThread finishes the requested disk work - directory listing
+#define WORKER_UPLDATACON_CONNECTED 21       // message ID posted to the worker when the upload data connection connects to the server
+#define WORKER_UPLDATACON_CLOSED 22          // message ID posted to the worker when the upload data connection closes/interrupts the connection to the server
+#define WORKER_UPLDATACON_PREPAREDATA 23     // message ID posted to the worker when more data need to be prepared in the flush buffer for sending to the server (into the upload data connection)
+#define WORKER_DISKWORKREADFINISHED 24       // message ID posted to the worker when FTPDiskThread finishes the requested disk work - read (for upload)
+#define WORKER_DISKWORKDELFILEFINISHED 25    // message ID posted to the worker when FTPDiskThread finishes the requested disk work - file deletion
+#define WORKER_SHOULDPAUSE 26                // message ID posted to a resumed worker (notification that it should pause)
+#define WORKER_SHOULDRESUME 27               // message ID posted to a paused worker (notification that it should resume)
+#define WORKER_DATACON_LISTENINGFORCON 28    // message ID posted to the worker when the data connection opens the "listen" port
+#define WORKER_UPLDATACON_LISTENINGFORCON 29 // message ID posted to the worker when the upload data connection opens the "listen" port
 
-#define WORKER_TIMEOUTTIMERID 30        // ID timeru zajistujiciho detekci timeoutu pro posilani FTP prikazu na server
-#define WORKER_CMDERRORTIMERID 31       // ID timeru umoznujiciho cekani na typ chyby, ktera nastala pri posilani prikazu na server (viz fwseWaitForCmdErr)
-#define WORKER_CONTIMEOUTTIMID 32       // ID timeru zajistujiciho detekci timeoutu pro zjistovani IP adresy, connect a login prompt
-#define WORKER_RECONTIMEOUTTIMID 33     // ID timeru pro cekani na dalsi pokus o connect (reconnect)
-#define WORKER_STATUSUPDATETIMID 34     // ID timeru pro periodicky update statusu
-#define WORKER_DATACONSTARTTIMID 35     // ID timeru pro detekci timeoutu pri cekani na otevreni data-connectiony po prijeti odpovedi serveru na RETR (WarFTPD absolutne nelogicky posle 226 jeste pred nasim accept socketu data-connectiony)
-#define WORKER_DELAYEDAUTORETRYTIMID 36 // ID timeru pro zpozdeni auto-retry (napr. Quick&Easy FTPD vraci na RETR 426 a vzapeti jeste 220 - kdyz se retryne hned, dojde k posunu odpovedi (220 se vezme k nasledujicimu prikazu misto odpovedi na tento prikaz a cele to jde do zahuby))
-#define WORKER_LISTENTIMEOUTTIMID 37    // ID timeru zajistujiciho detekci timeoutu pro otevirani "listen" portu na proxy serveru (pri otevirani aktivni data-connectiony)
+#define WORKER_TIMEOUTTIMERID 30        // timer ID ensuring timeout detection when sending FTP commands to the server
+#define WORKER_CMDERRORTIMERID 31       // timer ID enabling waiting for the type of error that occurred when sending a command to the server (see fwseWaitForCmdErr)
+#define WORKER_CONTIMEOUTTIMID 32       // timer ID ensuring timeout detection for obtaining the IP address, connect and login prompt
+#define WORKER_RECONTIMEOUTTIMID 33     // timer ID for waiting for another connect attempt (reconnect)
+#define WORKER_STATUSUPDATETIMID 34     // timer ID for periodically updating the status
+#define WORKER_DATACONSTARTTIMID 35     // timer ID for detecting a timeout while waiting for the data connection to open after receiving the server reply to RETR (WarFTPD illogically sends 226 even before our data connection accept)
+#define WORKER_DELAYEDAUTORETRYTIMID 36 // timer ID for delaying auto-retry (e.g. Quick&Easy FTPD returns 426 for RETR and immediately 220 - if you retry immediately, responses shift (220 is taken as the response to the next command instead of this command and everything goes wrong))
+#define WORKER_LISTENTIMEOUTTIMID 37    // timer ID ensuring timeout detection when opening the "listen" port on the proxy server (when opening an active data connection)
 
-#define WORKER_STATUSUPDATETIMEOUT 1000     // doba v milisekundach, za kterou periodicky dochazi k updatu statusu ve workerovi (a progresu workera a celkoveho progresu v dialogu operace) - POZOR: vazba na OPERDLG_STATUSMINIDLETIME
-#define WORKER_DELAYEDAUTORETRYTIMEOUT 5000 // doba v milisekundach, za kterou se provede auto-retry (viz WORKER_DELAYEDAUTORETRYTIMID)
+#define WORKER_STATUSUPDATETIMEOUT 1000     // time in milliseconds after which the status in the worker (and the worker progress and overall progress in the operation dialog) is updated - NOTE: linked to OPERDLG_STATUSMINIDLETIME
+#define WORKER_DELAYEDAUTORETRYTIMEOUT 5000 // time in milliseconds after which auto-retry is performed (see WORKER_DELAYEDAUTORETRYTIMID)
 
 class CUploadDataConnectionSocket;
 
 class CFTPWorker : public CSocket
 {
 protected:
-    // kriticka sekce pro pristup k socketove casti objektu je CSocket::SocketCritSect
-    // POZOR: v teto sekci nesmi dojit ke vnoreni do SocketsThread->CritSect (nesmi se volat metody SocketsThread)
+    // the critical section for accessing the socket part of the object is CSocket::SocketCritSect
+    // WARNING: within this section do not nest into SocketsThread->CritSect (do not call SocketsThread methods)
 
-    int ControlConnectionUID; // pokud ma worker connectionu z panelu, je zde UID objektu socketu z panelu (jinak je zde -1)
+    int ControlConnectionUID; // if the worker has a connection from the panel, this stores the UID of the panel socket object (otherwise -1)
 
-    BOOL HaveWorkingPath;                     // TRUE pokud je WorkingPath platne
-    char WorkingPath[FTP_MAX_PATH];           // aktualni pracovni cesta na FTP serveru (muze jit i jen o posledni retezec poslany pres CWD se "success" navratovou hodnotou - z rychlostnich duvodu nedelame po kazdem CWD jeste PWD)
-    CCurrentTransferMode CurrentTransferMode; // aktualni prenosovy rezim na FTP serveru (jen pamet pro posledni FTP prikaz "TYPE")
+    BOOL HaveWorkingPath;                     // TRUE if WorkingPath is valid
+    char WorkingPath[FTP_MAX_PATH];           // current working path on the FTP server (it may be only the last string sent via CWD with a "success" return value - for performance reasons we do not run PWD after every CWD)
+    CCurrentTransferMode CurrentTransferMode; // current transfer mode on the FTP server (only stores the last FTP command "TYPE")
 
-    BOOL EventConnectSent; // TRUE jen pokud jiz byla generovana udalost fwseConnect (resi prichod FD_READ pred FD_CONNECT)
+    BOOL EventConnectSent; // TRUE only if the fwseConnect event has already been generated (handles FD_READ arriving before FD_CONNECT)
 
-    char* BytesToWrite;            // buffer pro byty, ktere se nezapsaly ve Write (zapisou se po prijeti FD_WRITE)
-    int BytesToWriteCount;         // pocet platnych bytu v bufferu 'BytesToWrite'
-    int BytesToWriteOffset;        // pocet jiz odeslanych bytu v bufferu 'BytesToWrite'
-    int BytesToWriteAllocatedSize; // alokovana velikost bufferu 'BytesToWrite'
+    char* BytesToWrite;            // buffer for bytes that were not written in Write (they are written after receiving FD_WRITE)
+    int BytesToWriteCount;         // number of valid bytes in the 'BytesToWrite' buffer
+    int BytesToWriteOffset;        // number of bytes already sent from the 'BytesToWrite' buffer
+    int BytesToWriteAllocatedSize; // allocated size of the 'BytesToWrite' buffer
 
-    char* ReadBytes;            // buffer pro prectene byty ze socketu (ctou se po prijeti FD_READ)
-    int ReadBytesCount;         // pocet platnych bytu v bufferu 'ReadBytes'
-    int ReadBytesOffset;        // pocet jiz zpracovanych (preskocenych) bytu v bufferu 'ReadBytes'
-    int ReadBytesAllocatedSize; // alokovana velikost bufferu 'ReadBytes'
+    char* ReadBytes;            // buffer for bytes read from the socket (they are read after receiving FD_READ)
+    int ReadBytesCount;         // number of valid bytes in the 'ReadBytes' buffer
+    int ReadBytesOffset;        // number of bytes already processed (skipped) in the 'ReadBytes' buffer
+    int ReadBytesAllocatedSize; // allocated size of the 'ReadBytes' buffer
 
-    CDataConnectionSocket* WorkerDataCon;             // NULL, jinak data-connectiona prave vyuzivana timto workerem (stav viz WorkerDataConState)
-    CUploadDataConnectionSocket* WorkerUploadDataCon; // NULL, jinak data-connectiona prave vyuzivana timto workerem pro upload (stav viz WorkerDataConState)
+    CDataConnectionSocket* WorkerDataCon;             // NULL; otherwise, the data connection currently used by this worker (state see WorkerDataConState)
+    CUploadDataConnectionSocket* WorkerUploadDataCon; // NULL; otherwise, the data connection currently used by this worker for upload (state see WorkerDataConState)
 
-    // kriticka sekce pro pristup k datove casti objektu (data k zobrazeni v dialozich)
-    // POZOR: pristup do kritickych sekci konzultovat v souboru servers\critsect.txt !!!
+    // critical section for accessing the data part of the object (data for display in dialogs)
+    // WARNING: consult access to critical sections in the file servers\critsect.txt !!!
     CRITICAL_SECTION WorkerCritSect;
 
-    int CopyOfUID; // kopie CSocket::UID dostupna v kriticke sekci WorkerCritSect
-    int CopyOfMsg; // kopie CSocket::Msg dostupna v kriticke sekci WorkerCritSect
+    int CopyOfUID; // copy of CSocket::UID available in the WorkerCritSect critical section
+    int CopyOfMsg; // copy of CSocket::Msg available in the WorkerCritSect critical section
 
-    int ID;                                      // ID workeru (ukazuje se ve sloupci ID v listview Connections v dialogu operace)
-    int LogUID;                                  // UID logu pro tohoto workera (-1 pokud neni log zalozen); POZOR: je v sekci WorkerCritSect a ne SocketCritSect !!!
-    CFTPWorkerState State;                       // stav workera, viz CFTPWorkerState
-    CFTPWorkerSubState SubState;                 // stav uvnitr stavu workera (podstav pro kroky zpracovani kazdeho stavu State), viz CFTPWorkerSubState
-    CFTPQueueItem* CurItem;                      // jen pro cteni dat: zpracovavana polozka (ve stavu sqisProcessing), NULL=worker nema praci; zapis provadet pres Queue a CurItem->UID
-    char ErrorDescr[FTPWORKER_ERRDESCR_BUFSIZE]; // textovy popis chyby, neobsahuje CR ani LF a na konci nema tecku, zajisteni techto podminek viz CorrectErrorDescr(); zobrazuje se u fwsWaitingForReconnect a fwsConnectionError, plni se pri chybach viz CFTPWorkerEvent
-    int ConnectAttemptNumber;                    // cislo soucasneho pokusu o navazani spojeni, pred zcela prvnim pokusem je zde nula (v okamziku navazani spojeni se nastavuje na jednicku)
-    CCertificate* UnverifiedCertificate;         // SSL: pokud selze pokus o navazani spojeni diky neznamemu neduveryhodnemu certifikatu, spojeni se uzavre a certifikat je zde (zobrazime ho uzivateli v Solve Error dialogu)
+    int ID;                                      // worker ID (shown in the ID column in the Connections list view in the operation dialog)
+    int LogUID;                                  // log UID for this worker (-1 if the log is not created); NOTE: it is in WorkerCritSect and not SocketCritSect !!!
+    CFTPWorkerState State;                       // worker state, see CFTPWorkerState
+    CFTPWorkerSubState SubState;                 // state inside the worker state (substate for the processing steps of each State), see CFTPWorkerSubState
+    CFTPQueueItem* CurItem;                      // read-only data: processed item (in state sqisProcessing), NULL=worker has no work; write via Queue and CurItem->UID
+    char ErrorDescr[FTPWORKER_ERRDESCR_BUFSIZE]; // textual description of the error, contains no CR or LF and does not end with a period; ensuring these conditions see CorrectErrorDescr(); displayed for fwsWaitingForReconnect and fwsConnectionError, filled on errors see CFTPWorkerEvent
+    int ConnectAttemptNumber;                    // number of the current attempt to establish the connection; before the very first attempt this is zero (set to one when the connection is established)
+    CCertificate* UnverifiedCertificate;         // SSL: if the attempt to connect fails due to an unknown untrusted certificate, the connection is closed and the certificate is stored here (we show it to the user in the Solve Error dialog)
 
-    DWORD ErrorOccurenceTime; // "cas" vzniku chyby (pouziva se pro dodrzeni poradi reseni chyb podle jejich vzniku); -1 = zadna chyba nevznikla
+    DWORD ErrorOccurenceTime; // "time" the error occurred (used to keep the order of resolving errors according to when they arose); -1 = no error occurred
 
-    BOOL ShouldStop;     // TRUE jakmile se ceka na ukonceni workera (po volani InformAboutStop())
-    BOOL SocketClosed;   // TRUE/FALSE: socket "control connection" workera je zavreny/otevreny
-    BOOL ShouldBePaused; // TRUE pokud si uzivatel preje pozastavit praci tohoto workera (po volani InformAboutPause(TRUE))
+    BOOL ShouldStop;     // TRUE as soon as the worker is expected to finish (after calling InformAboutStop())
+    BOOL SocketClosed;   // TRUE/FALSE: the worker "control connection" socket is closed/open
+    BOOL ShouldBePaused; // TRUE if the user wants to pause this worker (after calling InformAboutPause(TRUE))
 
-    CFTPWorkerCmdState CommandState; // stav workeru souvisejici s posilanim prikazu (viz CFTPWorkerCmdState)
-    BOOL CommandTransfersData;       // TRUE = poslany prikaz slouzi k prenosu dat (je upraveny timeout podle aktivity na data-connection - WorkerDataCon+WorkerUploadDataCon)
-    BOOL CommandReplyTimeout;        // platne jen pro prave poslanou udalost fweCmdConClosed: TRUE = timeout cekani na odpoved (nasilne zavreni spojeni), FALSE = spojeni nezavrel klient (zavrel server nebo chyba spojeni)
+    CFTPWorkerCmdState CommandState; // worker state related to sending commands (see CFTPWorkerCmdState)
+    BOOL CommandTransfersData;       // TRUE = the sent command is used to transfer data (timeout is adjusted based on data-connection activity - WorkerDataCon+WorkerUploadDataCon)
+    BOOL CommandReplyTimeout;        // valid only for the currently sent fweCmdConClosed event: TRUE = timeout while waiting for a reply (forcibly closed connection), FALSE = the connection was not closed by the client (closed by the server or a connection error)
 
-    DWORD WaitForCmdErrError; // chyba posledniho Write(), dalsi popis viz fwcsWaitForCmdError
+    DWORD WaitForCmdErrError; // error of the last Write(), more details see fwcsWaitForCmdError
 
-    BOOL CanDeleteSocket;    // FALSE = worker je jeste ve WorkersList operace, nelze ho zrusit po predani socketu do "control connection" panelu
-    BOOL ReturnToControlCon; // TRUE = worker vraci socket do "control connection" panelu, nelze ho nechat zrusit v DeleteWorkers
+    BOOL CanDeleteSocket;    // FALSE = the worker is still in the operation's WorkersList, it cannot be cancelled after handing the socket to the "control connection" panel
+    BOOL ReturnToControlCon; // TRUE = the worker returns the socket to the "control connection" panel, it cannot be left for deletion in DeleteWorkers
 
-    BOOL ReceivingWakeup; // TRUE = tomuto workerovi byla postnuta message WORKER_WAKEUP (po doruceni prejde na FALSE)
+    BOOL ReceivingWakeup; // TRUE = this worker has been posted the WORKER_WAKEUP message (after delivery it switches to FALSE)
 
-    const char* ProxyScriptExecPoint; // aktualni prikaz proxy skriptu (NULL = prvni prikaz); POZOR: neni urceno ke cteni, ale jen pro predavani do CFTPOperation::PrepareNextScriptCmd()
-    int ProxyScriptLastCmdReply;      // odpoved na posledni poslany prikaz z proxy skriptu (-1 = neexistuje)
+    const char* ProxyScriptExecPoint; // current proxy script command (NULL = first command); WARNING: not intended for reading, only for passing to CFTPOperation::PrepareNextScriptCmd()
+    int ProxyScriptLastCmdReply;      // reply to the last command sent from the proxy script (-1 = none)
 
-    BOOL DiskWorkIsUsed; // TRUE pokud je DiskWork vlozeny v FTPDiskThread
+    BOOL DiskWorkIsUsed; // TRUE if DiskWork is inserted in FTPDiskThread
 
-    HANDLE OpenedFile;                   // cilovy soubor pro copy/move operace
-    CQuadWord OpenedFileSize;            // aktualni velikost souboru 'OpenedFile'
-    CQuadWord OpenedFileOriginalSize;    // puvodni velikost souboru 'OpenedFile'
-    BOOL CanDeleteEmptyFile;             // TRUE pokud muze dojit ke smazani prazdneho souboru (pouziva se pri cancelu/chybe polozky pro rozhodnuti zda smazat soubor nulove velikosti)
-    CQuadWord OpenedFileCurOffset;       // aktualni offset v souboru 'OpenedFile' (do jakeho mista se maji zapsat/otestovat data z data-connectiony)
-    CQuadWord OpenedFileResumedAtOffset; // Resume offset v souboru 'OpenedFile' (offset poslany prikazem REST - odkud checkujeme/zapisujeme)
-    BOOL ResumingOpenedFile;             // TRUE = provadime Resume downloadu (existujici cast jen kontrolujeme, pak teprve zapisujeme); FALSE = provadime Overwrite downloadu (jen zapisujeme)
+    HANDLE OpenedFile;                   // target file for copy/move operations
+    CQuadWord OpenedFileSize;            // current size of the 'OpenedFile'
+    CQuadWord OpenedFileOriginalSize;    // original size of the 'OpenedFile'
+    BOOL CanDeleteEmptyFile;             // TRUE if an empty file may be deleted (used when canceling/an item error to decide whether to delete a zero-sized file)
+    CQuadWord OpenedFileCurOffset;       // current offset in the 'OpenedFile' (where data from the data connection should be written/checked)
+    CQuadWord OpenedFileResumedAtOffset; // resume offset in the 'OpenedFile' (offset sent by the REST command - from where we check/write)
+    BOOL ResumingOpenedFile;             // TRUE = performing Resume download (only verifying the existing part, then writing); FALSE = performing Overwrite download (only writing)
 
-    HANDLE OpenedInFile;                     // zdrojovy soubor pro copy/move operace (upload)
-    CQuadWord OpenedInFileSize;              // velikost souboru 'OpenedInFile' zjistena pri otevreni souboru
-    CQuadWord OpenedInFileCurOffset;         // aktualni offset v souboru 'OpenedInFile' (z jakeho mista se maji precist data ze souboru pro zapis na data-connectionu)
-    CQuadWord OpenedInFileSizeWithCRLF_EOLs; // velikost dosud prectene casti souboru z disku s CRLF konci radku (upload textoveho souboru)
-    CQuadWord OpenedInFileNumberOfEOLs;      // pocet koncu radku v dosud prectene casti souboru z disku (upload textoveho souboru)
-    CQuadWord FileOnServerResumedAtOffset;   // Resume offset odkud se cte zdrojovy soubor pro prikaz APPE
-    BOOL ResumingFileOnServer;               // TRUE = provadime Resume uploadu; FALSE = provadime Overwrite uploadu
+    HANDLE OpenedInFile;                     // source file for copy/move operations (upload)
+    CQuadWord OpenedInFileSize;              // size of the 'OpenedInFile' determined when the file was opened
+    CQuadWord OpenedInFileCurOffset;         // current offset in the 'OpenedInFile' (from where data should be read from the file for writing to the data connection)
+    CQuadWord OpenedInFileSizeWithCRLF_EOLs; // size of the part of the file read from disk so far with CRLF line endings (upload of a text file)
+    CQuadWord OpenedInFileNumberOfEOLs;      // number of line endings in the part of the file read from disk so far (upload of a text file)
+    CQuadWord FileOnServerResumedAtOffset;   // resume offset from which the source file is read for the APPE command
+    BOOL ResumingFileOnServer;               // TRUE = performing Resume upload; FALSE = performing Overwrite upload
 
-    int LockedFileUID; // UID souboru zamceneho (v FTPOpenedFiles) pro praci na polozce v tomto workerovi (0 = zadny soubor neni zamceny)
+    int LockedFileUID; // UID of the file locked (in FTPOpenedFiles) for working on the item in this worker (0 = no file is locked)
 
-    CWorkerDataConnectionState WorkerDataConState; // stav data-connectiony (viz WorkerDataCon+WorkerUploadDataCon)
-    BOOL DataConAllDataTransferred;                // TRUE pokud jiz doslo k zavreni data-connectiony a ze serveru prisla nebo na server byla odeslana vsechna data
+    CWorkerDataConnectionState WorkerDataConState; // state of the data connection (see WorkerDataCon+WorkerUploadDataCon)
+    BOOL DataConAllDataTransferred;                // TRUE if the data connection has already been closed and all data have been received from or sent to the server
 
-    SYSTEMTIME StartTimeOfListing; // cas, kdy jsme zacali porizovat listing (tesne pred alokaci data-connectiony)
-    DWORD StartLstTimeOfListing;   // IncListingCounter() z okamziku, kdy jsme zacali porizovat listing (tesne pred alokaci data-connectiony)
-    int ListCmdReplyCode;          // vysledek prikazu "LIST"/"RETR" ulozeny pro pozdejsi zpracovani (viz fwssWorkExplProcessLISTRes/fwssWorkCopyProcessRETRRes)
-    char* ListCmdReplyText;        // vysledek prikazu "LIST"/"RETR" ulozeny pro pozdejsi zpracovani (viz fwssWorkExplProcessLISTRes/fwssWorkCopyProcessRETRRes)
+    SYSTEMTIME StartTimeOfListing; // time when we started retrieving the listing (just before allocating the data connection)
+    DWORD StartLstTimeOfListing;   // IncListingCounter() from the moment we started retrieving the listing (just before allocating the data connection)
+    int ListCmdReplyCode;          // result of the "LIST"/"RETR" command stored for later processing (see fwssWorkExplProcessLISTRes/fwssWorkCopyProcessRETRRes)
+    char* ListCmdReplyText;        // result of the "LIST"/"RETR" command stored for later processing (see fwssWorkExplProcessLISTRes/fwssWorkCopyProcessRETRRes)
 
-    CWorkerStatusType StatusType;   // typ status informaci ulozenych ve workeru (zobrazovanych v dialogu operace v listview Connections)
-    DWORD StatusConnectionIdleTime; // pri StatusType == wstDownloadStatus/wstUploadStatus: cas v sekundach od posledniho prijmu dat
-    DWORD StatusSpeed;              // pri StatusType == wstDownloadStatus/wstUploadStatus: rychlost spojeni v bytech za sekundu
-    CQuadWord StatusTransferred;    // pri StatusType == wstDownloadStatus/wstUploadStatus: kolik se jiz downloadlo/uploadlo bytu
-    CQuadWord StatusTotal;          // pri StatusType == wstDownloadStatus/wstUploadStatus: celkova velikost downloadu/uploadu v bytech - neni-li znama, je zde CQuadWord(-1, -1)
+    CWorkerStatusType StatusType;   // type of status information stored in the worker (shown in the operation dialog in the Connections list view)
+    DWORD StatusConnectionIdleTime; // for StatusType == wstDownloadStatus/wstUploadStatus: time in seconds since the last data reception
+    DWORD StatusSpeed;              // for StatusType == wstDownloadStatus/wstUploadStatus: connection speed in bytes per second
+    CQuadWord StatusTransferred;    // for StatusType == wstDownloadStatus/wstUploadStatus: number of bytes already downloaded/uploaded
+    CQuadWord StatusTotal;          // for StatusType == wstDownloadStatus/wstUploadStatus: total download/upload size in bytes - if unknown, CQuadWord(-1, -1)
 
-    DWORD LastTimeEstimation; // -1==neplatny, jinak zaokrouhleny pocet sekund do konce prace s aktualni polozkou
+    DWORD LastTimeEstimation; // -1 == invalid, otherwise the rounded number of seconds until the work with the current item finishes
 
-    CFlushDataError FlushDataError;     // kod chyby, ktera nastala pri flushovani dat (Copy a Move operace)
-    CPrepareDataError PrepareDataError; // kod chyby, ktera nastala pri priprave dat (upload: Copy a Move operace)
+    CFlushDataError FlushDataError;     // error code that occurred while flushing data (Copy and Move operations)
+    CPrepareDataError PrepareDataError; // error code that occurred while preparing data (upload: Copy and Move operations)
 
-    BOOL UploadDirGetTgtPathListing; // jen pri zpracovani upload-dir-explore nebo upload-file polozek: TRUE = ma se tahat listing cilove cesty
+    BOOL UploadDirGetTgtPathListing; // only when processing upload-dir-explore or upload-file items: TRUE = the target path listing should be fetched
 
-    int UploadAutorenamePhase;              // upload: aktualni faze generovani jmen pro cilovy adresar/soubor (viz FTPGenerateNewName()); 0 = pocatek autorename procesu; -1 = slo o posledni fazi generovani, typove jine jmeno proste neumime vygenerovat
-    char UploadAutorenameNewName[MAX_PATH]; // upload: buffer pro posledni vygenerovane jmeno pro cilovy adresar/soubor
+    int UploadAutorenamePhase;              // upload: current phase of generating names for the target directory/file (see FTPGenerateNewName()); 0 = beginning of the autorename process; -1 = it was the last generation phase, we simply cannot generate another name of that type
+    char UploadAutorenameNewName[MAX_PATH]; // upload: buffer for the last generated name for the target directory/file
 
-    CUploadType UploadType; // typ uploadu (podle stavu ciloveho souboru): new, resume, resume or overwrite, overwrite, autorename
+    CUploadType UploadType; // type of upload (according to the state of the target file): new, resume, resume or overwrite, overwrite, autorename
 
-    BOOL UseDeleteForOverwrite; // upload: TRUE = pred STOR volat DELE (resi na unixu prepis souboru jineho usera - zapsat do souboru nejde, ale smazat jde a pak jde vytvorit)
+    BOOL UseDeleteForOverwrite; // upload: TRUE = call DELE before STOR (handles overwriting a file of another user on Unix - it cannot be written to, but it can be deleted and then created)
 
-    // data bez potreby kriticke sekce (jen pro cteni + platna celou zivotnost objektu):
-    CFTPOperation* Oper; // operace, ke ktere worker patri (worker ma kratsi zivotnost nez operace)
-    CFTPQueue* Queue;    // fronta operace, ke ktere worker patri (worker ma kratsi zivotnost nez fronta operace)
+    // data without the need for a critical section (read-only + valid for the entire lifetime of the object):
+    CFTPOperation* Oper; // operation to which the worker belongs (the worker has a shorter lifetime than the operation)
+    CFTPQueue* Queue;    // queue of the operation to which the worker belongs (the worker has a shorter lifetime than the operation queue)
 
-    // data bez potreby kriticke sekce (pouziva se jen v sockets-threadu):
-    int IPRequestUID; // pocitadlo pro odliseni jednotlivych dotazu na zjisteni IP adresy (muze se volat se opakovane, vysledky by se motaly) (pouziva se jen v sockets threadu, neni nutna synchronizace)
-    int NextInitCmd;  // poradove cislo dalsiho posilaneho prikazu v retezci CFTPOperation::InitFTPCommands - 0 = prvni prikaz
+    // data without the need for a critical section (used only in the sockets thread):
+    int IPRequestUID; // counter to distinguish individual requests for obtaining the IP address (may be called repeatedly; results would otherwise get mixed) (used only in the sockets thread, no synchronization needed)
+    int NextInitCmd;  // ordinal number of the next command sent in the CFTPOperation::InitFTPCommands sequence - 0 = first command
 
-    // data bez potreby kriticke sekce (zapisuje se jen v sockets-threadu a disk-threadu, synchronizace pres FTPDiskThread a DiskWorkIsUsed):
-    CFTPDiskWork DiskWork; // data prace, ktera se zadava objektu FTPDiskThread (thread provadejici operace na disku)
+    // data without the need for a critical section (written only in the sockets thread and disk thread, synchronization via FTPDiskThread and DiskWorkIsUsed):
+    CFTPDiskWork DiskWork; // work data submitted to the FTPDiskThread object (thread performing disk operations)
 
 public:
     CFTPWorker(CFTPOperation* oper, CFTPQueue* queue, const char* host, unsigned short port,
                const char* user);
     ~CFTPWorker();
 
-    // vraci ID (v kriticke sekci WorkerCritSect)
+    // returns ID (in the WorkerCritSect critical section)
     int GetID();
 
-    // nastavi ID (v kriticke sekci WorkerCritSect)
+    // sets ID (in the WorkerCritSect critical section)
     void SetID(int id);
 
-    // vraci State (v kriticke sekci WorkerCritSect)
+    // returns State (in the WorkerCritSect critical section)
     CFTPWorkerState GetState();
 
-    // vraci ShouldBePaused (v kriticke sekci WorkerCritSect); v 'isWorking' (nesmi byt
-    // NULL) vraci TRUE pokud worker pracuje (nespi, neceka na usera a neni ukonceny);
+    // returns ShouldBePaused (in the WorkerCritSect critical section); in 'isWorking' (must not be
+    // NULL) returns TRUE if the worker is working (not sleeping, not waiting for the user, and not terminated);
     BOOL IsPaused(BOOL* isWorking);
 
-    // nastavi 'CopyOfUID' a 'CopyOfMsg' (v kriticke sekci CSocket::SocketCritSect a
-    // WorkerCritSect); vraci vzdy TRUE
+    // sets 'CopyOfUID' and 'CopyOfMsg' (in the CSocket::SocketCritSect and
+    // WorkerCritSect critical sections); always returns TRUE
     BOOL RefreshCopiesOfUIDAndMsg();
 
-    // vraci kopii CSocket::UID (v kriticke sekci WorkerCritSect)
+    // returns a copy of CSocket::UID (in the WorkerCritSect critical section)
     int GetCopyOfUID();
 
-    // vraci kopii CSocket::Msg (v kriticke sekci WorkerCritSect)
+    // returns a copy of CSocket::Msg (in the WorkerCritSect critical section)
     int GetCopyOfMsg();
 
-    // vraci LogUID (v kriticke sekci WorkerCritSect)
+    // returns LogUID (in the WorkerCritSect critical section)
     int GetLogUID();
 
-    // vraci ShouldStop (v kriticke sekci WorkerCritSect)
+    // returns ShouldStop (in the WorkerCritSect critical section)
     BOOL GetShouldStop();
 
-    // vraci data pro listview Connections v dialogu operace
+    // returns data for the Connections list view in the operation dialog
     void GetListViewData(LVITEM* itemData, char* buf, int bufSize);
 
-    // vraci TRUE pokud je mozne, ze worker potrebuje od usera vyresit chybu (stav
-    // fwsConnectionError (nutne reseni chyby) a fwsWaitingForReconnect (mozna je
-    // potreba zmenit login parametry - napr. pri zapnuti "Always try to reconnect"
-    // a zadani spatneho hesla))
+    // returns TRUE if it is possible that the worker needs the user to resolve an error (states
+    // fwsConnectionError (error must be resolved) and fwsWaitingForReconnect (login parameters
+    // might need to be changed - e.g. when "Always try to reconnect" is enabled
+    // and an incorrect password is entered))
     BOOL HaveError();
 
-    // vraci TRUE pokud worker potrebuje od usera vyresit chybu (viz HaveError()),
-    // pokud je worker ve stavu fwsWaitingForReconnect, zmeni se do stavu fwsConnectionError;
-    // pokud vraci TRUE, vraci i text chyby v 'buf' (buffer o velikosti 'bufSize') a pokud
-    // je chyba zpusobena neduveryhodnym serverovym certifikatem, vraci ho
-    // v 'unverifiedCertificate' (neni-li NULL; volajici ma na starosti pripadne uvolneni
-    // certifikatu jeho metodou Release()); pokud je potreba po volani metody postnout
-    // fweActivate, vraci v 'postActivate' TRUE;
+    // returns TRUE if the worker needs the user to resolve an error (see HaveError());
+    // if the worker is in the state fwsWaitingForReconnect, it changes to fwsConnectionError;
+    // if it returns TRUE, it also returns the error text in 'buf' (buffer of size 'bufSize'), and if
+    // the error is caused by an untrusted server certificate, it returns it
+    // in 'unverifiedCertificate' (if not NULL; the caller is responsible for releasing
+    // the certificate using its Release() method); if it is necessary to post
+    // fweActivate after calling the method, it returns TRUE in 'postActivate';
     BOOL GetErrorDescr(char* buf, int bufSize, BOOL* postActivate,
                        CCertificate** unverifiedCertificate);
 
-    // pouziva se pro dotaz na moznost zruseni workera z metod CReturningConnections (lze jen
-    // pokud uz jsme se o vymaz pokusili z DeleteWorkers); vraci TRUE je-li zruseni mozne
+    // used to query whether the worker can be cancelled from the CReturningConnections methods (only
+    // if we already attempted deletion via DeleteWorkers); returns TRUE if cancellation is possible
     BOOL CanDeleteFromRetCons();
 
-    // pouziva se pro dotaz na moznost zruseni workera z DeleteWorkers (lze jen pokud se
-    // connectiona z workera nevraci do panelu nebo pokud uz jsme se o vymaz pokusili
-    // z metod CReturningConnections); vraci TRUE je-li zruseni mozne
+    // used to query whether the worker can be cancelled from DeleteWorkers (only if the
+    // connection from the worker is not being returned to the panel, or if we already attempted deletion
+    // from the CReturningConnections methods); returns TRUE if cancellation is possible
     BOOL CanDeleteFromDelWorkers();
 
-    // informuje workera o tom, ze se ma snazit stopnout; vraci TRUE pokud si worker
-    // preje zavrit datovou connectionu nebo postnout WORKER_SHOULDSTOP (fweWorkerShouldStop)
-    // volanim CloseDataConnectionOrPostShouldStop() po dokonceni teto metody
-    // POZOR: muze se volat pro jednoho workera nekolikrat za sebou (provest kontrolu
-    //        jestli uz bylo volano, pripadne neprovadet zadnou akci a vracet FALSE)!
+    // informs the worker that it should attempt to stop; returns TRUE if the worker
+    // wants to close the data connection or post WORKER_SHOULDSTOP (fweWorkerShouldStop)
+    // by calling CloseDataConnectionOrPostShouldStop() after this method finishes
+    // WARNING: may be called for one worker several times in a row (check whether it has already been called; if so, do nothing and return FALSE)!
     BOOL InformAboutStop();
 
-    // zavira datovou connectionu (vola se mimo vsechny kriticke sekce, aby se dal bez
-    // obtizi zavolat CloseSocket() + DeleteSocket()) nebo postne WORKER_SHOULDSTOP
-    // (fweWorkerShouldStop)
+    // closes the data connection (called outside all critical sections so CloseSocket() + DeleteSocket() can be invoked without issues)
+    // or posts WORKER_SHOULDSTOP (fweWorkerShouldStop)
     void CloseDataConnectionOrPostShouldStop();
 
-    // informuje workera o tom, ze se ma snazit o pause/resume; vraci TRUE pokud si worker
-    // preje postnout WORKER_SHOULDPAUSE nebo WORKER_SHOULDRESUME (fweWorkerShouldPause
-    // nebo fweWorkerShouldResume) volanim PostShouldPauseOrResume() po dokonceni teto
-    // metody; 'pause' je TRUE/FALSE pokud jde o pause/resume
-    // POZOR: muze se volat pro jednoho workera nekolikrat za sebou (provest kontrolu
-    //        jestli uz bylo volano, pripadne neprovadet zadnou akci a vracet FALSE)!
+    // informs the worker that it should attempt to pause/resume; returns TRUE if the worker
+    // wants to post WORKER_SHOULDPAUSE or WORKER_SHOULDRESUME (fweWorkerShouldPause
+    // or fweWorkerShouldResume) by calling PostShouldPauseOrResume() after this
+    // method; 'pause' is TRUE/FALSE depending on pause/resume
+    // WARNING: may be called for one worker several times in a row (check whether it has already been called; if so, do nothing and return FALSE)!
     BOOL InformAboutPause(BOOL pause);
 
-    // postne WORKER_SHOULDPAUSE nebo WORKER_SHOULDRESUME (fweWorkerShouldPause
-    // nebo fweWorkerShouldResume) podle stavu ShouldBePaused; vola se mimo vsechny
-    // kriticke sekce
+    // posts WORKER_SHOULDPAUSE or WORKER_SHOULDRESUME (fweWorkerShouldPause
+    // or fweWorkerShouldResume) according to the state ShouldBePaused; called outside all
+    // critical sections
     void PostShouldPauseOrResume();
 
-    // zjisti jestli je socket "control connection" workera zavreny a neexistuje
-    // "data-connection" workera; vraci TRUE pokud je socket "control connection"
-    // zavreny a "data-connection" neexistuje (workera je mozne zrusit)
+    // determines whether the worker "control connection" socket is closed and the worker
+    // "data connection" does not exist; returns TRUE if the "control connection" socket is closed
+    // and the "data connection" does not exist (the worker can be cancelled)
     BOOL SocketClosedAndDataConDoesntExist();
 
-    // zjisti jestli ma worker praci v disk-threadu; vraci FALSE pokud
-    // nema praci (workera je mozne zrusit)
+    // determines whether the worker has work in the disk thread; returns FALSE if it has no work
+    // (the worker can be cancelled)
     BOOL HaveWorkInDiskThread();
 
-    // pripravi workera na zruseni (zavira tvrde "control connection" i "data connection");
-    // vola se mimo vsechny kriticke sekce nebo v jedine kriticke sekci CSocketsThread::CritSect,
-    // aby se dal bez obtizi zavolat CloseSocket()
+    // prepares the worker for cancellation (force-closes both the "control connection" and the "data connection");
+    // called outside all critical sections or in the single CSocketsThread::CritSect critical section
+    // so CloseSocket() can be invoked without issues
     void ForceClose();
 
-    // priprava workera na zruseni (canceluje praci v disk-threadu)
+    // preparation of the worker for cancellation (cancels work in the disk thread)
     void ForceCloseDiskWork();
 
-    // uvolni data workeru (vrati zpracovavanou polozku operace zpet do fronty);
-    // v 'uploadFirstWaitingWorker' je aktualizovany seznam workeru cekajicich na
-    // WORKER_TGTPATHLISTINGFINISHED
+    // releases worker data (returns the processed operation item back to the queue);
+    // updates the list of workers waiting for WORKER_TGTPATHLISTINGFINISHED
+    // in 'uploadFirstWaitingWorker'
     void ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker);
 
-    // aktivuje workera - postne socketu WORKER_ACTIVATE
-    // POZOR: vstupuje do sekci CSocketsThread::CritSect a CSocket::SocketCritSect !!!
+    // activates the worker - posts WORKER_ACTIVATE to the socket
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
     void PostActivateMsg();
 
-    // vyprazdni buffery pro cteni a zapis (hodi se napr. pred znovu-otevrenim pripojeni)
+    // clears the read and write buffers (useful for example before reopening the connection)
     void ResetBuffersAndEvents();
 
-    // zapise na socket (provede "send") byty z bufferu 'buffer' o delce 'bytesToWrite'
-    // (je-li 'bytesToWrite' -1, zapise strlen(buffer) bytu); pri chybe vraci FALSE a
-    // je-li znamy kod Windows chyby, vraci ho v 'error' (neni-li NULL); vraci-li TRUE,
-    // alespon cast bytu z bufferu byla uspesne zapsana; v 'allBytesWritten' (nesmi byt
-    // NULL) se vraci TRUE pokud probehl zapis celeho bufferu; vraci-li 'allBytesWritten'
-    // FALSE, je pred dalsim volanim metody Write nutne pockat na udalost fwseWriteDone
-    // (jakmile dojde, je zapis hotovy)
+    // writes to the socket (performs "send") bytes from the 'buffer' of length 'bytesToWrite'
+    // (if 'bytesToWrite' is -1, writes strlen(buffer) bytes); on error returns FALSE and,
+    // if the Windows error code is known, returns it in 'error' (if not NULL); if it returns TRUE,
+    // at least part of the buffer was successfully written; in 'allBytesWritten' (must not be
+    // NULL) returns TRUE if the entire buffer was written; if 'allBytesWritten'
+    // returns FALSE, before the next call to Write you must wait for the fwseWriteDone event
+    // (once it arrives, the write is complete)
     BOOL Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL* allBytesWritten);
 
-    // pomocna metoda pro detekovani jestli jiz je v bufferu 'ReadBytes' cela odpoved
-    // od FTP serveru; vraci TRUE pri uspechu - v 'reply' (nesmi byt NULL) vraci ukazatel
-    // na zacatek odpovedi, v 'replySize' (nesmi byt NULL) vraci delku odpovedi,
-    // v 'replyCode' (neni-li NULL) vraci FTP kod odpovedi nebo -1 pokud odpoved nema
-    // zadny kod (nezacina na triciferne cislo); pokud jeste neni odpoved kompletni, vraci
-    // FALSE - dalsi volani ReadFTPReply ma smysl az po prijeti udalosti fwseNewBytesRead
-    // POZOR: nutne volat z kriticke sekce SocketCritSect (jinak by se buffer 'ReadBytes'
-    // mohl libovolne zmenit)
+    // helper method to detect whether the entire reply from the FTP server is already in the 'ReadBytes' buffer;
+    // returns TRUE on success - in 'reply' (must not be NULL) returns a pointer
+    // to the start of the reply, in 'replySize' (must not be NULL) returns the reply length,
+    // in 'replyCode' (if not NULL) returns the FTP reply code or -1 if the reply has no
+    // code (does not start with a three-digit number); if the reply is not complete yet, returns
+    // FALSE - calling ReadFTPReply again makes sense only after the fwseNewBytesRead event is received
+    // WARNING: must be called from the SocketCritSect critical section (otherwise the 'ReadBytes' buffer
+    // could change arbitrarily)
     BOOL ReadFTPReply(char** reply, int* replySize, int* replyCode = NULL);
 
-    // pomocna metoda pro uvolneni odpovedi od FTP serveru (o delce 'replySize') z bufferu
-    // 'ReadBytes'
-    // POZOR: nutne volat z kriticke sekce SocketCritSect (jinak by se buffer 'ReadBytes'
-    // mohl libovolne zmenit)
+    // helper method to release the FTP server reply (of length 'replySize') from the
+    // 'ReadBytes' buffer
+    // WARNING: must be called from the SocketCritSect critical section (otherwise the 'ReadBytes'
+    // buffer could change arbitrarily)
     void SkipFTPReply(int replySize);
 
-    // pomocna metoda pro cteni chybovych hlasek z bufferu ReadBytes (socket uz muze byt
-    // davno zavreny); hlasky zobrazuje do Logu a je-li ErrorDescr prazdne, naplni do nej
-    // prvni chybovou hlasku
-    // POZOR: nutne volat z kriticke sekce SocketCritSect (jinak by se buffer 'ReadBytes'
-    // mohl libovolne zmenit) a kriticke sekce WorkerCritSect
+    // helper method for reading error messages from the ReadBytes buffer (the socket may
+    // already be closed); it writes the messages to the Log and, if ErrorDescr is empty,
+    // fills it with the first error message
+    // WARNING: must be called from the SocketCritSect critical section (otherwise the 'ReadBytes'
+    // buffer could change arbitrarily) and the WorkerCritSect critical section
     void ReadFTPErrorReplies();
 
-    // zjisti jestli je worker ve stavu "sleeping" a pokud je (vraci TRUE), zjisti jeste
-    // jestli ma otevrenou connectionu (v 'hasOpenedConnection' vraci TRUE) a jestli uz
-    // ceka na doruceni zpravy WORKER_WAKEUP aneb uz ho nekdo budi (v 'receivingWakeup'
-    // vraci TRUE)
+    // determines whether the worker is in the "sleeping" state and, if so (returns TRUE),
+    // also determines whether it has an open connection (returns TRUE in 'hasOpenedConnection')
+    // and whether it is already waiting for the WORKER_WAKEUP message to be delivered, i.e.
+    // someone is already waking it up (returns TRUE in 'receivingWakeup')
     BOOL IsSleeping(BOOL* hasOpenedConnection, BOOL* receivingWakeup);
 
-    // nastavi ReceivingWakeup (v kriticke sekci WorkerCritSect)
+    // sets ReceivingWakeup (inside the WorkerCritSect critical section)
     void SetReceivingWakeup(BOOL receivingWakeup);
 
-    // predani polozky z 'sourceWorker' do tohoto workera a uvedeni do stavu fwsPreparing,
-    // 'sourceWorker' se uvede do stavu fwsLookingForWork (z neho nejspis prejde do fwsSleeping)
+    // passes an item from 'sourceWorker' to this worker and puts it into the fwsPreparing state,
+    // 'sourceWorker' is put into the fwsLookingForWork state (from which it most likely moves to fwsSleeping)
     void GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker);
 
-    // prida do 'downloaded' velikost (v bytech) prave downloadeneho souboru v tomto workerovi
+    // adds to 'downloaded' the size (in bytes) of the file currently being downloaded by this worker
     void AddCurrentDownloadSize(CQuadWord* downloaded);
 
-    // prida do 'uploaded' velikost (v bytech) prave uploadeneho souboru v tomto workerovi
+    // adds to 'uploaded' the size (in bytes) of the file currently being uploaded by this worker
     void AddCurrentUploadSize(CQuadWord* uploaded);
 
-    // je-li worker ve stavu fwsConnectionError, vraci ErrorOccurenceTime (v kriticke
-    // sekci WorkerCritSect); jinak vraci -1
+    // if the worker is in the fwsConnectionError state, returns ErrorOccurenceTime (inside the
+    // WorkerCritSect critical section); otherwise returns -1
     DWORD GetErrorOccurenceTime();
 
     // ******************************************************************************************
-    // metody volane v "sockets" threadu (na zaklade prijmu zprav od systemu nebo jinych threadu)
+    // methods called in the "sockets" thread (based on receiving messages from the system or other threads)
     //
-    // POZOR: volane v sekci SocketsThread->CritSect, mely by se provadet co nejrychleji (zadne
-    //        cekani na vstup usera, atd.)
+    // WARNING: called inside the SocketsThread->CritSect section; they should be executed as quickly
+    //          as possible (no waiting for user input, etc.)
     // ******************************************************************************************
 
-    // prijem vysledku volani GetHostByAddress; je-li 'ip' == INADDR_NONE jde o chybu a v 'err'
-    // muze byt chybovy kod (pokud 'err' != 0)
+    // receipt of the result of calling GetHostByAddress; if 'ip' == INADDR_NONE, it's an error and 'err'
+    // may contain the error code (if 'err' != 0)
     virtual void ReceiveHostByAddress(DWORD ip, int hostUID, int err);
 
-    // prijem udalosti pro tento socket (FD_READ, FD_WRITE, FD_CLOSE, atd.); 'index' je
-    // index socketu v poli SocketsThread->Sockets (pouziva se pro opakovane posilani
-    // zprav pro socket)
+    // reception of an event for this socket (FD_READ, FD_WRITE, FD_CLOSE, etc.); 'index' is
+    // the socket index in the SocketsThread->Sockets array (used for repeated posting of
+    // messages for the socket)
     virtual void ReceiveNetEvent(LPARAM lParam, int index);
 
-    // prijem vysledku ReceiveNetEvent(FD_CLOSE) - neni-li 'error' NO_ERROR, jde
-    // o kod Windowsove chyby (prisla s FD_CLOSE nebo vznikla behem zpracovani FD_CLOSE)
+    // reception of the result from ReceiveNetEvent(FD_CLOSE) - if 'error' is not NO_ERROR, it is
+    // a Windows error code (arrived with FD_CLOSE or arose while processing FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // prijem timeru s ID 'id' a parametrem 'param'
+    // reception of a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // prijem postnute zpravy s ID 'id' a parametrem 'param'
+    // reception of a posted message with ID 'id' and parameter 'param'
     virtual void ReceivePostMessage(DWORD id, void* param);
 
 protected:
-    // zpracovani vsech typu udalosti na socketu workeru; vola se jen v sockets threadu, takze
-    // soubezne volani nehrozi; vola se v jedine kriticke sekci CSocketsThread::CritSect
+    // processing of all event types on the worker socket; called only in the sockets thread, so
+    // concurrent invocation is not a threat; called inside the single CSocketsThread::CritSect critical section
     void HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWORD data2);
 
-    // zpracovani udalosti workeru (aktivace, posilani prikazu, atd.); vola se jen v sockets
-    // threadu, takze soubezne volani nehrozi; vola se v kritickych sekcich
-    // CSocketsThread::CritSect a CSocket::SocketCritSect; 'reply'+'replySize'+'replyCode'
-    // obsahuji odpoved serveru (jen pri fweCmdReplyReceived a fweCmdInfoReceived, jinak
-    // jsou NULL+0+0) - po dokonceni metody HandleEvent() se vola SkipFTPReply(replySize)
+    // processing of worker events (activation, sending commands, etc.); called only in the sockets
+    // thread, so concurrent invocation is not a threat; called in the CSocketsThread::CritSect and
+    // CSocket::SocketCritSect critical sections; 'reply'+'replySize'+'replyCode' contain the server
+    // reply (only for fweCmdReplyReceived and fweCmdInfoReceived, otherwise they are NULL+0+0) - after
+    // the HandleEvent() method finishes, SkipFTPReply(replySize) is called
     void HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, int replyCode);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEvent()
+    // helper method solely to make HandleEvent() easier to follow
     void HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                      BOOL& reportWorkerChange);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEvent()
+    // helper method solely to make HandleEvent() easier to follow
     void HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                       BOOL& reportWorkerChange, char* buf, char* errBuf, char* host,
                                       int& cmdLen, BOOL& sendCmd, char* reply, int replySize,
                                       int replyCode, BOOL& operStatusMaybeChanged);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEvent()
+    // helper method solely to make HandleEvent() easier to follow
     void HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                    BOOL& reportWorkerChange, char* buf, char* errBuf, char* host,
                                    int& cmdLen, BOOL& sendCmd, char* reply, int replySize,
                                    int replyCode);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState a HandleEvent()
+    // helper method solely to make HandleEventInWorkingState and HandleEvent() easier to follow
     void HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                     BOOL& reportWorkerChange, char* buf, char* errBuf, char* host,
                                     int& cmdLen, BOOL& sendCmd, char* reply, int replySize,
@@ -1598,14 +1595,14 @@ protected:
                                     BOOL& conClosedRetryItem, BOOL& lookForNewWork,
                                     BOOL& handleShouldStop, BOOL* listingNotAccessible);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState a HandleEvent()
+    // helper method solely to make HandleEventInWorkingState and HandleEvent() easier to follow
     void HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                     char* buf, char* errBuf, int& cmdLen, BOOL& sendCmd,
                                     char* reply, int replySize, int replyCode, char* errText,
                                     BOOL& conClosedRetryItem, BOOL& lookForNewWork,
                                     BOOL& handleShouldStop);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState a HandleEvent()
+    // helper method solely to make HandleEventInWorkingState and HandleEvent() easier to follow
     void HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                     BOOL& reportWorkerChange, char* buf, char* errBuf, char* host,
                                     int& cmdLen, BOOL& sendCmd, char* reply, int replySize,
@@ -1613,7 +1610,7 @@ protected:
                                     BOOL& conClosedRetryItem, BOOL& lookForNewWork,
                                     BOOL& handleShouldStop, BOOL& quitCmdWasSent);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState a HandleEvent()
+    // helper method solely to make HandleEventInWorkingState and HandleEvent() easier to follow
     void HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                     BOOL& reportWorkerChange, char* buf, char* errBuf, char* host,
                                     int& cmdLen, BOOL& sendCmd, char* reply, int replySize,
@@ -1621,7 +1618,7 @@ protected:
                                     BOOL& conClosedRetryItem, BOOL& lookForNewWork,
                                     BOOL& handleShouldStop, BOOL& quitCmdWasSent);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState()
+    // helper method solely to make HandleEventInWorkingState() easier to follow
     BOOL ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueItems,
                                 const char* allocatedListing, int allocatedListingLen,
                                 CServerType* serverType, BOOL* lowMem,
@@ -1631,84 +1628,83 @@ protected:
                                 DWORD attrOrMask, int operationsUnknownAttrs,
                                 int operationsHiddenFileDel, int operationsHiddenDirDel);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void OpenActDataCon(CFTPWorkerSubState waitForListen, char* errBuf,
                         BOOL& conClosedRetryItem, BOOL& lookForNewWork);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void WaitForListen(CFTPWorkerEvent event, BOOL& handleShouldStop, char* errBuf,
                        char* buf, int& cmdLen, BOOL& sendCmd, BOOL& conClosedRetryItem,
                        CFTPWorkerSubState waitForPORTRes);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void WaitForPASVRes(CFTPWorkerEvent event, char* reply, int replySize, int replyCode,
                         BOOL& handleShouldStop, BOOL& nextLoop, BOOL& conClosedRetryItem,
                         CFTPWorkerSubState setType, CFTPWorkerSubState openActDataCon);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void WaitForPORTRes(CFTPWorkerEvent event, BOOL& nextLoop, BOOL& conClosedRetryItem,
                         CFTPWorkerSubState setType);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void SetTypeA(BOOL& handleShouldStop, char* errBuf, char* buf, int& cmdLen,
                   BOOL& sendCmd, BOOL& nextLoop, CCurrentTransferMode trMode,
                   BOOL asciiTrMode, CFTPWorkerSubState waitForTYPERes,
                   CFTPWorkerSubState trModeAlreadySet);
 
-    // jen pomocna metoda pro lepsi orientaci v HandleEventInWorkingState2()
+    // helper method solely to make HandleEventInWorkingState2() easier to follow
     void WaitForTYPERes(CFTPWorkerEvent event, int replyCode, BOOL& nextLoop, BOOL& conClosedRetryItem,
                         CCurrentTransferMode trMode, CFTPWorkerSubState trModeAlreadySet);
 
-    // upravi text v bufferu ErrorDescr tak, ze: neobsahuje CR ani LF a na konci nema tecku
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // adjusts the text in the ErrorDescr buffer so that it contains no CR or LF and has no period at the end
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     void CorrectErrorDescr();
 
-    // inicializuje polozky struktury 'DiskWork'
-    // POZOR: volat jen uvnitr kriticke sekce CSocket::SocketCritSect + vstupuje do sekce
-    //        CFTPOperation::OperCritSect !!!
+    // initializes the items of the 'DiskWork' structure
+    // WARNING: call only inside the CSocket::SocketCritSect critical section + enters the
+    //          CFTPOperation::OperCritSect section !!!
     void InitDiskWork(DWORD msgID, CFTPDiskWorkType type, const char* path, const char* name,
                       CFTPQueueItemAction forceAction, BOOL alreadyRenamedName,
                       char* flushDataBuffer, CQuadWord const* checkFromOffset,
                       CQuadWord const* writeOrReadFromOffset, int validBytesInFlushDataBuffer,
                       HANDLE workFile);
 
-    // vrati zpracovavanou polozku 'CurItem' zpet do fronty (vraci ji do stavu "waiting", aby ji
-    // mohl zpracovat jiny worker)
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // returns the processed 'CurItem' back to the queue (returns it to the "waiting" state so another
+    // worker can process it)
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     void ReturnCurItemToQueue();
 
-    // zavira otevreny soubor 'OpenedFile' (jen je-li otevreny, jinak neprovadi nic);
-    // 'transferAborted' je TRUE pokud doslo k preruseni prenosu souboru (krome zavreni
-    // muze dojit i k vymazu prazdneho souboru), jinak je FALSE (soubor byl uspesne prenesen);
-    // je-li 'setDateAndTime' TRUE, dojde pred zavrenim souboru k nastaveni casu zapisu
-    // na 'date'+'time' (POZOR: je-li date->Day==0 resp. time->Hour==24, jde o
-    // "prazdne hodnoty" u datumu resp. casu); je-li 'deleteFile' TRUE, dojde k vymazu
-    // souboru ihned po jeho uzavreni; neni-li 'setEndOfFile' NULL, dojde po zavreni
-    // souboru k oriznuti na offsetu 'setEndOfFile'
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // closes the open file 'OpenedFile' (only if it is open, otherwise does nothing);
+    // 'transferAborted' is TRUE if the file transfer was interrupted (in addition to closing,
+    // an empty file may also be deleted), otherwise it is FALSE (the file was transferred successfully);
+    // if 'setDateAndTime' is TRUE, the write time is set to 'date'+'time' before the file is closed
+    // (WARNING: if date->Day==0 or time->Hour==24, these are "empty values" for the date or time);
+    // if 'deleteFile' is TRUE, the file is deleted immediately after it is closed; if 'setEndOfFile'
+    // is not NULL, the file is truncated at the 'setEndOfFile' offset after it is closed
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     void CloseOpenedFile(BOOL transferAborted, BOOL setDateAndTime, const CFTPDate* date,
                          const CFTPTime* time, BOOL deleteFile, CQuadWord* setEndOfFile);
 
-    // zavira otevreny soubor 'OpenedInFile' (jen je-li otevreny, jinak neprovadi nic);
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // closes the open file 'OpenedInFile' (only if it is open, otherwise does nothing);
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     void CloseOpenedInFile();
 
-    // hlasi zavreni socketu workera nebo cancel/dokonceni prace workera v disk-threadu,
-    // viz WorkerMayBeClosedEvent
+    // reports the worker socket closure or cancellation/completion of the worker's work in the disk thread,
+    // see WorkerMayBeClosedEvent
     void ReportWorkerMayBeClosed();
 
-    // zpracuje chybu (viz FlushDataError), ktera nastala pri flushovani dat
-    // (Copy a Move operace) a vynuluje FlushDataError; vraci TRUE pokud nejaka
-    // chyba nastala a byla zpracovana; vraci FALSE pokud zadna chyba nenastala
-    // a je mozne normalne pokracovat
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // processes the error (see FlushDataError) that occurred while flushing data
+    // (Copy and Move operations) and resets FlushDataError; returns TRUE if an
+    // error occurred and was processed; returns FALSE if no error occurred
+    // and it is possible to continue normally
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     BOOL HandleFlushDataError(CFTPQueueItemCopyOrMove* curItem, BOOL& lookForNewWork);
 
-    // zpracuje chybu (viz PrepareDataError), ktera nastala pri priprave dat
-    // (upload: Copy a Move operace) a vynuluje PrepareDataError; vraci TRUE pokud nejaka
-    // chyba nastala a byla zpracovana; vraci FALSE pokud zadna chyba nenastala
-    // a je mozne normalne pokracovat
-    // POZOR: volat jen uvnitr kriticke sekce WorkerCritSect !!!
+    // processes the error (see PrepareDataError) that occurred while preparing data
+    // (upload: Copy and Move operations) and resets PrepareDataError; returns TRUE if an
+    // error occurred and was processed; returns FALSE if no error occurred
+    // and it is possible to continue normally
+    // WARNING: call only inside the WorkerCritSect critical section !!!
     BOOL HandlePrepareDataError(CFTPQueueItemCopyOrMoveUpload* curItem, BOOL& lookForNewWork);
 
     friend class CControlConnectionSocket;
@@ -1722,163 +1718,163 @@ protected:
 class CFTPWorkersList
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
-    // POZOR: pristup do kritickych sekci konzultovat v souboru servers\critsect.txt !!!
+    // critical section for accessing the object's data
+    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
     CRITICAL_SECTION WorkersListCritSect;
 
-    TIndirectArray<CFTPWorker> Workers; // pole workeru
-    int NextWorkerID;                   // pocitadlo pro ID workeru (zobrazuje se v listview Connections v dialogu operace)
+    TIndirectArray<CFTPWorker> Workers; // array of workers
+    int NextWorkerID;                   // counter for worker IDs (displayed in the Connections listview in the operation dialog)
 
-    DWORD LastFoundErrorOccurenceTime; // "cas" posledniho nalezeneho workera s chybou nebo "cas", pred kterym uz zadny worker s chybou neexistuje
+    DWORD LastFoundErrorOccurenceTime; // "time" of the last worker found with an error or the "time" before which no such worker exists
 
 public:
     CFTPWorkersList();
     ~CFTPWorkersList();
 
-    // prida do pole noveho workera; vraci TRUE pri uspechu
-    // POZOR: nemelo by dojit k volani behem provadeni ActivateWorkers(), PostLoginChanged(),
-    //        PostNewWorkAvailable()
+    // adds a new worker to the array; returns TRUE on success
+    // WARNING: should not be called while ActivateWorkers(), PostLoginChanged(),
+    //          PostNewWorkAvailable() are running
     BOOL AddWorker(CFTPWorker* newWorker);
 
-    // informuje workery o tom, ze se maji snazit stopnout; pracuje se vsemi workery
-    // operace (je-li 'workerInd' -1) nebo jen s workerem na indexu 'workerInd'; je
-    // nutne volat opakovane dokud vraci TRUE (zpracovani je davkove); 'victims'+'maxVictims'
-    // je pole pro workery, kteri potrebuji zavrit datove spojeni nebo postnout WORKER_SHOULDSTOP
-    // (fweWorkerShouldStop) volanim CloseDataConnectionOrPostShouldStop() po dokonceni teto
-    // metody; ve 'foundVictims' vstupuje pocet obsazenych polozek pole 'victims' a vraci se
-    // aktualizovany pocet obsazenych polozek
+    // informs workers that they should attempt to stop; operates on all workers
+    // of the operation (if 'workerInd' is -1) or only on the worker at index 'workerInd'; must
+    // be called repeatedly until it returns TRUE (processing is batched); 'victims'+'maxVictims'
+    // is an array for workers that need to close the data connection or post WORKER_SHOULDSTOP
+    // (fweWorkerShouldStop) by calling CloseDataConnectionOrPostShouldStop() after this method
+    // finishes; 'foundVictims' receives the number of filled items in the 'victims' array on input and
+    // returns the updated count of filled items
     BOOL InformWorkersAboutStop(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims);
 
-    // informuje workery o tom, ze se maji snazit o pause/resume; pracuje se vsemi workery
-    // operace (je-li 'workerInd' -1) nebo jen s workerem na indexu 'workerInd'; je
-    // nutne volat opakovane dokud vraci TRUE (zpracovani je davkove); 'victims'+'maxVictims'
-    // je pole pro workery, kteri potrebuji postnout WORKER_SHOULDPAUSE nebo WORKER_SHOULDRESUME
-    // (fweWorkerShouldPause nebo fweWorkerShouldResume) volanim PostShouldPauseOrResume() po
-    // dokonceni teto metody; ve 'foundVictims' vstupuje pocet obsazenych polozek pole 'victims'
-    // a vraci se aktualizovany pocet obsazenych polozek; v 'pause' je TRUE pokud se ma provest
-    // pause, FALSE pokud se ma provest resume
+    // informs workers that they should attempt to pause/resume; operates on all workers
+    // of the operation (if 'workerInd' is -1) or only on the worker at index 'workerInd'; must
+    // be called repeatedly until it returns TRUE (processing is batched); 'victims'+'maxVictims'
+    // is an array for workers that need to post WORKER_SHOULDPAUSE or WORKER_SHOULDRESUME
+    // (fweWorkerShouldPause or fweWorkerShouldResume) by calling PostShouldPauseOrResume() after
+    // this method finishes; 'foundVictims' receives the number of filled items in the 'victims'
+    // array on input and returns the updated count of filled items; 'pause' is TRUE if pause should
+    // be performed, FALSE if resume should be performed
     BOOL InformWorkersAboutPause(int workerInd, CFTPWorker** victims, int maxVictims,
                                  int* foundVictims, BOOL pause);
 
-    // zjisti jestli uz vsichni workeri (je-li 'workerInd' -1) nebo worker na indexu
-    // 'workerInd' ma zavreny socket a nema rozdelanou praci v disk-threadu; vraci
-    // TRUE pokud jsou sockety zavrene (disconnected) a workeri nemaji praci
-    // v disk-threadu
+    // determines whether all workers (if 'workerInd' is -1) or the worker at index
+    // 'workerInd' already has the socket closed and no work in progress in the disk thread; returns
+    // TRUE if the sockets are closed (disconnected) and the workers have no work
+    // in the disk thread
     BOOL CanCloseWorkers(int workerInd);
 
-    // donuti vsechny workery operace (je-li 'workerInd' -1) nebo workera na indexu
-    // 'workerInd' urychlene zavrit socket a cancelovat praci v disk-threadu (pokud uz
-    // je prace hotova, necha workera zpracovat jeji vysledky, nemelo by brzdit); je
-    // nutne volat opakovane dokud vraci TRUE (zpracovani je davkove); 'victims'+'maxVictims'
-    // je pole pro workery, kterym se ma zavolat metoda ForceClose() po dokonceni
-    // teto metody; ve 'foundVictims' vstupuje pocet obsazenych polozek pole 'victims'
-    // a vraci se aktualizovany pocet obsazenych polozek
+    // forces all workers of the operation (if 'workerInd' is -1) or the worker at index
+    // 'workerInd' to quickly close the socket and cancel the work in the disk thread (if the work is
+    // already finished, it lets the worker process its results, it should not be a slowdown); must
+    // be called repeatedly until it returns TRUE (processing is batched); 'victims'+'maxVictims'
+    // is an array for workers for which the ForceClose() method should be called after this method
+    // finishes; 'foundVictims' receives the number of filled items in the 'victims' array on input
+    // and returns the updated count of filled items
     BOOL ForceCloseWorkers(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims);
 
-    // zrusi postupne vsechny workery operace (je-li 'workerInd' -1) nebo zrusi
-    // workera na indexu 'workerInd'; je nutne volat opakovane dokud vraci TRUE
-    // (zpracovani je davkove); 'victims'+'maxVictims' je pole pro sockety,
-    // ktere se maji zavrit volanim DeleteSocket() po dokonceni
-    // teto metody; ve 'foundVictims' vstupuje pocet obsazenych polozek pole
-    // 'victims' a vraci se aktualizovany pocet obsazenych polozek;
-    // v 'uploadFirstWaitingWorker' je aktualizovany seznam workeru cekajicich na
+    // gradually cancels all workers of the operation (if 'workerInd' is -1) or cancels
+    // the worker at index 'workerInd'; must be called repeatedly until it returns TRUE
+    // (processing is batched); 'victims'+'maxVictims' is an array for sockets
+    // that should be closed by calling DeleteSocket() after this method finishes;
+    // 'foundVictims' receives the number of filled items in the 'victims' array on input
+    // and returns the updated count of filled items;
+    // 'uploadFirstWaitingWorker' contains the updated list of workers waiting for
     // WORKER_TGTPATHLISTINGFINISHED
     BOOL DeleteWorkers(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims,
                        CUploadWaitingWorker** uploadFirstWaitingWorker);
 
-    // vraci pocet workeru
+    // returns the number of workers
     int GetCount();
 
-    // vraci index prvniho workera, ktery hlasi chybu (stav fwsConnectionError);
-    // pokud zadny worker chybu nehlasi, vraci -1
+    // returns the index of the first worker that reports an error (state fwsConnectionError);
+    // if no worker reports an error, returns -1
     int GetFirstErrorIndex();
 
-    // vraci index workera s ID 'workerID'; pokud neni nalezen, vraci -1
+    // returns the index of the worker with ID 'workerID'; if not found, returns -1
     int GetWorkerIndex(int workerID);
 
-    // vraci data pro zobrazeni workera s indexem 'index' v listview v dialogu operace;
-    // 'buf'+'bufSize' je buffer pro text vraceny v 'lvdi' (meni se tri cyklicky,
-    // aby se splnily naroky LVN_GETDISPINFO); pokud index neni
-    // platny, nedela nic (refresh listview uz je na ceste)
+    // returns the data for displaying the worker at index 'index' in the listview in the operation dialog;
+    // 'buf'+'bufSize' is a buffer for the text returned in 'lvdi' (changes in three cycles
+    // to meet the LVN_GETDISPINFO requirements); if the index is not
+    // valid, does nothing (listview refresh is already on the way)
     void GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int bufSize);
 
-    // vraci ID workeru na indexu 'index'; -1 = neplatny index
+    // returns the worker ID at index 'index'; -1 = invalid index
     int GetWorkerID(int index);
 
-    // vraci UID logu workeru na indexu 'index'; -1 = neplatny index nebo worker nema log
+    // returns the log UID of the worker at index 'index'; -1 = invalid index or the worker has no log
     int GetLogUID(int index);
 
-    // vraci TRUE pokud je mozne, ze worker na indexu 'index' potrebuje od usera vyresit
-    // chybu (viz CFTPWorker::HaveError()); pri neplatnem indexu vraci FALSE
+    // returns TRUE if it is possible that the worker at index 'index' needs the user to resolve
+    // an error (see CFTPWorker::HaveError()); returns FALSE for an invalid index
     BOOL HaveError(int index);
 
-    // vraci TRUE pokud je worker na indexu 'index' pausnuty (viz CFTPWorker::IsPaused());
-    // v 'isWorking' (nesmi byt NULL) vraci TRUE pokud worker pracuje (nespi, neceka na
-    // usera a neni ukonceny);
-    // pri neplatnem indexu vraci FALSE (i v 'isWorking')
+    // returns TRUE if the worker at index 'index' is paused (see CFTPWorker::IsPaused());
+    // in 'isWorking' (must not be NULL) returns TRUE if the worker is working (not sleeping, not waiting for
+    // the user and not finished);
+    // returns FALSE for an invalid index (also in 'isWorking')
     BOOL IsPaused(int index, BOOL* isWorking);
 
-    // vraci TRUE pokud aspon jeden worker pracuje (nespi, neceka na usera a neni ukonceny);
-    // v 'someIsWorkingAndNotPaused' (nesmi byt NULL) vraci TRUE pokud aspon
-    // jeden worker pracuje (nespi, neceka na usera a neni ukonceny) a neni pausnuty
+    // returns TRUE if at least one worker is working (not sleeping, not waiting for the user and not finished);
+    // in 'someIsWorkingAndNotPaused' (must not be NULL) returns TRUE if at least
+    // one worker is working (not sleeping, not waiting for the user and not finished) and not paused
     BOOL SomeWorkerIsWorking(BOOL* someIsWorkingAndNotPaused);
 
-    // vraci TRUE pokud worker na indexu 'index' potrebuje od usera vyresit chybu
-    // (viz HaveError()), pokud je tento worker ve stavu fwsWaitingForReconnect, zmeni se
-    // do stavu fwsConnectionError; pokud vraci TRUE, vraci i text chyby v 'buf' (buffer
-    // o velikosti 'bufSize') a pokud je chyba zpusobena neduveryhodnym serverovym certifikatem,
-    // vraci ho v 'unverifiedCertificate' (neni-li NULL; volajici ma na starosti pripadne
-    // uvolneni certifikatu jeho metodou Release()); pri neplatnem indexu vraci FALSE
-    // POZOR: vstupuje do sekce CSocketsThread::CritSect !!!
+    // returns TRUE if the worker at index 'index' needs the user to resolve an error
+    // (see HaveError()); if this worker is in the fwsWaitingForReconnect state, it changes
+    // to the fwsConnectionError state; if it returns TRUE, it also returns the error text in 'buf' (buffer
+    // of size 'bufSize') and, if the error is caused by an untrusted server certificate,
+    // returns it in 'unverifiedCertificate' (if not NULL; the caller is responsible for releasing
+    // the certificate using its Release() method); returns FALSE for an invalid index
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     BOOL GetErrorDescr(int index, char* buf, int bufSize, CCertificate** unverifiedCertificate);
 
-    // aktivuje vsechny workery (postne socketu workera WORKER_ACTIVATE)
-    // POZOR: nepouziva plne sekci WorkersListCritSect, nemusi se provest pro workera
-    //        pridaneho behem provadeni metody (viz AddWorker()) !!!
-    // POZOR: vstupuje do sekci CSocketsThread::CritSect a CSocket::SocketCritSect !!!
+    // activates all workers (posts WORKER_ACTIVATE to the worker socket)
+    // WARNING: does not fully lock the WorkersListCritSect, it may not be executed for a worker
+    //          added while the method is running (see AddWorker()) !!!
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
     void ActivateWorkers();
 
-    // informuje vybrane workery s chybou o zmene login parametru (ma se provest novy pokus
-    // o connect); je-li 'workerID' -1, informuje vsechny workery ve stavu fwsConnectionError;
-    // neni-li 'workerID' -1, informuje workera s ID 'workerID' (je-li ve stavu fwsConnectionError)
-    // POZOR: nepouziva plne sekci WorkersListCritSect, nemusi se provest pro workera
-    //        pridaneho behem provadeni metody (viz AddWorker()) !!!
-    // POZOR: vstupuje do sekci CSocketsThread::CritSect !!!
+    // informs selected workers with an error about changed login parameters (a new connection attempt should be made);
+    // if 'workerID' is -1, informs all workers in the fwsConnectionError state;
+    // if 'workerID' is not -1, informs the worker with ID 'workerID' (if it is in the fwsConnectionError state)
+    // WARNING: does not fully lock the WorkersListCritSect, it may not be executed for a worker
+    //          added while the method is running (see AddWorker()) !!!
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     void PostLoginChanged(int workerID);
 
-    // informuje workery ve stavu "sleeping" o existenci nove prace (impulz pro hledani
-    // prace ve fronte polozek); je-li 'onlyOneItem' TRUE, jde jen o jednu polozku
-    // (staci informovat jednoho workera), jinak jde o vic polozek (informovat vsechny
-    // workery); informovani workeru = postnuti WORKER_WAKEUP;
-    // POZOR: nepouziva plne sekci WorkersListCritSect, nemusi se provest pro workera
-    //        pridaneho behem provadeni metody (viz AddWorker()) !!!
-    // POZOR: vstupuje do sekce CSocketsThread::CritSect !!!
+    // informs workers in the "sleeping" state about the existence of new work (impulse to search
+    // for work in the item queue); if 'onlyOneItem' is TRUE, there is just one item
+    // (informing one worker is enough), otherwise there are more items (inform all
+    // workers); informing the workers = posting WORKER_WAKEUP;
+    // WARNING: does not fully lock the WorkersListCritSect, it may not be executed for a worker
+    //          added while the method is running (see AddWorker()) !!!
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     void PostNewWorkAvailable(BOOL onlyOneItem);
 
-    // pokusi se najit "sleeping" workera s otevrenou connectionou, pri uspechu
-    // vraci TRUE a preda do nej polozku z 'sourceWorker' a uvede ho do stavu
-    // fwsPreparing (+ postne mu fweActivate), 'sourceWorker' se uvede do stavu
-    // fwsSleeping
-    // POZOR: vstupuje do sekce CSocketsThread::CritSect !!!
+    // attempts to find a "sleeping" worker with an open connection; on success,
+    // returns TRUE and passes the item from 'sourceWorker' to it and puts it into the
+    // fwsPreparing state (+ posts fweActivate to it); 'sourceWorker' is put into the
+    // fwsSleeping state
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     BOOL GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker);
 
-    // prida do 'downloaded' velikost (v bytech) prave downloadenych souboru ze vsech workeru
+    // adds to 'downloaded' the size (in bytes) of the files currently being downloaded by all workers
     void AddCurrentDownloadSize(CQuadWord* downloaded);
 
-    // prida do 'uploaded' velikost (v bytech) prave uploadenych souboru ze vsech workeru
+    // adds to 'uploaded' the size (in bytes) of the files currently being uploaded by all workers
     void AddCurrentUploadSize(CQuadWord* uploaded);
 
-    // hleda index workera, ktery potrebuje otevrit Solve Error dialog (objevila se
-    // v nem "nova" (user ji jeste nevidel) chyba); 'lastErrorOccurenceTime' je "cas"
-    // prideleny posledni chybe (pouziva se pro zrychleny test jestli ma smysl vubec
-    // hledat "novou" chybu); vraci TRUE pokud se takoveho workera podarilo nalezt,
-    // jeho index se vraci v 'index'
+    // searches for the index of a worker that needs to open the Solve Error dialog (a
+    // "new" error appeared there (the user has not seen it yet)); 'lastErrorOccurenceTime' is the "time"
+    // assigned to the last error (used for a quick test whether it even makes sense to look
+    // for a "new" error); returns TRUE if such a worker was found,
+    // its index is returned in 'index'
     BOOL SearchWorkerWithNewError(int* index, DWORD lastErrorOccurenceTime);
 
-    // vraci TRUE pokud je seznam workeru prazdny nebo vsichni workeri maji koncit
+    // returns TRUE if the worker list is empty or all workers should stop
     BOOL EmptyOrAllShouldStop();
 
-    // vraci TRUE pokud je aspon jeden worker ve stavu cekani na uzivatele
+    // returns TRUE if at least one worker is waiting for the user
     BOOL AtLeastOneWorkerIsWaitingForUser();
 };
 
@@ -1886,43 +1882,43 @@ public:
 // ****************************************************************************
 // CTransferSpeedMeter
 //
-// objekt pro vypocet rychlosti prenosu dat v data-connectione
+// object for calculating data transfer speed in the data connection
 
-#define DATACON_ACTSPEEDSTEP 1000     // pro vypocet prenosove rychlosti: velikost kroku v milisekundach (nesmi byt 0)
-#define DATACON_ACTSPEEDNUMOFSTEPS 60 // pro vypocet prenosove rychlosti: pocet pouzitych kroku (vic kroku = jemnejsi zmeny rychlosti pri "vypadku" prvniho kroku ve fronte)
+#define DATACON_ACTSPEEDSTEP 1000     // for computing the transfer speed: step size in milliseconds (must not be 0)
+#define DATACON_ACTSPEEDNUMOFSTEPS 60 // for computing the transfer speed: number of steps used (more steps = smoother speed changes when the first step in the queue "drops out")
 
 class CTransferSpeedMeter
 {
 protected:
-    CRITICAL_SECTION TransferSpeedMeterCS; // kriticka sekce pro pristup k datum objektu
+    CRITICAL_SECTION TransferSpeedMeterCS; // critical section for accessing the object's data
 
-    // vypocet prenosove rychlosti:
-    DWORD TransferedBytes[DATACON_ACTSPEEDNUMOFSTEPS + 1]; // kruhova fronta s poctem bytu prenesenych v poslednich N krocich (cas. intervalech) + jeden "pracovni" krok navic (nascitava se v nem hodnota za akt. interval)
-    int ActIndexInTrBytes;                                 // index posledniho (aktualniho) zaznamu v TransferedBytes
-    DWORD ActIndexInTrBytesTimeLim;                        // casova hranice (v ms) posledniho zaznamu v TransferedBytes (do tohoto casu se nacitaji byty do posl. zaznamu)
-    int CountOfTrBytesItems;                               // pocet kroku v TransferedBytes (uzavrene + jeden "pracovni")
+    // transfer speed calculation:
+    DWORD TransferedBytes[DATACON_ACTSPEEDNUMOFSTEPS + 1]; // circular queue with the number of bytes transferred in the last N steps (time intervals) + one extra "working" step (the value for the current interval is accumulated there)
+    int ActIndexInTrBytes;                                 // index of the last (current) record in TransferedBytes
+    DWORD ActIndexInTrBytesTimeLim;                        // time limit (in ms) of the last record in TransferedBytes (bytes are added to the last record up to this time)
+    int CountOfTrBytesItems;                               // number of steps in TransferedBytes (closed ones + one "working" step)
 
-    DWORD LastTransferTime; // GetTickCount z okamziku posledniho volani BytesReceived
+    DWORD LastTransferTime; // GetTickCount from the moment of the last BytesReceived call
 
 public:
     CTransferSpeedMeter();
     ~CTransferSpeedMeter();
 
-    // vynuluje objekt (priprava pro dalsi pouziti)
-    // volani mozne z libovolneho threadu
+    // resets the object (preparation for reuse)
+    // can be called from any thread
     void Clear();
 
-    // vraci rychlost spojeni v bytech za sekundu; v 'transferIdleTime' (muze byt NULL)
-    // vraci cas v sekundach od posledniho prijmu dat
-    // volani mozne z libovolneho threadu
+    // returns the connection speed in bytes per second; in 'transferIdleTime' (may be NULL)
+    // returns the time in seconds since the last data reception
+    // can be called from any thread
     DWORD GetSpeed(DWORD* transferIdleTime);
 
-    // vola se v okamziku navazani spojeni (aktivniho/pasivniho)
-    // volani mozne z libovolneho threadu
+    // called at the moment the connection is established (active/passive)
+    // can be called from any thread
     void JustConnected();
 
-    // vola se po uskutecneni prenosu casti dat; v 'count' je o kolik dat slo; 'time' je
-    // casu prenosu
+    // called after transferring a portion of data; 'count' contains how much data it was; 'time' is
+    // the transfer duration
     void BytesReceived(DWORD count, DWORD time);
 };
 
@@ -1930,12 +1926,12 @@ public:
 // ****************************************************************************
 // CSynchronizedDWORD
 //
-// DWORD se synchronizovanym pristupem pro pouziti z vice threadu
+// DWORD with synchronized access for use from multiple threads
 
 class CSynchronizedDWORD
 {
 private:
-    CRITICAL_SECTION ValueCS; // kriticka sekce pro pristup k datum objektu
+    CRITICAL_SECTION ValueCS; // critical section for accessing the object's data
     DWORD Value;
 
 public:
@@ -1950,300 +1946,300 @@ public:
 // ****************************************************************************
 // CFTPOperation
 //
-// objekt s informacemi o operaci jako celku (parametry pripojeni, typ operace, atd.)
+// object with information about the operation as a whole (connection parameters, operation type, etc.)
 
 enum CFTPOperationType
 {
-    fotNone,         // prazdna operace (nutne nastavit na jeden z nasledujicich typu)
-    fotDelete,       // operace mazani
-    fotCopyDownload, // operace kopirovani ze serveru
-    fotMoveDownload, // operace presunu ze serveru
-    fotChangeAttrs,  // operace zmeny atributu
-    fotCopyUpload,   // operace kopirovani na server
-    fotMoveUpload,   // operace presunu na server
+    fotNone,         // empty operation (must be set to one of the following types)
+    fotDelete,       // delete operation
+    fotCopyDownload, // copy-from-server operation
+    fotMoveDownload, // move-from-server operation
+    fotChangeAttrs,  // attribute change operation
+    fotCopyUpload,   // copy-to-server operation
+    fotMoveUpload,   // move-to-server operation
 };
 
-// jak resit problem "cilovy soubor/adresar nelze vytvorit"
-#define CANNOTCREATENAME_USERPROMPT 0 // zeptat se uzivatele
-#define CANNOTCREATENAME_AUTORENAME 1 // pouzit automaticke prejmenovani
-#define CANNOTCREATENAME_SKIP 2       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "target file/directory cannot be created"
+#define CANNOTCREATENAME_USERPROMPT 0 // ask the user
+#define CANNOTCREATENAME_AUTORENAME 1 // use automatic renaming
+#define CANNOTCREATENAME_SKIP 2       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "cilovy soubor jiz existuje"
-#define FILEALREADYEXISTS_USERPROMPT 0 // zeptat se uzivatele
-#define FILEALREADYEXISTS_AUTORENAME 1 // pouzit automaticke prejmenovani
-#define FILEALREADYEXISTS_RESUME 2     // resumnout (pridat na konec souboru - soubor se muze jedine zvetsit)
-#define FILEALREADYEXISTS_RES_OVRWR 3  // resumnout nebo prepsat (pokud nejde resume, soubor se smaze + vytvori znovu)
-#define FILEALREADYEXISTS_OVERWRITE 4  // prepsat (smazat + vytvorit znovu)
-#define FILEALREADYEXISTS_SKIP 5       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "target file already exists"
+#define FILEALREADYEXISTS_USERPROMPT 0 // ask the user
+#define FILEALREADYEXISTS_AUTORENAME 1 // use automatic renaming
+#define FILEALREADYEXISTS_RESUME 2     // resume (append to the end of the file - the file can only grow)
+#define FILEALREADYEXISTS_RES_OVRWR 3  // resume or overwrite (if resume is not possible, delete the file + create it again)
+#define FILEALREADYEXISTS_OVERWRITE 4  // overwrite (delete + create again)
+#define FILEALREADYEXISTS_SKIP 5       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "cilovy adresar jiz existuje"
-#define DIRALREADYEXISTS_USERPROMPT 0 // zeptat se uzivatele
-#define DIRALREADYEXISTS_AUTORENAME 1 // pouzit automaticke prejmenovani
-#define DIRALREADYEXISTS_JOIN 2       // vyuzit existujici adresar jako cilovy adresar (spojit adresare)
-#define DIRALREADYEXISTS_SKIP 3       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "target directory already exists"
+#define DIRALREADYEXISTS_USERPROMPT 0 // ask the user
+#define DIRALREADYEXISTS_AUTORENAME 1 // use automatic renaming
+#define DIRALREADYEXISTS_JOIN 2       // use the existing directory as the target directory (merge directories)
+#define DIRALREADYEXISTS_SKIP 3       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "retry na souboru FTP klientem primo vytvorenem nebo prepsanem"
-#define RETRYONCREATFILE_USERPROMPT 0 // zeptat se uzivatele
-#define RETRYONCREATFILE_AUTORENAME 1 // pouzit automaticke prejmenovani
-#define RETRYONCREATFILE_RESUME 2     // resumnout (pridat na konec souboru - soubor se muze jedine zvetsit)
-#define RETRYONCREATFILE_RES_OVRWR 3  // resumnout nebo prepsat (pokud nejde resume, soubor se smaze + vytvori znovu)
-#define RETRYONCREATFILE_OVERWRITE 4  // prepsat (smazat + vytvorit znovu)
-#define RETRYONCREATFILE_SKIP 5       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "retry on a file created or overwritten directly by the FTP client"
+#define RETRYONCREATFILE_USERPROMPT 0 // ask the user
+#define RETRYONCREATFILE_AUTORENAME 1 // use automatic renaming
+#define RETRYONCREATFILE_RESUME 2     // resume (append to the end of the file - the file can only grow)
+#define RETRYONCREATFILE_RES_OVRWR 3  // resume or overwrite (if resume is not possible, delete the file + create it again)
+#define RETRYONCREATFILE_OVERWRITE 4  // overwrite (delete + create again)
+#define RETRYONCREATFILE_SKIP 5       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "retry na souboru FTP klientem resumnutem"
-#define RETRYONRESUMFILE_USERPROMPT 0 // zeptat se uzivatele
-#define RETRYONRESUMFILE_AUTORENAME 1 // pouzit automaticke prejmenovani
-#define RETRYONRESUMFILE_RESUME 2     // resumnout (pridat na konec souboru - soubor se muze jedine zvetsit)
-#define RETRYONRESUMFILE_RES_OVRWR 3  // resumnout nebo prepsat (pokud nejde resume, soubor se smaze + vytvori znovu)
-#define RETRYONRESUMFILE_OVERWRITE 4  // prepsat (smazat + vytvorit znovu)
-#define RETRYONRESUMFILE_SKIP 5       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "retry on a file resumed by the FTP client"
+#define RETRYONRESUMFILE_USERPROMPT 0 // ask the user
+#define RETRYONRESUMFILE_AUTORENAME 1 // use automatic renaming
+#define RETRYONRESUMFILE_RESUME 2     // resume (append to the end of the file - the file can only grow)
+#define RETRYONRESUMFILE_RES_OVRWR 3  // resume or overwrite (if resume is not possible, delete the file + create it again)
+#define RETRYONRESUMFILE_OVERWRITE 4  // overwrite (delete + create again)
+#define RETRYONRESUMFILE_SKIP 5       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "ASCII transfer mode pro binarni soubor"
-#define ASCIITRFORBINFILE_USERPROMPT 0 // zeptat se uzivatele
-#define ASCIITRFORBINFILE_IGNORE 1     // ignorovat, user vi co dela
-#define ASCIITRFORBINFILE_INBINMODE 2  // zmenit transfer mode na binary a zacit prenos znovu (predpokladem je, ze se jeste do souboru nezapsalo)
-#define ASCIITRFORBINFILE_SKIP 3       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "ASCII transfer mode for a binary file"
+#define ASCIITRFORBINFILE_USERPROMPT 0 // ask the user
+#define ASCIITRFORBINFILE_IGNORE 1     // ignore it, the user knows what they are doing
+#define ASCIITRFORBINFILE_INBINMODE 2  // change the transfer mode to binary and restart the transfer (assuming nothing has been written to the file yet)
+#define ASCIITRFORBINFILE_SKIP 3       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit situaci "mazani neprazdneho adresare"
-#define NONEMPTYDIRDEL_USERPROMPT 0 // zeptat se uzivatele
-#define NONEMPTYDIRDEL_DELETEIT 1   // smazeme ho bez ptani
-#define NONEMPTYDIRDEL_SKIP 2       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the situation "deleting a non-empty directory"
+#define NONEMPTYDIRDEL_USERPROMPT 0 // ask the user
+#define NONEMPTYDIRDEL_DELETEIT 1   // delete it without asking
+#define NONEMPTYDIRDEL_SKIP 2       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit situaci "mazani hidden souboru"
-#define HIDDENFILEDEL_USERPROMPT 0 // zeptat se uzivatele
-#define HIDDENFILEDEL_DELETEIT 1   // smazeme ho bez ptani
-#define HIDDENFILEDEL_SKIP 2       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the situation "deleting a hidden file"
+#define HIDDENFILEDEL_USERPROMPT 0 // ask the user
+#define HIDDENFILEDEL_DELETEIT 1   // delete it without asking
+#define HIDDENFILEDEL_SKIP 2       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit situaci "mazani hidden adresare"
-#define HIDDENDIRDEL_USERPROMPT 0 // zeptat se uzivatele
-#define HIDDENDIRDEL_DELETEIT 1   // smazeme ho bez ptani
-#define HIDDENDIRDEL_SKIP 2       // skip (operaci proste neprovedeme)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the situation "deleting a hidden directory"
+#define HIDDENDIRDEL_USERPROMPT 0 // ask the user
+#define HIDDENDIRDEL_DELETEIT 1   // delete it without asking
+#define HIDDENDIRDEL_SKIP 2       // skip (simply do not perform the operation)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// jak resit problem "soubor/adresar ma nezname atributy, ktere neumime zachovat (jina prava nez 'r'+'w'+'x')"
-#define UNKNOWNATTRS_USERPROMPT 0 // zeptat se uzivatele
-#define UNKNOWNATTRS_IGNORE 1     // ignorovat, user vi co dela (nastavit atributy co nejblizsi pozadovanym)
-#define UNKNOWNATTRS_SKIP 2       // na tomto souboru/adresari atributy nebudeme menit (skipnuti souboru/adresare)
-// POZOR: pri pridani hodnoty je nutne zkontrolovat bitovy rozsah v CFTPOperation !!!
+// how to solve the problem "file/directory has unknown attributes that we cannot preserve (permissions other than 'r'+'w'+'x')"
+#define UNKNOWNATTRS_USERPROMPT 0 // ask the user
+#define UNKNOWNATTRS_IGNORE 1     // ignore it, the user knows what they are doing (set attributes as close to the requested ones as possible)
+#define UNKNOWNATTRS_SKIP 2       // we will not change attributes on this file/directory (skip the file/directory)
+// WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
 class CExploredPaths
 {
 protected:
-    TIndirectArray<char> Paths; // format cest: short s delkou cesty + samotny text cesty + null-terminator
+    TIndirectArray<char> Paths; // format of paths: short with the path length + the path text itself + null terminator
 
 public:
     CExploredPaths() : Paths(100, 500) {}
 
-    // vraci TRUE pokud cesta 'path' uz je v 'Paths';
-    // POZOR: vychazi z predpokladu, ze 'path' je cesta vracena serverem, takze se cesty
-    // porovnavaji jen jako case-sensitive retezce (neorezavaji se slashe/backslashe/tecky,
-    // atd.) - k detekci cyklu muze dojit az pri jeho druhem pruchodu, pro nase ucely to staci
+    // returns TRUE if the path 'path' is already in 'Paths';
+    // WARNING: assumes that 'path' is a path returned by the server, so paths
+    // are compared only as case-sensitive strings (slashes/backslashes/dots, etc., are not trimmed)
+    // - a cycle may be detected only on its second pass, which is sufficient for our purposes
     BOOL ContainsPath(const char* path);
 
-    // ulozi cestu 'path' do seznamu 'Paths';
-    // vraci FALSE pokud 'path' uz je v tomto seznamu (nedostatek pameti se v teto funkci ignoruje)
-    // POZOR: vychazi z predpokladu, ze 'path' je cesta vracena serverem, takze se cesty
-    // porovnavaji jen jako case-sensitive retezce (neorezavaji se slashe/backslashe/tecky,
-    // atd.) - k detekci cyklu muze dojit az pri jeho druhem pruchodu, pro nase ucely to staci
+    // stores the path 'path' in the 'Paths' list;
+    // returns FALSE if 'path' is already in this list (out of memory is ignored in this function)
+    // WARNING: assumes that 'path' is a path returned by the server, so paths
+    // are compared only as case-sensitive strings (slashes/backslashes/dots, etc., are not trimmed)
+    // - a cycle may be detected only on its second pass, which is sufficient for our purposes
     BOOL AddPath(const char* path);
 
 protected:
-    // vraci "nalezeno ?" a index polozky nebo kam se ma vlozit (razene pole)
+    // returns "found?" and the index of the item or where it should be inserted (sorted array)
     BOOL GetPathIndex(const char* path, int pathLen, int& index);
 };
 
 enum COperationState
 {
-    opstNone,                 // prazdna hodnota (inicializace promennych)
-    opstInProgress,           // operace jeste probiha (existuji polozky ve stavech sqisWaiting, sqisProcessing, sqisDelayed nebo sqisUserInputNeeded)
-    opstSuccessfullyFinished, // operace byla uspesne dokoncena (vsechny polozky jsou ve stavu sqisDone)
-    opstFinishedWithSkips,    // operace byla uspesne dokoncena, ale se skipy (polozky jsou ve stavech sqisDone nebo sqisSkipped)
-    opstFinishedWithErrors    // operace byla dokoncena, ale s chybami (polozky jsou ve stavech sqisDone, sqisSkipped, sqisFailed nebo sqisForcedToFail)
+    opstNone,                 // empty value (variable initialization)
+    opstInProgress,           // the operation is still in progress (there are items in the sqisWaiting, sqisProcessing, sqisDelayed or sqisUserInputNeeded states)
+    opstSuccessfullyFinished, // the operation was successfully completed (all items are in the sqisDone state)
+    opstFinishedWithSkips,    // the operation was successfully completed but with skips (items are in the sqisDone or sqisSkipped states)
+    opstFinishedWithErrors    // the operation was completed but with errors (items are in the sqisDone, sqisSkipped, sqisFailed or sqisForcedToFail states)
 };
 
-#define SMPLCMD_APPROXBYTESIZE 1000 // priblizna velikost zpracovani jedne polozky v bytech pro mereni rychlosti operaci Delete a ChangeAttrs
+#define SMPLCMD_APPROXBYTESIZE 1000 // approximate size of processing a single item in bytes for measuring the speed of Delete and ChangeAttrs operations
 
 class CFTPOperation
 {
 public:
-    static int NextOrdinalNumber;                // globalni pocitadlo pro OrdinalNumber operace (pristupovat jen v sekci NextOrdinalNumberCS!)
-    static CRITICAL_SECTION NextOrdinalNumberCS; // kriticka sekce pro NextOrdinalNumber
+    static int NextOrdinalNumber;                // global counter for the operation's OrdinalNumber (access only within the NextOrdinalNumberCS section!)
+    static CRITICAL_SECTION NextOrdinalNumberCS; // critical section for NextOrdinalNumber
 
 protected:
-    // kriticka sekce pro pristup k datum objektu
-    // POZOR: pristup do kritickych sekci konzultovat v souboru servers\critsect.txt !!!
+    // critical section for accessing the object's data
+    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
     CRITICAL_SECTION OperCritSect;
 
-    int UID;           // unikatni cislo operace (index v poli CFTPOperationsList::Operations + vazba pro polozky v Queue)
-    int OrdinalNumber; // poradove cislo operace (umisteni v poli CFTPOperationsList::Operations neni podle casu vzniku operace)
+    int UID;           // unique operation number (index in the CFTPOperationsList::Operations array + link for items in the Queue)
+    int OrdinalNumber; // sequential number of the operation (position in the CFTPOperationsList::Operations array is not by the operation creation time)
 
-    CFTPQueue* Queue; // fronta polozek operace
+    CFTPQueue* Queue; // queue of operation items
 
-    CFTPWorkersList WorkersList; // pole workeru ("control connections" zpracovavajici polozky operace z fronty)
+    CFTPWorkersList WorkersList; // array of workers ("control connections" processing the operation's items from the queue)
 
-    COperationDlg* OperationDlg; // objekt dialogu operace (bezi ve vlastnim threadu)
-    HANDLE OperationDlgThread;   // handle threadu, ve kterem bezel/bezi naposledy otevreny dialog operace
+    COperationDlg* OperationDlg; // operation dialog object (runs in its own thread)
+    HANDLE OperationDlgThread;   // handle of the thread in which the last opened operation dialog ran/is running
 
     CFTPProxyServer* ProxyServer;          // NULL = "not used (direct connection)"
-    const char* ProxyScriptText;           // text proxy skriptu (existuje i kdyz se nepouziva proxy server); POZOR: muze ukazovat na ProxyServer->ProxyScript (aneb text je platny jen do dealokace ProxyServer)
-    const char* ProxyScriptStartExecPoint; // radek s prvnim prikazem (radek za radkem s "connect to:")
-    char* ConnectToHost;                   // "host" podle proxy scriptu
-    unsigned short ConnectToPort;          // "port" podle proxy scriptu
-    DWORD HostIP;                          // IP adresa FTP serveru 'Host' (==INADDR_NONE pokud neni IP zname) (pouziva se jen pro SOCKS4 proxy server)
+    const char* ProxyScriptText;           // proxy script text (exists even when the proxy server is not used); WARNING: may point to ProxyServer->ProxyScript (i.e. the text is valid only until ProxyServer is deallocated)
+    const char* ProxyScriptStartExecPoint; // line with the first command (the line after the line with "connect to:")
+    char* ConnectToHost;                   // "host" according to the proxy script
+    unsigned short ConnectToPort;          // "port" according to the proxy script
+    DWORD HostIP;                          // IP address of the FTP server 'Host' (==INADDR_NONE if the IP is unknown) (used only for SOCKS4 proxy server)
 
-    char* Host;                   // hostitel (FTP server) (NULL=neni znamy)
-    unsigned short Port;          // port, na kterem bezi FTP server (-1=neni znamy)
-    char* User;                   // uzivatel (NULL=neni znamy) POZOR: anonymous je zde jiz ve stringu
-    char* Password;               // heslo (NULL=neni zname) POZOR: anonymous heslo (email) je zde jiz ve stringu
-    char* Account;                // account-info (viz FTP prikaz "ACCT") (NULL=neni zname)
-    BOOL RetryLoginWithoutAsking; // TRUE = worker ma zkouset reconnect i u "error" odpovedi serveru (kod "5xx"); FALSE = reconnect jen pro "transient-error" odpovedi (kod "4xx"); nastavuje az user pri reseni problemu connectiony (workera)
-    char* InitFTPCommands;        // seznam FTP prikazu, ktere se maji poslat serveru hned po pripojeni (NULL=zadne prikazy)
-    BOOL UsePassiveMode;          // TRUE/FALSE = pasive/active data connection mode
-    BOOL SizeCmdIsSupported;      // FALSE = na prikaz SIZE jsme dostali odpoved serveru "not supported" (nema smysl zkouset znovu)
-    char* ListCommand;            // prikaz ziskani listingu cesty na tomto serveru (NULL="LIST")
-    DWORD ServerIP;               // IP adresa FTP/Proxy serveru 'ConnectToHost' (==INADDR_NONE dokud neni IP zname)
-    char* ServerSystem;           // system serveru (odpoved na prikaz SYST) - muze byt i NULL
-    char* ServerFirstReply;       // prvni odpoved serveru (obsahuje casto verzi FTP serveru) - muze byt i NULL
-    BOOL UseListingsCache;        // TRUE = user si u tohoto spojeni preje ukladat listingy do cache
-    char* ListingServerType;      // typ serveru pro parsovani listingu: NULL = autodetekce; jinak jmeno typu serveru (bez prip. uvodni '*'; pokud prestane existovat, prepne se na autodetekci)
+    char* Host;                   // host (FTP server) (NULL = unknown)
+    unsigned short Port;          // port on which the FTP server runs (-1 = unknown)
+    char* User;                   // user (NULL = unknown) WARNING: anonymous is already part of the string here
+    char* Password;               // password (NULL = unknown) WARNING: anonymous password (email) is already part of the string here
+    char* Account;                // account info (see FTP command "ACCT") (NULL = unknown)
+    BOOL RetryLoginWithoutAsking; // TRUE = the worker should try to reconnect even for "error" server replies (code "5xx"); FALSE = reconnect only for "transient-error" replies (code "4xx"); set later by the user when resolving the worker connection problem
+    char* InitFTPCommands;        // list of FTP commands to send to the server immediately after connecting (NULL = no commands)
+    BOOL UsePassiveMode;          // TRUE/FALSE = passive/active data connection mode
+    BOOL SizeCmdIsSupported;      // FALSE = the SIZE command received the server reply "not supported" (no point trying again)
+    char* ListCommand;            // command to obtain a listing of a path on this server (NULL = "LIST")
+    DWORD ServerIP;               // IP address of the FTP/Proxy server 'ConnectToHost' (==INADDR_NONE until the IP is known)
+    char* ServerSystem;           // server system (reply to the SYST command) - may also be NULL
+    char* ServerFirstReply;       // first server reply (often contains the FTP server version) - may also be NULL
+    BOOL UseListingsCache;        // TRUE = the user wants to store listings in the cache for this connection
+    char* ListingServerType;      // server type for parsing listings: NULL = autodetect; otherwise the server type name (without the optional leading '*'; if it stops existing, it switches to autodetect)
     BOOL EncryptControlConnection;
     BOOL EncryptDataConnection;
     int CompressData;
     CCertificate* pCertificate;
 
-    CExploredPaths ExploredPaths; // seznam prozkoumanych cest (cesty, na kterych workeri uz delali "explore-dir")
+    CExploredPaths ExploredPaths; // list of explored paths (paths where workers have already performed "explore-dir")
 
-    int ReportChangeInWorkerID; // -2 = zadne zmeny (je treba postnout dialogu operace WM_APP_WORKERCHANGEREP), -1 = zmena ve vice nez jednom workerovi, jinak ID zmeneneho workera (typ zmen viz ReportWorkerChange())
-    BOOL ReportProgressChange;  // TRUE = doslo k updatu status informaci workera, bude se menit progress v dialogu operace (viz ReportWorkerChange())
-    int ReportChangeInItemUID;  // -3 = zadne zmeny (je treba postnout dialogu operace WM_APP_ITEMCHANGEREP), -2 = jedna zmena (ulozena v ReportChangeInItemUID2), -1 = zmena ve vice nez dvou polozkach, jinak UID druhe zmenene polozky (typ zmen viz ReportItemChange()) - prvni zmenena polozka je v ReportChangeInItemUID2
-    int ReportChangeInItemUID2; // UID prvni zmenene polozky (platnost viz ReportChangeInItemUID)
+    int ReportChangeInWorkerID; // -2 = no changes (the operation dialog needs to be posted WM_APP_WORKERCHANGEREP), -1 = change in more than one worker, otherwise the ID of the changed worker (type of changes see ReportWorkerChange())
+    BOOL ReportProgressChange;  // TRUE = the worker status information was updated, the progress in the operation dialog will change (see ReportWorkerChange())
+    int ReportChangeInItemUID;  // -3 = no changes (the operation dialog needs to be posted WM_APP_ITEMCHANGEREP), -2 = one change (stored in ReportChangeInItemUID2), -1 = change in more than two items, otherwise the UID of the second changed item (type of changes see ReportItemChange()) - the first changed item is in ReportChangeInItemUID2
+    int ReportChangeInItemUID2; // UID of the first changed item (validity see ReportChangeInItemUID)
 
-    BOOL OperStateChangedPosted;           // TRUE = dialogu operace jsme jiz postnuli WM_APP_OPERSTATECHANGE, cekame az zareaguje (zavola GetOperationState(TRUE))
-    COperationState LastReportedOperState; // posledni stav operace vraceny metodou GetOperationState(TRUE)
+    BOOL OperStateChangedPosted;           // TRUE = we have already posted WM_APP_OPERSTATECHANGE to the operation dialog, waiting for it to react (call GetOperationState(TRUE))
+    COperationState LastReportedOperState; // last operation state returned by GetOperationState(TRUE)
 
-    DWORD OperationStart; // GetTickCount() z okamziku spusteni operace (pri preruseni a opetovnem rozbehu dojde k posunu o "idle" cas, aby vychazel celkovy elapsed-time)
-    DWORD OperationEnd;   // GetTickCount() z okamziku dokonceni (i s chybami) operace (-1 = neplatny - operace jeste bezi)
+    DWORD OperationStart; // GetTickCount() from the moment the operation was started (when interrupted and restarted it shifts by the "idle" time so the total elapsed time fits)
+    DWORD OperationEnd;   // GetTickCount() from the moment the operation finished (even with errors) (-1 = invalid - operation still running)
 
-    CFTPOperationType Type; // typ operace
-    char* OperationSubject; // s cim operace pracuje ("file "test.txt"", "3 files and 1 directory", atp.)
+    CFTPOperationType Type; // operation type
+    char* OperationSubject; // what the operation works with ("file "test.txt"", "3 files and 1 directory", etc.)
 
-    int ChildItemsNotDone;  // pocet nedokoncenych "child" polozek (krome typu sqisDone)
-    int ChildItemsSkipped;  // pocet skipnutych "child" polozek (typ sqisSkipped)
-    int ChildItemsFailed;   // pocet failnutych "child" polozek (typ sqisFailed a sqisForcedToFail)
-    int ChildItemsUINeeded; // pocet user-input-needed "child" polozek (typ sqisFailed a sqisForcedToFail)
+    int ChildItemsNotDone;  // number of unfinished "child" items (except type sqisDone)
+    int ChildItemsSkipped;  // number of skipped "child" items (type sqisSkipped)
+    int ChildItemsFailed;   // number of failed "child" items (types sqisFailed and sqisForcedToFail)
+    int ChildItemsUINeeded; // number of user-input-needed "child" items (types sqisFailed and sqisForcedToFail)
 
-    char* SourcePath;                 // zdrojova cesta operace (plna cesta, pripadne vcetne fs-name)
-    char SrcPathSeparator;            // nejvic pouzivany oddelovac zdrojove cesty ('/', '.', atp.)
-    BOOL SrcPathCanChange;            // TRUE pokud se na zdrojove ceste maji hlasit zmeny po dokonceni operace
-    BOOL SrcPathCanChangeInclSubdirs; // je-li SrcPathCanChange TRUE, je zde ulozeno jestli se zmeny tykaji i podadresaru dane cesty
+    char* SourcePath;                 // operation source path (full path, possibly including fs-name)
+    char SrcPathSeparator;            // most frequently used source path separator ('/', '.', etc.)
+    BOOL SrcPathCanChange;            // TRUE if changes on the source path should be reported after the operation finishes
+    BOOL SrcPathCanChangeInclSubdirs; // if SrcPathCanChange is TRUE, this stores whether the changes also cover subdirectories of the given path
 
-    DWORD LastErrorOccurenceTime; // "cas" vzniku posledni chyby (inicializovany na -1)
-
-    // ****************************************************************************
-    // pro Change Attributes (+ ma jeste dalsi sekci):
-    // ****************************************************************************
-
-    WORD AttrAnd; // AND maska pro vypocet pozadovanych atributu (modu) souboru/adresaru (new_attr = (cur_attr & AttrAnd) | AttrOr)
-    WORD AttrOr;  // OR maska pro vypocet pozadovanych atributu (modu) souboru/adresaru (new_attr = (cur_attr & AttrAnd) | AttrOr)
+    DWORD LastErrorOccurenceTime; // "time" when the last error occurred (initialized to -1)
 
     // ****************************************************************************
-    // pro Copy a Move (download i upload):
+    // for Change Attributes (+ has another section):
     // ****************************************************************************
 
-    char* TargetPath;                 // cilova cesta operace (plna cesta, pripadne vcetne fs-name)
-    char TgtPathSeparator;            // nejvic pouzivany oddelovac cilove cesty ('/', '.', atp.)
-    BOOL TgtPathCanChange;            // TRUE pokud se na cilove ceste maji hlasit zmeny po dokonceni operace
-    BOOL TgtPathCanChangeInclSubdirs; // je-li TgtPathCanChange TRUE, je zde ulozeno jestli se zmeny tykaji i podadresaru dane cesty
-
-    CSalamanderMaskGroup* ASCIIFileMasks; // pro automaticky rezim prenosu souboru - masky pro "ascii" rezim (ostatni budou "binar") (NULL=neni znama)
-
-    CQuadWord TotalSizeInBytes; // soucet velikosti kopirovanych/presouvanych souboru u nichz je znama velikost v bytech
-    // platne jen pro download:
-    CQuadWord TotalSizeInBlocks; // soucet velikosti kopirovanych/presouvanych souboru u nichz je znama velikost v blocich
-
-    // platne jen pro download:
-    // udaje pro vypocet priblizne velikosti bloku (u VMS, MVS a dalsich serveru pouzivajicich
-    // bloky - jinde se ignoruje)
-    CQuadWord BlkSizeTotalInBytes;  // celkova velikost dosud ziskanych souboru v bytech (bereme jen soubory s velikosti aspon dva bloky)
-    CQuadWord BlkSizeTotalInBlocks; // celkova velikost dosud ziskanych souboru v blocich (bereme jen soubory s velikosti aspon dva bloky)
-    DWORD BlkSizeActualValue;       // soucasna hodnota realne velikosti bloku (pro odhad progressu) (-1=neni znama)
-
-    BOOL ResumeIsNotSupported;         // TRUE = FTP prikaz REST/APPE vraci permanentni chybu (napr. "not implemented")
-    BOOL DataConWasOpenedForAppendCmd; // TRUE = pouziti FTP prikazu APPE vedlo k otevreni data-connectiony se serverem (na 99.9% je append funkcni/implementovany)
-
-    unsigned AutodetectTrMode : 1;     // TRUE/FALSE = autodetekce podle ASCIIFileMasks / vyber podle UseAsciiTransferMode
-    unsigned UseAsciiTransferMode : 1; // TRUE/FALSE = ASCII/Binary transfer mode (pouziva se jen pri AutodetectTrMode==FALSE)
-
-    // platne jen pro download:
-    // userem preferovane zpusoby reseni nasledujicich problemu
-    unsigned CannotCreateFile : 2;      // viz konstanty CANNOTCREATENAME_XXX
-    unsigned CannotCreateDir : 2;       // viz konstanty CANNOTCREATENAME_XXX
-    unsigned FileAlreadyExists : 3;     // viz konstanty FILEALREADYEXISTS_XXX
-    unsigned DirAlreadyExists : 2;      // viz konstanty DIRALREADYEXISTS_XXX
-    unsigned RetryOnCreatedFile : 3;    // viz konstanty RETRYONCREATFILE_XXX
-    unsigned RetryOnResumedFile : 3;    // viz konstanty RETRYONRESUMFILE_XXX
-    unsigned AsciiTrModeButBinFile : 2; // viz konstanty ASCIITRFORBINFILE_XXX
-
-    // platne jen pro upload:
-    // userem preferovane zpusoby reseni nasledujicich problemu
-    unsigned UploadCannotCreateFile : 2;      // viz konstanty CANNOTCREATENAME_XXX
-    unsigned UploadCannotCreateDir : 2;       // viz konstanty CANNOTCREATENAME_XXX
-    unsigned UploadFileAlreadyExists : 3;     // viz konstanty FILEALREADYEXISTS_XXX
-    unsigned UploadDirAlreadyExists : 2;      // viz konstanty DIRALREADYEXISTS_XXX
-    unsigned UploadRetryOnCreatedFile : 3;    // viz konstanty RETRYONCREATFILE_XXX
-    unsigned UploadRetryOnResumedFile : 3;    // viz konstanty RETRYONRESUMFILE_XXX
-    unsigned UploadAsciiTrModeButBinFile : 2; // viz konstanty ASCIITRFORBINFILE_XXX
+    WORD AttrAnd; // AND mask for calculating desired attributes (modes) of files/directories (new_attr = (cur_attr & AttrAnd) | AttrOr)
+    WORD AttrOr;  // OR mask for calculating desired attributes (modes) of files/directories (new_attr = (cur_attr & AttrAnd) | AttrOr)
 
     // ****************************************************************************
-    // pro Delete:
+    // for Copy and Move (download and upload):
     // ****************************************************************************
 
-    // userem preferovane chovani v nasledujicich situacich
-    unsigned ConfirmDelOnNonEmptyDir : 2; // viz konstanty NONEMPTYDIRDEL_XXX
-    unsigned ConfirmDelOnHiddenFile : 2;  // viz konstanty HIDDENFILEDEL_XXX
-    unsigned ConfirmDelOnHiddenDir : 2;   // viz konstanty HIDDENDIRDEL_XXX
+    char* TargetPath;                 // operation target path (full path, possibly including fs-name)
+    char TgtPathSeparator;            // most frequently used target path separator ('/', '.', etc.)
+    BOOL TgtPathCanChange;            // TRUE if changes on the target path should be reported after the operation finishes
+    BOOL TgtPathCanChangeInclSubdirs; // if TgtPathCanChange is TRUE, this stores whether the changes also cover subdirectories of the given path
+
+    CSalamanderMaskGroup* ASCIIFileMasks; // for automatic file transfer mode - masks for the "ascii" mode (others will be "binary") (NULL = unknown)
+
+    CQuadWord TotalSizeInBytes; // sum of sizes of copied/moved files for which the size in bytes is known
+    // valid only for download:
+    CQuadWord TotalSizeInBlocks; // sum of sizes of copied/moved files for which the size in blocks is known
+
+    // valid only for download:
+    // data for estimating the block size (for VMS, MVS and other servers that use
+    // blocks - ignored elsewhere)
+    CQuadWord BlkSizeTotalInBytes;  // total size of files obtained so far in bytes (we take only files with a size of at least two blocks)
+    CQuadWord BlkSizeTotalInBlocks; // total size of files obtained so far in blocks (we take only files with a size of at least two blocks)
+    DWORD BlkSizeActualValue;       // current value of the real block size (for progress estimation) (-1 = unknown)
+
+    BOOL ResumeIsNotSupported;         // TRUE = the FTP REST/APPE command returns a permanent error (e.g. "not implemented")
+    BOOL DataConWasOpenedForAppendCmd; // TRUE = using the FTP APPE command led to opening the data connection with the server (append is 99.9% functional/implemented)
+
+    unsigned AutodetectTrMode : 1;     // TRUE/FALSE = autodetect according to ASCIIFileMasks / choose based on UseAsciiTransferMode
+    unsigned UseAsciiTransferMode : 1; // TRUE/FALSE = ASCII/Binary transfer mode (used only when AutodetectTrMode == FALSE)
+
+    // valid only for download:
+    // user-preferred ways of resolving the following problems
+    unsigned CannotCreateFile : 2;      // see constants CANNOTCREATENAME_XXX
+    unsigned CannotCreateDir : 2;       // see constants CANNOTCREATENAME_XXX
+    unsigned FileAlreadyExists : 3;     // see constants FILEALREADYEXISTS_XXX
+    unsigned DirAlreadyExists : 2;      // see constants DIRALREADYEXISTS_XXX
+    unsigned RetryOnCreatedFile : 3;    // see constants RETRYONCREATFILE_XXX
+    unsigned RetryOnResumedFile : 3;    // see constants RETRYONRESUMFILE_XXX
+    unsigned AsciiTrModeButBinFile : 2; // see constants ASCIITRFORBINFILE_XXX
+
+    // valid only for upload:
+    // user-preferred ways of resolving the following problems
+    unsigned UploadCannotCreateFile : 2;      // see constants CANNOTCREATENAME_XXX
+    unsigned UploadCannotCreateDir : 2;       // see constants CANNOTCREATENAME_XXX
+    unsigned UploadFileAlreadyExists : 3;     // see constants FILEALREADYEXISTS_XXX
+    unsigned UploadDirAlreadyExists : 2;      // see constants DIRALREADYEXISTS_XXX
+    unsigned UploadRetryOnCreatedFile : 3;    // see constants RETRYONCREATFILE_XXX
+    unsigned UploadRetryOnResumedFile : 3;    // see constants RETRYONRESUMFILE_XXX
+    unsigned UploadAsciiTrModeButBinFile : 2; // see constants ASCIITRFORBINFILE_XXX
 
     // ****************************************************************************
-    // dalsi pro Change Attributes:
+    // for Delete:
     // ****************************************************************************
 
-    unsigned ChAttrOfFiles : 1; // TRUE/FALSE = menit/nemenit atributy souboru
-    unsigned ChAttrOfDirs : 1;  // TRUE/FALSE = menit/nemenit atributy adresaru
+    // user-preferred behaviour in the following situations
+    unsigned ConfirmDelOnNonEmptyDir : 2; // see constants NONEMPTYDIRDEL_XXX
+    unsigned ConfirmDelOnHiddenFile : 2;  // see constants HIDDENFILEDEL_XXX
+    unsigned ConfirmDelOnHiddenDir : 2;   // see constants HIDDENDIRDEL_XXX
 
-    // userem preferovane zpusoby reseni nasledujicich problemu
-    unsigned UnknownAttrs : 2; // viz konstanty UNKNOWNATTRS_XXX
+    // ****************************************************************************
+    // more for Change Attributes:
+    // ****************************************************************************
 
-    // data bez potreby kriticke sekce (ma vlastni synchronizaci + pouziva se jen v objektech s kratsi zivotnosti):
-    // globalni speed-meter operace (mereni celkove rychlosti data-connection vsech workeru)
+    unsigned ChAttrOfFiles : 1; // TRUE/FALSE = change/do not change file attributes
+    unsigned ChAttrOfDirs : 1;  // TRUE/FALSE = change/do not change directory attributes
+
+    // user-preferred ways of resolving the following problems
+    unsigned UnknownAttrs : 2; // see constants UNKNOWNATTRS_XXX
+
+    // data without needing a critical section (have their own synchronization + used only in shorter-lived objects):
+    // global speed meter of the operation (measuring the total data-connection speed of all workers)
     CTransferSpeedMeter GlobalTransferSpeedMeter;
 
-    // data bez potreby kriticke sekce (ma vlastni synchronizaci + pouziva se jen v objektech s kratsi zivotnosti):
-    // globalni objekt pro ukladani casu posledni aktivity na skupine data-connection (vsech
-    // data-connection workeru FTP operace)
+    // data without needing a critical section (have their own synchronization + used only in shorter-lived objects):
+    // global object for storing the time of the last activity on the data-connection group (all
+    // data-connection workers of the FTP operation)
     CSynchronizedDWORD GlobalLastActivityTime;
 
 public:
     CFTPOperation();
     ~CFTPOperation();
 
-    // ziska UID (v kriticke sekci)
+    // gets the UID (in the critical section)
     int GetUID();
 
-    // nastavi UID (v kriticke sekci)
+    // sets the UID (in the critical section)
     void SetUID(int uid);
 
-    // nastavi udaje o spojeni na FTP server - vyuzivaji vsechny operace; vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the FTP server connection data - used by all operations; returns TRUE on success
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetConnection(CFTPProxyServer* proxyServer, const char* host, unsigned short port,
                        const char* user, const char* password, const char* account,
                        const char* initFTPCommands, BOOL usePassiveMode,
@@ -2251,27 +2247,27 @@ public:
                        const char* serverSystem, const char* serverFirstReply,
                        BOOL useListingsCache, DWORD hostIP);
 
-    // nastavi zakladni udaje operace - vyuzivaji vsechny operace
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // sets the basic operation data - used by all operations
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetBasicData(char* operationSubject, const char* listingServerType);
 
-    // nastavi tento objekt pro operaci Delete (pouziva se az po volani SetConnection() a
+    // configures this object for the Delete operation (used only after calling SetConnection() and
     // SetBasicData())
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetOperationDelete(const char* sourcePath, char srcPathSeparator,
                             BOOL srcPathCanChange, BOOL srcPathCanChangeInclSubdirs,
                             int confirmDelOnNonEmptyDir, int confirmDelOnHiddenFile,
                             int confirmDelOnHiddenDir);
 
-    // nastavi tento objekt pro operaci Copy/Move ze serveru (pouziva se az po volani
-    // SetConnection() a SetBasicData()); vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // configures this object for the Copy/Move-from-server operation (used only after calling
+    // SetConnection() and SetBasicData()); returns TRUE on success
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetOperationCopyMoveDownload(BOOL isCopy, const char* sourcePath, char srcPathSeparator,
                                       BOOL srcPathCanChange, BOOL srcPathCanChangeInclSubdirs,
                                       const char* targetPath, char tgtPathSeparator,
@@ -2281,21 +2277,21 @@ public:
                                       int fileAlreadyExists, int dirAlreadyExists, int retryOnCreatedFile,
                                       int retryOnResumedFile, int asciiTrModeButBinFile);
 
-    // nastavi tento objekt pro operaci Change Attributes (pouziva se az po volani SetConnection()
-    // a SetBasicData())
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // configures this object for the Change Attributes operation (used only after calling SetConnection()
+    // and SetBasicData())
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     void SetOperationChAttr(const char* sourcePath, char srcPathSeparator,
                             BOOL srcPathCanChange, BOOL srcPathCanChangeInclSubdirs,
                             WORD attrAnd, WORD attrOr, int chAttrOfFiles, int chAttrOfDirs,
                             int unknownAttrs);
 
-    // nastavi tento objekt pro operaci Copy/Move na server (pouziva se az po volani
-    // SetConnection() a SetBasicData()); vraci TRUE pri uspechu
-    // POZOR: nepouziva kritickou sekci pro pristup k datum (muze se volat jen pred
-    //        pridanim operace do FTPOperationsList) + nesmi se volat opakovane (ocekava
-    //        inicializovane hodnoty atributu objektu)
+    // configures this object for the Copy/Move-to-server operation (used only after calling
+    // SetConnection() and SetBasicData()); returns TRUE on success
+    // WARNING: does not use the critical section for accessing data (can be called only before
+    //          adding the operation to FTPOperationsList) + must not be called repeatedly (expects
+    //          initialized attribute values of the object)
     BOOL SetOperationCopyMoveUpload(BOOL isCopy, const char* sourcePath, char srcPathSeparator,
                                     BOOL srcPathCanChange, BOOL srcPathCanChangeInclSubdirs,
                                     const char* targetPath, char tgtPathSeparator,
@@ -2306,473 +2302,468 @@ public:
                                     int uploadDirAlreadyExists, int uploadRetryOnCreatedFile,
                                     int uploadRetryOnResumedFile, int uploadAsciiTrModeButBinFile);
 
-    // nastavi Queue (v kriticke sekci)
+    // sets Queue (in the critical section)
     void SetQueue(CFTPQueue* queue);
 
-    // vraci hodnotu Queue (v kriticke sekci)
+    // returns the Queue value (in the critical section)
     CFTPQueue* GetQueue();
 
-    // alokuje noveho workera (predava mu operaci, frontu, host+user+port); pri nedostatku
-    // pameti vraci NULL
+    // allocates a new worker (passes it the operation, queue, host+user+port); returns NULL if
+    // memory is insufficient
     CFTPWorker* AllocNewWorker();
 
-    // posle do logu s UID 'logUID' hlavicku operace (popis operace)
+    // sends the operation header (operation description) to the log with UID 'logUID'
     void SendHeaderToLog(int logUID);
 
-    // nastavi ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded (v kriticke sekci)
+    // sets ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded (in the critical section)
     void SetChildItems(int notDone, int skipped, int failed, int uiNeeded);
 
-    // pricte dane pocty k pocitadlum ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded
-    // (v kriticke sekci); zaroven muze zmenit stav operace (provadi se / hotova / nedobehla
-    // kvuli chybam+skipum); 'onlyUINeededOrFailedToSkipped' je TRUE pokud jde jen o zmenu stavu
-    // z sqisUserInputNeeded/sqisFailed na sqisSkipped (tato zmena urcite nevyzaduje refresh listingu - operace
-    // zustava v "dokoncenem" stavu bez nutnosti refreshu)
+    // adds the given counts to the ChildItemsNotDone+ChildItemsSkipped+ChildItemsFailed+ChildItemsUINeeded counters
+    // (in the critical section); it may also change the operation state (running / finished / did not finish
+    // due to errors+skips); 'onlyUINeededOrFailedToSkipped' is TRUE if this is just a state change
+    // from sqisUserInputNeeded/sqisFailed to sqisSkipped (this change definitely does not require a listing refresh - the operation
+    // remains in the "finished" state without needing a refresh)
     void AddToNotDoneSkippedFailed(int notDone, int skipped, int failed, int uiNeeded,
                                    BOOL onlyUINeededOrFailedToSkipped);
 
-    // zjisti jestli jmeno odpovida hromadne masce ASCIIFileMasks; 'name'+'ext' jsou ukazatele
-    // na jmeno a priponu (nebo konec jmena), oba jsou do jednoho bufferu; vraci TRUE pokud
-    // jmeno odpovida hromadne masce
+    // determines whether the name matches the aggregate ASCIIFileMasks mask; 'name'+'ext' are pointers
+    // to the name and extension (or the end of the name), both placed in a single buffer; returns TRUE if
+    // the name matches the aggregate mask
     BOOL IsASCIIFile(const char* name, const char* ext);
 
-    // pricita/odcita 'size' k/od 'TotalSizeInBytes' (je-li 'sizeInBytes' TRUE) nebo k/od 'TotalSizeInBlocks'
-    // (je-li 'sizeInBytes' FALSE); celkova velikost operace je soucet velikosti v bytech
-    // a v blocich (jedna operace muze mit teoreticky velikosti jak v bytech, tak v blocich - kazdy
-    // "adresar" totiz muze mit jiny format listingu, viz napr. MVS)
+    // adds/subtracts 'size' to/from 'TotalSizeInBytes' (if 'sizeInBytes' is TRUE) or to/from 'TotalSizeInBlocks'
+    // (if 'sizeInBytes' is FALSE); the total size of the operation is the sum of the sizes in bytes
+    // and in blocks (one operation can theoretically have sizes in both bytes and blocks - each
+    // "directory" can have a different listing format, e.g. MVS)
     void AddToTotalSize(const CQuadWord& size, BOOL sizeInBytes);
     void SubFromTotalSize(const CQuadWord& size, BOOL sizeInBytes);
 
-    // nastavi OperationDlg (v kriticke sekci)
+    // sets OperationDlg (in the critical section)
     void SetOperationDlg(COperationDlg* operDlg);
 
-    // aktivuje nebo otevre dialog operace (viz OperationDlg); vraci uspech operace
+    // activates or opens the operation dialog (see OperationDlg); returns success of the operation
     BOOL ActivateOperationDlg(HWND dropTargetWnd);
 
-    // zavre dialog operace (je-li otevren) a vraci handle threadu, ve kterem byl otevren
-    // posledni dialog (NULL pokud dialog otevren vubec nebyl)
+    // closes the operation dialog (if open) and returns the handle of the thread in which the
+    // last dialog was open (NULL if the dialog was never open)
     void CloseOperationDlg(HANDLE* dlgThread);
 
-    // vola dialog operace z WM_INITDIALOG; 'dlg' je dialog (hodnota v OperationDlg nemusi
-    // byt platna, pokud se jiz stihl zavolat CloseOperationDlg()); vraci uspech (FALSE =
-    // fatal error -> zavrit dialog)
+    // called by the operation dialog from WM_INITDIALOG; 'dlg' is the dialog (the value in OperationDlg may not
+    // be valid if CloseOperationDlg() has already been called); returns success (FALSE =
+    // fatal error -> close the dialog)
     BOOL InitOperDlg(COperationDlg* dlg);
 
-    // prida do WorkersList noveho workera; vraci TRUE pri uspechu
+    // adds a new worker to WorkersList; returns TRUE on success
     BOOL AddWorker(CFTPWorker* newWorker);
 
-    // vola se v okamziku, kdy mohlo dojit k pausnuti nebo resumnuti nebo zastaveni operace:
-    // po pridani workera nebo po resume workera, po stopnuti workera nebo po pausnuti
-    // workera nebo po rozeslani "should-stop"; pokud doslo k resumnuti operace: nuluje
-    // merak rychlosti a spousti mereni celkoveho casu operace; pokud doslo k pausnuti
-    // operace nebo jejimu zastaveni (ceka se uz jen na ukonceni workera): zastavuje mereni
-    // celkoveho casu operace
+    // called when the operation may have been paused, resumed, or stopped:
+    // after adding a worker or after resuming a worker, after stopping a worker or pausing
+    // a worker, or after sending "should-stop"; if the operation was resumed: resets
+    // the speed meter and starts measuring the total operation time; if the operation was paused
+    // or stopped (only waiting for the worker to finish): stops measuring the total
+    // operation time
     void OperationStatusMaybeChanged();
 
-    // viz CFTPWorkersList::InformWorkersAboutStop
+    // see CFTPWorkersList::InformWorkersAboutStop
     BOOL InformWorkersAboutStop(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims);
 
-    // viz CFTPWorkersList::InformWorkersAboutPause
+    // see CFTPWorkersList::InformWorkersAboutPause
     BOOL InformWorkersAboutPause(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims, BOOL pause);
 
-    // viz CFTPWorkersList::CanCloseWorkers
+    // see CFTPWorkersList::CanCloseWorkers
     BOOL CanCloseWorkers(int workerInd);
 
-    // viz CFTPWorkersList::ForceCloseWorkers
+    // see CFTPWorkersList::ForceCloseWorkers
     BOOL ForceCloseWorkers(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims);
 
-    // viz CFTPWorkersList::DeleteWorkers
+    // see CFTPWorkersList::DeleteWorkers
     BOOL DeleteWorkers(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims,
                        CUploadWaitingWorker** uploadFirstWaitingWorker);
 
-    // vraci TRUE pokud je znama IP adresa FTP/proxy serveru (vraci se v 'serverIP', 'host'+'hostBufSize'
-    // se v tomto pripade ignoruje); vraci FALSE pokud IP adresa serveru zatim neni znama, v tomto
-    // pripade vraci jmenou adresu FTP/proxy serveru v bufferu 'host' o velikosti 'hostBufSize'
+    // returns TRUE if the IP address of the FTP/proxy server is known (returned in 'serverIP'; 'host'+'hostBufSize'
+    // are ignored in this case); returns FALSE if the server IP address is not known yet; in that
+    // case it returns the hostname of the FTP/proxy server in the 'host' buffer of size 'hostBufSize'
     BOOL GetServerAddress(DWORD* serverIP, char* host, int hostBufSize);
 
-    // nastavi (v krit. sekci) 'ServerIP'
+    // sets 'ServerIP' (in the critical section)
     void SetServerIP(DWORD serverIP);
 
-    // vraci IP FTP/proxy serveru v 'serverIP', port FTP/proxy serveru v 'port', jmenou adresu
-    // FTP serveru v bufferu 'host' (min. velikost HOST_MAX_SIZE), typ proxy serveru v 'proxyType',
-    // IP FTP serveru v 'hostIP' (pouziva se jen pro SOCKS4, jinak INADDR_NONE), port FTP serveru
-    // v 'hostPort'; username a password pro proxy server v 'proxyUser' (min. velikost USER_MAX_SIZE)
-    // a 'proxyPassword' (min. velikost PASSWORD_MAX_SIZE)
+    // returns the FTP/proxy server IP in 'serverIP', the FTP/proxy server port in 'port', the hostname
+    // of the FTP server in the 'host' buffer (minimum size HOST_MAX_SIZE), the proxy server type in 'proxyType',
+    // the FTP server IP in 'hostIP' (used only for SOCKS4, otherwise INADDR_NONE), the FTP server port
+    // in 'hostPort'; username and password for the proxy server in 'proxyUser' (minimum size USER_MAX_SIZE)
+    // and 'proxyPassword' (minimum size PASSWORD_MAX_SIZE)
     void GetConnectInfo(DWORD* serverIP, unsigned short* port, char* host,
                         CFTPProxyServerType* proxyType, DWORD* hostIP, unsigned short* hostPort,
                         char* proxyUser, char* proxyPassword);
 
-    // ulozi do bufferu 'buf' (o velikosti 'bufSize') hlasku do logu
+    // stores the log message in the 'buf' buffer (of size 'bufSize')
     void GetConnectLogMsg(BOOL isReconnect, char* buf, int bufSize, int attemptNumber, const char* dateTime);
 
-    // je-li ServerSystem==NULL, nastavi ServerSystem na retezec 'reply'
-    // o delce 'replySize'
+    // if ServerSystem == NULL, sets ServerSystem to the string 'reply'
+    // of length 'replySize'
     void SetServerSystem(const char* reply, int replySize);
 
-    // je-li ServerFirstReply==NULL, nastavi ServerFirstReply na retezec 'reply'
-    // o delce 'replySize'
+    // if ServerFirstReply == NULL, sets ServerFirstReply to the string 'reply'
+    // of length 'replySize'
     void SetServerFirstReply(const char* reply, int replySize);
 
-    // pripravi text dalsiho prikazu z proxy skriptu pro server a pro Log (jde o zapouzdrene volani
-    // ProcessProxyScript); 'errDescrBuf' je buffer 300 znaku pro popis chyby; navratove hodnoty:
-    // - chyba ve skriptu: funkce vraci FALSE + pozice chyby se vraci v '*proxyScriptExecPoint' + popis
-    //   chyby je v 'errDescrBuf'
-    // - chybejici hodnota promenne: funkce vraci TRUE a v 'needUserInput' take TRUE, popis
-    //   chybejici promenne je v 'errDescrBuf' (hodnota '*proxyScriptExecPoint' se nemeni)
-    // - uspesne zjisteni jaky prikaz poslat na server: vraci TRUE a v 'buf' je prikaz (vcetne
-    //   CRLF na konci), v 'logBuf' je text do logu (heslo se nahrazuje slovem "(hidden)");
-    //   '*proxyScriptExecPoint' ukazuje na zacatek dalsiho radku skriptu
-    // - konec scriptu: vraci TRUE a 'buf' je prazdny retezec, '*proxyScriptExecPoint' ukazuje
-    //   na konec skriptu
+    // prepares the text of the next command from the proxy script for the server and for the Log (wraps
+    // ProcessProxyScript); 'errDescrBuf' is a 300-character buffer for the error description; return values:
+    // - script error: the function returns FALSE + the error position is returned in '*proxyScriptExecPoint' + the
+    //   error description is in 'errDescrBuf'
+    // - missing variable value: the function returns TRUE and also TRUE in 'needUserInput'; the description
+    //   of the missing variable is in 'errDescrBuf' (the value of '*proxyScriptExecPoint' does not change)
+    // - successful determination of which command to send to the server: returns TRUE and 'buf' contains the command (including
+    //   CRLF at the end), 'logBuf' contains the text for the log (the password is replaced with the word "(hidden)");
+    //   '*proxyScriptExecPoint' points to the start of the next script line
+    // - end of script: returns TRUE and 'buf' is an empty string, '*proxyScriptExecPoint' points
+    //   to the end of the script
     BOOL PrepareNextScriptCmd(char* buf, int bufSize, char* logBuf, int logBufSize, int* cmdLen,
                               const char** proxyScriptExecPoint, int proxyScriptLastCmdReply,
                               char* errDescrBuf, BOOL* needUserInput);
 
-    // vytvori strukturu CFTPProxyForDataCon (je NULL pokud je 'ProxyServer'==NULL), pri
-    // nedostatku pameti vraci metoda FALSE
+    // creates the CFTPProxyForDataCon structure (is NULL if 'ProxyServer' == NULL); returns FALSE if
+    // memory is insufficient
     BOOL AllocProxyForDataCon(CFTPProxyForDataCon** newDataConProxyServer);
 
-    // vraci hodnotu RetryLoginWithoutAsking (v krit. sekci)
+    // returns the value of RetryLoginWithoutAsking (in the critical section)
     BOOL GetRetryLoginWithoutAsking();
 
-    // vraci v 'buf' o velikosti 'bufSize' obsah retezece InitFTPCommands (v krit. sekci)
+    // returns the contents of the InitFTPCommands string in 'buf' of size 'bufSize' (in the critical section)
     void GetInitFTPCommands(char* buf, int bufSize);
 
-    // ziska info pro Login Error dialog (otevira se na "Solve Error" button v Connections listview)
+    // gets info for the Login Error dialog (opened via the "Solve Error" button in the Connections listview)
     void GetLoginErrorDlgInfo(char* user, int userBufSize, char* password, int passwordBufSize,
                               char* account, int accountBufSize, BOOL* retryLoginWithoutAsking,
                               BOOL* proxyUsed, char* proxyUser, int proxyUserBufSize,
                               char* proxyPassword, int proxyPasswordBufSize);
 
-    // ulozi nove hodnoty z Login Error dialogu (otevira se na "Solve Error" button v Connections listview)
+    // stores new values from the Login Error dialog (opened via the "Solve Error" button in the Connections listview)
     void SetLoginErrorDlgInfo(const char* password, const char* account, BOOL retryLoginWithoutAsking,
                               BOOL proxyUsed, const char* proxyUser, const char* proxyPassword);
 
-    // vola se pro ohlaseni zmeny ve workerovi (hlasi se jen zmeny projevujici se zmenou
-    // zobrazeni workera v listview Connections v dialogu operace - jde o promenne workera:
-    // ShouldStop, State a CurItem); 'reportProgressChange' je TRUE pokud je zmena workera
-    // spojena se zmenou progresu (statusu)
+    // called to report a change in a worker (only changes that affect the worker display in the Connections listview
+    // in the operation dialog are reported - the worker variables are ShouldStop, State and CurItem);
+    // 'reportProgressChange' is TRUE if the worker change is associated with a change of progress (status)
     void ReportWorkerChange(int workerID, BOOL reportProgressChange);
 
-    // vola dialog operace po hlaseni zmeny pres ReportWorkerChange(), vraci ID zmeneneho workera
-    // nebo -1 pokud se jich zmenilo vice; v 'reportProgressChange' (neni-li NULL) vraci TRUE pokud
-    // slo o zmenu workera spojenou se zmenou progresu (statusu)
+    // called by the operation dialog after a change is reported via ReportWorkerChange(); returns the ID of the changed worker
+    // or -1 if more than one changed; in 'reportProgressChange' (if not NULL) returns TRUE if
+    // it was a worker change associated with a progress (status) change
     int GetChangedWorker(BOOL* reportProgressChange);
 
-    // jen vola CFTPWorkersList::PostNewWorkAvailable()
-    // POZOR: vstupuje do sekce CSocketsThread::CritSect !!!
+    // just calls CFTPWorkersList::PostNewWorkAvailable()
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     void PostNewWorkAvailable(BOOL onlyOneItem);
 
-    // jen vola CFTPWorkersList::GiveWorkToSleepingConWorker()
-    // POZOR: vstupuje do sekce CSocketsThread::CritSect !!!
+    // just calls CFTPWorkersList::GiveWorkToSleepingConWorker()
+    // WARNING: enters the CSocketsThread::CritSect section !!!
     BOOL GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker);
 
-    // vola se pro ohlaseni zmeny polozky (hlasi se jen zmeny projevujici se zmenou
-    // zobrazeni polozky v listview Operations v dialogu operace - jde o promenne polozky:
-    // Name, Path, Type, State, Size, SizeInBytes, TgtName, TgtPath, AsciiTransferMode,
-    // Attr, ProblemID, WinError, ErrAllocDescr, OrigRights);
-    // je-li 'itemUID' -1, hlasi se zmena vice polozek (dojde k prekresleni vsech polozek)
+    // called to report an item change (only changes that affect the item display in the Operations listview
+    // in the operation dialog are reported - the item variables are Name, Path, Type, State, Size,
+    // SizeInBytes, TgtName, TgtPath, AsciiTransferMode, Attr, ProblemID, WinError, ErrAllocDescr, OrigRights);
+    // if 'itemUID' is -1, changes in multiple items are reported (all items are redrawn)
     void ReportItemChange(int itemUID);
 
-    // vola dialog operace po hlaseni zmeny pres ReportItemChange(), vraci UID zmenenych polozek
-    // (pri jedne zmene je v 'secondUID' -1) nebo dvojici (-1, -1) pokud se jich zmenilo vice nez dve
+    // called by the operation dialog after a change is reported via ReportItemChange(); returns the UIDs of the changed items
+    // (for a single change 'secondUID' is -1) or the pair (-1, -1) if more than two items changed
     void GetChangedItems(int* firstUID, int* secondUID);
 
-    // plni defaultni hodnoty chovani diskovych operaci zadane pro operaci
+    // fills in the default behaviour values for disk operations defined for the operation
     void GetDiskOperDefaults(CFTPDiskWork* diskWork);
 
-    // vraci CannotCreateDir (v kriticke sekci)
+    // returns CannotCreateDir (in the critical section)
     int GetCannotCreateDir();
 
-    // vraci DirAlreadyExists (v kriticke sekci)
+    // returns DirAlreadyExists (in the critical section)
     int GetDirAlreadyExists();
 
-    // vraci CannotCreateFile (v kriticke sekci)
+    // returns CannotCreateFile (in the critical section)
     int GetCannotCreateFile();
 
-    // vraci FileAlreadyExists (v kriticke sekci)
+    // returns FileAlreadyExists (in the critical section)
     int GetFileAlreadyExists();
 
-    // vraci RetryOnCreatedFile (v kriticke sekci)
+    // returns RetryOnCreatedFile (in the critical section)
     int GetRetryOnCreatedFile();
 
-    // vraci RetryOnResumedFile (v kriticke sekci)
+    // returns RetryOnResumedFile (in the critical section)
     int GetRetryOnResumedFile();
 
-    // vraci AsciiTrModeButBinFile (v kriticke sekci)
+    // returns AsciiTrModeButBinFile (in the critical section)
     int GetAsciiTrModeButBinFile();
 
-    // vraci UploadCannotCreateDir (v kriticke sekci)
+    // returns UploadCannotCreateDir (in the critical section)
     int GetUploadCannotCreateDir();
 
-    // vraci UploadDirAlreadyExists (v kriticke sekci)
+    // returns UploadDirAlreadyExists (in the critical section)
     int GetUploadDirAlreadyExists();
 
-    // vraci UploadCannotCreateFile (v kriticke sekci)
+    // returns UploadCannotCreateFile (in the critical section)
     int GetUploadCannotCreateFile();
 
-    // vraci UploadFileAlreadyExists (v kriticke sekci)
+    // returns UploadFileAlreadyExists (in the critical section)
     int GetUploadFileAlreadyExists();
 
-    // vraci UploadRetryOnCreatedFile (v kriticke sekci)
+    // returns UploadRetryOnCreatedFile (in the critical section)
     int GetUploadRetryOnCreatedFile();
 
-    // vraci UploadRetryOnResumedFile (v kriticke sekci)
+    // returns UploadRetryOnResumedFile (in the critical section)
     int GetUploadRetryOnResumedFile();
 
-    // vraci UploadAsciiTrModeButBinFile (v kriticke sekci)
+    // returns UploadAsciiTrModeButBinFile (in the critical section)
     int GetUploadAsciiTrModeButBinFile();
 
-    // vraci UnknownAttrs (v kriticke sekci)
+    // returns UnknownAttrs (in the critical section)
     int GetUnknownAttrs();
 
-    // vraci ResumeIsNotSupported (v kriticke sekci)
+    // returns ResumeIsNotSupported (in the critical section)
     BOOL GetResumeIsNotSupported();
 
-    // vraci DataConWasOpenedForAppendCmd (v kriticke sekci)
+    // returns DataConWasOpenedForAppendCmd (in the critical section)
     BOOL GetDataConWasOpenedForAppendCmd();
 
     BOOL GetEncryptControlConnection() { return EncryptControlConnection; }
     BOOL GetEncryptDataConnection() { return EncryptDataConnection; }
     int GetCompressData() { return CompressData; }
-    CCertificate* GetCertificate(); // POZOR: vraci certifikat az po volani jeho AddRef(), tedy volajici je zodpovedny za uvolneni pomoci volani Release() certifikatu
+    CCertificate* GetCertificate(); // WARNING: returns the certificate only after calling its AddRef(), so the caller is responsible for releasing it by calling Release()
 
     void SetEncryptDataConnection(BOOL encryptDataConnection) { EncryptDataConnection = encryptDataConnection; }
     void SetEncryptControlConnection(BOOL encryptControlConnection) { EncryptControlConnection = encryptControlConnection; }
     void SetCompressData(int compressData) { CompressData = compressData; }
     void SetCertificate(CCertificate* certificate);
 
-    // nastavuje CannotCreateDir (v kriticke sekci)
+    // sets CannotCreateDir (in the critical section)
     void SetCannotCreateDir(int value);
 
-    // nastavuje DirAlreadyExists (v kriticke sekci)
+    // sets DirAlreadyExists (in the critical section)
     void SetDirAlreadyExists(int value);
 
-    // nastavuje CannotCreateFile (v kriticke sekci)
+    // sets CannotCreateFile (in the critical section)
     void SetCannotCreateFile(int value);
 
-    // nastavuje FileAlreadyExists (v kriticke sekci)
+    // sets FileAlreadyExists (in the critical section)
     void SetFileAlreadyExists(int value);
 
-    // nastavuje RetryOnCreatedFile (v kriticke sekci)
+    // sets RetryOnCreatedFile (in the critical section)
     void SetRetryOnCreatedFile(int value);
 
-    // nastavuje RetryOnResumedFile (v kriticke sekci)
+    // sets RetryOnResumedFile (in the critical section)
     void SetRetryOnResumedFile(int value);
 
-    // nastavuje AsciiTrModeButBinFile (v kriticke sekci)
+    // sets AsciiTrModeButBinFile (in the critical section)
     void SetAsciiTrModeButBinFile(int value);
 
-    // nastavuje UploadCannotCreateDir (v kriticke sekci)
+    // sets UploadCannotCreateDir (in the critical section)
     void SetUploadCannotCreateDir(int value);
 
-    // nastavuje UploadDirAlreadyExists (v kriticke sekci)
+    // sets UploadDirAlreadyExists (in the critical section)
     void SetUploadDirAlreadyExists(int value);
 
-    // nastavuje UploadCannotCreateFile (v kriticke sekci)
+    // sets UploadCannotCreateFile (in the critical section)
     void SetUploadCannotCreateFile(int value);
 
-    // nastavuje UploadFileAlreadyExists (v kriticke sekci)
+    // sets UploadFileAlreadyExists (in the critical section)
     void SetUploadFileAlreadyExists(int value);
 
-    // nastavuje UploadRetryOnCreatedFile (v kriticke sekci)
+    // sets UploadRetryOnCreatedFile (in the critical section)
     void SetUploadRetryOnCreatedFile(int value);
 
-    // nastavuje UploadRetryOnResumedFile (v kriticke sekci)
+    // sets UploadRetryOnResumedFile (in the critical section)
     void SetUploadRetryOnResumedFile(int value);
 
-    // nastavuje UploadAsciiTrModeButBinFile (v kriticke sekci)
+    // sets UploadAsciiTrModeButBinFile (in the critical section)
     void SetUploadAsciiTrModeButBinFile(int value);
 
-    // nastavuje UnknownAttrs (v kriticke sekci)
+    // sets UnknownAttrs (in the critical section)
     void SetUnknownAttrs(int value);
 
-    // nastavuje ResumeIsNotSupported (v kriticke sekci)
+    // sets ResumeIsNotSupported (in the critical section)
     void SetResumeIsNotSupported(BOOL value);
 
-    // nastavuje DataConWasOpenedForAppendCmd (v kriticke sekci)
+    // sets DataConWasOpenedForAppendCmd (in the critical section)
     void SetDataConWasOpenedForAppendCmd(BOOL value);
 
-    // zjisti typ cesty na FTP serveru (vola v kriticke sekci ::GetFTPServerPathType()
-    // s parametry 'ServerSystem' a 'ServerFirstReply')
+    // determines the path type on the FTP server (calls ::GetFTPServerPathType() in the critical section
+    // with parameters 'ServerSystem' and 'ServerFirstReply')
     CFTPServerPathType GetFTPServerPathType(const char* path);
 
-    // zjisti jestli 'ServerSystem' obsahuje jmeno 'systemName'
+    // determines whether 'ServerSystem' contains the name 'systemName'
     BOOL IsServerSystem(const char* systemName);
 
-    // vraci TRUE pokud cesta 'path' uz je v seznamu prozkoumanych cest (viz 'ExploredPaths');
-    // POZOR: vychazi z predpokladu, ze 'path' je cesta vracena serverem, takze se cesty
-    // porovnavaji jen jako case-sensitive retezce (neorezavaji se slashe/backslashe/tecky,
-    // atd.) - k detekci cyklu muze dojit az pri jeho druhem pruchodu, pro nase ucely to staci
+    // returns TRUE if the path 'path' is already in the list of explored paths (see 'ExploredPaths');
+    // WARNING: assumes that 'path' is a path returned by the server, so paths
+    // are compared only as case-sensitive strings (slashes/backslashes/dots, etc., are not trimmed)
+    // - a cycle may be detected only on its second pass, which is sufficient for our purposes
     BOOL IsAlreadyExploredPath(const char* path);
 
-    // ulozi cestu 'path' do seznamu prozkoumanych cest (viz 'ExploredPaths');
-    // vraci FALSE pokud 'path' uz je v tomto seznamu (nedostatek pameti se v teto
-    // funkci ignoruje)
-    // POZOR: vychazi z predpokladu, ze 'path' je cesta vracena serverem, takze se cesty
-    // porovnavaji jen jako case-sensitive retezce (neorezavaji se slashe/backslashe/tecky,
-    // atd.) - k detekci cyklu muze dojit az pri jeho druhem pruchodu, pro nase ucely to staci
+    // stores the path 'path' in the list of explored paths (see 'ExploredPaths');
+    // returns FALSE if 'path' is already in this list (out of memory is ignored in this
+    // function)
+    // WARNING: assumes that 'path' is a path returned by the server, so paths
+    // are compared only as case-sensitive strings (slashes/backslashes/dots, etc., are not trimmed)
+    // - a cycle may be detected only on its second pass, which is sufficient for our purposes
     BOOL AddToExploredPaths(const char* path);
 
-    // vraci UsePassiveMode (v krit. sekci)
+    // returns UsePassiveMode (in the critical section)
     BOOL GetUsePassiveMode();
 
-    // nastavuje UsePassiveMode (v krit. sekci)
+    // sets UsePassiveMode (in the critical section)
     void SetUsePassiveMode(BOOL usePassiveMode);
 
-    // vraci SizeCmdIsSupported (v krit. sekci)
+    // returns SizeCmdIsSupported (in the critical section)
     BOOL GetSizeCmdIsSupported();
 
-    // nastavuje SizeCmdIsSupported (v krit. sekci)
+    // sets SizeCmdIsSupported (in the critical section)
     void SetSizeCmdIsSupported(BOOL sizeCmdIsSupported);
 
-    // vraci prikaz pro listovani (je-li ListCommand==NULL, vraci "LIST\r\n"), prikaz uz ma
-    // na konci CRLF; 'buf' (nesmi byt NULL) je buffer o velikosti 'bufSize'
+    // returns the listing command (if ListCommand == NULL, returns "LIST\r\n"), the command already has
+    // CRLF at the end; 'buf' (must not be NULL) is a buffer of size 'bufSize'
     void GetListCommand(char* buf, int bufSize);
 
-    // vraci UseListingsCache (v krit. sekci)
+    // returns UseListingsCache (in the critical section)
     BOOL GetUseListingsCache();
 
-    // vraci User (v krit. sekci); je-li User==NULL, vraci se FTP_ANONYMOUS
+    // returns User (in the critical section); if User == NULL, FTP_ANONYMOUS is returned
     void GetUser(char* buf, int bufSize);
 
-    // vraci (v krit. sekci) naalokovany retezec s odpovedi serveru na prikaz SYST
-    // (atribut 'ServerSystemReply'); pri chybe alokace vraci NULL
+    // returns (in the critical section) an allocated string with the server's reply to the SYST command
+    // (attribute 'ServerSystemReply'); returns NULL if allocation fails
     char* AllocServerSystemReply();
 
-    // vraci (v krit. sekci) naalokovany retezec s prvni odpovedi serveru
-    // (atribut 'ServerFirstReply'); pri chybe alokace vraci NULL
+    // returns (in the critical section) an allocated string with the first reply from the server
+    // (attribute 'ServerFirstReply'); returns NULL if allocation fails
     char* AllocServerFirstReply();
 
-    // vraci (v krit. sekci) typ serveru pro parsovani listingu: vraci FALSE pokud se
-    // ma provest autodetekce typu serveru (v 'buf' vraci prazdny retezec), pokud vrati
-    // TRUE, je v 'buf' (o velikosti aspon SERVERTYPE_MAX_SIZE) jmeno pozadovaneho
-    // typu serveru
+    // returns (in the critical section) the server type used for parsing listings: returns FALSE if
+    // the server type should be autodetected (returns an empty string in 'buf'); if it returns TRUE,
+    // 'buf' (with size at least SERVERTYPE_MAX_SIZE) contains the requested server type name
     BOOL GetListingServerType(char* buf);
 
-    // vraci (v krit. sekci) rezim prenosu zrekonstruovany z AutodetectTrMode
-    // a UseAsciiTransferMode
+    // returns (in the critical section) the transfer mode reconstructed from AutodetectTrMode
+    // and UseAsciiTransferMode
     int GetTransferMode();
 
-    // vraci (v krit. sekci) parametry operace Change Attributes
+    // returns (in the critical section) the parameters of the Change Attributes operation
     void GetParamsForChAttrsOper(BOOL* selFiles, BOOL* selDirs, BOOL* includeSubdirs,
                                  DWORD* attrAndMask, DWORD* attrOrMask,
                                  int* operationsUnknownAttrs);
 
-    // zvysi pocitadla v item-dir polozce 'itemDir' (polozka musi byt potomek CFTPQueueItemDir)
-    // nebo v teto operaci (je-li 'itemDir' -1); muze zmenit stav item-dir polozky nebo operace;
-    // pokud meni stav item-dir polozky, zmeni pocitadla v jejim parentovi (funguje rekurzivne,
-    // takze zajisti vsechny potrebne zmeny stavu a pocitadel); 'onlyUINeededOrFailedToSkipped'
-    // je TRUE pokud jde jen o zmenu stavu z sqisUserInputNeeded/sqisFailed na sqisSkipped
-    // (tato zmena urcite nevyzaduje refresh listingu - operace zustava v "dokoncenem" stavu
-    // bez nutnosti refreshu)
-    // POZOR: pracuje v kritickych sekcich CFTPOperation::OperCritSect a CFTPQueue::QueueCritSect
+    // increases the counters in the item-dir item 'itemDir' (the item must be a descendant of CFTPQueueItemDir)
+    // or in this operation (if 'itemDir' is -1); may change the state of the item-dir item or the operation;
+    // if it changes the state of the item-dir item, it updates the counters in its parent (works recursively,
+    // so it ensures all necessary state and counter changes); 'onlyUINeededOrFailedToSkipped'
+    // is TRUE if it is only a state change from sqisUserInputNeeded/sqisFailed to sqisSkipped
+    // (this change definitely does not require a listing refresh - the operation remains in the "finished" state
+    // without needing a refresh)
+    // WARNING: operates in the CFTPOperation::OperCritSect and CFTPQueue::QueueCritSect critical sections
     void AddToItemOrOperationCounters(int itemDir, int childItemsNotDone,
                                       int childItemsSkipped, int childItemsFailed,
                                       int childItemsUINeeded, BOOL onlyUINeededOrFailedToSkipped);
 
-    // vraci (v krit. sekci) parametry operace Delete; ignoruje NULLove parametry
+    // returns (in the critical section) the parameters of the Delete operation; ignores NULL parameters
     void GetParamsForDeleteOper(int* confirmDelOnNonEmptyDir, int* confirmDelOnHiddenFile,
                                 int* confirmDelOnHiddenDir);
 
-    // nastavuje (v krit. sekci) parametry operace Delete; ignoruje (nenastavuje) NULLove parametry
+    // sets (in the critical section) the parameters of the Delete operation; ignores (does not set) NULL parameters
     void SetParamsForDeleteOper(int* confirmDelOnNonEmptyDir, int* confirmDelOnHiddenFile,
                                 int* confirmDelOnHiddenDir);
 
-    // vola se pro ohlaseni zmeny stavu operace
+    // called to report an operation state change
     void ReportOperationStateChange();
 
-    // ziskani stavu operace; je-li 'calledFromSetupCloseButton' TRUE, jde o volani z metody
-    // SetupCloseButton (z dialogu operace), jde o reakci na postnutou notifikaci o zmene stavu
-    // operace - v tomto pripade se povoli postnuti dalsi notifikace
+    // obtains the operation state; if 'calledFromSetupCloseButton' is TRUE, it was called from the
+    // SetupCloseButton method (from the operation dialog), responding to a posted notification about a change
+    // in the operation state - in this case posting another notification is allowed
     COperationState GetOperationState(BOOL calledFromSetupCloseButton);
 
-    // jen pro debugovaci ucely: vraci stavy pocitadel (v kriticke sekci)
+    // debug only: returns the counter states (in the critical section)
     void DebugGetCounters(int* childItemsNotDone, int* childItemsSkipped,
                           int* childItemsFailed, int* childItemsUINeeded);
 
-    // rozesle po Salamanderovi zpravy o zmenach na cestach (zdrojove a pripadne i cilove);
-    // vola se az po dokonceni nebo preruseni operace, aby nedochazelo ke "zbytecnym"
-    // refreshum (brzdilo by operaci); 'softRefresh' je TRUE pokud se nebudou zavirat
-    // spojeni workeru (nedojde ke vraceni spojeni do panelu, tedy refresh nechame udelat
-    // az kdyz se user prepne zpet do hlavniho okna Salamandera - okamzity refresh by
-    // nutne vyvolal dotaz na reconnect, coz zbytecne prudi)
+    // sends Salamander messages about changes on paths (source and possibly target);
+    // called only after the operation finishes or is interrupted to avoid "unnecessary"
+    // refreshes (would slow down the operation); 'softRefresh' is TRUE if the worker connections
+    // should not be closed (connections are not returned to the panel, so we let the refresh happen
+    // only when the user switches back to the Salamander main window - an immediate refresh would
+    // necessarily trigger a reconnect prompt, which would be annoying)
     void PostChangeOnPathNotifications(BOOL softRefresh);
 
-    // vraci globalni speed-meter operace (mereni celkove rychlosti data-connection vsech workeru)
+    // returns the operation's global speed meter (measuring the total data-connection speed of all workers)
     CTransferSpeedMeter* GetGlobalTransferSpeedMeter() { return &GlobalTransferSpeedMeter; }
 
-    // vraci globalni objekt pro ukladani casu posledni aktivity na data-connectionach vsech workeru
+    // returns the global object for storing the time of the last activity on the data connections of all workers
     CSynchronizedDWORD* GetGlobalLastActivityTime() { return &GlobalLastActivityTime; }
 
-    // vraci (v krit. sekci) typ operace (viz 'Type')
+    // returns (in the critical section) the operation type (see 'Type')
     CFTPOperationType GetOperationType();
 
-    // vraci progres na zaklade souctu velikosti hotovych a skipnutych souboru v bytech a
-    // celkove velikosti v bytech (jinak vraci -1); v 'unknownSizeCount' vraci pocet
-    // nedokoncenych operaci s neznamou velikosti v bytech; v 'errorsCount' vraci pocet
-    // polozek s chybou nebo dotazem; ve 'waiting' vraci soucet velikosti (v bytech)
-    // polozek, ktere cekaji na zpracovani (waiting+delayed+processing)
+    // returns progress based on the sum of sizes of completed and skipped files in bytes and
+    // the total size in bytes (otherwise returns -1); in 'unknownSizeCount' returns the number of
+    // unfinished operations with an unknown size in bytes; in 'errorsCount' returns the number of
+    // items with an error or query; in 'waiting' returns the sum of sizes (in bytes)
+    // of items waiting to be processed (waiting+delayed+processing)
     int GetCopyProgress(CQuadWord* downloaded, CQuadWord* total, CQuadWord* waiting,
                         int* unknownSizeCount, int* errorsCount, int* doneOrSkippedCount,
                         int* totalCount, CFTPQueue* queue);
 
-    // vraci progres na zaklade souctu velikosti hotovych a skipnutych souboru v bytech a
-    // celkove velikosti v bytech (jinak vraci -1); v 'unknownSizeCount' vraci pocet
-    // nedokoncenych operaci s neznamou velikosti v bytech; v 'errorsCount' vraci pocet
-    // polozek s chybou nebo dotazem; ve 'waiting' vraci soucet velikosti (v bytech)
-    // polozek, ktere cekaji na zpracovani (waiting+delayed+processing)
+    // returns progress based on the sum of sizes of completed and skipped files in bytes and
+    // the total size in bytes (otherwise returns -1); in 'unknownSizeCount' returns the number of
+    // unfinished operations with an unknown size in bytes; in 'errorsCount' returns the number of
+    // items with an error or query; in 'waiting' returns the sum of sizes (in bytes)
+    // of items waiting to be processed (waiting+delayed+processing)
     int GetCopyUploadProgress(CQuadWord* uploaded, CQuadWord* total, CQuadWord* waiting,
                               int* unknownSizeCount, int* errorsCount, int* doneOrSkippedCount,
                               int* totalCount, CFTPQueue* queue);
 
-    // prida odpovidajici si dvojici velikosti v bytech a blocich; udaje se pouzivaji pro vypocet
-    // priblizne velikosti bloku (u VMS, MVS a dalsich serveru pouzivajicich bloky se pouziva pro
-    // odhad celkove velikosti downloadu v bytech na zaklade zname velikosti v blocich)
+    // adds a matching pair of sizes in bytes and blocks; the data is used to calculate
+    // the approximate block size (for VMS, MVS and other servers using blocks it is used to
+    // estimate the total download size in bytes based on the known size in blocks)
     void AddBlkSizeInfo(CQuadWord const& sizeInBytes, CQuadWord const& sizeInBlocks);
 
-    // vypocet priblizne velikosti v bytech na zaklade velikosti v blocich; vraci FALSE pokud
-    // jeste neni znama velikost bloku a neni tudiz mozne provest prepocet na byty
+    // calculates the approximate size in bytes based on the size in blocks; returns FALSE if
+    // the block size is not yet known and therefore the conversion to bytes cannot be performed
     BOOL GetApproxByteSize(CQuadWord* sizeInBytes, CQuadWord const& sizeInBlocks);
 
-    // vraci TRUE pokud je znama priblizna velikost bloku v bytech
+    // returns TRUE if the approximate block size in bytes is known
     BOOL IsBlkSizeKnown();
 
-    // vraci jak dlouho operace bezi/bezela
+    // returns how long the operation has been running/ran
     DWORD GetElapsedSeconds();
 
-    // vraci TRUE pokud behem poslednich WORKER_STATUSUPDATETIMEOUT milisekund doslo
-    // k nejake aktivite na data-connectionach workeru (tyka se listovani i downloadu)
+    // returns TRUE if there was any activity on worker data connections during the last WORKER_STATUSUPDATETIMEOUT milliseconds (applies to listing and download)
     BOOL GetDataActivityInLastPeriod();
 
-    // v 'buf' o velikosti 'bufSize' vraci TargetPath
+    // returns TargetPath in 'buf' of size 'bufSize'
     void GetTargetPath(char* buf, int bufSize);
 
-    // navysi LastErrorOccurenceTime o jednu a vraci novou hodnotu LastErrorOccurenceTime
+    // increments LastErrorOccurenceTime by one and returns the new LastErrorOccurenceTime value
     DWORD GiveLastErrorOccurenceTime();
 
-    // hleda index workera, ktery potrebuje otevrit Solve Error dialog (objevila se
-    // v nem "nova" (user ji jeste nevidel) chyba); vraci TRUE pokud se takoveho workera
-    // podarilo nalezt, jeho index se vraci v 'index'
+    // searches for the index of a worker that needs to open the Solve Error dialog (a
+    // "new" error appeared there (the user has not seen it yet)); returns TRUE if such a worker
+    // was found, its index is returned in 'index'
     BOOL SearchWorkerWithNewError(int* index);
 
-    // zjisti jestli tato operace muze provest zmeny na ceste 'path' typu 'pathType' na
-    // serveru 'user'+'host'+'port'; 'userLength' je nula pokud netusime, jak dlouhe je
-    // uzivatelske jmeno nebo pokud v nem nejsou "zakazane" znaky, jinak je to ocekavana
-    // delka uzivatelskeho jmena
+    // determines whether this operation can make changes on path 'path' of type 'pathType' on
+    // the server 'user'+'host'+'port'; 'userLength' is zero if we do not know how long the username is
+    // or if it does not contain "forbidden" characters, otherwise it is the expected
+    // username length
     BOOL CanMakeChangesOnPath(const char* user, const char* host, unsigned short port,
                               const char* path, CFTPServerPathType pathType,
                               int userLength);
 
-    // zjisti jestli je mezi operacemi upload na server 'user'+'host'+'port';
-    // 'user' je NULL pokud jde o anonymous pripojeni; 'userLength' je nula pokud
-    // netusime, jak dlouhe je uzivatelske jmeno nebo pokud v nem nejsou "zakazane"
-    // znaky, jinak je to ocekavana delka uzivatelskeho jmena
+    // determines whether among the operations there is an upload to the server 'user'+'host'+'port';
+    // 'user' is NULL for anonymous connections; 'userLength' is zero if we do not know how long the username is
+    // or if it does not contain "forbidden" characters, otherwise it is the expected username length
     BOOL IsUploadingToServer(const char* user, const char* host, unsigned short port,
                              int userLength);
 
-    // vraci 'Host'+'User'+'Port'; 'host' (neni-li NULL) je buffer pro 'Host' o velikosti
-    // HOST_MAX_SIZE; 'user' (neni-li NULL) je buffer pro 'User' o velikosti USER_MAX_SIZE;
-    // v 'port' (neni-li NULL) vraci 'Port'
+    // returns 'Host'+'User'+'Port'; 'host' (if not NULL) is a buffer for 'Host' of size
+    // HOST_MAX_SIZE; 'user' (if not NULL) is a buffer for 'User' of size USER_MAX_SIZE;
+    // 'port' (if not NULL) returns 'Port'
     void GetUserHostPort(char* user, char* host, unsigned short* port);
 };
 
@@ -2781,85 +2772,85 @@ public:
 // CFTPOperationsList
 //
 
-enum CWorkerWaitSatisfiedReason // udalosti hlidane v CFTPOperationsList::WaitForFinishOrESC
+enum CWorkerWaitSatisfiedReason // events monitored in CFTPOperationsList::WaitForFinishOrESC
 {
     wwsrEsc,                 // ESC
     wwsrTimeout,             // timeout
-    wwsrWorkerSocketClosure, // doslo k zavreni socketu nejakeho workera
+    wwsrWorkerSocketClosure, // a worker's socket was closed
 };
 
 class CFTPOperationsList
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
-    // POZOR: pristup do kritickych sekci konzultovat v souboru servers\critsect.txt !!!
+    // critical section for accessing the object's data
+    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
     CRITICAL_SECTION OpListCritSect;
 
-    // seznam existujicich operaci; UID operace je index do tohoto pole,
-    // takze: PRVKY POLE NELZE POSOUVAT (vymaz se resi prepisem indexu na NULL)
+    // list of existing operations; the operation UID is the index into this array,
+    // so: ARRAY ELEMENTS MUST NOT BE SHIFTED (deletion is handled by writing NULL to the index)
     TIndirectArray<CFTPOperation> Operations;
-    int FirstFreeIndexInOperations; // nejnizsi volny index uvnitr pole Operations (-1 = zadny)
+    int FirstFreeIndexInOperations; // lowest free index inside the Operations array (-1 = none)
 
-    BOOL CallOK; // pomocna promenna pro StartCall() a EndCall()
+    BOOL CallOK; // helper variable for StartCall() and EndCall()
 
 public:
     CFTPOperationsList();
     ~CFTPOperationsList();
 
-    // vraci TRUE pokud v seznamu neni zadna operace
+    // returns TRUE if there is no operation in the list
     BOOL IsEmpty();
 
-    // prida do pole novou operaci (pracuje s FirstFreeIndexInOperations); v 'newuid' (neni-li NULL)
-    // vraci UID pridane operace; vraci TRUE pri uspechu
+    // adds a new operation to the array (works with FirstFreeIndexInOperations); in 'newuid' (if not NULL)
+    // returns the UID of the added operation; returns TRUE on success
     BOOL AddOperation(CFTPOperation* newOper, int* newuid);
 
-    // zavre vsechny otevrene dialogy operaci a pocka na dokonceni vsech threadu dialogu
+    // closes all open operation dialogs and waits for all dialog threads to finish
     void CloseAllOperationDlgs();
 
-    // ukonci a zrusi vybrane workery operaci; 'parent' je "foreground" okno threadu (po
-    // stisku ESC se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne
-    // napriklad v jine aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent()
-    // nebo pluginem otevreny dialog); je-li 'operUID' -1, pracuje se vsemi workery vsech
-    // operaci; neni-li 'operUID' -1 a je-li 'workerInd' -1, prauje se vsemi workery
-    // operace s UID 'operUID'; neni-li 'operUID' ani 'workerInd' -1, pracuje s workerem
-    // na indexu 'workerInd' operace s UID 'operUID'
-    // POZOR: vstupuje do sekci CSocketsThread::CritSect a CSocket::SocketCritSect !!!
+    // stops and cancels selected workers of operations; 'parent' is the thread's "foreground" window (after
+    // pressing ESC it is used to determine whether ESC was pressed in this window and not
+    // for example in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
+    // or a dialog opened by the plugin); if 'operUID' is -1, it works with all workers of all
+    // operations; if 'operUID' is not -1 and 'workerInd' is -1, it works with all workers
+    // of the operation with UID 'operUID'; if neither 'operUID' nor 'workerInd' is -1, it works with the worker
+    // at index 'workerInd' of the operation with UID 'operUID'
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
     void StopWorkers(HWND parent, int operUID, int workerInd);
 
-    // pausne nebo resumne vybrane workery operaci; 'parent' je "foreground" okno threadu (po
-    // stisku ESC se pouziva pro zjisteni jestli byl stisknut ESC v tomto okne a ne
-    // napriklad v jine aplikaci; u hl. threadu jde o SalamanderGeneral->GetMsgBoxParent()
-    // nebo pluginem otevreny dialog); je-li 'operUID' -1, pracuje se vsemi workery vsech
-    // operaci; neni-li 'operUID' -1 a je-li 'workerInd' -1, prauje se vsemi workery
-    // operace s UID 'operUID'; neni-li 'operUID' ani 'workerInd' -1, pracuje s workerem
-    // na indexu 'workerInd' operace s UID 'operUID'; je-li 'pause' TRUE maji se vybrani
-    // workeri pausnout, jinak se maji resumnout
-    // POZOR: vstupuje do sekci CSocketsThread::CritSect a CSocket::SocketCritSect !!!
+    // pauses or resumes selected workers of operations; 'parent' is the thread's "foreground" window (after
+    // pressing ESC it is used to determine whether ESC was pressed in this window and not
+    // for example in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
+    // or a dialog opened by the plugin); if 'operUID' is -1, it works with all workers of all
+    // operations; if 'operUID' is not -1 and 'workerInd' is -1, it works with all workers
+    // of the operation with UID 'operUID'; if neither 'operUID' nor 'workerInd' is -1, it works with the worker
+    // at index 'workerInd' of the operation with UID 'operUID'; if 'pause' is TRUE the selected
+    // workers should pause, otherwise they should resume
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
     void PauseWorkers(HWND parent, int operUID, int workerInd, BOOL pause);
 
-    // smaze z pole operaci s UID 'uid' (nastavuje FirstFreeIndexInOperations);
-    // predem nutne zavrit dialog operace a zrusit vsechny workery operace;
-    // je-li 'doNotPostChangeOnPathNotifications' TRUE, nevola metoda
-    // PostChangeOnPathNotifications (FALSE jen v pripade Cancelu operace);
-    // POZOR: vstupuje take do sekce CUploadListingCache::UploadLstCacheCritSect !!!
+    // removes the operation with UID 'uid' from the array (updates FirstFreeIndexInOperations);
+    // the operation dialog must be closed in advance and all workers of the operation must be cancelled;
+    // if 'doNotPostChangeOnPathNotifications' is TRUE, the method does not call
+    // PostChangeOnPathNotifications (FALSE only in case of canceling the operation);
+    // WARNING: also enters the CUploadListingCache::UploadLstCacheCritSect section !!!
     void DeleteOperation(int uid, BOOL doNotPostChangeOnPathNotifications);
 
-    // zjisti jestli nektera z operaci muze provest zmeny na ceste 'path' typu 'pathType' na
-    // serveru 'user'+'host'+'port'; neni-li 'ignoreOperUID' -1, jde o UID operace, kterou
-    // ma ignorovat (jde o upload operaci, kterou jsme prave zalozili)
+    // determines whether any of the operations can make changes on path 'path' of type 'pathType' on
+    // the server 'user'+'host'+'port'; if 'ignoreOperUID' is not -1, it is the UID of an operation that
+    // should be ignored (an upload operation we have just created)
     BOOL CanMakeChangesOnPath(const char* user, const char* host, unsigned short port,
                               const char* path, CFTPServerPathType pathType, int ignoreOperUID);
 
-    // zjisti jestli je mezi operacemi upload na server 'user'+'host'+'port'
+    // determines whether there is an upload to the server 'user'+'host'+'port' among the operations
     BOOL IsUploadingToServer(const char* user, const char* host, unsigned short port);
 
     // ***************************************************************************************
-    // pomocne metody pro volani metod objektu typu CFTPOperation; objekty jsou identifikovane
-    // pres sva UID zadana v prvnim parametru pomocnych metod ('operUID'); pomocne metody
-    // vraci TRUE pokud doslo k volani metody objektu ('operUID' je platne UID operace)
+    // helper methods for calling methods of CFTPOperation objects; the objects are identified
+    // by their UIDs passed in the first parameter of the helper methods ('operUID'); the helper methods
+    // return TRUE if the object's method was called ('operUID' is a valid operation UID)
     // ***************************************************************************************
 
-    // jen pomocne metody pro snazsi implementaci nasledujiciho oddilu metod
+    // helper methods to simplify implementing the following method section
     BOOL StartCall(int operUID);
     BOOL EndCall();
 
@@ -2867,18 +2858,18 @@ public:
     BOOL CloseOperationDlg(int operUID, HANDLE* dlgThread);
 
 protected:
-    // ceka na zavreni socketu nejakeho workeru (navic: monitoruje ESC, ma timeout a obsahuje
-    // message-loop); 'parent' je "foreground" okno threadu (po stisku ESC se pouziva pro zjisteni
-    // jestli byl stisknut ESC v tomto okne a ne napriklad v jine aplikaci; u hl. threadu jde
-    // o SalamanderGeneral->GetMsgBoxParent() nebo pluginem otevreny dialog); 'milliseconds' je
-    // cas v ms, po ktery se ma cekat na zavreni socketu, po teto dobe vraci metoda
-    // 'reason'==wwsrTimeout, je-li 'milliseconds' INFINITE, ma se cekat bez casoveho
-    // omezeni; neni-li 'waitWnd' NULL, sleduje stisk close buttonu ve wait-okenku 'waitWnd';
-    // v 'reason' se vraci duvod ukonceni teto metody (jeden z wwsrXXX; wwsrEsc pokud user
-    // stiskl ESC); pokud prijde Windows message WM_CLOSE, nastavi se do 'postWM_CLOSE' TRUE
-    // a dojde k aktivaci okna 'parent' (aby user videl na co ceka); 'lastWorkerMayBeClosedState'
-    // je pomocna promenna, pred cyklem inicializovat na -1, pro volani v cyklu nemenit
-    // mozne volat z libovolneho threadu
+    // waits for some worker's socket to close (additionally: monitors ESC, has a timeout, and contains
+    // a message loop); 'parent' is the thread's "foreground" window (after pressing ESC it is used to determine
+    // whether ESC was pressed in this window and not for example in another application; in the main thread it is
+    // SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'milliseconds' is
+    // the time in ms to wait for the socket to close; after this time the method returns
+    // 'reason' == wwsrTimeout; if 'milliseconds' is INFINITE, it waits without a time
+    // limit; if 'waitWnd' is not NULL, it monitors pressing the close button in the 'waitWnd' wait window;
+    // 'reason' returns why the method ended (one of wwsrXXX; wwsrEsc if the user pressed ESC);
+    // if the Windows message WM_CLOSE arrives, 'postWM_CLOSE' is set to TRUE and the 'parent' window is activated
+    // (so the user sees what they are waiting for); 'lastWorkerMayBeClosedState'
+    // is a helper variable; initialize it to -1 before the loop and do not change it within the loop
+    // may be called from any thread
     void WaitForFinishOrESC(HWND parent, int milliseconds, CWaitWindow* waitWnd,
                             CWorkerWaitSatisfiedReason& reason, BOOL& postWM_CLOSE,
                             int& lastWorkerMayBeClosedState);
@@ -2892,7 +2883,7 @@ protected:
 class CUIDArray
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
+    // critical section for accessing the object's data
     CRITICAL_SECTION UIDListCritSect;
     TDirectArray<DWORD> Data;
 
@@ -2900,10 +2891,10 @@ public:
     CUIDArray(int base, int delta);
     ~CUIDArray();
 
-    // pridani UID do pole, vraci uspech
+    // adds a UID to the array, returns success
     BOOL Add(int uid);
 
-    // vraci prvni prvek z pole v 'uid'; vraci uspech
+    // returns the first element from the array in 'uid'; returns success
     BOOL GetFirstUID(int& uid);
 };
 
@@ -2914,8 +2905,8 @@ public:
 
 struct CReturningConnectionData
 {
-    int ControlConUID;         // do jake "control connection" v panelu spojeni vracime
-    CFTPWorker* WorkerWithCon; // worker s vracenym spojenim
+    int ControlConUID;         // to which "control connection" in the panel we return the connection
+    CFTPWorker* WorkerWithCon; // worker with the returned connection
 
     CReturningConnectionData(int controlConUID, CFTPWorker* workerWithCon)
     {
@@ -2927,7 +2918,7 @@ struct CReturningConnectionData
 class CReturningConnections
 {
 protected:
-    // kriticka sekce pro pristup k datum objektu
+    // critical section for accessing the object's data
     CRITICAL_SECTION RetConsCritSect;
     TIndirectArray<CReturningConnectionData> Data;
 
@@ -2935,14 +2926,14 @@ public:
     CReturningConnections(int base, int delta);
     ~CReturningConnections();
 
-    // pridani prvku do pole, vraci uspech
+    // adds an element to the array, returns success
     BOOL Add(int controlConUID, CFTPWorker* workerWithCon);
 
-    // vraci prvni prvek z pole (chyba: vraci -1 a NULL); vraci uspech
+    // returns the first element from the array (on error returns -1 and NULL); returns success
     BOOL GetFirstCon(int* controlConUID, CFTPWorker** workerWithCon);
 
-    // zrusi vsechny workery, kteri zatim nestihli predat connectionu do panelu (jsou v poli Data)
-    // volat jen bez vnoreni do zadnych krit. sekci (vstupuje do CSocketsThread::CritSect)
+    // cancels all workers that have not yet managed to hand the connection back to the panel (they are in the Data array)
+    // call only without nesting into any critical sections (enters CSocketsThread::CritSect)
     void CloseData();
 };
 
@@ -2950,53 +2941,53 @@ public:
 // ****************************************************************************
 // CUploadListingCache
 //
-// cache listingu cest na serverech - pouziva se pri uploadu pro zjistovani,
-// jestli cilovy soubor/adresar jiz existuje
+// cache of listings of paths on servers - used during upload to determine
+// whether the target file/directory already exists
 
 enum CUploadListingItemType
 {
-    ulitFile,      // soubor
-    ulitDirectory, // adresar
-    ulitLink,      // link (na adresar nebo soubor)
+    ulitFile,      // file
+    ulitDirectory, // directory
+    ulitLink,      // link (to a directory or file)
 };
 
-#define UPLOADSIZE_UNKNOWN CQuadWord(-1, -1)    // neznama velikost (na listingu neni velikost v bytech)
-#define UPLOADSIZE_NEEDUPDATE CQuadWord(-2, -1) // pro zjisteni velikosti je potreba opatrit novy listing (napr. behem uploadu nebo po uploadu v ASCII rezimu)
+#define UPLOADSIZE_UNKNOWN CQuadWord(-1, -1)    // unknown size (listing does not contain the size in bytes)
+#define UPLOADSIZE_NEEDUPDATE CQuadWord(-2, -1) // to obtain the size a new listing is needed (e.g. during upload or after uploading in ASCII mode)
 
-struct CUploadListingItem // data jednoho souboru/adresare/linku v listingu
+struct CUploadListingItem // data of a single file/directory/link in the listing
 {
-    // pristup k datum objektu v krit. sekci CUploadListingCache::UploadLstCacheCritSect
-    // POZNAMKA: pred pridanim do CUploadListingCache je pristup bez krit. sekce
+    // access to the object's data in the CUploadListingCache::UploadLstCacheCritSect critical section
+    // NOTE: before adding to CUploadListingCache the access is without a critical section
 
-    CUploadListingItemType ItemType; // soubor/adresar/link
-    char* Name;                      // jmeno polozky
-    CQuadWord ByteSize;              // jen pro soubory: velikost polozky v bytech, specialni hodnoty viz UPLOADSIZE_XXX
+    CUploadListingItemType ItemType; // file/directory/link
+    char* Name;                      // item name
+    CQuadWord ByteSize;              // for files only: item size in bytes, special values see UPLOADSIZE_XXX
 };
 
 enum CUploadListingChangeType
 {
-    ulctDelete,       // mazani jmena
-    ulctCreateDir,    // vytvoreni adresare
-    ulctStoreFile,    // zacatek uploadu souboru (muze byt i prepis souboru/linku)
-    ulctFileUploaded, // dokonceni uploadu souboru (mohl byt i prepis souboru/linku)
+    ulctDelete,       // deleting a name
+    ulctCreateDir,    // creating a directory
+    ulctStoreFile,    // start uploading a file (may also overwrite a file/link)
+    ulctFileUploaded, // upload finished (may also overwrite a file/link)
 };
 
-struct CUploadListingChange // zmena v listingu (aby se po kazde zmene netahal znovu listing, provadime po kazdem FTP prikazu ocekavanou zmenu listingu nad cachovanym listingem)
+struct CUploadListingChange // change in the listing (so we do not fetch the listing after every change, we perform the expected listing change on the cached listing after each FTP command)
 {
-    CUploadListingChange* NextChange; // dalsi zmena v listingu (vyuziva se behem stahovani listingu - zmeny se provedou az po stazeni listingu)
-    CUploadListingChangeType Type;    // typ zmeny
-    DWORD ChangeTime;                 // IncListingCounter() z okamziku zmeny (okamzik prijeti odpovedi serveru na prikaz menici listing)
+    CUploadListingChange* NextChange; // next change in the listing (used while downloading the listing - changes are applied after the listing is downloaded)
+    CUploadListingChangeType Type;    // change type
+    DWORD ChangeTime;                 // IncListingCounter() from the moment of the change (the moment the server reply to the listing-changing command was received)
 
-    char* Name;         // ulctDelete: jmeno mazaneho souboru/linku/adresare; ulctCreateDir: jmeno vytvareneho adresare; ulctStoreFile+ulctFileUploaded: jmeno uploadeneho souboru
-    CQuadWord FileSize; // ulctFileUploaded: velikost uploadleho souboru
+    char* Name;         // ulctDelete: name of the deleted file/link/directory; ulctCreateDir: name of the created directory; ulctStoreFile+ulctFileUploaded: name of the uploaded file
+    CQuadWord FileSize; // ulctFileUploaded: size of the uploaded file
 
     CUploadListingChange(DWORD changeTime, CUploadListingChangeType type, const char* name,
                          const CQuadWord* fileSize = NULL);
-    ~CUploadListingChange(); // uvolneni dat, ale POZOR: nesmi uvolnit NextChange
+    ~CUploadListingChange(); // releases data, but WARNING: must not release NextChange
     BOOL IsGood() { return Name != NULL; }
 };
 
-struct CUploadWaitingWorker // seznam workeru cekajicich na dokonceni (nebo chybu) listingu cesty
+struct CUploadWaitingWorker // list of workers waiting for a path listing to finish (or fail)
 {
     CUploadWaitingWorker* NextWorker;
     int WorkerMsg;
@@ -3005,31 +2996,31 @@ struct CUploadWaitingWorker // seznam workeru cekajicich na dokonceni (nebo chyb
 
 enum CUploadListingState
 {
-    ulsReady,                      // listing je pripraveny k pouziti (z pohledu Salamandera je aktualni)
-    ulsInProgress,                 // prave ho nejaky worker stahuje ze serveru
-    ulsInProgressButObsolete,      // prave ho nejaky worker stahuje ze serveru, ale uz mame z jineho zdroje (panel) listing ve stavu ulsReady (po vyignorovani vysledku z workeru se nahodi stav ulsReady)
-    ulsInProgressButMayBeOutdated, // prave ho nejaky worker stahuje ze serveru, ale uz vime, ze listing asi nebude aktualni (v adresari probehla neznama zmena nebo se behem zmeny rozpadlo spojeni)
-    ulsNotAccessible,              // listing je "neziskatelny" (napr. server hlasi "access denied" nebo listing nejde rozparsovat)
+    ulsReady,                      // listing is ready for use (from Salamander's perspective it is current)
+    ulsInProgress,                 // some worker is currently downloading it from the server
+    ulsInProgressButObsolete,      // some worker is currently downloading it from the server, but we already have a listing in the ulsReady state from another source (panel) (after ignoring the worker result the state switches to ulsReady)
+    ulsInProgressButMayBeOutdated, // some worker is currently downloading it from the server, but we already know the listing may be outdated (an unknown change occurred in the directory or the connection broke during the change)
+    ulsNotAccessible,              // the listing is "unobtainable" (e.g. the server reports "access denied" or the listing cannot be parsed)
 };
 
-struct CUploadPathListing // listing pro jednu konkretni cestu na serveru
+struct CUploadPathListing // listing for a specific path on the server
 {
 public:
-    // pristup k datum objektu v krit. sekci CUploadListingCache::UploadLstCacheCritSect
-    // POZNAMKA: pred pridanim do CUploadListingCache je pristup bez krit. sekce
+    // access to the object's data in the CUploadListingCache::UploadLstCacheCritSect critical section
+    // NOTE: before adding to CUploadListingCache the access is without a critical section
 
-    char* Path;                  // cachovana cesta (lokalni na serveru)
-    CFTPServerPathType PathType; // typ cachovane cesty
+    char* Path;                  // cached path (local on the server)
+    CFTPServerPathType PathType; // type of the cached path
 
-    CUploadListingState ListingState;         // stav listingu
-    DWORD ListingStartTime;                   // IncListingCounter() z okamziku poslani prikazu LIST na server (zahajeni listovani)
-    CUploadListingChange* FirstChange;        // jen v ulsInProgress: prvni zmena v listingu (zmeny se ukladaji jen behem stahovani listingu nekterym workerem)
-    CUploadListingChange* LastChange;         // jen v ulsInProgress: posledni zmena v listingu (za tuto se ulozi dalsi zmena)
-    DWORD LatestChangeTime;                   // IncListingCounter() z okamziku posledni zmeny listingu (pouziva se pri zjistovani jestli je mozne listing updatnout novym listingem - jen pokud je LatestChangeTime mensi nez cas zahajeni listovani noveho listingu)
-    CUploadWaitingWorker* FirstWaitingWorker; // jen ve stavech ulsInProgress*: seznam workeru cekajicich na dokonceni (nebo chybu) listingu cesty
-    BOOL FromPanel;                           // TRUE = listing prevzaty z panelu (muze byt stary, pri pochybnosti o aktualnosti listingu se provede jeho refresh)
+    CUploadListingState ListingState;         // listing state
+    DWORD ListingStartTime;                   // IncListingCounter() from the moment the LIST command was sent to the server (listing started)
+    CUploadListingChange* FirstChange;        // only in ulsInProgress: first change in the listing (changes are stored only while some worker is downloading the listing)
+    CUploadListingChange* LastChange;         // only in ulsInProgress: last change in the listing (a new change is appended after this one)
+    DWORD LatestChangeTime;                   // IncListingCounter() from the moment of the last listing change (used to check whether it is possible to update the listing with a new listing - only if LatestChangeTime is less than the start time of downloading the new listing)
+    CUploadWaitingWorker* FirstWaitingWorker; // only in ulsInProgress* states: list of workers waiting for the path listing to finish (or fail)
+    BOOL FromPanel;                           // TRUE = listing taken from the panel (may be outdated; if there is doubt about the listing freshness, refresh it)
 
-    TIndirectArray<CUploadListingItem> ListingItem; // pole polozek listingu
+    TIndirectArray<CUploadListingItem> ListingItem; // array of listing items
 
 public:
     CUploadPathListing(const char* path, CFTPServerPathType pathType,
@@ -3038,105 +3029,104 @@ public:
     ~CUploadPathListing();
     BOOL IsGood() { return Path != NULL; }
 
-    // uvolni listing z ListingItem
+    // releases the listing stored in ListingItem
     void ClearListingItems();
 
-    // uvolni seznam zmen (viz FirstChange, LastChange)
+    // releases the change list (see FirstChange, LastChange)
     void ClearListingChanges();
 
-    // najde polozku s CUploadListingItem::Name == 'name'; vraci TRUE pri uspechu a 'index'
-    // je index nalezene polozky; vraci FALSE pri neuspechu a 'index' je misto, kam zaradit
-    // pripadnou novou polozku s CUploadListingItem::Name == 'name'
+    // finds an item with CUploadListingItem::Name == 'name'; returns TRUE on success and 'index'
+    // is the index of the found item; returns FALSE on failure and 'index' is the place where
+    // a possible new item with CUploadListingItem::Name == 'name' should be inserted
     BOOL FindItem(const char* name, int& index);
 
-    // parsuje listing 'pathListing'+'pathListingLen'+'pathListingDate'; 'welcomeReply' (nesmi
-    // byt NULL) je prvni odpoved serveru (obsahuje casto verzi FTP serveru);
-    // 'systReply' (nesmi byt NULL) je system serveru (odpoved na prikaz SYST);
-    // 'suggestedListingServerType' je typ serveru pro parsovani listingu: NULL = autodetekce,
-    // jinak jmeno typu serveru (bez prip. uvodni '*', pokud prestane existovat, prepne se
-    // na autodetekci); neni-li 'lowMemory' NULL, vraci se v nem TRUE pokud je nedostatek
-    // pameti; vraci TRUE pokud se podarilo rozparsovat cely listing a objekt je
-    // naplneny novymi polozkami
+    // parses the listing 'pathListing'+'pathListingLen'+'pathListingDate'; 'welcomeReply' (must not
+    // be NULL) is the first server reply (often contains the FTP server version);
+    // 'systReply' (must not be NULL) is the server system (reply to the SYST command);
+    // 'suggestedListingServerType' is the server type used for parsing the listing: NULL = autodetect,
+    // otherwise the server type name (without the optional leading '*'; if it stops existing, it switches
+    // to autodetect); if 'lowMemory' is not NULL, it returns TRUE in it when memory is low;
+    // returns TRUE if the entire listing was successfully parsed and the object is filled with new items
     BOOL ParseListing(const char* pathListing, int pathListingLen, const CFTPDate& pathListingDate,
                       CFTPServerPathType pathType, const char* welcomeReply, const char* systReply,
                       const char* suggestedListingServerType, BOOL* lowMemory);
 
-    // hlaseni zmeny: vytvoreni adresare; 'newDir' je uz jen jedno jmeno adresare;
-    // v 'lowMem' (nesmi byt NULL) vraci TRUE pri nedostatku pameti (dojde k zneplatneni
-    // tohoto listingu); v 'dirCreated' (nesmi byt NULL) vraci TRUE pokud v listingu
-    // adresar 'newDir' neexistoval a byl uspesne pridan
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportCreateDirs()
+    // reporting a change: creating a directory; 'newDir' is just a single directory name;
+    // returns TRUE in 'lowMem' (must not be NULL) if memory is low (the listing becomes invalid);
+    // returns TRUE in 'dirCreated' (must not be NULL) if the directory 'newDir'
+    // did not exist in the listing and was successfully added
+    // WARNING: do not call directly, called through CUploadListingCache::ReportCreateDirs()
     void ReportCreateDir(const char* newDir, BOOL* dirCreated, BOOL* lowMem);
 
-    // popis viz CUploadListingCache::ReportDelete(); v 'invalidateNameDir' (nesmi byt NULL)
-    // se vraci TRUE pokud je potreba adresar 'name' zneplatnit (muze jit o adresar nebo
-    // link na adresar); v 'lowMem' (nesmi byt NULL) vraci TRUE pri nedostatku pameti pro
-    // pridani zmeny do fronty zmen (jen ve stavu ulsInProgress)
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportDelete()
+    // see CUploadListingCache::ReportDelete(); returns TRUE in 'invalidateNameDir' (must not be NULL)
+    // if the directory 'name' needs to be invalidated (it may be a directory or
+    // a link to a directory); returns TRUE in 'lowMem' (must not be NULL) if there is not enough memory to
+    // add the change to the change queue (only in the ulsInProgress state)
+    // WARNING: do not call directly, called through CUploadListingCache::ReportDelete()
     void ReportDelete(const char* name, BOOL* invalidateNameDir, BOOL* lowMem);
 
-    // popis viz CUploadListingCache::ReportStoreFile(); v 'lowMem' (nesmi byt NULL)
-    // vraci TRUE pri nedostatku pameti (dojde k zneplatneni tohoto listingu)
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportStoreFile()
+    // see CUploadListingCache::ReportStoreFile(); returns TRUE in 'lowMem' (must not be NULL)
+    // if memory is low (the listing becomes invalid)
+    // WARNING: do not call directly, called through CUploadListingCache::ReportStoreFile()
     void ReportStoreFile(const char* name, BOOL* lowMem);
 
-    // popis viz CUploadListingCache::ReportFileUploaded(); v 'lowMem' (nesmi byt NULL)
-    // vraci TRUE pri nedostatku pameti pro pridani zmeny do fronty zmen (jen ve stavu
-    // ulsInProgress)
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportFileUploaded()
+    // see CUploadListingCache::ReportFileUploaded(); returns TRUE in 'lowMem' (must not be NULL)
+    // if there is not enough memory to add the change to the change queue (only in the
+    // ulsInProgress state)
+    // WARNING: do not call directly, called through CUploadListingCache::ReportFileUploaded()
     void ReportFileUploaded(const char* name, const CQuadWord& fileSize, BOOL* lowMem);
 
-    // provede nad listingem zmenu 'change'; vraci uspech (neuspech = nutne zrusit cely listing)
+    // applies the change 'change' to the listing; returns success (failure = the entire listing must be invalidated)
     BOOL CommitChange(CUploadListingChange* change);
 
-    // prida workera 'workerMsg'+'workerUID' do fronty workeru, kteri cekaji na dokonceni
-    // (nebo chybu) listovani teto cesty; vraci FALSE jen pri nedostatku pameti
+    // adds worker 'workerMsg'+'workerUID' to the queue of workers waiting for this path listing
+    // to finish (or fail); returns FALSE only when memory is low
     BOOL AddWaitingWorker(int workerMsg, int workerUID);
 
-    // vsem workerum ze seznamu FirstWaitingWorker: je-li 'uploadFirstWaitingWorker' NULL,
-    // dojde k rozeslani zprav WORKER_TGTPATHLISTINGFINISHED, jinak je 'uploadFirstWaitingWorker'
-    // seznam, kam se maji tyto workeri pridat
-    // POZOR: je-li 'uploadFirstWaitingWorker' NULL, musi se volat v sekci CSocketsThread::CritSect!
+    // to all workers from the FirstWaitingWorker list: if 'uploadFirstWaitingWorker' is NULL,
+    // WORKER_TGTPATHLISTINGFINISHED messages are sent; otherwise 'uploadFirstWaitingWorker'
+    // is the list where these workers should be added
+    // WARNING: if 'uploadFirstWaitingWorker' is NULL, must be called inside CSocketsThread::CritSect!
     void InformWaitingWorkers(CUploadWaitingWorker** uploadFirstWaitingWorker);
 
 private:
-    // prida polozku na konec pole; POZOR: pred hledanim v poli nutne volat SortItems()
+    // adds an item to the end of the array; WARNING: SortItems() must be called before searching the array
     BOOL AddItemDoNotSort(CUploadListingItemType itemType, const char* name, const CQuadWord& byteSize);
 
-    // seradi pole podle CUploadListingItem::Name
+    // sorts the array by CUploadListingItem::Name
     void SortItems();
 
-    // jen pomocna metoda pro ParseListing()
+    // helper method for ParseListing()
     BOOL ParseListingToArray(const char* pathListing, int pathListingLen, const CFTPDate& pathListingDate,
                              CServerType* serverType, BOOL* lowMem, BOOL isVMS);
 
-    // pridani 'ch' do seznamu zmen
+    // adds 'ch' to the list of changes
     void AddChange(CUploadListingChange* ch);
 
-    // vlozi polozku na index 'index'
+    // inserts an item at index 'index'
     BOOL InsertNewItem(int index, CUploadListingItemType itemType, const char* name,
                        const CQuadWord& byteSize);
 };
 
-struct CUploadListingsOnServer // listingy cest na jednom serveru
+struct CUploadListingsOnServer // listings of paths on a single server
 {
 public:
-    // pristup k datum objektu v krit. sekci CUploadListingCache::UploadLstCacheCritSect
-    // POZNAMKA: pred pridanim do CUploadListingCache je pristup bez krit. sekce
+    // access to the object's data in the CUploadListingCache::UploadLstCacheCritSect critical section
+    // NOTE: before adding to CUploadListingCache the access is without a critical section
 
-    char* User;          // user-name, NULL==anonymous
-    char* Host;          // host-address (nesmi byt NULL)
-    unsigned short Port; // port na kterem bezi FTP server
+    char* User;          // user name, NULL == anonymous
+    char* Host;          // host address (must not be NULL)
+    unsigned short Port; // port on which the FTP server runs
 
-    TIndirectArray<CUploadPathListing> Listing; // pole listingu cest na serveru
+    TIndirectArray<CUploadPathListing> Listing; // array of path listings on the server
 
 #ifdef _DEBUG
-    static int FoundPathIndexesInCache; // kolik hledanych cest chytla cache
-    static int FoundPathIndexesTotal;   // kolik bylo celkem hledanych cest
+    static int FoundPathIndexesInCache; // how many requested paths were found in the cache
+    static int FoundPathIndexesTotal;   // total number of searched paths
 #endif
 
 protected:
-#define FOUND_PATH_IND_CACHE_SIZE 5 // musi byt aspon 1
+#define FOUND_PATH_IND_CACHE_SIZE 5 // must be at least 1
     int FoundPathIndexes[FOUND_PATH_IND_CACHE_SIZE];
 
 public:
@@ -3144,85 +3134,85 @@ public:
     ~CUploadListingsOnServer();
     BOOL IsGood() { return Host != NULL; }
 
-    // popis viz CUploadListingCache::AddOrUpdateListing();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::AddOrUpdateListing()
+    // see CUploadListingCache::AddOrUpdateListing();
+    // WARNING: do not call directly, called through CUploadListingCache::AddOrUpdateListing()
     BOOL AddOrUpdateListing(const char* path, CFTPServerPathType pathType,
                             const char* pathListing, int pathListingLen,
                             const CFTPDate& pathListingDate, DWORD listingStartTime,
                             BOOL onlyUpdate, const char* welcomeReply,
                             const char* systReply, const char* suggestedListingServerType);
 
-    // popis viz CUploadListingCache::RemoveNotAccessibleListings();
+    // see CUploadListingCache::RemoveNotAccessibleListings();
     void RemoveNotAccessibleListings();
 
-    // popis viz CUploadListingCache::InvalidatePathListing
+    // see CUploadListingCache::InvalidatePathListing
     void InvalidatePathListing(const char* path, CFTPServerPathType pathType);
 
-    // popis viz CUploadListingCache::IsListingFromPanel
+    // see CUploadListingCache::IsListingFromPanel
     BOOL IsListingFromPanel(const char* path, CFTPServerPathType pathType);
 
-    // prida prazdny listing cesty 'path'+'dirName' typu 'pathType' ve stavu 'listingState';
-    // 'dirName' muze byt i NULL (prida se listing cesty 'path'); 'doNotCheckIfPathIsKnown'
-    // je TRUE, pokud vime, ze cesta neni v poli 'Listings'; vraci ukazatel na novy
-    // listing pri uspechu, jinak vraci NULL
+    // adds an empty listing for path 'path'+'dirName' of type 'pathType' with state 'listingState';
+    // 'dirName' may also be NULL (a listing for the path 'path' is added); 'doNotCheckIfPathIsKnown'
+    // is TRUE if we know the path is not in the 'Listing' array; returns a pointer to the new
+    // listing on success, otherwise returns NULL
     CUploadPathListing* AddEmptyListing(const char* path, const char* dirName,
                                         CFTPServerPathType pathType,
                                         CUploadListingState listingState,
                                         BOOL doNotCheckIfPathIsKnown);
 
-    // najde polozku s CUploadPathListing::Path == 'path'; vraci TRUE pri uspechu a 'index'
-    // je index nalezene polozky; vraci FALSE pri neuspechu
+    // finds an item with CUploadPathListing::Path == 'path'; returns TRUE on success and 'index'
+    // is the index of the found item; returns FALSE on failure
     BOOL FindPath(const char* path, CFTPServerPathType pathType, int& index);
 
-    // popis viz CUploadListingCache::ReportCreateDirs();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportCreateDirs()
+    // see CUploadListingCache::ReportCreateDirs();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportCreateDirs()
     void ReportCreateDirs(const char* workPath, CFTPServerPathType pathType, const char* newDirs,
                           BOOL unknownResult);
 
-    // popis viz CUploadListingCache::ReportRename();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportRename()
+    // see CUploadListingCache::ReportRename();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportRename()
     void ReportRename(const char* workPath, CFTPServerPathType pathType,
                       const char* fromName, const char* newName, BOOL unknownResult);
 
-    // popis viz CUploadListingCache::ReportDelete();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportDelete()
+    // see CUploadListingCache::ReportDelete();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportDelete()
     void ReportDelete(const char* workPath, CFTPServerPathType pathType, const char* name,
                       BOOL unknownResult);
 
-    // popis viz CUploadListingCache::ReportStoreFile();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportStoreFile()
+    // see CUploadListingCache::ReportStoreFile();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportStoreFile()
     void ReportStoreFile(const char* workPath, CFTPServerPathType pathType, const char* name);
 
-    // popis viz CUploadListingCache::ReportFileUploaded();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportFileUploaded()
+    // see CUploadListingCache::ReportFileUploaded();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportFileUploaded()
     void ReportFileUploaded(const char* workPath, CFTPServerPathType pathType, const char* name,
                             const CQuadWord& fileSize, BOOL unknownResult);
 
-    // popis viz CUploadListingCache::ReportUnknownChange();
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ReportUnknownChange()
+    // see CUploadListingCache::ReportUnknownChange();
+    // WARNING: do not call directly, called through CUploadListingCache::ReportUnknownChange()
     void ReportUnknownChange(const char* workPath, CFTPServerPathType pathType);
 
-    // provede zneplatneni listingu na indexu 'index' (napr. po "nezname zmene" v tomto listingu)
+    // invalidates the listing at index 'index' (e.g. after an "unknown change" in this listing)
     void InvalidateListing(int index);
 
-    // popis viz CUploadListingCache::GetListing()
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::GetListing()
+    // see CUploadListingCache::GetListing()
+    // WARNING: do not call directly, called through CUploadListingCache::GetListing()
     BOOL GetListing(const char* path, CFTPServerPathType pathType, int workerMsg,
                     int workerUID, BOOL* listingInProgress, BOOL* notAccessible,
                     BOOL* getListing, const char* name, CUploadListingItem** existingItem,
                     BOOL* nameExists);
 
-    // popis viz CUploadListingCache::ListingFailed()
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ListingFailed()
-    // POZOR: je-li 'uploadFirstWaitingWorker' NULL, musi se volat v sekci CSocketsThread::CritSect!
+    // see CUploadListingCache::ListingFailed()
+    // WARNING: do not call directly, called through CUploadListingCache::ListingFailed()
+    // WARNING: if 'uploadFirstWaitingWorker' is NULL, must be called inside CSocketsThread::CritSect!
     void ListingFailed(const char* path, CFTPServerPathType pathType,
                        BOOL listingIsNotAccessible,
                        CUploadWaitingWorker** uploadFirstWaitingWorker,
                        BOOL* listingOKErrorIgnored);
 
-    // popis viz CUploadListingCache::ListingFinished()
-    // POZOR: nevolat primo, vola se pres CUploadListingCache::ListingFinished()
-    // POZOR: musi se volat v sekci CSocketsThread::CritSect!
+    // see CUploadListingCache::ListingFinished()
+    // WARNING: do not call directly, called through CUploadListingCache::ListingFinished()
+    // WARNING: must be called inside CSocketsThread::CritSect!
     BOOL ListingFinished(const char* path, CFTPServerPathType pathType,
                          const char* pathListing, int pathListingLen,
                          const CFTPDate& pathListingDate, const char* welcomeReply,
@@ -3232,27 +3222,26 @@ public:
 class CUploadListingCache
 {
 protected:
-    CRITICAL_SECTION UploadLstCacheCritSect;                  // kriticka sekce objektu
-    TIndirectArray<CUploadListingsOnServer> ListingsOnServer; // pole serveru, na kterych mame cachovane listingy
+    CRITICAL_SECTION UploadLstCacheCritSect;                  // object critical section
+    TIndirectArray<CUploadListingsOnServer> ListingsOnServer; // array of servers for which we have cached listings
 
 public:
     CUploadListingCache();
     ~CUploadListingCache();
 
-    // pridani nebo update listingu z panelu (pred zahajenim upload operace a po refreshi
-    // v panelu behem upload operace); 'user'+'host'+'port' popisuje server; 'path' je
-    // lokalni cesta na serveru typu 'pathType'; 'pathListing'+'pathListingLen' je text
-    // listingu; 'pathListingDate' je datum porizeni listingu (potrebne pro "year_or_time");
-    // 'listingStartTime' je IncListingCounter() z okamziku poslani prikazu LIST na server
-    // (zahajeni listovani); je-li 'onlyUpdate' TRUE, provede se jedine update listingu,
-    // ktery uz je v cache; 'welcomeReply' (nesmi byt NULL) je prvni odpoved serveru (obsahuje
-    // casto verzi FTP serveru); 'systReply' (nesmi byt NULL) je system serveru (odpoved na
-    // prikaz SYST); 'suggestedListingServerType' je typ serveru pro parsovani listingu:
-    // NULL = autodetekce, jinak jmeno typu serveru (bez prip. uvodni '*', pokud prestane
-    // existovat, prepne se na autodetekci); vraci FALSE pokud listing nelze parsovat nebo
-    // pri nedostatku pameti nebo pri invalidnich parametrech; vraci TRUE pokud byl listing
-    // pridan nebo updatnut nebo nebyl updatnut kvuli 'onlyUpdate'==TRUE nebo proto, ze
-    // update neni potreba (aneb vraci TRUE, pokud je mozne listing cesty v cache pouzivat)
+    // adds or updates a listing from the panel (before starting an upload operation and after a panel refresh
+    // during the upload operation); 'user'+'host'+'port' describes the server; 'path' is the
+    // local path on the server of type 'pathType'; 'pathListing'+'pathListingLen' is the listing text;
+    // 'pathListingDate' is the listing timestamp (needed for "year_or_time");
+    // 'listingStartTime' is IncListingCounter() from the moment the LIST command was sent to the server
+    // (listing started); if 'onlyUpdate' is TRUE, only an update of a listing already in the cache is performed;
+    // 'welcomeReply' (must not be NULL) is the first server reply (often contains the FTP server version);
+    // 'systReply' (must not be NULL) is the server system (reply to the SYST command);
+    // 'suggestedListingServerType' is the server type for parsing the listing:
+    // NULL = autodetect, otherwise the server type name (without the optional leading '*'; if it stops existing,
+    // it switches to autodetect); returns FALSE if the listing cannot be parsed or if memory is low or parameters are invalid;
+    // returns TRUE if the listing was added or updated or was not updated because 'onlyUpdate'==TRUE or because
+    // an update is not needed (i.e. returns TRUE if the cached path listing can be used)
     BOOL AddOrUpdateListing(const char* user, const char* host, unsigned short port,
                             const char* path, CFTPServerPathType pathType,
                             const char* pathListing, int pathListingLen,
@@ -3260,118 +3249,113 @@ public:
                             BOOL onlyUpdate, const char* welcomeReply,
                             const char* systReply, const char* suggestedListingServerType);
 
-    // odstrani z cache listingy ze serveru 'user'+'host'+'port'
+    // removes listings for server 'user'+'host'+'port' from the cache
     void RemoveServer(const char* user, const char* host, unsigned short port);
 
-    // zneplatni listing cesty - pri pristim pokusu o ziskani listingu teto cesty dojde
-    // k listovani cesty na serveru; 'user'+'host'+'port' popisuje server; 'path' je
-    // zneplatnovana cesta typu 'pathType'
+    // invalidates the listing of the path - on the next attempt to obtain the listing, the path will be listed
+    // on the server; 'user'+'host'+'port' describes the server; 'path' is the path of type 'pathType' being invalidated
     void InvalidatePathListing(const char* user, const char* host, unsigned short port,
                                const char* path, CFTPServerPathType pathType);
 
-    // zjisti, jestli je listing cesty prevzaty z panelu (v tom pripade vraci TRUE);
-    // 'user'+'host'+'port' popisuje server; 'path' je hledana cesta typu 'pathType'
+    // determines whether the path listing was taken from the panel (returns TRUE in that case);
+    // 'user'+'host'+'port' describes the server; 'path' is the sought path of type 'pathType'
     BOOL IsListingFromPanel(const char* user, const char* host, unsigned short port,
                             const char* path, CFTPServerPathType pathType);
 
-    // odstrani z cache "neziskatelne" listingy ze serveru 'user'+'host'+'port'
+    // removes "unobtainable" listings for server 'user'+'host'+'port' from the cache
     void RemoveNotAccessibleListings(const char* user, const char* host, unsigned short port);
 
-    // hlaseni zmeny: vytvoreni adresaru (napr. na VMS lze vytvorit vic adresaru najednou);
-    // 'user'+'host'+'port' popisuje server; 'workPath' je pracovni cesta typu 'pathType';
-    // 'newDirs' je parametr prikazu pro vytvoreni adresare (muze byt jeden i vic adresaru
-    // relativne nebo s absolutni cestou); 'unknownResult' je FALSE pokud byly adresare
-    // vytvoreny, TRUE pokud neni znamy vysledek (je treba zneplatnit prislusne listingy)
+    // change notification: creating directories (e.g. on VMS multiple directories can be created at once);
+    // 'user'+'host'+'port' describes the server; 'workPath' is the working path of type 'pathType';
+    // 'newDirs' is the command parameter for creating directories (may be one or more directories
+    // relative or with an absolute path); 'unknownResult' is FALSE if the directories were created,
+    // TRUE if the result is unknown (the relevant listings must be invalidated)
     void ReportCreateDirs(const char* user, const char* host, unsigned short port,
                           const char* workPath, CFTPServerPathType pathType, const char* newDirs,
                           BOOL unknownResult);
 
-    // hlaseni zmeny: prejmenovani (i presun) souboru/adresare;
-    // 'user'+'host'+'port' popisuje server; 'workPath' je pracovni cesta typu 'pathType';
-    // 'fromName' je jmeno (bez cesty) prejmenovavaneho souboru/adresare/linku; 'newName'
-    // je cilove jmeno (zadava user - muze byt relativni nebo vcetne cesty); 'unknownResult'
-    // je FALSE pokud prejmenovani normalne probehlo, TRUE pokud neni znamy vysledek (je
-    // treba zneplatnit prislusne listingy)
+    // change notification: renaming (also moving) a file/directory;
+    // 'user'+'host'+'port' describes the server; 'workPath' is the working path of type 'pathType';
+    // 'fromName' is the name (without path) of the file/directory/link being renamed; 'newName'
+    // is the target name (provided by the user - may be relative or include a path); 'unknownResult'
+    // is FALSE if the rename completed normally, TRUE if the result is unknown (the relevant listings must be invalidated)
     void ReportRename(const char* user, const char* host, unsigned short port,
                       const char* workPath, CFTPServerPathType pathType,
                       const char* fromName, const char* newName, BOOL unknownResult);
 
-    // hlaseni zmeny: smazani souboru/linku/adresare;
-    // 'user'+'host'+'port' popisuje server; 'workPath' je pracovni cesta typu 'pathType';
-    // 'name' je parametr prikazu mazani (jen jmeno bez cesty); 'unknownResult' je FALSE
-    // pokud smazani probehlo uspesne, TRUE pokud neni znamy vysledek (je treba zneplatnit
-    // prislusny listing)
+    // change notification: deleting a file/link/directory;
+    // 'user'+'host'+'port' describes the server; 'workPath' is the working path of type 'pathType';
+    // 'name' is the delete command parameter (just the name without path); 'unknownResult' is FALSE
+    // if the deletion succeeded, TRUE if the result is unknown (the relevant listing must be invalidated)
     void ReportDelete(const char* user, const char* host, unsigned short port,
                       const char* workPath, CFTPServerPathType pathType, const char* name,
                       BOOL unknownResult);
 
-    // hlaseni zmeny: zacatek uploadu souboru (muze byt i prepis/append(resume) souboru/linku) - pokud soubor
-    // nebo link jeste neexistuje, vytvori se soubor se jmenem 'name'; velikost souboru se
-    // nastavi na UPLOADSIZE_NEEDUPDATE; 'user'+'host'+'port' popisuje server; 'workPath' je
-    // pracovni cesta typu 'pathType'; 'name' je jmeno souboru/linku (jen jmeno bez cesty)
+    // change notification: start of uploading a file (may also overwrite/append(resume) a file/link) - if the file
+    // or link does not yet exist, a file with name 'name' is created; the file size is
+    // set to UPLOADSIZE_NEEDUPDATE; 'user'+'host'+'port' describes the server; 'workPath' is
+    // the working path of type 'pathType'; 'name' is the file/link name (just the name without path)
     void ReportStoreFile(const char* user, const char* host, unsigned short port,
                          const char* workPath, CFTPServerPathType pathType, const char* name);
 
-    // hlaseni zmeny: dokonceni uploadu souboru (mohl byt i prepis/append(resume) souboru/linku) - nastavi
-    // uploadlemu souboru velikost (po ReportStoreFile je velikost rovna UPLOADSIZE_NEEDUPDATE);
-    // 'user'+'host'+'port' popisuje server; 'workPath' je pracovni cesta typu 'pathType';
-    // 'name' je jmeno souboru/linku (jen jmeno bez cesty); 'fileSize' je velikost souboru;
-    // 'unknownResult' je FALSE pokud upload probehl uspesne, TRUE pokud neni znamy vysledek
-    // (je treba zneplatnit prislusny listing)
+    // change notification: file upload finished (may also overwrite/append(resume) a file/link) - sets
+    // the uploaded file size (after ReportStoreFile the size equals UPLOADSIZE_NEEDUPDATE);
+    // 'user'+'host'+'port' describes the server; 'workPath' is the working path of type 'pathType';
+    // 'name' is the file/link name (just the name without path); 'fileSize' is the file size;
+    // 'unknownResult' is FALSE if the upload succeeded, TRUE if the result is unknown
+    // (the relevant listing must be invalidated)
     void ReportFileUploaded(const char* user, const char* host, unsigned short port,
                             const char* workPath, CFTPServerPathType pathType, const char* name,
                             const CQuadWord& fileSize, BOOL unknownResult);
 
-    // hlaseni zmeny: neznama zmena (pouziva se po poslani zvoleneho commandu usera na
-    // server), je treba zneplatnit listing pracovni cesty;
-    // 'user'+'host'+'port' popisuje server; 'workPath' je pracovni cesta typu 'pathType'
+    // change notification: unknown change (used after sending a custom command to the server), the working path listing must be invalidated;
+    // 'user'+'host'+'port' describes the server; 'workPath' is the working path of type 'pathType'
     void ReportUnknownChange(const char* user, const char* host, unsigned short port,
                              const char* workPath, CFTPServerPathType pathType);
 
-    // opatreni listingu cesty 'path' (typu 'pathType') na serveru 'user'+'host'+'port'
-    // z cache - pokud v cache jeste neni, prida se, pokud uz se taha, pockame;
-    // pokud cesta neni v cache, prida ji ve stavu ulsInProgress, vrati TRUE v 'getListing'
-    // a TRUE v 'listingInProgress'; pokud je listing cesty "neziskatelny", vrati TRUE
-    // v 'notAccessible' a FALSE v 'listingInProgress'; pokud je cesta v cache
-    // v nekterem ze stavu ulsInProgress*, vrati FALSE v 'getListing', TRUE
-    // v 'listingInProgress' a po dokonceni (nebo pri chybe) stahovani listingu
-    // postne WORKER_TGTPATHLISTINGFINISHED workerovi 'workerMsg'+'workerUID';
-    // pokud je cesta v cache ve stavu ulsReady, vrati FALSE v 'notAccessible',
-    // FALSE v 'listingInProgress', polozku se jmenem 'name' vraci v alokovane
-    // strukture 'existingItem' (NULL pokud polozka tohoto jmena nebyla nalezena)
-    // a TRUE/FALSE v 'nameExists' pokud polozka se jmenem 'name' byla/nebyla
-    // nalezena; vraci FALSE jen pri nedostatku pameti
+    // obtaining the listing of path 'path' (of type 'pathType') on server 'user'+'host'+'port'
+    // from the cache - if it is not yet in the cache, it is added; if it is already being fetched, we wait;
+    // if the path is not in the cache, it is added in the ulsInProgress state, returns TRUE in 'getListing'
+    // and TRUE in 'listingInProgress'; if the path listing is "unobtainable", returns TRUE
+    // in 'notAccessible' and FALSE in 'listingInProgress'; if the path is in the cache
+    // in one of the ulsInProgress* states, returns FALSE in 'getListing', TRUE
+    // in 'listingInProgress', and after the listing download finishes (or fails)
+    // posts WORKER_TGTPATHLISTINGFINISHED to worker 'workerMsg'+'workerUID';
+    // if the path is in the cache in the ulsReady state, returns FALSE in 'notAccessible',
+    // FALSE in 'listingInProgress', returns the item named 'name' in the allocated
+    // structure 'existingItem' (NULL if an item with that name was not found),
+    // and TRUE/FALSE in 'nameExists' depending on whether an item named 'name' was found;
+    // returns FALSE only when memory is low
     BOOL GetListing(const char* user, const char* host, unsigned short port,
                     const char* path, CFTPServerPathType pathType, int workerMsg,
                     int workerUID, BOOL* listingInProgress, BOOL* notAccessible,
                     BOOL* getListing, const char* name, CUploadListingItem** existingItem,
                     BOOL* nameExists);
 
-    // ohlasi cache chybu pri ziskavani listingu cesty 'path' (typu 'pathType') na
-    // serveru 'user'+'host'+'port' z workeru; 'listingIsNotAccessible' je TRUE
-    // pokud je listing "neziskatelny" (dalsi pokusy o ziskani nemaji smysl),
-    // FALSE pokud jde jen o chybu spojeni (dalsi pokusy maji smysl);
-    // je-li 'uploadFirstWaitingWorker' NULL, dojde k rozeslani zprav
-    // WORKER_TGTPATHLISTINGFINISHED, jinak je 'uploadFirstWaitingWorker' seznam,
-    // kam se maji pridat workeri, kterym se ma poslat WORKER_TGTPATHLISTINGFINISHED;
-    // v 'listingOKErrorIgnored' (neni-li NULL) se vraci TRUE pokud byl listing
-    // ziskan jinym zpusobem a tato chyba se tedy muze ignorovat
-    // POZOR: je-li 'uploadFirstWaitingWorker' NULL, musi se volat v sekci CSocketsThread::CritSect!
+    // reports to the cache an error while obtaining the listing of path 'path' (of type 'pathType') on
+    // server 'user'+'host'+'port' from a worker; 'listingIsNotAccessible' is TRUE
+    // if the listing is "unobtainable" (further attempts make no sense),
+    // FALSE if it is just a connection error (further attempts make sense);
+    // if 'uploadFirstWaitingWorker' is NULL, WORKER_TGTPATHLISTINGFINISHED messages are sent,
+    // otherwise 'uploadFirstWaitingWorker' is the list where workers that should receive WORKER_TGTPATHLISTINGFINISHED are added;
+    // 'listingOKErrorIgnored' (if not NULL) returns TRUE if the listing
+    // was obtained in another way and this error can therefore be ignored
+    // WARNING: if 'uploadFirstWaitingWorker' is NULL, must be called inside CSocketsThread::CritSect!
     void ListingFailed(const char* user, const char* host, unsigned short port,
                        const char* path, CFTPServerPathType pathType,
                        BOOL listingIsNotAccessible,
                        CUploadWaitingWorker** uploadFirstWaitingWorker,
                        BOOL* listingOKErrorIgnored);
 
-    // ohlasi cache dokonceni listovani cesty 'path' (typu 'pathType') na serveru
-    // 'user'+'host'+'port' z workeru; 'pathListing'+'pathListingLen' je text
-    // listingu; 'pathListingDate' je datum porizeni listingu (potrebne pro "year_or_time");
-    // 'welcomeReply' (nesmi byt NULL) je prvni odpoved serveru (obsahuje casto verzi
-    // FTP serveru); 'systReply' (nesmi byt NULL) je system serveru (odpoved na
-    // prikaz SYST); 'suggestedListingServerType' je typ serveru pro parsovani listingu:
-    // NULL = autodetekce, jinak jmeno typu serveru (bez prip. uvodni '*', pokud prestane
-    // existovat, prepne se na autodetekci); vraci FALSE jen pri nedostatku pameti
-    // POZOR: musi se volat v sekci CSocketsThread::CritSect!
+    // reports to the cache that listing of path 'path' (of type 'pathType') on server
+    // 'user'+'host'+'port' finished in the worker; 'pathListing'+'pathListingLen' is the listing text;
+    // 'pathListingDate' is the listing timestamp (needed for "year_or_time");
+    // 'welcomeReply' (must not be NULL) is the first server reply (often contains the FTP server version);
+    // 'systReply' (must not be NULL) is the server system (reply to the SYST command);
+    // 'suggestedListingServerType' is the server type for parsing the listing:
+    // NULL = autodetect, otherwise the server type name (without the optional leading '*'; if it stops existing,
+    // it switches to autodetect); returns FALSE only when memory is low
+    // WARNING: must be called inside CSocketsThread::CritSect!
     BOOL ListingFinished(const char* user, const char* host, unsigned short port,
                          const char* path, CFTPServerPathType pathType,
                          const char* pathListing, int pathListingLen,
@@ -3379,9 +3363,9 @@ public:
                          const char* systReply, const char* suggestedListingServerType);
 
 protected:
-    // volat jen z krit. sekce UploadLstCacheCritSect; vraci server z ListingsOnServer
-    // nebo NULL pokud server nebyl nalezen; neni-li 'index' NULL, vraci se v nem index
-    // nalezeneho serveru (nenalezen - vraci -1)
+    // call only from the UploadLstCacheCritSect critical section; returns the server from ListingsOnServer
+    // or NULL if the server was not found; if 'index' is not NULL, the index
+    // of the found server is returned (not found - returns -1)
     CUploadListingsOnServer* FindServer(const char* user, const char* host,
                                         unsigned short port, int* index);
 };
@@ -3390,85 +3374,84 @@ protected:
 // ****************************************************************************
 // CFTPOpenedFiles
 //
-// protoze FTP servery neresi, jestli uz je soubor otevreny nebo ne (je mozne provadet
-// upload/download/delete jedineho souboru z libovolneho poctu spojeni najednou - vysledek
-// je pak dost zavisly na tom, jak je server implementovany), kontrolujeme aspon to,
-// jestli v ramci teto instance Salamandera jiz soubor neni otevreny (uzamknuty jinou
-// operaci)
+// because FTP servers do not care whether a file is already open (it is possible to
+// upload/download/delete a single file from any number of connections at the same time—the result
+// then depends heavily on the server implementation), we at least check whether the file is already
+// open (locked by another operation) within this Salamander instance
 
 enum CFTPFileAccessType
 {
-    ffatRead,   // pri downloadu
-    ffatWrite,  // pri uploadu (muze dojit i k mazani souboru pred prepisem nebo po chybnem ulozeni)
-    ffatDelete, // pri mazani
-    ffatRename, // pri prejmenovani (na stare i nove jmeno)
+    ffatRead,   // during download
+    ffatWrite,  // during upload (the file may also be deleted before overwriting or after a failed save)
+    ffatDelete, // during deletion
+    ffatRename, // during renaming (for both the old and new name)
 };
 
 class CFTPOpenedFile
 {
 protected:
-    int UID; // UID tohoto otevreneho souboru
+    int UID; // UID of this opened file
 
-    CFTPFileAccessType AccessType; // z jakeho duvodu je soubor otevren (uzamknut)
+    CFTPFileAccessType AccessType; // why the file is open (locked)
 
     char User[USER_MAX_SIZE];    // user-name
     char Host[HOST_MAX_SIZE];    // host-address
-    unsigned short Port;         // port na kterem bezi FTP server
-    char Path[FTP_MAX_PATH];     // cesta k otevrenemu souboru (lokalni na serveru)
-    CFTPServerPathType PathType; // typ cachovane cesty
-    char Name[MAX_PATH];         // jmeno otevreneho souboru
+    unsigned short Port;         // port on which the FTP server runs
+    char Path[FTP_MAX_PATH];     // path to the opened file (local on the server)
+    CFTPServerPathType PathType; // type of the cached path
+    char Name[MAX_PATH];         // name of the opened file
 
 public:
     CFTPOpenedFile(int myUID, const char* user, const char* host, unsigned short port,
                    const char* path, CFTPServerPathType pathType, const char* name,
                    CFTPFileAccessType accessType);
 
-    // nastaveni dat do objektu
+    // sets data into the object
     void Set(int myUID, const char* user, const char* host, unsigned short port,
              const char* path, CFTPServerPathType pathType, const char* name,
              CFTPFileAccessType accessType);
 
-    // porovna tento otevreny soubor a soubor dany parametry metody; vraci TRUE pokud
-    // jde o stejny soubor
+    // compares this opened file with the file specified by the method parameters; returns TRUE if
+    // it is the same file
     BOOL IsSameFile(const char* user, const char* host, unsigned short port,
                     const char* path, CFTPServerPathType pathType, const char* name);
 
     BOOL IsUID(int uid) { return uid == UID; }
 
-    // vraci TRUE pokud neni mozne otevrit tento soubor s pristupem 'accessType'
-    // (zjistuje podle aktualniho pristupu 'AccessType'); vraci FALSE, pokud
-    // je dalsi otevreni tohoto souboru mozne (napr. druhy download)
+    // returns TRUE if it is not possible to open this file with access 'accessType'
+    // (determined by the current 'AccessType'); returns FALSE if
+    // another opening of this file is possible (e.g. a second download)
     BOOL IsInConflictWith(CFTPFileAccessType accessType);
 };
 
 class CFTPOpenedFiles
 {
 protected:
-    CRITICAL_SECTION FTPOpenedFilesCritSect; // kriticka sekce objektu
+    CRITICAL_SECTION FTPOpenedFilesCritSect; // object critical section
 
-    TIndirectArray<CFTPOpenedFile> OpenedFiles;      // vsechny prave ted otevrene soubory
-    TIndirectArray<CFTPOpenedFile> AllocatedObjects; // jen sklad alokovanych nevyuzitych objektu CFTPOpenedFile (jen optimalizace, aby se porad nealokovalo a nedealokovalo)
-    int NextOpenedFileUID;                           // UID pro dalsi otevirany soubor
+    TIndirectArray<CFTPOpenedFile> OpenedFiles;      // all files currently opened
+    TIndirectArray<CFTPOpenedFile> AllocatedObjects; // storage of allocated unused CFTPOpenedFile objects (optimization to avoid constant allocation/deallocation)
+    int NextOpenedFileUID;                           // UID for the next file to open
 
 public:
     CFTPOpenedFiles();
     ~CFTPOpenedFiles();
 
-    // zkontroluje jestli je soubor mozne otevrit s pristupem 'accessType', pokud ano:
-    // prida ho mezi otevrene soubory a vrati TRUE a 'newUID' pridaneho souboru, jinak
-    // (i pri nedostatku pameti): vrati FALSE
+    // checks whether the file can be opened with access 'accessType'; if so,
+    // adds it among the opened files, returns TRUE, and stores the new file UID in 'newUID'; otherwise
+    // (even when memory is low) returns FALSE
     BOOL OpenFile(const char* user, const char* host, unsigned short port,
                   const char* path, CFTPServerPathType pathType, const char* name,
                   int* newUID, CFTPFileAccessType accessType);
 
-    // zavre otevreny soubor s UID 'UID'
+    // closes the opened file with UID 'UID'
     void CloseFile(int UID);
 };
 
 //
 // ****************************************************************************
 
-// vytvori polozku pro Delete operaci pro soubor/adresar 'f'
+// creates an item for the Delete operation for file/directory 'f'
 CFTPQueueItem* CreateItemForDeleteOperation(const CFileData* f, BOOL isDir, int rightsCol,
                                             CFTPListingPluginDataInterface* dataIface,
                                             CFTPQueueItemType* type, BOOL* ok, BOOL isTopLevelDir,
@@ -3476,7 +3459,7 @@ CFTPQueueItem* CreateItemForDeleteOperation(const CFileData* f, BOOL isDir, int 
                                             CFTPQueueItemState* state, DWORD* problemID,
                                             int* skippedItems, int* uiNeededItems);
 
-// vytvori polozku pro Copy nebo Move operaci pro soubor/adresar 'f'
+// creates an item for the Copy or Move operation for file/directory 'f'
 CFTPQueueItem* CreateItemForCopyOrMoveOperation(const CFileData* f, BOOL isDir, int rightsCol,
                                                 CFTPListingPluginDataInterface* dataIface,
                                                 CFTPQueueItemType* type, int transferMode,
@@ -3484,7 +3467,7 @@ CFTPQueueItem* CreateItemForCopyOrMoveOperation(const CFileData* f, BOOL isDir, 
                                                 const char* targetName, CQuadWord* size,
                                                 BOOL* sizeInBytes, CQuadWord* totalSize);
 
-// vytvori polozku pro operaci Change Attributes pro soubor/adresar 'f'
+// creates an item for the Change Attributes operation for file/directory 'f'
 CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir, int rightsCol,
                                                  CFTPListingPluginDataInterface* dataIface,
                                                  CFTPQueueItemType* type, BOOL* ok,
@@ -3495,7 +3478,7 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
                                                  DWORD attrAndMask, DWORD attrOrMask,
                                                  int operationsUnknownAttrs);
 
-// vytvori polozku pro Copy nebo Move z disku na FS pro soubor/adresar 'name'
+// creates an item for Copy or Move from disk to the file system for file/directory 'name'
 CFTPQueueItem* CreateItemForCopyOrMoveUploadOperation(const char* name, BOOL isDir, const CQuadWord* size,
                                                       CFTPQueueItemType* type, int transferMode,
                                                       CFTPOperation* oper, BOOL copy, const char* targetPath,
@@ -3505,19 +3488,19 @@ CFTPQueueItem* CreateItemForCopyOrMoveUploadOperation(const char* name, BOOL isD
 //
 // ****************************************************************************
 
-extern HANDLE WorkerMayBeClosedEvent;             // generuje pulz v okamziku zavreni socketu workera
-extern int WorkerMayBeClosedState;                // navysuje se s kazdym zavrenim socketu workera
-extern CRITICAL_SECTION WorkerMayBeClosedStateCS; // kriticka sekce pro pristup k WorkerMayBeClosedState
+extern HANDLE WorkerMayBeClosedEvent;             // generates a pulse when a worker's socket closes
+extern int WorkerMayBeClosedState;                // incremented with each worker socket closure
+extern CRITICAL_SECTION WorkerMayBeClosedStateCS; // critical section protecting access to WorkerMayBeClosedState
 
-extern CFTPOperationsList FTPOperationsList; // vsechny operace na FTP
-extern CUIDArray CanceledOperations;         // pole UID operaci, ktere se maji zrusit (po prijeti prikazu FTPCMD_CANCELOPERATION)
+extern CFTPOperationsList FTPOperationsList; // all FTP operations
+extern CUIDArray CanceledOperations;         // array of operation UIDs scheduled for cancellation (after receiving the FTPCMD_CANCELOPERATION command)
 
-extern CReturningConnections ReturningConnections; // pole s vracenymi spojenimi (z workeru do panelu)
+extern CReturningConnections ReturningConnections; // array with connections returned from workers to the panel
 
-extern CFTPDiskThread* FTPDiskThread; // thread zajistujici diskove operace (duvod: neblokujici volani)
+extern CFTPDiskThread* FTPDiskThread; // thread providing disk operations (reason: non-blocking calls)
 
-extern CUploadListingCache UploadListingCache; // cache listingu cest na serverech - pouziva se pri uploadu pro zjistovani, jestli cilovy soubor/adresar jiz existuje
+extern CUploadListingCache UploadListingCache; // cache of path listings on servers - used during upload to detect whether the target file/directory already exists
 
-extern CFTPOpenedFiles FTPOpenedFiles; // seznam souboru prave ted otevrenych z tohoto Salamandera na FTP serverech
+extern CFTPOpenedFiles FTPOpenedFiles; // list of files currently opened from this Salamander on FTP servers
 
 #pragma pack(pop, enter_include_operats_h_dt)

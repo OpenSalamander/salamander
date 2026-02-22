@@ -194,7 +194,7 @@ int CZipUnpack::UnpackOneFile(const char* nameInZip, const CFileData* fileData, 
                     free(SlideWindow);
                 ErrorID = IDS_LOWMEM;
             }
-            //free(fileInfo.Name); uvolni ho destructor
+            //free(fileInfo.Name); the destructor releases it
         }
     }
     return ErrorID;
@@ -444,7 +444,7 @@ int CZipUnpack::MatchFilesToMask(TIndirectArray2<char>& maskArray)
         hasExtension = false;
         while (sour >= tempName && *sour != '\\')
             if (*sour-- == '.')
-                hasExtension = true; // ".cvspass" ve Windows je pripona
+                hasExtension = true; // ".cvspass" is treated as an extension in Windows
         sour++;
         for (j = 0; j < maskArray.Count; j++)
         {
@@ -512,7 +512,7 @@ void Refill(CDecompressionObject* decompress)
             SalamanderCrypt->AESDecrypt(&CZIPUNPACK(decompress)->AESContext, CZIPUNPACK(decompress)->InputBuffer, s);
             if (CZIPUNPACK(decompress)->BytesLeft == 0)
             {
-                // posledni porce, overime authentication code
+                // final chunk, verify the authentication code
                 unsigned char mac[AES_MAXHMAC];
                 unsigned char macFile[AES_MAXHMAC];
                 int mode = CZIPUNPACK(decompress)->AESContext.mode;
@@ -742,7 +742,7 @@ int CZipUnpack::UnStoreFile(CFileInfo* fileInfo, int* errorID)
                     SalamanderCrypt->AESDecrypt(&AESContext, InputBuffer, readBytes);
                     if (bytesLeft == 0)
                     {
-                        // posledni porce, overime authentication code
+                        // final chunk, verify the authentication code
                         unsigned char mac[AES_MAXHMAC];
                         unsigned char macFile[AES_MAXHMAC];
                         int mode = AESContext.mode;
@@ -1179,7 +1179,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
           ", isdir: " << fileInfo->IsDir <<
           ", file attr:" << fileInfo->FileAttr);
 */
-    AESContextValid = FALSE; // inicializace
+    AESContextValid = FALSE; // initialization
     if (success)
         *success = FALSE;
     localHeader = (CLocalFileHeader*)malloc(MAX_HEADER_SIZE);
@@ -1333,7 +1333,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                         SafeRead(&pwdVerFile, sizeof(pwdVerFile), NULL);
                                     if (!errorID)
                                     {
-                                        // zkusime hesla v cache
+                                        // try the cached passwords
                                         int i;
                                         for (i = 0; i < Passwords.Count; i++)
                                         {
@@ -1357,7 +1357,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                                 }
                                             }
                                         }
-                                        if (!AESContextValid /*i >= Passwords.Count*/) // heslo jsme nenasli v cache
+                                        if (!AESContextValid /*i >= Passwords.Count*/) // the password was not found in the cache
                                             do
                                             {
                                                 repeat = false;
@@ -1590,8 +1590,8 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                 {
                                 case DEC_NOERROR:
                                 {
-                                    // nekdy jsou v local-headeru ulozena jina data, nez v
-                                    // central-headeru porovname tedy crc s obema
+                                    // sometimes the local header stores different data than the
+                                    // central header, so compare the CRC with both
                                     if (bCheckCRC && ((Crc != fileInfo->Crc) &&
                                                       ((fileInfo->Flag & GPF_DATADESCR) || Crc != localHeader->Crc)))
                                     {
@@ -1920,28 +1920,28 @@ int CZipUnpack::SafeCreateCFile(CFile** file, const char* fileName, const char* 
                 {
                     if (q == CQuadWord(0, 0x80000000))
                     {
-                        // allokace se nepovedla a uz se o to snazit nebudem
+                        // allocation failed and we will not attempt it again
                         AllocateWholeFile = false;
                         TestAllocateWholeFile = false;
                     }
                     else if (q == CQuadWord(0, 0x00000000))
                     {
-                        // allokace se nepovedla, ale priste to zkusime znova
+                        // allocation failed, but we will try again next time
                     }
                     else
                     {
-                        // allokace se povedla
+                        // allocation succeeded
                         TestAllocateWholeFile = false;
                     }
                 }
 
-                // // abychom nefragmentovali disk, nastavime predem souboru cilovou velikost
+                // // to avoid fragmenting the disk, preallocate the target file size
                 // LONG distHi = HIDWORD(size);
                 // if (SetFilePointer((*file)->File, LODWORD(size), &distHi, FILE_BEGIN) != 0xFFFFFFFF &&
                 //     GetLastError() == NO_ERROR)
                 // {
                 //   SetEndOfFile((*file)->File);
-                //   // vratime ukazatel zpatky na zacatek
+                //   // move the file pointer back to the beginning
                 //   if (SetFilePointer((*file)->File, 0, NULL, FILE_BEGIN) == 0xFFFFFFFF &&
                 //       GetLastError() != NO_ERROR)
                 //   {
@@ -2000,9 +2000,9 @@ LABEL_QuickSortHeaders2:
             i++;
             j--;
         }
-    } while (i <= j); //musej bejt shodny?
+    } while (i <= j); // should they be the same?
 
-    // nasledujici "hezky" kod jsme nahradili kodem podstatne setricim stack (max. log(N) zanoreni rekurze)
+    // the following "nice" code was replaced with a stack-saving variant (maximum log(N) recursion depth)
     //  if (left < j) QuickSortHeaders2(left, j, headers);
     //  if (i < right) QuickSortHeaders2(i, right, headers);
 
@@ -2010,7 +2010,7 @@ LABEL_QuickSortHeaders2:
     {
         if (i < right)
         {
-            if (j - left < right - i) // je potreba seradit obe "poloviny", tedy do rekurze posleme tu mensi, tu druhou zpracujeme pres "goto"
+            if (j - left < right - i) // both "halves" need sorting; recurse into the smaller one and handle the other via goto
             {
                 QuickSortHeaders2(left, j, headers);
                 left = i;

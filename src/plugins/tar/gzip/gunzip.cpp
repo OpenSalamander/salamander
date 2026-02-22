@@ -187,14 +187,14 @@ void MemCopy(unsigned char* dest, const unsigned char* src, int num)
 
     if (src - dest >= (signed int)sizeof(long)) // NOTE: must remain as signed comparison
     {
-        c = num / sizeof(long); // kolik intU muzem prenest ?
+        c = num / sizeof(long); // how many whole words can we copy?
         while (c--)
         {
             *((unsigned long*)dest) = *((const unsigned long*)src);
             dest += sizeof(long);
             src += sizeof(long);
         }
-        num = (num & (sizeof(long) - 1)); // kolik dela zbytek (jiz nutny presun po BYTU)
+        num = (num & (sizeof(long) - 1)); // how many bytes remain (copy byte-by-byte)
     }
     while (num--)
         *dest++ = *src++;
@@ -940,18 +940,18 @@ BOOL CGZip::InflateBlock()
         FixedDistanceTable = NULL;
         InProgress = FALSE;
 
-        // nasli jsme posledni blok gzip archivu
+        // we found the last block of the gzip archive
         if (LastBlock)
         {
-            // zkontrolujeme CRC
+            // verify the CRC
             Cleanup();
 
-            // mame dost dat?
+            // do we have enough data?
             if (DataEnd - DataStart < sizeof(SGZipHeader))
             {
-                // nacteme dalsi
+                // read more input
                 FReadBlock(sizeof(SGZipHeader));
-                // ale od-oznacime je jako prectene, oznacene budou v Initialize metode
+                // but mark it as unread; Initialize() will mark it as consumed
                 DataStart -= sizeof(SGZipHeader);
                 StreamPos -= CQuadWord(sizeof(SGZipHeader), 0);
             }
@@ -996,47 +996,47 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
     // clear CRC
     crc = 0xffffffffL;
 
-    // nemuze to byt gzip, pokud mame min nez hlavicku...
+    // this cannot be a gzip stream if we have less than one header...
     if (DataEnd - DataStart < sizeof(SGZipHeader))
         return FALSE;
 
-    // pokud neni "magicke cislo" na zacatku, nejde o gzip
+    // if the "magic number" is not at the start, it is not a gzip stream
     SGZipHeader* header = (SGZipHeader*)DataStart;
     if (header->Magic != GZIP_MAGIC &&
         header->Magic != OLD_GZIP_MAGIC)
         return FALSE;
 
-    // mame gzip, potvrdime precteny header
+    // we have a gzip stream; confirm the header we just read
     FReadBlock(sizeof(SGZipHeader));
 
-    // ted zjistujeme vlstnosti archivu
+    // now determine the archive properties
     if (header->Method != METHOD_DEFLATE)
     {
         // supported are only deflated archives
         errorCode = IDS_GZERR_BADMETHOD;
         return FALSE;
     }
-    // flagy si zapamatujeme, abychom mohli dal cist ze vstupu (sdilime buffer)
+    // remember the flags so we can keep reading from the shared input buffer
     unsigned char flags = header->Flags;
     if ((flags & ENCRYPTED) != 0)
     {
-        // encryptene archivy neumime
+        // encrypted archives are not supported
         errorCode = IDS_GZERR_ENCRYPTED;
         return FALSE;
     }
     if ((flags & CONTINUATION) != 0)
     {
-        // multipart archivy neumime
+        // multi-part archives are not supported
         errorCode = IDS_GZERR_MULTIPART;
         return FALSE;
     }
     if ((flags & RESERVED) != 0)
     {
-        // divny flagy - ruce pryc...
+        // unknown flags detected—abort processing
         errorCode = IDS_GZERR_BADFLAGS;
         return FALSE;
     }
-    // pokud je pritomen continuation header, musime ho preskocit
+    // if a continuation header is present, skip it
     if ((flags & CONTINUATION) != 0)
     {
         // Multi-part input !!!!
@@ -1047,18 +1047,18 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
             return FALSE;
         }
     }
-    // pokud je pritomen extra header, musime ho preskocit
+    // if an extra header is present, skip it
     if ((flags & EXTRA_FIELD) != 0)
     {
-        // nacteme zacatek extra headeru
+        // read the start of the extra header
         SGzipExtraHeader* exHeader = (SGzipExtraHeader*)FReadBlock(sizeof(SGzipExtraHeader));
         if (exHeader == NULL)
         {
             errorCode = ErrorCode;
             return FALSE;
         }
-        // a preskocime zbytek
-        unsigned short skip = exHeader->FieldLen; // muze byt vetsi nez BUFSIZE, v tom pripade preskakujeme postupne po BUFSIZE
+        // and skip the remainder
+        unsigned short skip = exHeader->FieldLen; // may exceed BUFSIZE; skip it in BUFSIZE-sized chunks when needed
         while (skip > 0)
         {
             const unsigned char* tmp = FReadBlock(skip > BUFSIZE ? BUFSIZE : skip);
@@ -1070,7 +1070,7 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
             skip -= skip > BUFSIZE ? BUFSIZE : skip;
         }
     }
-    // nacteme puvodni jmeno, pokud je pritomno
+    // read the original file name when present
     if ((flags & ORIG_NAME) != 0)
     {
         char buffer[MAX_PATH], *tmp;
@@ -1090,7 +1090,7 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
             }
         }
         *tmp = '\0';
-        // prectem zbytek nazvu, kterej je na nas moc dlouhej
+        // read the remainder of an overly long name
         while (Ok && src != '\0')
             src = FReadByte();
         if (!Ok)
@@ -1100,7 +1100,7 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
         }
         SetOldName(buffer);
     }
-    // preskocime komentar, pokud je pritomen
+    // skip the comment when present
     if ((flags & COMMENT) != 0)
     {
         unsigned char src;
@@ -1112,7 +1112,7 @@ BOOL CGZip::Initialize(unsigned int& errorCode)
             return FALSE;
         }
     }
-    // hotovo
+    // done
     return TRUE;
 }
 
@@ -1193,13 +1193,14 @@ void CGZip::GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAtt
 {
     CALL_STACK_MESSAGE1("CGZip::GetFileInfo(,,)");
 
-    // Neexistuje spolehliva cesta jak zjistit velikost rozbalenych dat,
-    // informace na konci souboru byt nemusi, pokud se jedna o vice-souborovy
-    // gzip, pak bychom museli rozbalit cely archiv abychom nasli vsechny
-    // slozky. Navic ulozena velikost je jen modulo 2^32. Proste velikost neni...
+    // There is no reliable way to determine the size of the unpacked data;
+    // the information at the end of the file may be missing for multi-member
+    // gzip archives, in which case we would need to unpack the entire archive
+    // to discover every part. Additionally, the stored size is only modulo
+    // 2^32. In short, the size is unavailable...
     fileSize.Set(0, 0);
 
-    // zjistime zbytek
+    // retrieve the remaining metadata
     BY_HANDLE_FILE_INFORMATION fileinfo;
     if (GetFileInformationByHandle(File, &fileinfo))
     {
@@ -1218,9 +1219,9 @@ BOOL CGZip::CompactBuffer()
 {
     CALL_STACK_MESSAGE1("CGZip::CompactBuffer()");
 
-    // musime soupnout datama tak, abychom meli dost mista
-    // ale nesmime premazat ani ta stara - deflate z gzipu je muze pouzit
-    // nejjednodussi je realokaci uplne jinam :-)
+    // We must shift the data so we have enough free space,
+    // but we cannot overwrite the old bytes—gzip's deflate may still use
+    // them. The simplest solution is to reallocate the buffer elsewhere :-)
     unsigned char* tmp = (unsigned char*)malloc(BUFSIZE);
     if (tmp == NULL)
     {
@@ -1231,16 +1232,16 @@ BOOL CGZip::CompactBuffer()
     unsigned int diff = (unsigned int)(ExtrStart - Window);
     memcpy(tmp, ExtrStart, BUFSIZE - diff);
     memcpy(tmp + (BUFSIZE - diff), Window, diff);
-    // pokud je dekomprese uprostred bloku, updatneme pointery
+    // if decompression is in the middle of a block, update the pointers
     if (CopyInProgress)
     {
         if (CopyDistance < diff)
             CopyDistance += BUFSIZE;
         CopyDistance -= diff;
     }
-    // pust stary buffer
+    // release the old buffer
     free(Window);
-    // a pouzij novy
+    // and use the new one
     ExtrEnd = tmp + (ExtrEnd - ExtrStart);
     ExtrStart = tmp;
     Window = tmp;
@@ -1250,7 +1251,7 @@ BOOL CGZip::CompactBuffer()
 BOOL CGZip::DecompressBlock(unsigned short needed)
 {
     unsigned char* begin = ExtrEnd;
-    // doplnime buffer az do konce...
+    // fill the output buffer up to its capacity...
     while ((InProgress || !LastBlock) && ExtrEnd < Window + BUFSIZE)
     {
         if (!InflateBlock())

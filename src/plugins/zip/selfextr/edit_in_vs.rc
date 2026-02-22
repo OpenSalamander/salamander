@@ -65,7 +65,7 @@ SE_IDI_ICON             ICON                    "icon.ico"
 
 
 
-// sem vlozit jadro main.rc: zacit za radkou "#include "..\..\comdefs.h"" a vzit to do konce souboru
+// insert the core of main.rc here: start after the line "#include "..\..\comdefs.h"" and copy it to the end of the file
 
 
 

@@ -39,8 +39,6 @@ inline bool operator!=(REFGUID g1, REFGUID g2) { return !(g1 == g2); }
 #define MY_EXTERN_C extern
 #endif
 
-#endif // GUID_DEFINED
-
 #ifdef DEFINE_GUID
 #undef DEFINE_GUID
 #endif
@@ -51,3 +49,4 @@ inline bool operator!=(REFGUID g1, REFGUID g2) { return !(g1 == g2); }
 #else
 #define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     MY_EXTERN_C const GUID name
+#endif

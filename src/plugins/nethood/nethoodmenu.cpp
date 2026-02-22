@@ -21,7 +21,7 @@
 #include "nethood.rh2"
 #include "lang\lang.rh"
 
-/// Cache of network.
+/// Global network cache instance.
 extern CNethoodCache g_oNethoodCache;
 
 DWORD WINAPI
@@ -56,11 +56,11 @@ CNethoodPluginInterfaceForMenuExt::ExecuteMenuItem(
         iPanel = id - MENUCMD_REDIRECT_BASE + PANEL_LEFT;
         assert(iPanel == PANEL_LEFT || iPanel == PANEL_RIGHT);
 
-        // Paranoic test (should be always true).
+        // Paranoid safety check (should always be true).
         if (SalamanderGeneral->GetPanelPluginFS(iPanel) != NULL)
         {
-            // Remove current path from directories history
-            // and List of Working Directories (Alt+F12).
+            // Remove the current path from the directory history
+            // and from the List of Working Directories (Alt+F12).
             SalamanderGeneral->RemoveCurrentPathFromHistory(iPanel);
         }
 

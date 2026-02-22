@@ -30,23 +30,23 @@ int ConvertU2A(const WCHAR* src, int srcLen, char* buf, int bufSize, BOOL compos
     int res = WideCharToMultiByte(codepage, compositeCheck ? WC_COMPOSITECHECK : 0, src, srcLen, buf, bufSize, NULL, NULL);
     if (srcLen != -1 && res > 0)
         res++;
-    if (compositeCheck && res == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) // nektere codepage nepodporuji WC_COMPOSITECHECK
+    if (compositeCheck && res == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) // some code pages do not support WC_COMPOSITECHECK
     {
         res = WideCharToMultiByte(codepage, 0, src, srcLen, buf, bufSize, NULL, NULL);
         if (srcLen != -1 && res > 0)
             res++;
     }
     if (res > 0 && res <= bufSize)
-        buf[res - 1] = 0; // uspech, zakoncime string nulou
+        buf[res - 1] = 0; // success, terminate the string with zero
     else
     {
         if (res > bufSize || res == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
         {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
-            buf[bufSize - 1] = 0; // maly buffer, vratime chybu, ale castecne prelozeny string nechame v bufferu
+            buf[bufSize - 1] = 0; // buffer too small: return an error but keep the partially converted string in the buffer
         }
         else
-            buf[0] = 0; // jina chyba, zajistime prazdny buffer
+            buf[0] = 0; // other error: ensure the buffer is empty
         res = 0;
     }
     return res;
@@ -54,7 +54,7 @@ int ConvertU2A(const WCHAR* src, int srcLen, char* buf, int bufSize, BOOL compos
 
 //***********************************************************
 //
-// PATH rutiny od Lukase z SFX
+// PATH routines by Lukas from SFX
 //
 
 LPTSTR PathAddBackslash(LPTSTR pszPath)
@@ -225,7 +225,7 @@ BOOL PathMerge(char* fullPath, const char* relativePath)
                     dest = StrRChr(fullPath, dest - 1, '\\') + 1;
                 sour += 2;
                 if (*sour)
-                    sour++; //preskocime jeste lomitko nejsme-li  na konci
+                    sour++; // skip the slash too if we are not at the end
                 continue;
             }
             if (sour[1] == '\\')
@@ -343,7 +343,7 @@ BOOL GetFileCRC(const char* fileName, DWORD* crc)
         OutWindow.AddLine(outputBuff, mteError);
         return FALSE;
     }
-    data[size] = 0; // vlozime terminator
+    data[size] = 0; // insert the terminator
 
     *crc = UpdateCrc32(data, size, 0);
 
@@ -372,7 +372,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
         if (strcmp(line, "[Settings]") == 0)
             *section = pseSettings;
         if (strcmp(line, "[Progress]") == 0)
-            *section = pseDummy; // tuto sekci ignorujeme
+            *section = pseDummy; // ignore this section
         if (strcmp(line, "[DialogsTranslation]") == 0)
             *section = pseDialogsTranslation;
         if (strcmp(line, "[MenusTranslation]") == 0)
@@ -392,7 +392,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
         return TRUE;
     }
 
-    // vyhledame znak '='
+    // find the '=' character
     const char* p = line;
     while (*p != '=' && *p != 0)
         p++;
@@ -541,7 +541,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
 
     if (*section == pseDummy)
     {
-        // sekci ignorujeme
+        // ignore the section
         return TRUE;
     }
 
@@ -640,7 +640,7 @@ BOOL CData::LoadProject(const char* fileName)
         HANDLES(CloseHandle(hFile));
         return FALSE;
     }
-    data[size] = 0; // vlozime terminator
+    data[size] = 0; // insert the terminator
 
     char* lineStart = data;
     DWORD count = 0;
@@ -671,7 +671,7 @@ BOOL CData::LoadProject(const char* fileName)
         {
             if (!ProcessProjectLine(&section, lineStart, line))
             {
-                // chyba byla zobrazena uvnitr
+                // the error was shown inside
                 free(data);
                 HANDLES(CloseHandle(hFile));
                 return FALSE;
@@ -1045,7 +1045,7 @@ BOOL CData::AddTranslationState(CTranslationTypeEnum type, WORD id1, WORD id2, W
     return TRUE;
 }
 
-// odhadneme, zda uz je text prelozeny
+// estimate whether the text is already translated
 WORD GuessTranslationState(const wchar_t* oStr, const wchar_t* tStr)
 {
     return IsTranslatableControl(tStr) &&
@@ -1064,7 +1064,7 @@ BOOL CData::QueryTranslationStateIndex(CTranslationTypeEnum type, WORD id1, WORD
     if (states->Count == 0)
     {
         *index = 0;
-        return FALSE; // nenalezeno
+        return FALSE; // not found
     }
 
     int l = 0, r = states->Count - 1, m;
@@ -1075,7 +1075,7 @@ BOOL CData::QueryTranslationStateIndex(CTranslationTypeEnum type, WORD id1, WORD
         if (res == 0)
         {
             *index = m;
-            return TRUE; // nalezeno
+            return TRUE; // found
         }
         else
         {
@@ -1084,7 +1084,7 @@ BOOL CData::QueryTranslationStateIndex(CTranslationTypeEnum type, WORD id1, WORD
                 if (l == r || l > m - 1)
                 {
                     *index = m;
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 r = m - 1;
             }
@@ -1093,7 +1093,7 @@ BOOL CData::QueryTranslationStateIndex(CTranslationTypeEnum type, WORD id1, WORD
                 if (l == r)
                 {
                     *index = m;
-                    return FALSE; // nenalezeno
+                    return FALSE; // not found
                 }
                 l = m + 1;
             }
@@ -1109,9 +1109,9 @@ WORD CData::QueryTranslationState(CTranslationTypeEnum type, WORD id1, WORD id2,
 
     int index;
     if (QueryTranslationStateIndex(type, id1, id2, &index))
-        return states->At(index).State; // nalezeno
+        return states->At(index).State; // found
     else
-        return GuessTranslationState(oStr, tStr); // nenalezeno
+        return GuessTranslationState(oStr, tStr); // not found
 }
 
 /*
@@ -1120,7 +1120,7 @@ CData::QueryTranslationState(WORD id1, WORD id2, const wchar_t *oStr, const wcha
 {
   DWORD id = MAKELPARAM(id1, id2);
   if (TranslationStates.Count == 0)
-    return GuessTranslationState(oStr, tStr);  // nenalezeno
+    return GuessTranslationState(oStr, tStr);  // not found
 
   int l = 0, r = TranslationStates.Count - 1, m;
   while (1)
@@ -1129,18 +1129,18 @@ CData::QueryTranslationState(WORD id1, WORD id2, const wchar_t *oStr, const wcha
     int res = TranslationStates[m].ID - id;
     if (res == 0)
     {
-      return TranslationStates[m].State; // nalezeno
+      return TranslationStates[m].State; // found
     }
     else
     {
       if (res > 0)
       {
-        if (l == r || l > m - 1) return GuessTranslationState(oStr, tStr); // nenalezeno
+        if (l == r || l > m - 1) return GuessTranslationState(oStr, tStr); // not found
         r = m - 1;
       }
       else
       {
-        if (l == r) return GuessTranslationState(oStr, tStr); // nenalezeno
+        if (l == r) return GuessTranslationState(oStr, tStr); // not found
         l = m + 1;
       }
     }

@@ -54,7 +54,7 @@ public:
 
     void FontHasChanged(LOGFONT* plf, HFONT font, int fontWidth, int fontHeight);
 
-    // nahrazuje ExtTextOut: pod Vistou provadi premapovani na "spravne siroke" znaky (viz ViewerFontNeedsMapping)
+    // replacement for ExtTextOut: on Vista performs remapping to characters with the correct width (see ViewerFontNeedsMapping)
     BOOL DoTextOut(HDC hdc, int X, int Y, UINT fuOptions, CONST RECT* lprc,
                    const CChar* lpString, UINT cbCount, CONST INT* lpDx)
     {
@@ -86,18 +86,18 @@ public:
             return ExtTextOutX(hdc, X, Y, fuOptions, lprc, lpString, cbCount, lpDx);
     }
 
-    // true = (jen XP64/Vista) je potreba mapovat znaky pred vykreslenim (nektera pismena jsou "spatne" siroka)
+    // true = only on XP64/Vista it is necessary to map characters before drawing (some glyphs have an incorrect width)
     bool NeedMapping() { return ViewerFontNeedsMapping; }
 
-    // premapuje, mozne volat jen pokud NeedMapping vraci true!!!
+    // remap the character; may be called only when NeedMapping returns true!!!
     CChar MapChar(CChar c) { return ViewerFontMapping[TCharSpecific<CChar>::Unsigned(c)]; }
 
-    // mozne volat jen pokud NeedMapping vraci true!!!
+    // may be called only when NeedMapping returns true!!!
     void CalcMappingIfNeeded(HDC hDC, const CChar* buf, int len);
 
 private:
-    bool ViewerFontNeedsMapping; // TRUE = (jen XP64/Vista) je potreba mapovat znaky pred vykreslenim (nektera pismena jsou "spatne" siroka)
-    CChar* ViewerFontMapping;    // mapovani pro pripad, kdy je ViewerFontNeedsMapping==true
+    bool ViewerFontNeedsMapping; // TRUE = only on XP64/Vista do characters need to be remapped before rendering (some glyphs are wrongly sized)
+    CChar* ViewerFontMapping;    // character map used when ViewerFontNeedsMapping is true
     CChar* Buffer;
     size_t BufferSize;
     LPVOID pMappedFont;

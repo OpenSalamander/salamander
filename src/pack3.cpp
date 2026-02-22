@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -14,11 +15,11 @@
 
 //
 // ****************************************************************************
-// Typy
+// Types
 // ****************************************************************************
 //
 
-// Struktura dat pro parsovaci funkce
+// Data structure for the parsing function
 struct SPackExpData
 {
     const char* ArcName;
@@ -27,12 +28,12 @@ struct SPackExpData
     const char* LstName;
     const char* ExtName;
     char Buffer[MAX_PATH];
-    // nasledujici promenne jsou zde z duvodu, ze ziskat DOS jmeno od neexistujiciho
-    // souboru nelze -> resime tak, ze vratime nahradni DOS jmeno, ktere se pozdeji
-    // (po vytvoreni archivu) prejmenuje na pozadovane dlouhe jmeno
-    BOOL ArcNameFilePossible; // TRUE dokud se nepouzilo nahradni DOS jmeno (musime pouzivat jedno jmeno vsude)
-    BOOL DOSTmpFilePossible;  // TRUE dokud je mozne nahradit ArcName za nahradni DOS jmeno
-    char* DOSTmpFile;         // nahradni jmeno za ArcName (neni NULL jen pokud DOSTmpFilePossible je TRUE)
+    // following variables exist because we cannot obtain the DOS name of a non-existent file
+    // we handle it by returning a substitute DOS name which will later (after creating the archive) be renamed to the desired long name
+    // once the archive is created
+    BOOL ArcNameFilePossible; // TRUE until the substitute DOS name is used (we must use one name everywhere)
+    BOOL DOSTmpFilePossible;  // TRUE while ArcName can be replaced with the substitute DOS name
+    char* DOSTmpFile;         // substitute name for ArcName (non-NULL only if DOSTmpFilePossible is TRUE)
 };
 
 class CExecuteWindow : public CWindow
@@ -53,15 +54,15 @@ protected:
 
 //
 // ****************************************************************************
-// Konstanty a globalni promenne
+// Constants and global variables
 // ****************************************************************************
 //
 
-// Timeout na otvirani konzole s pakovacem v milisekundach
-// (pokud mensi nez jedna, neotvira se vubec)
+// Timeout for opening the packer console in milliseconds
+// (if less than one, it is not opened at all)
 LONG PackWinTimeout = 15000;
 
-// nazvy konfiguracnich polozek v registry
+// configuration item names in the registry
 //
 // predefined packers associations
 const char* SALAMANDER_PPA_EXTENSIONS = "Extension List";
@@ -75,13 +76,13 @@ const char* SALAMANDER_PPC_EXESAME = "Use Packer Executable To Unpack";
 const char* SALAMANDER_PPC_UID = "Packer UID";
 const char* SALAMANDER_PPC_UNPACKEXE = "Unpacker Executable";
 
-// hlavni konfigurace pakovacu
+// main packer configuration
 CPackerFormatConfig PackerFormatConfig /*(FALSE)*/;
 CArchiverConfig ArchiverConfig /*(FALSE)*/;
 
 //
-// Tabulky navratovych kodu jednotlivych podporovanych pakovacu
-// errorkod 0 znamena vzdy succes
+// Return code tables for individual supported packers
+// error code 0 always means success
 //
 
 // JAR
@@ -242,8 +243,8 @@ const TPackErrorTable ACEErrors =
         {255, IDS_PACKRET_BREAK2},
         {-1, -1}};
 
-// Promenne rozlisovane v prikazove radce a aktualnim adresari pri spousteni
-// externiho programu
+// Variables distinguished in the command line and the current directory when
+// launching an external program
 const char* PACK_ARC_PATH = "ArchivePath";
 const char* PACK_ARC_FILE = "ArchiveFileName";
 const char* PACK_ARC_NAME = "ArchiveFullName";
@@ -270,10 +271,10 @@ const char* PACK_EXE_ZIP32 = "Zip32bitExecutable";
 const char* PACK_EXE_ZIP16 = "Zip16bitExecutable";
 const char* PACK_EXE_UZP16 = "Unzip16bitExecutable";
 
-// Menu v konfiguraci
+// Menu in configuration
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script that generates salmenu.mnu for the
+   Translator; keep synchronized with the array below...
 MENU_TEMPLATE_ITEM CmdCustomPackers[] = 
 {
   {MNTT_PB, 0
@@ -316,8 +317,8 @@ CExecuteItem CmdCustomPackers[] =
         {EXECUTE_TERMINATOR, 0, 0},
 };
 
-/* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s polem dole...
+/* used by the export_mnu.py script that generates salmenu.mnu for the
+   Translator; keep synchronized with the array below...
 MENU_TEMPLATE_ITEM ArgsCustomPackers[] = 
 {
   {MNTT_PB, 0
@@ -349,11 +350,11 @@ CExecuteItem ArgsCustomPackers[] =
 
 //
 // ****************************************************************************
-// Funkce
+// Functions
 // ****************************************************************************
 //
 
-// Funkce pro inicializaci nazvu spawn executable s plnou cestou
+// Function for initializing the spawn executable name with full path
 BOOL InitSpawnName(HWND parent)
 {
     CALL_STACK_MESSAGE1("InitSpawnName()");
@@ -380,7 +381,7 @@ BOOL InitSpawnName(HWND parent)
 
 //
 // ****************************************************************************
-// Implementace konfiguracniho objektu - asociace pripon a pakovacu
+// Implementation of the configuration object - association of extensions and packers
 //
 
 CPackerFormatConfig::CPackerFormatConfig(/*BOOL disableDefaultValues*/)
@@ -414,7 +415,7 @@ void CPackerFormatConfig::AddDefault(int SalamVersion)
     switch (SalamVersion)
     {
     case 0: // default
-    case 1: // 1.52 nemela pakovace
+    case 1: // version 1.52 had no packers
         if ((index = AddFormat()) == -1)
             return;
         SetFormat(index, "zip", TRUE, -1, -1, TRUE);
@@ -437,8 +438,8 @@ void CPackerFormatConfig::AddDefault(int SalamVersion)
             return;
         SetFormat(index, "ace", TRUE, 10, 10, TRUE);
 
-    case 2: // co pribylo po beta1
-        // hack na pridani PK3 pripony k zipu
+    case 2: // what was added after beta1
+        // workaround to add the PK3 extension to ZIP
         for (index = 0; index < Formats.Count; index++)
             if (!stricmp(Formats[index]->Ext, "zip"))
             {
@@ -452,14 +453,14 @@ void CPackerFormatConfig::AddDefault(int SalamVersion)
                 }
                 break;
             }
-        // a nove pripony
+        // and new extensions
         if ((index = AddFormat()) == -1)
             return;
         SetFormat(index, "pak", TRUE, -3, -3, TRUE);
 
-    case 3: // co pribylo po beta2
-    case 4: // beta 3 ale se starou konfiguraci (obsahuje $(SpawnName))
-        // hack na pridani C## pripony k ACE
+    case 3: // what was added after beta2
+    case 4: // beta3 but with old configuration (contains $(SpawnName))
+        // workaround to add the C## extension to ACE
         for (index = 0; index < Formats.Count; index++)
             if (!stricmp(Formats[index]->Ext, "ace"))
             {
@@ -474,11 +475,11 @@ void CPackerFormatConfig::AddDefault(int SalamVersion)
                 break;
             }
 
-    case 5: // co je noveho v beta4 ?
+    case 5: // what's new in beta4?
         if ((index = AddFormat()) == -1)
             return;
         SetFormat(index, "tgz;tbz;taz;tar;gz;bz;bz2;z;rpm;cpio", FALSE, 0, -2, TRUE);
-        // hack na pridani JAR pripony k zipu
+        // workaround to add the JAR extension to ZIP
         for (index = 0; index < Formats.Count; index++)
             if (!stricmp(Formats[index]->Ext, "zip;pk3"))
             {
@@ -501,11 +502,11 @@ BOOL CPackerFormatConfig::BuildArray(int* line, int* column)
     char buffer[501];
     buffer[500] = '\0';
 
-    // zrusime stavajici pole
+    // clear the existing array
     int i;
     for (i = 0; i < 256; i++)
         Extensions[i].DestroyMembers();
-    // a nakrmime ho znova
+    // and fill it again
     CExtItem item;
     for (i = 0; i < Formats.Count; i++)
     {
@@ -584,21 +585,21 @@ BOOL CPackerFormatConfig::SetFormat(int index, const char* ext, BOOL usePacker,
     }
 }
 
-// vraci index do tabulky formatu + 1 nebo FALSE (0) kdyz neni archiv
+// returns the format table index + 1 or FALSE (0) when it's not an archive
 int CPackerFormatConfig::PackIsArchive(const char* archiveName, int archiveNameLen)
 {
-    // j.r. makro jsem zakazal, protoze PackIsArchive se masivne vola z CFilesWindow::CommonRefresh()
+    // j.r. I disabled the macro because PackIsArchive is heavily called from CFilesWindow::CommonRefresh()
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE2("PackIsArchive(%s)", archiveName);
     if (archiveName[0] == 0)
-        return 0; // nenalezeno
+        return 0; // not found
     int idx;
     if (archiveNameLen == -1)
         idx = (int)strlen(archiveName) - 1;
     else
         idx = archiveNameLen - 1;
     CStringArray* array = &Extensions[LowerCase[archiveName[idx]]];
-    // posledni znak bereme jak je
+    // take the last character as it is
     int i;
     for (i = 0; i < array->Count; i++)
     {
@@ -614,7 +615,7 @@ int CPackerFormatConfig::PackIsArchive(const char* archiveName, int archiveNameL
         if (*ptr == '\0')
             return array->At(i).GetIndex() + 1;
     }
-    // pokud je posledni znak cislo
+    // if the last character is a digit
     if (archiveName[idx] >= '0' && archiveName[idx] <= '9')
     {
         array = &Extensions['#'];
@@ -633,7 +634,7 @@ int CPackerFormatConfig::PackIsArchive(const char* archiveName, int archiveNameL
                 return array->At(i).GetIndex() + 1;
         }
     }
-    // nenalezeno
+    // not found
     return 0;
 }
 
@@ -694,7 +695,7 @@ BOOL CPackerFormatConfig::Load(HKEY hKey)
         int index;
         if ((index = AddFormat()) == -1)
             return FALSE;
-        if (Configuration.ConfigVersion < 44) // prevod pripon na lowercase
+        if (Configuration.ConfigVersion < 44) // convert extensions to lowercase
         {
             char extAux[MAX_PATH + 2];
             lstrcpyn(extAux, ext, MAX_PATH + 2);
@@ -746,15 +747,15 @@ void CPackerFormatConfig::DeleteFormat(int index)
 
 //
 // ****************************************************************************
-// Implementace tridy s konfiguraci - preddefinovane pakovace
+// Implementation of the configuration class - predefined packers
 //
 
-// konstruktor
+// constructor
 CArchiverConfig::CArchiverConfig(/*BOOL disableDefaultValues*/)
     : Archivers(20, 10)
 {
     /*
-  // nastavime default hodnoty, pokud to neni zakazano
+  // set default values if it is not disabled
   if (!disableDefaultValues)
     AddDefault(0);
 */
@@ -762,11 +763,11 @@ CArchiverConfig::CArchiverConfig(/*BOOL disableDefaultValues*/)
 
 void CArchiverConfig::InitializeDefaultValues()
 {
-    // nastavime default hodnoty, pokud to neni zakazano
+    // set default values if it is not disabled
     AddDefault(0);
 }
 
-// nastavi default hodnoty
+// sets default values
 void CArchiverConfig::AddDefault(int SalamVersion)
 {
     int index;
@@ -779,7 +780,7 @@ void CArchiverConfig::AddDefault(int SalamVersion)
     switch (SalamVersion)
     {
     case 0: // default
-    case 1: // 1.52 nemela pakovace
+    case 1: // version 1.52 had no packers
         if ((index = AddArchiver()) == -1)
             return;
         SetArchiver(index, ARC_UID_JAR32, LoadStr(IDS_EXT_JAR32), EXE_32BIT, TRUE, PACK_EXE_JAR32, NULL,
@@ -828,20 +829,20 @@ void CArchiverConfig::AddDefault(int SalamVersion)
             return;
         SetArchiver(index, ARC_UID_ACE16, LoadStr(IDS_EXT_ACE16), EXE_16BIT, TRUE, PACK_EXE_ACE16, NULL,
                     "ace", NULL, "ace", NULL);
-        //    case 2:  // co pribylo po beta1
-        //    case 3:  // co pribylo po beta2
-        //    case 4:  // beta 3 ale se starou konfiguraci (obsahuje $(SpawnName))
-        //    case 5:   // beta 3 ale bez taru
-        //    case 6:   // co je noveho v beta4 ?
+        //    case 2:  // what was added after beta1
+        //    case 3:  // what was added after beta2
+        //    case 4:  // beta3 but with old configuration (contains $(SpawnName))
+        //    case 5:   // beta3 but without tar
+        //    case 6:   // what's new in beta4?
     }
 }
 
-// inicializuje konfigurace podle jine konfigurace
+// initializes the configuration based on another configuration
 BOOL CArchiverConfig::Load(CArchiverConfig& src)
 {
-    // vycistime, co mame (pokud neco mame)
+    // clear what we have (if we have anything)
     DeleteAllArchivers();
-    // a pridame co jsme dostali
+    // and add what we received
     int i;
     for (i = 0; i < src.GetArchiversCount(); i++)
     {
@@ -858,7 +859,7 @@ BOOL CArchiverConfig::Load(CArchiverConfig& src)
     return TRUE;
 }
 
-// vytvori na konci pole novy prazdny archiver
+// creates a new empty archiver at the end of the array
 int CArchiverConfig::AddArchiver()
 {
     CArchiverConfigData* data = new CArchiverConfigData;
@@ -874,13 +875,13 @@ int CArchiverConfig::AddArchiver()
     return index;
 }
 
-// nastavi archiver na danem indexu na pozadovane hodnoty
+// sets the archiver at the given index to the requested values
 BOOL CArchiverConfig::SetArchiver(int index, DWORD uid, const char* title, EPackExeType type, BOOL exesAreSame,
                                   const char* packerVariable, const char* unpackerVariable,
                                   const char* packerExecutable, const char* unpackerExecutable,
                                   const char* packExeFile, const char* unpackExeFile)
 {
-    // vycistime stare udaje, pokud nejake mame
+    // clear old data, if we have any
     CArchiverConfigData* data = Archivers[index];
     data->Destroy();
 
@@ -888,27 +889,27 @@ BOOL CArchiverConfig::SetArchiver(int index, DWORD uid, const char* title, EPack
     data->Title = DupStr(title);
     data->Type = type;
     data->ExesAreSame = exesAreSame;
-    // promenna a jmeno exace jsou konstantni stringy z kodu salama, staci melka kopie
+    // the variable and executable name are constant strings from Salamander's code; a shallow copy is enough
     data->PackerVariable = packerVariable;
     data->PackerExecutable = packerExecutable;
-    // cesta k exaci je alokovana, udelame kopii
+    // the path to the executable is allocated, make a copy
     data->PackExeFile = DupStr(packExeFile);
     if (!data->ExesAreSame)
     {
-        // pokud je unpacker jiny, inicializujeme ho take
+        // if the unpacker differs, initialize it as well
         data->UnpackerVariable = unpackerVariable;
         data->UnpackerExecutable = unpackerExecutable;
         data->UnpackExeFile = DupStr(unpackExeFile);
     }
     else
     {
-        // pokud je pakovac stejny, mame lehci praci
+        // if the packer is the same, the work is easier
         data->UnpackerVariable = NULL;
         data->UnpackerExecutable = NULL;
         data->UnpackExeFile = DupStr(packExeFile);
     }
 
-    // jsou hodnoty smysluplne ?
+    // are the values meaningful?
     if (data->IsValid())
         return TRUE;
     else
@@ -919,62 +920,62 @@ BOOL CArchiverConfig::SetArchiver(int index, DWORD uid, const char* title, EPack
     }
 }
 
-// nastavi cestu k pakovaci pro pakovac na danem indexu
-// (volano z transferu pri uzavreni autokonfiguracniho dialogu)
+// sets the packer path for the packer at the given index
+// (called from the transfer when closing the auto-configuration dialog)
 void CArchiverConfig::SetPackerExeFile(int index, const char* filename)
 {
     CArchiverConfigData* data = Archivers[index];
     if (data->PackExeFile)
         free(data->PackExeFile);
-    // pokud dostaneme NULL (nenalezeno z autokonfigurace), bereme jako default nazev exace
+    // if we get NULL (not found by auto-configuration), use the default executable name
     data->PackExeFile = DupStr(filename != NULL ? filename : data->PackerExecutable);
 }
 
-// nastavi cestu k pakovaci pro rozpakovavac na danem indexu
-// (volano z transferu pri uzavreni autokonfiguracniho dialogu)
+// sets the packer path for the unpacker at the given index
+// (called from the transfer when closing the auto-configuration dialog)
 void CArchiverConfig::SetUnpackerExeFile(int index, const char* filename)
 {
     CArchiverConfigData* data = Archivers[index];
     if (data->UnpackExeFile)
         free(data->UnpackExeFile);
-    // pokud dostaneme NULL (nenalezeno z autokonfigurace), bereme jako default nazev exace
+    // if we get NULL (not found by auto-configuration), use the default executable name
     data->UnpackExeFile = DupStr(filename != NULL ? filename : data->UnpackerExecutable);
 }
 
-// ulozi konfiguraci jedne polozky do registry
+// saves the configuration of a single entry into the registry
 BOOL CArchiverConfig::Save(int index, HKEY hKey)
 {
     DWORD d;
     BOOL ret = TRUE;
-    // ulozi UID
+    // save UID
     d = GetArchiverUID(index);
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PPC_UID, REG_DWORD, &d, sizeof(d));
-    // (ulozi titulek) - diky tomu, ze se preklada, uz se neda pouzivat pro identifikaci archivatoru (nove se pouziva UID), tedy nema smysl ho ukladat
+    // (saves the title) - because it is translated it can no longer be used for identification
+    //   of the archiver (UID is now used instead), there is no point in storing it
     //  if (ret) ret &= SetValue(hKey, SALAMANDER_PPC_TITLE, REG_SZ, GetArchiverTitle(index), -1);
-    // ulozi exac
+    // save the executable path
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PPC_PACKEXE, REG_SZ, GetPackerExeFile(index), -1);
-    // ulozi, zda je pakovac a rozpakovavac stejny
+    // save whether packer and unpacker are the same
     d = ArchiverExesAreSame(index);
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PPC_EXESAME, REG_DWORD, &d, sizeof(d));
 
-    // a pokud ne, ulozi i cestu k rozpakovavaci
+    // and if not, also store the path to the unpacker
     if (!ArchiverExesAreSame(index))
         if (ret)
             ret &= SetValue(hKey, SALAMANDER_PPC_UNPACKEXE, REG_SZ, GetUnpackerExeFile(index), -1);
     return ret;
 }
 
-// nacte konfiguraci jedne polozky z registry
+// loads configuration of a single entry from the registry
 
-// j.r. Prepracoval jsem nacteni konfigurace -- prohledava se deafult seznam
-//      pokud se polozka z Registry najde v tomto default seznamu, pouziji se
-//      jeji hodnoty. Jinak se ignoruje.
-//      Stara metoda delala problemy, protoze uzivatele si rucne smazali obsah
-//      klice a uz nebyla zadna cesta (z dialogu) jak obnovit puvodni seznam.
-//      Navic nam padal Salamander, viz chyba CCfgPageExternalArchivers::DialogProc(0x111
+// j.r. I reworked configuration loading -- it searches the default list and if a
+//      registry item is found in this default list, its values are used, otherwise it is ignored.
+//      The old method caused problems because users manually deleted the key
+//      contents and there was no path (from the dialog) to restore the original list.
+//      It also crashed Salamander, see bug CCfgPageExternalArchivers::DialogProc(0x111
 
 BOOL CArchiverConfig::Load(HKEY hKey)
 {
@@ -989,19 +990,19 @@ BOOL CArchiverConfig::Load(HKEY hKey)
     DWORD uid = -1;
 
     BOOL ret = TRUE;
-    // nacte titulek
+    // loads the title
     if (ret && Configuration.ConfigVersion <= 64)
         ret &= GetValue(hKey, SALAMANDER_PPC_TITLE, REG_SZ, title, max);
-    // nacte exac k pakovani
+    // loads the packing executable
     if (ret)
         ret &= GetValue(hKey, SALAMANDER_PPC_PACKEXE, REG_SZ, packExe, max);
-    // zjisti, jestli rozpakovavac je stejny
+    // determine whether the unpacker is the same
     if (ret)
         ret &= GetValue(hKey, SALAMANDER_PPC_EXESAME, REG_DWORD, &exesAreSame, sizeof(DWORD));
-    // UID archivatoru (drive se misto nej pouzival Title, ovsem ten se nove preklada, tedy dale neni pouzitelny)
+    // UID of the archiver (Title was previously used instead, but it is translated now and it can no longer be used)
     if (ret && Configuration.ConfigVersion > 64)
         ret &= GetValue(hKey, SALAMANDER_PPC_UID, REG_DWORD, &uid, sizeof(DWORD));
-    // nacte exac k rozpakovavani, pokud je jiny ne pakovac
+    // load the unpacker executable, if it is different from the packer
     if (!exesAreSame)
         if (ret)
             ret &= GetValue(hKey, SALAMANDER_PPC_UNPACKEXE, REG_SZ, unpackExe, max);
@@ -1012,9 +1013,9 @@ BOOL CArchiverConfig::Load(HKEY hKey)
         for (i = 0; i < Archivers.Count; i++)
         {
             CArchiverConfigData* arch = Archivers[i];
-            // z klicu, ktere jsou kompletni a sedi jejich title s default hodnotou prevezmu cesty
-            if (Configuration.ConfigVersion <= 64 && stricmp(title, arch->Title) == 0 || // Title se nove preklada, tedy dale neni pouzitelny
-                Configuration.ConfigVersion > 64 && uid == arch->UID)                    // zavedli jsme tedy klasicky UID
+            // for keys that are complete and whose title matches the default value, take over their paths
+            if (Configuration.ConfigVersion <= 64 && stricmp(title, arch->Title) == 0 || // Title is now translated and cannot be used anymore
+                Configuration.ConfigVersion > 64 && uid == arch->UID)                    // thus we introduced a standard UID
             {
                 SetPackerExeFile(i, packExe);
                 SetUnpackerExeFile(i, exesAreSame ? packExe : unpackExe);
@@ -1035,25 +1036,26 @@ CArchiverConfig::Load(HKEY hKey)
   DWORD exesAreSame;
 
   BOOL ret = TRUE;
-  // nacte titulek
+  // loads the title
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_TITLE, REG_SZ, title, max);
-  // nacte exac k pakovani
+  // loads the packing executable
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_PACKEXE, REG_SZ, packExe, max);
-  // zjisti, jestli rozpakovavac je stejny
+  // determine whether the unpacker is the same
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_EXESAME, REG_DWORD, &exesAreSame, sizeof(DWORD));
-  // nacte exac k rozpakovavani, pokud je jiny ne pakovac
+  // loads the unpacker executable, if it is different from the packer
   if (!exesAreSame)
     if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_UNPACKEXE, REG_SZ, unpackExe, max);
 
   EPackExeType type;
   const char *name, *variablePack, *variableUnpack = NULL, *exePack, *exeUnpack = NULL;
 
-  // a ted konverze do novejsi konfigurace - chybejici informace vezmu podle defaults (stejne zadna z nich neni konfigurovatena :-) )
+  // and now convert to a newer configuration - missing information is taken from defaults
+  // (none of it is configurable anyway :-))
   if (ret)
   {
     int index;
     if ((index = AddArchiver()) == -1) return FALSE;
-    // ted predpokladam, ze v konfiguraci jsou indexy s nezmenenym poradim. Pokud ne, nactu prdlajs
+    // I now assume the indices in the configuration keep their order. If not, nothing is loaded
     switch (index)
     {
       case 0:
@@ -1132,17 +1134,17 @@ CArchiverConfig::Load(HKEY hKey)
         break;
       default:
         TRACE_E("Too big index of packer, probably mistake in registry");
-        Archivers.Delete(index);  // Aby nezustala neinicializovana struktura; padalo v Sal2.0 v SaveConfig
+        Archivers.Delete(index);  // To avoid leaving an uninitialized structure; Salamander 2.0 crashed in SaveConfig
         return FALSE;
     }
-    // zkontrolujem, jestli opravdu pridavame pakovac, o kterem si myslime ze pridavame
+    // verify we are really adding the packer we think we are adding
     if (strncmp(title, name, 10) || (exesAreSame && exeUnpack != NULL) || (!exesAreSame && exeUnpack == NULL))
     {
       TRACE_E("Inconsistency in configuration of packers.");
-      Archivers.Delete(index);  // Aby nezustala neinicializovana struktura; padalo v Sal2.0 v SaveConfig
+      Archivers.Delete(index);  // To avoid leaving an uninitialized structure; Salamander 2.0 crashed in SaveConfig
       return FALSE;
     }
-    // a nastavime vsechny udaje
+    // and set all information
     ret &= SetArchiver(index, name, type, exesAreSame, variablePack, variableUnpack,
                        exePack, exeUnpack, packExe, unpackExe);
   }
@@ -1152,7 +1154,7 @@ CArchiverConfig::Load(HKEY hKey)
 
 //
 // ****************************************************************************
-// Parsovaci funkce pro nahradu promennych jejich hodnotami
+// Parsing functions for replacing variables with their values
 //
 
 const char* WINAPI PackExpArcPath(HWND msgParent, void* param)
@@ -1177,7 +1179,7 @@ const char* WINAPI PackExpArcName(HWND msgParent, void* param)
         TRACE_E("It is not possible to combine DOS and long archive file name (ArchiveFileName and ArchiveFullName) in PackExpArcName().");
         return NULL;
     }
-    data->DOSTmpFilePossible = FALSE; // odtedka uz jen ArcName
+    data->DOSTmpFilePossible = FALSE; // from now on only ArcName
 
     return data->ArcName;
 }
@@ -1191,7 +1193,7 @@ const char* WINAPI PackExpArcFile(HWND msgParent, void* param)
         TRACE_E("It is not possible to combine DOS and long archive file name (ArchiveFileName and ArchiveFullName) in PackExpArcFile().");
         return NULL;
     }
-    data->DOSTmpFilePossible = FALSE; // odtedka uz jen ArcName
+    data->DOSTmpFilePossible = FALSE; // from now on only ArcName
 
     const char* s = strrchr(data->ArcName, '\\');
     if (s == NULL)
@@ -1217,10 +1219,10 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                 TRACE_E("Error (1) in GetShortPathName() in PackExpArcDosName().");
                 return NULL;
             }
-            data->ArcNameFilePossible = FALSE; // odtedka uz jen DOSTmpName
+            data->ArcNameFilePossible = FALSE; // from now on only DOSTmpName
         }
         else
-            data->DOSTmpFilePossible = FALSE; // odtedka uz jen ArcName
+            data->DOSTmpFilePossible = FALSE; // from now on only ArcName
     }
     else
     {
@@ -1231,9 +1233,9 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
         }
     }
 
-    if (data->DOSTmpFilePossible) // pouzijeme nahradni jmeno
+    if (data->DOSTmpFilePossible) // use a substitute name
     {
-        if (data->DOSTmpFile[0] == 0) // je ho potreba nagenerovat
+        if (data->DOSTmpFile[0] == 0) // it needs to be generated
         {
             char path[MAX_PATH + 50];
             strcpy(path, data->ArcName);
@@ -1251,7 +1253,7 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                     WIN32_FIND_DATA findData;
                     HANDLE find = HANDLES_Q(FindFirstFile(path, &findData));
                     if (find != INVALID_HANDLE_VALUE)
-                        HANDLES(FindClose(find)); // toto jmeno uz s nejakou priponou existuje, hledame dale
+                        HANDLES(FindClose(find)); // this name already exists with some extension, searching again
                     else
                     {
                         sprintf(s, "%X", randNum);
@@ -1260,10 +1262,10 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                         //            while (--ext > data->ArcName && *ext != '\\' && *ext != '.');
                         while (--ext >= data->ArcName && *ext != '\\' && *ext != '.')
                             ;
-                        //            if (ext > data->ArcName && *ext == '.' && *(ext - 1) != '\\')  // nakopirujeme priponu archivu (pouzivaji archivery u multivolumu: ARJ->A01,A02,...); ".cvspass" ve Windows je pripona ...
-                        if (ext >= data->ArcName && *ext == '.') // nakopirujeme priponu archivu (pouzivaji archivery u multivolumu: ARJ->A01,A02,...)
+                        //            if (ext > data->ArcName && *ext == '.' && *(ext - 1) != '\\')  // copy the archive extension (used by multi-volume archivers: ARJ->A01,A02,...); ".cvspass" in Windows is an extension ...
+                        if (ext >= data->ArcName && *ext == '.') // copy the archive extension (used by multi-volume archivers: ARJ->A01,A02,...)
                         {
-                            int count = 4; // nakopiruju '.' plus max. 3 povolene znaky pripony formatu (8.3)
+                            int count = 4; // copy '.' plus at most 3 allowed extension characters (of the 8.3 format)
                             while (count-- && *ext < 128 && *ext != '[' && *ext != ']' &&
                                    *ext != ';' && *ext != '=' && *ext != ',' && *ext != ' ')
                             {
@@ -1271,7 +1273,7 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                             }
                             *s = 0;
                         }
-                        break; // tohle jmeno muzeme pouzit (jeste neexistuje se zadnou priponou)
+                        break; // we can use this name (it does not exist with any extension yet)
                     }
                     randNum++;
                 }
@@ -1283,13 +1285,13 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                     HANDLES(CloseHandle(h));
                     strcpy(data->DOSTmpFile, path);
                     BOOL ok = GetShortPathName(data->DOSTmpFile, buff2, MAX_PATH);
-                    DeleteFile(data->DOSTmpFile); // uz soubor nepotrebujeme (nechame ho vytvorit archiveru)
+                    DeleteFile(data->DOSTmpFile); // we no longer need the file (let the archiver create it)
                     if (!ok)
                     {
                         TRACE_E("Error (2) in GetShortPathName() in PackExpArcDosName().");
                         return NULL;
                     }
-                    strcpy(data->DOSTmpFile, buff2); // ziskali jsme nahradni jmeno
+                    strcpy(data->DOSTmpFile, buff2); // we obtained a substitute name
                 }
                 else
                 {
@@ -1409,7 +1411,7 @@ const char* WINAPI PackExpExtName(HWND msgParent, void* param)
 const char* WINAPI
 PackExpExeName(unsigned int index, BOOL unpacker = FALSE)
 {
-    // buffer pro zkraceni nazvu programu
+    // buffer for shortening the program name
     static char PackExpExeName[MAX_PATH];
     char buff[MAX_PATH];
     const char* exe;
@@ -1417,8 +1419,8 @@ PackExpExeName(unsigned int index, BOOL unpacker = FALSE)
         exe = ArchiverConfig.GetPackerExeFile(index);
     else
         exe = ArchiverConfig.GetUnpackerExeFile(index);
-    // pokud neni pakovac nakonfigurovan, nemel by byt ani pouzit, ale
-    // vylouceno to neni. Takze pouzijeme jmeno programu bez cesty
+    // if the packer is not configured it should not be used, but
+    // it's not excluded, so use the program name without the path
     if (exe == NULL)
         if (!unpacker)
             exe = ArchiverConfig.GetPackerExecutable(index);
@@ -1426,18 +1428,18 @@ PackExpExeName(unsigned int index, BOOL unpacker = FALSE)
             exe = ArchiverConfig.GetUnpackerExecutable(index);
     else
     {
-        // na starsich Windows neslo presmerovat vystup z DOS programu v adresari s dlouhym
-        // nazvem; ted uz to nemam naladu patchovat a riskovat, ze to nepojede
+        // on older Windows it was impossible to redirect output from a DOS program in a directory
+        // with a long name; I no longer feel like patching and risking this that it won't work
         buff[0] = '\0';
         DWORD len = GetShortPathName(exe, buff, MAX_PATH);
-        // kdyz uspesne zkratil, vratim kratky nazev
+        // if the path was shortened successfully, return the short name
         if (len == strlen(buff) && len > 0)
         {
             strcpy(PackExpExeName, buff);
             return PackExpExeName;
         }
     }
-    // u dlouheho nazvu zkontrolujem uvozovky...
+    // for long names, check the quotes...
     unsigned long src = 0, dst = 0;
     if (exe[src] != '"')
         buff[dst++] = '"';
@@ -1518,15 +1520,15 @@ const char* WINAPI PackExpUzp16ExeName(HWND msgParent, void* param)
 
 //
 // ****************************************************************************
-// Konstanty
+// Constants
 // ****************************************************************************
 //
 
 // ****************************************************************************
-// tabulky prirazeni jednotlivych evaluacnich funkci pro jednotlive promenne
+// tables assigning individual evaluation functions to specific variables
 //
 
-// tabulka prikazove radky
+// command line table
 CSalamanderVarStrEntry PackCmdLineExpArray[] =
     {
         {PACK_ARC_PATH, PackExpArcPath},
@@ -1555,7 +1557,7 @@ CSalamanderVarStrEntry PackCmdLineExpArray[] =
         // sentinel
         {NULL, NULL}};
 
-// tabulka aktualniho adresare
+// current directory table
 CSalamanderVarStrEntry PackInitDirExpArray[] =
     {
         {PACK_ARC_PATH, PackExpArcPath},
@@ -1566,13 +1568,13 @@ CSalamanderVarStrEntry PackInitDirExpArray[] =
 
 //
 // ****************************************************************************
-// Funkce
+// Functions
 // ****************************************************************************
 //
 
 //
 // ****************************************************************************
-// Funkce pro expanzi promennych
+// Functions for variable expansion
 //
 
 //
@@ -1581,19 +1583,19 @@ CSalamanderVarStrEntry PackInitDirExpArray[] =
 //                        const char *extName, const char *exeName, const char *varText,
 //                        char *buffer, const int bufferLen, char *DOSTmpName)
 //
-//   Expanduje promenne v prikazove radce
+//   Expands variables in the command line
 //
-//   RET:  TRUE pro uspech, FALSE pro chybu
-//   IN:   archiveName je nazev archivu, se kterym pracujeme
-//         tgtDir je nazev ciloveho adresare pro operaci nebo NULL
-//         lstName je nazev souboru se seznamem souboru, nad kterymi probiha operace nebo NULL
-//         extName je nazev vybalovaneho souboru nebo NULL
-//         varText je prikazova radka s promennymi
-//         bufferLen je velikost promenne buffer
-//         DOSTmpName je NULL pokud nelze nahradit long-name nahradnim DOS jmenem, jinak ukazuje do
-//           bufferu o velikosti min. MAX_PATH
-//   OUT:  buffer je prikazova radka s nahrazenymi promennymi
-//         DOSTmpName je jmeno nahradniho souboru (nebo prazdny retezec, pokud se nenahrazovalo)
+//   RET:  TRUE on success, FALSE on error
+//   IN:   archiveName is the name of the archive we work with
+//         tgtDir is the target directory name for the operation or NULL
+//         lstName is the name of the file listing processed items or NULL
+//         extName is the name of the extracted file or NULL
+//         varText is the command line with variables
+//         bufferLen is the size of the buffer parameter
+//         DOSTmpName is NULL if a long name cannot be replaced by a substitute DOS name,
+//           otherwise it points to a buffer at least MAX_PATH long
+//   OUT:  buffer is the command line with variables expanded
+//         DOSTmpName is the name of the temporary file (or an empty string if no replacement was made)
 
 BOOL PackExpandCmdLine(const char* archiveName, const char* tgtDir, const char* lstName,
                        const char* extName, const char* varText, char* buffer,
@@ -1620,15 +1622,15 @@ BOOL PackExpandCmdLine(const char* archiveName, const char* tgtDir, const char* 
 // BOOL PackExpandInitDir(const char *archiveName, const char *srcDir, const char *tgtDir,
 //                        const char *varText, char *buffer, const int bufferLen)
 //
-//   Expanduje promenne v retezci urcujicim aktualni adresar pro spousteny program
+//   Expands variables in the string specifying the current directory for the launched program
 //
-//   RET:  TRUE pro uspech, FALSE pro chybu
-//   IN:   archiveName je nazev archivu, se kterym pracujeme
-//         srcDir je nazev zdrojoveho adresare pro operaci nebo NULL
-//         tgtDir je nazev ciloveho adresare pro operaci nebo NULL
-//         varText je prikazova radka s promennymi
-//         bufferLen je velikost promenne buffer
-//   OUT:  buffer je prikazova radka s nahrazenymi promennymi
+//   RET:  TRUE on success, FALSE on error
+//   IN:   archiveName is the archive name we work with
+//         srcDir is the source directory for the operation or NULL
+//         tgtDir is the target directory for the operation or NULL
+//         varText is the command line with variables
+//         bufferLen is the size of the buffer parameter
+//   OUT:  buffer is the command line with variables expanded
 
 BOOL PackExpandInitDir(const char* archiveName, const char* srcDir, const char* tgtDir,
                        const char* varText, char* buffer, const int bufferLen)
@@ -1649,23 +1651,22 @@ BOOL PackExpandInitDir(const char* archiveName, const char* srcDir, const char* 
 
 //
 // ****************************************************************************
-// Obecne funkce
+// General functions
 //
 
 //
 // ****************************************************************************
 // BOOL EmptyErrorHandler(HWND parent, const WORD err, ...)
 //
-//   Prazdna chybova fce - pro spravne zpracovani chyb je treba nahradit
-//   v ukazateli PackErrorHandlerPtr tuto funkci funci vlastni, ktera zpracuje
-//   chybu podle potreby. Neslouzi pouze k oznameni chyb, ktere nastaly,
-//   (IDS_PACKERR_...) ale take k reseni nenadalych situaci formou dotazu na
-//   uzivatele (IDS_PACKQRY_...)
+//   Empty error function - to handle errors correctly, replace this function
+//   in PackErrorHandlerPtr pointer with your own function that processes the error as needed.
+//   It is used not only to report errors that occurred (IDS_PACKERR_*) but also
+//   to resolve unexpected situations by asking the user (IDS_PACKQRY_*).
 //
-//   RET:  TRUE pro pokracovani, FALSE pro ukonceni
-//   IN:   parent je parent message-boxu
-//         err je cislo chyby, ktera vznikla
-//         ostatni parametry jsou udaje pro upresneni chyby, zavisle na jejim kodu
+//   RET:  TRUE to continue, FALSE to abort
+//   IN:   parent is the parent window of message boxes
+//         err is the error number that occurred
+//         remaining parameters further specify the error depending on its code
 
 BOOL EmptyErrorHandler(HWND parent, const WORD err, ...)
 {
@@ -1677,10 +1678,10 @@ BOOL EmptyErrorHandler(HWND parent, const WORD err, ...)
 // ****************************************************************************
 // void PackSetErrorHandler(BOOL (*handler)(HWND parent, const WORD errNum, ...))
 //
-//   Nastaveni chybove funkce
+//   Sets the error handling function
 //
 //   RET:
-//   IN:   handler je nova funkce pro zpracovani chyb
+//   IN:   handler is the new function for error processing
 
 void PackSetErrorHandler(BOOL (*handler)(HWND parent, const WORD errNum, ...))
 {
@@ -1694,25 +1695,24 @@ void PackSetErrorHandler(BOOL (*handler)(HWND parent, const WORD errNum, ...))
 // ****************************************************************************
 // BOOL PackExecute(HWND parent, char *cmdLine, const char *currentDir, TPackErrorTable *const errorTable)
 //
-//   Spusti externi program uvedeny (i s parametry) v retezci cmdLine
+//   Runs the external program given (including parameters) in cmdLine string
 //
-//   RET: vraci TRUE pri uspechu, FALSE pri chybe
-//        pri chybe vola callback funkci *PackErrorHandlerPtr
-//   IN:  parent je parent pro message-boxy
-//        cmdLine je prikazova radka urcena k provedeni
-//        currentDir je uplne urceni aktualniho adresare pro spousteny program,
-//                   nebo NULL, pokud na nem nezalezi
-//        errorTable je ukazatel na tabulku navratovych kodu (pokud NULL, tabulka neni)
+//   RET: returns TRUE on success, FALSE on error
+//        on error the callback *PackErrorHandlerPtr is called
+//   IN:  parent is the parent window for message boxes
+//        cmdLine is the command line to execute
+//        currentDir is the full current directory for the launched program or NULL if it doesn't matter
+//        errorTable is a pointer to the return code table (if NULL, no table)
 
 BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorTable* const errorTable)
 {
     CALL_STACK_MESSAGE3("PackExecute(, %s, %s, ,)", cmdLine, currentDir);
 
-    // pokud jsme jeste nezjistili cestu ke spawnu, udelame to ted
+    // if we haven't determined the path to the spawn yet, do it now
     if (!InitSpawnName(parent))
         return FALSE;
 
-    // nastavime vse potrebne pro vytvoreni procesu
+    // set everything needed to create the process
     PROCESS_INFORMATION pi;
     STARTUPINFO si;
     memset(&si, 0, sizeof(STARTUPINFO));
@@ -1723,8 +1723,8 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         POINT p;
         if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
         {
-            // pokud je hlavni okno na jinem monitoru, meli bychom tam take otevrit
-            // okno vznikajici a nejlepe na default pozici (stejne jako na primaru)
+            // if the main window is on another monitor we should open the new window there
+            // preferably at the default position (as on the primary monitor)
             si.dwFlags |= STARTF_USEPOSITION;
             si.dwX = p.x;
             si.dwY = p.y;
@@ -1732,13 +1732,13 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         si.wShowWindow = SW_MINIMIZE;
     }
 
-    // Zjistime, co to vlastne poustime (pro oznamovani chyb)
+    // Determine what we are actually running (for error reporting)
     int i = 0, j = 0;
     char cmd[MAX_PATH];
-    // preskocime uvodni whitespace
+    // skip leading whitespace
     while (cmdLine[i] != '\0' && (cmdLine[i] == ' ' || cmdLine[i] == '\t'))
         i++;
-    // nacteme jmeno programu
+    // read the program name
     if (cmdLine[i] == '"')
     {
         i++;
@@ -1754,7 +1754,7 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
     if (tmpCmdLine == NULL)
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_NOMEM);
     sprintf(tmpCmdLine, "\"%s\" %s %s", SpawnExe, SPAWN_EXE_PARAMS, cmdLine);
-    // spustime externi program
+    // launch the external program
     if (!HANDLES(CreateProcess(NULL, tmpCmdLine, NULL, NULL, TRUE, CREATE_DEFAULT_ERROR_MODE | NORMAL_PRIORITY_CLASS, NULL, currentDir, &si, &pi)))
     {
         DWORD err = GetLastError();
@@ -1763,18 +1763,18 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
     }
     free(tmpCmdLine);
 
-    // vytvorime modalni okenko
+    // create a modal window
     HWND hFocusedWnd = GetFocus();
     HWND main = parent == NULL ? MainWindow->HWindow : parent;
     CExecuteWindow tmpWindow(main, IDS_PACK_EXECUTING, ooStatic);
     tmpWindow.Create();
     HWND oldPluginMsgBoxParent = PluginMsgBoxParent;
-    // muzou se volat pluginove timery (deje se pri WinSCP otevrenem v druhem panelu) -> nutne nastaveni parenta pro messageboxy
+    // plugin timers may be invoked (happens with WinSCP open in the other panel) -> set parent for message boxes
     PluginMsgBoxParent = tmpWindow.HWindow;
     EnableWindow(main, FALSE);
-    // nahodime presypacky
+    // activate the hourglass cursor
     HCURSOR prevCrsr = SetCursor(LoadCursor(NULL, IDC_WAIT));
-    // Pockame na dokonceni externiho programu
+    // Wait for the external program to finish
     HANDLE objects[] = {pi.hProcess};
     DWORD start = GetTickCount();
     DWORD elapsed = 0;
@@ -1782,12 +1782,12 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
     DWORD ret;
     do
     {
-        /*  // Petr: pumpovani jen WM_PAINT vede k zablokovani vsech ostatnich instanci Salamandera
-    //       (i nove spustenych) a i dalsich softu (minimalne pri Paste) v pripade, ze pred
-    //       balenim vlozime na clipboard soubor nebo adresar - dojde k tomu, ze se pri pristupu
-    //       na data na clipboardu OLE snazi komunikovat s timto procesem a ten nekomunikuje,
-    //       protoze pumpuje jen WM_PAINT
-    // Puvodni Tomova varianta:
+        /*  // Petr: pumping only WM_PAINT leads to blocking all other instances of Salamander
+    //       (even newly started ones) and other softwares (at least during Paste), if we
+    //       put a file or directory on the clipboard before packing. Accessing clipboard
+    //       data causes OLE to communicate with this process which doesn't respond
+    //       because it pumps only WM_PAINT.
+    // Original Tom's variant:
     ret = MsgWaitForMultipleObjects(1, objects, FALSE,
                                     PackWinTimeout <= 0 ? INFINITE : PackWinTimeout - elapsed,
                                     QS_PAINT);
@@ -1797,9 +1797,9 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
                                         QS_ALLINPUT);
         if (ret == WAIT_OBJECT_0 + 1)
         {
-            // pokud prisla message, obslouzime
+            // if a message arrived, handle it
             MSG msg;
-            /*    // Puvodni Tomova varianta: (popis viz vyse)
+            /*    // Original Tom's variant: (see description above)
       while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
         DispatchMessage(&msg);
 */
@@ -1808,7 +1808,7 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-            // pokud uz vyprsel timeout, konec
+            // if the timeout has expired, stop
             elapsed = GetTickCount() - start;
             if (PackWinTimeout > 0 && (int)elapsed >= PackWinTimeout)
             {
@@ -1816,7 +1816,7 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
                 break;
             }
         }
-    } while (ret == WAIT_OBJECT_0 + 1); // cekame dokud chodi WM_PAINT
+    } while (ret == WAIT_OBJECT_0 + 1); // wait while WM_PAINT messages arrive
 
     if (ret == WAIT_TIMEOUT)
     {
@@ -1834,14 +1834,14 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         } while (win != NULL);
         do
         {
-            /*    // Puvodni Tomova varianta: (popis viz vyse)
+            /*    // Original Tom's variant: (see description above)
       ret = MsgWaitForMultipleObjects(1, objects, FALSE, INFINITE, QS_PAINT);
 */
             ret = MsgWaitForMultipleObjects(1, objects, FALSE, INFINITE, QS_ALLINPUT);
             MSG msg;
             if (ret == WAIT_OBJECT_0 + 1)
             {
-                /*      // Puvodni Tomova varianta: (popis viz vyse)
+                /*      // Original Tom's variant: (see description above)
         while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
           DispatchMessage(&msg);
 */
@@ -1851,21 +1851,21 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
                     DispatchMessage(&msg);
                 }
             }
-        } while (ret == WAIT_OBJECT_0 + 1); // cekame dokud chodi WM_PAINT
+        } while (ret == WAIT_OBJECT_0 + 1); // wait while WM_PAINT messages arrive
     }
 
     EnableWindow(main, TRUE);
     PluginMsgBoxParent = oldPluginMsgBoxParent;
     DestroyWindow(tmpWindow.HWindow);
-    // pokud je aktivni Salamander, zavolame SetFocus na zapamatovane okno (SetFocus nefunguje
-    // pokud je hl. okno disablovane - po deaktivaci/aktivaci disablovaneho hl. okna aktivni panel
-    // nema fokus)
+    // if Salamander is active, call SetFocus on the stored window (SetFocus does
+    // not work when the main window is disabled - after deactivation/activation
+    // of the disabled main window, the active panel has no focus)
     HWND hwnd = GetForegroundWindow();
     while (hwnd != NULL && hwnd != main)
         hwnd = GetParent(hwnd);
     if (hwnd == main)
         SetFocus(hFocusedWnd);
-    // zrusime presypacky
+    // remove the hourglass cursor
     SetCursor(prevCrsr);
     UpdateWindow(main);
 
@@ -1879,7 +1879,7 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // a zjistime jak to dopadlo - snad vsechny vraci 0 jako success
+    // and find out how it ended - hopefully they all return 0 as success
     DWORD exitCode;
     if (!GetExitCodeProcess(pi.hProcess, &exitCode))
     {
@@ -1891,24 +1891,24 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
     }
 
-    // uvolnime handly procesu
+    // release handles of the process
     HANDLES(CloseHandle(pi.hProcess));
     HANDLES(CloseHandle(pi.hThread));
 
     if (exitCode != 0)
     {
         //
-        // Nejprve chyby salspawn.exe, pokud jsme ho pouzili
+        // First handle salspawn.exe errors if we used it
         //
         if (exitCode >= SPAWN_ERR_BASE)
         {
-            // chyba salspawn.exe - spatne parametry nebo tak...
+            // salspawn.exe error - bad parameters or similar
             if (exitCode >= SPAWN_ERR_BASE && exitCode < SPAWN_ERR_BASE * 2)
                 return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_RETURN, SPAWN_EXE_NAME, LoadStr(IDS_PACKRET_SPAWN));
-            // chyba CreateProcess
+            // CreateProcess error
             if (exitCode >= SPAWN_ERR_BASE * 2 && exitCode < SPAWN_ERR_BASE * 3)
                 return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_PROCESS, cmd, GetErrorText(exitCode - SPAWN_ERR_BASE * 2));
-            // chyba WaitForSingleObject
+            // WaitForSingleObject error
             if (exitCode >= SPAWN_ERR_BASE * 3 && exitCode < SPAWN_ERR_BASE * 4)
             {
                 char buffer[1000];
@@ -1916,7 +1916,7 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
                 strcat(buffer, GetErrorText(exitCode - SPAWN_ERR_BASE * 3));
                 return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_GENERAL, buffer);
             }
-            // chyba GetExitCodeProcess
+            // GetExitCodeProcess error
             if (exitCode >= SPAWN_ERR_BASE * 4)
             {
                 char buffer[1000];
@@ -1926,21 +1926,21 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
             }
         }
         //
-        // ted budou chyby externiho programu
+        // now come the external program errors
         //
-        // pokud je errorTable == NULL, pak nedelame preklad (neexistuje tabulka)
+        // if errorTable == NULL, no translation is done (table doesn't exist)
         if (!errorTable)
         {
             char buffer[1000];
             sprintf(buffer, LoadStr(IDS_PACKRET_GENERAL), exitCode);
             return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_RETURN, cmd, buffer);
         }
-        // najdeme v tabulce patricny text
+        // find the corresponding text in the table
         for (i = 0; (*errorTable)[i][0] != -1 &&
                     (*errorTable)[i][0] != (int)exitCode;
              i++)
             ;
-        // nasli jsme ho ?
+        // was it found?
         if ((*errorTable)[i][0] == -1)
             return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_RETURN, cmd, LoadStr(IDS_PACKRET_UNKNOWN));
         else
@@ -1981,7 +1981,7 @@ CExecuteWindow::~CExecuteWindow()
 HWND CExecuteWindow::Create()
 {
     CALL_STACK_MESSAGE1("CExecuteWindow::Create()");
-    // napocitam velikost textu => velikost okna
+    // compute text size => window size
     SIZE s;
     s.cx = 300;
     s.cy = 30;

@@ -130,7 +130,7 @@ void* MemCpy(void* dst, const void* src, unsigned count);
 
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 BOOL PathAppend(LPTSTR pPath, LPCTSTR pMore);
@@ -149,9 +149,9 @@ char* NumberToStr(char* buffer, const __int64 number);
 HANDLE CheckAndCreateDirectory(char* name, bool noSkip = false);
 int GetRootLen(const char* path);
 
-// protoze windowsova verze GetFileAttributes neumi pracovat se jmeny koncicimi mezerou/teckou,
-// napsali jsme si vlastni (u techto jmen pridava backslash na konec, cimz uz pak
-// GetFileAttributes funguje spravne, ovsem jen pro adresare, pro soubory s mezerou/teckou na
-// konci reseni nemame, ale aspon se to nezjistuje od jineho souboru - windowsova verze
-// orizne mezery/tecky a pracuje tak s jinym souborem/adresarem)
+// because the Windows version of GetFileAttributes cannot work with names ending with a space or dot,
+// we implemented our own (it appends a backslash to those names so that
+// GetFileAttributes then behaves correctly; this only helps for directories
+// while files with a trailing space or dot remain unsupported, but at least
+// it no longer queries another file — the Windows call trims the space/dot and works on a different file/directory)
 DWORD SalGetFileAttributes(const char* fileName);

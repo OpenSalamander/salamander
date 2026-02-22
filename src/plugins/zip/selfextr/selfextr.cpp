@@ -196,7 +196,7 @@ BOOL RemoveTemporaryDir()
     if (lstrlen(TargetPath) < MAX_PATH)
         _RemoveTemporaryDir(TargetPath);
     GetSystemDirectory(buf, MAX_PATH);
-    SetCurrentDirectory(buf); // musime z adresare odejit, jinak nepujde smazat
+    SetCurrentDirectory(buf); // we must leave the directory; otherwise it cannot be deleted
 
     DWORD attr = SalGetFileAttributes(TargetPath);
     if (attr != INVALID_FILE_ATTRIBUTES)
@@ -209,11 +209,11 @@ BOOL RemoveTemporaryDir()
     return RemoveDirectory(TargetPath);
 }
 
-// nase varianta funkce RegQueryValueEx, narozdil od API varianty zajistuje
-// pridani null-terminatoru pro typy REG_SZ, REG_MULTI_SZ a REG_EXPAND_SZ
-// POZOR: pri zjistovani potrebne velikosti bufferu vraci o jeden nebo dva (dva
-//        jen u REG_MULTI_SZ) znaky vic pro pripad, ze by string bylo potreba
-//        zakoncit nulou/nulami
+// our variant of RegQueryValueEx; unlike the API version it ensures
+// that REG_SZ, REG_MULTI_SZ, and REG_EXPAND_SZ values are null-terminated
+// WARNING: when requesting the required buffer size it returns one or two
+//          extra characters (two only for REG_MULTI_SZ) so the string can be
+//          properly terminated by one or two null characters
 LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                         LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData)
 {
@@ -228,7 +228,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
             lpcbData != NULL &&
             (ret == ERROR_MORE_DATA || lpData == NULL && ret == ERROR_SUCCESS))
         {
-            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // rekneme si radsi o pripadny null-terminator(y) navic
+            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request extra space for a possible null terminator
             return ret;
         }
         if (ret == ERROR_SUCCESS && lpData != NULL)
@@ -240,9 +240,9 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                     ((char*)lpData)[*lpcbData] = 0;
                     (*lpcbData)++;
                 }
-                else // nedostatek mista pro null-terminator v bufferu
+                else // not enough space for the null terminator in the buffer
                 {
-                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // rekneme si o potrebny null-terminator(y)
+                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request the necessary null terminator
                     return ERROR_MORE_DATA;
                 }
             }
@@ -253,9 +253,9 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                     ((char*)lpData)[*lpcbData] = 0;
                     (*lpcbData)++;
                 }
-                else // nedostatek mista pro druhy null-terminator v bufferu
+                else // not enough room for the second null terminator in the buffer
                 {
-                    (*lpcbData)++; // rekneme si o potrebny null-terminator
+                    (*lpcbData)++; // request the required null terminator
                     return ERROR_MORE_DATA;
                 }
             }
@@ -271,7 +271,7 @@ int InitExtraction(const char* name)
     int section;
 
     //
-    // otevreme soubor s archivem (exe) a namapujeme do pameti
+    // open the archive file (exe) and map it into memory
     //
 #ifdef EXT_VER
     int err;
@@ -315,7 +315,7 @@ int InitExtraction(const char* name)
     }
 #endif
     //
-    // mame ukazatel, ted zanalyzujeme header exe fajlu
+    // we have the pointer, now analyze the exe header
     //
     ptr = ArchiveBase;
     if (*(unsigned short*)ptr != ('M' + ('Z' << 8)))
@@ -432,7 +432,7 @@ int InitExtraction(const char* name)
     {
         HKEY key;
         char buffer[MAX_PATH];
-        const char* subKey = (char*)ArchiveStart + ArchiveStart->TargetDirSpecOffs + sizeof(LONG); // sizeof(HKEY) nelze pouzit v 64-bit verzi, ulozena je jen 32-bit hodnota
+        const char* subKey = (char*)ArchiveStart + ArchiveStart->TargetDirSpecOffs + sizeof(LONG); // sizeof(HKEY) cannot be used in 64-bit builds; only a 32-bit value is stored
         if (RegOpenKeyEx((HKEY)(ULONG_PTR) * (LONG*)((char*)ArchiveStart + ArchiveStart->TargetDirSpecOffs),
                          subKey, 0, KEY_QUERY_VALUE, &key) != ERROR_SUCCESS)
             goto LCURENTDIR;
@@ -667,7 +667,7 @@ int MyWinMain()
   }
   */
 
-    //jeste zobrazime messagebox
+    // finally show the message box
     if (ArchiveStart->MBoxStyle != -1)
     {
         int r = (int)ArchiveStart->MBoxStyle < 0 ? DialogBox(HInstance, MAKEINTRESOURCE(IDD_LONGMESSAGE), NULL, LongMessageDlgProc) : MessageBox(NULL, (char*)ArchiveStart + ArchiveStart->MBoxTextOffs, (char*)ArchiveStart + ArchiveStart->MBoxTitleOffs, ArchiveStart->MBoxStyle);
@@ -721,7 +721,7 @@ int MyWinMain()
         int r = ExpandEnvironmentStrings((char*)ArchiveStart + sizeof(CSelfExtrHeader),
                                          expandedCmdLine, sizeof(expandedCmdLine));
 
-        // pokud expanze nevydarila, bereme puvodni hodnotu
+        // if the expansion failed, fall back to the original value
         int len = SplitCommandLine(exeName, &parameters,
                                    r > 0 && r <= sizeof(expandedCmdLine) ? expandedCmdLine : (char*)ArchiveStart + sizeof(CSelfExtrHeader));
 
@@ -799,7 +799,7 @@ int MyWinMain()
                         MSG msg;
                         TRACE1("WAIT_OBJECT_0 + 1")
                         PeekMessage(&msg, (HWND)NULL, 0, 0, PM_REMOVE);
-                        /*BOOL b = FALSE; pro debug ucely
+                        /*BOOL b = FALSE; for debugging purposes
 	      if (b) MainWindowWndProc(NULL, WM_USER + 1, TRUE, 0);*/
                         break;
                     }

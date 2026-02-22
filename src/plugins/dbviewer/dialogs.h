@@ -5,14 +5,14 @@
 
 class CRendererWindow;
 
-#define FIND_HISTORY_SIZE 10 // pocet pamatovanych stringu
+#define FIND_HISTORY_SIZE 10 // number of remembered strings
 extern char* FindHistory[FIND_HISTORY_SIZE];
 
 //****************************************************************************
 //
 // CCommonDialog
 //
-// Dialog centrovany k parentu
+// Dialog centered relative to the parent
 //
 
 class CCommonDialog : public CDialog
@@ -111,7 +111,7 @@ public:
 protected:
     INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void SetFontText(); // na zaklade aktualniho fontu nastavi text v okenku
+    void SetFontText(); // set the text in the control based on the current font
 };
 
 //****************************************************************************
@@ -125,7 +125,7 @@ protected:
     CRendererWindow* Renderer;
     HWND HListView;
     BOOL DisableNotification;
-    TDirectArray<CDatabaseColumn> MyColumns; // kopie sloupcu pro ucely konfigurace
+    TDirectArray<CDatabaseColumn> MyColumns; // copy of columns for configuration purposes
     DWORD MinDlgW, MinDlgH, PrevDlgW, PrevDlgH;
 
 public:
@@ -141,7 +141,7 @@ protected:
 
     void RecalcLayout(DWORD NewDlgW, DWORD NewDlgH);
 
-    void SetLVTexts(int index); // podle MyColumns nastavi sloupce v LV
+    void SetLVTexts(int index); // configure list view columns according to MyColumns
 };
 
 // ****************************************************************************

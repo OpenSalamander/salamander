@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -11,7 +12,7 @@
 #include "gui.h"
 #include "logo.h"
 
-// pomocny objekt pro zasilani Ctrl+C do parenta prostrednictvim zpravy WM_COPY
+// helper object for sending Ctrl+C to the parent via the WM_COPY message
 class CKeyForwarderWindow : public CWindow
 {
 public:
@@ -143,14 +144,14 @@ int CMessageBox::Execute()
 
     HWND mainWnd = GetWndToFlash(Parent);
 
-    // tento patch prinesl hromadu padacek v SS2.5RC1, takze od nej opoustime
-    // a opravujeme FileComparator, aby se WM_USER_ACTIVATEWINDOW chovala mene
-    // agresivne
+    // this patch caused many crashes in SS2.5RC1, so we are abandoning it
+    // and fixing FileComparator so WM_USER_ACTIVATEWINDOW behaves less
+    // aggressively
     /*
-  // napred dorucime zpravy (standardni MessageBox se chova stejne)
-  // napriklad File Comparator ma ve fronte postuntou zpravu WM_USER_ACTIVATEWINDOW
-  // kterou bez teto pumpy dorucime az po aktivaci messageboxu, takze nam nasledne
-  // diffwnd ukradnul aktivaci
+  // first deliver messages (a standard MessageBox behaves the same way)
+  // for example, File Comparator has a postponed WM_USER_ACTIVATEWINDOW message in the queue
+  // which without this pump would be delivered only after the message box activation
+  // so diffwnd would steal the activation afterwards
   MSG msg;
   while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
   {
@@ -166,7 +167,7 @@ int CMessageBox::Execute()
     return ret;
 }
 
-// posune child window o dx a dy
+// move a child window by dx and dy
 void OffsetChildWindow(HWND hDialog, int resID, int dx, int dy)
 {
     HWND hWnd = GetDlgItem(hDialog, resID);
@@ -190,9 +191,9 @@ BOOL CMessageBox::EscapeEnabled()
         return TRUE;
 }
 
-// vraci kopii 'src', do ktere jsou vlozeny znaky 'n' tak, aby vysledna maximalni
-// sirka nepresahla 'maxWidth'. Predpoklada, ze hDC ma vybrany patricny font.
-// v pripade neuspechu vraci NULL
+// returns a copy of 'src' into which 'n' characters are inserted so that the resulting maximum
+// width does not exceed 'maxWidth'. Assumes that the hDC has the correct font selected.
+// returns NULL in case of failure
 
 char* DuplicateStrAndInsertEOLs(const char* src, HDC hDC, int maxWidth)
 {
@@ -201,8 +202,8 @@ char* DuplicateStrAndInsertEOLs(const char* src, HDC hDC, int maxWidth)
 
     int srcLen = (int)strlen(src);
 
-    // pole pro ulozeni castecnych delek v retezci
-    int* alpDx = (int*)malloc((1 + srcLen + 1) * sizeof(int)); // pro jistotu o polozku vice
+    // array for storing partial lengths in the string
+    int* alpDx = (int*)malloc((1 + srcLen + 1) * sizeof(int)); // one extra slot for safety
     if (alpDx == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -224,7 +225,7 @@ char* DuplicateStrAndInsertEOLs(const char* src, HDC hDC, int maxWidth)
     {
         if (src[i] == '\n')
         {
-            // konec radku
+            // end of line
             lineLen = 0;
         }
         else
@@ -267,7 +268,7 @@ BOOL CMessageBox::CopyToClipboard()
 {
     const char* separator = "---------------------------\r\n";
 
-    // napocitame celkovou velikost buffer
+    // compute the total buffer size
     const char* text = Text.Get();
     int urlTextLen = 0;
     if (URL != NULL)
@@ -278,10 +279,10 @@ BOOL CMessageBox::CopyToClipboard()
     }
     int buffSize = 4 * (int)strlen(separator) +
                    (int)strlen(Title) +
-                   2 * (int)strlen(text) + // vsechny znaky mohou byt '\n' budeme je konvertovat na "\r\n"
+                   2 * (int)strlen(text) + // every character may be '\n'; we'll convert them to "\r\n"
                    urlTextLen +
-                   MESSAGEBOX_MAXBUTTONS * (100 + 2 + 4) + // maximalni pocet znaku v tlacitku, co jsme ochotni resit
-                   50;                                     // nejaka rezerva na "\r\n"
+                   MESSAGEBOX_MAXBUTTONS * (100 + 2 + 4) + // max number of characters in a button we're willing to handle
+                   50;                                     // extra space for "\r\n"
     if (CheckText != NULL)
         buffSize += 300 + 2 + (int)strlen(separator);
 
@@ -295,7 +296,7 @@ BOOL CMessageBox::CopyToClipboard()
     DWORD written = wsprintf(buff, "%s%s\r\n%s", separator, Title, separator);
     char* ptr = buff + written;
 
-    // prelozime '\n' -> "\r\n"
+    // convert '\n' -> "\r\n"
     while (*text != 0)
     {
         if (*text == '\n')
@@ -314,7 +315,7 @@ BOOL CMessageBox::CopyToClipboard()
     written = wsprintf(ptr, "\r\n%s", separator);
     ptr += written;
 
-    // pripojime seznam tlacitek, odstranime '&'
+    // append list of buttons, remove '&'
     int i;
     for (i = 0; i < MESSAGEBOX_MAXBUTTONS; i++)
     {
@@ -339,7 +340,7 @@ BOOL CMessageBox::CopyToClipboard()
     written = wsprintf(ptr, "\r\n%s", separator);
     ptr += written;
 
-    // pokud existuje checkbox, pripojime jeho text (vyradime &)
+    // if a checkbox exists, append its text (strip the '&')
     if (CheckText != NULL)
     {
         char chkText[300];
@@ -368,7 +369,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // odmaskujeme jednotlive casti flagu
+        // unmask individual parts of the flag
         DWORD flagsType = Flags & MSGBOXEX_TYPEMASK;
         DWORD flagsIcon = Flags & MSGBOXEX_ICONMASK;
         DWORD flagsDef = Flags & MSGBOXEX_DEFMASK;
@@ -379,7 +380,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!EscapeEnabled())
             EnableMenuItem(GetSystemMenu(HWindow, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
 
-        // texty to titulku okna a do tela
+        // set the window title and body text
         SetWindowText(HWindow, Title);
         if (Text.NeedTruncate())
             Text.TruncateText(GetDlgItem(HWindow, IDS_MSGBOX_TEXT), TRUE);
@@ -396,14 +397,14 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         else
             DestroyWindow(GetDlgItem(HWindow, IDS_MSGBOX_URL));
 
-        // prostor mezi tlacitky a vodorovnou linkou / spodkem dialogu
+        // space between the buttons and the horizontal line / bottom of the dialog
         RECT lineR;
         GetWindowRect(GetDlgItem(HWindow, IDC_MSGBOX_LINE), &lineR);
         RECT btnR;
         GetWindowRect(GetDlgItem(HWindow, IDC_MSGBOX_1), &btnR);
         int btnBottomMargin = lineR.top - btnR.bottom;
 
-        // text pro check box
+        // text for the checkbox
         int checkLineH = 0;
         BOOL hintVisible = FALSE;
         char* hintLabel = NULL;
@@ -411,9 +412,9 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (flagsEx & MSGBOXEX_HINT)
             {
-                // probehneme CheckText, musime najit 2x'\t'
-                // za prvnim '\t' je "klikaci" text, ktery zobrazime vedle checkboxu
-                // za druhym '\t' je vlastni HINT, ktery se zobrazi po kliknuti
+                // parse CheckText and locate two '\t' characters
+                // after the first '\t' is the "clickable" text, which we display next to the checkbox
+                // after the second '\t' is the actual hint, which is shown when the clickable text is clicked
                 hintLabel = CheckText;
                 while (*hintLabel != '\t' && *hintLabel != 0)
                     hintLabel++;
@@ -444,7 +445,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else
             {
-                // TAB v checkboxu nema co delat (W2K zobrazi svislou carku, XP od TABu nezobrazi nic)
+                // TAB has no place in a checkbox (W2K shows a vertical bar, XP shows nothing)
                 char* p = CheckText;
                 while (*p != '\t' && *p != 0)
                     p++;
@@ -475,7 +476,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!hintVisible)
             DestroyWindow(GetDlgItem(HWindow, IDS_MSGBOX_HINT));
 
-        // nastavime pozadovanou ikonu
+        // select the desired icon
         LPCTSTR iconID = 0;
         DWORD beepID = MB_OK;
 
@@ -555,14 +556,14 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DestroyWindow(GetDlgItem(HWindow, IDI_MSGBOX_ICON));
         }
 
-        // vytahneme rect desktopu, kam budeme umisteni
+        // get the desktop rectangle where we will be positioned
         RECT clipRect;
         HWND hParent = Parent;
         if (hParent != NULL)
             hParent = GetTopVisibleParent(hParent);
         MultiMonGetClipRectByWindow(Parent, &clipRect, NULL);
 
-        // namerime velikost textu
+        // measure the text size
         HDC hDC = HANDLES(GetDC(HWindow));
         HFONT hOldFont = (HFONT)SelectObject(hDC, (HFONT)SendMessage(HWindow, WM_GETFONT, 0, 0));
         RECT tR;
@@ -571,16 +572,16 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT tRCheck = tR;
         RECT tRHint = tR;
 
-        // test prumerne sirky znaku fontu
+        // test the average character width of the font
         const char* FONT_TEST_TEXT = "ABCDEabcde12345";
         RECT fontR = {0};
         DrawText(hDC, FONT_TEST_TEXT, -1, &fontR, DT_CALCRECT | DT_LEFT | DT_SINGLELINE | DT_NOPREFIX);
         int fontCharWidth = (fontR.right - fontR.left) / (int)strlen(FONT_TEST_TEXT);
         int fontCharHeight = fontR.bottom - fontR.top;
 
-        // maximalni sirka vztazena k dekstopu, na kterem bude dialog zobrazen
+        // maximum width relative to the desktop where the dialog will appear
         int maxTextWidth = (int)((clipRect.right - clipRect.left) / 1.8);
-        if (maxTextWidth > fontCharWidth * 90) // od Windows Vista jsou dialogy zase uzsi - zalameme na 90 prumernych znacich
+        if (maxTextWidth > fontCharWidth * 90) // since Windows Vista dialogs are narrower again - wrap at 90 average characters
             maxTextWidth = fontCharWidth * 90;
 
         tR.right = maxTextWidth;
@@ -588,8 +589,8 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (tR.right > maxTextWidth)
         {
-            // sirka textu presahuje hranici maxTextWidth, vytvorime novy
-            // text do ktereho vlozime tvrde konce radku
+            // text width exceeds maxTextWidth limit, so we create a new one
+            // text into which we will insert hard line breaks
             const char* newText = DuplicateStrAndInsertEOLs(Text.Get(), hDC, maxTextWidth);
             if (newText != NULL)
             {
@@ -601,26 +602,26 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-            // zmensujeme sirku textu, dokud nesjou radky optimalne vypneny
-            // casove trochu narocne, ale neni kam spechat
+            // decrease the text width until the lines are optimally filled
+            // a bit time-consuming, but there's no need to rush
             RECT iterRect = tR;
             int goodRight;
             do
             {
                 goodRight = iterRect.right;
-                iterRect.right -= 5; // pojedeme po peti bodech
+                iterRect.right -= 5; // step by five pixels
                 DrawText(hDC, Text.Get(), -1, &iterRect, DT_CALCRECT | DT_LEFT | DT_WORDBREAK | DT_EXPANDTABS | DT_NOPREFIX);
                 //        TRACE_I("Iter: right="<<iterRect.right);
             } while (iterRect.bottom == tR.bottom && iterRect.right < goodRight && iterRect.right >= 0);
             tR.right = goodRight;
         }
 
-        // pokud je pod textem URL, pripocitame ho pro zjednoduseni k vysce textu
+        // if there's a URL below the text, we add it to the text height for simplicity
         RECT urlR = {0};
         if (urlText != NULL)
         {
             DrawText(hDC, urlText, -1, &urlR, DT_CALCRECT | DT_LEFT | DT_SINGLELINE | DT_NOPREFIX);
-            tR.bottom += urlR.bottom; // vyska url
+            tR.bottom += urlR.bottom; // URL height
         }
 
         BOOL multiline = tR.bottom > textR.bottom;
@@ -646,7 +647,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             deltaY -= 2 * topMargin;
         deltaY += fontCharHeight;
 
-        // priradime tlacitka
+        // assign the buttons
         int btnText[MESSAGEBOX_MAXBUTTONS];
         int btnID[MESSAGEBOX_MAXBUTTONS];
         int btnCount = 0;
@@ -736,9 +737,9 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         default: //case MSGBOXEX_OK:
         {
-            // pokud k nam propadne neznamy flag, budeme se tvarit jako MSGBOXEX_OK varianta
+            // if an unknown flag falls through, we will behave like the MSGBOXEX_OK variant
             if (flagsType != MSGBOXEX_OK)
-                TRACE_E("CMessageBox: uknown flags: " << Flags);
+                TRACE_E("CMessageBox: unknown flags: " << Flags);
 
             btnText[btnCount] = IDS_BUTTON_OK;
             btnID[btnCount++] = DIALOG_OK;
@@ -758,7 +759,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // detekce rozmeru tlacitka a mezitlacitkove mezery
+        // detection of the button dimensions and the spacing between buttons
         RECT buttonR1;
         GetWindowRect(GetDlgItem(HWindow, IDC_MSGBOX_1), &buttonR1);
         RECT buttonR2;
@@ -772,7 +773,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ScreenToClient(HWindow, &p);
         int btnY = p.y + deltaY;
 
-        // nastavime tlacitka (IDcka, texty, viditelnost)
+        // configure buttons (IDs, text, visibility)
         int origBtnID[MESSAGEBOX_MAXBUTTONS] = {IDC_MSGBOX_1, IDC_MSGBOX_2, IDC_MSGBOX_3, IDC_MSGBOX_4};
         HWND origBtnWnd[MESSAGEBOX_MAXBUTTONS];
         int btnAddedWidth = 0;
@@ -783,11 +784,11 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             origBtnWnd[i] = hButton;
             if (i < btnCount)
             {
-                // priradime ID
+                // assign ID
                 ButtonsID[i] = btnID[i];
                 SetWindowLongPtr(hButton, GWLP_ID, btnID[i]);
 
-                // priradime text
+                // assign text
                 BOOL btnTextWasSet = FALSE;
                 if (AliasBtnNames != NULL) // alias button names
                 {
@@ -807,7 +808,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             btnTextWasSet = TRUE;
                             SetWindowText(hButton, aliasName);
 
-                            // omerime jestli neni potreba rozsirit tlacitko
+                            // measure whether the button needs to be expanded
                             char btnText2[300];
                             lstrcpyn(btnText2, aliasName, 300);
                             RemoveAmpersands(btnText2);
@@ -835,23 +836,23 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (!btnTextWasSet)
                     SetWindowText(hButton, LoadStr(btnText[i]));
 
-                // nechame si posilat Ctrl+C v podobe WM_COPY
+                // request to receive Ctrl+C in the form of WM_COPY
                 CKeyForwarderWindow* wnd = new CKeyForwarderWindow(HWindow, btnID[i]);
                 if (wnd != NULL && wnd->HWindow == NULL)
-                    delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+                    delete wnd; // attaching failed - manually delete
             }
             else
             {
                 ButtonsID[i] = 0;
-                // nepotrebna tlacitka vyhodime
+                // remove unnecessary buttons
                 DestroyWindow(hButton);
             }
         }
 
-        // celkova sirka tlacitek a mezitlacitkovych mezer
+        // total width of buttons and gaps between them
         int totalBtnWidth = btnWidth * btnCount + btnMargin * (btnCount - 1) + btnAddedWidth;
 
-        // upravime rozmery dialogu
+        // adjust dialog dimensions
         RECT windowR;
         GetWindowRect(HWindow, &windowR);
         int width = windowR.right - windowR.left;
@@ -860,7 +861,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT clientR;
         GetClientRect(HWindow, &clientR);
 
-        // uprava sirky dialogu: musi se tam vejit text, checkbox a tlacitka s okrajema
+        // adjust the dialog width: the text, checkbox and buttons must fit with margins
         int checkAndHint = tRCheck.right;
         if (hintVisible)
             checkAndHint += hintWidth;
@@ -869,13 +870,13 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (clientR.right + deltaX < totalBtnWidth + 2 * btnBottomMargin)
             deltaX = totalBtnWidth + 2 * btnBottomMargin - clientR.right;
 
-        // zmensime vysku textu
+        // reduce the text height
         GetWindowRect(GetDlgItem(HWindow, IDS_MSGBOX_TEXT), &textR);
         p.x = textR.left;
         ScreenToClient(HWindow, &p);
-        // text vertikalne je centrovan k ikone
+        // text is vertically centered relative to the icon
         p.y = topMargin + (iconHeight - tR.bottom - tR.top) / 2;
-        // ale nesmi vylezt nad ni
+        // but it must not extend above it
         if (p.y < topMargin)
             p.y = topMargin;
         SetWindowPos(GetDlgItem(HWindow, IDS_MSGBOX_TEXT), NULL, p.x - iconWidth, p.y,
@@ -888,13 +889,13 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                          tR.right - tR.left, urlR.bottom - urlR.top, SWP_NOZORDER);
         }
 
-        // vlastni dialog
+        // the actual dialog
         SetWindowPos(HWindow, NULL, 0, 0, width + deltaX, height + deltaY,
                      SWP_NOZORDER | SWP_NOMOVE);
 
         GetClientRect(HWindow, &clientR);
 
-        // rozmistime tlacitka
+        // arrange the buttons
         int x = (clientR.right - totalBtnWidth) / 2;
         if (WindowsVistaAndLater)
             x = clientR.right - totalBtnWidth - btnBottomMargin;
@@ -931,7 +932,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SendMessage(HWindow, DM_SETDEFID, btnID[defIndex], 0);
         SetFocus(GetDlgItem(HWindow, btnID[defIndex]));
 
-// casem az to bude v includech, vymazat nasledujici definice...
+// remove the following definitions once they are included...
 #define BCM_FIRST 0x1600 // Button control messages
 #define BCM_SETSHIELD (BCM_FIRST + 0x000C)
 
@@ -940,7 +941,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendMessage(GetDlgItem(HWindow, btnID[defIndex]), BCM_SETSHIELD, 0, TRUE);
         }
 
-        // posuneme checkbox a caru
+        // move the checkbox and line
         if (CheckText != NULL)
         {
             OffsetChildWindow(HWindow, IDC_MSGBOX_LINE, 0, deltaY);
@@ -962,10 +963,10 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetWindowPos(GetDlgItem(HWindow, IDS_MSGBOX_CHECK), NULL, p.x, p.y,
                          tRCheck.right + 3 * p.x, r.bottom - r.top, SWP_NOZORDER);
 
-            // nechame si posilat Ctrl+C v podobe WM_COPY
+            // forward Ctrl+C as a WM_COPY message
             CKeyForwarderWindow* wnd = new CKeyForwarderWindow(HWindow, IDS_MSGBOX_CHECK);
             if (wnd != NULL && wnd->HWindow == NULL)
-                delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+                delete wnd; // attaching failed - manually delete
 
             if (hintVisible)
             {
@@ -979,15 +980,15 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         //      MessageBox(Parent, Text.Get(), Title, Flags);  // experimental
 
-        // pipneme - jako pravy message box
+        // beep - like a proper message box
         if ((Flags & MSGBOXEX_SILENT) == 0)
             MessageBeep(beepID);
 
-        // nechame vycentrovat
+        // let it be centered
         CCommonDialog::DialogProc(uMsg, wParam, lParam);
 
-        // pod W2K pri spousteni pres shortcut s MAXIMIZED nastavenim
-        // se dialog zobrazoval maximalizovany; SC_RESTORE na to zabira
+        // on Windows 2000, when launched via a shortcut with MAXIMIZED set
+        // the dialog appeared maximized; SC_RESTORE fixes that
         SendMessage(HWindow, WM_SYSCOMMAND, SC_RESTORE, 0);
 
         if (Flags & MB_TASKMODAL)
@@ -1071,11 +1072,11 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             hi.iContextType = HELPINFO_WINDOW;
             hi.dwContextId = HelpID;
             GetCursorPos(&hi.MousePos);
-            // pokud mame callback, volame ho
+            // if we have a callback, invoke it
             if (HelpCallback != NULL)
                 HelpCallback(&hi);
             else
-            { // jinak posleme WM_HELP
+            { // otherwise send WM_HELP
                 if (Parent != NULL)
                     SendMessage(Parent, WM_HELP, 0, (LPARAM)&hi);
                 else
@@ -1084,7 +1085,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
 
-        // pouze tato tlacitka zaviraji dialog (chodi sem i kliknuti na checkbox)
+        // only these buttons close the dialog (clicks on the checkbox also arrive here)
         case DIALOG_OK:
         case DIALOG_CANCEL:
         case DIALOG_ABORT:
@@ -1095,13 +1096,13 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case DIALOG_TRYAGAIN:
         case DIALOG_CONTINUE:
         {
-            if (LOWORD(wParam) == DIALOG_CANCEL && !EscapeEnabled()) // blokujeme VK_ESCAPE pro nektere kombinace tlacitek
+            if (LOWORD(wParam) == DIALOG_CANCEL && !EscapeEnabled()) // block VK_ESCAPE for some button combinations
                 return TRUE;
 
-            TransferData(ttDataFromWindow); // vnutime transfer i pri DIALOG_CANCEL (MSDN: If users select the option and click Cancel, this option does take effect. This setting is a meta-option, so it doesn't follow the standard Cancel behavior of leaving no side effect.)
+            TransferData(ttDataFromWindow); // force transfer even when DIALOG_CANCEL is used (MSDN: If users select the option and click Cancel, this option does take effect. This setting is a meta-option, so it doesn't follow the standard Cancel behavior of leaving no side effect.)
             if (Modal)
             {
-                // message box typu MSGBOXEX_OK a MSGBOXEX_YESNO nesmi vratit CANCEL (naopak MSGBOXEX_ABORTRETRYIGNORE vraci CANCEL)
+                // message boxes MSGBOXEX_OK and MSGBOXEX_YESNO must not return CANCEL (whereas MSGBOXEX_ABORTRETRYIGNORE does return CANCEL)
                 if (LOWORD(wParam) == DIALOG_CANCEL)
                 {
                     DWORD flagsType = Flags & MSGBOXEX_TYPEMASK;
@@ -1136,14 +1137,14 @@ int SalMessageBox(HWND hParent, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
     CALL_STACK_MESSAGE5("SalMessageBox(0x%p, %s, %s, 0x%X)", hParent, lpText, lpCaption, uType);
 
-    // omezeno, ktere SalMessageBox nezvladne
+    // limitations that SalMessageBox cannot handle
     if (uType & MSGBOXEX_HELP)
     {
         TRACE_E("SalMessageBox: use SalMessageBoxEx with MSGBOXEX_HELP flag");
         uType &= ~MSGBOXEX_HELP;
     }
 
-    // prevedeme volani na SalMessageBoxEx
+    // forward the call to SalMessageBoxEx
     MSGBOXEX_PARAMS params;
     memset(&params, 0, sizeof(params));
     params.HParent = hParent;

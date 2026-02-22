@@ -112,7 +112,7 @@ CPluginInterfaceAbstract*
     // setup help file name
     SalamanderGeneral->SetHelpFileName("automation.chm");
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(
         SalamanderGeneral->LoadStr(g_hLangInst, IDS_PLUGINNAME),
         FUNCTION_CONFIGURATION |

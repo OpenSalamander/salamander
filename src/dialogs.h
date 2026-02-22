@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -39,9 +40,9 @@ protected:
     int SelectionEnd;
 
 public:
-    // 'history' urcuje, jestli dialog bude obsahovat combbox(TRUE), nebo editline (FALSE)
-    // 'directoryHelper' urcuje, zda se pouzije resource s tlacitkem za ediline pro vyber adresare
-    // 'selectionEnd' urcuje po ktery znak ma byt selected nazev (slouzi pro quick rename) -1 == all
+    // 'history' determines whether the dialog will contain a combobox (TRUE) or an editline (FALSE)
+    // 'directoryHelper' specifies if a resource with a button behind the editline will be used to select a directory
+    // 'selectionEnd' specifies up to which character the name is selected (used for quick rename), -1 == all
     CCopyMoveDialog(HWND parent, char* path, int pathBufSize, char* title,
                     CTruncatedString* subject, DWORD helpID,
                     char* history[], int historyCount, BOOL directoryHelper);
@@ -77,22 +78,22 @@ protected:
     int PathBufSize;
     char** History;
     int HistoryCount;
-    CCriteriaData* CriteriaInOut; // pro transfer dat do dialogu a ven z nej (pri OK)
-    CCriteriaData* Criteria;      // alokuji, protoze kvuli staticke deklaraci bych musel sachovat s headrama
+    CCriteriaData* CriteriaInOut; // used to transfer data in and out of the dialog (on OK)
+    CCriteriaData* Criteria;      // allocated because static declaration would require juggling headers
     BOOL HavePermissions;
     BOOL SupportsADS;
 
-    int OriginalWidth;    // plna sirka dialogu
-    int OriginalHeight;   // plna vyska dialogu
-    int OriginalButtonsY; // Y pozice tlacitek v client souradnicich
-    int SpacerHeight;     // vymezovac pro zmensovani/zvetsovani dialogu
-    BOOL Expanded;        // jsme prave rozbaleni?
+    int OriginalWidth;    // full dialog width
+    int OriginalHeight;   // full dialog height
+    int OriginalButtonsY; // Y position of the buttons in client coordinates
+    int SpacerHeight;     // spacer used when shrinking/expanding the dialog
+    BOOL Expanded;        // is the dialog currently expanded?
 
     CButton* MoreButton;
 
 public:
-    // 'history' urcuje, jestli dialog bude obsahovat combbox(TRUE), nebo editline (FALSE)
-    // 'directoryHelper' urcuje, zda se pouzije resource s tlacitkem za ediline pro vyber adresare
+    // 'history' determines whether the dialog will contain a combobox (TRUE) or an editline (FALSE)
+    // 'directoryHelper' specifies if a resource with a button behind the editline will be used to select a directory
     CCopyMoveMoreDialog(HWND parent, char* path, int pathBufSize, char* title,
                         CTruncatedString* subject, DWORD helpID,
                         char* history[], int historyCount, CCriteriaData* criteriaInOut,
@@ -106,7 +107,7 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void SetOptionsButtonState(BOOL more);
-    void DisplayMore(BOOL more, BOOL fast); // fast znamena, ze je vse cerstve inicializovano a nemusime resetit hodnoty
+    void DisplayMore(BOOL more, BOOL fast); // fast means everything is freshly initialized and we don't need to reset values
     HDWP OffsetControl(HDWP hdwp, int id, int yOffset);
     void EnableControls();
     void TransferCriteriaControls(CTransferInfo& ti);
@@ -116,7 +117,7 @@ protected:
 //
 // ****************************************************************************
 
-#define MESSAGEBOX_MAXBUTTONS 4 // maximalni pocet tlacitek
+#define MESSAGEBOX_MAXBUTTONS 4 // maximum number of buttons
 
 class CMessageBox : public CCommonDialog
 {
@@ -131,9 +132,9 @@ protected:
     char* AliasBtnNames;
     char* URL;
     char* URLText;
-    // pro WM_COPY:
-    int ButtonsID[MESSAGEBOX_MAXBUTTONS]; // IDcka tlacitek po premapovani
-    int BackgroundSeparator;              // y offset rozdeleni bila/seda (Vista+)
+    // for WM_COPY:
+    int ButtonsID[MESSAGEBOX_MAXBUTTONS]; // IDs of the buttons after remapping
+    int BackgroundSeparator;              // Y offset dividing white/gray (Vista+)
 
 public:
     CMessageBox(HWND parent, DWORD flags, const char* title, const char* text,
@@ -165,7 +166,7 @@ protected:
 class CChangeAttrDialog : public CCommonDialog
 {
 private:
-    // handly pro TimeDate controly
+    // handles for the TimeDate controls
     HWND HModifiedDate;
     HWND HModifiedTime;
     HWND HCreatedDate;
@@ -173,12 +174,12 @@ private:
     HWND HAccessedDate;
     HWND HAccessedTime;
 
-    // stavove promenne pro disableni checkboxu
+    // state variables used to disable checkboxes
     BOOL SelectionContainsDirectory;
     BOOL FileBasedCompression;
     BOOL FileBasedEncryption;
 
-    // pokud user kliknul na prislusny checkbox, bude promenna nastavena na TRUE
+    // variable is set to TRUE when the user clicks the corresponding checkbox
     BOOL ArchiveDirty;
     BOOL ReadOnlyDirty;
     BOOL HiddenDirty;
@@ -226,8 +227,8 @@ protected:
 
 struct CProgressDlgArrItem
 {
-    HANDLE DlgThread; // handle threadu dialogu (muze byt i handle ukonceneho threadu dialogu)
-    HWND DlgWindow;   // handle okna dialogu (NULL = dialog jiz byl zavren)
+    HANDLE DlgThread; // handle of the dialog thread (may also be a handle of a terminated dialog thread)
+    HWND DlgWindow;   // handle of the dialog window (NULL = the dialog has already closed)
 
     CProgressDlgArrItem()
     {
@@ -239,49 +240,49 @@ struct CProgressDlgArrItem
 class CProgressDlgArray
 {
 protected:
-    CRITICAL_SECTION Monitor;                 // sekce pouzita pro synchronizaci tohoto objektu (chovani - monitor)
-    TIndirectArray<CProgressDlgArrItem> Dlgs; // pole dialogu operaci (jen dialogy bezici ve svych threadech)
+    CRITICAL_SECTION Monitor;                 // section used to synchronize this object (behaves like a monitor)
+    TIndirectArray<CProgressDlgArrItem> Dlgs; // array of operation dialogs (only those running in their own threads)
 
 public:
     CProgressDlgArray();
     ~CProgressDlgArray();
 
-    // alokuje a vlozi do pole strukturu pro novy dialog (data se plni az venku);
-    // pri nedostatku pameti vraci NULL, jinak vraci pozadovanou strukturu
-    // volat jen z hl. threadu (jinak hrozi konflikt s cistenim dokoncenych threadu)
+    // allocates and inserts a structure for a new dialog into the array (data are filled in outside)
+    // returns NULL on insufficient memory, otherwise returns the requested structure
+    // call only from the main thread (otherwise a conflict with cleanup of finished threads may occur)
     CProgressDlgArrItem* PrepareNewDlg();
 
-    // v kriticke sekci pole nastavi data v 'dlg' podle 'dlgThread' a 'dlgWindow';
-    // data se meni jen na hodnoty ruzne od NULL (parametr NULL = bez zmeny)
+    // within the array's critical section set data in 'dlg' according to 'dlgThread' and 'dlgWindow'
+    // data change only to values different from NULL (parameter NULL = no change)
     void SetDlgData(CProgressDlgArrItem* dlg, HANDLE dlgThread, HWND dlgWindow);
 
-    // odstrani strukturu 'dlg' z pole; 'dlg->DlgThread' musi byt NULL; volat jen
-    // pokud se nepodari start dialogu, pro nejz byl 'dlg' ziskan pres metodu
-    // PrepareNewDlg()
+    // removes the 'dlg' structure from the array; 'dlg->DlgThread' must be NULL;
+    // call only if starting the dialog for which 'dlg' was acquired via 
+    // PrepareNewDlg() function failed
     void RemoveDlg(CProgressDlgArrItem* dlg);
 
-    // odstrani z pole vsechny dialogy, jejichz thready uz se dokoncili (handly techto
-    // threadu zavre); vraci pocet dosud bezicich threadu dialogu operaci (takze az vrati
-    // nulu, je napr. mozne ukoncit Salamandera)
+    // removes all dialogs whose threads have already finished from the array (closes their handles);
+    // returns the number of still running operation dialog threads (so when it returns zero, 
+    // for example Salamander can be terminated)
     int RemoveFinishedDlgs();
 
-    // najde v poli dialog s oknem 'hdlg' a ulozi do jeho 'DlgWindow' NULL (dialog
-    // timto zpusobem hlasi, ze se zavira; thread dialogu by se mel ukoncit vzapeti)
+    // finds a dialog with window 'hdlg' in the array and stores NULL to its 'DlgWindow'
+    // (this way the dialog reports it is closing; the dialog thread should end shortly after)
     void ClearDlgWindow(HWND hdlg);
 
-    // vraci dalsi otevreny dialog; pokud zadny dialog neni otevreny, vraci NULL;
-    // 'index' pred prvnim volanim inicializovat na 0, pro dalsi volani pouzit
-    // vracenou hodnotu 'index' (nesahat na 'index' mezi volanimi); vraci dialogy
-    // cyklicky (po poslednim v rade se vrati k prvnimu)
+    // returns the next open dialog; if no dialog is open, returns NULL;
+    // before the first call set 'index' to 0, use the returned value of 'index' 
+    // for subsequent calls (do not touch 'index' between calls); dialogs are returned 
+    // in cycles (after the last one it returns to the first)
     HWND GetNextOpenedDlg(int* index);
 
-    // zajisti zavreni vsech otevrenych dialogu;
-    // volat jen z hl. threadu (jinak hrozi otevreni dalsiho dialogu, ktery se prirozene
-    // nedozvi, ze se ma ukoncit)
+    // ensures all open dialogs are closed
+    // call only from the main thread (otherwise another dialog might open and it won't 
+    // know it should terminate)
     void PostCancelToAllDlgs();
 
-    // rozeslem vsem dialogum zpravu, ze doslo ke zmene (barvy) ikonky a je treba ji
-    // znovu nastavit; volat jen z hl. threadu
+    // sends a message to all dialogs that the icon (color) has changed and needs 
+    // to be set again; call only from the main thread
     void PostIconChange();
 };
 
@@ -297,10 +298,10 @@ class CStaticText;
 class CProgressBar;
 struct CStartProgressDialogData;
 
-// vraci FALSE pokud se nepodarilo v novem threadu otevrit progress dialog nebo
-// pokud se v tomto dialogu nepodarilo spustit thread workera operace; pokud
-// vraci FALSE, musi volajici uvolnit skript 'script' (jinak se skript uvolnuje
-// az po dobehnuti operace v threadu workera)
+// returns FALSE if the progress dialog could not be opened in the new thread or 
+// if starting an operation in the worker thread failed in this dialog; when FALSE 
+// is returned the caller must free the script 'script' manually (otherwise the script
+// is freed after the operation in the worker thread finishes)
 BOOL StartProgressDialog(COperations* script, const char* caption,
                          CChangeAttrsData* attrsData, CConvertData* convertData);
 
@@ -315,28 +316,28 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    BOOL FlushCachedData(); // posle zmenena data staticum a progress baram; vraci TRUE pokud bylo co updatnout (neco bylo dirty)
+    BOOL FlushCachedData(); // sends modified data to statics and progress bars; returns TRUE if there was something to update (something was dirty)
 
     void SetDlgTitle(BOOL minimized);
     void SetWindowIcon();
 
 protected:
-    BOOL RunningInOwnThread;                // TRUE/FALSE = dialog bezi ve svem threadu ("na pozadi") / dialog bezi v hl. threadu a je modalni k parentovi (vetsinou k jednomu z panelu)
-    CStartProgressDialogData* ProgrDlgData; // neni NULL jen pokud dialog bezi ve svem threadu a jeste nebyl pusten dale hl. thread (ceka na otevreni dialogu a start operace)
+    BOOL RunningInOwnThread;                // TRUE/FALSE = dialog runs in its own thread ("background") / dialog runs in the main thread and is modal to its parent (usually one of the panels)
+    CStartProgressDialogData* ProgrDlgData; // non-NULL only if the dialog runs in its own thread and the main thread hasn't been resumed yet (waiting for dialog opening and operation start)
 
-    HANDLE Worker;                // thread workera prislusiciho k tomuto dialogu (NULL pokud tento thread jeste/uz neexistuje)
-    HANDLE WContinue;             // viceucelovy event
-    HANDLE WorkerNotSuspended;    // non-signaled == Worker ma prejit do suspend-modu
-    BOOL CancelWorker;            // je-li TRUE, thread workera se ukonci
-    int OperationProgress;        // hodnota progressu sdilena s threadem workera
-    int SummaryProgress;          // hodnota progressu sdilena s threadem workera
-    BOOL ShowPause;               // tlacitko "pause" ma mit text: TRUE = pause, FALSE = resume
-    BOOL IsInQueue;               // TRUE = operace je ve fronte (user si to pral + povedlo se ji tam pridat)
-    BOOL AutoPaused;              // TRUE pokud je operace ve fronte a je kvuli tomu "paused"
-    BOOL StatusPaused;            // TRUE = operace je zastavena, napr. dotaz na Cancel operace (+ostatni dialogy)
-    DWORD NextTimeLeftUpdateTime; // cas dalsiho povoleneho updatu time-left (caste updaty jsou u delsich casu na skodu)
-    CQuadWord TimeLeftLastValue;  // posledni zobrazena hodnota time-left
-    CITaskBarList3 TaskBarList3;  // pro ovladani progress na taskbar od W7
+    HANDLE Worker;                // worker thread associated with this dialog (NULL if it doesn't exist yet/any more)
+    HANDLE WContinue;             // multi-purpose event
+    HANDLE WorkerNotSuspended;    // non-signaled == the worker should enter suspend mode
+    BOOL CancelWorker;            // if TRUE, the worker thread will terminate
+    int OperationProgress;        // progress value shared with the worker thread
+    int SummaryProgress;          // progress value shared with the worker thread
+    BOOL ShowPause;               // the "pause" button text: TRUE = pause, FALSE = resume
+    BOOL IsInQueue;               // TRUE = the operation is queued (requested by the user and successfully added)
+    BOOL AutoPaused;              // TRUE if the operation is queued and therefore paused
+    BOOL StatusPaused;            // TRUE = the operation is stopped, e.g. when querying Cancel (+ other dialogs)
+    DWORD NextTimeLeftUpdateTime; // time of the next allowed time-left update (frequent updates hurt for long times)
+    CQuadWord TimeLeftLastValue;  // last displayed time-left value
+    CITaskBarList3 TaskBarList3;  // controls taskbar progress since Windows 7
 
     CProgressBar *Operation,
         *Summary;
@@ -352,24 +353,24 @@ protected:
 
     HWND HPreposition;
 
-    BOOL CanClose; // zamezime nechtenemu zavreni (uvnitr metody tohoto objektu)
+    BOOL CanClose; // prevent unwanted closing (handled inside this object's methods)
 
-    BOOL TimerIsRunning; // pokud je TRUE, bezi timer pro zobrazovani zmen textu a progress bar
+    BOOL TimerIsRunning; // if TRUE, a timer for text changes and the progress bar updates is running
 
-    BOOL FirstUserSetDialog; // TRUE = jeste nebyla zpracovana zprava WM_USER_SETDIALOG (u prvni forcneme prekresleni, aby user videl dialog aspon probliknout)
+    BOOL FirstUserSetDialog; // TRUE = WM_USER_SETDIALOG message isn't processed yet (the first call forces a repaint so the user sees the dialog at least flash)
 
-    HWND NextForegroundWindow; // okno, ktere by melo byt foreground po zavreni tohoto dialogu (na XP se servis packem 1 a otevrenym top-most oknem blbla aktivace okna po zavreni dialogu - aktivovalo se top-most okno misto hlavniho okna Salama)
+    HWND NextForegroundWindow; // window that should be foreground after closing this dialog (on XP with service pack 1 and with a top-most window opened the activation may fail after closing the dialog - focus sometimes went to the top-most window instead of Salamander)
 
-    BOOL DoNotBeepOnClose; // TRUE = operace se cancluje kvuli exitu Salama, zadny beep nema smysl
+    BOOL DoNotBeepOnClose; // TRUE = operation cancels because Salamander is exiting; beeping makes no sense
 
-    // texty ukladame do cache, vykreslujeme je az na timer
+    // texts are stored in a cache and drawn when the timer fires
     BOOL CacheIsDirty;
     char OperationCache[100];
     char PrepositionCache[100];
     char SourceCache[2 * MAX_PATH];
     char TargetCache[2 * MAX_PATH];
 
-    // hodnoty ukladame, vykreslujeme az na timer
+    // values are stored and drawn only when the timer fires
     BOOL OperationProgressCacheIsDirty;
     int OperationProgressCache;
     BOOL SummaryProgressCacheIsDirty;
@@ -587,8 +588,8 @@ class CColorGraph;
 class CDriveInfo : public CCommonDialog
 {
 protected:
-    char VolumePath[MAX_PATH]; // k jakemu drivu se maji zobrazit informace (bud root nebo junction-point)
-    char OldVolumeName[1000];  // pro detekci zmeny
+    char VolumePath[MAX_PATH]; // which drive information should be shown (either the root or a junction point)
+    char OldVolumeName[1000];  // for change detection
     CColorGraph* Graph;
     HICON HDriveIcon;
 
@@ -613,9 +614,9 @@ private:
     BOOL SelectionContainsDirectory;
 
 public:
-    int FileNameFormat; // cisla kompatibilni s funkci AlterFileName
-    int Change;         // jaka cast jmena se ma menit  --||--
-    BOOL SubDirs;       // vcetne podadresaru?
+    int FileNameFormat; // numbers compatible with AlterFileName function
+    int Change;         // which part of the name should be modified  --||--
+    BOOL SubDirs;       // including subdirectories?
 
     CChangeCaseDlg(HWND parent, BOOL selectionContainsDirectory);
 
@@ -631,11 +632,11 @@ private:
     BOOL SelectionContainsDirectory;
 
 public:
-    char Mask[MAX_PATH]; // ktere soubory budeme konvertovat?
-    int Change;          // ktery prevod se ma provest?
-    BOOL SubDirs;        // vcetne podadresaru?
-    int CodeType;        // ktere kodovani je vybrane (0 = nic)
-    int EOFType;         // ktere konce radku jsou vybrane (0 = nic)
+    char Mask[MAX_PATH]; // which files will be converted?
+    int Change;          // which conversion should be performed?
+    BOOL SubDirs;        // include subdirectories?
+    int CodeType;        // selected encoding (0 = none)
+    int EOFType;         // selected line endings (0 = none)
                          // 1 = CRLF
                          // 2 = LF
                          // 3 = CR
@@ -682,8 +683,8 @@ protected:
 class CSetSpeedLimDialog : public CCommonDialog
 {
 protected:
-    BOOL* UseSpeedLim; // TRUE = zapnuty speed-limit
-    DWORD* SpeedLimit; // speed-limit v bytech za vterinu
+    BOOL* UseSpeedLim; // TRUE = speed limit enabled
+    DWORD* SpeedLimit; // speed limit in bytes per second
 
 public:
     CSetSpeedLimDialog(HWND parent, BOOL* useSpeedLim, DWORD* speedLimit);
@@ -756,7 +757,7 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // v bufferu 'name' zmeni priponu na 'ext'; vrati TRUE, pokud se to povedlo
+    // changes the extension in buffer 'name' to 'ext'; returns TRUE on success
     BOOL ChangeExtension(char* name, const char* ext);
 
     char* Path;
@@ -829,8 +830,8 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
-    CBitmap* Bitmap;         // vcetne textu
-    CBitmap* OriginalBitmap; // pouze grafika bez textu
+    CBitmap* Bitmap;         // includes the text
+    CBitmap* OriginalBitmap; // graphics only, without text
     HFONT HNormalFont;
     HFONT HBoldFont;
     RECT OpenSalR;
@@ -912,14 +913,14 @@ protected:
 class CTaskListDialog : public CCommonDialog
 {
 protected:
-    DWORD DisplayedVersion; // zobrazena verze seznamu
+    DWORD DisplayedVersion; // currently shown version of the list
 
 public:
     CTaskListDialog(HWND parent);
 
 protected:
     void Refresh();
-    DWORD GetCurPID(); // vraci PID vybrany v listboxu
+    DWORD GetCurPID(); // returns the PID selected in the list box
 
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
@@ -930,12 +931,12 @@ protected:
 class CChangeIconDialog : public CCommonDialog
 {
 protected:
-    // pro transfer dat z/do dialogu
+    // for transferring data to and from the dialog
     char* IconFile;
     int* IconIndex;
     BOOL Dirty;
-    HICON* Icons;     // pole handlu enumerovanych ikon
-    DWORD IconsCount; // pocet ikon v poli
+    HICON* Icons;     // array of enumerated icon handles
+    DWORD IconsCount; // number of icons in the array
 
 public:
     CChangeIconDialog(HWND hParent, char* iconFile, int* iconIndex);
@@ -948,8 +949,8 @@ protected:
 
     void GetShell32(char* fileName);
 
-    BOOL LoadIcons();    // provede enumeraci ikon a naleje je do pole Icons
-    void DestroyIcons(); // vycisti pole Icons
+    BOOL LoadIcons();    // enumerates icons and fills the Icons array
+    void DestroyIcons(); // clears the Icons array
 };
 
 //
@@ -962,21 +963,21 @@ class CHyperLink;
 class CPluginsDlg : public CCommonDialog
 {
 protected:
-    HWND HListView; // nase listview
+    HWND HListView; // our listview
     CToolbarHeader* Header;
-    HIMAGELIST HImageList;      // imagelist pro listview
-    BOOL RefreshPanels;         // bude po zavreni dialogu treba refresnout panely?
-    BOOL DrivesBarChange;       // bude po zavreni dialogu treba refreshnout Drives bary?
-    char FocusPlugin[MAX_PATH]; // prazdny, pokud se nema focusnout plugin; jinak obsahuje cestu
+    HIMAGELIST HImageList;      // image list for the listview
+    BOOL RefreshPanels;         // should the panels be refreshed after closing the dialog?
+    BOOL DrivesBarChange;       // should the Drives bars be refreshed after closing the dialog?
+    char FocusPlugin[MAX_PATH]; // empty if no plugin should get focus; otherwise contains its path
     CHyperLink* Url;
-    char ShowInBarText[200];        // text vytazeny z checkboxu pri otevreni dialogu
-    char ShowInChDrvText[200];      // text vytazeny z checkboxu pri otevreni dialogu
-    char InstalledPluginsText[200]; // text vytazeny z titulku listview pri otevreni dialogu
+    char ShowInBarText[200];        // text taken from the checkbox when the dialog opens
+    char ShowInChDrvText[200];      // text taken from the checkbox when the dialog opens
+    char InstalledPluginsText[200]; // text taken from the listview caption when the dialog opens
 
 public:
     CPluginsDlg(HWND hParent);
 
-    // navratove hodnoty dialogu:
+    // dialog return values:
     BOOL GetRefreshPanels() { return RefreshPanels; }
     BOOL GetDrivesBarChange() { return DrivesBarChange; }
     const char* GetFocusPlugin() { return FocusPlugin; }
@@ -984,13 +985,13 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void InitColumns();     // do listview prida sloupce
-    void SetColumnWidths(); // nastavi optimalni sirky sloupcu
+    void InitColumns();     // add columns to the listview
+    void SetColumnWidths(); // set optimal column widths
     void RefreshListView(BOOL setOnly = TRUE, int selIndex = -1, const CPluginData* selectPlugin = NULL, BOOL setColumnWidths = FALSE);
-    void OnSelChanged();                                                    // vybrana polozka v listview se zmenila
-    CPluginData* GetSelectedPlugin(int* index = NULL, int* lvIndex = NULL); // vraci NULL, pokud neni zadna polozka vybrana; index vraci index do pole Plugins; lvIndex vraci index v ramci listview, muze byt NULL
+    void OnSelChanged();                                                    // selected item in the listview changed
+    CPluginData* GetSelectedPlugin(int* index = NULL, int* lvIndex = NULL); // returns NULL if no item is selected; index returns index to the Plugins array; lvIndex returns index within listview, can be NULL
     void EnableButtons(CPluginData* plugin);
-    void OnContextMenu(int x, int y); // na souradnicich x, y vybali kontextove menu pro vybranou polozku
+    void OnContextMenu(int x, int y); // show the context menu for the selected item at coordinates x, y
     void OnMove(BOOL up);
     void OnSort();
     void EnableHeader();
@@ -1004,13 +1005,13 @@ struct CPluginMenuItem;
 class CPluginKeys : public CCommonDialog
 {
 public:
-    BOOL Reset; // navratovka (TRUE pokud byl dialog ukoncen pres Reset)
+    BOOL Reset; // return value (TRUE if the dialog was closed via Reset)
 
 protected:
-    HWND HListView; // nase listview
+    HWND HListView; // our listview
     CToolbarHeader* Header;
     CPluginData* Plugin;
-    DWORD* HotKeys; // nase kopie hot keys (abychom mohli cancelnout)
+    DWORD* HotKeys; // local copy of hot keys (so cancel works)
 
 public:
     CPluginKeys(HWND hParent, CPluginData* plugin);
@@ -1019,12 +1020,12 @@ public:
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    void InitColumns();     // do listview prida sloupce
-    void SetColumnWidths(); // nastavi optimalni sirky sloupcu
+    void InitColumns();     // add columns to the listview
+    void SetColumnWidths(); // set optimal column widths
     void RefreshListView(BOOL setOnly = TRUE);
 
     WORD GetHotKey(BYTE* virtKey = NULL, BYTE* mods = NULL);
-    CPluginMenuItem* GetSelectedItem(int* orgIndex); // orgIndex vrati index do pole Plugin->MenuItems; muze byt NULL
+    CPluginMenuItem* GetSelectedItem(int* orgIndex); // orgIndex returns index to Plugin array->MenuItems; may be NULL
     CPluginMenuItem* GetItem(int index);
     void EnableButtons();
     void HandleConflictWarning();
@@ -1056,10 +1057,10 @@ protected:
 //
 // CWaitWindow
 //
-// Modalni okenko slouzici k zobrazeni informace o probihajicim deji.
-// Text muze byt viceradkovy, oddeleny znakem '\n'.
-// 'showCloseButton' urcuje, zda bude okenko obsahovat Close tlacitko,
-// ktere by melo byt ekvivalent k Escape, ale pro mysare.
+// Modal window used to display information about an operation in progress.
+// The text may contain multiple lines separated by '\n'.
+// 'showCloseButton' specifies whether the dialog includes a Close button,
+// which is effectively the same as pressing Escape but accessible by mouse.
 //
 
 class CWaitWindow : public CWindow
@@ -1078,20 +1079,20 @@ protected:
     DWORD BarMax;
     DWORD BarPos;
 
-    CBitmap* CacheBitmap; // pro neblikajici kresleni textu
+    CBitmap* CacheBitmap; // used for flicker-free text drawing
 
 public:
     CWaitWindow(HWND hParent, int textResID, BOOL showCloseButton, CObjectOrigin origin = ooAllocated, BOOL showProgressBar = FALSE);
     ~CWaitWindow();
 
-    void SetCaption(const char* text); // pokud nebude zavolano, caption bude "Open Salamander"
+    void SetCaption(const char* text); // if not called, the caption will be "Open Salamander"
     void SetText(const char* text);
 
     void SetProgressMax(DWORD max);
     void SetProgressPos(DWORD pos);
 
-    // pokud je hForegroundWnd ruzny od NULL, bude k nemu okenko centrovano,
-    // ale nebude zobrazeno (zobrazuje se v ThreadSafeWaitWindowFBody)
+    // if hForegroundWnd is non-NULL the window will be centered relative to it
+    // but not shown (display occurs in ThreadSafeWaitWindowFBody)
     HWND Create(HWND hForegroundWnd = NULL);
 
 protected:
@@ -1102,7 +1103,7 @@ protected:
 
 //****************************************************************************
 //
-// CTipOfTheDayWindow a CTipOfTheDayDialog
+// CTipOfTheDayWindow and CTipOfTheDayDialog
 //
 //
 /*
@@ -1146,8 +1147,8 @@ class CTipOfTheDayDialog: public CCommonDialog
 
     virtual void Transfer(CTransferInfo &ti);
 
-    BOOL LoadTips(BOOL quiet);  // nacucne ze souboru tipy do pole Tips
-    void FreeTips();  // uvolni pole
+    BOOL LoadTips(BOOL quiet);  // loads tips from the file into the Tips array
+    void FreeTips();  // frees the array
 
   friend class CTipOfTheDayWindow;
 };
@@ -1166,12 +1167,12 @@ struct CImportOldKey
 class CImportConfigDialog : public CCommonDialog
 {
 public:
-    // pole odpovidajici poli SalamanderConfigurationRoots; TRUE:konfigurace existuje FALSE:neexistuje
+    // array corresponding to SalamanderConfigurationRoots array; TRUE:the configuration exists, FALSE:it doesn't
     BOOL ConfigurationExist[SALCFG_ROOTS_COUNT];
-    // ukazatel na stejne velke pole, kam dialog nastavi TRUE pro konfigurace urcene ke smazani
+    // pointer to the same sized array where the dialog stores TRUE for configurations to delete
     BOOL* DeleteConfigurations;
-    // v teto promenne dialog vraci kterou konfiguraci si uzivatel preje importovat; -1 -> zadnou
-    // index je do pole SalamanderConfigurationRoots
+    // dialog returns here which configuration the user wants to import; -1 -> none
+    // index points into the SalamanderConfigurationRoots array
     int IndexOfConfigurationToLoad;
 
 public:
@@ -1208,12 +1209,12 @@ public:
 
     int Execute();
 
-    // obejde adresar lang a vsechny platne SLG soubory prida do pole
+    // scans the 'lang' directory and adds all valid SLG files to the array
     BOOL Initialize(const char* slgSearchPath = NULL, HINSTANCE pluginDLL = NULL);
 
     int GetLanguagesCount() { return Items.Count; }
-    BOOL GetSLGName(char* path, int index = 0); //vrati xxxx.slg od polozky na indexu 'index'
-    BOOL SLGNameExists(const char* slgName);    // overi jestli je 'slgName' v 'Items'
+    BOOL GetSLGName(char* path, int index = 0); // returns xxxx.slg of the item at index 'index'
+    BOOL SLGNameExists(const char* slgName);    // checks whether 'slgName' exists in 'Items'
 
     void FillControls();
 
@@ -1221,10 +1222,10 @@ public:
 
     void Transfer(CTransferInfo& ti);
 
-    // vrati index do pole Items; nejvyssi prioritu ma 'selectSLGName' (neni-li NULL), pak
-    // nastaveni Windows, a je-li 'exactMatch' FALSE, tak pak jeste english.slg a jinak prvni
-    // nalezene .slg; je-li 'exactMatch' TRUE, vraci index 'selectSLGName' (neni-li NULL)
-    // nebo nastaveni Windows nebo -1 (nenalezeno)
+    // returns the index into Items array; highest priority is 'selectSLGName' (if not NULL), then
+    // the Windows setting, and if 'exactMatch' is FALSE then english.slg or otherwise the first
+    // found .slg; if 'exactMatch' is TRUE, it returns the index of 'selectSLGName' (if not NULL)
+    // or the Windows setting or -1 (nothing found)
     int GetPreferredLanguageIndex(const char* selectSLGName, BOOL exactMatch = FALSE);
 
 protected:
@@ -1277,31 +1278,31 @@ class CSharesDialog : public CCommonDialog
 {
 protected:
     HWND HListView;
-    CShares SharedDirs; // radeji podrzime vlastni instanci, aby nam s nima
-                        // nekdo nerefreshnul na pozadi
-    BYTE SortBy;        // udava sloupec, podle ktereho je razeno
-    int FocusedIndex;   // slouzi pro navrat hodnoty
+    CShares SharedDirs; // keep our own instance so nobody 
+                        // refreshes it in the background
+    BYTE SortBy;        // indicates the column used for sorting
+    int FocusedIndex;   // used to return the value
 
 public:
     CSharesDialog(HWND hParent);
 
-    const char* GetFocusedPath(); // vrati cestu vybraneho sharu; lze volat az po navratu z dialogu
-                                  // vrati NULL, pokud nebylo stisteno "Focus" a dialog vratil IDOK
-                                  // z Execute()
+    const char* GetFocusedPath(); // returns the path of the selected share; call only after the dialog returns
+                                  // returns NULL if "Focus" wasn't clicked and the dialog returned IDOK
+                                  // from Execute()
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    HIMAGELIST CreateImageList(); // vytvori image list s jednou ikonou (sdileny adresar)
+    HIMAGELIST CreateImageList(); // creates an image list with a single icon (shared folder)
 
-    void InitColumns(); // nahazi sloupce do ListView
-    void Refresh();     // nacte sdilene adresare a prida je do listview
+    void InitColumns(); // add columns to the ListView
+    void Refresh();     // loads shared folders and adds them to the listview
     static int CALLBACK SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-    void SortItems();                        // seradi polozky na zaklade promenne SortBy
-    int GetFocusedIndex();                   // vrati index do pole SharetDirs nebo -1, pokud neni zadna polozka vybrana
-    void DeleteShare(const char* shareName); // ukeca system, aby zrusil share
-    void OnContextMenu(int x, int y);        // na souradnicich x, y vybali kontextove menu pro vybranou polozku
-    void EnableControls();                   // enabler pro tlacitka
+    void SortItems();                        // sorts items based on the SortBy variable
+    int GetFocusedIndex();                   // returns index to SharetDirs array or -1 if no item is selected
+    void DeleteShare(const char* shareName); // request the system to remove the share
+    void OnContextMenu(int x, int y);        // shows the context menu for the selected item at coordinates x, y
+    void EnableControls();                   // button enabler
 };
 
 //****************************************************************************
@@ -1309,12 +1310,12 @@ protected:
 // CDisconnectDialog
 //
 
-// typy pro CConnectionItem
+// types for CConnectionItem
 enum CConnectionItemType
 {
-    citGroup,   // oznacuje nasledujici skupinu (sitove zdroje, pluginy, ...)
-    citNetwork, // jde o sitovy zdroj
-    citPlugin   // jde o connection pluginu
+    citGroup,   // marks the following group (network resources, plugins, ...)
+    citNetwork, // a network resource
+    citPlugin   // a plugin connection
 };
 
 #define CONNECTION_ICON_NETWORK 0
@@ -1322,23 +1323,23 @@ enum CConnectionItemType
 #define CONNECTION_ICON_ACCESSIBLE 2
 #define CONNECTION_ICON_INACCESSIBLE 3
 
-// jednotlive polozky zobrazovane v Disconnect dialogu; plni se v EnumConnections()
+// individual items displayed in the Disconnect dialog; filled by EnumConnections()
 struct CConnectionItem
 {
     CConnectionItemType Type;
-    int IconIndex; // index ikonky v HImageList (CONNECTION_ICON_xxx)
-    char* Name;    // sloupec Name
-    char* Path;    // sloupec Path
-    BOOL Default;  // pokud je TRUE, bude polozka po naplneni listview FOCUSED+SELECTED; pouze jedna polozka v poli by mela mit Default==TRUE
+    int IconIndex; // icon index in HImageList (CONNECTION_ICON_xxx)
+    char* Name;    // Name column
+    char* Path;    // Path column
+    BOOL Default;  // if TRUE, the item is FOCUSED+SELECTED after the listview is filled; only one item in the array should have Default == TRUE
 
-    // jen pro Type == citPlugin: interface FS (nemusi byt platny, overovat)
+    // only for Type == citPlugin: FS interface (might not be valid, verify)
     CPluginFSInterfaceAbstract* PluginFS;
 };
 
 class CDisconnectDialog : public CCommonDialog
 {
 protected:
-    CFilesWindow* Panel; // panel, ze ktereho byl vyvolan Disconnect a ze ktereho cerpame defualt cestu
+    CFilesWindow* Panel; // panel from which Disconnect was invoked and from which we take the default path
     HWND HListView;
     HIMAGELIST HImageList;
     BOOL NoConncection;
@@ -1348,36 +1349,36 @@ public:
     CDisconnectDialog(CFilesWindow* panel);
     ~CDisconnectDialog();
 
-    const char* GetFocusedPath();                 // vrati cestu vybraneho sharu; lze volat az po navratu z dialogu
-                                                  // vrati NULL, pokud nebylo stisteno "Focus" a dialog vratil IDOK
-                                                  // z Execute()
-    BOOL NoConnection() { return NoConncection; } // vrati TRUE, pokud dialog nebyl otevren, protoze nebyla zadna connection
+    const char* GetFocusedPath();                 // returns the path of the selected share; call only after the dialog returns
+                                                  // returns NULL if "Focus" wasn't clicked and the dialog returned IDOK
+                                                  // from Execute()
+    BOOL NoConnection() { return NoConncection; } // returns TRUE if the dialog wasn't opened because there was no connection
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
     virtual void Validate(CTransferInfo& ti);
 
-    HIMAGELIST CreateImageList(); // vytvori image list 0-pristupny 1-nepristupny network drive
+    HIMAGELIST CreateImageList(); // creates an image list 0-accessible, 1-inaccessible network drive
 
-    void EnumConnections(); // naplni pole Connections
+    void EnumConnections(); // fills the Connections array
 
-    void InitColumns(); // nahazi sloupce do ListView
+    void InitColumns(); // adds columns to the ListView
     void Refresh();
 
-    // odpoji SELECTED polozky; vraci TRUE pokud vse probehlo dobre a cely dialog se muze zavrit
-    // pokud nastane chyba, zobrazi messagebox a vrati FALSE; dialog se v tomto pripade nezavre
+    // disconnects SELECTED items; returns TRUE if everything succeeded and the dialog can close
+    // if an error occurs it shows a message box and returns FALSE; the dialog then stays open
     BOOL OnDisconnect();
 
-    void EnableControls(); // enabler pro tlacitka
+    void EnableControls(); // button enabler
 
-    // vlozi novou polozku do pole Connections
-    // pokud je index == -1, vlozi prvek na konec seznamu
-    // pokud je ignoreDuplicate, prohleda se napred pole a pokud stejny prvek existuje, neprida se
+    // inserts a new item into the Connections array
+    // if index == -1 the item is appended to the end of the list
+    // if ignoreDuplicate is set, the array is searched first and the item is skipped if already present
     BOOL InsertItem(int index, BOOL ignoreDuplicate, CConnectionItemType type, int iconIndex,
                     const char* name, const char* path, BOOL defaultItem,
                     CPluginFSInterfaceAbstract* pluginFS);
 
-    void DestroyConnections(); // vyprazdni/uvolni pole Connections
+    void DestroyConnections(); // empties/frees the Connections array
 };
 
 //****************************************************************************
@@ -1441,11 +1442,11 @@ protected:
     CFilesWindow* LeftPanel;
     CFilesWindow* RightPanel;
 
-    int OriginalWidth;    // plna sirka dialogu
-    int OriginalHeight;   // plna vyska dialogu
-    int OriginalButtonsY; // Y pozice tlacitek v client souradnicich
-    int SpacerHeight;     // vymezovac pro zmensovani/zvetsovani dialogu
-    BOOL Expanded;        // jsme prave rozbaleni?
+    int OriginalWidth;    // full dialog width
+    int OriginalHeight;   // full dialog height
+    int OriginalButtonsY; // Y position of the buttons in client coordinates
+    int SpacerHeight;     // spacer used when shrinking/expanding the dialog
+    BOOL Expanded;        // are we currently expanded?
 
 public:
     CCompareDirsDialog(HWND hParent, BOOL enableByDateAndTime, BOOL enableBySize,
@@ -1481,48 +1482,48 @@ protected:
     CProgressBar* Progress;
     CProgressBar* TotalProgress;
 
-    char DelayedSource[2 * MAX_PATH]; // text s odlozenym zobrazenim
-    char DelayedTarget[2 * MAX_PATH]; // text s odlozenym zobrazenim
+    char DelayedSource[2 * MAX_PATH]; // text displayed later
+    char DelayedTarget[2 * MAX_PATH]; // text displayed later
     BOOL DelayedSourceDirty;
     BOOL DelayedTargetDirty;
 
-    // progress s odlozenym zobrazenim
+    // progress displayed later
     BOOL SizeIsDirty;
     CQuadWord FileSize;
     CQuadWord ActualFileSize;
     CQuadWord TotalSize;
     CQuadWord ActualTotalSize;
 
-    DWORD LastTickCount; // pro detekci ze uz je treba prekreslit zmena data
+    DWORD LastTickCount; // used to detect when the date must be redrawn
 
-    CITaskBarList3* TaskBarList3; // ukazatel na interface patrici hlavnimu oknu Salamandera
+    CITaskBarList3* TaskBarList3; // pointer to the interface owned by the Salamander main window
 
 public:
-    CCmpDirProgressDialog(HWND hParent, BOOL hasProgress, CITaskBarList3* taskBarList3); //pokud je 'hasProgress' TRUE, pouzije se dialog s progress bar
+    CCmpDirProgressDialog(HWND hParent, BOOL hasProgress, CITaskBarList3* taskBarList3); // if 'hasProgress' is TRUE, the dialog shows a progress bar
 
-    // nastaveni textu
+    // text setup
     void SetSource(const char* text);
     void SetTarget(const char* text);
 
-    // nasledujici tri metody maji vyznam je-li zobrazen progress bar
+    // the following three methods are relevant only when the progress bar is shown
 
-    // nastavi celkovou velikost jednoho souboru
+    // sets the total size of a single file
     void SetFileSize(const CQuadWord& size);
-    // nastavi absolutni progress
+    // sets absolute progress
     void SetActualFileSize(const CQuadWord& size);
-    // nastavi celkovou velikost vsech souboru
+    // sets the total size of all files
     void SetTotalSize(const CQuadWord& size);
-    // nastavi aktualni celkovou velikost vsech souboru
+    // sets the current total size of all files
     void SetActualTotalSize(const CQuadWord& size);
-    // vytahne aktualni celkovou velikost vsech souboru
+    // retrieves the current total size of all files
     void GetActualTotalSize(CQuadWord& size);
-    // relativne zmeni progress
+    // changes progress relatively
     void AddSize(const CQuadWord& size);
 
-    // distribuuje zpravy, vraci FALSE pokud uzivatel stornoval operaci
+    // distributes messages; returns FALSE if the user cancelled the operation
     BOOL Continue();
 
-    void FlushDataToControls(); // preda ulozene hodnoty controlum k zobrazeni
+    void FlushDataToControls(); // passes stored values to controls for display
 
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1584,4 +1585,4 @@ protected:
     int* CnfrmShowNamesToCompare;
 };
 
-extern CProgressDlgArray ProgressDlgArray; // pole dialogu diskovych operaci (jen dialogy bezici ve svych threadech)
+extern CProgressDlgArray ProgressDlgArray; // array of disk operation dialogs (only those running in their own threads)

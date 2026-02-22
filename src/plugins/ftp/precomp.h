@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -13,7 +14,7 @@
 #include <limits.h>
 #include <process.h>
 #include <commctrl.h>
-#include <ostream> // pro verzi 2.5 beta 7 a novejsi
+#include <ostream> // for version 2.5 beta 7 and newer
 #include <stdio.h>
 #include <time.h>
 

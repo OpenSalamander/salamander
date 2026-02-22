@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -11,17 +12,17 @@
 void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQuitCmd, BOOL& postActivate,
                                              BOOL& reportWorkerChange)
 {
-    if ((!DiskWorkIsUsed || event == fweWorkerShouldStop) && ShouldStop) // mame ukoncit workera
+    if ((!DiskWorkIsUsed || event == fweWorkerShouldStop) && ShouldStop) // we should terminate the worker
     {
         if (SubState != fwssPrepQuitSent && SubState != fwssPrepWaitForDiskAfterQuitSent && !SocketClosed)
         {
-            SubState = (SubState == fwssPrepWaitForDisk ? fwssPrepWaitForDiskAfterQuitSent : fwssPrepQuitSent); // abychom neposilali "QUIT" vicekrat
-            sendQuitCmd = TRUE;                                                                                 // mame koncit + mame otevrenou connectionu -> posleme serveru prikaz "QUIT" (odpoved ignorujeme, kazdopadne by mela vest k zavreni spojeni a o nic jineho ted nejde)
+            SubState = (SubState == fwssPrepWaitForDisk ? fwssPrepWaitForDiskAfterQuitSent : fwssPrepQuitSent); // so that we do not send "QUIT" more than once
+            sendQuitCmd = TRUE;                                                                                 // we are supposed to finish and the connection is open -> send the server the "QUIT" command (we ignore the reply, it should lead to closing the connection and nothing else matters now)
         }
     }
-    else // normalni cinnost
+    else // normal activity
     {
-        // overime proveditelnost polozky
+        // verify whether the item can be processed
         BOOL fail = FALSE;
         BOOL wait = FALSE;
         BOOL quitSent = FALSE;
@@ -29,13 +30,13 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
         {
             switch (CurItem->Type)
             {
-            case fqitCopyResolveLink: // kopirovani: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-            case fqitMoveResolveLink: // presun: zjisteni jestli jde o link na soubor nebo adresar (objekt tridy CFTPQueueItemCopyOrMove)
-                break;                // neni co overovat
+            case fqitCopyResolveLink: // copy: detect whether it is a link to a file or directory (object of class CFTPQueueItemCopyOrMove)
+            case fqitMoveResolveLink: // move: detect whether it is a link to a file or directory (object of class CFTPQueueItemCopyOrMove)
+                break;                // nothing to check
 
-            case fqitCopyExploreDir:     // explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-            case fqitMoveExploreDir:     // explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-            case fqitMoveExploreDirLink: // explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
+            case fqitCopyExploreDir:     // explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
+            case fqitMoveExploreDir:     // explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
+            case fqitMoveExploreDirLink: // explore a link to a directory for moving (deletes the directory link after completion) (object of class CFTPQueueItemCopyMoveExplore)
             {
                 switch (SubState)
                 {
@@ -43,41 +44,41 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 {
                     if (((CFTPQueueItemCopyMoveExplore*)CurItem)->TgtDirState == TGTDIRSTATE_UNKNOWN)
                     {
-                        // zkusime vytvorit cilovy adresar na disku (zjistime i jestli existuje)
+                        // try to create the target directory on disk (also see whether it already exists)
                         if (DiskWorkIsUsed)
                             TRACE_E("Unexpected situation in CFTPWorker::HandleEventInPreparingState(): DiskWorkIsUsed may not be TRUE here!");
                         InitDiskWork(WORKER_DISKWORKFINISHED, fdwtCreateDir,
                                      ((CFTPQueueItemCopyMoveExplore*)CurItem)->TgtPath,
                                      ((CFTPQueueItemCopyMoveExplore*)CurItem)->TgtName,
                                      CurItem->ForceAction, FALSE, NULL, NULL, NULL, 0, NULL);
-                        if (CurItem->ForceAction != fqiaNone) // vynucena akce timto prestava platit
+                        if (CurItem->ForceAction != fqiaNone) // the forced action stops being valid here
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                         if (FTPDiskThread->AddWork(&DiskWork))
                         {
                             DiskWorkIsUsed = TRUE;
-                            SubState = fwssPrepWaitForDisk; // pockame si na vysledek
+                            SubState = fwssPrepWaitForDisk; // wait for the result
                             wait = TRUE;
                         }
-                        else // nelze vytvorit adresar, nelze pokracovat v provadeni polozky
+                        else // cannot create the directory, cannot continue processing the item
                         {
                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LOWMEM, NO_ERROR, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                         }
                     }
-                    // else ; // neni co delat (cilovy adresar existuje)
+                    // else ; // nothing to do (the target directory exists)
                     break;
                 }
 
                 case fwssPrepWaitForDisk:
                 case fwssPrepWaitForDiskAfterQuitSent:
                 {
-                    if (event == fweDiskWorkFinished) // mame vysledek diskove operace (vytvareni cil. adresare)
+                    if (event == fweDiskWorkFinished) // we have the result of the disk operation (creating the target directory)
                     {
                         DiskWorkIsUsed = FALSE;
-                        ReportWorkerMayBeClosed(); // ohlasime dokonceni prace workera (pro ostatni cekajici thready)
+                        ReportWorkerMayBeClosed(); // announce the worker has finished (for other waiting threads)
 
-                        // pokud uz jsme QUIT poslali, musime zamezit dalsimu poslani QUIT z noveho stavu
+                        // if we have already sent QUIT, prevent sending QUIT again from the new state
                         quitSent = SubState == fwssPrepWaitForDiskAfterQuitSent;
 
                         BOOL itemChange = FALSE;
@@ -88,17 +89,17 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                             itemChange = TRUE;
                         }
                         if (DiskWork.State == sqisNone)
-                        { // adresar se podarilo vytvorit (i autorename) nebo uz existoval a muzeme ho pouzit
+                        { // the directory was created (including autorename) or it already existed and we can use it
                             Queue->UpdateTgtDirState((CFTPQueueItemCopyMoveExplore*)CurItem, TGTDIRSTATE_READY);
                         }
-                        else // pri vytvareni adresare nastala chyba nebo doslo ke skipnuti polozky
+                        else // an error occurred while creating the directory or the item was skipped
                         {
                             Queue->UpdateItemState(CurItem, DiskWork.State, DiskWork.ProblemID, DiskWork.WinError, NULL, Oper);
                             itemChange = TRUE;
                             fail = TRUE;
                         }
                         if (itemChange)
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                     }
                     else
                         wait = TRUE;
@@ -108,24 +109,24 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 break;
             }
 
-            case fqitUploadCopyExploreDir: // upload: explore adresare pro kopirovani (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
-            case fqitUploadMoveExploreDir: // upload: explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveUploadExplore)
+            case fqitUploadCopyExploreDir: // upload: explore directories for copying (object of class CFTPQueueItemCopyMoveUploadExplore)
+            case fqitUploadMoveExploreDir: // upload: explore directories for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveUploadExplore)
             {
                 if (CurItem->ForceAction == fqiaNone &&
                     ((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtDirState == UPLOADTGTDIRSTATE_UNKNOWN &&
                     !FTPMayBeValidNameComponent(((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtName,
                                                 ((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtPath, TRUE,
                                                 Oper->GetFTPServerPathType(((CFTPQueueItemCopyMoveUploadExplore*)CurItem)->TgtPath)))
-                { // pokud jmeno nesplnuje konvence pro dany typ cesty, jde o problem "cilovy adresar nelze vytvorit"
+                { // if the name does not follow the conventions for the given path type, the problem is "cannot create target directory"
                     switch (Oper->GetUploadCannotCreateDir())
                     {
                     case CANNOTCREATENAME_AUTORENAME:
-                        break; // autorename (az na nej dojde) si musi poradit i s blbym jmenem
+                        break; // autorename (when it happens) must deal even with a bad name
 
                     case CANNOTCREATENAME_SKIP:
                     {
                         Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_UPLOADCANNOTCREATETGTDIR, 0, NULL, Oper);
-                        Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                        Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                         fail = TRUE;
                         break;
                     }
@@ -133,21 +134,21 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                     default: // CANNOTCREATENAME_USERPROMPT
                     {
                         Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_UPLOADCANNOTCREATETGTDIR, 0, NULL, Oper);
-                        Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                        Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                         fail = TRUE;
                         break;
                     }
                     }
                 }
-                // else ; // neni co delat (force akce se delaji ve fwsWorking stavu a nebo cilovy adresar uz existuje a nebo jmeno adresare je OK)
+                // else ; // nothing to do (force actions are handled in the fwsWorking state, or the target directory already exists, or the directory name is OK)
                 break;
             }
 
-            case fqitDeleteExploreDir: // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
-            case fqitDeleteLink:       // delete pro link (objekt tridy CFTPQueueItemDel)
-            case fqitDeleteFile:       // delete pro soubor (objekt tridy CFTPQueueItemDel)
+            case fqitDeleteExploreDir: // explore directories for delete (note: links to directories are deleted as a whole, the operation's purpose is fulfilled and nothing "extra" is removed) (object of class CFTPQueueItemDelExplore)
+            case fqitDeleteLink:       // delete for a link (object of class CFTPQueueItemDel)
+            case fqitDeleteFile:       // delete for a file (object of class CFTPQueueItemDel)
             {
-                if (CurItem->Type == fqitDeleteExploreDir && ((CFTPQueueItemDelExplore*)CurItem)->IsHiddenDir || // pokud je adresar/soubor/link skryty, overime, co si s nim user preje delat
+                if (CurItem->Type == fqitDeleteExploreDir && ((CFTPQueueItemDelExplore*)CurItem)->IsHiddenDir || // if the directory/file/link is hidden, check what the user wants to do with it
                     (CurItem->Type == fqitDeleteLink || CurItem->Type == fqitDeleteFile) &&
                         ((CFTPQueueItemDel*)CurItem)->IsHiddenFile)
                 {
@@ -165,7 +166,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         case HIDDENDIRDEL_SKIP:
                         {
                             Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_DIRISHIDDEN, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
@@ -173,7 +174,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         default: // HIDDENDIRDEL_USERPROMPT
                         {
                             Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_DIRISHIDDEN, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
@@ -190,7 +191,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         case HIDDENFILEDEL_SKIP:
                         {
                             Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_FILEISHIDDEN, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
@@ -198,7 +199,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         default: // HIDDENFILEDEL_USERPROMPT
                         {
                             Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_FILEISHIDDEN, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
@@ -207,14 +208,14 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 }
             }
 
-            case fqitDeleteDir:             // delete pro adresar (objekt tridy CFTPQueueItemDir)
-            case fqitChAttrsExploreDir:     // explore adresare pro zmenu atributu (prida i polozku pro zmenu atributu adresare) (objekt tridy CFTPQueueItemChAttrExplore)
-            case fqitChAttrsResolveLink:    // zmena atributu: zjisteni jestli jde o link na adresar (objekt tridy CFTPQueueItem)
-            case fqitChAttrsExploreDirLink: // explore linku na adresar pro zmenu atributu (objekt tridy CFTPQueueItem)
-                break;                      // neni co overovat
+            case fqitDeleteDir:             // delete for a directory (object of class CFTPQueueItemDir)
+            case fqitChAttrsExploreDir:     // explore directories for attribute changes (also adds an item for changing the directory attributes) (object of class CFTPQueueItemChAttrExplore)
+            case fqitChAttrsResolveLink:    // attribute change: determine whether it is a link to a directory (object of class CFTPQueueItem)
+            case fqitChAttrsExploreDirLink: // explore a link to a directory for attribute changes (object of class CFTPQueueItem)
+                break;                      // nothing to verify
 
-            case fqitCopyFileOrFileLink: // kopirovani souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
-            case fqitMoveFileOrFileLink: // presun souboru nebo linku na soubor (objekt tridy CFTPQueueItemCopyOrMove)
+            case fqitCopyFileOrFileLink: // copying a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
+            case fqitMoveFileOrFileLink: // moving a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
             {
                 switch (SubState)
                 {
@@ -222,7 +223,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 {
                     if (((CFTPQueueItemCopyOrMove*)CurItem)->TgtFileState != TGTFILESTATE_TRANSFERRED)
                     {
-                        // zkusime vytvorit/otevrit cilovy soubor na disku
+                        // try to create/open the target file on disk
                         if (DiskWorkIsUsed)
                             TRACE_E("Unexpected situation 2 in CFTPWorker::HandleEventInPreparingState(): DiskWorkIsUsed may not be TRUE here!");
                         CFTPDiskWorkType type = fdwtCreateFile; // TGTFILESTATE_UNKNOWN
@@ -241,34 +242,34 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                                      CurItem->ForceAction,
                                      strcmp(CurItem->Name, ((CFTPQueueItemCopyOrMove*)CurItem)->TgtName) != 0,
                                      NULL, NULL, NULL, 0, NULL);
-                        if (CurItem->ForceAction != fqiaNone) // vynucena akce timto prestava platit
+                        if (CurItem->ForceAction != fqiaNone) // the forced action stops being valid here
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                         if (FTPDiskThread->AddWork(&DiskWork))
                         {
                             DiskWorkIsUsed = TRUE;
-                            SubState = fwssPrepWaitForDisk; // pockame si na vysledek
+                            SubState = fwssPrepWaitForDisk; // wait for the result
                             wait = TRUE;
                         }
-                        else // nelze vytvorit/otevrit soubor, nelze pokracovat v provadeni polozky
+                        else // cannot create/open the file, cannot continue processing the item
                         {
                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LOWMEM, NO_ERROR, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                         }
                     }
-                    // else ; // neni co delat (soubor uz je downloadly)
+                    // else ; // nothing to do (the file is already downloaded)
                     break;
                 }
 
                 case fwssPrepWaitForDisk:
                 case fwssPrepWaitForDiskAfterQuitSent:
                 {
-                    if (event == fweDiskWorkFinished) // mame vysledek diskove operace (vytvareni cil. souboru)
+                    if (event == fweDiskWorkFinished) // we have the result of the disk operation (creating the target file)
                     {
                         DiskWorkIsUsed = FALSE;
-                        ReportWorkerMayBeClosed(); // ohlasime dokonceni prace workera (pro ostatni cekajici thready)
+                        ReportWorkerMayBeClosed(); // announce the worker has finished (for other waiting threads)
 
-                        // pokud uz jsme QUIT poslali, musime zamezit dalsimu poslani QUIT z noveho stavu
+                        // if we have already sent QUIT, prevent sending QUIT again from the new state
                         quitSent = SubState == fwssPrepWaitForDiskAfterQuitSent;
 
                         BOOL itemChange = FALSE;
@@ -279,7 +280,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                             itemChange = TRUE;
                         }
                         if (DiskWork.State == sqisNone)
-                        { // soubor se podarilo vytvorit nebo otevrit
+                        { // the file was created or opened successfully
                             if (OpenedFile != NULL)
                                 TRACE_E("Unexpected situation in CFTPWorker::HandleEventInPreparingState(): OpenedFile is not NULL!");
                             OpenedFile = DiskWork.OpenedFile;
@@ -293,14 +294,14 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                             Queue->UpdateTgtFileState((CFTPQueueItemCopyOrMove*)CurItem,
                                                       DiskWork.CanOverwrite ? TGTFILESTATE_CREATED : TGTFILESTATE_RESUMED);
                         }
-                        else // pri vytvareni/otevirani souboru nastala chyba nebo doslo ke skipnuti polozky
+                        else // an error occurred while creating/opening the file or the item was skipped
                         {
                             Queue->UpdateItemState(CurItem, DiskWork.State, DiskWork.ProblemID, DiskWork.WinError, NULL, Oper);
                             itemChange = TRUE;
                             fail = TRUE;
                         }
                         if (itemChange)
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                     }
                     else
                         wait = TRUE;
@@ -310,8 +311,8 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 break;
             }
 
-            case fqitUploadCopyFile: // upload: kopirovani souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
-            case fqitUploadMoveFile: // upload: presun souboru (objekt tridy CFTPQueueItemCopyOrMoveUpload)
+            case fqitUploadCopyFile: // upload: copying files (object of class CFTPQueueItemCopyOrMoveUpload)
+            case fqitUploadMoveFile: // upload: moving files (object of class CFTPQueueItemCopyOrMoveUpload)
             {
                 switch (SubState)
                 {
@@ -323,16 +324,16 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         !FTPMayBeValidNameComponent(((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtName,
                                                     ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtPath, FALSE,
                                                     Oper->GetFTPServerPathType(((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtPath)))
-                    { // pokud jmeno nesplnuje konvence pro dany typ cesty, jde o problem "cilovy soubor nelze vytvorit"
+                    { // if the name does not follow the conventions for the given path type, the problem is "cannot create target file"
                         switch (Oper->GetUploadCannotCreateFile())
                         {
                         case CANNOTCREATENAME_AUTORENAME:
-                            break; // autorename (az na nej dojde) si musi poradit i s blbym jmenem
+                            break; // autorename (when it happens) must deal even with a bad name
 
                         case CANNOTCREATENAME_SKIP:
                         {
                             Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_UPLOADCANNOTCREATETGTFILE, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
@@ -340,14 +341,14 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         default: // CANNOTCREATENAME_USERPROMPT
                         {
                             Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_UPLOADCANNOTCREATETGTFILE, 0, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                             break;
                         }
                         }
                     }
                     if (!fail && ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->TgtFileState != UPLOADTGTFILESTATE_TRANSFERRED)
-                    { // otevreme zdrojovy soubor na disku pro cteni
+                    { // open the source file on disk for reading
                         if (DiskWorkIsUsed)
                             TRACE_E("Unexpected situation 4 in CFTPWorker::HandleEventInPreparingState(): DiskWorkIsUsed may not be TRUE here!");
                         InitDiskWork(WORKER_DISKWORKFINISHED, fdwtOpenFileForReading, CurItem->Path, CurItem->Name,
@@ -355,33 +356,33 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         if (FTPDiskThread->AddWork(&DiskWork))
                         {
                             DiskWorkIsUsed = TRUE;
-                            SubState = fwssPrepWaitForDisk; // pockame si na vysledek
+                            SubState = fwssPrepWaitForDisk; // wait for the result
                             wait = TRUE;
                         }
-                        else // nelze vytvorit/otevrit soubor, nelze pokracovat v provadeni polozky
+                        else // cannot create/open the file, cannot continue processing the item
                         {
                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LOWMEM, NO_ERROR, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                         }
                     }
-                    // else ; // neni co delat (upload uz failnul nebo uz je soubor uploadly)
+                    // else ; // nothing to do (the upload has already failed or the file is already uploaded)
                     break;
                 }
 
                 case fwssPrepWaitForDisk:
                 case fwssPrepWaitForDiskAfterQuitSent:
                 {
-                    if (event == fweDiskWorkFinished) // mame vysledek diskove operace (otevreni zdrojoveho souboru)
+                    if (event == fweDiskWorkFinished) // we have the result of the disk operation (opening the source file)
                     {
                         DiskWorkIsUsed = FALSE;
-                        ReportWorkerMayBeClosed(); // ohlasime dokonceni prace workera (pro ostatni cekajici thready)
+                        ReportWorkerMayBeClosed(); // announce the worker has finished (for other waiting threads)
 
-                        // pokud uz jsme QUIT poslali, musime zamezit dalsimu poslani QUIT z noveho stavu
+                        // if we have already sent QUIT, prevent sending QUIT again from the new state
                         quitSent = SubState == fwssPrepWaitForDiskAfterQuitSent;
 
                         if (DiskWork.State == sqisNone)
-                        { // soubor se podarilo otevrit
+                        { // the file was opened successfully
                             if (OpenedInFile != NULL)
                                 TRACE_E("Unexpected situation in CFTPWorker::HandleEventInPreparingState(): OpenedInFile is not NULL!");
                             OpenedInFile = DiskWork.OpenedFile;
@@ -393,10 +394,10 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                             FileOnServerResumedAtOffset.Set(0, 0);
                             ResumingFileOnServer = FALSE;
                         }
-                        else // pri otevirani souboru nastala chyba
+                        else // an error occurred while opening the file
                         {
                             Queue->UpdateItemState(CurItem, DiskWork.State, DiskWork.ProblemID, DiskWork.WinError, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                         }
                     }
@@ -408,13 +409,13 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 break;
             }
 
-            case fqitUploadMoveDeleteDir: // upload: smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
+            case fqitUploadMoveDeleteDir: // upload: delete a directory after its contents were moved (object of class CFTPQueueItemDir)
             {
                 switch (SubState)
                 {
                 case fwssNone:
                 {
-                    // zkusime smazat prazdny zdrojovy adresar z disku
+                    // try to delete an empty source directory from disk
                     if (DiskWorkIsUsed)
                         TRACE_E("Unexpected situation 3 in CFTPWorker::HandleEventInPreparingState(): DiskWorkIsUsed may not be TRUE here!");
                     InitDiskWork(WORKER_DISKWORKFINISHED, fdwtDeleteDir, CurItem->Path, CurItem->Name,
@@ -422,13 +423,13 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                     if (FTPDiskThread->AddWork(&DiskWork))
                     {
                         DiskWorkIsUsed = TRUE;
-                        SubState = fwssPrepWaitForDisk; // pockame si na vysledek
+                        SubState = fwssPrepWaitForDisk; // wait for the result
                         wait = TRUE;
                     }
-                    else // nelze smazat adresar, zapiseme chybu do polozky
+                    else // cannot delete the directory, store the error in the item
                     {
                         Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LOWMEM, NO_ERROR, NULL, Oper);
-                        Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                        Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                         fail = TRUE;
                     }
                     break;
@@ -437,34 +438,34 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 case fwssPrepWaitForDisk:
                 case fwssPrepWaitForDiskAfterQuitSent:
                 {
-                    if (event == fweDiskWorkFinished) // mame vysledek diskove operace (mazani prazdneho zdrojoveho adresare)
+                    if (event == fweDiskWorkFinished) // we have the result of the disk operation (deleting the empty source directory)
                     {
                         DiskWorkIsUsed = FALSE;
-                        ReportWorkerMayBeClosed(); // ohlasime dokonceni prace workera (pro ostatni cekajici thready)
+                        ReportWorkerMayBeClosed(); // announce the worker has finished (for other waiting threads)
 
-                        // pokud uz jsme QUIT poslali, musime zamezit dalsimu poslani QUIT z noveho stavu
+                        // if we have already sent QUIT, prevent sending QUIT again from the new state
                         quitSent = SubState == fwssPrepWaitForDiskAfterQuitSent;
 
                         if (DiskWork.State == sqisNone)
-                        { // adresar se podarilo smazat
+                        { // the directory was deleted successfully
                             Queue->UpdateItemState(CurItem, sqisDone, ITEMPR_OK, NO_ERROR, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
 
-                            // jdeme si najit dalsi praci
+                            // go find more work
                             CurItem = NULL;
-                            State = fwsLookingForWork; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                            State = fwsLookingForWork; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                             if (quitSent)
-                                SubState = fwssLookFWQuitSent; // predame do fwsLookingForWork, ze QUIT uz byl poslany
+                                SubState = fwssLookFWQuitSent; // hand over to fwsLookingForWork that QUIT was already sent
                             else
                                 SubState = fwssNone;
-                            postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                            postActivate = TRUE; // post an activation for the next worker state
                             reportWorkerChange = TRUE;
-                            wait = TRUE; // preskocime zmeny stavu pod timhle switchem
+                            wait = TRUE; // skip state changes below this switch
                         }
-                        else // pri mazani adresare nastala chyba
+                        else // an error occurred while deleting the directory
                         {
                             Queue->UpdateItemState(CurItem, DiskWork.State, DiskWork.ProblemID, DiskWork.WinError, NULL, Oper);
-                            Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                            Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                             fail = TRUE;
                         }
                     }
@@ -476,14 +477,14 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 break;
             }
 
-            case fqitMoveDeleteDir:     // smazani adresare po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-            case fqitMoveDeleteDirLink: // smazani linku na adresar po presunuti jeho obsahu (objekt tridy CFTPQueueItemDir)
-                break;                  // neni co overovat
+            case fqitMoveDeleteDir:     // deleting a directory after its contents were moved (object of class CFTPQueueItemDir)
+            case fqitMoveDeleteDirLink: // deleting a link to a directory after its contents were moved (object of class CFTPQueueItemDir)
+                break;                  // nothing to verify
 
-            case fqitChAttrsFile: // zmena atributu souboru (pozn.: u linku se atributy menit nedaji) (objekt tridy CFTPQueueItemChAttr)
-            case fqitChAttrsDir:  // zmena atributu adresare (objekt tridy CFTPQueueItemChAttrDir)
+            case fqitChAttrsFile: // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
+            case fqitChAttrsDir:  // change directory attributes (object of class CFTPQueueItemChAttrDir)
             {
-                if (CurItem->Type == fqitChAttrsFile && ((CFTPQueueItemChAttr*)CurItem)->AttrErr || // zareagujeme na chybu "neznamy atribut ma byt zachovan, coz neumime"
+                if (CurItem->Type == fqitChAttrsFile && ((CFTPQueueItemChAttr*)CurItem)->AttrErr || // respond to the error "an unknown attribute should be preserved, which we cannot do"
                     CurItem->Type == fqitChAttrsDir && ((CFTPQueueItemChAttrDir*)CurItem)->AttrErr)
                 {
                     switch (Oper->GetUnknownAttrs())
@@ -500,7 +501,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                     case UNKNOWNATTRS_SKIP:
                     {
                         Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_UNKNOWNATTRS, 0, NULL, Oper);
-                        Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                        Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                         fail = TRUE;
                         break;
                     }
@@ -508,7 +509,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                     default: // UNKNOWNATTRS_USERPROMPT
                     {
                         Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_UNKNOWNATTRS, 0, NULL, Oper);
-                        Oper->ReportItemChange(CurItem->UID); // pozadame o redraw polozky
+                        Oper->ReportItemChange(CurItem->UID); // request a redraw of the item
                         fail = TRUE;
                         break;
                     }
@@ -532,35 +533,35 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
 
         if (!wait)
         {
-            if (fail) // polozka neni proveditelna, je uz na ni nastaven error, jdeme najit jinou polozku
+            if (fail) // the item cannot be performed, it already has an error set, go find another item
             {
                 CurItem = NULL;
-                State = fwsLookingForWork; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                State = fwsLookingForWork; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                 if (quitSent)
-                    SubState = fwssLookFWQuitSent; // predame do fwsLookingForWork, ze QUIT uz byl poslany
+                    SubState = fwssLookFWQuitSent; // hand over to fwsLookingForWork that QUIT was already sent
                 else
                     SubState = fwssNone;
             }
-            else // zatim vse OK, pokracujeme
+            else // everything OK so far, continue
             {
                 if (SocketClosed)
                 {
-                    State = fwsConnecting; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
-                    SubState = fwssNone;   // connectiona neni otevrena, proto quitSent muzeme ignorovat (neni kam poslat QUIT)
+                    State = fwsConnecting; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
+                    SubState = fwssNone;   // the connection is not open, therefore we can ignore quitSent (there is nowhere to send QUIT)
                 }
                 else
                 {
-                    State = fwsWorking; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                    State = fwsWorking; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                     if (UploadDirGetTgtPathListing)
                         TRACE_E("CFTPWorker::HandleEventInPreparingState(): UploadDirGetTgtPathListing==TRUE!");
                     StatusType = wstNone;
                     if (quitSent)
-                        SubState = fwssWorkStopped; // predame do fwsWorking, ze QUIT uz byl poslany
+                        SubState = fwssWorkStopped; // hand over to fwsWorking that QUIT was already sent
                     else
                         SubState = fwssNone;
                 }
             }
-            postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+            postActivate = TRUE; // post an activation for the next worker state
             reportWorkerChange = TRUE;
         }
     }
@@ -574,131 +575,131 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
     BOOL run;
     do
     {
-        run = FALSE;              // pri zmene na TRUE dojde k okamzitemu dalsimu pruchodu smyckou
-        BOOL closeSocket = FALSE; // TRUE = ma se zavrit socket workera
-        if (ShouldStop)           // mame ukoncit workera (vse ve smycce kvuli 'closeSocket')
+        run = FALSE;              // when changed to TRUE, the loop runs again immediately
+        BOOL closeSocket = FALSE; // TRUE = the worker's socket should be closed
+        if (ShouldStop)           // we should terminate the worker (everything inside the loop due to 'closeSocket')
         {
             switch (SubState)
             {
-                // case fwssNone:  // neni potreba nic provest
+                // case fwssNone:  // nothing needs to be done
 
-                // case fwssConConnect:           // nemuze nastat (jen mezistav)
-                // case fwssConReconnect:         // nemuze nastat (jen mezistav)
-                // case fwssConSendNextScriptCmd: // nemuze nastat (jen mezistav)
-                // case fwssConSendInitCmds:      // nemuze nastat (jen mezistav)
-                // case fwssConSendSyst:          // nemuze nastat (jen mezistav)
+                // case fwssConConnect:           // cannot occur (only an intermediate state)
+                // case fwssConReconnect:         // cannot occur (only an intermediate state)
+                // case fwssConSendNextScriptCmd: // cannot occur (only an intermediate state)
+                // case fwssConSendInitCmds:      // cannot occur (only an intermediate state)
+                // case fwssConSendSyst:          // cannot occur (only an intermediate state)
 
-            case fwssConWaitingForIP: // smazeme timer WORKER_CONTIMEOUTTIMID
+            case fwssConWaitingForIP: // delete the WORKER_CONTIMEOUTTIMID timer
             {
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                // because we are already inside CSocketsThread::CritSect, this call is also possible
+                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                 SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                 break;
             }
 
-            case fwssConWaitForConRes: // zavreme spojeni a smazeme timer WORKER_CONTIMEOUTTIMID
+            case fwssConWaitForConRes: // close the connection and delete the WORKER_CONTIMEOUTTIMID timer
             {
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                // because we are already inside CSocketsThread::CritSect, this call is also possible
+                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                 SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                 closeSocket = TRUE;
                 break;
             }
 
-            case fwssConWaitForPrompt:       // zavreme spojeni a smazeme timer WORKER_TIMEOUTTIMERID
-            case fwssConWaitForScriptCmdRes: // zavreme spojeni a smazeme timer WORKER_TIMEOUTTIMERID (nemusi uz existovat, ale to nevadi)
-            case fwssConWaitForInitCmdRes:   // zavreme spojeni a smazeme timer WORKER_TIMEOUTTIMERID (nemusi uz existovat, ale to nevadi)
-            case fwssConWaitForSystRes:      // zavreme spojeni a smazeme timer WORKER_TIMEOUTTIMERID (nemusi uz existovat, ale to nevadi)
+            case fwssConWaitForPrompt:       // close the connection and delete the WORKER_TIMEOUTTIMERID timer
+            case fwssConWaitForScriptCmdRes: // close the connection and delete the WORKER_TIMEOUTTIMERID timer (it might no longer exist, but that does not matter)
+            case fwssConWaitForInitCmdRes:   // close the connection and delete the WORKER_TIMEOUTTIMERID timer (it might no longer exist, but that does not matter)
+            case fwssConWaitForSystRes:      // close the connection and delete the WORKER_TIMEOUTTIMERID timer (it might no longer exist, but that does not matter)
             {
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                // because we are already inside CSocketsThread::CritSect, this call is also possible
+                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                 SocketsThread->DeleteTimer(UID, WORKER_TIMEOUTTIMERID);
                 closeSocket = TRUE;
                 break;
             }
             }
         }
-        else // normalni cinnost
+        else // normal activity
         {
             switch (SubState)
             {
-            case fwssNone: // zjistime jestli je potreba ziskavat IP adresu
+            case fwssNone: // determine whether we need to obtain the IP address
             {
-                if (ConnectAttemptNumber == 0) // pro tohoto workera jde o prvni pokus o nazavani spojeni
+                if (ConnectAttemptNumber == 0) // for this worker it is the first attempt to establish a connection
                 {
                     ConnectAttemptNumber = 1;
                 }
                 else
                 {
-                    if (ConnectAttemptNumber == 1) // prvni pokus o reconnect (dalsi pokusy se ridi z fwssConReconnect)
+                    if (ConnectAttemptNumber == 1) // first reconnect attempt (additional attempts are handled from fwssConReconnect)
                     {
                         if (ConnectAttemptNumber + 1 > Config.GetConnectRetries() + 1)
-                        { // druhy pokus o navazani spojeni (prvni pokus = spojeni, ktere se rozpadlo) je
-                            // okamzity (bez cekani po vypadku), ceka se jen mezi jednotlivymi pokusy
-                            // o navazani spojeni
-                            State = fwsConnectionError; // POZOR: predpoklada nastavene ErrorDescr
+                        { // the second attempt to establish a connection (the first attempt = the connection that broke) is
+                            // immediate (without waiting after the failure), we only wait between individual attempts
+                            // to establish the connection
+                            State = fwsConnectionError; // ATTENTION: assumes ErrorDescr is set
                             operStatusMaybeChanged = TRUE;
                             ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                             SubState = fwssNone;
-                            postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                            postActivate = TRUE; // post an activation for the next worker state
                             reportWorkerChange = TRUE;
-                            break; // konec provadeni stavu fwsConnecting
+                            break; // end of executing the fwsConnecting state
                         }
                         else
                             ConnectAttemptNumber++;
                     }
                 }
 
-                // provedeme reset caches
+                // reset caches
                 HaveWorkingPath = FALSE;
                 CurrentTransferMode = ctrmUnknown;
 
                 DWORD serverIP;
-                if (Oper->GetServerAddress(&serverIP, host, HOST_MAX_SIZE)) // mame IP
+                if (Oper->GetServerAddress(&serverIP, host, HOST_MAX_SIZE)) // we have the IP
                 {
                     SubState = fwssConConnect;
                     run = TRUE;
                 }
-                else // mame jen jmennou adresu
+                else // we only have a host name
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     BOOL getHostByAddressRes = GetHostByAddress(host, ++IPRequestUID);
-                    RefreshCopiesOfUIDAndMsg(); // obnovime kopie UID+Msg (doslo k jejich zmene)
+                    RefreshCopiesOfUIDAndMsg(); // refresh the UID+Msg copies (they changed)
                     if (!getHostByAddressRes)
-                    { // neni sance na uspech -> ohlasime chybu
+                    { // no chance of success -> report an error
                         _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_WORKERGETIPERROR),
                                     GetWorkerErrorTxt(NO_ERROR, errBuf, 50 + FTP_MAX_PATH));
                         CorrectErrorDescr();
                         SubState = fwssConReconnect;
                         run = TRUE;
                     }
-                    else // budeme cekat az IP adresa serveru prijde jako fwseIPReceived, pak si IP znovu vyzvedneme z operace
+                    else // wait until the server IP address arrives as fwseIPReceived, then obtain the IP from the operation again
                     {
-                        // nastavime novy timeout timer
+                        // set a new timeout timer
                         int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                         if (serverTimeout < 1000)
-                            serverTimeout = 1000; // aspon sekundu
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                        // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                            serverTimeout = 1000; // at least one second
+                        // because we are already inside CSocketsThread::CritSect, this call is also possible
+                        // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                         SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
-                                                WORKER_CONTIMEOUTTIMID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                                WORKER_CONTIMEOUTTIMID, NULL); // ignore the error, at worst the user hits Stop
 
                         SubState = fwssConWaitingForIP;
-                        // run = TRUE;  // nema smysl (zatim nenastala zadna udalost)
+                        // run = TRUE;  // pointless (no event has occurred yet)
                     }
                 }
                 break;
             }
 
-            case fwssConWaitingForIP: // cekame na prijeti IP adresy (preklad ze jmenne adresy)
+            case fwssConWaitingForIP: // waiting for the IP address (translation from the host name)
             {
                 switch (event)
                 {
                 case fweIPReceived:
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                     SubState = fwssConConnect;
                     run = TRUE;
@@ -707,8 +708,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
 
                 case fweIPRecFailure:
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                     SubState = fwssConReconnect;
                     run = TRUE;
@@ -727,7 +728,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConConnect: // provedeme Connect()
+            case fwssConConnect: // perform Connect()
             {
                 DWORD serverIP;
                 unsigned short port;
@@ -755,31 +756,31 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                     Logs.LogMessage(LogUID, buf, -1);
                 }
 
-                ResetBuffersAndEvents(); // vyprazdnime buffery (zahodime stara data) a inicializujeme promenne spojene s connectem
+                ResetBuffersAndEvents(); // clear the buffers (discard old data) and initialize variables related to the connection
 
                 DWORD error;
-                // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                // because we are already inside CSocketsThread::CritSect, this call is also possible
+                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                 BOOL conRes = ConnectWithProxy(serverIP, port, proxyType, &error, host, hostPort,
                                                proxyUser, proxyPassword, hostIP);
-                RefreshCopiesOfUIDAndMsg(); // obnovime kopie UID+Msg (doslo k jejich zmene)
+                RefreshCopiesOfUIDAndMsg(); // refresh the UID+Msg copies (they changed)
                 Logs.SetIsConnected(LogUID, IsConnected());
                 Logs.RefreshListOfLogsInLogsDlg();
                 if (conRes)
                 {
-                    SocketClosed = FALSE; // socket uz je zase otevreny
+                    SocketClosed = FALSE; // the socket is open again
 
-                    // nastavime novy timeout timer
+                    // set a new timeout timer
                     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                     if (serverTimeout < 1000)
-                        serverTimeout = 1000; // aspon sekundu
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                        serverTimeout = 1000; // at least one second
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
-                                            WORKER_CONTIMEOUTTIMID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                            WORKER_CONTIMEOUTTIMID, NULL); // ignore the error, at worst the user hits Stop
 
                     SubState = fwssConWaitForConRes;
-                    // run = TRUE;  // nema smysl (zatim nenastala zadna udalost)
+                    // run = TRUE;  // pointless (no event has occurred yet)
                 }
                 else
                 {
@@ -792,36 +793,36 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConWaitForConRes: // cekame na vysledek Connect()
+            case fwssConWaitForConRes: // wait for the result of Connect()
             {
                 switch (event)
                 {
                 case fweConnected:
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
 
-                    // nastavime stav workera tak, aby zacal cekat na odpoved na prikaz (i kdyz jsme zadny
-                    // neposlali, na odpoved serveru cekame) - nastavime timeout pro prijem odpovedi na prikaz
+                    // set the worker state so it starts waiting for a command reply (even if we did not
+                    // send any command, we wait for the server response) - set the timeout for receiving a command reply
                     CommandState = fwcsWaitForLoginPrompt;
                     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                     if (serverTimeout < 1000)
-                        serverTimeout = 1000; // aspon sekundu
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                        serverTimeout = 1000; // at least one second
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
-                                            WORKER_TIMEOUTTIMERID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                            WORKER_TIMEOUTTIMERID, NULL); // ignore the error, at worst the user hits Stop
 
                     SubState = fwssConWaitForPrompt;
-                    // run = TRUE; // nema smysl (zatim nenastala zadna udalost)
+                    // run = TRUE; // pointless (no event has occurred yet)
                     break;
                 }
 
                 case fweConnectFailure:
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                    // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocketsThread::CritSect, this call is also possible
+                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                     SubState = fwssConReconnect;
                     run = TRUE;
@@ -831,8 +832,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
 
                 case fweConTimeout:
                 {
-                    // vzhledem k tomu, ze uz v sekci CSocket::SocketCritSect jsme, je tohle volani
-                    // mozne i ze sekce CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                    // because we are already inside CSocket::SocketCritSect, this call is also possible
+                    // from within CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     if (!GetProxyTimeoutDescr(ErrorDescr, FTPWORKER_ERRDESCR_BUFSIZE))
                         lstrcpyn(ErrorDescr, LoadStr(IDS_OPENCONTIMEOUT), FTPWORKER_ERRDESCR_BUFSIZE);
                     CorrectErrorDescr();
@@ -845,56 +846,56 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConWaitForPrompt: // cekame na login prompt od serveru
+            case fwssConWaitForPrompt: // waiting for the login prompt from the server
             {
                 switch (event)
                 {
-                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                // case fweCmdInfoReceived:  // ignore "1xx" replies (they are only written to the Log)
                 case fweCmdReplyReceived:
                 {
                     if (replyCode != -1)
                     {
                         if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS &&
-                            FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // napr. 220 - Service ready for new user
+                            FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION) // e.g. 220 - Service ready for new user
                         {
-                            Oper->SetServerFirstReply(reply, replySize); // ulozime prvni odpoved serveru (zdroj informaci o verzi serveru)
+                            Oper->SetServerFirstReply(reply, replySize); // store the server's first reply (source of information about the server version)
 
-                            ProxyScriptExecPoint = NULL; // posilame zase od prvniho prikazu login skriptu
+                            ProxyScriptExecPoint = NULL; // start sending from the first login script command again
                             ProxyScriptLastCmdReply = -1;
-                            SubState = Oper->GetEncryptControlConnection() ? fwssConSendAUTH : fwssConSendNextScriptCmd; // budeme posilat prikazy z login skriptu
+                            SubState = Oper->GetEncryptControlConnection() ? fwssConSendAUTH : fwssConSendNextScriptCmd; // we will send commands from the login script
                             run = TRUE;
                         }
                         else
                         {
                             if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR ||
-                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) // napr. 421 Service not available, closing control connection
+                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) // e.g. 421 Service not available, closing control connection
                             {
                                 lstrcpyn(ErrorDescr, CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize),
                                          FTPWORKER_ERRDESCR_BUFSIZE);
                                 CorrectErrorDescr();
-                                closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                                closeSocket = TRUE; // close the connection (no point in continuing)
 
                                 SubState = fwssConReconnect;
                                 run = TRUE;
                             }
-                            else // necekana reakce, ignorujeme ji
+                            else // unexpected response, ignore it
                             {
                                 TRACE_E("Unexpected reply: " << CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                             }
                         }
                     }
-                    else // neni FTP server
+                    else // not an FTP server
                     {
                         _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_NOTFTPSERVERERROR),
                                     CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                         CorrectErrorDescr();
-                        closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                        closeSocket = TRUE; // close the connection (no point in continuing)
 
                         State = fwsConnectionError;
                         operStatusMaybeChanged = TRUE;
                         ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                         SubState = fwssNone;
-                        postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                        postActivate = TRUE; // post an activation for the next worker state
                         reportWorkerChange = TRUE;
                     }
                     break;
@@ -945,7 +946,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 SubState = fwssConWaitForMODEZCmdRes;
                 break;
 
-            case fwssConSendNextScriptCmd: // posleme dalsi prikaz login skriptu
+            case fwssConSendNextScriptCmd: // send the next login script command
             {
                 BOOL fail = FALSE;
                 char errDescrBuf[300];
@@ -955,9 +956,9 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                                errDescrBuf, &needUserInput) &&
                     !needUserInput)
                 {
-                    if (buf[0] == 0) // konec skriptu
+                    if (buf[0] == 0) // end of the script
                     {
-                        if (ProxyScriptLastCmdReply == -1) // skript neobsahuje zadny prikaz, ktery by se poslal na server - napr. pokud se prikazy preskoci kvuli tomu, ze obsahuji nepovinne promenne
+                        if (ProxyScriptLastCmdReply == -1) // the script does not contain any command that would be sent to the server - e.g. commands were skipped because they contain optional variables
                         {
                             lstrcpyn(ErrorDescr, LoadStr(IDS_INCOMPLETEPRXSCR2), FTPWORKER_ERRDESCR_BUFSIZE);
                             CorrectErrorDescr();
@@ -965,15 +966,15 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                         }
                         else
                         {
-                            if (FTP_DIGIT_1(ProxyScriptLastCmdReply) == FTP_D1_SUCCESS) // napr. 230 User logged in, proceed
+                            if (FTP_DIGIT_1(ProxyScriptLastCmdReply) == FTP_D1_SUCCESS) // e.g. 230 User logged in, proceed
                             {
                                 Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGLOGINSUCCESS), -1, TRUE);
-                                NextInitCmd = 0;                                                             // poslat prvni init-ftp-prikaz
-                                SubState = Oper->GetCompressData() ? fwssConSendMODEZ : fwssConSendInitCmds; // jsme zalogovani, jdeme poslat init-ftp-prikazy
+                                NextInitCmd = 0;                                                             // send the first init-ftp command
+                                SubState = Oper->GetCompressData() ? fwssConSendMODEZ : fwssConSendInitCmds; // we are logged in, now send the init-ftp commands
                                 run = TRUE;
                             }
-                            else // FTP_DIGIT_1(ProxyScriptLastCmdReply) == FTP_D1_PARTIALSUCCESS  // napr. 331 User name okay, need password
-                            {    // predpoklada, ze to sem prislo z fwssConWaitForScriptCmdRes a reply+replySize je stale platne
+                            else // FTP_DIGIT_1(ProxyScriptLastCmdReply) == FTP_D1_PARTIALSUCCESS  // e.g. 331 User name okay, need password
+                            {    // assumes we got here from fwssConWaitForScriptCmdRes and reply+replySize is still valid
                                 _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_INCOMPLETEPRXSCR3),
                                             CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                                 CorrectErrorDescr();
@@ -981,14 +982,14 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                             }
                         }
                     }
-                    else // mame dalsi prikaz na poslani
+                    else // there is another command to send
                     {
                         sendCmd = TRUE;
                         SubState = fwssConWaitForScriptCmdRes;
-                        // run = TRUE; // nema smysl (zatim nenastala zadna udalost)
+                        // run = TRUE; // pointless (no event has occurred yet)
                     }
                 }
-                else // chyba ve skriptu nebo chybejici hodnota promenne
+                else // script error or missing variable value
                 {
                     if (needUserInput)
                         lstrcpyn(ErrorDescr, errDescrBuf, FTPWORKER_ERRDESCR_BUFSIZE);
@@ -999,13 +1000,13 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 }
                 if (fail)
                 {
-                    closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                    closeSocket = TRUE; // close the connection (no point in continuing)
 
-                    State = fwsConnectionError; // POZOR: ErrorDescr se nastavuje vyse (viz "fail = TRUE")
+                    State = fwsConnectionError; // NOTE: ErrorDescr is set above (see "fail = TRUE")
                     operStatusMaybeChanged = TRUE;
                     ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                     SubState = fwssNone;
-                    postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                    postActivate = TRUE; // post an activation for the next worker state
                     reportWorkerChange = TRUE;
                 }
                 break;
@@ -1035,11 +1036,11 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                 CCertificate* unverifiedCert;
                                 BOOL ret = EncryptSocket(LogUID, &err, &unverifiedCert, &errID, errBuf,
                                                          50 + FTP_MAX_PATH,
-                                                         NULL /* pro control connection je to vzdy NULL */);
+                                                         NULL /* for the control connection this is always NULL */);
                                 HANDLES(EnterCriticalSection(&WorkerCritSect));
                                 if (ret)
                                 {
-                                    if (unverifiedCert != NULL) // zavreme connectionu a pokud zopakujeme az se user dozvi o neduveryhodnem certifikatu a prijme ho nebo zajisti jeho duveryhodnost (v Solve Error dialogu)
+                                    if (unverifiedCert != NULL) // close the connection and retry only after the user learns about the untrusted certificate and accepts it or ensures it becomes trusted (in the Solve Error dialog)
                                     {
                                         if (UnverifiedCertificate != NULL)
                                             UnverifiedCertificate->Release();
@@ -1092,20 +1093,20 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                     {
                         CorrectErrorDescr();
 
-                        closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                        closeSocket = TRUE; // close the connection (no point in continuing)
 
-                        if (retryLoginWithoutAsking) // zkusime to znovu
+                        if (retryLoginWithoutAsking) // try again
                         {
                             SubState = fwssConReconnect;
                             run = TRUE;
                         }
-                        else // ohlasime chybu uzivateli
+                        else // report the error to the user
                         {
                             State = fwsConnectionError;
                             operStatusMaybeChanged = TRUE;
                             ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                             SubState = fwssNone;
-                            postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                            postActivate = TRUE; // post an activation for the next worker state
                             reportWorkerChange = TRUE;
                         }
                     }
@@ -1153,17 +1154,17 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConWaitForScriptCmdRes: // cekame na vysledek prikazu z login skriptu
+            case fwssConWaitForScriptCmdRes: // waiting for the result of a login script command
             {
                 switch (event)
                 {
-                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                // case fweCmdInfoReceived:  // ignore "1xx" replies (they are only written to the Log)
                 case fweCmdReplyReceived:
                 {
                     if (replyCode != -1)
                     {
-                        if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS ||      // napr. 230 User logged in, proceed
-                            FTP_DIGIT_1(replyCode) == FTP_D1_PARTIALSUCCESS) // napr. 331 User name okay, need password
+                        if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS ||      // e.g. 230 User logged in, proceed
+                            FTP_DIGIT_1(replyCode) == FTP_D1_PARTIALSUCCESS) // e.g. 331 User name okay, need password
                         {
                             SubState = fwssConSendNextScriptCmd;
                             ProxyScriptLastCmdReply = replyCode;
@@ -1171,13 +1172,13 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                         }
                         else
                         {
-                            if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // napr. 421 Service not available (too many users), closing control connection
-                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // napr. 530 Not logged in (invalid password)
+                            if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // e.g. 421 Service not available (too many users), closing control connection
+                                FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // e.g. 530 Not logged in (invalid password)
                             {
                                 BOOL retryLoginWithoutAsking;
                                 if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                { // pohodlne reseni chyby "too many users" - zadne dotazy, hned "retry"
-                                    // muze vadit: s timto kodem prijde zprava, na kterou je treba reagovat zmenou user/passwd
+                                { // convenient handling of the "too many users" error - no questions, immediately retry
+                                    // this may be a problem: this code is accompanied by a message that requires changing the user/password
                                     retryLoginWithoutAsking = TRUE;
                                 }
                                 else
@@ -1186,41 +1187,41 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                 _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_WORKERLOGINERR),
                                             CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                                 CorrectErrorDescr();
-                                closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                                closeSocket = TRUE; // close the connection (no point in continuing)
 
-                                if (retryLoginWithoutAsking) // zkusime to znovu
+                                if (retryLoginWithoutAsking) // try again
                                 {
                                     SubState = fwssConReconnect;
                                     run = TRUE;
                                 }
-                                else // ohlasime chybu uzivateli a pockame az zmeni heslo/account
+                                else // report the error to the user and wait until they change the password/account
                                 {
                                     State = fwsConnectionError;
                                     operStatusMaybeChanged = TRUE;
                                     ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                                     SubState = fwssNone;
-                                    postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                                    postActivate = TRUE; // post an activation for the next worker state
                                     reportWorkerChange = TRUE;
                                 }
                             }
-                            else // necekana reakce, ignorujeme ji
+                            else // unexpected response, ignore it
                             {
                                 TRACE_E("Unexpected reply: " << CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                             }
                         }
                     }
-                    else // neni FTP server
+                    else // not an FTP server
                     {
                         _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_NOTFTPSERVERERROR),
                                     CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                         CorrectErrorDescr();
-                        closeSocket = TRUE; // zavreme spojeni (nema vyznam pokracovat)
+                        closeSocket = TRUE; // close the connection (no point in continuing)
 
                         State = fwsConnectionError;
                         operStatusMaybeChanged = TRUE;
                         ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                         SubState = fwssNone;
-                        postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                        postActivate = TRUE; // post an activation for the next worker state
                         reportWorkerChange = TRUE;
                     }
                     break;
@@ -1236,7 +1237,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConSendInitCmds: // posleme inicializacni prikazy (user-defined, viz CFTPOperation::InitFTPCommands)
+            case fwssConSendInitCmds: // send initialization commands (user-defined, see CFTPOperation::InitFTPCommands)
             {
                 Oper->GetInitFTPCommands(buf, 200 + FTP_MAX_PATH);
                 if (buf[0] != 0)
@@ -1247,12 +1248,12 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                     while (GetToken(&s, &next))
                     {
                         if (*s != 0 && *s <= ' ')
-                            s++;     // odbourame jen prvni mezeru (aby na zacatek prikazu bylo mozne dat i mezery)
-                        if (*s != 0) // je-li co, posleme to na server
+                            s++;     // remove only the first space (so commands can still start with spaces)
+                        if (*s != 0) // if there is anything, send it to the server
                         {
                             if (i++ == NextInitCmd)
                             {
-                                NextInitCmd++; // priste bereme dalsi prikaz (silne neefektivni reseni, ale neocekava se zde vetsi mnozstvi prikazu)
+                                NextInitCmd++; // take the next command next time (very inefficient, but only a few commands are expected here)
                                 _snprintf_s(errBuf, 50 + FTP_MAX_PATH, _TRUNCATE, "%s\r\n", s);
                                 strcpy(buf, errBuf);
                                 cmdLen = (int)strlen(buf);
@@ -1262,27 +1263,27 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                         }
                     }
                 }
-                if (sendCmd) // posilame dalsi init-ftp-prikaz
+                if (sendCmd) // sending another init-ftp command
                 {
                     SubState = fwssConWaitForInitCmdRes;
-                    // run = TRUE; // nema smysl (zatim nenastala zadna udalost)
+                    // run = TRUE; // pointless (no event has occurred yet)
                 }
-                else // jiz jsme poslali vsechny init-ftp-prikazy (nebo zadne neexistuji)
+                else // all init-ftp commands have been sent (or none exist)
                 {
-                    SubState = fwssConSendSyst; // zjistime system serveru
+                    SubState = fwssConSendSyst; // determine the server system
                     run = TRUE;
                 }
                 break;
             }
 
-            case fwssConWaitForInitCmdRes: // cekame na vysledek provadeneho inicializacniho prikazu
+            case fwssConWaitForInitCmdRes: // waiting for the result of the initialization command
             {
                 switch (event)
                 {
-                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                // case fweCmdInfoReceived:  // ignore "1xx" replies (they are only written to the Log)
                 case fweCmdReplyReceived:
                 {
-                    SubState = fwssConSendInitCmds; // posleme dalsi init-ftp-prikaz (na odpovedich serveru nam nezalezi)
+                    SubState = fwssConSendInitCmds; // send another init-ftp command (we do not care about the server replies)
                     run = TRUE;
                     break;
                 }
@@ -1297,33 +1298,33 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConSendSyst: // zjistime system serveru (posleme prikaz "SYST")
+            case fwssConSendSyst: // determine the server system (send the "SYST" command)
             {
-                PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH, ftpcmdSystem, &cmdLen); // nemuze nahlasit chybu
+                PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH, ftpcmdSystem, &cmdLen); // cannot report an error
                 sendCmd = TRUE;
                 SubState = fwssConWaitForSystRes;
-                // run = TRUE; // nema smysl (zatim nenastala zadna udalost)
+                // run = TRUE; // pointless (no event has occurred yet)
                 break;
             }
 
-            case fwssConWaitForSystRes: // cekame na system serveru (vysledek prikazu "SYST")
+            case fwssConWaitForSystRes: // waiting for the server system (result of the "SYST" command)
             {
                 switch (event)
                 {
-                // case fweCmdInfoReceived:  // "1xx" odpovedi ignorujeme (jen se pisou do Logu)
+                // case fweCmdInfoReceived:  // ignore "1xx" replies (they are only written to the Log)
                 case fweCmdReplyReceived:
                 {
-                    Oper->SetServerSystem(reply, replySize); // ulozime system serveru (zdroj informaci o verzi serveru)
+                    Oper->SetServerSystem(reply, replySize); // store the server system (source of information about the server version)
 
-                    // spojeni je navazane, jdeme pracovat
-                    State = fwsWorking; // neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                    // the connection is established, start working
+                    State = fwsWorking; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                     if (UploadDirGetTgtPathListing)
                         TRACE_E("CFTPWorker::HandleEventInPreparingState(): UploadDirGetTgtPathListing==TRUE!");
                     SubState = fwssNone;
                     StatusType = wstNone;
-                    postActivate = TRUE;      // postneme si aktivaci pro dalsi stav workera
-                    ConnectAttemptNumber = 1; // spojeni je navazane, vracime se na jednicku, aby dalsi mel pripadny dalsi reconnect opet "nabito"
-                    ErrorDescr[0] = 0;        // opet zacneme sbirat chybova hlaseni
+                    postActivate = TRUE;      // post an activation for the next worker state
+                    ConnectAttemptNumber = 1; // the connection is established, reset to one so the next reconnect attempt is ready again
+                    ErrorDescr[0] = 0;        // start collecting error messages again
                     reportWorkerChange = TRUE;
                     break;
                 }
@@ -1338,44 +1339,43 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 break;
             }
 
-            case fwssConReconnect: // vyhodnotime jestli provest reconnect nebo ohlasit chybu workera
+            case fwssConReconnect: // decide whether to perform a reconnect or report a worker error
             {
                 if (ConnectAttemptNumber + 1 > Config.GetConnectRetries() + 1)
                 {
-                    State = fwsConnectionError; // POZOR: predpoklada nastavene ErrorDescr
+                    State = fwsConnectionError; // NOTE: assumes ErrorDescr is set
                     operStatusMaybeChanged = TRUE;
                     ErrorOccurenceTime = Oper->GiveLastErrorOccurenceTime();
                     SubState = fwssNone;
-                    postActivate = TRUE; // postneme si aktivaci pro dalsi stav workera
+                    postActivate = TRUE; // post an activation for the next worker state
                     reportWorkerChange = TRUE;
                 }
                 else
                 {
-                    // zkusime najit "sleeping" workera s otevrenou connectionou, kteremu bychom
-                    // praci predali (misto zbytecneho reconnectu)
+                    // try to find a "sleeping" worker with an open connection to hand over the work to (instead of reconnecting unnecessarily)
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     BOOL workMoved = Oper->GiveWorkToSleepingConWorker(this);
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
 
                     if (!workMoved)
                     {
-                        // jdeme si pockat na reconnect
+                        // wait for a reconnect
                         ConnectAttemptNumber++;
 
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                        // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                        // because we are already inside CSocketsThread::CritSect, this call is also possible
+                        // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                         SocketsThread->DeleteTimer(UID, WORKER_RECONTIMEOUTTIMID);
 
-                        // nahodime timer pro dalsi pokus o connect
+                        // start a timer for the next connect attempt
                         int delayBetweenConRetries = Config.GetDelayBetweenConRetries() * 1000;
-                        // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-                        // mozne i ze sekce CSocket::SocketCritSect a CFTPWorker::WorkerCritSect (nehrozi dead-lock)
+                        // because we are already inside CSocketsThread::CritSect, this call is also possible
+                        // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                         SocketsThread->AddTimer(Msg, UID, GetTickCount() + delayBetweenConRetries,
-                                                WORKER_RECONTIMEOUTTIMID, NULL); // chybu ignorujeme, maximalne si user da Stop
+                                                WORKER_RECONTIMEOUTTIMID, NULL); // ignore the error, at worst the user hits Stop
 
-                        State = fwsWaitingForReconnect; // POZOR: predpoklada nastavene ErrorDescr; neni nutne volat Oper->OperationStatusMaybeChanged(), nemeni stav operace (neni paused a nebude ani po teto zmene)
+                        State = fwsWaitingForReconnect; // NOTE: assumes ErrorDescr is set; no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                         SubState = fwssNone;
-                        // postActivate = TRUE;  // neni duvod, cekame na timeout
+                        // postActivate = TRUE;  // no reason, waiting for the timeout
                         reportWorkerChange = TRUE;
                     }
                 }
@@ -1387,8 +1387,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
         {
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
-            // vzhledem k tomu, ze uz v sekci CSocketsThread::CritSect jsme, je tohle volani
-            // mozne i ze sekce CSocket::SocketCritSect (nehrozi dead-lock)
+            // because we are already inside CSocketsThread::CritSect, this call is also possible
+            // from within CSocket::SocketCritSect (no risk of dead-lock)
             ForceClose();
 
             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -1411,7 +1411,7 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
     totalSize->Set(0, 0);
     *sizeInBytes = TRUE;
 
-    // napocitame masku 'validDataMask'
+    // compute the 'validDataMask'
     DWORD validDataMask = VALID_DATA_HIDDEN | VALID_DATA_ISLINK; // Name + NameLen + Hidden + IsLink
     int i;
     for (i = 0; i < serverType->Columns.Count; i++)
@@ -1441,7 +1441,7 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                                                                                    validDataMask, isVMS);
     if (dataIface != NULL)
     {
-        DWORD* emptyCol = new DWORD[serverType->Columns.Count]; // pomocne predalokovane pole pro GetNextItemFromListing
+        DWORD* emptyCol = new DWORD[serverType->Columns.Count]; // helper preallocated array for GetNextItemFromListing
         if (dataIface->IsGood() && emptyCol != NULL)
         {
             validDataMask |= dataIface->GetPLValidDataMask();
@@ -1450,7 +1450,7 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
             {
                 parser = CompileParsingRules(HandleNULLStr(serverType->RulesForParsing), &(serverType->Columns),
                                              NULL, NULL, NULL);
-                serverType->CompiledParser = parser; // 'parser' nebudeme dealokovat, uz je v 'serverType'
+                serverType->CompiledParser = parser; // we will not deallocate 'parser', it already lives in 'serverType'
             }
             if (parser != NULL)
             {
@@ -1459,12 +1459,12 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                 const char* listingEnd = allocatedListing + allocatedListingLen;
                 BOOL isDir = FALSE;
 
-                int rightsCol = -1; // index sloupce s pravy (pouziva se pro detekci linku)
+                int rightsCol = -1; // index of the column with permissions (used to detect links)
                 if (dataIface != NULL)
                     rightsCol = dataIface->FindRightsColumn();
 
-                // promenne pro Copy a Move operace
-                CQuadWord size(-1, -1); // promenna pro velikost aktualniho souboru
+                // variables for Copy and Move operations
+                CQuadWord size(-1, -1); // variable for the current file size
                 char targetPath[MAX_PATH];
                 if (CurItem->Type == fqitCopyExploreDir ||
                     CurItem->Type == fqitMoveExploreDir ||
@@ -1472,20 +1472,20 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                 {
                     CFTPQueueItemCopyMoveExplore* cmItem = (CFTPQueueItemCopyMoveExplore*)CurItem;
                     lstrcpyn(targetPath, cmItem->TgtPath, MAX_PATH);
-                    SalamanderGeneral->SalPathAppend(targetPath, cmItem->TgtName, MAX_PATH); // musi vyjit, adresar uz existuje na disku a jeho fullname ma max. PATH_MAX_PATH-1 znaku
+                    SalamanderGeneral->SalPathAppend(targetPath, cmItem->TgtName, MAX_PATH); // must succeed, the directory already exists on disk and its full name is at most PATH_MAX_PATH-1 characters
                 }
                 else
                     targetPath[0] = 0;
                 BOOL is_AS_400_QSYS_LIB_Path = isAS400 && FTPIsPrefixOfServerPath(ftpsptAS400, "/QSYS.LIB", WorkingPath);
                 parser->BeforeParsing(listing, listingEnd, StartTimeOfListing.wYear, StartTimeOfListing.wMonth,
-                                      StartTimeOfListing.wDay, FALSE); // init parseru
+                                      StartTimeOfListing.wDay, FALSE); // parser initialization
                 while (parser->GetNextItemFromListing(&file, &isDir, dataIface, &(serverType->Columns), &listing,
                                                       listingEnd, NULL, &err, emptyCol))
                 {
                     if (!isDir || file.NameLen > 2 ||
-                        file.Name[0] != '.' || (file.Name[1] != 0 && file.Name[1] != '.')) // nejde o adresare "." a ".."
+                        file.Name[0] != '.' || (file.Name[1] != 0 && file.Name[1] != '.')) // ignore the "." and ".." directories
                     {
-                        // pridame polozku pro vyparsovany soubor/adresar do ftpQueueItems
+                        // add an item for the parsed file/directory to ftpQueueItems
                         CFTPQueueItem* item = NULL;
                         CFTPQueueItemType type;
                         BOOL ok = TRUE;
@@ -1494,19 +1494,19 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                         BOOL skip = FALSE;
                         switch (CurItem->Type)
                         {
-                        case fqitDeleteExploreDir: // explore adresare pro delete (pozn.: linky na adresare mazeme jako celek, ucel operace se splni a nesmaze se nic "navic") (objekt tridy CFTPQueueItemDelExplore)
+                        case fqitDeleteExploreDir: // explore directories for delete (note: links to directories are deleted as a whole, the operation's purpose is fulfilled and nothing "extra" is removed) (object of class CFTPQueueItemDelExplore)
                         {
-                            int skippedItems = 0;  // nepouziva se
-                            int uiNeededItems = 0; // nepouziva se
+                            int skippedItems = 0;  // unused
+                            int uiNeededItems = 0; // unused
                             item = CreateItemForDeleteOperation(&file, isDir, rightsCol, dataIface, &type, &ok, FALSE,
                                                                 operationsHiddenFileDel, operationsHiddenDirDel,
                                                                 &state, &problemID, &skippedItems, &uiNeededItems);
                             break;
                         }
 
-                        case fqitCopyExploreDir:     // explore adresare nebo linku na adresar pro kopirovani (objekt tridy CFTPQueueItemCopyMoveExplore)
-                        case fqitMoveExploreDir:     // explore adresare pro presun (po dokonceni smaze adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
-                        case fqitMoveExploreDirLink: // explore linku na adresar pro presun (po dokonceni smaze link na adresar) (objekt tridy CFTPQueueItemCopyMoveExplore)
+                        case fqitCopyExploreDir:     // explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
+                        case fqitMoveExploreDir:     // explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
+                        case fqitMoveExploreDirLink: // explore a link to a directory for moving (deletes the directory link after completion) (object of class CFTPQueueItemCopyMoveExplore)
                         {
                             char mbrName[MAX_PATH];
                             char* tgtName = file.Name;
@@ -1518,16 +1518,16 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                             item = CreateItemForCopyOrMoveOperation(&file, isDir, rightsCol, dataIface,
                                                                     &type, transferMode, Oper,
                                                                     CurItem->Type == fqitCopyExploreDir,
-                                                                    targetPath, tgtName, // jsme v podadresari, tady uz se jmena nevyrabi z operacni masky
+                                                                    targetPath, tgtName, // we are in a subdirectory, names are no longer generated from the operation mask here
                                                                     &size, sizeInBytes, totalSize);
                             break;
                         }
 
-                        case fqitChAttrsExploreDir:     // explore adresare pro zmenu atributu (prida i polozku pro zmenu atributu adresare) (objekt tridy CFTPQueueItemChAttrExplore)
-                        case fqitChAttrsExploreDirLink: // explore linku na adresar pro zmenu atributu (objekt tridy CFTPQueueItem)
+                        case fqitChAttrsExploreDir:     // explore directories for attribute changes (also adds an item for changing the directory attributes) (object of class CFTPQueueItemChAttrExplore)
+                        case fqitChAttrsExploreDirLink: // explore a link to a directory for attribute changes (object of class CFTPQueueItem)
                         {
-                            int skippedItems = 0;  // nepouziva se
-                            int uiNeededItems = 0; // nepouziva se
+                            int skippedItems = 0;  // unused
+                            int uiNeededItems = 0; // unused
                             item = CreateItemForChangeAttrsOperation(&file, isDir, rightsCol, dataIface,
                                                                      &type, &ok, &state, &problemID,
                                                                      &skippedItems, &uiNeededItems, &skip, selFiles,
@@ -1541,7 +1541,7 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                             if (ok)
                             {
                                 item->SetItem(-1, type, state, problemID, WorkingPath, file.Name);
-                                ftpQueueItems->Add(item); // pridani operace do fronty
+                                ftpQueueItems->Add(item); // add the operation to the queue
                                 if (!ftpQueueItems->IsGood())
                                 {
                                     ftpQueueItems->ResetState();
@@ -1556,14 +1556,14 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                         }
                         else
                         {
-                            if (!skip) // jen pokud nejde o skipnuti polozky, ale o chybu nedostatku pameti
+                            if (!skip) // only if this is not skipping the item but a low-memory error
                             {
                                 TRACE_E(LOW_MEMORY);
                                 err = TRUE;
                             }
                         }
                     }
-                    // uvolnime data souboru nebo adresare
+                    // release file or directory data
                     dataIface->ReleasePluginData(file, isDir);
                     SalamanderGeneral->Free(file.Name);
 
@@ -1571,10 +1571,10 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                         break;
                 }
                 if (!err && listing == listingEnd)
-                    ret = TRUE; // parsovani probehlo uspesne
+                    ret = TRUE; // parsing finished successfully
             }
             else
-                err = TRUE; // muze byt jen nedostatek pameti
+                err = TRUE; // only a lack of memory can happen here
         }
         else
         {
@@ -1631,7 +1631,7 @@ BOOL CExploredPaths::AddPath(const char* path)
         return TRUE;
     }
     else
-        return FALSE; // uz je v poli
+        return FALSE; // already present in the array
 }
 
 BOOL CExploredPaths::GetPathIndex(const char* path, int pathLen, int& index)
@@ -1651,25 +1651,25 @@ BOOL CExploredPaths::GetPathIndex(const char* path, int pathLen, int& index)
         res = *pathM - pathLen;
         if (res == 0)
             res = memcmp((const char*)(pathM + 1), path, pathLen);
-        if (res == 0) // nalezeno
+        if (res == 0) // found
         {
             index = m;
             return TRUE;
         }
         else if (res > 0)
         {
-            if (l == r || l > m - 1) // nenalezeno
+            if (l == r || l > m - 1) // not found
             {
-                index = m; // mel by byt na teto pozici
+                index = m; // should be at this position
                 return FALSE;
             }
             r = m - 1;
         }
         else
         {
-            if (l == r) // nenalezeno
+            if (l == r) // not found
             {
-                index = m + 1; // mel by byt az za touto pozici
+                index = m + 1; // should come after this position
                 return FALSE;
             }
             l = m + 1;

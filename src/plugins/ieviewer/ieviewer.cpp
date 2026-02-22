@@ -15,30 +15,30 @@
 
 #pragma comment(lib, "comsuppw.lib")
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro viewer
+// CPluginInterface portion for the viewer
 CPluginInterfaceForViewer InterfaceForViewer;
 
 const char* WINDOW_CLASSNAME = "IE Viewer Class";
-ATOM AtomObject = 0;                                         // "property" okna s ukazatelem na objekt
-CIEMainWindowQueue CIEMainWindow::ViewerWindowQueue;         // seznam vsech oken viewru
-CThreadQueue CIEMainWindow::ThreadQueue("IEViewer Viewers"); // seznam vsech threadu oken
+ATOM AtomObject = 0;                                         // window "property" with a pointer to the object
+CIEMainWindowQueue CIEMainWindow::ViewerWindowQueue;         // list of all viewer windows
+CThreadQueue CIEMainWindow::ThreadQueue("IEViewer Viewers"); // list of all window threads
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL module - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG module - language-dependent resources
 
 int ConfigVersion = 0;           // 0 - default, 1 - SS 1.6 beta 3, 2 - SS 1.6 beta 4, 3 - SS 2.5 beta 1, 4 - AS 3.1 beta 1
 #define CURRENT_CONFIG_VERSION 4 // AS 3.1 beta 1
 const char* CONFIG_VERSION = "Version";
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
 char GetStringFromIIDBuffer[MAX_PATH];
@@ -155,9 +155,9 @@ void UpdateInternetFeatureControl()
     //Internet Feature Control Keys
     //https://msdn.microsoft.com/en-us/library/ee330720%28v=vs.85%29.aspx
 
-    // o FEATURE_96DPI_PIXEL se v MSDN zminuji ze je deprecated a nahrazena DOCHOSTUIFLAG_DPI_AWARE
+    // MSDN mentions that FEATURE_96DPI_PIXEL is deprecated and replaced by DOCHOSTUIFLAG_DPI_AWARE
     // https://msdn.microsoft.com/en-us/library/aa753277%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-    // ale zatim to chodi i pod W10/IE11, takze neresim
+    // but it still works under W10/IE11, so I am ignoring it
 
     char exePath[MAX_PATH];
     if (!GetModuleFileName(NULL, exePath, MAX_PATH))
@@ -185,31 +185,31 @@ void UpdateInternetFeatureControl()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // configure SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // configure SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "Internet Explorer Viewer" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let it load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Internet Explorer Viewer" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
 
-    // povolime renderovani v aktualnim IE enginu, High-DPI support, GPU akceleraci, ...
+    // enable rendering in the current IE engine, High-DPI support, GPU acceleration, ...
     static BOOL ifcUpdated = FALSE;
     if (!ifcUpdated)
     {
@@ -218,9 +218,9 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     }
 
     if (!InitViewer())
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // configure the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER,
                                    VERSINFO_VERSION_NO_PLATFORM,
@@ -270,11 +270,11 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         {
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // probably some troublemaker... ;-)
         }
     }
     else // default configuration
@@ -298,23 +298,23 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     char buff[1000];
     sprintf_s(buff, "*.htm;*.html;*.xml;*.mht;%s", MARKDOWN_EXTENSIONS);
 
-    salamander->AddViewer(buff, FALSE); // default (install pluginu), jinak Salam ignoruje
+    salamander->AddViewer(buff, FALSE); // default (plugin installation), otherwise Salamander ignores it
 
-    if (ConfigVersion < 2) // pred SS 1.6 beta 4
+    if (ConfigVersion < 2) // before SS 1.6 beta 4
     {
-        salamander->AddViewer("*.xml", TRUE);   // pridame *.xml  (do 1.6 beta 3, jinak uz tam je, neprida se)
-        salamander->ForceRemoveViewer("*.jpg"); // vyhodime *.jpg  (z beta 3, jinak tam neni)
-        salamander->ForceRemoveViewer("*.gif"); // vyhodime *.gif  (z beta 3, jinak tam neni)
+        salamander->AddViewer("*.xml", TRUE);   // add *.xml (up to 1.6 beta 3, otherwise already there, will not be added)
+        salamander->ForceRemoveViewer("*.jpg"); // remove *.jpg (from beta 3, otherwise not present)
+        salamander->ForceRemoveViewer("*.gif"); // remove *.gif (from beta 3, otherwise not present)
     }
 
-    if (ConfigVersion < 3) // pred SS 2.5 beta 1
+    if (ConfigVersion < 3) // before SS 2.5 beta 1
     {
-        salamander->AddViewer("*.mht", TRUE); // pridame *.mht  (do 2.5 beta 1, jinak uz tam je, neprida se)
+        salamander->AddViewer("*.mht", TRUE); // add *.mht (through 2.5 beta 1, otherwise already there, will not be added)
     }
 
-    if (ConfigVersion < 4) // pred AD 3.1 beta 1
+    if (ConfigVersion < 4) // before AD 3.1 beta 1
     {
-        salamander->AddViewer(MARKDOWN_EXTENSIONS, TRUE); // podpora pro Markdown
+        salamander->AddViewer(MARKDOWN_EXTENSIONS, TRUE); // support for Markdown
     }
 }
 
@@ -394,10 +394,10 @@ unsigned WINAPI ThreadIEMessageLoop(void* param)
     lstrcpyn(name, data->Name, MAX_PATH);
     IStream* contentStream = data->ContentStream;
     BOOL openFile = data->Success;
-    SetEvent(data->Continue); // pustime dale hl. thread, od tohoto bodu nejsou data platna (=NULL)
+    SetEvent(data->Continue); // let the main thread continue; data are invalid from this point (=NULL)
     data = NULL;
 
-    // pokud probehlo vse bez potizi, otevreme v okne pozadovany soubor
+    // if everything succeeded, open the requested file in the window
     if (window != NULL && openFile)
     {
         CALL_STACK_MESSAGE1("ThreadIEMessageLoop::Navigate");
@@ -421,10 +421,10 @@ unsigned WINAPI ThreadIEMessageLoop(void* param)
         }
     }
 
-    // pravdepodobne casta chyba v IE - objekt se puvodne destruoval v reakci na WM_DESTROY
-    // pak ale prisla message jeste pred ukoncenim message pumpy a byl osloven zdestruovany
-    // objekt
-    // proto jsem presunul destrukci okna sem - obdoba ooStatic z WinLibu
+    // probably a common bug in IE - the object was originally destroyed in response to WM_DESTROY
+    // but a message arrived before the message pump finished and hit the destroyed
+    // object
+    // therefore I moved the window destruction here - similar to ooStatic from WinLib
     CALL_STACK_MESSAGE1("ThreadIEMessageLoop::message_loop done");
     delete window;
 
@@ -440,7 +440,7 @@ enum FileFormatEnum
 
 FileFormatEnum GetFileFormat(const char* name)
 {
-    // naivni detekce podle pripony, asi by si to zaslouzilo heuristiku podle obsahu
+    // naive detection by extension; it probably deserves content-based heuristics
     FileFormatEnum ret = ffeHTML;
     CSalamanderMaskGroup* masks = SalamanderGeneral->AllocSalamanderMaskGroup();
     if (masks != NULL)
@@ -472,7 +472,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     data.Name = name;
     data.ContentStream = NULL;
     if (fileFormat == ffeMarkdown)
-        data.ContentStream = ConvertMarkdownToHTML(name); // pokud vrati NULL, zobrazime soubor jako HTML
+        data.ContentStream = ConvertMarkdownToHTML(name); // if it returns NULL, display the file as HTML
     data.Left = left;
     data.Top = top;
     data.Width = width;
@@ -485,13 +485,13 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     data.Continue = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (data.Continue == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit Continue event.");
+        TRACE_E("Failed to create the Continue event.");
         return FALSE;
     }
 
     if (CIEMainWindow::ThreadQueue.StartThread(ThreadIEMessageLoop, &data))
     {
-        // pockame, az thread zpracuje predana data a vrati vysledky
+        // wait until the thread processes the passed data and returns results
         WaitForSingleObject(data.Continue, INFINITE);
     }
     else
@@ -1252,8 +1252,8 @@ BOOL CImpIDispatch::CanonizeURL(char* psz)
 
     while (*pszSource != '\0')
     {
-        //    if (*pszSource == '+')   // j.r. padalo v pripade zobrazeni souboru v adresari obsahujici v nazvu '+'
-        //      *pszDest++ = ' ';      // netusim, proc tam eliminace '+' puvodne byla (prevzaty kod)
+        //    if (*pszSource == '+')   // j.r. it crashed when displaying a file in a directory with '+' in its name
+        //      *pszDest++ = ' ';      // no idea why the '+' removal was originally there (inherited code)
         //    else
         if (*pszSource == '%')
         {
@@ -1292,7 +1292,7 @@ BOOL CImpIDispatch::CanonizeURL(char* psz)
         int offset = 7;
         if (m_pSite->m_pIWebBrowser2 != NULL)
         {
-            // > IE 3.02 - novejsi IE pisi "file:\\\C:\" nebo "file:\\john\c"
+            // > IE 3.02 - newer IE versions write "file:\\\C:\" or "file:\\john\c"
             if (psz[7] == '\\' && __isascii(psz[8]))
                 offset++;
             else
@@ -1386,7 +1386,7 @@ CSite::CSite()
     //Object interfaces
     m_pIUnknown = NULL;
     m_pIWebBrowser = NULL;
-    m_pIWebBrowser2 = NULL; // !!! pozor - pro IE3.02 muze byt NULL
+    m_pIWebBrowser2 = NULL; // !!! warning - for IE3.02 it can be NULL
     m_pIOleObject = NULL;
     m_pIOleInPlaceObject = NULL;
     m_pIOleInPlaceActiveObject = NULL;
@@ -1508,7 +1508,7 @@ BOOL CSite::ObjectInitialize()
     return TRUE;
 }
 
-// tahle potvora chodi i s IE 3.02
+// this nasty thing works even with IE 3.02
 static CLSID const my_CLSID_WebBrowser =
     {0xeab22ac3, 0x30c1, 0x11cf, {0xa7, 0xeb, 0x0, 0x0, 0xc0, 0x5b, 0xae, 0x0b}};
 
@@ -1528,12 +1528,12 @@ BOOL CSite::Create(HWND hParentWnd)
     if (!ObjectInitialize())
         return FALSE;
 
-    // Necham vytvorit instance CLSID_WebBrowser a vytahnu IID_IUnknown
+    // Let it create an instance of CLSID_WebBrowser and fetch IID_IUnknown
     HRESULT hr = CoCreateInstance(my_CLSID_WebBrowser, NULL,
                                   CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER,
                                   IID_IUnknown, (void**)&m_pIUnknown);
 
-    if (hr == REGDB_E_CLASSNOTREG) // spravna varianta
+    if (hr == REGDB_E_CLASSNOTREG) // correct variant
     {
         TRACE_E("A InternetExplorer class is not registered in the registration database");
         return FALSE;
@@ -1545,7 +1545,7 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-    // Casto potrebuji IID_IWebBrowser, tak si jeden vytahnu
+    // I often need IID_IWebBrowser, so I obtain one
     hr = m_pIUnknown->QueryInterface(IID_IWebBrowser, (void**)&m_pIWebBrowser);
     if (FAILED(hr))
     {
@@ -1553,11 +1553,11 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-    // zkusim, jestli neni k mani take IID_IWebBrowser2
+    // try whether IID_IWebBrowser2 is also available
     hr = m_pIUnknown->QueryInterface(IID_IWebBrowser2, (void**)&m_pIWebBrowser2);
     if (FAILED(hr))
     {
-        TRACE_I("Neni IID_IWebBrowser2");
+        TRACE_I("IID_IWebBrowser2 interface is not available");
     }
     /*
   VARIANT_BOOL offline;
@@ -1567,7 +1567,7 @@ BOOL CSite::Create(HWND hParentWnd)
 
   m_pIWebBrowser2->get_Offline(&offline);
 */
-    // Casto potrebuji IOleObject, tak si jeden vytahnu
+    // I often need IOleObject, so I obtain one
     hr = m_pIUnknown->QueryInterface(IID_IOleObject, (void**)&m_pIOleObject);
     if (FAILED(hr))
     {
@@ -1575,7 +1575,7 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-    // Casto potrebuji IOleInPlaceObject, tak si jeden vytahnu
+    // I often need IOleInPlaceObject, so I obtain one
     hr = m_pIUnknown->QueryInterface(IID_IOleInPlaceObject, (void**)&m_pIOleInPlaceObject);
     if (FAILED(hr))
     {
@@ -1583,7 +1583,7 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-    // Casto potrebuji IID_IOleInPlaceActiveObject, tak si jeden vytahnu
+    // I often need IID_IOleInPlaceActiveObject, so I obtain one
     hr = m_pIUnknown->QueryInterface(IID_IOleInPlaceActiveObject, (void**)&m_pIOleInPlaceActiveObject);
     if (FAILED(hr))
     {
@@ -1591,7 +1591,7 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-    // Casto potrebuji IID_IViewObject, tak si jeden vytahnu
+    // I often need IID_IViewObject, so I obtain one
     hr = m_pIUnknown->QueryInterface(IID_IViewObject, (void**)&m_pIViewObject);
     if (FAILED(hr))
     {
@@ -1606,7 +1606,7 @@ BOOL CSite::Create(HWND hParentWnd)
     return FALSE;
   }
 */
-    // Nastavim objektu ClientSite
+    // Set the object's ClientSite
     if (FAILED(hr = m_pIOleObject->SetClientSite(m_pImpIOleClientSite)))
     {
         TRACE_E("SetClientSite on WebBrowser failed.");
@@ -1659,13 +1659,13 @@ void CSite::Close()
 
     m_fCreated = FALSE;
 
-    // deaktivuju InPlaceObject
+    // deactivate the InPlaceObject
     if (m_pIOleInPlaceObject != NULL)
     {
         hr = m_pIOleInPlaceObject->InPlaceDeactivate();
         if (FAILED(hr))
             TRACE_E("m_pIOleInPlaceObject->InPlaceDeactivate failed");
-        // uvolnim interface
+        // release the interface
         ReleaseInterface(m_pIOleInPlaceObject);
     }
 
@@ -1677,7 +1677,7 @@ void CSite::Close()
       TRACE_E("SetAdvise on WebBrowser failed.");
   }
 */
-    // zavru OleObject
+    // close the OleObject
     if (m_pIOleObject != NULL)
     {
         hr = m_pIOleObject->SetClientSite(NULL);
@@ -1686,11 +1686,11 @@ void CSite::Close()
         hr = m_pIOleObject->Close(OLECLOSE_NOSAVE);
         if (FAILED(hr))
             TRACE_E("m_pIOleObject->Close failed");
-        // uvolnim interface
+        // release the interface
         ReleaseInterface(m_pIOleObject);
     }
 
-    // uvolnim pomocne interfacy
+    // release helper interfaces
     ReleaseInterface(m_pIUnknown);
     ReleaseInterface(m_pIWebBrowser);
     if (m_pIWebBrowser2 != NULL)
@@ -1698,7 +1698,7 @@ void CSite::Close()
     ReleaseInterface(m_pIOleInPlaceActiveObject);
     ReleaseInterface(m_pIViewObject);
 
-    // uvolnim svoje interfacy
+    // release my own interfaces
     DeleteInterfaceImp(m_pImpIOleClientSite);
     DeleteInterfaceImp(m_pImpIOleInPlaceSite);
     DeleteInterfaceImp(m_pImpIOleInPlaceFrame);
@@ -1835,14 +1835,14 @@ HRESULT LoadWebBrowserFromStream(IWebBrowser* pWebBrowser, IStream* pStream)
 void NavigateAux(CSite* m_pSite, const char* fileName, IStream* contentStream)
 {
     HRESULT hr = m_pSite->m_pIWebBrowser2->Navigate(_bstr_t("about:blank"), NULL, NULL, NULL, NULL);
-    // hack - misto pomerne slozitejsiho reseni pres event DWebBrowserEvents2::DocumentComplete
-    // viz https://msdn.microsoft.com/en-us/library/aa752047%28v=vs.85%29.aspx
-    // proste pockame, az zacne browser vracet READYSTATE == READYSTATE_COMPLETE
-    // viz https://support.microsoft.com/en-us/kb/180366 a http://www.dsource.org/forums/viewtopic.php?t=2953
+    // hack - instead of a more complex solution via the DWebBrowserEvents2::DocumentComplete event
+    // see https://msdn.microsoft.com/en-us/library/aa752047%28v=vs.85%29.aspx
+    // we simply wait until the browser starts returning READYSTATE == READYSTATE_COMPLETE
+    // see https://support.microsoft.com/en-us/kb/180366 and http://www.dsource.org/forums/viewtopic.php?t=2953
     READYSTATE rs;
     do
     {
-        // musime pumpovat zpravy, jinak vraci get_ReadyState() porad READYSTATE_LOADING
+        // we have to pump messages, otherwise get_ReadyState() keeps returning READYSTATE_LOADING
         MSG msg;
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -1912,7 +1912,7 @@ BOOL CIEWindow::CanClose()
 HRESULT CIEWindow::TranslateAccelerator(LPMSG lpmsg)
 {
     CALL_STACK_MESSAGE1("CIEWindow::TranslateAccelerator()");
-    // odchytim klavesu ESCAPE a zavru viewer
+    // capture the ESCAPE key and close the viewer
     if (lpmsg->message == WM_KEYDOWN && lpmsg->wParam == VK_ESCAPE)
     {
         TRACE_I("Posting WM_CLOSE");
@@ -1934,9 +1934,9 @@ HRESULT CIEWindow::TranslateAccelerator(LPMSG lpmsg)
 CIEMainWindowQueue::~CIEMainWindowQueue()
 {
     if (!Empty())
-        TRACE_E("Nejake okno viewru zustalo otevrene!");
-    // tady uz multi-threadovost nehrozi (konci plugin, thready jsou/byly ukonceny)
-    // dealokujeme aspon nejakou pamet
+        TRACE_E("A viewer window remained open!");
+    // no multithreading risk here (the plugin is ending, threads are/were terminated)
+    // free at least some memory
     CIEMainWindowQueueItem* last;
     CIEMainWindowQueueItem* item = Head;
     while (item != NULL)
@@ -1970,7 +1970,7 @@ void CIEMainWindowQueue::Remove(HWND hWindow)
     CIEMainWindowQueueItem* item = Head;
     while (item != NULL)
     {
-        if (item->HWindow == hWindow) // nalezeno, odstranime
+        if (item->HWindow == hWindow) // found, remove it
         {
             if (last != NULL)
                 last->Next = item->Next;
@@ -1998,7 +1998,7 @@ BOOL CIEMainWindowQueue::Empty()
 BOOL CIEMainWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWaitTime)
 {
     CALL_STACK_MESSAGE4("CIEMainWindowQueue::CloseAllWindows(%d, %d, %d)", force, waitTime, forceWaitTime);
-    // posleme zadost o zavreni vsech oken
+    // send a request to close all windows
     CS.Enter();
     CIEMainWindowQueueItem* item = Head;
     while (item != NULL)
@@ -2008,13 +2008,13 @@ BOOL CIEMainWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWait
     }
     CS.Leave();
 
-    // pockame az/jestli se zavrou
+    // wait until/if they close
     DWORD ti = GetTickCount();
     DWORD w = force ? forceWaitTime : waitTime;
     while ((w == INFINITE || w > 0) && !Empty())
     {
         DWORD t = GetTickCount() - ti;
-        if (w == INFINITE || t < w) // mame jeste cekat
+        if (w == INFINITE || t < w) // should we keep waiting
         {
             if (w == INFINITE || 50 < w - t)
                 Sleep(50);
@@ -2095,7 +2095,7 @@ CIEMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!LOWORD(wParam))
         {
-            // hlavni okno pri prepnuti z viewru nebude delat refresh
+            // the main window will not refresh when switching away from the viewer
             SalamanderGeneral->SkipOneActivateRefresh();
         }
         break;
@@ -2122,9 +2122,10 @@ CIEMainWindow::GetLock()
 }
 
 // ****************************************************************************
-// staticka funkce CIEMainWindow::CIEMainWindowProc pro vsechny message vsech oken
-// viewru, odtud probiha distribuce messages do jednotlivych oken viewru - metoda
-// CIEMainWindow::WindowProc (vhodne misto pro zpracovani zprav jednotlivych oken)
+// static function CIEMainWindow::CIEMainWindowProc for all messages of all viewer
+// windows, distributes messages to individual viewer windows via the
+// CIEMainWindow::WindowProc method (a suitable place to process messages of
+// individual windows)
 
 LRESULT CALLBACK
 CIEMainWindow::CIEMainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2133,12 +2134,12 @@ CIEMainWindow::CIEMainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     CIEMainWindow* wnd;
     switch (uMsg)
     {
-    case WM_CREATE: // prvni zprava - pripojeni objektu k oknu
+    case WM_CREATE: // first message - attach the object to the window
     {
         wnd = (CIEMainWindow*)((CREATESTRUCT*)lParam)->lpCreateParams;
         if (wnd == NULL)
         {
-            TRACE_E("Chyba pri vytvareni okna.");
+            TRACE_E("Error while creating the window.");
             return FALSE;
         }
         else
@@ -2150,7 +2151,7 @@ CIEMainWindow::CIEMainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         break;
     }
 
-    case WM_DESTROY: // posledni zprava - odpojeni objektu od okna
+    case WM_DESTROY: // last message - detach the object from the window
     {
         wnd = (CIEMainWindow*)GetProp(hwnd, (LPCTSTR)AtomObject);
         if (wnd != NULL)
@@ -2160,7 +2161,7 @@ CIEMainWindow::CIEMainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             RemoveProp(hwnd, (LPCTSTR)AtomObject);
             //        delete wnd;
             if (res == 0)
-                return 0; // aplikace ji zpracovala
+                return 0; // the application handled it
             wnd = NULL;
         }
         break;
@@ -2171,7 +2172,7 @@ CIEMainWindow::CIEMainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         wnd = (CIEMainWindow*)GetProp(hwnd, (LPCTSTR)AtomObject);
     }
     }
-    //--- zavolani metody WindowProc(...) prislusneho objektu okna
+    // --- call the WindowProc(...) method of the corresponding window object
     if (wnd != NULL)
         return wnd->WindowProc(uMsg, wParam, lParam);
     else

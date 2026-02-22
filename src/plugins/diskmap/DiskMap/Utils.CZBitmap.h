@@ -52,7 +52,7 @@ protected:
         bmix.bmiHeader.biPlanes = 1;
         bmix.bmiHeader.biBitCount = 32;
         bmix.bmiHeader.biCompression = BI_RGB;
-        bmix.bmiHeader.biSizeImage = 0; //0 pouze pro BI_RGB obrazky
+        bmix.bmiHeader.biSizeImage = 0; //0 only for BI_RGB images
 
         BYTE* pix = NULL;
 
@@ -79,7 +79,7 @@ protected:
 			bmix.bmiHeader.biPlanes      = 1;
 			bmix.bmiHeader.biBitCount    = 32;
 			bmix.bmiHeader.biCompression = BI_RGB;
-			bmix.bmiHeader.biSizeImage   = 0; //0 pouze pro BI_RGB obrazky
+                        bmix.bmiHeader.biSizeImage   = 0; //0 only for BI_RGB images
 
 			if (SetDIBits(hdc, bm, 0, pixmap->_height, pixmap->_pixmap, &bmix, DIB_RGB_COLORS) > 0)
 			{

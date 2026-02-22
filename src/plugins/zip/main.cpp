@@ -35,16 +35,16 @@
 #include "zip.rh2"
 #include "lang\lang.rh"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods Salamander calls
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// additional parts of the CPluginInterface
 CPluginInterfaceForArchiver InterfaceForArchiver;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface available from plugin startup to shutdown
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient file operations
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
 // Interface for AES encryption
@@ -53,13 +53,13 @@ CSalamanderCryptAbstract* SalamanderCrypt = NULL;
 // Interface for BZIP2 de/compression
 CSalamanderBZIP2Abstract* SalamanderBZIP2;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-// definice stringu do configurace
+// configuration key definitions
 const char* CONFIG_LEVEL = "Level";
 const char* CONFIG_ENCRYPTMETHOD = "Encryption Method";
 const char* CONFIG_NOEMPTYDIRS = "No Empty Dirs";
@@ -98,7 +98,7 @@ const char* CONFIG_LIST_INFO_PACKED_SIZE = "List Info Packed Size";
 const char* CONFIG_COL_PACKEDSIZE_FIXEDWIDTH = "Column PackedSize FixedWidth";
 const char* CONFIG_COL_PACKEDSIZE_WIDTH = "Column PackedSize Width";
 
-// definice IDs do menu
+// menu command ID definitions
 #define MID_CREATESFX 1
 #define MID_REPAIR 2
 #define MID_TEST 3
@@ -123,38 +123,38 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set up SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // ensure the plugin runs on the current Salamander version or newer
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "ZIP" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "ZIP" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interfaces
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
     SalamanderCrypt = SalamanderGeneral->GetSalamanderCrypt();
     SalamanderBZIP2 = SalamanderGeneral->GetSalamanderBZIP2();
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
     SalamanderGeneral->SetHelpFileName("zip.chm");
 
     /*
-  //beta plati do konce unora 2001
+    // beta valid until the end of February 2001
   SYSTEMTIME st;
   GetLocalTime(&st);
   if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
@@ -164,7 +164,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
   }
   */
 
-    // nastavime zakladni informace o pluginu
+    // provide the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_PANELARCHIVEREDIT |
                                        FUNCTION_CUSTOMARCHIVERPACK | FUNCTION_CUSTOMARCHIVERUNPACK |
@@ -174,7 +174,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
                                    "ZIP" /* neprekladat! */, "zip;pk3;pk4;jar");
 
-    // nastavime URL home-page pluginu
+    // register the plugin home page URL
     salamander->SetPluginHomePageURL("www.altap.cz");
 
     return &PluginInterface;
@@ -208,7 +208,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
 
 void ValidateDefSfxFile()
 {
-    // zjistime jestli soubor existuje, kdyz ne nastavime jako defaultni prvni, ktery najdeme
+    // ensure the file exists; otherwise use the first available one as default
     char path[MAX_PATH];
     char* file;
     GetModuleFileName(DLLInstance, path, MAX_PATH);
@@ -297,7 +297,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         }
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &Config.Version, sizeof(DWORD)))
         {
-            Config.Version = 1; // beta 3 jeste nema value v konfiguraci
+            Config.Version = 1; // beta 3 did not store this value in the configuration
         }
         registry->GetValue(regKey, CONFIG_DEFSFX, REG_SZ, Config.DefSfxFile, MAX_PATH);
         ValidateDefSfxFile();
@@ -514,11 +514,11 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 
     salamander->AddCustomPacker("ZIP (Plugin)", "zip", FALSE);
     salamander->AddCustomUnpacker("ZIP (Plugin)", "*.zip;*.pk3;*.jar",
-                                  Config.Version < 2); // pred SS 1.6 beta 4 nebyl *.jar -> obnova
+                                  Config.Version < 2); // before SS 1.6 beta 4 there was no *.jar support -> restore it
     salamander->AddPanelArchiver("zip;pk3;jar", TRUE, FALSE);
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep it in sync with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -537,12 +537,12 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     //salamander->AddMenuItem(LoadStr(IDS_MENUREPAIR), 0, MID_REPAIR, TRUE, 0, 0);
     salamander->AddMenuItem(-1, LoadStr(IDS_MENUTEST), 0, MID_TEST, TRUE, 0, 0, MENU_SKILLLEVEL_ALL);
 
-    if (Config.Version < 2) // pred SS 1.6 beta 4
+    if (Config.Version < 2) // before SS 1.6 beta 4
     {
-        salamander->AddPanelArchiver("jar", TRUE, TRUE); // nebyl jar -> pridame ho
+        salamander->AddPanelArchiver("jar", TRUE, TRUE); // no JAR entry was present -> add it
     }
 
-    // nastavime ikonku pluginu
+    // assign the plugin icon
     HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_ZIP),
                                       IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
     salamander->SetBitmapWithIcons(hBmp);
@@ -580,22 +580,22 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
 {
     CALL_STACK_MESSAGE3("CPluginInterfaceForMenuExt::GetMenuItemState(%d, 0x%X)",
                         id, eventMask);
-    // musi byt na disku nebo v nasem pluginu
+    // must reside on disk or inside our plugin
     if ((eventMask & (MENU_EVENT_DISK | MENU_EVENT_THIS_PLUGIN_ARCH)) == 0)
         return 0;
 
-    // pokud v archivu jsme, vse je enabled
+    // when already inside our archive, everything stays enabled
     if (eventMask & MENU_EVENT_THIS_PLUGIN_ARCH)
         return MENU_ITEM_STATE_ENABLED;
 
-    // vezmeme bud oznacene soubory nebo soubor pod fokusem
+    // use the selected files or the file under focus
     const CFileData* file = NULL;
     BOOL isDir;
     if ((eventMask & MENU_EVENT_FILES_SELECTED) == 0)
     {
         if ((eventMask & MENU_EVENT_FILE_FOCUSED) == 0)
             return 0;
-        file = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir); // selected neni nic -> enumerace failne
+        file = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, &isDir); // nothing is selected -> enumeration fails
     }
 
     BOOL ret = TRUE;
@@ -613,7 +613,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
         file = SalamanderGeneral->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
     }
 
-    return (ret && count > 0) ? MENU_ITEM_STATE_ENABLED : 0; // vsechny oznacene soubory jsou nase
+    return (ret && count > 0) ? MENU_ITEM_STATE_ENABLED : 0; // all selected files are handled by us
 }
 
 BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
@@ -639,7 +639,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         selFiles = eventMask & MENU_EVENT_FILES_SELECTED;
     }
 
-    BOOL changesReported = FALSE; // pomocna promenna - TRUE pokud uz byly hlaseny zmeny na ceste
+    BOOL changesReported = FALSE; // helper flag — TRUE once a path change was already reported
     do
     {
         if (arch)
@@ -654,7 +654,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
             else
                 fileData = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, NULL);
             if (!fileData)
-                break; // konec enumerace, nebo chyba (v pripade GetFocusedItem)
+                break; // end of enumeration, or an error (for GetFocusedItem)
             lstrcpy(fileName, fileData->Name);
             DWORD attr = SalamanderGeneral->SalGetFileAttributes(zipFile);
             if (attr != 0xFFFFFFFF && attr & FILE_ATTRIBUTE_DIRECTORY)
@@ -670,7 +670,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         {
         case MID_COMMENT:
         {
-            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as work on the path (shows up in Alt+F12)
 
             CZipPack pack(zipFile, "", salamander);
 
@@ -688,7 +688,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 
         case MID_CREATESFX:
         {
-            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as work on the path (shows up in Alt+F12)
 
             CZipPack pack(zipFile, "", salamander);
 
@@ -708,7 +708,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 
         case MID_TEST:
         {
-            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // tento prikaz povazujeme za praci s cestou (objevi se v Alt+F12)
+            SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_SOURCE); // treat this command as work on the path (shows up in Alt+F12)
 
             CZipUnpack unpack(zipFile, "", salamander, NULL);
 
@@ -733,20 +733,20 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
         }
         }
 
-        if (id == MID_COMMENT || id == MID_CREATESFX || id == MID_REPAIR) // pokud mohlo dojit ke zmene
+        if (id == MID_COMMENT || id == MID_CREATESFX || id == MID_REPAIR) // when the operation may have modified the path
         {
-            if (!changesReported) // zmena na ceste + jeste nebyla hlasena -> ohlasime
+            if (!changesReported) // path changed and has not been reported yet -> report it
             {
                 changesReported = TRUE;
-                // ohlasime zmenu na ceste, kde lezi menene PAK soubory (hlaseni se provede az po opusteni
-                // kodu pluginu - po navratu z teto metody)
+                // notify the path containing the modified PAK files (notification happens after leaving
+                // the plugin code — once this method returns)
                 char zipFileDir[MAX_PATH];
                 strcpy(zipFileDir, zipFile);
-                SalamanderGeneral->CutDirectory(zipFileDir); // musi jit, protoze jde o existujici soubor
+                SalamanderGeneral->CutDirectory(zipFileDir); // must succeed because the file exists
                 SalamanderGeneral->PostChangeOnPathNotification(zipFileDir, FALSE);
             }
         }
-    } while (selFiles); // cyklime dokud metoda GetSelectedItem nevrati NULL
+    } while (selFiles); // keep looping until GetSelectedItem returns NULL
 
     return TRUE;
 }
@@ -1096,7 +1096,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             if (unpack.ErrorID != IDS_NODISPLAY)
                 SalamanderGeneral->ShowMessageBox(LoadStr(unpack.ErrorID),
                                                   LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
-            /*    // Petr: tohle vazne nevim k cemu melo byt ... kazdopadne ted to musim odstavit, jinak se pri fatalni chybe a 'delArchiveWhenDone'==TRUE smaze archiv, coz je nepripustne
+            /*    // Petr: I really do not know what this was for... I have to disable it now, otherwise a fatal error with 'delArchiveWhenDone'==TRUE would delete the archive, which is unacceptable
       if (unpack.Fatal)
         return TRUE;
       else
@@ -1105,7 +1105,7 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
         }
         if (unpack.UserBreak)
             return FALSE;
-        if (delArchiveWhenDone) // prehazime unikatni svazky z 'arcVolumes' do 'archiveVolumes' (v 'arcVolumes' se muzou svazky opakovat)
+        if (delArchiveWhenDone) // move unique volumes from 'arcVolumes' to 'archiveVolumes' (arcVolumes may contain duplicates)
         {
             if (arcVolumes.Count > 1)
                 QuickSortArcVolumes(&arcVolumes, 0, arcVolumes.Count - 1);

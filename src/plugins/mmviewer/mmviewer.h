@@ -5,12 +5,12 @@
 
 /*
 MP3, MP2 - MPEG 1 or MPEG 2 audio files, layer I, II or III
-OGG - OGG Vorbis Audio (konkurence MP3) - Ogg Vorbis is a fully open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio format for mid to high quality (8kHz-48.0kHz, 16+ bit, polyphonic) audio and music at fixed and variable bitrates from 16 to 128 kbps/channel. This places Vorbis in the same competitive class as audio representations such as MPEG-4 (AAC), and similar to, but higher performance than MPEG-1/2 audio layer 3, MPEG-4 audio (TwinVQ), WMA and PAC.
-VQF - Yamaha VQF Audio (predchudce MP3, dnes uz IMHO obsolete)
+OGG - OGG Vorbis Audio (competition to MP3) - Ogg Vorbis is a fully open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio format for mid to high quality (8kHz-48.0kHz, 16+ bit, polyphonic) audio and music at fixed and variable bitrates from 16 to 128 kbps/channel. This places Vorbis in the same competitive class as audio representations such as MPEG-4 (AAC), and similar to, but higher performance than MPEG-1/2 audio layer 3, MPEG-4 audio (TwinVQ), WMA and PAC.
+VQF - Yamaha VQF Audio (predecessor of MP3, nowadays basically obsolete)
 WAV - Waveform Audio
 WMA - Windows Media Audio
 
-Moduly hudebních trackerů:
+Modules of music trackers:
 669 - Composer 669 Module
 IT - Impulse Tracker Module
 MOD - Pro Tracker Module
@@ -20,11 +20,11 @@ STM - Scream Tracker Module 2
 XM - Extended Module - Fast Tracker II
 */
 
-// [0, 0] - pro otevrena okna viewru: konfigurace pluginu se zmenila
+// [0, 0] - for open viewer windows: the plugin configuration has changed
 #define WM_USER_VIEWERCFGCHNG WM_APP + 3246
-// [0, 0] - pro otevrena okna viewru: je treba podriznou historie
+// [0, 0] - for open viewer windows: the history needs to be pruned
 #define WM_USER_CLEARHISTORY WM_APP + 3247
-// [0, 0] - pro otevrena okna vieweru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, we have to call SetFont() on the lists
 #define WM_USER_SETTINGCHANGE WM_APP + 3248
 
 enum
@@ -49,16 +49,16 @@ BOOL GetOpenFileName(HWND parent, const char* title, char* filter, char* buffer,
 int ExportToHTML(const char* fname, COutput& Output);
 int ExportToXML(const char* fname, COutput& Output);
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 extern CSalamanderGeneralAbstract* SalGeneral;
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 // Configuration variables
-extern LOGFONT CfgLogFont;                 // popis fontu pouzivaneho pro panel
-extern BOOL CfgSavePosition;               // ukladat pozici okna/umistit dle hlavniho okna
-extern WINDOWPLACEMENT CfgWindowPlacement; // neplatne, pokud CfgSavePosition != TRUE
+extern LOGFONT CfgLogFont;                 // description of the font used for the panel
+extern BOOL CfgSavePosition;               // save the window position/place it relative to the main window
+extern WINDOWPLACEMENT CfgWindowPlacement; // invalid if CfgSavePosition != TRUE
 
 void OnConfiguration(HWND hParent);
 
@@ -142,16 +142,16 @@ enum CViewerWindowEnablerEnum
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock; // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
+    HANDLE Lock; // 'lock' object or NULL (signaled only after we close the file)
     CRendererWindow Renderer;
 
-    HWND HRebar; // drzi MenuBar a ToolBar
+    HWND HRebar; // holds the MenuBar and ToolBar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
 
-    HIMAGELIST HGrayToolBarImageList; // toolbar a menu v sedivem provedeni (pocitano z barevneho)
-    HIMAGELIST HHotToolBarImageList;  // toolbar a menu v barevnem provedeni
+    HIMAGELIST HGrayToolBarImageList; // toolbar and menu in gray form (derived from the colored one)
+    HIMAGELIST HHotToolBarImageList;  // toolbar and menu in the colored form
 
     DWORD Enablers[vweCount];
 

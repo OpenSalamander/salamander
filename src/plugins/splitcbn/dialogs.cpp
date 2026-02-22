@@ -15,7 +15,7 @@
 //  SPLIT DIALOG
 //
 
-#define STRICT_SYNTAX // nepovoli kraviny v COMBO_SIZE
+#define STRICT_SYNTAX // disallows nonsense values in COMBO_SIZE
 
 namespace split
 {
@@ -34,7 +34,7 @@ namespace split
         if (!partsize.Value)
         {
             TRACE_E("S/C.GetSizeOfLastPart: partsize == 0 ?!?");
-            return CQuadWord(0, 0); // ochrana pred delenim nulou, nemelo by nastat
+            return CQuadWord(0, 0); // guard against division by zero; should not happen
         }
         CQuadWord last;
         last.Value = filesize.Value % partsize.Value;
@@ -113,7 +113,7 @@ namespace split
         char text[100], number[100];
         GetDlgItemText(hDialog, IDC_COMBO_SIZE, text, 100);
 
-        // vypusteni mezer a tabulatoru a nahrezeni carky teckou
+        // remove spaces and tabs and replace commas with dots
         int i = 0, j = 0;
         while (text[i] && (strchr(" \t0123456789.,", text[i]) != NULL || (BYTE)text[i] == 0xA0))
         {
@@ -128,7 +128,7 @@ namespace split
             j++;
         text[j] = 0;
 
-        // ziskani multiplikatoru
+        // determine the multiplier
         DWORD multiplier = 1;
         BOOL ok = TRUE;
         if (!lstrcmpi(text + i, LoadStr(IDS_SIZE_KB)) || !lstrcmpi(text + i, LoadStr(IDS_SIZE_K)))
@@ -175,7 +175,7 @@ namespace split
         }
         if (parts > 0)
         {
-            CQuadWord size = (qwFileSize + CQuadWord(parts - 1, 0)) / CQuadWord(parts, 0); // zaokrouhlujeme nahoru
+            CQuadWord size = (qwFileSize + CQuadWord(parts - 1, 0)) / CQuadWord(parts, 0); // round up
             *pqwPartialSize = size;
             SalamanderGeneral->NumberToStr(text, size);
             //SalamanderGeneral->PrintDiskSize(text, size, 1);
@@ -243,7 +243,7 @@ namespace split
         {
             if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
                 SalamanderGeneral->OpenHtmlHelp(hWnd, HHCDisplayContext, IDD_SPLIT, FALSE);
-            return TRUE; // F1 nenechame propadnout do parenta ani pokud nezobrazujeme help
+            return TRUE; // do not let F1 fall through to the parent even if help is not displayed
         }
 
         case WM_COMMAND:
@@ -647,7 +647,7 @@ namespace combine
         {
             if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
                 SalamanderGeneral->OpenHtmlHelp(hWnd, HHCDisplayContext, IDD_COMBINE, FALSE);
-            return TRUE; // F1 nenechame propadnout do parenta ani pokud nezobrazujeme help
+            return TRUE; // do not let F1 fall through to the parent even if help is not displayed
         }
 
         case WM_COMMAND:
@@ -853,7 +853,7 @@ static INT_PTR CALLBACK ConfigDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalamanderGeneral->OpenHtmlHelp(hWnd, HHCDisplayContext, IDD_CONFIG, FALSE);
-        return TRUE; // F1 nenechame propadnout do parenta ani pokud nezobrazujeme help
+        return TRUE; // do not let F1 fall through to the parent even if help is not displayed
     }
 
     case WM_COMMAND:
@@ -917,7 +917,7 @@ static INT_PTR CALLBACK CRCDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         sprintf(text, LoadStr(IDS_CRCDEC), calcCrc);
         SetDlgItemText(hWnd, IDC_EDIT_CRC2, text);
 
-        // !POZOR! ziskanou ikonu je treba ve WM_DESTROY destruovat
+        // WARNING! the obtained icon must be destroyed in WM_DESTROY
         HICON icon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_WARN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
         SendDlgItemMessage(hWnd, IDC_ICON_WARN, STM_SETIMAGE, IMAGE_ICON, (LPARAM)icon);
         icon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_OK), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
@@ -946,7 +946,7 @@ static INT_PTR CALLBACK CRCDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
     case WM_DESTROY:
     {
-        // ikona ziskana bez flagu LR_SHARED se musi destruovat
+        // an icon obtained without the LR_SHARED flag must be destroyed
         HICON hIcon = (HICON)SendDlgItemMessage(hWnd, IDC_ICON_WARN, STM_SETIMAGE, IMAGE_ICON, NULL);
         if (hIcon != NULL)
             DestroyIcon(hIcon);

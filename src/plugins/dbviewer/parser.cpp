@@ -179,20 +179,20 @@ CParserInterfaceDBF::OpenFile(const char* fileName)
     if (Dbf != NULL)
         CloseFile();
 
-    // otevreme soubor v read-only rezimu
+    // open the file in read-only mode
     Dbf = new cDBF(fileName, TRUE);
     if (Dbf != NULL)
     {
         if (Dbf->GetStatus() == DBFE_OK)
         {
-            // naplnime pole sloupcu
+            // populate the column array
             DBF_HEADER* hdr = Dbf->GetHeader();
             DBF_FIELD* field = Dbf->GetFields();
 
             DbfHdr = hdr;
             DbfFields = field;
 
-            // pripravime buffer pro prijem dat
+            // prepare a buffer for receiving data
             if (Record != NULL)
             {
                 free(Record);
@@ -208,7 +208,7 @@ CParserInterfaceDBF::OpenFile(const char* fileName)
         else
         {
             status = TranslateDBFStatus(Dbf->GetStatus());
-            CloseFile(); // po Close bude Dbf=NULL
+            CloseFile(); // after Close Dbf will be NULL
         }
     }
     else
@@ -243,7 +243,7 @@ BOOL CParserInterfaceDBF::GetFileInfo(HWND hEdit)
 {
     if (Dbf == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::GetFileInfo: Dbf == NULL");
+        TRACE_E("Invalid call to CParserInterfaceDBF::GetFileInfo: Dbf == NULL");
         return FALSE;
     }
 
@@ -256,7 +256,7 @@ BOOL CParserInterfaceDBF::GetFileInfo(HWND hEdit)
     sprintf(buff, "%s\r\n\r\n", FileName);
     SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM)buff);
 
-    // zjistime informace o souboru (size, date&time)
+    // obtain file information (size, date & time)
     HANDLE file = CreateFile(FileName, GENERIC_READ,
                              FILE_SHARE_READ | FILE_SHARE_WRITE,
                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -266,7 +266,7 @@ BOOL CParserInterfaceDBF::GetFileInfo(HWND hEdit)
         CQuadWord fileSize;
         GetFileTime(file, NULL, NULL, &fileTime);
         DWORD err;
-        SalGeneral->SalGetFileSize(file, fileSize, err); // chyby ignorujeme
+        SalGeneral->SalGetFileSize(file, fileSize, err); // ignore errors
         CloseHandle(file);
 
         SYSTEMTIME st;
@@ -342,7 +342,7 @@ CParserInterfaceDBF::GetRecordCount()
 {
     if (Dbf == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::GetRecordCount: Dbf == NULL");
+        TRACE_E("Invalid call to CParserInterfaceDBF::GetRecordCount: Dbf == NULL");
         return 0;
     }
     return DbfHdr->recordsCnt;
@@ -353,7 +353,7 @@ CParserInterfaceDBF::GetFieldCount()
 {
     if (Dbf == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::GetFieldCount: Dbf == NULL");
+        TRACE_E("Invalid call to CParserInterfaceDBF::GetFieldCount: Dbf == NULL");
         return 0;
     }
     return DbfHdr->fieldsCnt;
@@ -363,7 +363,7 @@ BOOL CParserInterfaceDBF::GetFieldInfo(DWORD index, CFieldInfo* info)
 {
     if (Dbf == NULL || info == NULL || index >= DbfHdr->fieldsCnt)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::GetFieldInfo");
+        TRACE_E("Invalid call to CParserInterfaceDBF::GetFieldInfo");
         return FALSE;
     }
 
@@ -464,7 +464,7 @@ BOOL CParserInterfaceDBF::GetFieldInfo(DWORD index, CFieldInfo* info)
     if (field->type == DBF_FTYPE_NUM)
         info->Decimals = field->decimals;
     else
-        info->Decimals = -1; // nezobrazime nic
+        info->Decimals = -1; // show nothing
 
     return TRUE;
 }
@@ -474,7 +474,7 @@ CParserInterfaceDBF::FetchRecord(DWORD index)
 {
     if (Dbf == NULL || index >= DbfHdr->recordsCnt)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::FetchRecord");
+        TRACE_E("Invalid call to CParserInterfaceDBF::FetchRecord");
         return psCount;
     }
 
@@ -496,10 +496,10 @@ char* Int64ToCurrency(char* buffer, __int64 number)
   else
   {
     DecimalSeparatorLen--;
-    DecimalSeparator[DecimalSeparatorLen] = 0;  // posychrujeme nulu na konci
+    DecimalSeparator[DecimalSeparatorLen] = 0;  // ensure a zero terminator at the end
   }
   */
-    // ostatni hodnoty v DBF obsahuji '.' jako desetinny oddelovac, takze nepouzijeme systemovy
+    // other DBF values use '.' as the decimal separator, so we do not use the system one
     int DecimalSeparatorLen = 1;
     char DecimalSeparator[1] = {'.'};
 
@@ -562,7 +562,7 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
 {
     if (Dbf == NULL || textLen == NULL || index >= DbfHdr->fieldsCnt)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::GetCellText");
+        TRACE_E("Invalid call to CParserInterfaceDBF::GetCellText");
         if (textLen != NULL)
             *textLen = 0;
         return "";
@@ -740,7 +740,7 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
 const wchar_t*
 CParserInterfaceDBF::GetCellTextW(DWORD index, size_t* textLen)
 {
-    TRACE_E("Chybne volani CParserInterfaceDBF::GetCellTextW");
+    TRACE_E("Invalid call to CParserInterfaceDBF::GetCellTextW");
     if (textLen != NULL)
         *textLen = 0;
     return L"";
@@ -787,7 +787,7 @@ BOOL CParserInterfaceDBF::IsRecordDeleted()
 {
     if (Dbf == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceDBF::IsRecordDeleted()");
+        TRACE_E("Invalid call to CParserInterfaceDBF::IsRecordDeleted()");
         return FALSE;
     }
     return Record[0] == '*';
@@ -814,8 +814,8 @@ CParserInterfaceCSV::OpenFile(const char* fileName)
     if (Csv != NULL)
         CloseFile();
 
-    // otevreme soubor
-    char separator = ','; // default hodnota, pokud selze autodetekce
+    // open the file
+    char separator = ','; // default value if auto-detection fails
     BOOL autoSeparator = FALSE;
     switch (Config->ValueSeparator)
     {
@@ -839,7 +839,7 @@ CParserInterfaceCSV::OpenFile(const char* fileName)
         break;
     }
 
-    CCSVParserTextQualifier qualifier = CSVTQ_QUOTE; // default hodnota, pokud selze autodetekce
+    CCSVParserTextQualifier qualifier = CSVTQ_QUOTE; // default value if auto-detection fails
     BOOL autoQualifier = FALSE;
     switch (Config->TextQualifier)
     {
@@ -953,7 +953,7 @@ BOOL CParserInterfaceCSV::GetFileInfo(HWND hEdit)
 {
     if (Csv == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetFileInfo: Csv == NULL");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetFileInfo: Csv == NULL");
         return FALSE;
     }
 
@@ -966,7 +966,7 @@ BOOL CParserInterfaceCSV::GetFileInfo(HWND hEdit)
     sprintf(buff, "%s\r\n\r\n", FileName);
     SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM)buff);
 
-    // zjistime informace o souboru (size, date&time)
+    // obtain file information (size, date & time)
     HANDLE file = CreateFile(FileName, GENERIC_READ,
                              FILE_SHARE_READ | FILE_SHARE_WRITE,
                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -976,7 +976,7 @@ BOOL CParserInterfaceCSV::GetFileInfo(HWND hEdit)
         CQuadWord fileSize;
         GetFileTime(file, NULL, NULL, &fileTime);
         DWORD err;
-        SalGeneral->SalGetFileSize(file, fileSize, err); // chyby ignorujeme
+        SalGeneral->SalGetFileSize(file, fileSize, err); // ignore errors
         CloseHandle(file);
 
         SYSTEMTIME st;
@@ -1009,7 +1009,7 @@ CParserInterfaceCSV::GetRecordCount()
 {
     if (Csv == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetRecordCount: Csv == NULL");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetRecordCount: Csv == NULL");
         return 0;
     }
     return Csv->GetRecordsCnt();
@@ -1020,7 +1020,7 @@ CParserInterfaceCSV::GetFieldCount()
 {
     if (Csv == NULL)
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetFieldCount: Csv == NULL");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetFieldCount: Csv == NULL");
         return 0;
     }
 
@@ -1031,7 +1031,7 @@ BOOL CParserInterfaceCSV::GetFieldInfo(DWORD index, CFieldInfo* info)
 {
     if (Csv == NULL || index >= Csv->GetColumnsCnt())
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetFieldInfo");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetFieldInfo");
         return FALSE;
     }
 
@@ -1086,7 +1086,7 @@ CParserInterfaceCSV::FetchRecord(DWORD index)
 {
     if (Csv == NULL || index >= Csv->GetRecordsCnt())
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::FetchRecord");
+        TRACE_E("Invalid call to CParserInterfaceCSV::FetchRecord");
         return psCount;
     }
     return TranslateCSVStatus(Csv->FetchRecord(index));
@@ -1097,7 +1097,7 @@ CParserInterfaceCSV::GetCellText(DWORD index, size_t* textLen)
 {
     if (IsUnicode || Csv == NULL || index >= Csv->GetColumnsCnt())
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetCellText");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetCellText");
         *textLen = 0;
         return "";
     }
@@ -1109,7 +1109,7 @@ CParserInterfaceCSV::GetCellTextW(DWORD index, size_t* textLen)
 {
     if (!IsUnicode || Csv == NULL || index >= Csv->GetColumnsCnt())
     {
-        TRACE_E("Chybne volani CParserInterfaceCSV::GetCellTextW");
+        TRACE_E("Invalid call to CParserInterfaceCSV::GetCellTextW");
         *textLen = 0;
         return L"";
     }
@@ -1153,6 +1153,6 @@ CParserInterfaceCSV::TranslateCSVStatus(CCSVParserStatus status)
 
 BOOL CParserInterfaceCSV::IsRecordDeleted()
 {
-    // CSV format nepodporuje tento stav
+    // the CSV format does not support this state
     return FALSE;
 }

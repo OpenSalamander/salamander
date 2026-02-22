@@ -11,29 +11,29 @@
 class CConfigData
 {
 public:
-    // umisteni hlavniho okna
+    // placement of the main window
     WINDOWPLACEMENT MainWindowPlacement;
-    // okno je zhasnute - pouze pro rezim ToolbatCaption
+    // window is hidden - used only by the ToolbarCaption mode
     BOOL MainWindowHidden;
-    // program ma toolbarovy caption; nezobrazuje se na tasklistu
+    // program has a toolbar caption; it is hidden from the task list
     BOOL UseToolbarCaption;
-    // okno je topmost
+    // window stays on top
     BOOL AlwaysOnTop;
-    // dodrzovat mezni pocet message
+    // enforce the message limit
     BOOL UseMaxMessagesCount;
-    // maximalni pocet message v poli
+    // maximum number of messages in the array
     int MaxMessagesCount;
-    // v seznamu se zobrazuje posledni message
+    // display the latest message in the list
     BOOL ScrollToLatestMessage;
-    // pokud prijde Error message, program pipne a vybehne nahoru
+    // when an Error message arrives, beep and bring the window to front
     BOOL ShowOnErrorMessage;
-    // automaticke mazani message pri pripojeni noveho programu
+    // automatically clear messages when a new program connects
     BOOL AutoClear;
     // hotkey
     WORD HotKey;
     WORD HotKeyClear;
 
-    // viditelnost jednotlivych sloupcu
+    // visibility of individual columns
     BOOL ViewColumnVisible_Type;
     BOOL ViewColumnVisible_PID;
     BOOL ViewColumnVisible_UPID;
@@ -48,7 +48,7 @@ public:
     BOOL ViewColumnVisible_Line;
     BOOL ViewColumnVisible_Message;
 
-    // sirky jednotlivych sloupcu
+    // width of individual columns
     int ViewColumnWidth_Type;
     int ViewColumnWidth_PID;
     int ViewColumnWidth_UPID;

@@ -24,7 +24,7 @@ private:
 
     HWND HParent;
     CViewerWindow* Viewer;
-    BOOL ShouldCloseViewerAfterClosingSM; // TRUE = zavrit viewer po zavreni Source Manageru
+    BOOL ShouldCloseViewerAfterClosingSM; // TRUE = close the viewer after the Source Manager is closed
 
 public:
     CTwain();

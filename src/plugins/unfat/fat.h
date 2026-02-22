@@ -12,7 +12,7 @@
 
 #pragma once
 
-#pragma pack(push, enter_include_fat) // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_fat) // keep the structures independent of the current alignment setting
 #pragma pack(1)
 
 struct CHSINT13
@@ -166,7 +166,7 @@ public:
     CFATImage();
     ~CFATImage();
 
-    // otevre FAT image 'fileName' a nacte
+    // open the FAT image 'fileName' and load
     BOOL Open(const char* fileName, BOOL quiet, HWND hParent);
 
     BOOL ListImage(CSalamanderDirectoryAbstract* dir, HWND hParent);
@@ -184,8 +184,8 @@ protected:
                       CSalamanderDirectoryAbstract* dir, DWORD sector,
                       HWND hParent);
 
-    // projde 1. FAT tabulku a do pole 'fat' prida retez zacinajici na clusteru 'cluster'
-    // uklada primo hodnoty z fat, ktere je nasledne treba prelozit na realny sektor
+    // walk the first FAT table and add to the 'fat' array the chain that begins at cluster 'cluster'
+    // stores the raw values from the FAT, which must later be translated to the real sector
 
     BOOL LoadFAT(DWORD cluster, TDirectArray<DWORD>* fat, HWND hParent,
                  DWORD buttons, DWORD* pressedButton, DWORD* silentMask);

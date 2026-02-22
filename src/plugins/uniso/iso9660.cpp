@@ -87,7 +87,7 @@ BOOL CISO9660::Open(BOOL quiet)
             case 0x02: // suplementary/enhanced volume descriptor
                 memcpy(&SVD, sector, SECTOR_SIZE);
 
-                // Joliet ma FileStructureVersion = 1
+                // Joliet has FileStructureVersion = 1
                 if (SVD.FileStructureVersion == 1)
                     Ext = extJoliet;
                 // Patera 2009.02.03: The following check seems correct and not the above one...
@@ -159,7 +159,7 @@ void CISO9660::FillPathTableRecord(CPathTableRecord& record, BYTE bytes[])
 //
 void CISO9660::ExtractExtFileName(char* fileName, const char* src, CDirectoryRecord& dr)
 {
-    // zpracovani extensions
+    // processing extensions
     const char* srcSU = src + dr.LengthOfFileIdentifier;
     const char* srcEnd = src + (dr.LengthOfDirectoryRecord - 34);
     int len = dr.LengthOfDirectoryRecord - 34;
@@ -169,7 +169,7 @@ void CISO9660::ExtractExtFileName(char* fileName, const char* src, CDirectoryRec
         srcSU++;
     }
 
-    // koukneme, jestli v 'system use area' neni nejake rozsireni
+    // check whether there is any extension in the 'system use area'
     if (srcSU < srcEnd && (Ext != extJoliet))
     {
         EExt ext = extNone;
@@ -178,7 +178,7 @@ void CISO9660::ExtractExtFileName(char* fileName, const char* src, CDirectoryRec
         memcpy(&rrHeader, srcSU, sizeof(rrHeader));
 
         if (strncmp((char*)rrHeader.Signature, "RR", 2) == 0)
-            ext = extRockRidge; // je to RockRigde
+            ext = extRockRidge; // this is a RockRidge entry
 
         char extFileName[2 * MAX_PATH + 1];
         ZeroMemory(extFileName, sizeof(extFileName));
@@ -219,8 +219,8 @@ void CISO9660::ExtractExtFileName(char* fileName, const char* src, CDirectoryRec
 }
 
 //
-// Vysekne ze 'src' jmeno souboru
-// pouziti pro nazvy souboru v iso level 1,2,3
+// Extracts the file name from 'src'
+// used for file names in ISO levels 1, 2, and 3
 //
 void CISO9660::ExtractFileName(char* fileName, const char* src, CISO9660::CDirectoryRecord& dr)
 {
@@ -329,7 +329,7 @@ BOOL CISO9660::AddFileDir(const char* path, char* fileName, CDirectoryRecord& dr
         fd.IsLink = 0;
 
         if (!SortByExtDirsAsFiles)
-            fd.Ext = fd.Name + fd.NameLen; // adresare nemaji priponu
+            fd.Ext = fd.Name + fd.NameLen; // directories do not have an extension
 
         if (dir && !dir->AddDir(path, fd, pluginData))
         {
@@ -343,7 +343,7 @@ BOOL CISO9660::AddFileDir(const char* path, char* fileName, CDirectoryRecord& dr
     {
         fd.Size = CQuadWord(dr.DataLength, 0);
 
-        // soubor
+        // file
         fd.IsLink = SalamanderGeneral->IsFileLink(fd.Ext);
         if (dir && !dir->AddFile(path, fd, pluginData))
         {
@@ -398,7 +398,7 @@ BOOL CISO9660::AddBootRecord(char* path, int session,
         CDirectoryRecord dr;
         ZeroMemory(&dr, sizeof(dr));
 
-        // nastavit virtualni directory record
+        // set up the virtual directory record
         dr.FileFlags = 0;
         dr.LocationOfExtent = BootRecordInfo->LoadRBA;
         //    dr.RecordingDateAndTime = ;
@@ -457,7 +457,7 @@ int CISO9660::ListDirectoryRe(char* path, CDirectoryRecord* root,
     {
         delete[] data;
         Error(IDS_ERROR_LISTING_IMAGE, FALSE, block);
-        // pokud se nepodari nacist sektor s rootem
+        // if reading the sector with the root fails
         return (block == (DWORD)Root.LocationOfExtent - ExtentOffset) ? ERR_CONTINUE : ERR_TERMINATE;
     }
 
@@ -497,11 +497,11 @@ int CISO9660::ListDirectoryRe(char* path, CDirectoryRecord* root,
                         int pathLen = (int)strlen(path);
                         strcat(path, "\\");
                         strcat(path, dirName);
-                        // zanorit jen kdyz je vse OK
+                        // descend only when everything is OK
                         if (ret == ERR_OK)
                         {
                             ret = ListDirectoryRe(path, &dirRecord, dir, pluginData);
-                            // kdyz se vynorime s ukoncovaci chybou, pokracovat ve zpracovani co to pujde
+                            // if we surface with a termination error, keep processing as much as possible
                             if (ret == ERR_TERMINATE)
                                 ret = ERR_CONTINUE;
                         }
@@ -526,11 +526,11 @@ int CISO9660::ListDirectoryRe(char* path, CDirectoryRecord* root,
                         strcat(path, "\\");
                         strcat(path, extFileName);
                         //          TRACE_I(path);
-                        // zanorit jen kdyz je vse OK
+                        // descend only when everything is OK
                         if (ret == ERR_OK)
                         {
                             ret = ListDirectoryRe(path, &dirRecord, dir, pluginData);
-                            // kdyz se vynorime s ukoncovaci chybou, pokracovat ve zpracovani co to pujde
+                            // if we surface with a termination error, keep processing as much as possible
                             if (ret == ERR_TERMINATE)
                                 ret = ERR_CONTINUE;
                         }
@@ -594,11 +594,11 @@ int CISO9660::UnpackFile(CSalamanderForOperationsAbstract* salamander, const cha
     // set file time
     file.SetFileTime(&ft, &ft, &ft);
 
-    // celkova operace muze pokracovat dal. pouze skip
+    // the overall operation can continue further: skip only
     if (toSkip)
         return UNPACK_ERROR;
 
-    // celkova operace nemuze pokracovat dal. cancel
+    // the overall operation cannot continue any further: cancel
     if (hFile == INVALID_HANDLE_VALUE)
         return UNPACK_CANCEL;
 
@@ -626,7 +626,7 @@ int CISO9660::UnpackFile(CSalamanderForOperationsAbstract* salamander, const cha
     while (remain.Value > 0)
     {
         if (remain.Value < nbytes)
-            nbytes = remain.LoDWord; // !!! velikost bufferu nesmi byt vetsi nez DWORD
+            nbytes = remain.LoDWord; // !!! the buffer size must not exceed DWORD
 
         if (!Image->ReadBlock(block, sectorUserSize, buffer))
         {
@@ -658,14 +658,14 @@ int CISO9660::UnpackFile(CSalamanderForOperationsAbstract* salamander, const cha
 
         block++;
 
-        if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, abychom nebrzdili
+        if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, so we do not slow things down
         {
             salamander->ProgressDialogAddText(LoadStr(IDS_CANCELING_OPERATION), FALSE);
             salamander->ProgressEnableCancel(FALSE);
 
             ret = UNPACK_CANCEL;
             bFileComplete = FALSE;
-            break; // preruseni akce
+            break; // action interrupted
         }
 
         ULONG written;
@@ -693,14 +693,14 @@ int CISO9660::UnpackFile(CSalamanderForOperationsAbstract* salamander, const cha
 
     if (!bFileComplete)
     {
-        // protoze je vytvoren s read-only atributem, musime R attribut
-        // shodit, aby sel soubor smazat
+        // because it was created with the read-only attribute, we must clear
+        // the R attribute so the file can be deleted
         attrs &= ~FILE_ATTRIBUTE_READONLY;
         if (!SetFileAttributes(name, attrs))
             Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-        // user zrusil operaci
-        // smazat po sobe neuplny soubor
+        // the user cancelled the operation
+        // delete the incomplete file afterwards
         if (!DeleteFile(name))
             Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());
     }
@@ -716,7 +716,7 @@ BOOL CISO9660::DumpInfo(FILE* outStream)
 
     CALL_STACK_MESSAGE1("CISO9660::DumpInfo()");
 
-    // zobrazit info z PVD
+    // display info from the PVD
     s = ViewerStrNcpy((char*)PVD.SystemIdentifier, 32);
     if (*s)
         fprintf(outStream, "    System Identifier:        %s\n", s);

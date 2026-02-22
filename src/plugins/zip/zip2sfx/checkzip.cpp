@@ -40,7 +40,7 @@ BOOL CheckEntries(DWORD dirOffs, DWORD totalEntries)
              header.LocHeaderOffs == 0xFFFFFFFF ||
              header.StartDisk == 0xFFFF))
         {
-            // jde o Zip64 odmitneme ho
+            // Zip64 detected; reject the archive
             return Error(STR_ZIP64);
         }
         offs += sizeof(CFileHeader) + header.NameLen + header.ExtraLen + header.CommentLen;

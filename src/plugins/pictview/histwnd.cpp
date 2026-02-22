@@ -18,7 +18,7 @@ enum
     IDX_TB_RGBSUM,
 };
 
-// menu item skill level ALL (zahrnuje beginned, intermediate a advanced)
+// menu item skill level ALL (covers beginner, intermediate, and advanced)
 #define MNTS_ALL (MNTS_B | MNTS_I | MNTS_A)
 
 //****************************************************************************
@@ -59,12 +59,12 @@ CHistogramControl::CHistogramControl(LPDWORD* data)
         }
     }
 
-    DWORD maxPeak = 0xFFFFFFFF; // maximalni peak (vsechny vyssi hodnoty se na nej oriznou)
+    DWORD maxPeak = 0xFFFFFFFF; // maximum peak (all higher values will be clipped to it)
                                 //  for (c = 0; c < 5; c++)
                                 //    if (maxPeak > (DWORD)(1.2 * peak[c])) maxPeak = (DWORD)(1.2 * peak[c]);
     maxPeak = (DWORD)(average * 4);
     if (maxPeak < 10)
-        maxPeak = 10; // extremne male hodnoty se nam nehodi
+        maxPeak = 10; // extremely small values are not useful for us
 
     int d;
     for (d = 0; d < 5; d++)
@@ -92,14 +92,14 @@ CHistogramControl::~CHistogramControl()
 
 int CHistogramControl::SetChannel(int channel)
 {
-    // TODO prekreslit okno
+    // TODO redraw the window
     InvalidateRect(HWindow, NULL, FALSE);
     return Channel = channel;
 }
 
 BOOL CHistogramControl::SetShowOtherChannels(BOOL show)
 {
-    // TODO prekreslit okno
+    // TODO redraw the window
     InvalidateRect(HWindow, NULL, FALSE);
     return ShowOtherChannels = show;
 }
@@ -114,11 +114,11 @@ void CHistogramControl::Paint()
     int barHeight;
     HPEN oldPen;
 
-    // vymazeme pozadi
+    // clear the background
     SetBkColor(DC, Colors[Background]);
     FastFillRect(DC, DC.GetRect());
 
-    // vykreslime histogramu
+    // draw the histogram
     SetBkColor(DC, Colors[Channel]);
     int i;
     for (i = 0; i < 256; i++)
@@ -129,7 +129,7 @@ void CHistogramControl::Paint()
 
     if (ShowOtherChannels)
     {
-        // projedeme ostatni kanaly a vykrelime po castech jejich krivky
+        // go through the other channels and draw their curves in segments
         int c;
         for (c = 0; c < 5; c++)
         {
@@ -149,7 +149,7 @@ void CHistogramControl::Paint()
         }
     }
 
-    // vykreslime separator
+    // draw the separator
     int top = height;
     oldPen = HPEN(SelectObject(DC, LightHPen));
     MoveToEx(DC, 0, top, NULL);
@@ -167,7 +167,7 @@ void CHistogramControl::Paint()
     top++;
     SelectObject(DC, oldPen);
 
-    // vykreslime tonalni pruh pod histogramem
+    // draw the tonal band below the histogram
     DWORD color;
     int j;
     for (j = 0; j < 256; j++)
@@ -242,16 +242,16 @@ void CHistogramWindow::Show()
              0, 0, 100, 100, Viewer->HWindow, NULL,
              DLLInstance, this);
 
-    Viewer->HHistogramWindow = HWindow; // chceme notifikace o zmene fontu, protoze mame toolbar
+    Viewer->HHistogramWindow = HWindow; // we want font change notifications because we have a toolbar
 
     MSG msg;
     BOOL ret = TRUE;
-    while (HWindow != NULL && // pri zavreni z jineho threadu (shutdown / zavreni hl. okna Salama) uz okno neexistuje
+    while (HWindow != NULL && // when closing from another thread (shutdown / closing Salamander main window) the window may no longer exist
            IsWindow(HWindow) && (ret = GetMessage(&msg, NULL, 0, 0)) != 0)
     {
         if (ret == -1)
             break;
-        // zpracujeme zpravu
+        // process the message
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
@@ -278,7 +278,7 @@ void CHistogramWindow::SaveConfiguration(HKEY key,
 
 BOOL CHistogramWindow::Init()
 {
-    // vytvorime toolbaru
+    // create the toolbar
     Toolbar = SalamanderGUI->CreateToolBar(HWindow);
     if (!Toolbar)
         return FALSE;
@@ -287,7 +287,7 @@ BOOL CHistogramWindow::Init()
     Toolbar->SetImageList(Viewer->HGrayToolBarImageList);
     Toolbar->SetHotImageList(Viewer->HHotToolBarImageList);
 
-    // vyber kanalu
+    // channel selection
     TLBI_ITEM_INFO2 tii;
     tii.Mask = TLBI_MASK_ID | TLBI_MASK_TEXT | TLBI_MASK_STYLE;
     tii.Style = TLBI_STYLE_DROPDOWN | TLBI_STYLE_WHOLEDROPDOWN | TLBI_STYLE_SHOWTEXT;
@@ -300,14 +300,14 @@ BOOL CHistogramWindow::Init()
     tii.Style = TLBI_STYLE_SEPARATOR;
     Toolbar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
 
-    // prepina zobrazeni ostatnich kanalu
+    // toggles the display of other channels
     tii.Mask = TLBI_MASK_IMAGEINDEX | TLBI_MASK_ID | TLBI_MASK_STYLE;
     tii.Style = TLBI_STYLE_CHECK;
     tii.ImageIndex = IDX_TB_OTHERCHANNELS;
     tii.ID = cmdOtherChannels;
     Toolbar->InsertItem2(0xFFFFFFFF, TRUE, &tii);
 
-    // vytvorime histogram
+    // create the histogram
     Histogram.CreateEx(WS_EX_STATICEDGE, CWINDOW_CLASSNAME, _T(""),
                        WS_CHILD | WS_VISIBLE,
                        0, Toolbar->GetNeededHeight(), 10, 10, HWindow, NULL,
@@ -551,7 +551,7 @@ CHistogramWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
             case cmdChannel:
             {
-                // vytvorime menu
+                // create the menu
                 MENU_TEMPLATE_ITEM templ[] =
                     {
                         {MNTT_PB, 0, 0, 0, -1, 0, NULL},

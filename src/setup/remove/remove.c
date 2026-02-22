@@ -34,7 +34,7 @@ char InfFileBuffer[500000] = {0};
 BOOL QuietMode = FALSE;
 BOOL InsideSetupMode = FALSE;
 //BOOL       InstallingSameVersion = FALSE;
-HWND HParent = NULL; // pokud je volany jako EXE nebo ze setupu v silent rezimu, bude parent NULL, jinak jde o dialog setupu
+HWND HParent = NULL; // when called as an EXE or from setup in silent mode, the parent is NULL; otherwise it is the setup dialog
 
 // uninstall scripts
 char UnpinFromTaskbar[100000] = {0};
@@ -87,7 +87,7 @@ char* LoadStr(int resID)
 {
     int size;
     char* ret;
-    static char buffer[5000]; // buffer pro mnoho stringu
+    static char buffer[5000]; // buffer for many strings
     static char* act = buffer;
 
     if (5000 - (act - buffer) < 200)
@@ -105,7 +105,7 @@ char* LoadStr(int resID)
 
     return ret;
 }
-#endif // INSIDE_SETUP"
+#endif // INSIDE_SETUP
 
 char* GetErrorText(DWORD error)
 {
@@ -361,7 +361,7 @@ WORD GetCurDispLangID()
 
     langID = GetUserDefaultLangID();
 
-    // zkorigujeme langID na novejsich woknech
+    // adjust the langID on newer Windows versions
     KERNEL32DLL = LoadLibrary("kernel32.dll");
     if (KERNEL32DLL != NULL)
     {
@@ -386,7 +386,7 @@ INT_PTR CALLBACK ConfirmationDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPA
         char buff1[2 * MAX_PATH];
         char buff2[2 * MAX_PATH];
 
-        // vycentruji dialog k obrazovce
+        // center the dialog on the screen
         CenterWindow(hWindow);
 
         hIcon = LoadIcon(NULL, MAKEINTRESOURCE(IDI_QUESTION));
@@ -471,7 +471,7 @@ BOOL RemoveOpenInfFile()
 {
     int ret;
 
-    // nacteme zakladni data
+    // load the basic data
     ret = GetPrivateProfileString(INF_REMOVE_OPTIONS_SECTION, INF_REMOVE_OPTIONS_APPNAME, "",
                                   RemoveAppName, 1024, RemoveInfFileName);
 
@@ -576,7 +576,7 @@ BOOL DoRemoveFiles(const char* removeFiles)
 // DoRemoveDirs
 //
 
-// musime umet smazat v nahodilem poradi, proto mazeme dokud se mazani dari
+// we must be able to delete in a random order, so keep deleting while it succeeds
 
 BOOL DoRemoveDirs()
 {
@@ -790,10 +790,10 @@ BOOL DeleteAutoImportConfigMarker(const char* autoImportConfig)
         {
             BOOL deleteKey;
 
-            // smazneme hodnotu
+            // delete the value
             RegDeleteValue(hKey, value);
 
-            // pokud je klic po smazani hodnoty prazdny, budeme mazat i klic
+            // if the key is empty after deleting the value, delete the key as well
             deleteKey = IsRegistryKeyEmpty(hKey);
             RegCloseKey(hKey);
 
@@ -809,8 +809,8 @@ BOOL DeleteAutoImportConfigMarker(const char* autoImportConfig)
                     lstrcpy(value, end2 + 1);
                     if (RegOpenKeyEx(hRoot, key, 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS)
                     {
-                        // smazneme klic
-                        RegDeleteKey(hKey, value); // pod W9x smaze i podklice, viz stare MSDN, proto ten test zda je klic skutence prazdny
+                        // delete the key
+                        RegDeleteKey(hKey, value); // under Win9x this removes subkeys too (see old MSDN), hence the check that the key is truly empty
                         RegCloseKey(hKey);
                     }
                 }
@@ -824,7 +824,7 @@ BOOL DeleteAutoImportConfigMarker(const char* autoImportConfig)
 BOOL ContainSubStrIgnoreCase(const char* str, const char* subStr)
 {
     int len = lstrlen(subStr);
-    // pokud je kratsi nez substring, mizime
+    // if it is shorter than the substring, bail out
     if (lstrlen(str) < len)
         return FALSE;
 
@@ -871,8 +871,8 @@ BOOL DoRemoveRegKeys(BOOL removeConfiguration)
 
         removeIt = removeConfiguration;
         lstrcpy(tmp, key);
-        tmp[lstrlen(UNINSTALL_KEY)] = 0;       // nemame strstr, takze to obejdeme
-        if (lstrcmpi(tmp, UNINSTALL_KEY) == 0) // zaznam odinstalaku zarizneme v kazdem pripade
+        tmp[lstrlen(UNINSTALL_KEY)] = 0;       // we do not have strstr, so work around it
+        if (lstrcmpi(tmp, UNINSTALL_KEY) == 0) // always cut off the uninstall record
             removeIt = TRUE;
 
         hRoot = RemoveGetRootHandle(root);
@@ -886,7 +886,7 @@ BOOL DoRemoveRegKeys(BOOL removeConfiguration)
         {
             if (ContainSubStrIgnoreCase(key, SALAMNDER_KEY_NEW) || ContainSubStrIgnoreCase(key, SALAMNDER_KEY_OLD))
             {
-                // ukladame pouze posledni komponentu cesty
+                // store only the last component of the path
                 end = key + lstrlen(key) - 1;
                 while (end > key && *end != '\\')
                     end--;
@@ -936,12 +936,12 @@ BOOL RemoveIsWow64()
 
 void DoRemoveWERLocalDump(const char* exeName)
 {
-    // Pokud padne x86 aplikace pod x64 windows, pouziji se pro WER zaznamy z x64 Registry.
-    // Klic HKEY_LOCAL_MACHINE\SOFTWARE podleha Registry Redirectoru, takze x86 Setup vidi x86 verzi,
-    // zatimco x64 Setup vidi x64 verzi. My z x86 verze Setup.exe potrebujeme zapisovat do x64 vetve
-    // Registry, coz lze zaridit pomoci specialniho klice KEY_WOW64_64KEY, viz MSDN:
+    // If an x86 application crashes on x64 Windows, WER uses entries from the x64 registry.
+    // The HKEY_LOCAL_MACHINE\SOFTWARE key is subject to the registry redirector, so the x86 Setup sees the x86 view,
+    // while the x64 Setup sees the x64 view. From the x86 Setup.exe we need to write to the x64 branch of the
+    // registry, which can be achieved using the special KEY_WOW64_64KEY flag, see MSDN:
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129%28v=vs.85%29.aspx
-    // Pozor, obchazeni redirectoru se tyka i modulu doinst.c!
+    // Note that bypassing the redirector also applies to doinst.c!
     HKEY hKey;
     DWORD altapRefCount = 0xffffffff;
     BOOL delExeKey = FALSE;
@@ -951,7 +951,7 @@ void DoRemoveWERLocalDump(const char* exeName)
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps", 0, samDesired | KEY_READ | KEY_WRITE, &hKey) == ERROR_SUCCESS)
     {
         HKEY hExeKey;
-        // otevreme klic s nazvem EXE
+        // open the key named after the EXE
         if (RegOpenKeyEx(hKey, exeName, 0, samDesired | KEY_READ | KEY_WRITE, &hExeKey) == ERROR_SUCCESS)
         {
             DWORD dwType;
@@ -964,12 +964,12 @@ void DoRemoveWERLocalDump(const char* exeName)
                     altapRefCount--;
                 if (altapRefCount == 0)
                 {
-                    // po zavreni cely klic smazeme
+                    // delete the entire key after closing it
                     delExeKey = TRUE;
                 }
                 else
                 {
-                    // ulozime novy RefCount
+                    // store the new RefCount
                     dwType = REG_DWORD;
                     RegSetValueEx(hExeKey, "AltapRefCount", 0, dwType, (const BYTE*)&altapRefCount, sizeof(altapRefCount));
                 }
@@ -1004,7 +1004,7 @@ void DoRemoveWERLocalDumps()
 //
 // DoRemoveShellExts
 //
-/* odstranovani pomoci CLSID jiz neni treba, nove jedeme pres nazev souboru
+/* removing via CLSID is no longer necessary; now we go by file name
 BOOL MyGetValue(HKEY hKey, const char *name, DWORD type, void *buffer, DWORD bufferSize)
 {
   DWORD gettedType;
@@ -1023,8 +1023,7 @@ RemoveShellExt(const char *clsid)
   BOOL registered;
   DWORD attrs;
 
-  // zjistime jestli uz je shell extensiona registrovana, pripadne jak
-  // se jmenuje SALSHEXT.DLL v TEMPu
+  // find out whether the shell extension is registered and how the SALSHEXT.DLL is named in TEMP
   registered = FALSE;
   lstrcpy(key, "CLSID\\");
   lstrcat(key, clsid);
@@ -1036,10 +1035,10 @@ RemoveShellExt(const char *clsid)
     RegCloseKey(hKey);
   }
 
-  // zda se, ze je registrovane
+  // it appears to be registered
   if (registered)
   {
-    // pokusime se ho nacist a zavolat funkci pro odregistrovani
+    // try to load it and call the unregister function
     HMODULE hShellExt = LoadLibrary(shellExtPath);
     if (hShellExt != NULL)
     {
@@ -1049,13 +1048,13 @@ RemoveShellExt(const char *clsid)
       FreeLibrary(hShellExt);
     }
 
-    // zjistime jestli DLL existuje a smazeme ho
+    // check whether the DLL exists and delete it
     attrs = GetFileAttributes(shellExtPath);
     if (attrs != INVALID_FILE_ATTRIBUTES)
     {
       if (attrs & FILE_ATTRIBUTE_READONLY)
         SetFileAttributes(shellExtPath, attrs ^ FILE_ATTRIBUTE_READONLY);
-      // pokud nelze smazat konvecne, smazeme ho po restartu
+      // if it cannot be deleted normally, remove it after restart
       if (!DeleteFile(shellExtPath))
       {
         RemoveOnReboot(shellExtPath);
@@ -1078,15 +1077,15 @@ BOOL TryToRenameShellExt(char* name)
     BOOL exist;
 
     if (lstrlen(name) > MAX_PATH - 10)
-        return FALSE; // neni kam nacpat nase cislo
+        return FALSE; // nowhere to fit our number
 
     lstrcpy(buff, name);
 
     p = strrchr(buff, '.');
     if (p == NULL)
-        return FALSE; // shellext bez pripony? divny
+        return FALSE; // shell extension without an extension? strange
 
-    lstrcpy(ext, p); // zaloha pripony
+    lstrcpy(ext, p); // backup of the extension
     counter = 1;
     do
     {
@@ -1097,10 +1096,10 @@ BOOL TryToRenameShellExt(char* name)
     } while (exist && counter < 1000);
 
     if (exist)
-        return FALSE; // 1000 pokusu musi stacit, balime to
+        return FALSE; // 1000 attempts must be enough; give up
 
     if (!MoveFile(name, buff))
-        return FALSE; // pod W9x se prejmenovani nemusi podarit
+        return FALSE; // on Win9x the rename may fail
 
     lstrcpy(name, buff);
     return TRUE;
@@ -1110,7 +1109,7 @@ BOOL RemoveShellExt(const char* shellExtPath, BOOL* delayedDelete, BOOL* renamin
 {
     DWORD attrs;
 
-    // pokusime se ho nacist a zavolat funkci pro odregistrovani
+    // try to load it and call the unregister function
     HMODULE hShellExt = LoadLibrary(shellExtPath);
     if (hShellExt != NULL)
     {
@@ -1123,11 +1122,11 @@ BOOL RemoveShellExt(const char* shellExtPath, BOOL* delayedDelete, BOOL* renamin
         FreeLibrary(hShellExt);
     }
 
-    // zjistime jestli DLL existuje a smazeme ho
+    // check whether the DLL exists and delete it
     attrs = GetFileAttributes(shellExtPath);
     if (attrs != INVALID_FILE_ATTRIBUTES)
     {
-        // shodime read-only atribut, je-li nastaven
+        // drop the read-only attribute if it is set
         if (attrs & FILE_ATTRIBUTE_READONLY)
             SetFileAttributes(shellExtPath, attrs ^ FILE_ATTRIBUTE_READONLY);
 
@@ -1146,13 +1145,12 @@ BOOL RemoveShellExt(const char* shellExtPath, BOOL* delayedDelete, BOOL* renamin
 
             if (!DeleteFile(newName))
             {
-                // pokusime se prejmenovat shellextension, aby v pripade ze uzivatel po odinstalaci
-                // hned do stejneho adresare naleje novou verzi Salama, tak abychom mu pripadne
-                // nepodrizli jeho novou shellextension
+                // try to rename the shell extension so that if the user immediately copies a new version of Salamander into the same directory after uninstalling,
+                // we do not accidentally cut off their new shell extension
                 if (!TryToRenameShellExt(newName))
                     *renamingFailed = TRUE;
 
-                // pokud nelze smazat konvecne, smazeme ho po restartu
+                // if it cannot be deleted normally, remove it after restart
                 RemoveOnReboot(newName);
                 *delayedDelete = TRUE;
             }
@@ -1184,7 +1182,7 @@ BOOL DoRemoveShellExts()
 //
 // CheckRunningApp
 //
-// zjisti, jestli nebezi nejaka aplikace s tridou okna appWindowClassName
+// checks whether an application with the window class appWindowClassName is running
 //
 /*
 BOOL
@@ -1282,7 +1280,7 @@ BOOL DoRemove(BOOL* needRestart)
     if (needRestart != NULL)
         *needRestart = FALSE;
 
-    // nacteme inf soubor
+    // load the INF file
     hFile = CreateFile(RemoveInfFileName, GENERIC_READ, 0, NULL,
                        OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
@@ -1298,7 +1296,7 @@ BOOL DoRemove(BOOL* needRestart)
     /*
   if (CheckRunningApps[0] != 0)
   {
-    // donutime usera pozavirat aplikace ze seznamu
+    // force the user to close applications from the list
     char appClass[1000];
     char *begin;
     char *end;
@@ -1313,12 +1311,12 @@ BOOL DoRemove(BOOL* needRestart)
       begin = end;
 
       if (!CheckRunningApp(appClass))
-        return FALSE; // cancel od uzivatele
+        return FALSE; // user canceled
     }
   }
 */
 
-    // nacucneme seznamy k podrezani
+    // load the lists slated for removal
     RemoveGetPrivateProfileSection(INF_REMOVE_UNPINFROMTASKBAR, UnpinFromTaskbar, sizeof(UnpinFromTaskbar));
     RemoveGetPrivateProfileSection(INF_REMOVE_DELFILES, RemoveFiles, sizeof(RemoveFiles));
     RemoveGetPrivateProfileSection(INF_REMOVE_DELDIRS, RemoveDirs, sizeof(RemoveDirs));
@@ -1327,12 +1325,12 @@ BOOL DoRemove(BOOL* needRestart)
     RemoveGetPrivateProfileSection(INF_REMOVE_DELSHELLEXTS, RemoveShellExts, sizeof(RemoveShellExts));
 
     ParamsGlobal.AppName = RemoveAppName;
-    ParamsGlobal.RemoveConfiguration = FALSE; // zde lze nastavit default hodnoty (pokud je volano "InsideSetupMode", musi byt FALSE!)
+    ParamsGlobal.RemoveConfiguration = FALSE; // default values can be set here (if called in "InsideSetupMode", it must be FALSE!)
 
 #ifndef INSIDE_SETUP
     if (!QuietMode && !InsideSetupMode)
     {
-        // opravdu mame podrezat aplikaci?
+        // do we really want to terminate the application?
         INT_PTR ret = DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CONFIRMATION),
                                      HParent, ConfirmationDlgProc, (LPARAM)NULL);
         if (ret == IDNO)
@@ -1342,7 +1340,7 @@ BOOL DoRemove(BOOL* needRestart)
 
     if (RemoveRunProgramQuiet[0] != 0)
     {
-        // pustime softik a pockame az dobehne
+        // launch the tool and wait until it finishes
         STARTUPINFO si = {0};
         PROCESS_INFORMATION pi;
         char currentDir[MAX_PATH];
@@ -1370,7 +1368,7 @@ BOOL DoRemove(BOOL* needRestart)
 #endif //INSIDE_SETUP
         }
         else
-            WaitForSingleObject(pi.hProcess, INFINITE); // pockame, az softik dobehne
+            WaitForSingleObject(pi.hProcess, INFINITE); // wait for the tool to finish
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
@@ -1382,8 +1380,8 @@ BOOL DoRemove(BOOL* needRestart)
     {
         if (!DoRemoveShellExts())
         {
-            // pokud bezime v ramci instalace nove verze a nepodarilo se prejmenovat starou shell extension (W9x),
-            // musime uzivatele pozadat o restartovani masiny pred dokoncenim instalace
+            // if we are running as part of installing a new version and the old shell extension could not be renamed (W9x),
+            // we must ask the user to restart the machine before finishing the installation
             if (InsideSetupMode)
             {
                 if (needRestart != NULL)
@@ -1447,7 +1445,7 @@ BOOL CleanUp()
     if (nameOnly == NULL || *nameOnly == 0)
         nameOnly = fileName;
 
-    // vytvorime batak, ktery smaze nas a pak i sebe
+    // create a batch file that deletes us and then itself
     hFile = CreateFile(fileName, GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_ARCHIVE, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
@@ -1458,7 +1456,7 @@ BOOL CleanUp()
     ok = (written == (DWORD)lstrlen(cmdLine));
     if (ok)
     {
-        for (i = 0; i < 5; i++) // PRASARNA, ale snad promaze komplet do hloubky 5
+        for (i = 0; i < 5; i++) // ugly hack, but it should wipe everything down to depth 5
         {
             line = RemoveDirs;
             while (*line != 0)
@@ -1486,13 +1484,13 @@ BOOL CleanUp()
     }
     CloseHandle(hFile);
 
-    // a spustime batak
+    // and run the batch file
     si.cb = sizeof(STARTUPINFO);
     si.dwFlags = STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
 
     GetEnvironmentVariable("COMSPEC", cmdLine, MAX_PATH);
-    lstrcat(cmdLine, " /C "); // spust command + po skonceni zavri
+    lstrcat(cmdLine, " /C "); // run the command and close after it finishes
     wsprintf(cmdLine + lstrlen(cmdLine), "\"%s\"", nameOnly);
 
     SetCurrentDirectory(tempPath);
@@ -1541,11 +1539,11 @@ BOOL Uninstall(BOOL* needRestart)
     {
         if (!QuietMode && !InsideSetupMode)
         {
-            // oznamime, ze je to ok
+            // notify that everything is OK
             wsprintf(buff, LoadStr(IDS_REMOVE_SUCCESS), RemoveAppName);
             MessageBox(HParent, buff, LoadStr(IDS_REMOVE_TITLE), MB_OK | MB_ICONINFORMATION | MB_TASKMODAL | MB_SETFOREGROUND);
         }
-        // vycistime po sobe temp
+        // clean up our temporary files
         if (!InsideSetupMode)
             CleanUp();
         ret = TRUE;
@@ -1562,7 +1560,7 @@ BOOL Uninstall(BOOL* needRestart)
 
 #ifndef INSIDE_SETUP
 
-/* dle http://vcfaq.mvps.org/sdk/21.htm */
+/* according to http://vcfaq.mvps.org/sdk/21.htm */
 #define BUFF_SIZE 1024
 BOOL IsUserAdmin()
 {
@@ -1616,7 +1614,7 @@ BOOL RunAsAdminAndWait(HWND hWnd, LPTSTR lpFile, LPTSTR lpParameters, DWORD* exi
 
     ret = FALSE;
     *exitCode = 0;
-    if (ShellExecuteEx(&sei)) // FALSE muze byt i jen Cancel
+    if (ShellExecuteEx(&sei)) // FALSE can also mean just Cancel
     {
         ret = TRUE;
         if (sei.hProcess != NULL)
@@ -1691,7 +1689,7 @@ void RunRemoveExeAsAdminIfNeeded()
             {
                 MessageBox(NULL, LoadStr(IDS_REMOVE_XPRUNASADMIN), LoadStr(IDS_REMOVE_TITLE), MB_OK | MB_ICONINFORMATION);
                 if (RunAsAdminAndWait(NULL, removeExe, params, &exitCode))
-                { // pokud spustim jiny remove.exe, tento ukoncim zde
+                { // if another remove.exe is started, terminate this one here
                     ExitProcess(exitCode);
                 }
             }
@@ -1704,7 +1702,7 @@ BOOL RefreshDesktop(BOOL sleep)
     ITEMIDLIST root = {0};
     SHChangeNotify(SHCNE_UPDATEDIR, SHCNF_IDLIST, &root, 0);
     if (sleep)
-        Sleep(500); // dame systemu nejaky cas
+        Sleep(500); // give the system some time
     return TRUE;
 }
 
@@ -1712,7 +1710,7 @@ BOOL RefreshDesktop(BOOL sleep)
 // EnableExceptionsOn64
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to be notified about SEH exceptions even on x64 Windows 7 SP1 and later
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038
@@ -1755,7 +1753,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     InitUtils();
 
-    // nechceme zadne kriticke chyby jako "no disk in drive A:"
+    // we do not want critical errors such as "no disk in drive A:"
     SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
 
     OleInitialize(NULL);

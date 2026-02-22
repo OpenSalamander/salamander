@@ -3,7 +3,7 @@
 
 #pragma once
 
-/// hlavni export /////////////////////////////////////////////////////////////
+/// main export ////////////////////////////////////////////////////////////////
 
 BOOL DecodeSelectedBlocks(LPCTSTR pszFileName, CParserOutput* output, LPCTSTR dir, FILETIME* pft,
                           CSalamanderForOperationsAbstract* Salamander, const CQuadWord& totalSize,
@@ -11,7 +11,7 @@ BOOL DecodeSelectedBlocks(LPCTSTR pszFileName, CParserOutput* output, LPCTSTR di
 
 extern int iErrorStr;
 
-/// export pro parser.cpp /////////////////////////////////////////////////////
+/// export for parser.cpp /////////////////////////////////////////////////////
 
 class CDecoder
 {

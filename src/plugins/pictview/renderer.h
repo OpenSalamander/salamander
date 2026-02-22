@@ -11,11 +11,11 @@ extern TCHAR Focus_Path[MAX_PATH];
 // Used by SaveAs dlg to get the current path in the source(=active) panel
 extern HWND ghSaveAsWindow;
 
-// interni drzak barvy, ktery navic obsahuje flag
+// internal color holder that also contains a flag
 typedef DWORD SALCOLOR;
 
 // SALCOLOR flags
-#define SCF_DEFAULT 0x01 // barevna slozka se ignoruje a pouzije se default hodnota
+#define SCF_DEFAULT 0x01 // ignore the color component and use the default value
 
 #define GetCOLORREF(rgbf) ((COLORREF)rgbf & 0x00ffffff)
 #define RGBF(r, g, b, f) ((COLORREF)(((BYTE)(r) | ((WORD)((BYTE)(g)) << 8)) | (((DWORD)(BYTE)(b)) << 16) | (((DWORD)(BYTE)(f)) << 24)))
@@ -71,8 +71,8 @@ typedef struct _gen_saveas_info
     LPPVImageInfo pvii;
 } SAVEAS_INFO, *SAVEAS_INFO_PTR;
 
-BOOL IsCageValid(const RECT* r); // vraci TRUE, pokud r->left != 0x80000000
-void InvalidateCage(RECT* r);    // nastavuje r->left = 0x80000000 (klec neni validni, nebude zobrazena)
+BOOL IsCageValid(const RECT* r); // returns TRUE if r->left != 0x80000000
+void InvalidateCage(RECT* r);    // sets r->left = 0x80000000 (the cage is invalid and will not be shown)
 
 //****************************************************************************
 //
@@ -87,8 +87,8 @@ class CRendererWindow : public CWindow
 public:
     CViewerWindow* Viewer;
 
-    // promenne pro PVW32
-    LPPVHandle PVHandle; // handle obrazku
+    // variables for PVW32
+    LPPVHandle PVHandle; // image handle
     LPPVImageSequence PVSequence, PVCurImgInSeq;
     BOOL ImageLoaded;
     BOOL DoNotAttempToLoad;
@@ -100,9 +100,9 @@ public:
     eZoomType ZoomType;
     BOOL Capturing;
     eTool CurrTool;
-    BOOL HiddenCursor;       // ma vyznam ve FullScreen, je TRUE pokud uplynul cas a zhasnul se kurzor
-    BOOL CanHideCursor;      // TRUE = je mozne kurzor schovat (FALSE napr. behem otevreni Save As okna, aby se porad neschovaval kurzor mysi)
-    DWORD LastMoveTickCount; // tick count pri poslednim pohybu mysi
+    BOOL HiddenCursor;       // relevant in FullScreen, TRUE when the cursor faded after a timeout
+    BOOL CanHideCursor;      // TRUE = the cursor may be hidden (FALSE e.g. while opening Save As so the cursor stays visible)
+    DWORD LastMoveTickCount; // tick count at the last mouse movement
     RECT ClientRect;
 
 protected:
@@ -119,20 +119,20 @@ protected:
     HWND PipWindow;
     TCHAR toolTipText[68];
     HBRUSH HAreaBrush;
-    // SelectRect je v absolutnich souradnicich obrazku a nepodleha zoom a scrollu
-    RECT SelectRect;    // selected area; left = 0x8000000 if no selection (v souradnicich obrazku)
-    POINT LButtonDown;  // client-window souradnice, kde uzivatel stisknul LBUTTON (pro utrzeni d&d)
-    RECT TmpCageRect;   // prave tazena klec (zoom || select); v souradnicich obrazku; left/top = Anchot; right/bottom = kurzor
-    POINT CageAnchor;   // pocatek klece (protilehly bod proti CageCursor) v souradnicich obrazku
-    POINT CageCursor;   // viz CageAnchor
-    BOOL BeginDragDrop; // TRUE pokud d&d jeste nezacal (jsme v ochrannem prostoru)
-    BOOL ShiftKeyDown;  // vime o stistene klavese SHIFT
+    // SelectRect is in absolute image coordinates and is unaffected by zoom or scroll
+    RECT SelectRect;    // selected area; left = 0x8000000 if no selection (in image coordinates)
+    POINT LButtonDown;  // client-window coordinates where the user pressed LBUTTON (to detect drag start)
+    RECT TmpCageRect;   // cage currently being dragged (zoom || select); in image coordinates; left/top = anchor; right/bottom = cursor
+    POINT CageAnchor;   // cage origin (the point opposite to CageCursor) in image coordinates
+    POINT CageCursor;   // see CageAnchor
+    BOOL BeginDragDrop; // TRUE if drag&drop has not started yet (we are in the safe zone)
+    BOOL ShiftKeyDown;  // remember the pressed SHIFT key
     BOOL bDrawCageRect;
     BOOL bEatSBTextOnce; // Don't update SB texts once to keep information displayed for a while
     int inWMSizeCnt;
 
-    int EnumFilesSourceUID;    // UID zdroje pro enumeraci souboru ve vieweru
-    int EnumFilesCurrentIndex; // index aktualniho souboru ve vieweru ve zdroji
+    int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
+    int EnumFilesCurrentIndex; // index of the current file in the viewer within the source
 
     BOOL SavedZoomParams;
     eZoomType SavedZoomType;
@@ -143,9 +143,9 @@ protected:
     int BrushOrg;
     BOOL ScrollTimerIsRunning;
 
-    // print dialog je alokovany, protoze slouzi jako nositel nastavenych parametru
-    // tiskarny, orientace papiru, atd.; pokud uzivatel da po sobe dva tisky, tato
-    // nastaveni zustanou zachovana
+    // the print dialog is allocated because it carries the configured parameters
+    // for printer, paper orientation, etc.; if the user prints twice in a row,
+    // these settings remain preserved
     CPrintDlg* pPrintDlg;
 
 public:
@@ -211,10 +211,10 @@ protected:
     void UpdatePipetteTooltip();
     void UpdateInfos();
 
-    void ClientToPicture(POINT* p); // konvertuje souradnice v bodech client area okna na souradnice obrazku
-    void PictureToClient(POINT* p); // konvertuje souradnice v bodech obrazku na souradnice v client area okna
+    void ClientToPicture(POINT* p); // converts client-area window coordinates to image coordinates
+    void PictureToClient(POINT* p); // converts image coordinates to client-area window coordinates
 
-    void AutoScroll(); // hlida kurzor proti client area; pokud je za hranici, scroluje okno
+    void AutoScroll(); // tracks the cursor relative to the client area; if it is outside, scroll the window
 
     void DrawCageRect(HDC hDC, const RECT* cageRect);
 

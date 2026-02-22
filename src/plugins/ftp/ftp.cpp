@@ -1,59 +1,60 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
-// objekt interfacu plug-inu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called from Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// other parts of the CPluginInterface interface
 CPluginInterfaceForFS InterfaceForFS;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// ConfigVersion: 0 - default (bez loadu),
-//                1 - pracovni verze pred podporou parsovani listingu (od teto verze jiz existuji rozumne seznamy server-types a ftp-servers)
-//                2 - pracovni verze pred 1. upravami MVS podle testera Michaela Knigge (uprava seznamu server-types)
-//                3 - pracovni verze pred 2. upravami MVS podle testera Michaela Knigge (uprava seznamu server-types)
-//                4 - pracovni verze pred 3. upravami MVS podle testera Michaela Knigge (uprava seznamu server-types)
-//                5 - pracovni verze pred 1. upravami VMS (uprava seznamu server-types)
-//                6 - pracovni verze pred 4. upravami MVS podle testera Michaela Knigge (uprava seznamu server-types)
-//                7 - pracovni verze pred upravou hodnot v konfiguraci na strance Operations
-//                8 - pracovni verze pred Servant Salamander 2.1 beta 1
-//                9 - Servant Salamander 2.5 beta 6 (+upravy autodetect podminek server-types)
-//                10 - pridani parseru pro Unixy s dvema mezerama pred jmenem souboru/adresare v listingu (Filezilla + AIX)
-//                11 - oprava parseru pro Unixy s dvema mezerama pred jmenem souboru/adresare v listingu (Filezilla + AIX)
-//                12 - zmena priority: parser pro Unixy s dvema mezerama po roce pred jmeny je pred parserem s jednou mezerou po roce pred jmeny (pravdepodobnejsi je varianta bez mezer na zacatku jmen) + obohaceni parseru MVS1 a MVS2
-//                13 - oprava popisu sloupcu MVS PO parseru (vsech ctyrech): misto "Size" dan "Number of Records"
-//                14 - oprava MVS PO 4 parseru: muze chybet i hodnota ve sloupci "AC" i ve sloupci "Alias" - uz je ctu tvrde pres offsety + orezavam koncove mezery, jinak to proste nejde + oprava MVS1 a MVS2 parseru (volume OK + nasleduje "Error determining attributes")
-//                     + oprava jmen sloupcu MVS PO parseru (vsech ctyrech): misto "Size" dan "Records" - velikost neni v bytech, ukazoval se nesmyslny progress pri downloadu
-//                15 - pridany parser pro OS/2 ftp server
-//                16 - pridany parser pro VxWorks ftp server
-//                17 - oprava MVS parseru (dalsi typ chybove hlasky ve vypise + dalsi kombinace skipnutych dat v listingu) + oprava VxWorks parseru
-//                18 - pridani zarovnani (alignment) sloupcum parseru - doprava obvykle zarovnavame datumy+casy+cisla
-//                19 - uprava z/VM parseru: Date je typu GeneralDate aby na polozce ".." neukazoval "1.1.1602", ale prazdny retezec
-//                20 - pridani identifikatoru "is_link" (TRUE = ikona v panelu ma overlay linku)
-//                21 - pridani parseru UNIX4 (nemecke datumy - mesice na vic nez 3 pismena), pridani funkci "month_txt"
-//                22 - uprava hodnot v konfiguraci na strance Operations 2 (Upload)
-//                23 - uprava autodetekcnich podminek parseru, ktere preskakuji prvni nebo posledni radky listingu (pokud Microsoft IIS nebo Netprezenz vratili listing s jednou nebo dvema radkami, VMS parser je proste vyignoroval a pouzil se prazdny listing)
-//                24 - uprava skipnuti hlavicek listingu v parserech, nyni uz v pripade chybejici hlavicky nedojde ke skipnuti invalidniho radku
-//                25 - uprava Microsoft IIS parseru: adresare s mezerami misto nazvu se ignoruji (nechapu proc se vubec ukazuji, kdyz nemaji nazev, ale delaji to)
-//                26 - pridani UNIX5 (IBM AIX - german version) parseru (ma prohozene sloupce mesic a den)
-//                27 - uprava VMS1-4 parseru, novinka na cs.felk.cvut.cz: prazdny adresar vraci listing obsahujici "Total of 0 files, 0/0 blocks" (drive listing vracel chybu "no files found")
-//                28 - pridani parseru pro Tandem
-//                29 - zmena defaultu: "Resume or Overwrite" misto "Overwrite" pro Config.UploadRetryOnCreatedFile; Config.DisableLoggingOfWorkers zmeneno na FALSE (uz me nebavi kazdemu psat, at si zapne logovani, rezie logovani je minimalni)
-//                30 - pridani parseru pro IBM AS/400
-//                31 - uprava parseru pro IBM AS/400
-//                32 - prejmenovani parseru pro IBM AS/400 na "IBM iSeries/i5, AS/400"
-//                33 - uprava parseru pro IBM AS/400: jmena nesmi obsahovat mezery (jinak nesmyslne parsuje napr. unixove neparsovatelne listingy)
-//                34 - uprava vsech peti UNIX parseru: user+group muzou obsahovat vic mezer (v tomto pripade se ignoruji, protoze nevime jak oddelit usera od groupy)
-//                35 - pridani UNIX parseru pro MOXA ftp server (chybi casy + datumy); zmena ve vsech UNIX parserech: cteni sloupce <rights>: uz se necte pevnych 10 znaku, ale slovo (duvod: ACL na unixu zavedly '+' za temito deseti znaky, napr. "drwxrwxr-x+")
-//                36 - zmena CZ+EN parseru pro IBM AS/400: ignorovani prvniho radku s prazdnym jmenem souboru
-//                37 - pridani parseru pro Xbox 360
+// ConfigVersion: 0 - default (without load),
+//                1 - work version before listing parsing support (from this version on there are sensible lists of server-types and ftp-servers)
+//                2 - work version before the first MVS adjustments according to tester Michael Knigge (server-type list adjustment)
+//                3 - work version before the second MVS adjustments according to tester Michael Knigge (server-type list adjustment)
+//                4 - work version before the third MVS adjustments according to tester Michael Knigge (server-type list adjustment)
+//                5 - work version before the first VMS adjustments (server-type list adjustment)
+//                6 - work version before the fourth MVS adjustments according to tester Michael Knigge (server-type list adjustment)
+//                7 - work version before modifying values in the configuration on the Operations page
+//                8 - work version before Servant Salamander 2.1 beta 1
+//                9 - Servant Salamander 2.5 beta 6 (+adjustments to server-type autodetect conditions)
+//                10 - added parser for Unix systems with two spaces before the file/directory name in the listing (Filezilla + AIX)
+//                11 - fixed parser for Unix systems with two spaces before the file/directory name in the listing (Filezilla + AIX)
+//                12 - priority change: the parser for Unix systems with two spaces after the year before names comes before the parser with one space after the year before names (the variant without spaces at the beginning of names is more likely) + enriched MVS1 and MVS2 parsers
+//                13 - fixed column descriptions in the MVS PO parser (all four): used "Number of Records" instead of "Size"
+//                14 - fixed the MVS PO 4 parser: the value can be missing both in column "AC" and in column "Alias" - now reading them directly by offsets + trimming trailing spaces, there is no other way + fixed the MVS1 and MVS2 parsers (volume OK + followed by "Error determining attributes")
+//                     + fixed the column names in the MVS PO parser (all four): used "Records" instead of "Size" - the size is not in bytes, nonsensical progress was shown during download
+//                15 - added parser for OS/2 FTP server
+//                16 - added parser for VxWorks FTP server
+//                17 - fixed the MVS parser (another type of error message in the listing + another combination of skipped data in the listing) + fixed the VxWorks parser
+//                18 - added alignment to parser columns - we usually align dates+times+numbers to the right
+//                19 - adjusted the z/VM parser: Date is of type GeneralDate so that item ".." shows an empty string instead of "1.1.1602"
+//                20 - added the "is_link" identifier (TRUE = the panel icon has a link overlay)
+//                21 - added the UNIX4 parser (German dates - months longer than 3 letters), added functions "month_txt"
+//                22 - modified values in the configuration on the Operations 2 (Upload) page
+//                23 - adjusted parser autodetection conditions that skip the first or last rows of the listing (if Microsoft IIS or Netprezenz returned a listing with one or two rows, the VMS parser simply ignored it and an empty listing was used)
+//                24 - adjusted skipping listing headers in parsers, now an invalid row is not skipped when a header is missing
+//                25 - adjusted the Microsoft IIS parser: directories containing spaces instead of names are ignored (I do not understand why they are even shown when they have no name, but they are)
+//                26 - added UNIX5 (IBM AIX - German version) parser (the month and day columns are swapped)
+//                27 - adjusted the VMS1-4 parsers, novelty on cs.felk.cvut.cz: an empty directory returns a listing containing "Total of 0 files, 0/0 blocks" (the listing previously returned the error "no files found")
+//                28 - added parser for Tandem
+//                29 - default change: "Resume or Overwrite" instead of "Overwrite" for Config.UploadRetryOnCreatedFile; Config.DisableLoggingOfWorkers changed to FALSE (I am tired of writing to everyone to enable logging, the logging overhead is minimal)
+//                30 - added parser for IBM AS/400
+//                31 - adjusted parser for IBM AS/400
+//                32 - renamed parser for IBM AS/400 to "IBM iSeries/i5, AS/400"
+//                33 - adjusted parser for IBM AS/400: names must not contain spaces (otherwise it nonsensically parses, for example, unparsable Unix listings)
+//                34 - adjusted all five UNIX parsers: user+group can contain more spaces (in that case they are ignored because we do not know how to separate user from group)
+//                35 - added UNIX parser for MOXA FTP server (missing times + dates); change in all UNIX parsers: reading the <rights> column is no longer done by fixed 10 characters but by a word (reason: ACL on Unix introduced '+' after those ten characters, e.g. "drwxrwxr-x+")
+//                36 - change in the CZ+EN parser for IBM AS/400: ignore the first row with an empty file name
+//                37 - added parser for Xbox 360
 
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 37
-#define RELOAD_PARSERS_BEFORE_CONFIG_VERSION 37 // z konfigu pred touto verzi se nectou parsery, pouziji se defaultni (primitivni update parseru u useru)
+#define RELOAD_PARSERS_BEFORE_CONFIG_VERSION 37 // parsers are not read from configurations before this version; defaults are used (primitive parser update for users)
 
-// jmena hodnot v konfiguraci (v registry)
+// names of values in the configuration (in the registry)
 const char* CONFIG_VERSION = "Version";
 const char* CONFIG_LASTCFGPAGE = "Last Config Page";
 
@@ -186,50 +187,50 @@ const char* CONFIG_SENDSECRETCOMMAND = "Send Secret Command";
 const char* CONFIG_HOSTADDRESSHISTORY = "Host Address History";
 const char* CONFIG_INITPATHHISTORY = "Init Path History";
 
-// casto pouzita chybova hlaska
+// frequently used error message
 const char* LOW_MEMORY = "Low memory";
 
-const char* LIST_CMD_TEXT = "LIST";      // text FTP prikazu "LIST"
-const char* NLST_CMD_TEXT = "NLST";      // text FTP prikazu "NLST"
-const char* LIST_a_CMD_TEXT = "LIST -a"; // text FTP prikazu "LIST -a"
+const char* LIST_CMD_TEXT = "LIST";      // text of the FTP command "LIST"
+const char* NLST_CMD_TEXT = "NLST";      // text of the FTP command "NLST"
+const char* LIST_a_CMD_TEXT = "LIST -a"; // text of the FTP command "LIST -a"
 
-int SortByExtDirsAsFiles = FALSE; // aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
-int InactiveBeepWhenDone = TRUE;  // aktualni hodnota konfiguracni promenne Salamandera SALCFG_MINBEEPWHENDONE
+int SortByExtDirsAsFiles = FALSE; // current value of the Salamander configuration variable SALCFG_SORTBYEXTDIRSASFILES
+int InactiveBeepWhenDone = TRUE;  // current value of the Salamander configuration variable SALCFG_MINBEEPWHENDONE
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni plug-inu
+// general interface of Salamander - valid from startup until the plug-in is closed
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
 // ZLIB compression/decompression interface;
 CSalamanderZLIBAbstract* SalZLIB = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-// ukazatele na tabulky mapovani na mala/velka pismena
+// pointers to the mapping tables for lower/upper case
 unsigned char* LowerCase = NULL;
 unsigned char* UpperCase = NULL;
 
-CConfiguration Config; // globalni konfigurace FTP klienta
+CConfiguration Config; // global configuration of the FTP client
 
-// pole se vsemi otevrenymi FS (pouzivat jen z hl. threadu - nesynchronizovane)
+// array with all open FS (use only from the main thread - unsynchronized)
 TIndirectArray<CPluginFSInterface> FTPConnections(5, 10, dtNoDelete);
 
-BOOL WindowsVistaAndLater = FALSE; // Windows Vista nebo pozdejsi z rady NT
+BOOL WindowsVistaAndLater = FALSE; // Windows Vista or later from the NT family
 
-// globalni promenne pro prikaz FTPCMD_CHANGETGTPANELPATH
+// global variables for the FTPCMD_CHANGETGTPANELPATH command
 int TargetPanelPathPanel = PANEL_LEFT;
 char TargetPanelPath[MAX_PATH] = "";
 
-char UserDefinedSuffix[100] = ""; // predloadeny string pro oznaceni uzivatelskych "server type"
+char UserDefinedSuffix[100] = ""; // preloaded string for marking user-defined "server type"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
@@ -279,31 +280,31 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plug-in je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plug-in is made for the current version of Salamander and higher - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(), REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "FTP Client" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let the language module (.slg) load
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "FTP Client" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // get the general interface of Salamander
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalZLIB = SalamanderGeneral->GetSalamanderZLIB();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("ftp.chm");
 
     SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &SortByExtDirsAsFiles,
@@ -313,25 +314,25 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     SalamanderGeneral->GetLowerAndUpperCase(&LowerCase, &UpperCase);
     lstrcpyn(UserDefinedSuffix, LoadStr(IDS_SRVTYPEUSERDEF), 100);
     if (!Config.InitWithSalamanderGeneral())
-        return NULL; // chyba
+        return NULL; // error
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
     if (!InitSockets(salamander->GetParentWindow()))
     {
         Config.ReleaseDataFromSalamanderGeneral();
-        return NULL; // chyba
+        return NULL; // error
     }
 
     if (!InitFS())
     {
         ReleaseSockets();
         Config.ReleaseDataFromSalamanderGeneral();
-        return NULL; // chyba
+        return NULL; // error
     }
 
-    // nastavime zakladni informace o plug-inu
+    // set the basic information about the plug-in
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION |
                                        FUNCTION_FILESYSTEM,
@@ -342,18 +343,18 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
-    // chceme dostavat zpravy o zavedeni/zmene/zruseni master passwordu
+    // we want to receive messages about creation/change/removal of the master password
     SalamanderGeneral->SetPluginUsesPasswordManager();
 
-    // ziskame nase FS-name (nemusi byt "FTP", Salamander ho muze upravit)
+    // obtain our FS-name (it does not have to be "FTP", Salamander may adjust it)
     SalamanderGeneral->GetPluginFSName(AssignedFSName, 0);
     AssignedFSNameLen = (int)strlen(AssignedFSName);
 
-    // jeste pridame jmeno pro FTPS (FTP over SSL)
+    // also add a name for FTPS (FTP over SSL)
     if (salamander->AddFSName("ftps", &AssignedFSNameIndexFTPS))
         SalamanderGeneral->GetPluginFSName(AssignedFSNameFTPS, AssignedFSNameIndexFTPS);
     else
-        strcpy(AssignedFSNameFTPS, AssignedFSName); // nejspis "dead code"
+        strcpy(AssignedFSNameFTPS, AssignedFSName); // probably "dead code"
     AssignedFSNameLenFTPS = (int)strlen(AssignedFSNameFTPS);
 
     return &PluginInterface;
@@ -385,7 +386,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_CANCELEXISTINGOPER),
                                          LoadStr(IDS_FTPPLUGINTITLE),
                                          MB_YESNO | MB_ICONQUESTION | MSGBOXEX_ESCAPEENABLED) == IDYES)
-    { // pripadny cancel vsech operaci se provede v ReleaseFS()
+    { // any cancellation of all operations is performed in ReleaseFS()
         ret = TRUE;
     }
 
@@ -398,7 +399,7 @@ BOOL CPluginInterface::Release(HWND parent, BOOL force)
             TRACE_E("Some FS interfaces were not closed (count=" << InterfaceForFS.GetActiveFSCount() << ")");
         }
 
-        // zrusime vsechny kopie souboru z FTP v disk-cache (existuji, protoze prezivaji zavreni spojeni + dale jsou zbytecne)
+        // remove all copies of files from FTP in the disk cache (they exist because they survive connection close and are unnecessary)
         char uniqueFileName[MAX_PATH];
         strcpy(uniqueFileName, AssignedFSName);
         strcat(uniqueFileName, ":");
@@ -483,7 +484,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD));
 
@@ -553,7 +554,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         DWORD cacheMaxSize;
         if (registry->GetValue(regKey, CONFIG_CACHEMAXSIZE, REG_DWORD, &cacheMaxSize, sizeof(DWORD)))
         {
-            Config.CacheMaxSize = CQuadWord(cacheMaxSize, 0); // zatim staci ukladat jako DWORD
+            Config.CacheMaxSize = CQuadWord(cacheMaxSize, 0); // storing it as a DWORD is sufficient for now
             if (Config.CacheMaxSize < CQuadWord(100 * 1024, 0))
                 Config.CacheMaxSize = CQuadWord(100 * 1024, 0);
         }
@@ -561,7 +562,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_DELETEADDTOQUEUE, REG_DWORD, &Config.DeleteAddToQueue, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_CHATTRADDTOQUEUE, REG_DWORD, &Config.ChAttrAddToQueue, sizeof(DWORD));
 
-        if (ConfigVersion > 7) // starsi verze pouziji standardni hodnoty
+        if (ConfigVersion > 7) // older versions use default values
         {
             registry->GetValue(regKey, CONFIG_OPERCANNOTCREATEFILE, REG_DWORD, &Config.OperationsCannotCreateFile, sizeof(DWORD));
             registry->GetValue(regKey, CONFIG_OPERCANNOTCREATEDIR, REG_DWORD, &Config.OperationsCannotCreateDir, sizeof(DWORD));
@@ -576,7 +577,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             registry->GetValue(regKey, CONFIG_OPERHIDDENDIRDEL, REG_DWORD, &Config.OperationsHiddenDirDel, sizeof(DWORD));
         }
 
-        if (ConfigVersion >= 22) // starsi verze pouziji standardni hodnoty
+        if (ConfigVersion >= 22) // older versions use default values
         {
             registry->GetValue(regKey, CONFIG_UPLOADCANNOTCREATEFILE, REG_DWORD, &Config.UploadCannotCreateFile, sizeof(DWORD));
             registry->GetValue(regKey, CONFIG_UPLOADCANNOTCREATEDIR, REG_DWORD, &Config.UploadCannotCreateDir, sizeof(DWORD));
@@ -584,9 +585,9 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             registry->GetValue(regKey, CONFIG_UPLOADDIRALREADYEXISTS, REG_DWORD, &Config.UploadDirAlreadyExists, sizeof(DWORD));
             registry->GetValue(regKey, CONFIG_UPLOADRETRYONCREATFILE, REG_DWORD, &Config.UploadRetryOnCreatedFile, sizeof(DWORD));
 
-            // uprava spatne zvoleneho defaultu - na zaklade reakci lidi jsem zmenil z "Overwrite" na "Resume or Overwrite"
-            // (stvalo je, ze po hodine uploadu a rozpadnuti spojeni doslo k overwritu misto k resumnuti, riziko chyby
-            // Resume je snad dost male, tak jsem to zmenil na "Resume or Overwrite")
+            // adjustment of a poorly chosen default - based on user feedback I changed "Overwrite" to "Resume or Overwrite"
+            // (they were annoyed that after an hour of upload and a broken connection the file was overwritten instead of resumed, the risk of
+            // Resume is hopefully small enough, so I changed it to "Resume or Overwrite")
             if (ConfigVersion < 29 && Config.UploadRetryOnCreatedFile == RETRYONCREATFILE_OVERWRITE)
                 Config.UploadRetryOnCreatedFile = RETRYONCREATFILE_RES_OVRWR;
 
@@ -596,10 +597,10 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 
         registry->GetValue(regKey, CONFIG_LASTBOOKMARK, REG_DWORD, &Config.LastBookmark, sizeof(DWORD));
 
-        if (ConfigVersion != 1) // pri prechodu z verze 1 na 2 se vyignoruji seznamy server-types a ftp-servers v registry
+        if (ConfigVersion != 1) // when moving from version 1 to 2 the server-types and ftp-servers lists in the registry are ignored
         {
             if (ConfigVersion < 2 || ConfigVersion >= RELOAD_PARSERS_BEFORE_CONFIG_VERSION)
-            { // pri prechodu na nejnovejsi verzi se upravi seznam server-types (vyignorujeme stary)
+            { // when upgrading to the latest version the server-types list is adjusted (ignore the old one)
                 Config.LockServerTypeList()->Load(parent, regKey, registry);
                 Config.UnlockServerTypeList();
             }
@@ -641,7 +642,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_ALWAYSSHOWLOGFORACTPAN, REG_DWORD, &Config.AlwaysShowLogForActPan, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_DISABLELOGWORKERS, REG_DWORD, &Config.DisableLoggingOfWorkers, sizeof(DWORD));
 
-        // uprava spatne zvoleneho defaultu - defaultne se bude logovat i ve workerech (uz me nebavi porad lidi smerovat jak logovani zapnout + rezie logovani je minimalni)
+        // adjustment of a poorly chosen default - logging will be enabled in workers by default (I am tired of constantly pointing people to how to enable logging + the logging overhead is minimal)
         if (ConfigVersion < 29 && Config.DisableLoggingOfWorkers)
             Config.DisableLoggingOfWorkers = FALSE;
 
@@ -653,7 +654,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             RECT rect;
             sscanf(buf, "%d, %d, %d, %d, %u", &rect.left, &rect.top, &rect.right, &rect.bottom, &Config.LogsDlgPlacement.showCmd);
 
-            // zajistime, aby okno nepresehlo working area monitoru, na kterem lezi majoritni casti
+            // ensure the window does not exceed the working area of the monitor where its major part lies
             RECT clipRect;
             SalamanderGeneral->MultiMonGetClipRectByRect(&rect, &clipRect, NULL);
             IntersectRect(&Config.LogsDlgPlacement.rcNormalPosition, &rect, &clipRect);
@@ -668,7 +669,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             rect.left = 0;
             rect.top = 0;
 
-            // zajistime, aby okno nepresehlo working area monitoru, na kterem lezi majoritni casti
+            // ensure the window does not exceed the working area of the monitor where its major part lies
             RECT clipRect;
             SalamanderGeneral->MultiMonGetClipRectByRect(&rect, &clipRect, NULL);
             IntersectRect(&Config.OperDlgPlacement.rcNormalPosition, &rect, &clipRect);
@@ -697,8 +698,8 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_OPERDLGCLOSEIFSUCCESS, REG_DWORD,
                            &Config.CloseOperationDlgIfSuccessfullyFinished, sizeof(DWORD));
 
-        // zakomentovano, protoze pamet tohoto checkboxu na me pusobi divne - smysl checkboxu ted vidim
-        // v tom, mit moznost nechat dialog zavrit po dokonceni operace (coz nezavisi na predchozi operaci)
+        // commented out because remembering this checkbox feels odd to me - I now see the meaning of the checkbox
+        // in having the option to let the dialog close after the operation completes (which does not depend on the previous operation)
         //    registry->GetValue(regKey, CONFIG_OPERDLGCLOSEWHENFINISHES, REG_DWORD,
         //                       &Config.CloseOperationDlgWhenOperFinishes, sizeof(DWORD));
 
@@ -759,7 +760,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_KASENDEVERY, REG_DWORD, &Config.KeepAliveSendEvery, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_KASTOPAFTER, REG_DWORD, &Config.KeepAliveStopAfter, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_KACOMMAND, REG_DWORD, &Config.KeepAliveCommand, sizeof(DWORD));
-    DWORD cacheMaxSize = (DWORD)Config.CacheMaxSize.Value; // zatim staci ukladat jako DWORD
+    DWORD cacheMaxSize = (DWORD)Config.CacheMaxSize.Value; // storing it as a DWORD is sufficient for now
     registry->SetValue(regKey, CONFIG_CACHEMAXSIZE, REG_DWORD, &cacheMaxSize, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_DOWNLOADADDTOQUEUE, REG_DWORD, &Config.DownloadAddToQueue, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_DELETEADDTOQUEUE, REG_DWORD, &Config.DeleteAddToQueue, sizeof(DWORD));
@@ -793,17 +794,17 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
     if (passwordManager->IsUsingMasterPassword())
     {
-        // zjistime, zda je nektere z hesel drzene v nesifrovane podobe
+        // determine whether any of the passwords is stored in an unencrypted form
         BOOL containsUnsecurePassword = Config.FTPServerList.ContainsUnsecuredPassword() || Config.FTPProxyServerList.ContainsUnsecuredPassword();
         if (containsUnsecurePassword)
         {
             if (!passwordManager->IsMasterPasswordSet())
             {
-                // nezname master password, zeptame se uzivatele
+                // we do not know the master password, ask the user
                 SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_PASSWORD_UNSECURED), LoadStr(IDS_FTPPLUGINTITLE), MB_OK | MB_ICONEXCLAMATION);
                 passwordManager->AskForMasterPassword(parent);
             }
-            if (passwordManager->IsMasterPasswordSet()) // pokud jiz zname master password, muzeme sifrovat
+            if (passwordManager->IsMasterPasswordSet()) // if we already know the master password, we can encrypt
             {
                 Config.FTPServerList.EncryptPasswords(parent, TRUE);
                 Config.FTPProxyServerList.EncryptPasswords(parent, TRUE);
@@ -827,7 +828,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_DISABLELOGWORKERS, REG_DWORD, &Config.DisableLoggingOfWorkers, sizeof(DWORD));
 
     char buf[100];
-    Logs.SaveLogsDlgPos(); // ulozime jeste pozici prave otevreneho okna
+    Logs.SaveLogsDlgPos(); // also store the position of the currently opened window
     if (Config.LogsDlgPlacement.length != 0)
     {
         sprintf(buf, "%d, %d, %d, %d, %u",
@@ -873,8 +874,8 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_OPERDLGCLOSEIFSUCCESS, REG_DWORD,
                        &Config.CloseOperationDlgIfSuccessfullyFinished, sizeof(DWORD));
 
-    // zakomentovano, protoze pamet tohoto checkboxu na me pusobi divne - smysl checkboxu ted vidim
-    // v tom, mit moznost nechat dialog zavrit po dokonceni operace (coz nezavisi na predchozi operaci)
+    // commented out because remembering this checkbox feels odd to me - I now see the meaning of the checkbox
+    // in having the option to let the dialog close after the operation completes (which does not depend on the previous operation)
     //  registry->SetValue(regKey, CONFIG_OPERDLGCLOSEWHENFINISHES, REG_DWORD,
     //                     &Config.CloseOperationDlgWhenOperFinishes, sizeof(DWORD));
 
@@ -904,8 +905,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    /* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+    /* used by the export_mnu.py script that generates salmenu.mnu for Translator
+   keep synchronized with the salamander->AddMenuItem() calls below...
 MENU_TEMPLATE_ITEM PluginMenu[] = 
 {
 	{MNTT_PB, 0
@@ -940,7 +941,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
                             FTPCMD_DISCONNECT_F12, FALSE, MENU_EVENT_TRUE, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
     salamander->AddMenuItem(-1, LoadStr(IDS_SHOWCERT), 0, FTPCMD_SHOWCERT, TRUE,
                             0, 0, MENU_SKILLLEVEL_ALL);
-    // zacatek submenu Transfer Mode
+    // start of the Transfer Mode submenu
     salamander->AddSubmenuStart(-1, LoadStr(IDS_MENUTRANSFERMODE), FTPCMD_TRMODESUBMENU, FALSE,
                                 MENU_EVENT_THIS_PLUGIN_FS, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
     salamander->AddMenuItem(-1, LoadStr(IDS_MENUTRMODEAUTO), 0, FTPCMD_TRMODEAUTO, TRUE,
@@ -950,7 +951,7 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
     salamander->AddMenuItem(-1, LoadStr(IDS_MENUTRMODEBINARY), 0, FTPCMD_TRMODEBINARY, TRUE,
                             0, 0, MENU_SKILLLEVEL_ALL);
     salamander->AddSubmenuEnd();
-    // konec submenu Transfer Mode
+    // end of the Transfer Mode submenu
     salamander->AddMenuItem(-1, LoadStr(IDS_REFRESHPATH), 0, FTPCMD_REFRESHPATH, FALSE,
                             MENU_EVENT_THIS_PLUGIN_FS, MENU_EVENT_TRUE, MENU_SKILLLEVEL_ALL);
     salamander->AddMenuItem(-1, NULL, 0, 0, FALSE, 0, 0, MENU_SKILLLEVEL_ALL); // separator
@@ -1006,7 +1007,7 @@ void CPluginInterface::Event(int event, DWORD param)
     {
         CPluginFSInterface* fs = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
         if (fs != NULL)
-            fs->ActivateWelcomeMsg(); // aktivujeme okno welcome-msg (z klavesnice nelze, aby ho user mohl vubec zavrit)
+            fs->ActivateWelcomeMsg(); // activate the welcome message window (cannot be done from the keyboard so the user can close it at all)
 
         if (Config.AlwaysShowLogForActPan)
         {
@@ -1042,21 +1043,21 @@ void CPluginInterface::ClearHistory(HWND parent)
 
 void CPluginInterface::AcceptChangeOnPathNotification(const char* path, BOOL includingSubdirs)
 {
-    // POZOR: v 'includingSubdirs' pro FTP cesty je naORovany 0x02 pokud jde o "soft refresh"
+    // WARNING: in 'includingSubdirs' for FTP paths the value is ORed with 0x02 if it is a "soft refresh"
 
-    BOOL isFTP = SalamanderGeneral->StrNICmp(path, AssignedFSName, AssignedFSNameLen) == 0 &&          // jde o nase fs-name pro FTP
-                 path[AssignedFSNameLen] == ':';                                                       // nase fs-name neni jen prefix
-    BOOL isFTPS = SalamanderGeneral->StrNICmp(path, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // jde o nase fs-name pro FTPS
-                  path[AssignedFSNameLenFTPS] == ':';                                                  // nase fs-name neni jen prefix
+    BOOL isFTP = SalamanderGeneral->StrNICmp(path, AssignedFSName, AssignedFSNameLen) == 0 &&          // this is our FS-name for FTP
+                 path[AssignedFSNameLen] == ':';                                                       // our FS-name is not just a prefix
+    BOOL isFTPS = SalamanderGeneral->StrNICmp(path, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 && // this is our FS-name for FTPS
+                  path[AssignedFSNameLenFTPS] == ':';                                                  // our FS-name is not just a prefix
 
     if (isFTP || isFTPS)
     {
         ListingCache.AcceptChangeOnPathNotification(path + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS) + 1,
-                                                    (includingSubdirs & 0x01)); // vyhazime listingy jak FTP, tak FTPS cest
+                                                    (includingSubdirs & 0x01)); // drop listings for both FTP and FTPS paths
 
         SalamanderGeneral->RemoveFilesFromCache(path);
 
-        char path2[2 * MAX_PATH]; // sestavime jmeno pro druhe fs-name (smazneme z cache stejne jmeno preventivne i na druhem fs-name)
+        char path2[2 * MAX_PATH]; // build the name for the second FS-name (remove the same name from cache on the other FS-name as a precaution)
         strcpy(path2, isFTPS ? AssignedFSName : AssignedFSNameFTPS);
         lstrcpyn(path2 + (isFTPS ? AssignedFSNameLen : AssignedFSNameLenFTPS),
                  path + (isFTP ? AssignedFSNameLen : AssignedFSNameLenFTPS),
@@ -1067,7 +1068,7 @@ void CPluginInterface::AcceptChangeOnPathNotification(const char* path, BOOL inc
 
 void CPluginInterface::ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData)
 {
-    if (pluginData != &SimpleListPluginDataInterface) // ten je globalni, neni treba uvolnovat
+    if (pluginData != &SimpleListPluginDataInterface) // it is global, no need to release it
     {
         delete ((CFTPListingPluginDataInterface*)pluginData);
     }
@@ -1081,25 +1082,25 @@ CPluginInterface::GetInterfaceForMenuExt()
 
 void CPluginInterface::PasswordManagerEvent(HWND parent, int event)
 {
-    BOOL allPasswordsDecrypted = TRUE; // podarilo ze rozsifrovat vsechna hesla
+    BOOL allPasswordsDecrypted = TRUE; // whether all passwords were successfully decrypted
 
     if (event == PME_MASTERPASSWORDCREATED || event == PME_MASTERPASSWORDCHANGED || event == PME_MASTERPASSWORDREMOVED)
     {
-        // pokud dochazi k vytvoreni, zmene nebo odstraneni master password, pokusime se zasifrovana hesla prevest na scrambled
+        // if the master password is being created, changed, or removed, try to convert encrypted passwords to scrambled form
         allPasswordsDecrypted &= Config.FTPServerList.EncryptPasswords(parent, FALSE);
         allPasswordsDecrypted &= Config.FTPProxyServerList.EncryptPasswords(parent, FALSE);
     }
 
     if (event == PME_MASTERPASSWORDCREATED || event == PME_MASTERPASSWORDCHANGED)
     {
-        // pokud dochazi k vytvoreni nebo zmene master password, musime pomoci nej zasifrovat hesla
+        // if the master password is being created or changed, we must use it to encrypt the passwords
         Config.FTPServerList.EncryptPasswords(parent, TRUE);
         Config.FTPProxyServerList.EncryptPasswords(parent, TRUE);
     }
 
     if (!allPasswordsDecrypted)
     {
-        // pokud se alespon jedno z hesel nepodarilo rozsifrovat, dame o tom vedet uzivateli
+        // if at least one password could not be decrypted, inform the user about it
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_CANNOT_DECRYPT_SOMEPASSWORDS),
                                          LoadStr(IDS_FTPERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
     }
@@ -1139,7 +1140,7 @@ void CFTPServer::Init()
     ListCommand = NULL;
     EncryptControlConnection = EncryptDataConnection = 0;
     CompressData = -1;
-    // POZOR: zdejsi defaultni hodnoty musi odpovidat defaultnim hodnotam pouzitym v metode Save()
+    // WARNING: default values here must match the default values used in the Save() method
 }
 
 void CFTPServer::Release()
@@ -1154,7 +1155,7 @@ void CFTPServer::Release()
         SalamanderGeneral->Free(UserName);
     if (EncryptedPassword != NULL)
     {
-        memset(EncryptedPassword, 0, EncryptedPasswordSize); // cisteni pameti obsahujici password
+        memset(EncryptedPassword, 0, EncryptedPasswordSize); // clean memory containing the password
         SalamanderGeneral->Free(EncryptedPassword);
     }
     if (TargetPanelPath != NULL)
@@ -1213,33 +1214,33 @@ CFTPServer::MakeCopy()
 
 void UpdateStr(char*& str, const char* newStr, BOOL* err, BOOL clearMem)
 {
-    if (str == NULL) // neexistuje stara verze stringu
+    if (str == NULL) // there is no previous version of the string
     {
         str = SalamanderGeneral->DupStr(newStr);
     }
-    else // existuje stara verze stringu
+    else // an older version of the string exists
     {
-        if (newStr != NULL) // novy string neni NULL
+        if (newStr != NULL) // the new string is not NULL
         {
-            if (strcmp(str, newStr) != 0) // stringy se lisi
+            if (strcmp(str, newStr) != 0) // the strings differ
             {
-                if (strlen(str) < strlen(newStr)) // novy string je delsi (nedostatek mista, nutna realokace)
+                if (strlen(str) < strlen(newStr)) // the new string is longer (not enough space, reallocation needed)
                 {
                     char* old = str;
                     str = SalamanderGeneral->DupStr(newStr);
                     if (str != NULL)
                     {
                         if (clearMem)
-                            memset(old, 0, strlen(old)); // cisteni pameti pred dealokaci kvuli passwordum
+                            memset(old, 0, strlen(old)); // clean memory before deallocation because of passwords
                         SalamanderGeneral->Free(old);
                     }
                     else
-                        str = old; // nepodarila se alokace, zustaneme u starsi verze stringu
+                        str = old; // allocation failed, keep the older version of the string
                 }
                 else
                 {
                     if (clearMem)
-                        memset(str, 0, strlen(str)); // cisteni pameti pred zkracenim kvuli passwordum
+                        memset(str, 0, strlen(str)); // clean memory before shortening because of passwords
                     strcpy(str, newStr);
                 }
             }
@@ -1247,7 +1248,7 @@ void UpdateStr(char*& str, const char* newStr, BOOL* err, BOOL clearMem)
         else
         {
             if (clearMem)
-                memset(str, 0, strlen(str)); // cisteni pameti pred dealokaci kvuli passwordum
+                memset(str, 0, strlen(str)); // clean memory before deallocation because of passwords
             free(str);
             str = NULL;
         }
@@ -1344,7 +1345,7 @@ unsigned char UnscrambleTable[256];
 
 void ScramblePassword(char* password)
 {
-    // padding + jednotky delky + desitky delky + stovky delky + password
+    // padding + units of length + tens of length + hundreds of length + password
     char buf[PASSWORD_MAX_SIZE + 50];
     int len = (int)strlen(password);
     if (InitSRand)
@@ -1374,7 +1375,7 @@ void ScramblePassword(char* password)
         s++;
     }
     strcpy(password, buf);
-    memset(buf, 0, PASSWORD_MAX_SIZE + 50); // cisteni pameti obsahujici password
+    memset(buf, 0, PASSWORD_MAX_SIZE + 50); // clean memory containing the password
 }
 
 void UnscramblePassword(char* password)
@@ -1389,7 +1390,7 @@ void UnscramblePassword(char* password)
         InitUnscrambleTable = FALSE;
     }
 
-    char backup[PASSWORD_MAX_SIZE + 50]; // zaloha pro TRACE_E
+    char backup[PASSWORD_MAX_SIZE + 50]; // backup for TRACE_E
     lstrcpyn(backup, password, PASSWORD_MAX_SIZE + 50);
 
     char* s = password;
@@ -1406,7 +1407,7 @@ void UnscramblePassword(char* password)
 
     s = password;
     while (*s != 0 && (*s < '0' || *s > '9'))
-        s++; // najdeme si delku passwordu
+        s++; // find the length of the password
     BOOL ok = FALSE;
     if (strlen(s) >= 3)
     {
@@ -1421,10 +1422,10 @@ void UnscramblePassword(char* password)
     }
     if (!ok)
     {
-        password[0] = 0; // nejaka chyba, zrusime password
+        password[0] = 0; // some error occurred, discard the password
         TRACE_E("Unable to unscramble password! scrambled=" << backup);
     }
-    memset(backup, 0, PASSWORD_MAX_SIZE + 50); // cisteni pameti obsahujici password
+    memset(backup, 0, PASSWORD_MAX_SIZE + 50); // clean memory containing the password
 }
 
 void LoadPassword(HKEY regKey, CSalamanderRegistryAbstract* registry, const char* oldPwdName, const char* scrambledPwdName, const char* encryptedPwdName, BYTE** encryptedPassword, int* encryptedPasswordSize)
@@ -1432,8 +1433,8 @@ void LoadPassword(HKEY regKey, CSalamanderRegistryAbstract* registry, const char
     *encryptedPassword = NULL;
     *encryptedPasswordSize = 0;
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
-    BOOL passwordFound = FALSE; // mam heslo?
-    // v prvnim kroku se pokusim vytahnout AES-encrypted nebo scrabled verzi hesla
+    BOOL passwordFound = FALSE; // do we have a password?
+    // in the first step try to fetch the AES-encrypted or scrambled version of the password
     DWORD gotType;
     DWORD bufferSize;
     const char* keyName = encryptedPwdName;
@@ -1456,23 +1457,23 @@ void LoadPassword(HKEY regKey, CSalamanderRegistryAbstract* registry, const char
             SalamanderGeneral->Free(passwordReg);
     }
 
-    // muze jit o puvodni ftp-scrambled verzi hesla
+    // this may be the original FTP-scrambled version of the password
     if (!passwordFound)
     {
         char passwordReg[PASSWORD_MAX_SIZE + 50];
         if (registry->GetValue(regKey, oldPwdName, REG_SZ, passwordReg, PASSWORD_MAX_SIZE + 50))
         {
-            char password[PASSWORD_MAX_SIZE + 50]; // 50 je rezerva pro scrambleni (password se tim prodluzuje)
+            char password[PASSWORD_MAX_SIZE + 50]; // 50 is a reserve for scrambling (the password gets longer)
 
-            // ziskame otevrene heslo pomoci puvodni ftp-scrambled metody
+            // obtain the plain password using the original FTP-scrambled method
             ConvertStringRegToTxt(password, PASSWORD_MAX_SIZE, passwordReg);
             UnscramblePassword(password);
 
             if (password[0] != 0)
             {
-                // v tuto chvili je mozne, ze je zapnute pouzivani master password a ze je MP zadany, takze bychom v
-                // takovem pripade mohli heslo drzet zasifrovane, ale nebudeme vec komplikovat a pripadne AES sifrovani
-                // odlozime az na save konfigurace pluginu; zatim budeme heslo drzet pouze scramblene
+                // at this moment it is possible that the master password usage is enabled and MP is entered, so we could
+                // keep the password encrypted in that case, but we will not complicate matters and postpone possible AES
+                // encryption until saving the plug-in configuration; for now we keep the password only scrambled
                 passwordManager->EncryptPassword(password, encryptedPassword, encryptedPasswordSize, FALSE);
             }
         }
@@ -1509,7 +1510,7 @@ BOOL CFTPServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* reg
     int encryptControlConnection, encryptDataConnection;
     int compressData;
 
-    // prevezmeme default hodnoty (objekt je cisty, zrovna nainicializovany)
+    // take over default values (the object is clean, just initialized)
     strcpy(itemName, HandleNULLStr(ItemName));
     strcpy(address, HandleNULLStr(Address));
     strcpy(initialPath, HandleNULLStr(InitialPath));
@@ -1540,7 +1541,7 @@ BOOL CFTPServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* reg
     compressData = CompressData;
 
     if (!registry->GetValue(regKey, CONFIG_FTPSRVNAME, REG_SZ, itemName, BOOKMARKNAME_MAX_SIZE))
-        return FALSE; // jmeno je povinne
+        return FALSE; // the name is mandatory
     registry->GetValue(regKey, CONFIG_FTPSRVADDRESS, REG_SZ, address, HOST_MAX_SIZE);
     registry->GetValue(regKey, CONFIG_FTPSRVPATH, REG_SZ, initialPath, FTP_MAX_PATH);
     registry->GetValue(regKey, CONFIG_FTPSRVANONYM, REG_DWORD, &anonymousConnection, sizeof(DWORD));
@@ -1570,7 +1571,7 @@ BOOL CFTPServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* reg
     {
         useMaxConcurrentConnections = (maxConcurrentConnections == -1 ? 0 : 1);
         if (maxConcurrentConnections == -1)
-            maxConcurrentConnections = MaxConcurrentConnections; // nenechame tam -1 -> dame default hodnotu
+            maxConcurrentConnections = MaxConcurrentConnections; // do not leave -1 there -> use the default value
     }
     char num[30];
     if (registry->GetValue(regKey, CONFIG_FTPSRVSPDLIM, REG_SZ, num, 30))
@@ -1578,7 +1579,7 @@ BOOL CFTPServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* reg
         serverSpeedLimit = atof(num);
         useServerSpeedLimit = (serverSpeedLimit == -1 ? 0 : 1);
         if (serverSpeedLimit == -1)
-            serverSpeedLimit = ServerSpeedLimit; // nenechame tam -1 -> dame default hodnotu
+            serverSpeedLimit = ServerSpeedLimit; // do not leave -1 there -> use the default value
     }
     registry->GetValue(regKey, CONFIG_FTPSRVUSELISTINGSCACHE, REG_DWORD, &useListingsCache, sizeof(DWORD));
     registry->GetValue(regKey, CONFIG_FTPSRVINITFTPCMDS, REG_SZ, initFTPCommands, FTP_MAX_PATH);
@@ -1644,7 +1645,7 @@ void UpdateEncryptedPassword(BYTE** password, int* passwordSize, const BYTE* new
     if (*password != NULL)
     {
         if (newPassword == *password)
-            return; // prirazeni stejneho hesla (nema dojit ke zmene)
+            return; // assigning the same password (no change should occur)
         memset(*password, 0, *passwordSize);
         SalamanderGeneral->Free(*password);
         *password = NULL;
@@ -1697,7 +1698,7 @@ void CFTPServer::Save(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* reg
         registry->SetValue(regKey, CONFIG_FTPSRVPASV, REG_DWORD, &UsePassiveMode, sizeof(DWORD));
     if (KeepConnectionAlive != 2)
         registry->SetValue(regKey, CONFIG_FTPSRVKALIVE, REG_DWORD, &KeepConnectionAlive, sizeof(DWORD));
-    if (KeepConnectionAlive == 1) // ukladame jen pri vlastnim nastaveni
+    if (KeepConnectionAlive == 1) // store only when explicitly configured
     {
         registry->SetValue(regKey, CONFIG_FTPSRVKASENDEVERY, REG_DWORD, &KeepAliveSendEvery, sizeof(DWORD));
         registry->SetValue(regKey, CONFIG_FTPSRVKASTOPAFTER, REG_DWORD, &KeepAliveStopAfter, sizeof(DWORD));
@@ -1739,23 +1740,23 @@ BOOL CFTPServer::EnsurePasswordCanBeDecrypted(HWND hParent)
     if (!AnonymousConnection && EncryptedPassword != NULL &&
         passwordManager->IsPasswordEncrypted(EncryptedPassword, EncryptedPasswordSize))
     {
-        // overime, zda neni potreba zadat master password pro rozsifrovani hesla
+        // verify whether a master password is needed to decrypt the password
         if (passwordManager->IsUsingMasterPassword() && !passwordManager->IsMasterPasswordSet())
         {
             if (!passwordManager->AskForMasterPassword(hParent))
-                return FALSE; // uzivatel nezadal spravny master password
+                return FALSE; // the user did not enter the correct master password
         }
-        // overime, ze jde o spravny master password pro toto heslo
+        // verify that this is the correct master password for this password
         if (!passwordManager->DecryptPassword(EncryptedPassword, EncryptedPasswordSize, NULL))
         {
             int ret = SalamanderGeneral->SalMessageBox(hParent, LoadStr(IDS_CANNOT_DECRYPT_PASSWORD_DELETE),
                                                        LoadStr(IDS_FTPERRORTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
             if (ret == IDNO)
-                return FALSE; // nepodarilo se rozsifrovat heselo
+                return FALSE; // failed to decrypt the password
 
-            // uzivatel si pral smaznout heslo
+            // the user wanted to delete the password
             UpdateEncryptedPassword(&EncryptedPassword, &EncryptedPasswordSize, NULL, 0);
-            // vycistime save password checkbox
+            // clear the save password checkbox
             SavePassword = FALSE;
         }
     }

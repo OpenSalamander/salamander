@@ -15,7 +15,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are occupied by this include!!!
 
 #define IDS_PLUGINNAME           46
 #define IDS_ABOUT                47
@@ -55,7 +55,7 @@
 #define CML_VIEWER_VIEW          1540
 #define CML_VIEWER_FILTER        1545
 
-#define CM_FILTER_FIRST          1550 // vyhrazeny interval
+#define CM_FILTER_FIRST          1550 // reserved interval
 #define CM_FILTER_LAST           1559
 
 #define IDS_MENU_FILES           2000

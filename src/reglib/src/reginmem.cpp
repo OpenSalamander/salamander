@@ -49,8 +49,9 @@ namespace RegLib
         CValue(LPCTSTR name, eVT_VALUE_TYPE type, LPCVOID data, DWORD size);
         ~CValue();
 
-        // copy-constructor is default (memcpy), after adding object to array, you must call
-        // Invalidate() or object data will be deallocated also for object in array
+        // Uses the default copy constructor (memcpy). After adding the object to the array,
+        // call Invalidate(); otherwise the object's data will also be freed for the copy stored
+        // in the array.
 
         BOOL IsOK();
 
@@ -532,7 +533,7 @@ namespace RegLib
                 }
                 else
                 {
-                    _stprintf(buf, _T("hex(%x):"), pValue->Type); // FIXME_X64 - nemuze obsahovat x64 hodnotu?
+                    _stprintf(buf, _T("hex(%x):"), pValue->Type); // FIXME_X64 - cannot contain an x64 value?
                 }
                 size_t buflen = SizeOf(buf) - _tcslen(buf) - _tcslen(pValue->Name) - 3, srclen = pValue->Size;
                 LPTSTR d = buf + _tcslen(buf);

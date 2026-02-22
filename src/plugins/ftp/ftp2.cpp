@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -16,7 +17,7 @@ BOOL ConvertStringRegToTxt(char* buf, int bufSize, const char* regStr)
     {
         while (*s != 0 && d < end)
         {
-            if (*s == '\\') // escape-sekvence
+            if (*s == '\\') // escape sequence
             {
                 s++;
                 if (*s != 0)
@@ -38,7 +39,7 @@ BOOL ConvertStringRegToTxt(char* buf, int bufSize, const char* regStr)
                         if (*s == '$')
                             *d++ = '\r'; // CR
                         else
-                            *d++ = *s; // normalni znak
+                            *d++ = *s; // normal character
                     }
                 }
             }
@@ -79,7 +80,7 @@ BOOL ConvertStringTxtToReg(char* buf, int bufSize, const char* txtStr)
                 else
                 {
                     if (*s == '|' || *s == '!' || *s == '$' || *s == '\\')
-                        *d++ = '\\'; // escape-sekvence
+                        *d++ = '\\'; // escape sequence
                     *d++ = *s;
                 }
             }
@@ -156,7 +157,7 @@ BOOL CSrvTypeColumn::LoadStr(const char** str, char** result, int limit)
     }
     BOOL ret = TRUE;
     if (esc == 1 && s - *str == 2 && (*str)[1] == '0')
-        *result = NULL; // "\\0" je escape-sekvence pro NULL
+        *result = NULL; // "\\0" is the escape sequence for NULL
     else
     {
         *result = (char*)SalamanderGeneral->Alloc((int)(s - *str) - esc + 1);
@@ -172,7 +173,7 @@ BOOL CSrvTypeColumn::LoadStr(const char** str, char** result, int limit)
             }
             *d = 0;
             if (limit != -1 && d - *result > limit)
-                (*result)[limit] = 0; // orez stringu na limit
+                (*result)[limit] = 0; // truncate the string to the limit
         }
         else
         {
@@ -218,7 +219,7 @@ BOOL CSrvTypeColumn::LoadFromStr(const char* str)
     if (!LoadStr(&str, &EmptyValue, STC_EMPTYVAL_MAX_SIZE - 1))
         return FALSE;
     if (*str == 0)
-        LeftAlignment = TRUE; // starsi verze jeste zarovnani nemely = zarovnani vlevo
+        LeftAlignment = TRUE; // older versions did not have alignment yet = align to the left
     else
     {
         LeftAlignment = *str++ == '1';
@@ -226,7 +227,7 @@ BOOL CSrvTypeColumn::LoadFromStr(const char* str)
             str++;
     }
     if (*str == 0)
-        ColWidths->FixedWidth = 0; // starsi verze jeste FixedWidth nemely = elasticky sloupec
+        ColWidths->FixedWidth = 0; // older versions did not have FixedWidth yet = flexible column
     else
     {
         switch (*str++)
@@ -248,7 +249,7 @@ BOOL CSrvTypeColumn::LoadFromStr(const char* str)
             str++;
     }
     if (*str == 0)
-        ColWidths->Width = 0; // starsi verze jeste Width nemely = minimalni sire
+        ColWidths->Width = 0; // older versions did not have Width yet = minimal width
     else
     {
         char* strWidth;
@@ -263,15 +264,15 @@ BOOL CSrvTypeColumn::LoadFromStr(const char* str)
 int CSrvTypeColumn::SaveStrLen(const char* str)
 {
     if (str == NULL)
-        return 2; // pro NULL mame escape-sekvenci "\\0"
+        return 2; // for NULL we have the escape sequence "\\0"
     const char* s = str;
     int size = 0;
     while (*s != 0)
     {
         if (*s == ',')
-            size++; // pro ',' mame escape-sekvenci "\\,"
+            size++; // for ',' we have the escape sequence "\\,"
         else if (*s == '\\')
-            size++; // pro '\\' mame escape-sekvenci "\\\\"
+            size++; // for '\\' we have the escape sequence "\\\\"
         s++;
     }
     return size + (int)(s - str);
@@ -290,7 +291,7 @@ void CSrvTypeColumn::SaveStr(char** s, const char* str, BOOL addComma)
         while (*str != 0)
         {
             if (*str == ',' || *str == '\\')
-                *dest++ = '\\'; // pro ',' a '\\' mame escape-sekvenci
+                *dest++ = '\\'; // for ',' and '\\' we have the escape sequence
             *dest++ = *str++;
         }
     }
@@ -332,7 +333,7 @@ BOOL CSrvTypeColumn::SaveToStr(char* buf, int bufSize, BOOL ignoreColWidths)
         sprintf(num, "%d", (int)Type);
         *s++ = num[0];
         if (num[1] != 0)
-            *s++ = num[1]; // Type je max. dvouciferny
+            *s++ = num[1]; // Type has at most two digits
         *s++ = ',';
         SaveStr(&s, EmptyValue, FALSE);
         *s++ = ',';
@@ -401,11 +402,11 @@ void CSrvTypeColumn::Set(BOOL visible, char* id, int nameID, char* nameStr, int 
 
 BOOL ValidateSrvTypeColumns(TIndirectArray<CSrvTypeColumn>* columns, int* errResID)
 {
-    // kontrola jestli prvni sloupec je Name a je viditelny
+    // check whether the first column is Name and visible
     if (columns->Count > 0 && columns->At(0)->Type == stctName && columns->At(0)->Visible)
     {
-        // kontrola neprazdnosti ID + cetnosti typu + je-li Ext druhy a viditelny + kontrola "empty value"
-        // + kontrola neprazdnosti Name a Description
+        // check ID non-emptiness + type counts + whether Ext is second and visible + check of "empty value"
+        // + check non-emptiness of Name and Description
         int i, counts[stctLastItem - 1];
         memset(counts, 0, sizeof(counts));
         for (i = 0; i < columns->Count; i++)
@@ -430,7 +431,7 @@ BOOL ValidateSrvTypeColumns(TIndirectArray<CSrvTypeColumn>* columns, int* errRes
                     *errResID = IDS_STC_ERR_EXTERR;
                 return FALSE;
             }
-            // u typu Name, Ext a Type nemaji prazdne hodnoty smysl, vycistime je
+            // empty values make no sense for the Name, Ext, and Type types, clear them
             if ((type == stctName || type == stctExt || type == stctType) && col->EmptyValue != NULL)
             {
                 free(col->EmptyValue);
@@ -466,7 +467,7 @@ BOOL ValidateSrvTypeColumns(TIndirectArray<CSrvTypeColumn>* columns, int* errRes
                 return FALSE;
             }
         }
-        // kontrola unikatnosti ID
+        // check uniqueness of IDs
         for (i = 0; i < columns->Count - 1; i++)
         {
             char* id = columns->At(i)->ID;
@@ -645,14 +646,14 @@ BOOL CServerType::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* re
 {
     char name[SERVERTYPE_MAX_SIZE];
     if (!registry->GetValue(regKey, CONFIG_STNAME, REG_SZ, name, SERVERTYPE_MAX_SIZE))
-        return FALSE; // jmeno je povinne
+        return FALSE; // name is mandatory
     char autodetectCond[AUTODETCOND_MAX_SIZE];
     autodetectCond[0] = 0;
-    registry->GetValue(regKey, CONFIG_STADCOND, REG_SZ, autodetectCond, AUTODETCOND_MAX_SIZE); // nepovinne
+    registry->GetValue(regKey, CONFIG_STADCOND, REG_SZ, autodetectCond, AUTODETCOND_MAX_SIZE); // optional
 
     TIndirectArray<char> columnStrings(5, 5);
     if (!columnStrings.IsGood())
-        return FALSE; // low memory, koncime
+        return FALSE; // low memory, aborting
     HKEY columnsKey;
     if (registry->OpenKey(regKey, CONFIG_STCOLUMNS, columnsKey))
     {
@@ -668,52 +669,52 @@ BOOL CServerType::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* re
                 if (!columnStrings.IsGood())
                 {
                     columnStrings.ResetState();
-                    return FALSE; // asi low memory, koncime
+                    return FALSE; // probably low memory, aborting
                 }
             }
             else
-                return FALSE; // sloupce se musi nacist vsechny, koncime
+                return FALSE; // all columns must be loaded, terminating
             sprintf(num, "%d", ++i);
         }
         registry->CloseKey(columnsKey);
     }
     else
-        return FALSE; // sloupce jsou povinne
+        return FALSE; // columns are mandatory
 
     char rulesForParsingReg[PARSER_MAX_SIZE + 1000];
     rulesForParsingReg[0] = 0;
     char rulesForParsing[PARSER_MAX_SIZE];
     rulesForParsing[0] = 0;
     if (!registry->GetValue(regKey, CONFIG_STRULESFORPARS, REG_SZ, rulesForParsingReg, PARSER_MAX_SIZE + 1000))
-        return FALSE; // pravidla parsovani jsou take povinna
+        return FALSE; // parsing rules are mandatory as well
     if (!ConvertStringRegToTxt(rulesForParsing, PARSER_MAX_SIZE, rulesForParsingReg))
         TRACE_E("Unexpected error in CServerType::Load(): small buffer for rules for parsing!");
     BOOL ret = Set(name, autodetectCond[0] != 0 ? autodetectCond : NULL,
                    columnStrings.Count, (const char**)columnStrings.GetData(),
                    rulesForParsing[0] != 0 ? rulesForParsing : NULL);
 
-    // overime jestli je seznam sloupcu v poradku
+    // verify that the list of columns is valid
     if (ret)
         ret = ValidateSrvTypeColumns(&Columns, NULL);
 
-    // overime jestli jsou pravidla pro parsovani v poradku
+    // verify that the parsing rules are valid
     if (ret)
     {
         CFTPParser* parser = CompileParsingRules(HandleNULLStr(RulesForParsing), &Columns, NULL, NULL, NULL);
         if (parser != NULL)
-            delete parser; // parser je OK, zase ho zrusime
+            delete parser; // parser is OK, discard it again
         else
-            ret = FALSE; // chyba v pravidlech
+            ret = FALSE; // error in the rules
     }
 
-    // overime jestli je v poradku podminka pro autodetekci
+    // verify that the autodetect condition is valid
     if (ret)
     {
         CFTPAutodetCondNode* node = CompileAutodetectCond(HandleNULLStr(AutodetectCond), NULL, NULL, NULL, NULL, 0);
         if (node != NULL)
-            delete node; // podminka je OK, zase ji zrusime
+            delete node; // condition is OK, discard it again
         else
-            ret = FALSE; // chyba v podmince
+            ret = FALSE; // error in the condition
     }
 
     return ret;
@@ -776,10 +777,10 @@ CServerType::MakeCopy()
                 break;
             }
         }
-        // CompiledAutodetCond = NULL;  // zbytecne, dela se v n->Init() v konstruktoru
+        // CompiledAutodetCond = NULL;  // unnecessary, done in n->Init() in the constructor
         // CompiledParser = NULL;
 
-        if (err) // nezduplikovalo se vsechno
+        if (err) // not everything was duplicated
         {
             delete n;
             n = NULL;
@@ -793,7 +794,7 @@ CServerType::MakeCopy()
 char* GetTypeNameForUser(char* typeName, char* buf, int bufSize)
 {
     char* txt = typeName;
-    if (*txt == '*' && bufSize > 0) // jmeno zacinajici '*' znamena "user defined server type" - orizneme znak + pridame priponu
+    if (*txt == '*' && bufSize > 0) // a name starting with '*' means "user defined server type" - strip the character and append the suffix
     {
         _snprintf_s(buf, bufSize, _TRUNCATE, "%s %s", txt + 1, UserDefinedSuffix);
         txt = buf;
@@ -801,10 +802,10 @@ char* GetTypeNameForUser(char* typeName, char* buf, int bufSize)
     return txt;
 }
 
-#define WSTF_MAX_LINE_LEN 80 // pouziva se pri zapisu a cteni retezce do souboru
+#define WSTF_MAX_LINE_LEN 80 // used when writing and reading a string to a file
 
-// zapise do souboru 'file' retezec 'str', pripadnou chybu vraci v 'err' (nesmi byt NULL);
-// format (krome "// " na zacatku radky presne jak bude v souboru - '"', '\', atd. nemaji C++ vyznam):
+// writes string 'str' to file 'file', returns any error in 'err' (must not be NULL);
+// format (apart from "// " at the beginning of the line exactly as it will be in the file - '"', '\', etc. have no C++ meaning):
 // "first line starts with double quotes
 // long lines has backslash after each part of line:
 // line-part1\
@@ -815,12 +816,12 @@ char* GetTypeNameForUser(char* typeName, char* buf, int bufSize)
 // lastline ends with double quotes"
 void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
 {
-    char line[WSTF_MAX_LINE_LEN + 3]; // 3 znaky jsou rezie pro snadny zapis
+    char line[WSTF_MAX_LINE_LEN + 3]; // 3 characters are overhead for easy writing
     ULONG written;
     BOOL success;
     if (str == NULL)
     {
-        strcpy(line, "\"\\0\"\r\n"); // retezec pro NULL string
+        strcpy(line, "\"\\0\"\r\n"); // string for a NULL value
         int len = (int)strlen(line);
         if ((success = WriteFile(file, line, len, &written, NULL)) == 0 ||
             written != (DWORD)len)
@@ -846,10 +847,10 @@ void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
             }
             while (*s != 0 && *s != '\r' && *s != '\n')
             {
-                if (d > end - 5) // pro jednoduchost kontrolujeme, aby se veslo: '\\'+'X'+'"'+'\r'+'\n'
+                if (d > end - 5) // for simplicity we check that we can fit: '\\'+'X'+'"'+'\r'+'\n'
                 {
                     *d++ = '\\';
-                    break; // ukoncime tuto cast radky, pokracovani na dalsi radce souboru
+                    break; // finish this part of the line, continue on the next line in the file
                 }
                 if (*s == '"' || *s == '\\')
                     *d++ = '\\';
@@ -860,7 +861,7 @@ void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
             *d++ = '\r';
             *d++ = '\n';
 
-            // zapis do souboru
+            // write to the file
             if ((success = WriteFile(file, line, (DWORD)(d - line), &written, NULL)) == 0 ||
                 written != (DWORD)(d - line))
             {
@@ -868,11 +869,11 @@ void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
                     *err = GetLastError();
                 else
                     *err = ERROR_DISK_FULL;
-                break; // chyba zapisu, koncime s chybou
+                break; // write error, abort with error
             }
 
             if (*s == 0)
-                break; // konec zapisu retezce
+                break; // finished writing the string
 
             if (*s == '\r')
                 s++;
@@ -882,7 +883,7 @@ void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
     }
 }
 
-// texty v souboru s exportovanym "server type" (pripona .STR)
+// texts in the file with an exported "server type" (extension .STR)
 const char* STR_FILE_HEADER = "Open Salamander - FTP Client - Exported Server Type";
 const char* STR_FILE_TYPENAME = "Type Name:";
 const char* STR_FILE_ADCOND = "Autodetect Condition:";
@@ -907,20 +908,20 @@ CServerType::ExportToFile(HANDLE file)
             break;
         case 2:
             _snprintf_s(line, _TRUNCATE, "%s ", STR_FILE_ADCOND);
-            break; // hlavicka pro AutodetectCond
+            break; // header for AutodetectCond
 
-        case 3: // zapis retezce AutodetectCond
+        case 3: // write the AutodetectCond string
         {
             WriteStrToFile(file, AutodetectCond, &err);
-            line[0] = 0; // timto zpusobem zapisovat nebudeme
+            line[0] = 0; // we will not write it this way
             break;
         }
 
         case 4:
             _snprintf_s(line, _TRUNCATE, "\r\n%s\r\n", STR_FILE_COLUMNS);
-            break; // hlavicka pro sloupce
+            break; // header for columns
 
-        case 5: // zapis vsech sloupcu
+        case 5: // write all columns
         {
             char colStr[STC_MAXCOLUMNSTR];
             int j;
@@ -929,39 +930,39 @@ CServerType::ExportToFile(HANDLE file)
                 Columns[j]->SaveToStr(colStr, STC_MAXCOLUMNSTR, TRUE);
                 WriteStrToFile(file, colStr, &err);
                 if (err != NO_ERROR)
-                    break; // chyba souboru, koncime
+                    break; // file error, aborting
             }
-            line[0] = 0; // timto zpusobem zapisovat nebudeme
+            line[0] = 0; // we will not write it this way
             break;
         }
 
         case 6:
             _snprintf_s(line, _TRUNCATE, "\r\n%s\r\n", STR_FILE_RULES);
-            break; // hlavicka pro RulesForParsing
+            break; // header for RulesForParsing
 
-        case 7: // zapis retezce RulesForParsing
+        case 7: // write the RulesForParsing string
         {
             WriteStrToFile(file, RulesForParsing, &err);
-            line[0] = 0; // timto zpusobem zapisovat nebudeme
+            line[0] = 0; // we will not write it this way
             break;
         }
 
         default:
             i = -1;
-            break; // konec souboru
+            break; // end of file
         }
         if (err != NO_ERROR)
-            break; // chyba souboru, koncime
+            break; // file error, aborting
         if (i == -1)
-            break; // konec souboru, uspesne koncime
+            break; // end of file, finishing successfully
         else
-            i++; // prechod na dalsi radku
+            i++; // move to the next line
 
-        // zapis radky dat do souboru
+        // write the data line to the file
         ULONG written;
         BOOL success;
         int len = (int)strlen(line);
-        if (len > 0 && // je co zapisovat
+        if (len > 0 && // there is something to write
             ((success = WriteFile(file, line, len, &written, NULL)) == 0 ||
              written != (DWORD)len))
         {
@@ -969,15 +970,15 @@ CServerType::ExportToFile(HANDLE file)
                 err = GetLastError();
             else
                 err = ERROR_DISK_FULL;
-            break; // koncime s chybou
+            break; // aborting with an error
         }
     }
     return err;
 }
 
-// na radce 'beg' az 'end' hleda retezec 'str' - pokud tam je (porovnani je case sensitive),
-// vraci TRUE a v 'afterStr' vraci pokracovani radky za najitym retezcem,
-// pokud tam neni, vraci FALSE a v 'afterStr' vraci 'beg'
+// on the line from 'beg' to 'end' it searches for the string 'str' - if it is there (comparison is case sensitive),
+// returns TRUE and stores in 'afterStr' the continuation of the line after the found string,
+// if it is not there, returns FALSE and puts 'beg' into 'afterStr'
 BOOL MatchString(char* beg, char* end, const char* str, char** afterStr)
 {
     int l = (int)strlen(str);
@@ -990,8 +991,8 @@ BOOL MatchString(char* beg, char* end, const char* str, char** afterStr)
     return FALSE;
 }
 
-// vraci null-terminated alokovany retezec 'beg' az 'end'; pri nedostatku pameti
-// vraci NULL a v 'ret' vraci FALSE
+// returns a null-terminated allocated string from 'beg' to 'end'; on low memory
+// returns NULL and stores FALSE in 'ret'
 char* AllocString(char* beg, char* end, BOOL* ret)
 {
     char* s = (char*)malloc(end - beg + 1);
@@ -1008,14 +1009,14 @@ char* AllocString(char* beg, char* end, BOOL* ret)
     return s;
 }
 
-// postupne nacita z radek souboru retezec; prave zpracovavana radka je 'line' az 'lineEnd'
-// (neni null-terminated); 'firstLine' je IN/OUT promenna, inicializuje se na
-// TRUE, funkce ReadStrFromLines ji zmeni na FALSE jakmile najde zacatek retezce;
-// do 'dynStr' se pridava cast retezce nactena z prave zpracovavane radky; ukazatele
-// 'firstLine' a 'dynStr' se behem nacitani jednoho retezce nemeni (slouzi jako globalni
-// data); v 'success' (nesmi byt NULL) se vraci FALSE pri syntakticke chybe nebo chybe
-// alokace 'dynStr'; vraci TRUE pokud jiz byl nacten cely retezec a v 'isNULLStr' vraci
-// TRUE pokud jde o NULL (jinak je retezce umisten v 'dynStr')
+// gradually reads a string from the file lines; the currently processed line is 'line' to 'lineEnd'
+// (not null-terminated); 'firstLine' is an IN/OUT variable initialized to
+// TRUE, the ReadStrFromLines function changes it to FALSE as soon as it finds the beginning of the string;
+// 'dynStr' receives the part of the string read from the currently processed line; the pointers
+// 'firstLine' and 'dynStr' do not change during the loading of one string (they act as global
+// data); in 'success' (must not be NULL) FALSE is returned on a syntax error or a
+// 'dynStr' allocation error; returns TRUE if the entire string has already been read and in 'isNULLStr' returns
+// TRUE if it is NULL (otherwise the string is stored in 'dynStr')
 BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
                       CDynString* dynStr, BOOL* success, BOOL* isNULLStr)
 {
@@ -1026,22 +1027,22 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
         while (s < lineEnd && *s <= ' ')
             s++;
         if (s == lineEnd)
-            return FALSE; // retezec teprve musime najit
-        if (*s != '"')    // tady mel zacinat retezec
+            return FALSE; // we still have to find the string
+        if (*s != '"')    // the string was supposed to start here
         {
             *success = FALSE; // syntax error
-            return TRUE;      // chyba, dal se retezcem nezabyvame
+            return TRUE;      // error, stop processing the string
         }
         s++;
         *firstLine = FALSE;
         dynStr->Clear();
-        if (s + 2 < lineEnd && strncmp(s, "\\0\"", 3) == 0) // escape sekvence pro NULL
+        if (s + 2 < lineEnd && strncmp(s, "\\0\"", 3) == 0) // escape sequence for NULL
         {
             *isNULLStr = TRUE;
             return TRUE;
         }
     }
-    char buf[WSTF_MAX_LINE_LEN + 2]; // 2 znaky rezie na "\r\n"
+    char buf[WSTF_MAX_LINE_LEN + 2]; // 2 characters of overhead for "\r\n"
     char* d = buf;
     char* end = buf + WSTF_MAX_LINE_LEN + 2;
     BOOL eol = TRUE;
@@ -1055,7 +1056,7 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
             else
             {
                 eol = FALSE;
-                break; // retezec navazuje primo dalsi radkou (bez EOLu)
+                break; // the string continues directly on the next line (without an EOL)
             }
         }
         else
@@ -1064,13 +1065,13 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
             {
                 foundEnd = TRUE;
                 eol = FALSE;
-                break; // nasli jsme konec retezce (+ zadny EOL uz nebude)
+                break; // end of the string found (+ no more EOL)
             }
         }
-        if (d + 2 >= end) // nutny "flush" lokalniho bufferu do 'dynStr' (uz neni misto na znak+EOL)
+        if (d + 2 >= end) // need to "flush" the local buffer to 'dynStr' (no space left for a character + EOL)
         {
             if (!dynStr->Append(buf, (int)(d - buf)))
-                *success = FALSE; // chyba alokace
+                *success = FALSE; // allocation error
             d = buf;
         }
         *d++ = *s++;
@@ -1081,13 +1082,13 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
         *d++ = '\n';
     }
     if (d - buf > 0 && !dynStr->Append(buf, (int)(d - buf)))
-        *success = FALSE; // chyba alokace
+        *success = FALSE; // allocation error
     return foundEnd;
 }
 
-// pomocna funkce: je-li 'isNULLStr' TRUE, vraci v 'str' NULL; jinak, je-li 'success'
-// TRUE, pokusi se zduplikovat retezec 'dynStr' do 'str', pri nedostatku pameti vraci
-// 'success' FALSE
+// helper function: if 'isNULLStr' is TRUE, it returns NULL in 'str'; otherwise, if 'success'
+// is TRUE, it tries to duplicate the 'dynStr' string into 'str', and on low memory returns
+// 'success' as FALSE
 void GetStrResult(char** str, BOOL* success, CDynString* dynStr, BOOL isNULLStr)
 {
     if (isNULLStr)
@@ -1098,15 +1099,15 @@ void GetStrResult(char** str, BOOL* success, CDynString* dynStr, BOOL isNULLStr)
         {
             const char* s = dynStr->GetString();
             if (s == NULL)
-                s = ""; // NULL to neni, musime zduplikovat prazdny retezec
+                s = ""; // this is not NULL, we must duplicate an empty string
             *str = SalamanderGeneral->DupStr(s);
             if (*str == NULL)
-                *success = FALSE; // nedostatek pameti, koncime
+                *success = FALSE; // out of memory, aborting
         }
     }
 }
 
-#define IMPORT_FILE_BUF_SIZE 1024 // velikost bufferu pro cteni ze souboru
+#define IMPORT_FILE_BUF_SIZE 1024 // buffer size for reading from a file
 
 BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
 {
@@ -1126,11 +1127,11 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
     }
 
     char buffer[IMPORT_FILE_BUF_SIZE];
-    int readBytes = 0; // kolik bytu je nacteno
+    int readBytes = 0; // how many bytes have been read
     int i = 0;
-    BOOL skipNextEOLN = FALSE; // TRUE = '\r' uz se zpracovalo, pokud bude '\n' za zacatku bufferu, je to zbytek EOLu a ma se preskocit
-    CDynString dynStr;         // sdileny dynamicky retezec pro nacitani retezcu nezname delky ze souboru
-    BOOL strFirstLine = TRUE;  // sdilena pomocna promenna pro nacitani retezcu nezname delky ze souboru
+    BOOL skipNextEOLN = FALSE; // TRUE = '\r' was already processed, if '\n' is at the start of the buffer it is the remainder of the EOL and should be skipped
+    CDynString dynStr;         // shared dynamic string for reading strings of unknown length from the file
+    BOOL strFirstLine = TRUE;  // shared helper variable for reading strings of unknown length from the file
     while (ret)
     {
         DWORD read;
@@ -1138,19 +1139,19 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
         {
             *err = GetLastError();
             ret = FALSE;
-            break; // koncime s chybou
+            break; // aborting with an error
         }
         readBytes += read;
         if (readBytes == 0)
-            break; // konec souboru
+            break; // end of file
 
-        // zpracujeme nacteny buffer
-        char* end = buffer + readBytes; // konec dat v bufferu
-        char* s = buffer;               // hledani konce radky
-        char* lineBeg = s;              // zacatek radky
+        // process the read buffer
+        char* end = buffer + readBytes; // end of data in the buffer
+        char* s = buffer;               // searching for the end of the line
+        char* lineBeg = s;              // start of the line
         while (1)
         {
-            if (skipNextEOLN && s < end && *s == '\n') // pro pripad roztrzeni EOLu '\r\n'
+            if (skipNextEOLN && s < end && *s == '\n') // in case the EOL '\r\n' was split
             {
                 lineBeg = ++s;
                 skipNextEOLN = FALSE;
@@ -1161,40 +1162,40 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
             {
                 if (readBytes == IMPORT_FILE_BUF_SIZE)
                 {
-                    if (lineBeg == buffer) // prilis dlouha radka
+                    if (lineBeg == buffer) // line too long
                     {
                         *errResID = IDS_SRVTYPEIMPMOREDATA;
                         ret = FALSE;
                         break;
                     }
-                    else // konec radky uz v bufferu neni, nacteme ho
+                    else // the rest of the line is no longer in the buffer, read it
                     {
                         memmove(buffer, lineBeg, end - lineBeg);
                         readBytes = (int)(end - lineBeg);
                         break;
                     }
                 }
-                else // posledni radka neni ukoncena EOLem
+                else // the last line is not terminated by an EOL
                 {
                     if (s == lineBeg)
-                    { // konec bufferu, jestli jde o prazdnou radku, EOL bude na zacatku dalsiho nacteneho bufferu
+                    { // end of buffer; if this is an empty line, the EOL will be at the start of the next buffer read
                         readBytes = 0;
                         break;
                     }
                 }
             }
-            // else;  // radka ukocena EOLem
+            // else;  // line ended with an EOL
 
-            // zpracujeme radku ('lineBeg' az 'lineEnd')
+            // process the line ('lineBeg' to 'lineEnd')
             char* lineEnd = s;
             char* afterTitle;
             BOOL isNULLStr = FALSE;
             switch (i)
             {
-            case 0: // signatura
+            case 0: // signature
             {
                 if ((int)strlen(STR_FILE_HEADER) != lineEnd - lineBeg ||
-                    strncmp(STR_FILE_HEADER, lineBeg, lineEnd - lineBeg) != 0) // spatna signatura, neni STR soubor
+                    strncmp(STR_FILE_HEADER, lineBeg, lineEnd - lineBeg) != 0) // bad signature, not an STR file
                 {
                     *errResID = IDS_SRVTYPEIMPNOTSTRFILE;
                     ret = FALSE;
@@ -1205,13 +1206,13 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
             case 1: // type name
             {
                 if (lineEnd == lineBeg)
-                    i--; // skipnuti prazdnych radek
+                    i--; // skip empty lines
                 else
                 {
                     if (MatchString(lineBeg, lineEnd, STR_FILE_TYPENAME, &afterTitle))
                     {
                         if (afterTitle < lineEnd && *afterTitle == ' ')
-                            afterTitle++; // skipnuti mezery za ':'
+                            afterTitle++; // skip the space after ':'
                         if (afterTitle < lineEnd)
                             TypeName = AllocString(afterTitle, lineEnd, &ret);
                         else
@@ -1223,10 +1224,10 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                 break;
             }
 
-            case 2: // hlavicka pro AutodetectCond
+            case 2: // header for AutodetectCond
             {
                 if (lineEnd == lineBeg)
-                    i--; // skipnuti prazdnych radek
+                    i--; // skip empty lines
                 else
                 {
                     if (MatchString(lineBeg, lineEnd, STR_FILE_ADCOND, &afterTitle))
@@ -1236,7 +1237,7 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                             ReadStrFromLines(afterTitle, lineEnd, &strFirstLine, &dynStr, &ret, &isNULLStr))
                         {
                             GetStrResult(&AutodetectCond, &ret, &dynStr, isNULLStr);
-                            i++; // string je komplet nacteny, docitani stringu preskocime
+                            i++; // string fully loaded, skip reading the remainder
                         }
                     }
                     else
@@ -1245,28 +1246,28 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                 break;
             }
 
-            case 3: // docteni retezce AutodetectCond
+            case 3: // finish reading the AutodetectCond string
             {
                 if (!ReadStrFromLines(lineBeg, lineEnd, &strFirstLine, &dynStr, &ret, &isNULLStr))
-                    i--; // retezec pokracuje na dalsi radce
+                    i--; // the string continues on the next line
                 else
                     GetStrResult(&AutodetectCond, &ret, &dynStr, isNULLStr);
                 break;
             }
 
-            case 4: // hlavicka pro Columns
+            case 4: // header for Columns
             {
                 if (lineEnd == lineBeg)
-                    i--; // skipnuti prazdnych radek
+                    i--; // skip empty lines
                 else
                 {
                     if (MatchString(lineBeg, lineEnd, STR_FILE_COLUMNS, &afterTitle))
                     {
                         strFirstLine = TRUE;
                         while (afterTitle < lineEnd && *afterTitle <= ' ')
-                            afterTitle++; // skipnuti white-spaces za ':'
+                            afterTitle++; // skip whitespace after ':'
                         if (afterTitle < lineEnd)
-                            ret = FALSE; // syntax error, tady uz nema nic byt
+                            ret = FALSE; // syntax error, nothing should be here
                     }
                     else
                         ret = FALSE; // error
@@ -1274,15 +1275,15 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                 break;
             }
 
-            case 5: // nacteni sloupcu
+            case 5: // load columns
             {
                 BOOL read2 = TRUE;
-                if (strFirstLine) // jeste nezacal retezec, testneme jestli je na radce jeste sloupec nebo jestli uz skoncily
+                if (strFirstLine) // the string has not started yet, check whether there is still a column on the line or whether they have ended
                 {
                     char* s2 = lineBeg;
                     while (s2 < lineEnd && *s2 <= ' ')
                         s2++;
-                    if (s2 < lineEnd && *lineBeg != '"') // tato radka uz nam nepatri (popis sloupce je retezec)
+                    if (s2 < lineEnd && *lineBeg != '"') // this line is no longer ours (the column description is a string)
                     {
                         read2 = FALSE;
                         i++;
@@ -1291,11 +1292,11 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                 if (read2)
                 {
                     if (!ReadStrFromLines(lineBeg, lineEnd, &strFirstLine, &dynStr, &ret, &isNULLStr))
-                        i--; // retezec pokracuje na dalsi radce
+                        i--; // the string continues on the next line
                     else
                     {
                         if (isNULLStr)
-                            ret = FALSE; // syntax error, NULL tu byt nemuze
+                            ret = FALSE; // syntax error, NULL cannot appear here
                         if (ret)
                         {
                             CSrvTypeColumn* c = new CSrvTypeColumn;
@@ -1305,13 +1306,13 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                                 if (Columns.IsGood())
                                 {
                                     i--;
-                                    strFirstLine = TRUE; // jdeme nacist dalsi radek s daty o sloupci
+                                    strFirstLine = TRUE; // go read the next line with column data
                                 }
                                 else
                                 {
                                     delete c;
                                     Columns.ResetState();
-                                    ret = FALSE; // nedostatek pameti
+                                    ret = FALSE; // out of memory
                                 }
                             }
                             else
@@ -1324,18 +1325,18 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                                 }
                                 else
                                     TRACE_E(LOW_MEMORY);
-                                ret = FALSE; // nedostatek pameti nebo syntax error
+                                ret = FALSE; // out of memory or syntax error
                             }
                         }
                     }
                     break;
                 }
-                // else break;  // tady byt break nema (prijaty radek nam nepatri, predavame jej dale)
+                // else break;  // break must not be here (the received line is not ours, pass it on)
             }
-            case 6: // nacteni RulesForParsing
+            case 6: // load RulesForParsing
             {
                 if (lineEnd == lineBeg)
-                    i--; // skipnuti prazdnych radek
+                    i--; // skip empty lines
                 else
                 {
                     if (MatchString(lineBeg, lineEnd, STR_FILE_RULES, &afterTitle))
@@ -1345,7 +1346,7 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                             ReadStrFromLines(afterTitle, lineEnd, &strFirstLine, &dynStr, &ret, &isNULLStr))
                         {
                             GetStrResult(&RulesForParsing, &ret, &dynStr, isNULLStr);
-                            i++; // string je komplet nacteny, docitani stringu preskocime
+                            i++; // string fully loaded, skip reading the remainder
                         }
                     }
                     else
@@ -1354,19 +1355,19 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
                 break;
             }
 
-            case 7: // docteni retezce RulesForParsing
+            case 7: // finish reading the RulesForParsing string
             {
                 if (!ReadStrFromLines(lineBeg, lineEnd, &strFirstLine, &dynStr, &ret, &isNULLStr))
-                    i--; // retezec pokracuje na dalsi radce
+                    i--; // the string continues on the next line
                 else
                     GetStrResult(&RulesForParsing, &ret, &dynStr, isNULLStr);
                 break;
             }
 
-            default: // uz se nacetly vsechny radky, ktere jsme ocekavali
+            default: // all expected lines have already been read
             {
                 if (lineEnd - lineBeg == 0)
-                    i--; // skipnuti prazdnych radek
+                    i--; // skip empty lines
                 else
                 {
                     *errResID = IDS_SRVTYPEIMPMOREDATA;
@@ -1379,11 +1380,11 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
             {
                 if (*errResID == 0)
                     *errResID = IDS_SRVTYPEIMPSYNERR;
-                break; // chyba, koncime
+                break; // error, aborting
             }
             i++;
 
-            // preskocime EOL
+            // skip the EOL
             if (s < end && *s == '\r' && ++s == end)
                 skipNextEOLN = TRUE;
             if (s < end && *s == '\n')
@@ -1392,32 +1393,32 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
         }
     }
 
-    // overime jestli je seznam sloupcu v poradku
+    // verify that the list of columns is valid
     if (ret)
         ret = ValidateSrvTypeColumns(&Columns, errResID);
 
-    // overime jestli jsou pravidla pro parsovani v poradku
+    // verify that the parsing rules are valid
     if (ret)
     {
         CFTPParser* parser = CompileParsingRules(HandleNULLStr(RulesForParsing), &Columns, NULL, NULL, NULL);
         if (parser != NULL)
-            delete parser; // parser je OK, zase ho zrusime
+            delete parser; // parser is OK, discard it again
         else
         {
-            ret = FALSE; // chyba v pravidlech
+            ret = FALSE; // error in the rules
             *errResID = IDS_SRVTYPEIMPERRINRULES;
         }
     }
 
-    // overime jestli je v poradku podminka pro autodetekci
+    // verify that the autodetect condition is valid
     if (ret)
     {
         CFTPAutodetCondNode* node = CompileAutodetectCond(HandleNULLStr(AutodetectCond), NULL, NULL, NULL, NULL, 0);
         if (node != NULL)
-            delete node; // podminka je OK, zase ji zrusime
+            delete node; // condition is OK, discard it again
         else
         {
-            ret = FALSE; // chyba v podmince
+            ret = FALSE; // error in the condition
             *errResID = IDS_SRVTYPEIMPERRINACOND;
         }
     }
@@ -1427,7 +1428,7 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
 
 //
 // ***********************************************************************************
-// Funkce ProcessProxyScript + pomocna funkce ExpandText + funkce GetProxyScriptText
+// Functions ProcessProxyScript plus helper function ExpandText plus function GetProxyScriptText
 // ***********************************************************************************
 //
 
@@ -1495,24 +1496,23 @@ CProxyScriptParams::CProxyScriptParams()
     AllowEmptyPassword = FALSE;
 }
 
-// 'buf' o velikosti 'bufSize' je buffer pro vysledny text (hostitel nebo prikaz);
-// 'logBuf' o velikosti 'logBufSize' je buffer pro vysledny text publikovatelny v logu
-// (jen prikazy - nepublikuje hesla, nahrazuje je slovem "hidden"); 'strBeg' az 'strEnd'
-// je text skriptu, ktery mame expandnout; 'hostVarsOnly' je TRUE pokud expandujeme
-// hostitele (povolene jen promenne Host a ProxyHost + na konec se nepridava CRLF (dela
-// se u prikazu); v 'proxyHostNeeded' (neni-li NULL) se vraci TRUE pokud se pri
-// expanzi stringu pouziva promenna $(ProxyHost)
-// navratove hodnoty:
-// - chyba: vraci FALSE, kod chyby se vraci v 'errCode' a v '*errorPos' pozice chyby
-// - radek se ma skipnout: vraci TRUE + 'skipThisLine'==TRUE
-// - chybi hodnoty promennych: vraci FALSE, ale 'errCode' 0
-// - vse OK: vraci TRUE + text v 'buf'
+// 'buf' with size 'bufSize' is the buffer for the resulting text (host or command);
+// 'logBuf' with size 'logBufSize' is the buffer for the resulting text that can be published in the log
+// (commands only - passwords are not published, they are replaced with the word "hidden"); 'strBeg' to 'strEnd'
+// is the script text to be expanded; 'hostVarsOnly' is TRUE when expanding
+// the host (only the Host and ProxyHost variables are allowed, and CRLF is not appended at the end as it is for commands);
+// 'proxyHostNeeded' (if not NULL) returns TRUE when the $(ProxyHost) variable is used during the expansion
+// return values:
+// - error: returns FALSE, the error code is returned in 'errCode' and '*errorPos' gives the error position
+// - the line should be skipped: returns TRUE with 'skipThisLine'==TRUE
+// - missing variable values: returns FALSE, but 'errCode' is 0
+// - everything OK: returns TRUE with text in 'buf'
 BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char* strBeg, const char* strEnd,
                 CProxyScriptParams* scriptParams, const char** errorPos, int* errCode,
                 BOOL hostVarsOnly, BOOL* skipThisLine, BOOL* proxyHostNeeded)
 {
     BOOL ret = TRUE;
-    DWORD needUserInput = 0; // != 0 - user by mel zadat hodnoty oznacenych promennych (jsou naORovane v tomto DWORDu)
+    DWORD needUserInput = 0; // != 0 - the user should enter the values of the marked variables (bitwise ORed in this DWORD)
     BOOL localSkipThisLine = FALSE;
     if (skipThisLine != NULL)
         *skipThisLine = FALSE;
@@ -1533,7 +1533,7 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
     {
         if (*s == '$')
         {
-            if (s + 1 < strEnd && *(s + 1) == '$') // escape sekvence pro '$'
+            if (s + 1 < strEnd && *(s + 1) == '$') // escape sequence for '$'
             {
                 if (txt < bufEnd)
                     *txt++ = '$';
@@ -1582,18 +1582,18 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
                         }
                         int varNameLen = (int)strlen(varName);
                         if (s + varNameLen < strEnd && *(s + varNameLen) == ')' &&
-                            SalamanderGeneral->StrNICmp(s, varName, varNameLen) == 0) // promenna nalezena
+                            SalamanderGeneral->StrNICmp(s, varName, varNameLen) == 0) // variable found
                         {
                             if (i == 0 && proxyHostNeeded != NULL)
                                 *proxyHostNeeded = TRUE;
                             if (hostVarsOnly && i != 0 && i != 4)
                             {
                                 *errorPos = s;
-                                *errCode = IDS_PRXSCRERR_HOSTVARSONLY; // nepovolena promenna
+                                *errCode = IDS_PRXSCRERR_HOSTVARSONLY; // variable not allowed
                                 ret = FALSE;
                                 break;
                             }
-                            if (scriptParams != NULL) // pokud mame hodnoty promennych, vlozime hodnotu promenne
+                            if (scriptParams != NULL) // if we have variable values, insert the variable value
                             {
                                 char portBuf[20];
                                 const char* value = "";
@@ -1682,7 +1682,7 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
                                 if (txt < bufEnd)
                                 {
                                     if (valLen > bufEnd - txt)
-                                        valLen = (int)(bufEnd - txt); // oriznuti textu, cilovy buffer nestaci
+                                        valLen = (int)(bufEnd - txt); // trim text, destination buffer is too small
                                     memmove(txt, value, valLen);
                                     txt += valLen;
                                 }
@@ -1694,27 +1694,27 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
                                 if (logTxt < logBufEnd)
                                 {
                                     if (valLen > logBufEnd - logTxt)
-                                        valLen = (int)(logBufEnd - logTxt); // oriznuti textu, cilovy buffer nestaci
+                                        valLen = (int)(logBufEnd - logTxt); // trim text, destination buffer is too small
                                     memmove(logTxt, value, valLen);
                                     logTxt += valLen;
                                 }
                                 if (hidden && logTxt < logBufEnd)
                                     *logTxt++ = ')';
                             }
-                            s += varNameLen + 1; // preskocime promennou
+                            s += varNameLen + 1; // skip the variable
                             break;
                         }
                     }
                     if (i == 9)
                     {
                         *errorPos = s;
-                        *errCode = IDS_PRXSCRERR_UNKNOWNVAR; // neznama promenna
+                        *errCode = IDS_PRXSCRERR_UNKNOWNVAR; // unknown variable
                         ret = FALSE;
                     }
                     if (*errCode != 0)
-                        break; // koncime
+                        break; // stop
                 }
-                else // za '$' je neco jineho nez '(' a '$' - okopcime 1:1
+                else // something other than '(' and '$' follows '$' - copy 1:1
                 {
                     if (txt < bufEnd)
                         *txt++ = *s;
@@ -1737,13 +1737,13 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
     {
         if (localSkipThisLine && skipThisLine != NULL)
             *skipThisLine = TRUE;
-        if (!localSkipThisLine && needUserInput != 0) // preneseme priznaky z needUserInput do scriptParams->NeedXXX
+        if (!localSkipThisLine && needUserInput != 0) // transfer flags from needUserInput to scriptParams->NeedXXX
         {
             ret = FALSE;
             int i;
             for (i = 0; i < 9; i++)
             {
-                if (needUserInput & (1 << i)) // nutne znamena, ze 'scriptParams' neni NULL
+                if (needUserInput & (1 << i)) // necessarily means that 'scriptParams' is not NULL
                 {
                     switch (i)
                     {
@@ -1770,13 +1770,13 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
     if (localSkipThisLine || !ret)
     {
         if (bufSize > 0)
-            buf[0] = 0; // jen tak pro poradek
+            buf[0] = 0; // just to be safe
         if (logBufSize > 0)
-            logBuf[0] = 0; // jen tak pro poradek
+            logBuf[0] = 0; // just to be safe
     }
     else
     {
-        if (!hostVarsOnly) // u FTP prikazu doplnime CRLF
+        if (!hostVarsOnly) // append CRLF for FTP commands
         {
             if (txt < bufEnd)
                 *txt++ = '\r';
@@ -1830,8 +1830,8 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
     int errCode = 0;
     const char* s = *execPoint == NULL ? script : *execPoint;
     BOOL validateScript = scriptParams == NULL;
-    BOOL processNextLine = s > script; // TRUE = mame zpracovat dalsi radek s prikazem ve skriptu
-    if (s == script)                   // jsme na zacatku skriptu
+    BOOL processNextLine = s > script; // TRUE = we should process the next line with a command in the script
+    if (s == script)                   // we are at the beginning of the script
     {
         while (*s != 0 && *s <= ' ')
             s++; // skip white-spaces
@@ -1842,7 +1842,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                 s++; // skip white-spaces to EOL
             const char* host = s;
             while (*s > ' ' && *s != ':')
-                s++; // hledame konec hostitele
+                s++; // look for the end of the host
             if (s > host)
             {
                 const char* hostEnd = s;
@@ -1855,7 +1855,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                         s++; // skip white-spaces to EOL
                     portStr = s;
                     while (*s > ' ')
-                        s++; // hledame konec portu
+                        s++; // look for the end of the port
                     if (s > portStr)
                         portEnd = s;
                     else
@@ -1865,7 +1865,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                     s++; // skip white-spaces to EOL
                 if (*s == 0 || *s == '\r' || *s == '\n')
                 {
-                    // 'host' az 'hostEnd' je hostitel; 'portStr' az 'portEnd' je port ('portStr'==NULL -> port 21)
+                    // 'host' to 'hostEnd' is the host; 'portStr' to 'portEnd' is the port ('portStr'==NULL -> port 21)
                     if (portStr != NULL)
                     {
                         if (portEnd - portStr == 12 && SalamanderGeneral->StrNICmp(portStr, "$(ProxyPort)", 12) == 0)
@@ -1910,7 +1910,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                             }
                         }
                     }
-                    if (errCode == 0) // port je OK, jdeme na hostitele
+                    if (errCode == 0) // port is OK, continue with the host
                     {
                         if (ExpandText(hostBuf, hostBuf == NULL ? 0 : HOST_MAX_SIZE, NULL, 0,
                                        host, hostEnd, scriptParams, &s, &errCode, TRUE, NULL,
@@ -1937,15 +1937,15 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
 
     BOOL testIfFirstCmdLineIs3xx = validateScript;
     BOOL errorNoCommandsInScript = processNextLine && validateScript;
-    while (processNextLine && *s != 0) // zpracovani radku s prikazem
+    while (processNextLine && *s != 0) // processing command lines
     {
         processNextLine = FALSE;
         while (*s != 0 && *s <= ' ')
-            s++; // skip white-spaces (vcetne EOLu)
+            s++; // skip white-spaces (including EOL)
         BOOL sendOnlyIf3xxReply = SalamanderGeneral->StrNICmp(s, "3xx:", 4) == 0;
         if (sendOnlyIf3xxReply)
         {
-            if (testIfFirstCmdLineIs3xx) // u prvni radky je "3xx:" nesmysl (neexistuje predchozi prikaz, tedy ani neexistuje odpoved na nej)
+            if (testIfFirstCmdLineIs3xx) // on the first line, "3xx:" makes no sense (no previous command, therefore no reply)
             {
                 errCode = IDS_PRXSCRERR_3XXONFIRSTLINE;
                 break;
@@ -1954,13 +1954,13 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
             {
                 s += 4;
                 while (*s != 0 && *s <= ' ' && *s != '\r' && *s != '\n')
-                    s++; // skip white-spaces (bez EOLu)
+                    s++; // skip white-spaces (without EOL)
             }
         }
         testIfFirstCmdLineIs3xx = FALSE;
         const char* lineBeg = s;
         while (*s != 0 && *s != '\r' && *s != '\n')
-            s++; // do konce skriptu nebo do konce radku
+            s++; // to the end of the script or end of the line
 
         if (s > lineBeg &&
             (validateScript || !sendOnlyIf3xxReply ||
@@ -1971,12 +1971,12 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                            logCmdBuf, logCmdBuf == NULL ? 0 : FTPCOMMAND_MAX_SIZE,
                            lineBeg, s, scriptParams, &s, &errCode, FALSE, &skipThisLine, NULL))
             {
-                if (skipThisLine) // radka se ma skipnout (obsahuje nepovinnou promennou)
+                if (skipThisLine) // the line should be skipped (contains an optional variable)
                 {
                     lastCmdReply = -1;
                     processNextLine = TRUE;
                 }
-                else // vse OK, vratime prikaz + text do logu
+                else // everything OK, return the command and the text for the log
                 {
                     if (*s == '\r')
                         s++;
@@ -1988,10 +1988,10 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
                 errorNoCommandsInScript = FALSE;
             }
         }
-        else // prazdny radek na konci skriptu nebo prazdny radek za "3xx:" nebo radek preskoceny diky "3xx:" podmince
+        else // empty line at the end of the script or after "3xx:" or a line skipped due to the "3xx:" condition
         {
             if (s > lineBeg)
-                lastCmdReply = -1; // prazdny radek jen preskocime (tvarime se jakoby nebyl)
+                lastCmdReply = -1; // just skip the empty line (pretend it was not there)
             processNextLine = TRUE;
         }
     }
@@ -2000,7 +2000,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
         errCode = IDS_PRXSCRERR_NONECMDS;
     if (errCode != 0 || scriptParams == NULL || !scriptParams->NeedUserInput())
         *execPoint = s;
-    if (errCode != 0 && errDescrBuf != NULL) // text chyby jeste neni v bufferu, text-res-ID je v errCode
+    if (errCode != 0 && errDescrBuf != NULL) // error text not yet in the buffer, text resource ID stored in errCode
         lstrcpyn(errDescrBuf, LoadStr(errCode), 300);
     return errCode == 0;
 }
@@ -2009,7 +2009,7 @@ const char* GetProxyScriptText(CFTPProxyServerType type, BOOL textForDialog)
 {
     switch (type)
     {
-    case fpstNotUsed: // "prime pripojeni" (bez proxy serveru)
+    case fpstNotUsed: // "direct connection" (without a proxy server)
         return "Connect to: $(Host):$(Port)\r\n"
                "USER $(User)\r\n"
                "3xx: PASS $(Password)\r\n"
@@ -2067,7 +2067,7 @@ const char* GetProxyScriptText(CFTPProxyServerType type, BOOL textForDialog)
                "3xx: PASS $(Password)\r\n"
                "3xx: ACCT $(Account)\r\n";
 
-    case fpstFTP_transparent: // (fw_host+fw_port se nepouzivaji - connecti se na host+port) USER fw_user;PASS fw_pass;USER user;PASS pass;ACCT acct
+    case fpstFTP_transparent: // (fw_host+fw_port are not used - connect to host+port) USER fw_user;PASS fw_pass;USER user;PASS pass;ACCT acct
         return "Connect to: $(Host):$(Port)\r\n"
                "USER $(ProxyUser)\r\n"
                "3xx: PASS $(ProxyPassword)\r\n"
@@ -2130,9 +2130,9 @@ unsigned short GetProxyDefaultPort(CFTPProxyServerType type)
         return 8080;
 
     case fpstFTP_transparent:
-        return 0; // (fw_host+fw_port se nepouzivaji - connecti se na host+port) USER fw_user;PASS fw_pass;USER user;PASS pass;ACCT acct
+        return 0; // (fw_host+fw_port are not used - connect to host+port) USER fw_user;PASS fw_pass;USER user;PASS pass;ACCT acct
 
-        //    case fpstNotUsed:                        // "prime pripojeni" (bez proxy serveru)
+        //    case fpstNotUsed:                        // "direct connection" (without a proxy server)
         //    case fpstFTP_SITE_host_colon_port:       // USER fw_user;PASS fw_pass;SITE host:port;USER user;PASS pass;ACCT acct
         //    case fpstFTP_SITE_host_space_port:       // USER fw_user;PASS fw_pass;SITE host port;USER user;PASS pass;ACCT acct
         //    case fpstFTP_SITE_user_host_colon_port:  // USER fw_user;PASS fw_pass;SITE user@host:port;PASS pass;ACCT acct
@@ -2143,7 +2143,7 @@ unsigned short GetProxyDefaultPort(CFTPProxyServerType type)
         //    case fpstFTP_USER_fireuser_host:         // USER fw_user@host:port;PASS fw_pass;USER user;PASS pass;ACCT acct
         //    case fpstFTP_USER_user_host_fireuser:    // USER user@host:port fw_user;PASS pass;ACCT fw_pass;ACCT acct
         //    case fpstFTP_USER_user_fireuser_host:    // USER user@fw_user@host:port;PASS pass@fw_pass;ACCT acct
-        //    case fpstOwnScript:                      // uzivatel si napsal svuj vlastni script pro pripojeni na FTP server
+        //    case fpstOwnScript:                      // the user wrote their own script for connecting to the FTP server
     default:
         return 21;
     }
@@ -2265,7 +2265,7 @@ void CFTPProxyServer::Init(int proxyUID)
     SaveProxyPassword = FALSE;
     ProxyScript = NULL;
 
-    // POZOR: zdejsi defaultni hodnoty musi odpovidat defaultnim hodnotam pouzitym v metode Save()
+    // NOTE: the default values here must match the default values used in the Save() method
 }
 
 void CFTPProxyServer::Release()
@@ -2278,12 +2278,12 @@ void CFTPProxyServer::Release()
         free(ProxyUser);
     if (ProxyEncryptedPassword != NULL)
     {
-        memset(ProxyEncryptedPassword, 0, ProxyEncryptedPasswordSize); // cisteni pameti obsahujici password
+        memset(ProxyEncryptedPassword, 0, ProxyEncryptedPasswordSize); // cleaning memory containing the password
         SalamanderGeneral->Free(ProxyEncryptedPassword);
     }
     if (ProxyPlainPassword != NULL)
     {
-        memset(ProxyPlainPassword, 0, strlen(ProxyPlainPassword)); // cisteni pameti obsahujici password
+        memset(ProxyPlainPassword, 0, strlen(ProxyPlainPassword)); // cleaning memory containing the password
         SalamanderGeneral->Free(ProxyPlainPassword);
     }
     if (ProxyScript != NULL)
@@ -2390,7 +2390,7 @@ BOOL CFTPProxyServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
     int saveProxyPassword;
     char proxyScript[PROXYSCRIPT_MAX_SIZE];
 
-    // prevezmeme default hodnoty (objekt je cisty, zrovna nainicializovany)
+    // take over default values (the object is clean, just initialized)
     proxyType = ProxyType;
     strcpy(proxyHost, HandleNULLStr(ProxyHost));
     proxyPort = ProxyPort;
@@ -2403,19 +2403,19 @@ BOOL CFTPProxyServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
     if (!registry->GetValue(regKey, CONFIG_FTPPRXUID, REG_DWORD, &proxyUID, sizeof(DWORD)))
     {
         TRACE_E("Unexpected error in CFTPProxyServer::Load(): UID of proxy server was not found!");
-        return FALSE; // UID je povinne
+        return FALSE; // UID is mandatory
     }
     if (!registry->GetValue(regKey, CONFIG_FTPPRXNAME, REG_SZ, proxyName, PROXYSRVNAME_MAX_SIZE) ||
         proxyName[0] == 0)
     {
         TRACE_E("Unexpected error in CFTPProxyServer::Load(): empty name of proxy server is not allowed!");
-        return FALSE; // jmeno je povinne
+        return FALSE; // name is mandatory
     }
     registry->GetValue(regKey, CONFIG_FTPPRXTYPE, REG_DWORD, &proxyType, sizeof(DWORD));
     if (proxyType < 0 || proxyType > fpstOwnScript)
     {
         TRACE_E("Unexpected error in CFTPProxyServer::Load(): unknown type of proxy server!");
-        return FALSE; // neznamy typ proxy serveru
+        return FALSE; // unknown proxy server type
     }
     registry->GetValue(regKey, CONFIG_FTPPRXHOST, REG_SZ, proxyHost, HOST_MAX_SIZE);
     registry->GetValue(regKey, CONFIG_FTPPRXPORT, REG_DWORD, &proxyPort, sizeof(DWORD));
@@ -2427,7 +2427,7 @@ BOOL CFTPProxyServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
     {
         saveProxyPassword = TRUE;
 
-        // detekuju a pripadne vycistim "zbytecne" (kvuli ulozeni "save password" TRUE) prazdne scramblene heslo
+        // detect and, if needed, clear the "unnecessary" (due to storing "save password" TRUE) empty scrambled password
         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
         if (!passwordManager->IsPasswordEncrypted(proxyEncryptedPassword, proxyEncryptedPasswordSize))
         {
@@ -2500,7 +2500,7 @@ void CFTPProxyServer::Save(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
         registry->SetValue(regKey, CONFIG_FTPPRXPORT, REG_DWORD, &ProxyPort, sizeof(DWORD));
     if (IsNotEmptyStr(ProxyUser))
         registry->SetValue(regKey, CONFIG_FTPPRXUSER, REG_SZ, ProxyUser, -1);
-    if (SaveProxyPassword) // "save password" se neuklada (je-li ulozene heslo, znamena to ze je "save password" TRUE - proto musime ulozit i prazdne heslo)
+    if (SaveProxyPassword) // "save password" is not stored (if a password is saved, it means "save password" is TRUE - so we must also store an empty password)
     {
         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
         if (ProxyEncryptedPassword != NULL && ProxyEncryptedPasswordSize > 0)
@@ -2509,14 +2509,14 @@ void CFTPProxyServer::Save(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
             registry->SetValue(regKey, encrypted ? CONFIG_FTPPRXPASSWD_ENCRYPTED : CONFIG_FTPPRXPASSWD_SCRAMBLED,
                                REG_BINARY, ProxyEncryptedPassword, ProxyEncryptedPasswordSize);
         }
-        else // ulozime umele vytvorene prazdne heslo, jen kvuli ulozeni "save password" TRUE
+        else // store an artificially created empty password only to keep "save password" TRUE
         {
             BYTE* scrambledPassword;
             int scrambledPasswordSize;
             if (passwordManager->EncryptPassword("", &scrambledPassword, &scrambledPasswordSize, FALSE))
             {
                 registry->SetValue(regKey, CONFIG_FTPPRXPASSWD_SCRAMBLED, REG_BINARY, scrambledPassword, scrambledPasswordSize);
-                // uvolnime buffer alokovany v EncryptPassword()
+                // free the buffer allocated in EncryptPassword()
                 SalamanderGeneral->Free(scrambledPassword);
             }
         }
@@ -2568,7 +2568,7 @@ BOOL CFTPProxyServerList::CopyMembersToList(CFTPProxyServerList& dstList)
         }
         else
         {
-            ret = FALSE; // chyba
+            ret = FALSE; // error
             break;
         }
     }
@@ -2595,7 +2595,7 @@ void CFTPProxyServerList::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbst
                 TRACE_E(LOW_MEMORY);
                 break;
             }
-            if (!item->Load(parent, subKey, registry)) // nepovedl se load, na tuhle polozku kasleme
+            if (!item->Load(parent, subKey, registry)) // loading failed, skip this item
             {
                 delete item;
             }
@@ -2632,7 +2632,7 @@ void CFTPProxyServerList::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbst
                     break;
                 }
                 else
-                { // pridani se podarilo, zajistime unikatnost NextFreeProxyUID vuci nove pridanemu proxy serveru
+                { // addition succeeded, ensure NextFreeProxyUID is unique with respect to the newly added proxy server
                     if (NextFreeProxyUID <= item->ProxyUID)
                         NextFreeProxyUID = item->ProxyUID + 1;
                 }
@@ -2680,7 +2680,7 @@ void CFTPProxyServerList::InitCombo(HWND combo, int focusProxyUID, BOOL addDefau
     if (focusProxyUID == -1 && addDefault)
         focusIndex = 0;
     int i;
-    for (i = 0; i < Count; i++) // naplneni listu combo-boxu
+    for (i = 0; i < Count; i++) // fill the combo-box list
     {
         CFTPProxyServer* proxy = At(i);
         SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)proxy->ProxyName);
@@ -2714,7 +2714,7 @@ BOOL CFTPProxyServerList::IsValidUID(int proxyServerUID)
 {
     HANDLES(EnterCriticalSection(&ProxyServerListCS));
     int i;
-    for (i = 0; i < Count; i++) // naplneni listu combo-boxu
+    for (i = 0; i < Count; i++) // fill the combo-box list
     {
         if (At(i)->ProxyUID == proxyServerUID)
             break;
@@ -2731,7 +2731,7 @@ BOOL CFTPProxyServerList::IsProxyNameOK(CFTPProxyServer* proxyServer, const char
     {
         HANDLES(EnterCriticalSection(&ProxyServerListCS));
         int i;
-        for (i = 0; i < Count; i++) // zjistujeme jestli uz jmeno nebylo pouzite jinde
+        for (i = 0; i < Count; i++) // check whether the name has already been used elsewhere
         {
             CFTPProxyServer* proxy = At(i);
             if (proxy != proxyServer && SalamanderGeneral->StrICmp(proxy->ProxyName, proxyName) == 0)
@@ -2797,15 +2797,15 @@ void CFTPProxyServerList::AddProxyServer(HWND parent, HWND combo)
     CFTPProxyServer* n = new CFTPProxyServer(0);
     if (n != NULL)
     {
-        // zmena hodnoty se deje v metode CProxyServerDlg::Transfer(), vola se SetProxyServer() tohoto objektu
+        // the value change happens in CProxyServerDlg::Transfer(), which calls SetProxyServer() on this object
         if (CProxyServerDlg(parent, this, n, FALSE).Execute() == IDOK)
         {
             HANDLES(EnterCriticalSection(&ProxyServerListCS));
             Add(n);
             if (IsGood())
             {
-                n->ProxyUID = NextFreeProxyUID++; // inicializace ProxyUID
-                // pridani do comboboxu + focus pridane polozky
+                n->ProxyUID = NextFreeProxyUID++; // initialization of ProxyUID
+                // add to the combo box and focus the added item
                 SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)n->ProxyName);
                 int count = (int)SendMessage(combo, CB_GETCOUNT, 0, 0);
                 if (count != CB_ERR && count > 0)
@@ -2831,13 +2831,13 @@ void CFTPProxyServerList::EditProxyServer(HWND parent, HWND combo, BOOL addDefau
     if (sel != CB_ERR)
     {
         int index = sel - (addDefault ? 2 : 1);
-        if (index >= 0 && index < Count) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+        if (index >= 0 && index < Count) // reading values in the main thread does not need a critical section
         {
             CFTPProxyServer* e = At(index);
-            // zmena hodnoty se deje v metode CProxyServerDlg::Transfer(), vola se SetProxyServer() tohoto objektu
+            // the value change happens in CProxyServerDlg::Transfer(), which calls SetProxyServer() on this object
             BOOL edited = (CProxyServerDlg(parent, this, e, TRUE).Execute() == IDOK);
             if (edited)
-            { // jen refreshneme combobox
+            { // just refresh the combo box
                 if (SendMessage(combo, CB_INSERTSTRING, sel, (LPARAM)e->ProxyName) == sel)
                 {
                     SendMessage(combo, CB_DELETESTRING, sel + 1, 0);
@@ -2854,7 +2854,7 @@ void CFTPProxyServerList::DeleteProxyServer(HWND parent, HWND combo, BOOL addDef
     if (sel != CB_ERR)
     {
         int index = sel - (addDefault ? 2 : 1);
-        if (index >= 0 && index < Count) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+        if (index >= 0 && index < Count) // reading values in the main thread does not need a critical section
         {
             char buf[500];
             sprintf(buf, LoadStr(IDS_WANTDELPRXSRV), At(index)->ProxyName);
@@ -2887,7 +2887,7 @@ void CFTPProxyServerList::MoveUpProxyServer(HWND combo, BOOL addDefault)
     if (sel != CB_ERR)
     {
         int index = sel - (addDefault ? 2 : 1);
-        if (index > 0 && index < Count) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+        if (index > 0 && index < Count) // reading values in the main thread does not need a critical section
         {
             if (SendMessage(combo, CB_INSERTSTRING, sel - 1, (LPARAM)At(index)->ProxyName) == sel - 1)
             {
@@ -2910,7 +2910,7 @@ void CFTPProxyServerList::MoveDownProxyServer(HWND combo, BOOL addDefault)
     if (sel != CB_ERR && count != CB_ERR)
     {
         int index = sel - (addDefault ? 2 : 1);
-        if (index >= 0 && index + 1 < Count) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+        if (index >= 0 && index + 1 < Count) // reading values in the main thread does not need a critical section
         {
             if (SendMessage(combo, CB_INSERTSTRING, sel, (LPARAM)At(index + 1)->ProxyName) == sel)
             {
@@ -2934,7 +2934,7 @@ BOOL CFTPProxyServerList::GetProxyName(char* buf, int bufSize, int proxyServerUI
         return TRUE;
     }
     int i;
-    for (i = 0; i < Count; i++) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+    for (i = 0; i < Count; i++) // reading values in the main thread does not need a critical section
     {
         CFTPProxyServer* s = At(i);
         if (s->ProxyUID == proxyServerUID)
@@ -2950,7 +2950,7 @@ CFTPProxyServerType
 CFTPProxyServerList::GetProxyType(int proxyServerUID)
 {
     int i;
-    for (i = 0; i < Count; i++) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+    for (i = 0; i < Count; i++) // reading values in the main thread does not need a critical section
     {
         CFTPProxyServer* s = At(i);
         if (s->ProxyUID == proxyServerUID)
@@ -2961,10 +2961,10 @@ CFTPProxyServerList::GetProxyType(int proxyServerUID)
 
 BOOL CFTPProxyServerList::ContainsUnsecuredPassword()
 {
-    // POZOR, stejna metoda existuje pro CFTPServerList
+    // NOTE, the same method exists for CFTPServerList
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
     int i;
-    for (i = 0; i < Count; i++) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+    for (i = 0; i < Count; i++) // reading values in the main thread does not need a critical section
     {
         CFTPProxyServer* s = At(i);
         if (s->SaveProxyPassword && s->ProxyEncryptedPassword != NULL)
@@ -2978,7 +2978,7 @@ BOOL CFTPProxyServerList::ContainsUnsecuredPassword()
 
 BOOL CFTPProxyServerList::EncryptPasswords(HWND hParent, BOOL encrypt)
 {
-    // POZOR, stejna metoda existuje pro CFTPServerList
+    // NOTE, the same method exists for CFTPServerList
     HANDLES(EnterCriticalSection(&ProxyServerListCS));
     BOOL ret = TRUE;
     int i;
@@ -2994,11 +2994,11 @@ BOOL CFTPProxyServerList::EncryptPasswords(HWND hParent, BOOL encrypt)
 BOOL CFTPProxyServerList::EnsurePasswordCanBeDecrypted(HWND hParent, int proxyServerUID)
 {
     if (proxyServerUID == -1 /* not used */)
-        return TRUE; // proxy server se nepouziva, tedy neni co overovat
+        return TRUE; // proxy server is not used, nothing to verify
 
     CFTPProxyServer* s = NULL;
     int i;
-    for (i = 0; i < Count; i++) // pro cteni hodnot v hlavnim threadu neni potreba kriticka sekce
+    for (i = 0; i < Count; i++) // reading values in the main thread does not need a critical section
     {
         if (At(i)->ProxyUID == proxyServerUID)
         {
@@ -3017,24 +3017,24 @@ BOOL CFTPProxyServerList::EnsurePasswordCanBeDecrypted(HWND hParent, int proxySe
     if (s->ProxyEncryptedPassword != NULL &&
         passwordManager->IsPasswordEncrypted(s->ProxyEncryptedPassword, s->ProxyEncryptedPasswordSize))
     {
-        // overime, zda neni potreba zadat master password pro rozsifrovani hesla
+        // verify whether entering the master password is necessary to decrypt the password
         if (passwordManager->IsUsingMasterPassword() && !passwordManager->IsMasterPasswordSet())
         {
             if (!passwordManager->AskForMasterPassword(hParent))
-                return FALSE; // uzivatel nezadal spravny master password
+                return FALSE; // the user did not enter the correct master password
         }
-        // overime, ze jde o spravny master password pro toto heslo
+        // verify that this is the correct master password for this password
         if (!passwordManager->DecryptPassword(s->ProxyEncryptedPassword, s->ProxyEncryptedPasswordSize, NULL))
         {
             int ret = SalamanderGeneral->SalMessageBox(hParent, LoadStr(IDS_CANNOT_DECRYPT_PASSWORD_DELETE),
                                                        LoadStr(IDS_FTPERRORTITLE), MB_YESNO | MSGBOXEX_ESCAPEENABLED | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
             if (ret == IDNO)
-                return FALSE; // nepodarilo se rozsifrovat heselo
+                return FALSE; // failed to decrypt the password
 
-            // uzivatel si pral smaznout heslo
+            // the user wanted to delete the password
             HANDLES(EnterCriticalSection(&ProxyServerListCS));
             UpdateEncryptedPassword(&s->ProxyEncryptedPassword, &s->ProxyEncryptedPasswordSize, NULL, 0);
-            // vycistime save password checkbox
+            // clear the save password checkbox
             s->SaveProxyPassword = FALSE;
             HANDLES(LeaveCriticalSection(&ProxyServerListCS));
         }

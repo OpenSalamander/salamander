@@ -29,6 +29,9 @@ class CScriptEngineAssociations : private TDirectArray<SCRIPT_ENGINE_ASSOCIATION
 protected:
     SCRIPT_ENGINE_ASSOCIATION* FindAssoc(PCTSTR pszExt);
 
+private:
+    static HRESULT QueryHardcodedScriptEngineAssociation(PCTSTR pszExt, __out CLSID* clsidEngine);
+
 public:
     CScriptEngineAssociations() : TDirectArray<SCRIPT_ENGINE_ASSOCIATION>(2, 2)
     {

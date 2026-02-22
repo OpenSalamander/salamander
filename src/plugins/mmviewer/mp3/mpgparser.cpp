@@ -71,11 +71,11 @@ CParserMPG::GetFileInfo(COutputInterface* output)
         BOOL id3tagv1found = FALSE;
         BOOL id3tagv2found = FALSE;
 
-        int usetag = 0; //program rozhodne jaky tag pouzit (1 nebo 2)
+        int usetag = 0; // the program decides which tag to use (1 or 2)
 
         memset(&mpeginfo, 0, sizeof(mpeginfo));
 
-        //zjisti velikost souboru
+        // find out the file size
         fseek(f, 0, SEEK_END);
         filesize = ftell(f);
         fseek(f, 0, SEEK_SET);
@@ -87,7 +87,7 @@ CParserMPG::GetFileInfo(COutputInterface* output)
                 id3tagv2found = TRUE;
             }
 
-            fseek(f, sizeof(ID3TAGV2_HEADER) + CONVERT_C2DW(id3v2head.size), SEEK_SET); //bezpecne preskoc veskera id3v2 data
+            fseek(f, sizeof(ID3TAGV2_HEADER) + CONVERT_C2DW(id3v2head.size), SEEK_SET); // safely skip all id3v2 data
         }
 
         if ((header = ScanForHeader(f, filesize)) != NULL)
@@ -141,7 +141,7 @@ CParserMPG::GetFileInfo(COutputInterface* output)
             return preUnknownFile;
         }
 
-        //Precti ID3TAGV1
+        // Read ID3TAGV1
 
         fseek(f, -signed(sizeof(ID3TAGV1)), SEEK_END);
         if (ID3TAGV1_Read(f, &id3v1))

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -8,31 +9,31 @@
 // CControlConnectionSocket
 //
 
-enum CSendFTPCmdStates // stavy automatu pro CControlConnectionSocket::SendFTPCommand
+enum CSendFTPCmdStates // states of the automaton for CControlConnectionSocket::SendFTPCommand
 {
-    // poslani FTP commandu
+    // sending an FTP command
     sfcsSendCommand,
 
-    // abort FTP commandu (poslani prikazu "ABOR")
+    // aborting an FTP command (sending the "ABOR" command)
     sfcsAbortCommand,
 
-    // nove poslani abortu FTP commandu bez OOB dat (poslani prikazu "ABOR")
+    // sending the abort of an FTP command again without OOB data (sending the "ABOR" command)
     sfcsResendAbortCommand,
 
-    // fatalni chyba (res-id textu je v 'fatalErrorTextID' + je-li 'fatalErrorTextID' -1, je
-    // string rovnou v 'errBuf')
+    // fatal error (the resource ID of the text is in 'fatalErrorTextID' + if 'fatalErrorTextID' is -1,
+    // the string is directly in 'errBuf')
     sfcsFatalError,
 
-    // fatalni chyba operace (res-id textu je v 'opFatalErrorTextID' a cislo Windows chyby v
-    // 'opFatalError' + je-li 'opFatalError' -1, je string rovnou v 'errBuf')
+    // fatal error of the operation (the resource ID of the text is in 'opFatalErrorTextID' and the Windows error number in
+    // 'opFatalError' + if 'opFatalError' is -1, the string is directly in 'errBuf')
     sfcsOperationFatalError,
 
-    // konec metody (uspesny i neuspesny - podle 'ret' TRUE/FALSE)
+    // method finished (success or failure indicated by the TRUE/FALSE value of 'ret')
     sfcsDone
 };
 
 // **************************************************************************************
-// pomocny objekt CSendCmdUserIfaceWaitWnd pro CControlConnectionSocket::SendFTPCommand()
+// helper object CSendCmdUserIfaceWaitWnd for CControlConnectionSocket::SendFTPCommand()
 
 class CSendCmdUserIfaceWaitWnd : public CSendCmdUserIfaceAbstract
 {
@@ -63,9 +64,9 @@ void CSendCmdUserIfaceWaitWnd::Init(HWND parent, const char* logCmd, const char*
 {
     char buf[500];
     char errBuf[300];
-    if (waitWndText == NULL) // std. text wait okenka
+    if (waitWndText == NULL) // standard text of the wait window
     {
-        lstrcpyn(errBuf, logCmd, 300); // orizneme CRLF z commandu
+        lstrcpyn(errBuf, logCmd, 300); // trim the CRLF from the command
         char* s = errBuf + strlen(errBuf);
         while (s > errBuf && (*(s - 1) == '\r' || *(s - 1) == '\n'))
             s--;
@@ -86,7 +87,7 @@ BOOL CSendCmdUserIfaceWaitWnd::HandleESC(HWND parent, BOOL isSend, BOOL allowCmd
                                                 MB_YESNO | MSGBOXEX_ESCAPEENABLED | MB_ICONQUESTION) == IDYES;
     if (!esc)
     {
-        SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+        SalamanderGeneral->WaitForESCRelease(); // prevent the next action from being interrupted by a lingering ESC state from the previous message box
         WaitWnd.Show(TRUE);
     }
     return esc;
@@ -95,7 +96,7 @@ BOOL CSendCmdUserIfaceWaitWnd::HandleESC(HWND parent, BOOL isSend, BOOL allowCmd
 // *********************************************************************************
 
 void WriteUnexpReplyToLog(int logUID, char* unexpReply, int unexpReplyBufSize)
-{ // pomocna funkce - zapis "unexpected reply: %s" do logu
+{ // helper function - write "unexpected reply: %s" to the log
     char* s = LoadStr(IDS_LOGMSGUNEXPREPLY);
     int ul = (int)strlen(s);
     int l = (int)strlen(unexpReply);
@@ -124,7 +125,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         resetCurrentTransferModeCache, retryMsgBufSize);
 
     parent = FindPopupParent(parent);
-    DWORD startTime = GetTickCount(); // cas zacatku operace
+    DWORD startTime = GetTickCount(); // start time of the operation
     if (canRetry != NULL)
         *canRetry = FALSE;
     if (retryMsgBufSize > 0)
@@ -133,9 +134,9 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
     char buf[500];
     char errBuf[300];
 
-    // pokud se ma pouzivat uzivatelske rozhrani CSendCmdUserIfaceWaitWnd, vytvorime ho zde
+    // if the CSendCmdUserIfaceWaitWnd user interface should be used, create it here
     CSendCmdUserIfaceAbstract* userIface = specialUserInterface;
-    CSendCmdUserIfaceWaitWnd objSendCmdUserIfaceWaitWnd(parent); // nebudeme ho alokovat (zbytecne osetrovani chyb)
+    CSendCmdUserIfaceWaitWnd objSendCmdUserIfaceWaitWnd(parent); // do not allocate it (unnecessary error handling)
     if (userIface == NULL)
         userIface = &objSendCmdUserIfaceWaitWnd;
 
@@ -150,19 +151,19 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
     HWND focusedWnd = NULL;
     BOOL parentIsEnabled = IsWindowEnabled(parent);
     CSetWaitCursorWindow* winParent = NULL;
-    if (parentIsEnabled) // parenta nemuzeme nechat enablovaneho (wait okenko neni modalni)
+    if (parentIsEnabled) // we cannot leave the parent enabled (the wait window is not modal)
     {
-        // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+        // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
         focusedWnd = GetFocus();
         HWND hwnd = focusedWnd;
         while (hwnd != NULL && hwnd != parent)
             hwnd = GetParent(hwnd);
         if (hwnd != parent)
             focusedWnd = NULL;
-        // disablujeme 'parent', pri enablovani obnovime i fokus
+        // disable the 'parent'; when enabling it restore the focus as well
         EnableWindow(parent, FALSE);
 
-        // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+        // set the wait cursor over the parent, unfortunately we do not know another way
         winParent = new CSetWaitCursorWindow;
         if (winParent != NULL)
             winParent->AttachToWindow(parent);
@@ -172,25 +173,25 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
     int fatalErrorTextID = 0;
     int opFatalErrorTextID = 0;
     int opFatalError = 0;
-    BOOL fatalErrLogMsg = TRUE; // FALSE = nevypise error hlasku do logu (duvod: uz tam je vypsana)
+    BOOL fatalErrLogMsg = TRUE; // FALSE = do not print the error message to the log (reason: it has already been printed there)
     BOOL aborting = FALSE;
-    BOOL cmdReplyReceived = FALSE; // jen pri abortovani: TRUE = odpoved na command uz prisla (muzeme cekat na odpoved na abort)
-    BOOL donotRetry = FALSE;       // TRUE = na tuto chybu nema smysl zkouset retry
+    BOOL cmdReplyReceived = FALSE; // only when aborting: TRUE = the reply to the command has already arrived (we can wait for the abort reply)
+    BOOL donotRetry = FALSE;       // TRUE = retry makes no sense for this error
 
     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
     if (serverTimeout < 1000)
-        serverTimeout = 1000; // aspon sekundu
+        serverTimeout = 1000; // at least one second
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
-    int logUID = LogUID; // UID logu teto connectiony
+    int logUID = LogUID; // log UID of this connection
     BOOL auxCanSendOOBData = CanSendOOBData;
-    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE pokud se keep-alive neresi o uroven vyse (je nutne ho resit zde)
+    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE if keep-alive is not handled at a higher level (it must be handled here)
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
     if (handleKeepAlive)
     {
-        // pockame na dokonceni keep-alive prikazu (pokud prave probiha) + nastavime
-        // keep-alive na 'kamForbidden' (probiha normalni prikaz)
+        // wait for the keep-alive command to finish (if it is in progress) + set
+        // keep-alive to 'kamForbidden' (a normal command is running)
         DWORD waitTime = GetTickCount() - startTime;
         WaitForEndOfKeepAlive(parent, waitTime < (DWORD)waitWndTime ? waitWndTime - waitTime : 0);
     }
@@ -198,18 +199,18 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
     CSendFTPCmdStates state = sfcsSendCommand;
     while (state != sfcsDone)
     {
-        CALL_STACK_MESSAGE2("state = %d", state); // at je pripadne videt kde to spadlo/vytuhlo
+        CALL_STACK_MESSAGE2("state = %d", state); // aids debugging by showing where the automaton stalled or failed
         switch (state)
         {
         case sfcsResendAbortCommand:
         {
-            state = sfcsAbortCommand; // dale zpracovavame jako sfcsAbortCommand
-                                      // break;  // zde byt nema
+            state = sfcsAbortCommand; // continue processing as sfcsAbortCommand
+                                      // break intentionally omitted
         }
         case sfcsAbortCommand:
         {
             if (!PrepareFTPCommand(buf, 500, errBuf, 300, ftpcmdAbort, NULL))
-            { // necekana chyba ("always false")
+            { // unexpected error ("always false")
                 state = sfcsDone;
                 userIface->CancelDataCon();
                 break;
@@ -217,7 +218,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
             userIface->BeforeAborting();
             aborting = TRUE;
-            // break;  // nema tu byt break (dale se zpracovava jako sfcsSendCommand)
+            // break intentionally omitted (continue processing as sfcsSendCommand)
         }
         case sfcsSendCommand:
         {
@@ -228,23 +229,23 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
             if (aborting && auxCanSendOOBData)
             {
-                // upozornime server na abort (viz RFC 959 - posilani ABOR commandu)
+                // notify the server about the abort (see RFC 959 - sending the ABOR command)
                 HANDLES(EnterCriticalSection(&SocketCritSect));
                 if (Socket != INVALID_SOCKET &&
-                    BytesToWriteCount == 0) // "always true" (vsechna data by mela byt poslana)
+                    BytesToWriteCount == 0) // "always true" (all data should have been sent)
                 {
-                    // posleme sekvenci "TELNET IP" (interrupt process)
+                    // send the "TELNET IP" sequence (interrupt process)
                     char errTxt[100];
                     int sentLen;
                     if ((sentLen = send(Socket, "\xff\xf4" /* IAC+IP */, 2, 0)) != 2)
-                    {                     // temer "always false", chybu posleme do logu, pro ladeni problemu by se to mohlo hodit
-                        if (sentLen == 1) // druhy byte se neposlal, pridame ho do 'buf' (to se bude nasledne posilat)
+                    {                     // almost "always false", log the error; it might be useful for debugging problems
+                        if (sentLen == 1) // the second byte was not sent, add it to 'buf' (it will be sent afterwards)
                         {
                             int ll = (int)strlen(buf);
                             if (ll > 498)
                                 ll = 498;
                             memmove(buf + 1, buf, ll);
-                            buf[0] = '\xf4'; // IP (IAC uz je poslane)
+                            buf[0] = '\xf4'; // IP (IAC has already been sent)
                             buf[ll + 1] = 0;
                         }
                         DWORD err = WSAGetLastError();
@@ -252,11 +253,11 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         Logs.LogMessage(logUID, errTxt, -1, TRUE);
                     }
 
-                    // posleme TELNET "Synch" signal - socket je neblokujici, takze hrozi jen ze se TELNET
-                    // "Synch" neposle, tuto chybu nebudeme osetrovat (je nepravdepodobna a nedulezita)
-                    if (sentLen == 2 && // jen pokud se podarilo poslat IAC+IP (jinak nema smysl)
+                    // send the TELNET "Synch" signal - the socket is non-blocking, so the only risk is that the TELNET
+                    // "Synch" is not sent; we will not handle this error (it is unlikely and unimportant)
+                    if (sentLen == 2 && // only if IAC+IP was sent successfully (otherwise it makes no sense)
                         (sentLen = send(Socket, "\xF2" /* DM */, 1, MSG_OOB)) != 1)
-                    { // temer "always false", chybu posleme do logu, pro ladeni problemu by se to mohlo hodit
+                    { // almost "always false", log the error; it might be useful for debugging problems
                         DWORD err = WSAGetLastError();
                         sprintf(errTxt, "Unable to send TELNET \"Synch\" signal: error = %u (%d)\r\n", err, sentLen);
                         Logs.LogMessage(logUID, errTxt, -1, TRUE);
@@ -268,14 +269,14 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
             char unexpReply[700];
             unexpReply[0] = 0;
             int unexpReplyCode = -1;
-            if (!aborting) // zkusime skipnout nadbytecne odpovedi serveru (nemely by vubec existovat, ale bohuzel existuji - WarFTPD po listovani adresare, kam user nema pristup vygeneruje dvakrat "550 access denied")
+            if (!aborting) // try to skip extra server replies (they should not exist at all, but unfortunately they do - WarFTPD generates "550 access denied" twice after listing a directory the user cannot access)
             {
                 char* reply;
                 int replySize;
                 int replyCode;
 
                 HANDLES(EnterCriticalSection(&SocketCritSect));
-                while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have any server reply
                 {
                     if (unexpReply[0] != 0)
                         WriteUnexpReplyToLog(logUID, unexpReply, 700);
@@ -290,7 +291,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
             if (Write(!aborting ? ftpCmd : buf, -1, &error, &allBytesWritten))
             {
-                if (unexpReply[0] != 0) // zapis se podaril, pripadnou necekanou odpoved jiz nepotrebujeme -> vypiseme ji do logu a zahodime
+                if (unexpReply[0] != 0) // the write succeeded, we no longer need the unexpected reply -> write it to the log and discard it
                 {
                     WriteUnexpReplyToLog(logUID, unexpReply, 700);
                     unexpReply[0] = 0;
@@ -304,7 +305,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                 BOOL isCanceled = FALSE;
                 while (!allBytesWritten || state == sendState)
                 {
-                    // pockame na udalost na socketu (odpoved serveru) nebo ESC
+                    // wait for an event on the socket (server reply) or ESC
                     CControlConnectionSocketEvent event;
                     DWORD data1, data2;
                     DWORD now = GetTickCount();
@@ -318,18 +319,18 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                     {
                         if (userIface->HandleESC(parent, state == sfcsSendCommand, allowCmdAbort))
                         {                                                  // cancel
-                            if (allowCmdAbort && state == sfcsSendCommand) // cancel pro command -> zacne abortovani commandu
+                            if (allowCmdAbort && state == sfcsSendCommand) // cancel for the command -> start aborting the command
                             {
                                 state = sfcsAbortCommand;
-                                // allBytesWritten = TRUE;   // musime pockat az se odesle prikaz nez zacneme s posilanim abortu
-                                // nebudeme znovu ukazovat wait okenko, odeslani by teoreticky nemelo nikdy vaznout -> neresime (user bude cekat bez wait okna)
+                                // allBytesWritten = TRUE;   // we must wait until the command is sent before starting to send the abort
+                                // we will not display the wait window again; in theory sending should never stall -> ignore it (the user will wait without the wait window)
                             }
-                            else // nelze pouzit abort (musime zavrit connectionu) nebo cancel pro abortovani commandu
+                            else // cannot use abort (we must close the connection) or cancel while aborting the command
                             {
                                 state = sfcsDone;
                                 isCanceled = TRUE;
-                                allBytesWritten = TRUE;                                               // ted uz to neni dulezite, dojde k zavreni socketu
-                                Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) do logu
+                                allBytesWritten = TRUE;                                               // no longer important now, the socket will be closed
+                                Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGACTIONCANCELED), -1, TRUE); // ESC (cancel) to the log
                             }
                         }
                         break;
@@ -342,79 +343,79 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         {
                             fatalErrorTextID = errorTextID;
                             state = sfcsFatalError;
-                            allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                            allBytesWritten = TRUE; // no longer important now, the socket will be closed
                         }
                         break;
                     }
 
                     case ccsevWriteDone:
-                        allBytesWritten = TRUE; // uz odesly vsechny byty (osetrime take to, ze ccsevWriteDone mohla prepsat ccsevNewBytesRead)
-                    case ccsevClosed:           // mozna necekana ztrata pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                    case ccsevNewBytesRead:     // nacetli jsme nove byty
+                        allBytesWritten = TRUE; // all bytes have already been sent (also handle that ccsevWriteDone could overwrite ccsevNewBytesRead)
+                    case ccsevClosed:           // possible unexpected loss of connection (also handle that ccsevClosed could overwrite ccsevNewBytesRead)
+                    case ccsevNewBytesRead:     // new bytes have been read
                     {
                         char* reply;
                         int replySize;
                         int replyCode;
 
                         HANDLES(EnterCriticalSection(&SocketCritSect));
-                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have any server reply
                         {
                             Logs.LogMessage(logUID, reply, replySize);
 
-                            if (state != sfcsFatalError && state != sfcsOperationFatalError && // jen pokud uz nemame jinou chybu
-                                replyCode == -1)                                               // neni FTP odpoved, koncime
+                            if (state != sfcsFatalError && state != sfcsOperationFatalError && // only if we do not already have another error
+                                replyCode == -1)                                               // not an FTP reply, we are done
                             {
                                 opFatalErrorTextID = IDS_NOTFTPSERVERERROR;
-                                allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
+                                allBytesWritten = TRUE; // no longer important now, the socket will be closed
                                 CopyStr(errBuf, 300, reply, replySize);
-                                opFatalError = -1; // "error" (reply) je primo v errBuf
+                                opFatalError = -1; // the "error" (reply) is directly in errBuf
                                 state = sfcsOperationFatalError;
-                                fatalErrLogMsg = FALSE; // uz je v logu, nema smysl ji tam davat znovu
-                                donotRetry = TRUE;      // retry nema smysl
+                                fatalErrLogMsg = FALSE; // it is already in the log, no point adding it again
+                                donotRetry = TRUE;      // retry makes no sense
                                 SkipFTPReply(replySize);
                                 break;
                             }
 
                             if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS)
-                            { // odpovedi typu FTP_D1_MAYBESUCCESS davame jen do logu (cekame na "posledni slovo" serveru)
+                            { // replies of type FTP_D1_MAYBESUCCESS are logged only (we are waiting for the server's "last word")
                                 if (event != ccsevClosed)
                                 {
                                     if (!aborting) // send command
-                                    {              // muze byt i state==sfcsAbortCommand, to pak musime prikaz abortnout, i kdyz prave uspesne probehl (user porucil abort)
+                                    {              // state can also be sfcsAbortCommand; then we must abort the command even if it succeeded just now (the user ordered an abort)
                                         if (state != sfcsAbortCommand)
                                         {
                                             state = sfcsDone;
                                             *ftpReplyCode = replyCode;
                                             CopyStr(ftpReplyBuf, ftpReplyBufSize, reply, replySize);
-                                            ret = TRUE; // USPECH, mame odpoved serveru! (u sendu nas zajima jen jedna odpoved serveru)
+                                            ret = TRUE; // SUCCESS, we have the server's reply! (for sending we only care about a single server reply)
                                         }
-                                        // else; // jdeme pokracovat v cekani na abort prikazu (jeste jsme neposlali ABOR)
+                                        // else; // continue waiting for the abort command (we have not sent ABOR yet)
                                         SkipFTPReply(replySize);
                                         break;
                                     }
                                     else // abort command
                                     {
-                                        if (auxCanSendOOBData &&                      // posilali jsme OOB data
-                                            FTP_DIGIT_1(replyCode) == FTP_D1_ERROR && // odpovedi je syntax error
+                                        if (auxCanSendOOBData &&                      // we were sending OOB data
+                                            FTP_DIGIT_1(replyCode) == FTP_D1_ERROR && // the reply is a syntax error
                                             FTP_DIGIT_2(replyCode) == FTP_D2_SYNTAX)
-                                        {                                               // nejspis server nerozumi OOB datum a vlozil je primo do datoveho streamu (prikaz "\xF2ABOR" server nezna)
-                                            auxCanSendOOBData = CanSendOOBData = FALSE; // v teto "control connection" uz OOB znovu nebudeme zkouset
+                                        {                                               // the server probably does not understand OOB data and inserted them directly into the data stream (the server does not know the "\xF2ABOR" command)
+                                            auxCanSendOOBData = CanSendOOBData = FALSE; // do not try OOB again on this "control connection"
                                             state = sfcsResendAbortCommand;
                                             SkipFTPReply(replySize);
                                             break;
                                         }
                                         else
                                         {
-                                            // tohle je odpoved za poslany nebo abortovany prikaz, jeste zkusime nacist
-                                            // dalsi odpovedi serveru (nektere servery posilaji jeste jednu za ABOR)
-                                            if (!cmdReplyReceived) // vracime prvni odpoved (mela by byt k prikazu, ale muze byt
-                                            {                      // i na ABOR) - pripadnou druhou odpoved (na ABOR) ignorujeme
+                                            // this is the reply for the sent or aborted command; we will still try to read
+                                            // additional server replies (some servers send one more for ABOR)
+                                            if (!cmdReplyReceived) // return the first reply (it should belong to the command but it may be
+                                            {                      // for ABOR as well) - ignore any possible second reply (to ABOR)
                                                 state = sfcsDone;
                                                 *ftpReplyCode = replyCode;
                                                 CopyStr(ftpReplyBuf, ftpReplyBufSize, reply, replySize);
                                                 if (cmdAborted != NULL)
                                                     *cmdAborted = TRUE;
-                                                ret = TRUE; // USPECH, mame odpoved serveru na prikaz/abort
+                                                ret = TRUE; // SUCCESS, we have the server's reply to the command/abort
                                                 cmdReplyReceived = TRUE;
                                             }
                                         }
@@ -424,19 +425,19 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                                 {
                                     if (state != sfcsFatalError && state != sfcsOperationFatalError &&
                                         (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR ||
-                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)) // napr. 421 Service not available, closing control connection
-                                    {                                             // postupne vyhazime vsechny odpovedi serveru, vypiseme prvni nalezenou chybu
+                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)) // e.g. 421 Service not available, closing control connection
+                                    {                                             // discard all server replies one by one, log the first error we find
                                         CopyStr(errBuf, 300, reply, replySize);
-                                        fatalErrorTextID = -1; // text chyby je v 'errBuf'
+                                        fatalErrorTextID = -1; // the error text is in 'errBuf'
                                         state = sfcsFatalError;
-                                        allBytesWritten = TRUE; // ted uz to neni dulezite, dojde k zavreni socketu
-                                        fatalErrLogMsg = FALSE; // uz je v logu, nema smysl ji tam davat znovu
+                                        allBytesWritten = TRUE; // no longer important now, the socket will be closed
+                                        fatalErrLogMsg = FALSE; // it is already in the log, no point adding it again
                                     }
                                 }
                             }
                             else
                             {
-                                userIface->MaybeSuccessReplyReceived(reply, replySize); // pasivni rezim: zkusime zasifrovat data-connectionu (jen pokud ji prikaz pouziva)
+                                userIface->MaybeSuccessReplyReceived(reply, replySize); // passive mode: try to encrypt the data connection (only if the command uses it)
                             }
                             SkipFTPReply(replySize);
                         }
@@ -444,9 +445,9 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
                         if (event == ccsevClosed)
                         {
-                            allBytesWritten = TRUE; // ted uz to neni dulezite, doslo k zavreni socketu
+                            allBytesWritten = TRUE; // no longer important now, the socket was closed
                             if (state == sfcsSendCommand || state == sfcsAbortCommand || state == sfcsResendAbortCommand)
-                            { // close bez priciny (at uz behem/po sendu nebo pred/behem/po abortu)
+                            { // close without a cause (whether during/after send or before/during/after abort)
                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
                                 state = sfcsFatalError;
                             }
@@ -466,21 +467,21 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                 }
 
                 if (!isCanceled && !aborting && state == sfcsDone)
-                { // server hlasi "hotovo", budeme jeste cekat na zavreni user-ifacu ("data connection")
+                { // the server reports "done", we will still wait for the user interface ("data connection") to close
                     BOOL calledBeforeWaitingForFinish = FALSE;
-                    BOOL useTimeout = FALSE;    // TRUE = pouzit timeout 'serverTimeout2' cekani na dokonceni data-connectiony
-                    int serverTimeout2 = 10000; // timeout pro dokonceni data-connectiony v pripadech, ze LIST vraci error nebo ze jeste nedoslo k otevreni spojeni je 10 sekund
+                    BOOL useTimeout = FALSE;    // TRUE = use the 'serverTimeout2' timeout while waiting for the data connection to finish
+                    int serverTimeout2 = 10000; // timeout for finishing the data connection when LIST returns an error or the connection has not been opened yet is 10 seconds
                     DWORD start2 = GetTickCount();
                     while (!userIface->CanFinishSending(*ftpReplyCode, &useTimeout))
                     {
-                        if (!calledBeforeWaitingForFinish) // zavolame jen poprve
+                        if (!calledBeforeWaitingForFinish) // call only the first time
                         {
                             DWORD waitTime2 = GetTickCount() - startTime;
                             userIface->BeforeWaitingForFinish(*ftpReplyCode, &useTimeout);
                             calledBeforeWaitingForFinish = TRUE;
                         }
 
-                        // pockame na zavreni user-ifacu, timeout nebo ESC
+                        // wait for the user interface to close, for a timeout, or for ESC
                         CControlConnectionSocketEvent event;
                         DWORD data1, data2;
                         DWORD now = GetTickCount();
@@ -492,7 +493,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         switch (event)
                         {
                         case ccsevUserIfaceFinished:
-                            break; // CanFinishSending() uz snad vrati TRUE
+                            break; // CanFinishSending() will hopefully return TRUE now
 
                         case ccsevTimeout:
                         {
@@ -515,13 +516,13 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         }
                     }
 
-                    // zjistime jestli behem docitani data-connectiony nedoslo k zavreni control-connectiony
+                    // check whether the control connection closed while finishing reading the data connection
                     if (!IsConnected())
                     {
                         HANDLES(EnterCriticalSection(&EventCritSect));
                         DWORD error2 = NO_ERROR;
                         int i;
-                        for (i = 0; i < EventsUsedCount; i++) // test pritomnosti udalosti ccsevClosed
+                        for (i = 0; i < EventsUsedCount; i++) // check whether the ccsevClosed event is present
                         {
                             if (Events[i]->Event == ccsevClosed)
                             {
@@ -538,7 +539,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                             FTPGetErrorTextForLog(error2, buf, 500);
                             Logs.LogMessage(logUID, buf, -1);
                         }
-                        ret = FALSE; // control-connectiona je zavrena
+                        ret = FALSE; // the control connection is closed
                     }
                 }
                 else
@@ -549,20 +550,20 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
                 userIface->SendingFinished();
             }
-            else // chyba Write (low memory, disconnected, chyba neblokujiciho "send")
+            else // Write error (low memory, disconnected, non-blocking "send" error)
             {
                 if (aborting)
                     userIface->CancelDataCon();
                 while (state == sendState)
                 {
-                    // vybereme udalost na socketu
+                    // pick an event on the socket
                     CControlConnectionSocketEvent event;
                     DWORD data1, data2;
-                    WaitForEventOrESC(parent, &event, &data1, &data2, 0, NULL, NULL, FALSE); // necekame, jen prijimame udalosti
+                    WaitForEventOrESC(parent, &event, &data1, &data2, 0, NULL, NULL, FALSE); // do not wait, just collect events
                     switch (event)
                     {
-                    // case ccsevESC:   // (uzivatel nemuze stihnout ESC behem 0 ms timeoutu)
-                    case ccsevTimeout: // zadna zprava neceka -> zobrazime primo error z metody Write
+                    // case ccsevESC:   // (the user cannot press ESC during a 0 ms timeout)
+                    case ccsevTimeout: // no message is waiting -> display the error from Write directly
                     {
                         opFatalErrorTextID = !aborting ? IDS_SENDCOMMANDERROR : IDS_ABORTCOMMANDERROR;
                         opFatalError = error;
@@ -570,8 +571,8 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         break;
                     }
 
-                    case ccsevClosed:       // slo o necekanou ztratu pripojeni (osetrime take to, ze ccsevClosed mohla prepsat ccsevNewBytesRead)
-                    case ccsevNewBytesRead: // nacetli jsme nove byty (mozna popis chyby vedouci k disconnectu)
+                    case ccsevClosed:       // unexpected loss of connection (also handle that ccsevClosed could overwrite ccsevNewBytesRead)
+                    case ccsevNewBytesRead: // read new bytes (possibly the error description that caused the disconnect)
                     {
                         char* reply;
                         int replySize;
@@ -582,37 +583,37 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                         {
                             Logs.LogMessage(logUID, unexpReply, -1);
 
-                            if (unexpReplyCode == -1 ||                                 // neni FTP odpoved
-                                FTP_DIGIT_1(unexpReplyCode) == FTP_D1_TRANSIENTERROR || // popis docasne chyby
-                                FTP_DIGIT_1(unexpReplyCode) == FTP_D1_ERROR)            // popis chyby
+                            if (unexpReplyCode == -1 ||                                 // not an FTP reply
+                                FTP_DIGIT_1(unexpReplyCode) == FTP_D1_TRANSIENTERROR || // description of a temporary error
+                                FTP_DIGIT_1(unexpReplyCode) == FTP_D1_ERROR)            // description of an error
                             {
                                 opFatalErrorTextID = !aborting ? IDS_SENDCOMMANDERROR : IDS_ABORTCOMMANDERROR;
                                 lstrcpyn(errBuf, unexpReply, 300);
-                                opFatalError = -1;      // "error" (reply) je primo v errBuf
-                                fatalErrLogMsg = FALSE; // chyba uz v logu je, nepridavat znovu
+                                opFatalError = -1;      // the "error" (reply) is directly in errBuf
+                                fatalErrLogMsg = FALSE; // the error is already in the log, do not add it again
                                 state = sfcsOperationFatalError;
-                                done = TRUE; // dalsi hlasku uz neni nutne cist
+                                done = TRUE; // no need to read another message
                             }
                         }
 
                         if (!done)
                         {
                             HANDLES(EnterCriticalSection(&SocketCritSect));
-                            while (ReadFTPReply(&reply, &replySize, &replyCode)) // dokud mame nejakou odpoved serveru
+                            while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have any server reply
                             {
                                 Logs.LogMessage(logUID, reply, replySize);
 
-                                if (replyCode == -1 ||                                 // neni FTP odpoved
-                                    FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // popis docasne chyby
-                                    FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // popis chyby
+                                if (replyCode == -1 ||                                 // not an FTP reply
+                                    FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // description of a temporary error
+                                    FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // description of an error
                                 {
                                     opFatalErrorTextID = !aborting ? IDS_SENDCOMMANDERROR : IDS_ABORTCOMMANDERROR;
                                     CopyStr(errBuf, 300, reply, replySize);
                                     SkipFTPReply(replySize);
-                                    opFatalError = -1;      // "error" (reply) je primo v errBuf
-                                    fatalErrLogMsg = FALSE; // chyba uz v logu je, nepridavat znovu
+                                    opFatalError = -1;      // the "error" (reply) is directly in errBuf
+                                    fatalErrLogMsg = FALSE; // the error is already in the log, do not add it again
                                     state = sfcsOperationFatalError;
-                                    break; // dalsi hlasku uz neni nutne cist
+                                    break; // no need to read another message
                                 }
                                 SkipFTPReply(replySize);
                             }
@@ -621,7 +622,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
 
                         if (event == ccsevClosed)
                         {
-                            if (state == sendState) // close bez priciny
+                            if (state == sendState) // close without a cause
                             {
                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
                                 state = sfcsFatalError;
@@ -640,7 +641,7 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
             break;
         }
 
-        case sfcsFatalError: // fatalni chyba (res-id textu je v 'fatalErrorTextID' + je-li 'fatalErrorTextID' -1, je string rovnou v 'errBuf')
+        case sfcsFatalError: // fatal error (the resource ID of the text is in 'fatalErrorTextID' + if 'fatalErrorTextID' is -1, the string is directly in 'errBuf')
         {
             lstrcpyn(buf, GetFatalErrorTxt(fatalErrorTextID, errBuf), 500);
             char* s = buf + strlen(buf);
@@ -648,11 +649,11 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                 s--;
             if (fatalErrLogMsg)
             {
-                strcpy(s, "\r\n");                      // CRLF na konec textu posledni chyby
-                Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+                strcpy(s, "\r\n");                      // CRLF at the end of the last error text
+                Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
             }
             fatalErrLogMsg = TRUE;
-            if (canRetry == NULL || donotRetry) // "retry" neni mozne nebo nema smysl
+            if (canRetry == NULL || donotRetry) // "retry" is not possible or does not make sense
             {
                 *s = 0;
                 SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_FTPERRORTITLE),
@@ -667,9 +668,9 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
             break;
         }
 
-        case sfcsOperationFatalError: // fatalni chyba operace (res-id textu je v 'opFatalErrorTextID' a
-        {                             // cislo Windows chyby v 'opFatalError' + je-li 'opFatalError' -1,
-                                      // je string rovnou v 'errBuf'
+        case sfcsOperationFatalError: // fatal error of the operation (the resource ID of the text is in 'opFatalErrorTextID' and
+        {                             // the Windows error number is in 'opFatalError' + if 'opFatalError' is -1,
+                                      // the string is directly in 'errBuf'
             const char* e = GetOperationFatalErrorTxt(opFatalError, errBuf);
             if (fatalErrLogMsg)
             {
@@ -677,12 +678,12 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
                 char* s = buf + strlen(buf);
                 while (s > buf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
                     s--;
-                strcpy(s, "\r\n");                      // CRLF na konec textu posledni chyby
-                Logs.LogMessage(logUID, buf, -1, TRUE); // text posledni chyby pridame do logu
+                strcpy(s, "\r\n");                      // CRLF at the end of the last error text
+                Logs.LogMessage(logUID, buf, -1, TRUE); // add the last error text to the log
             }
             fatalErrLogMsg = TRUE;
 
-            if (canRetry == NULL || donotRetry) // "retry" neni mozne nebo nema smysl
+            if (canRetry == NULL || donotRetry) // "retry" is not possible or does not make sense
             {
                 sprintf(buf, LoadStr(opFatalErrorTextID), e);
                 SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_FTPERRORTITLE),
@@ -706,18 +707,18 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
         }
     }
 
-    if (parentIsEnabled) // pokud jsme disablovali parenta, zase ho enablujeme
+    if (parentIsEnabled) // if we disabled the parent, enable it again
     {
-        // shodime cekaci kurzor nad parentem
+        // remove the wait cursor over the parent
         if (winParent != NULL)
         {
             winParent->DetachWindow();
             delete winParent;
         }
 
-        // enablujeme 'parent'
+        // enable the 'parent'
         EnableWindow(parent, TRUE);
-        // pokud je aktivni 'parent', obnovime i fokus
+        // if the 'parent' is active, restore focus as well
         if (GetForegroundWindow() == parent)
         {
             if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -731,27 +732,27 @@ BOOL CControlConnectionSocket::SendFTPCommand(HWND parent, const char* ftpCmd, c
     }
 
     if (resetWorkingPathCache)
-        ResetWorkingPathCache(); // pokud hrozi zmena pracovni cesty, resetneme cache
+        ResetWorkingPathCache(); // if a change to the working path is likely, reset the cache
     if (resetCurrentTransferModeCache)
-        ResetCurrentTransferModeCache(); // pokud hrozi zmena prenosoveho rezimu, resetneme cache
+        ResetCurrentTransferModeCache(); // if a change to the transfer mode is likely, reset the cache
 
-    if (ret) // spojeni je OK, timeout nenastal
+    if (ret) // the connection is OK, no timeout occurred
     {
         if (handleKeepAlive)
         {
-            // pokud je vse OK, nastavime timer pro keep-alive
+            // if everything is OK, set up the keep-alive timer
             SetupKeepAliveTimer();
         }
     }
-    else // spojeni preruseno nebo timeout (socket je dale nepouzitelny)
+    else // connection interrupted or timeout (the socket cannot be used anymore)
     {
-        CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+        CloseSocket(NULL); // close the socket (if it is open); the system will attempt a "graceful" shutdown (we will not learn the result)
         Logs.SetIsConnected(logUID, IsConnected());
-        Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+        Logs.RefreshListOfLogsInLogsDlg(); // "connection inactive" notification
 
         if (handleKeepAlive)
         {
-            // uvolnime keep-alive, ted uz nebude potreba (uz neni navazane spojeni)
+            // release keep-alive, it is no longer needed (the connection is no longer established)
             ReleaseKeepAlive();
         }
     }
@@ -784,44 +785,44 @@ BOOL CControlConnectionSocket::GetCurrentWorkingPath(HWND parent, char* path, in
         HANDLES(LeaveCriticalSection(&SocketCritSect));
         leaveSect = FALSE;
 
-        // zjistime pracovni adresar na serveru
-        PrepareFTPCommand(cmdBuf, 50, logBuf, 50, ftpcmdPrintWorkingPath, NULL); // nemuze selhat
+        // determine the working directory on the server
+        PrepareFTPCommand(cmdBuf, 50, logBuf, 50, ftpcmdPrintWorkingPath, NULL); // cannot fail
         int ftpReplyCode;
         if (SendFTPCommand(parent, cmdBuf, logBuf, NULL, GetWaitTime(WAITWND_COMOPER), NULL,
                            &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, canRetry,
                            retryMsg, retryMsgBufSize, NULL))
         {
             HANDLES(EnterCriticalSection(&SocketCritSect));
-            if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // vraci se uspech (melo by byt 257)
+            if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // success is returned (should be 257)
                     FTPGetDirectoryFromReply(replyBuf, (int)strlen(replyBuf), WorkingPath, FTP_MAX_PATH) ||
-                FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS) // vraci neuspech (napr. "not defined; use CWD to set the working directory") -> prozatimne pouzijeme prazdnou cestu
+                FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS) // failure returned (e.g. "not defined; use CWD to set the working directory") -> temporarily use an empty path
             {
                 if (FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS)
-                    WorkingPath[0] = 0; // prozatimne pouzijeme prazdnou cestu
+                    WorkingPath[0] = 0; // temporarily use an empty path
                 leaveSect = TRUE;
-                HaveWorkingPath = TRUE; // mame pracovni adresar
+                HaveWorkingPath = TRUE; // we have the working directory
             }
-            else // fatalni chyba, nelze zjistit pracovni adresar, zavreme connectionu a vratime chybu
+            else // fatal error, cannot determine the working directory; close the connection and return an error
             {
-                int logUID = LogUID; // UID logu teto connectiony
+                int logUID = LogUID; // log UID of this connection
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-                CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+                CloseSocket(NULL); // close the socket (if it is open); the system will attempt a "graceful" shutdown (we will not learn the result)
                 Logs.SetIsConnected(logUID, IsConnected());
-                Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+                Logs.RefreshListOfLogsInLogsDlg(); // "connection inactive" notification
                 Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGFATALERROR), -1, TRUE);
 
-                ReleaseKeepAlive(); // pri chybe uvolnime keep-alive (nelze pouzivat bez navazaneho spojeni)
+                ReleaseKeepAlive(); // on error release keep-alive (cannot be used without an established connection)
 
                 sprintf(errBuf, LoadStr(IDS_GETCURWORKPATHERROR), replyBuf);
                 SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
             }
         }
-        // else; // chyba -> zavrena connectiona
+        // else; // error -> connection closed
     }
 
-    if (leaveSect) // zaroven HaveWorkingPath==TRUE
+    if (leaveSect) // HaveWorkingPath == TRUE at the same time
     {
         lstrcpyn(path, WorkingPath, pathBufSize);
         HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -894,34 +895,34 @@ BOOL CControlConnectionSocket::SendChangeWorkingPath(BOOL notInPanel, BOOL leftP
         {
             const char* p;
 
-            BOOL needChangeDir = i == 0 && reconnected && startPath != NULL; // po reconnectu zkusime opet nastavit 'startPath'
-            if (i == 0 && !reconnected && startPath != NULL)                 // jsme jiz dele pripojeni, zkontrolujeme
-            {                                                                // jestli pracovni adresar odpovida 'startPath'
-                // vyuzijeme cache, v normalnich pripadech by tam cesta mela byt
+            BOOL needChangeDir = i == 0 && reconnected && startPath != NULL; // after reconnect try to set 'startPath' again
+            if (i == 0 && !reconnected && startPath != NULL)                 // we have been connected for a while, check
+            {                                                                // whether the working directory matches 'startPath'
+                // use the cache; under normal circumstances the path should be there
                 if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE, &canRetry, retryMsgBuf, 300))
                 {
-                    if (strcmp(newPath, startPath) != 0) // nesedi pracovni adresar na serveru - nutna zmena
-                        needChangeDir = TRUE;            // (predpoklad: server vraci stale stejny retezec pracovni cesty)
+                    if (strcmp(newPath, startPath) != 0) // the working directory on the server differs - change required
+                        needChangeDir = TRUE;            // (assumption: the server always returns the same working path string)
                 }
                 else
                 {
-                    if (canRetry) // "retry" je povolen
+                    if (canRetry) // "retry" is allowed
                     {
                         run = TRUE;
                         retryMsgAux = retryMsgBuf;
                     }
-                    break; // zavrena connectiona, prerusime vnitrni cyklus
+                    break; // connection closed, terminate the inner loop
                 }
             }
 
             if (needChangeDir)
-            { // obnovene spojeni + relativni cesta -> nejdrive zmenime cestu na absolutni, ze ktere vychazime
+            { // restored connection + relative path -> first change to the absolute path we base it on
                 p = startPath;
             }
             else
             {
                 p = path;
-                i = 1; // konec smycky
+                i = 1; // end of the loop
             }
             if (PrepareFTPCommand(cmdBuf, 50 + FTP_MAX_PATH, logBuf, 50 + FTP_MAX_PATH,
                                   ftpcmdChangeWorkingPath, NULL, p))
@@ -934,50 +935,50 @@ BOOL CControlConnectionSocket::SendChangeWorkingPath(BOOL notInPanel, BOOL leftP
                     if (p == startPath)
                     {
                         if (FTP_DIGIT_1(ftpReplyCode) != FTP_D1_SUCCESS)
-                        {               // neuspech (neexistuje absolutni cesta, ze ktere vychazime)
-                            ret = TRUE; // zmena probehla (s chybou)
+                        {               // failure (the absolute path we base it on does not exist)
+                            ret = TRUE; // the change happened (with an error)
                             lstrcpyn(ftpReplyBuf, replyBuf, ftpReplyBufSize);
-                            break; // neuspech -> koncime
+                            break; // failure -> finish
                         }
                     }
                     else
                     {
-                        ret = TRUE; // zmena probehla (uspesne nebo s chybou)
+                        ret = TRUE; // the change happened (successfully or with an error)
                         lstrcpyn(ftpReplyBuf, replyBuf, ftpReplyBufSize);
-                        if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // vraci se uspech (melo by byt 250)
+                        if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // success is returned (should be 250)
                             *success = TRUE;
                     }
                 }
                 else
                 {
-                    if (canRetry) // "retry" je povolen
+                    if (canRetry) // "retry" is allowed
                     {
                         run = TRUE;
                         retryMsgAux = retryMsgBuf;
                     }
-                    break; // zavrena connectiona, prerusime vnitrni cyklus
+                    break; // connection closed, terminate the inner loop
                 }
             }
-            else // neocekavana chyba ("always false") -> zavreme connectionu
+            else // unexpected error ("always false") -> close the connection
             {
                 TRACE_E("Unexpected situation in CControlConnectionSocket::SendChangeWorkingPath() - small buffer for command!");
 
                 HANDLES(EnterCriticalSection(&SocketCritSect));
-                int logUID = LogUID; // UID logu teto connectiony
+                int logUID = LogUID; // log UID of this connection
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-                CloseSocket(NULL); // zavreme socket (je-li otevreny), system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+                CloseSocket(NULL); // close the socket (if it is open); the system will attempt a "graceful" shutdown (we will not learn the result)
                 Logs.SetIsConnected(logUID, IsConnected());
-                Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection inactive"
+                Logs.RefreshListOfLogsInLogsDlg(); // "connection inactive" notification
                 Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGFATALERROR2), -1, TRUE);
 
-                ReleaseKeepAlive(); // pri chybe uvolnime keep-alive (nelze pouzivat bez navazaneho spojeni)
+                ReleaseKeepAlive(); // on error release keep-alive (cannot be used without an established connection)
 
                 break;
             }
         }
         if (!run)
-            break; // ukonceni cyklu v pripade, ze nenastalo preruseni spojeni, ktere se ma obnovit
+            break; // end the loop if there was no connection interruption that needs to be restored
     }
     if (totalAttemptNum != NULL)
         *totalAttemptNum = attemptNum;
@@ -1023,7 +1024,7 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                          forceRefresh, mode, cutDirectory, rescuePath, showChangeInLog,
                          skipFirstReconnectIfNeeded);
 
-    // prvni faze: provedeme odhad textu cesty
+    // first phase: estimate the path text
     BOOL ret = TRUE;
     if (pathBufSize <= 0)
     {
@@ -1037,29 +1038,29 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
     BOOL fileNameAlreadyCut = FALSE;
     if (ret)
     {
-        if (path[0] == 0) // jen tesne po pripojeni - jinak se zmena cesty (Shift+F7) na
-        {                 // rel. cestu (napr. "ftp://localhost") ignoruje
-                          // + pri optimalizaci ChangePath() volane tesne po ziskani pracovni cesty
-            // forceRefresh by melo byt jen FALSE + vzdy predchazi volani GetCurrentWorkingPath() -> vzdy
-            // by melo brat cestu z cache (nesaha na connectionu)
+        if (path[0] == 0) // only right after connecting - otherwise the path change (Shift+F7) to
+        {                 // a relative path (e.g. "ftp://localhost") is ignored
+                          // + when optimizing ChangePath() called right after obtaining the working directory
+            // forceRefresh should be only FALSE + it is always preceded by a GetCurrentWorkingPath() call -> it should always
+            // take the path from the cache (does not touch the connection)
             ret = GetCurrentWorkingPath(parent, path, pathBufSize, forceRefresh, NULL, NULL, 0);
             if (ret)
             {
-                donotTestPath = TRUE; // cestu ziskanou od serveru nema smysl testovat - rovnou ji vylistujeme
+                donotTestPath = TRUE; // no point testing the path obtained from the server - list it right away
                 pathType = GetFTPServerPathType(path);
             }
         }
         else
         {
-            if (parsedPath &&                    // krome pripojeni z dialogu "Connect to FTP Server" je vzdy TRUE
-                (*path == '/' || *path == '\\')) // 'path' ma za zacatku vzdy '/' nebo '\\' ("always true")
+            if (parsedPath &&                    // except for connecting from the "Connect to FTP Server" dialog it is always TRUE
+                (*path == '/' || *path == '\\')) // 'path' always starts with '/' or '\\' ("always true")
             {
                 pathType = GetFTPServerPathType(path + 1);
                 if (pathType == ftpsptOpenVMS || pathType == ftpsptMVS || pathType == ftpsptIBMz_VM ||
-                    pathType == ftpsptOS2 && GetFTPServerPathType("") == ftpsptOS2) // OS/2 cesty se pletou s unixovou cestou "/C:/path", proto rozlisujeme OS/2 cesty i jen podle SYST-reply
-                {                                                                   // VMS + MVS + IBM_z/VM + OS/2 nemaji '/' ani '\\' na zacatku cesty
-                    memmove(path, path + 1, strlen(path) + 1);                      // vyhodime znak '/' nebo '\\' ze zacatku cesty
-                    if (path[0] == 0)                                               // obecny root -> doplnime podle typu systemu
+                    pathType == ftpsptOS2 && GetFTPServerPathType("") == ftpsptOS2) // OS/2 paths get confused with the Unix path "/C:/path", so distinguish OS/2 paths even just by the SYST reply
+                {                                                                   // VMS + MVS + IBM_z/VM + OS/2 do not have '/' or '\\' at the start of the path
+                    memmove(path, path + 1, strlen(path) + 1);                      // remove the '/' or '\\' character from the start of the path
+                    if (path[0] == 0)                                               // generic root -> supplement it according to the system type
                     {
                         if (pathType == ftpsptOpenVMS)
                             lstrcpyn(path, "[000000]", pathBufSize);
@@ -1073,7 +1074,7 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                 {
                                     if (rescuePath[0] == 0 || !FTPGetIBMz_VMRootPath(path, pathBufSize, rescuePath))
                                     {
-                                        lstrcpyn(path, "/", pathBufSize); // testovany server podporoval Unixovy root "/", mozna se nekdo ozve, pak budeme resit dale...
+                                        lstrcpyn(path, "/", pathBufSize); // the tested server supported the Unix root "/"; maybe someone will report it, then we will handle it further...
                                     }
                                 }
                                 else
@@ -1082,7 +1083,7 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                     {
                                         if (rescuePath[0] == 0 || !FTPGetOS2RootPath(path, pathBufSize, rescuePath))
                                         {
-                                            lstrcpyn(path, "/", pathBufSize); // zkusime aspon Unixovy root "/", nic jineho neumime, mozna se nekdo ozve, pak budeme resit dale...
+                                            lstrcpyn(path, "/", pathBufSize); // try at least the Unix root "/", we know nothing else; maybe someone will report it, then we will handle it further...
                                         }
                                     }
                                 }
@@ -1093,12 +1094,12 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                     {
                         if (pathType == ftpsptOpenVMS && mode == 3 && !fileNameAlreadyCut &&
                             cutFileName != NULL && !cutDirectory)
-                        { // zkusime jestli nejde o jmeno souboru (u VMS je to rozlisene syntaxi)
+                        { // try whether it is a file name (with VMS it is distinguished by syntax)
                             lstrcpyn(prevUsedPath, path, FTP_MAX_PATH);
                             BOOL fileNameCouldBeCut;
                             if (FTPCutDirectory(pathType, prevUsedPath, FTP_MAX_PATH, newPath,
                                                 FTP_MAX_PATH, &fileNameCouldBeCut) &&
-                                fileNameCouldBeCut) // u VMS pri 'fileNameCouldBeCut'==TRUE vime jiste, ze se jedna o soubor
+                                fileNameCouldBeCut) // with VMS, 'fileNameCouldBeCut' == TRUE means it is definitely a file
                             {
                                 lstrcpyn(cutFileName, newPath, MAX_PATH);
                                 lstrcpyn(path, prevUsedPath, pathBufSize);
@@ -1119,33 +1120,33 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
 
     char replyBuf[700];
     char errBuf[900 + FTP_MAX_PATH];
-    if (ret && showChangeInLog && // pokud se ma ukazat v logu
-        !cutDirectory)            // jen pri prvnim pruchodu (zkracovani kvuli vadnemu listingu nehlasime)
+    if (ret && showChangeInLog && // if it should be shown in the log
+        !cutDirectory)            // only on the first pass (do not report shortening due to a faulty listing)
     {
         _snprintf_s(errBuf, _TRUNCATE, LoadStr(forceRefresh ? IDS_LOGMSGREFRESHINGPATH : IDS_LOGMSGCHANGINGPATH), path);
         LogMessage(errBuf, -1, TRUE);
     }
 
     prevUsedPath[0] = 0;
-    if (ret && cutDirectory) // zatim OK + ma se zkratit cesta jeste pred pouzitim (pokud cesta nesla vylistovat)
+    if (ret && cutDirectory) // still OK + the path should be shortened before use (if the path could not be listed)
     {
         if (donotTestPath)
-            donotTestPath = FALSE;                  // zmena cesty - zmenenou uz testovat musime
-        lstrcpyn(prevUsedPath, path, FTP_MAX_PATH); // zapamatujeme si predchozi cestu na serveru (vracenou serverem)
+            donotTestPath = FALSE;                  // path change - we must test the modified one
+        lstrcpyn(prevUsedPath, path, FTP_MAX_PATH); // remember the previous path on the server (returned by the server)
         if (!FTPCutDirectory(pathType, path, pathBufSize, NULL, 0, NULL))
         {
-            if (rescuePath[0] != 0) // jeste zkusime zachranou cestu
+            if (rescuePath[0] != 0) // try the rescue path as well
             {
                 lstrcpyn(path, rescuePath, pathBufSize);
                 pathType = GetFTPServerPathType(path);
-                rescuePath[0] = 0; // priste uz ji zkouset nebudeme (nezacyklime se)
+                rescuePath[0] = 0; // do not try it next time (avoid loops)
             }
-            else // neni treba hlasit zadnou chybu (listovani hlasilo chybu), snazili jsme se v tichosti
-            {    // nalezt nejakou pristupnou cestu (coz nevyslo)
+            else // no need to report any error (listing already reported an error); we quietly tried
+            {    // to find an accessible path (which did not work)
                 ret = FALSE;
             }
         }
-        if (ret) // bud orizla nebo jina cesta, kazdopadne to neni pozadovana cesta
+        if (ret) // either shortened or another path, in any case it is not the requested path
         {
             fileNameAlreadyCut = TRUE;
             if (pathWasCut != NULL)
@@ -1153,8 +1154,8 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
         }
     }
 
-    // druha faze: najdeme na serveru pozadovanou nebo co nejblize odpovidajici cestu, ktera
-    //             je bud cachovana nebo pristupna
+    // second phase: find on the server the requested or the closest matching path that
+    //               is either cached or accessible
     if (ret)
     {
         HANDLES(EnterCriticalSection(&SocketCritSect));
@@ -1167,19 +1168,19 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
         strcat(listCmd, "\r\n");
         BOOL isFTPS = EncryptControlConnection == 1;
         int useListingsCacheAux = UseListingsCache;
-        BOOL resuscitateKeepAlive = (IsConnected() && KeepAliveEnabled && KeepAliveMode == kamNone); // pokud uz se keep-alive vypnul (vyprsela doba ozivovani), musime ho znovu nastartovat
-        KeepAliveStart = GetTickCount();                                                             // pozor, nestaci jen tak jednoduse, pouziti 'resuscitateKeepAlive' je nutne
+        BOOL resuscitateKeepAlive = (IsConnected() && KeepAliveEnabled && KeepAliveMode == kamNone); // if keep-alive has already turned off (revival time expired), we must restart it
+        KeepAliveStart = GetTickCount();                                                             // beware, it is not enough to do it simply; 'resuscitateKeepAlive' must be used
         HANDLES(LeaveCriticalSection(&SocketCritSect));
 
         if (donotTestPath)
         {
-            if (useListingsCacheAux && !forceRefresh && // user chce cache pouzivat a nejde o tvrdy refresh
+            if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
                 ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType, path, pathBufSize,
                                             listCmd, isFTPS, cachedListing, cachedListingLen,
                                             cachedListingDate, cachedListingStartTime) &&
                 *cachedListing == NULL)
             {
-                ret = FALSE; // listing je v cache, ale neni dost pameti pro jeho alokaci -> fatalni chyba
+                ret = FALSE; // the listing is in the cache, but there is not enough memory to allocate it -> fatal error
             }
         }
         else
@@ -1196,7 +1197,7 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
 
             while (1)
             {
-                BOOL inCache = useListingsCacheAux && !forceRefresh && // user chce cache pouzivat a nejde o tvrdy refresh
+                BOOL inCache = useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
                                ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
                                                            path, pathBufSize, listCmd, isFTPS,
                                                            cachedListing, cachedListingLen,
@@ -1210,13 +1211,13 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
 
                 if (inCache && *cachedListing == NULL)
                 {
-                    ret = FALSE;   // listing je v cache, ale neni dost pameti pro jeho alokaci
-                    errBuf[0] = 0; // pripadne hlaseni je zbytecne, vypsana chyba by byla jen matouci
-                    break;         // fatalni chyba
+                    ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                    errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
+                    break;         // fatal error
                 }
-                if (!inCache) // listing neni v cache (nebo ho nesmime pouzit)
+                if (!inCache) // the listing is not in the cache (or we must not use it)
                 {
-                    resuscitateKeepAlive = FALSE; // sahne se na connectionu, keep-alive se ozivi automaticky
+                    resuscitateKeepAlive = FALSE; // the connection will be touched, keep-alive will revive automatically
 
                     BOOL success;
                     BOOL userRejectsReconnect;
@@ -1231,20 +1232,20 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                         firstRound = FALSE;
                         skipFirstReconnectIfNeeded = FALSE;
                         retryMsgAux = NULL;
-                        if (success) // server vraci uspech - vytahneme novou cestu
+                        if (success) // the server reports success - retrieve the new path
                         {
                             if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, forceRefresh,
                                                       &canRetry, retryMsgBuf, 300))
                             {
                                 if (cutDirectory && strcmp(newPath, prevUsedPath) == 0)
-                                { // server si z nas dela blazny (nemeni cestu a vraci ze ano)
+                                { // the server is making fools of us (does not change the path but claims it did)
                                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
                                 }
                                 else
                                 {
-                                    lstrcpyn(path, newPath, pathBufSize);       // prevezmeme novou cestu ze serveru
-                                    if (useListingsCacheAux && !forceRefresh && // user chce cache pouzivat a nejde o tvrdy refresh
-                                        strcmp(path, pathSearchedInCache) != 0) // pokud jsme jeste v cache tuto cestu nehledali, zkusime to
+                                    lstrcpyn(path, newPath, pathBufSize);       // take over the new path from the server
+                                    if (useListingsCacheAux && !forceRefresh && // the user wants to use the cache and this is not a hard refresh
+                                        strcmp(path, pathSearchedInCache) != 0) // if we have not searched for this path in the cache yet, try it
                                     {
                                         pathType = GetFTPServerPathType(path);
                                         if (ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
@@ -1253,17 +1254,17 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                                                         cachedListingDate,
                                                                         cachedListingStartTime) &&
                                             *cachedListing == NULL)
-                                        {                  // fatalni chyba
-                                            ret = FALSE;   // listing je v cache, ale neni dost pameti pro jeho alokaci
-                                            errBuf[0] = 0; // pripadne hlaseni je zbytecne, vypsana chyba by byla jen matouci
+                                        {                  // fatal error
+                                            ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                                            errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
                                         }
                                     }
-                                    break; // fatal error nebo uspech (cesta zmenena) + pripadne: cesta je cachovana, listing bereme z cache
+                                    break; // fatal error or success (path changed) + possibly: the path is cached, take the listing from the cache
                                 }
                             }
                             else
                             {
-                                if (canRetry) // "retry" je povolen
+                                if (canRetry) // "retry" is allowed
                                 {
                                     retryMsgAux = retryMsgBuf;
 
@@ -1271,47 +1272,47 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                 }
 
                                 ret = FALSE;
-                                errBuf[0] = 0; // user dostal uz hlaseni fatalni chyby, dalsi hlaska je zbytecna
-                                break;         // fatalni chyba - uz je i zavrena connectiona
+                                errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
+                                break;         // fatal error - the connection is already closed
                             }
                         }
-                        else // chyba, nagenerujeme hlasku
+                        else // error, generate a message
                         {
                             _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), path, replyBuf);
                         }
 
                         if (strcmp(rescuePath, path) == 0)
-                            rescuePath[0] = 0; // chyba cesty shodne s 'rescuePath' -> 'rescuePath' uz dale nema vyznam
+                            rescuePath[0] = 0; // path error identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
 
-                        // zkusime zkratit cestu (pri uspesne zmene cesty to sem nedojde)
+                        // try to shorten the path (a successful path change would not reach this point)
                         BOOL fileNameCouldBeCut;
                         if (!FTPCutDirectory(pathType, path, pathBufSize, newPath, FTP_MAX_PATH, &fileNameCouldBeCut))
                         {
-                            if (rescuePath[0] != 0) // jeste zkusime zachranou cestu
+                            if (rescuePath[0] != 0) // try the rescue path as well
                             {
                                 lstrcpyn(path, rescuePath, pathBufSize);
                                 fileNameAlreadyCut = TRUE;
                                 pathType = GetFTPServerPathType(path);
-                                rescuePath[0] = 0; // priste uz ji zkouset nebudeme (nezacyklime se)
+                                rescuePath[0] = 0; // do not try it next time (avoid loops)
                             }
                             else
                             {
-                                // ani pokud jsme nenasli zadnou pristupnou cestu, nechceme disconnect, proto provedeme nasledujici:
+                                // even if we did not find any accessible path, we do not want a disconnect, therefore do the following:
                                 if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, TRUE,
                                                           &canRetry, retryMsgBuf, 300))
                                 {
-                                    if (newPath[0] == 0) // zajima nas jen pripad, kdy na serveru neni zadna aktualni cesta (jinak to sem snad ani nemuze dojit - dojde k pouziti rescuePath)
+                                    if (newPath[0] == 0) // we care only about the case when there is no current path on the server (otherwise we should not get here - rescuePath would be used)
                                     {
                                         if (pathWasCut != NULL)
-                                            *pathWasCut = TRUE; // jsme na jine nez pozadovane ceste
+                                            *pathWasCut = TRUE; // we are on a path other than the requested one
                                         if (pathBufSize > 0)
-                                            path[0] = 0; // zadna aktualni cesta na serveru neni
-                                        break;           // jdeme zkusit listovani...
+                                            path[0] = 0; // there is no current path on the server
+                                        break;           // go try listing...
                                     }
                                 }
                                 else
                                 {
-                                    if (canRetry) // "retry" je povolen
+                                    if (canRetry) // "retry" is allowed
                                     {
                                         retryMsgAux = retryMsgBuf;
 
@@ -1319,36 +1320,36 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                     }
 
                                     ret = FALSE;
-                                    errBuf[0] = 0; // user dostal uz hlaseni fatalni chyby, dalsi hlaska je zbytecna
-                                    break;         // fatalni chyba - uz je i zavrena connectiona
+                                    errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
+                                    break;         // fatal error - the connection is already closed
                                 }
 
-                                ret = FALSE; // hlasime posledni chybu (ve vsech typech 'mode')
-                                break;       // fatalni chyba (neexistuje zadna pristupna cesta na FS) - spojeni nechame klidne otevrene
+                                ret = FALSE; // report the last error (in all types of 'mode')
+                                break;       // fatal error (no accessible path exists on the FS) - leave the connection open
                             }
                         }
-                        if (fileNameCouldBeCut && !fileNameAlreadyCut && mode == 3) // prvni zkraceni -> muze byt jmeno souboru
+                        if (fileNameCouldBeCut && !fileNameAlreadyCut && mode == 3) // first shortening -> it may be a file name
                         {
-                            errBuf[0] = 0; // v 'mode' 3 se tohle jako chyba nehlasi (snazime se o fokus souboru)
+                            errBuf[0] = 0; // in 'mode' 3 this is not reported as an error (we are trying to focus on the file)
                             if (cutFileName != NULL)
                                 lstrcpyn(cutFileName, newPath, MAX_PATH);
                         }
                         else
                         {
                             if (cutFileName != NULL)
-                                *cutFileName = 0; // to uz byt jmeno souboru nemuze
+                                *cutFileName = 0; // it can no longer be a file name
                         }
                         fileNameAlreadyCut = TRUE;
                         if (pathWasCut != NULL)
                             *pathWasCut = TRUE;
                         if (mode == 1)
-                            errBuf[0] = 0; // v 'mode' 1 se hlasi jen chyby rootu
+                            errBuf[0] = 0; // in 'mode' 1 only root errors are reported
                     }
                     else
                     {
-                        // pokud jde o tvrdy refresh a user odmitl reconnect a cesta ma cachovany listing,
-                        // pouzijeme cachovany listing (user vi, ze "NO" na reconnect, takze nebude ocekavat
-                        // refreshnuty listing)
+                        // if this is a hard refresh and the user refused reconnect and the path has a cached listing,
+                        // use the cached listing (the user knows they answered "NO" to reconnect, so they will not expect
+                        // a refreshed listing)
                         if (firstRound && userRejectsReconnect && useListingsCacheAux && forceRefresh)
                         {
                             inCache = ListingCache.GetPathListing(hostTmp, portTmp, userBuf, pathType,
@@ -1358,41 +1359,41 @@ BOOL CControlConnectionSocket::ChangeWorkingPath(BOOL notInPanel, BOOL leftPanel
                                                                   cachedListingStartTime);
                             if (inCache && *cachedListing == NULL)
                             {
-                                ret = FALSE;   // listing je v cache, ale neni dost pameti pro jeho alokaci
-                                errBuf[0] = 0; // pripadne hlaseni je zbytecne, vypsana chyba by byla jen matouci
-                                break;         // fatalni chyba
+                                ret = FALSE;   // the listing is in the cache, but there is not enough memory to allocate it
+                                errBuf[0] = 0; // any possible message is unnecessary; the printed error would only be confusing
+                                break;         // fatal error
                             }
                             if (inCache)
-                                break; // cesta je cachovana - nebudeme zkoumat jestli jeste existuje, listing bereme z cache
+                                break; // the path is cached - do not check whether it still exists, take the listing from the cache
                         }
 
                         ret = FALSE;
-                        errBuf[0] = 0; // user dostal uz hlaseni fatalni chyby, dalsi hlaska je zbytecna
-                        break;         // fatalni chyba - uz je i zavrena connectiona
+                        errBuf[0] = 0; // the user has already received the fatal error message; another message is unnecessary
+                        break;         // fatal error - the connection is already closed
                     }
-                    skipFirstReconnectIfNeeded = TRUE; // dalsi volani SendChangeWorkingPath() navazuje na predchozi uspesne volani SendChangeWorkingPath()
+                    skipFirstReconnectIfNeeded = TRUE; // the next SendChangeWorkingPath() call follows the previous successful SendChangeWorkingPath() call
                 }
                 else
-                    break; // cesta je cachovana - nebudeme zkoumat jestli jeste existuje, listing bereme z cache
+                    break; // the path is cached - do not check whether it still exists, take the listing from the cache
             }
             if (totalAttemptNum != NULL)
                 *totalAttemptNum = attemptNum;
-            if (errBuf[0] != 0) // pokud mame nejake chybove hlaseni, vypiseme ho zde
+            if (errBuf[0] != 0) // if we have an error message, display it here
             {
                 SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
             }
         }
-        // ma se ozivit a listing je z cache (jinak se musi ozivit az na prvnim poslanem prikazu)
+        // it should be revived and the listing is from the cache (otherwise it must be revived on the first sent command)
         if (resuscitateKeepAlive && *cachedListing != NULL)
         {
-            WaitForEndOfKeepAlive(parent, 0); // wait-okno se nemuze zobrazit
+            WaitForEndOfKeepAlive(parent, 0); // the wait window cannot be shown
             SetupKeepAliveTimer(TRUE);
         }
     }
 
     if (ret && strcmp(rescuePath, path) == 0)
-        rescuePath[0] = 0; // zkousime cestu shodnou s 'rescuePath' -> 'rescuePath' uz dale nema vyznam
+        rescuePath[0] = 0; // trying a path identical to 'rescuePath' -> 'rescuePath' is no longer meaningful
     return ret;
 }
 
@@ -1402,38 +1403,38 @@ void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWN
 
     parent = FindPopupParent(parent);
 
-    if (IsConnected()) // jen je-li spojeni otevrene
+    if (IsConnected()) // only if the connection is open
     {
-        // nejdrive zastavime keep-alive:
-        // schovame si fokus z 'parent' (neni-li fokus z 'parent', ulozime NULL)
+        // first stop keep-alive:
+        // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
         HWND focusedWnd = GetFocus();
         HWND hwnd = focusedWnd;
         while (hwnd != NULL && hwnd != parent)
             hwnd = GetParent(hwnd);
         if (hwnd != parent)
             focusedWnd = NULL;
-        // disablujeme 'parent', pri enablovani obnovime i fokus
+        // disable the 'parent'; when enabling it restore the focus as well
         EnableWindow(parent, FALSE);
 
-        // nahodime cekaci kurzor nad parentem, bohuzel to jinak neumime
+        // set the wait cursor over the parent, unfortunately we do not know another way
         CSetWaitCursorWindow* winParent = new CSetWaitCursorWindow;
         if (winParent != NULL)
             winParent->AttachToWindow(parent);
 
-        // pockame na dokonceni keep-alive prikazu (pokud prave probiha) + nastavime
-        // keep-alive na 'kamForbidden' (budou probihat normalni prikazy)
+        // wait for the keep-alive command to finish (if it is currently running) + set
+        // keep-alive to 'kamForbidden' (normal commands will run)
         WaitForEndOfKeepAlive(parent, WAITWND_CONTOOPER);
 
-        // shodime cekaci kurzor nad parentem
+        // remove the wait cursor over the parent
         if (winParent != NULL)
         {
             winParent->DetachWindow();
             delete winParent;
         }
 
-        // enablujeme 'parent'
+        // enable the 'parent'
         EnableWindow(parent, TRUE);
-        // pokud je aktivni 'parent', obnovime i fokus
+        // if the 'parent' is active, restore the focus as well
         if (GetForegroundWindow() == parent)
         {
             if (parent == SalamanderGeneral->GetMainWindowHWND())
@@ -1445,31 +1446,31 @@ void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWN
             }
         }
 
-        // po zastaveni keep-alive muzeme provest predani aktivni "control connection" do workera
-        // (timer a post-socket-message spojene s keep-alive jsou smazane/dorucene)
-        if (IsConnected()) // jen je-li spojeni otevrene i po dokonceni keep-alive prikazu
+        // after stopping keep-alive we can hand over the active "control connection" to the worker
+        // (the timer and post-socket message associated with keep-alive have been cleared/delivered)
+        if (IsConnected()) // only if the connection is open even after the keep-alive command finishes
         {
-            // prohodime sockety a interni data objektu tykajici se socketu (read/write buffery, atd.)
+            // swap sockets and the object's internal data related to the socket (read/write buffers, etc.)
             SocketsThread->BeginSocketsSwap(this, newWorker);
             // This check is rather complicated for sanity purposes: pCertificate is always NULL
             if (pCertificate)
                 pCertificate->Release();
             pCertificate = newWorker->GetCertificate(); // Keep the certificate
-            newWorker->RefreshCopiesOfUIDAndMsg();      // obnovime kopie UID+Msg (doslo k jejich zmene)
+            newWorker->RefreshCopiesOfUIDAndMsg();      // refresh copies of UID+Msg (they changed)
             BOOL ok = newWorker->IsConnected();
-            if (ok) // paranoid check: mezi IsConnected() a SocketsThread->BeginSocketsSwap() jeste mohlo vypadnout spojeni, to by zadne prohazovani nemelo smysl
+            if (ok) // paranoid check: the connection might still drop between IsConnected() and SocketsThread->BeginSocketsSwap(), swapping would make no sense then
             {
                 HANDLES(EnterCriticalSection(&newWorker->WorkerCritSect));
-                newWorker->SocketClosed = FALSE;      // socket uz neni zavreny, prebirame socket z panelu
-                newWorker->ConnectAttemptNumber = 1;  // spojeni je navazane, tedy zde musi byt jednicka
-                int workerLogUID = newWorker->LogUID; // UID logu workera
-                newWorker->ErrorDescr[0] = 0;         // zacneme sbirat chybova hlaseni
+                newWorker->SocketClosed = FALSE;      // the socket is no longer closed; we are taking over the socket from the panel
+                newWorker->ConnectAttemptNumber = 1;  // the connection is established, so this must be one
+                int workerLogUID = newWorker->LogUID; // log UID of this worker
+                newWorker->ErrorDescr[0] = 0;         // start collecting error messages
                 HANDLES(LeaveCriticalSection(&newWorker->WorkerCritSect));
 
                 HANDLES(EnterCriticalSection(&SocketCritSect));
                 HANDLES(EnterCriticalSection(&newWorker->SocketCritSect));
 
-                // predame workerovi informace o connectione a data socketu
+                // pass the worker information about the connection and the socket data
                 newWorker->ControlConnectionUID = UID;
                 if (HaveWorkingPath)
                 {
@@ -1487,30 +1488,30 @@ void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWN
                 ReadBytesCount = 0;
                 ReadBytesOffset = 0;
                 ReadBytesAllocatedSize = 0;
-                int logUID = LogUID; // UID logu teto connectiony
+                int logUID = LogUID; // log UID of this connection
 
                 HANDLES(LeaveCriticalSection(&newWorker->SocketCritSect));
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-                ResetBuffersAndEvents(); // vycistime frontu udalosti (mela by obsahovat jen ccsevNewBytesRead)
+                ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
 
-                // oznamime Logu, ze je "control connection" predana do workera (tudiz i "inactive")
+                // inform the log that the "control connection" has been handed to the worker (and is thus "inactive")
                 Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONINWORKER), -1, TRUE);
                 Logs.SetIsConnected(logUID, IsConnected());
                 Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERUSECON), -1, TRUE);
                 Logs.SetIsConnected(workerLogUID, newWorker->IsConnected());
                 Logs.RefreshListOfLogsInLogsDlg();
             }
-            else // pokud prohozeni nema smysl, vratime objekty do puvodniho stavu
+            else // if swapping makes no sense, restore the objects to their original state
             {
                 SocketsThread->BeginSocketsSwap(this, newWorker);
-                newWorker->RefreshCopiesOfUIDAndMsg(); // obnovime kopie UID+Msg (doslo k jejich zmene)
+                newWorker->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
                 SocketsThread->EndSocketsSwap();
             }
             SocketsThread->EndSocketsSwap();
         }
 
-        // uvolnime keep-alive, ted uz nebude potreba (uz neni navazane spojeni)
+        // release keep-alive, it is no longer needed (the connection is no longer established)
         ReleaseKeepAlive();
     }
 }
@@ -1519,24 +1520,24 @@ void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker* workerWithCon
 {
     CALL_STACK_MESSAGE1("CControlConnectionSocket::GetConnectionFromWorker()");
 
-    if (!IsConnected() && workerWithCon->IsConnected()) // jen neni-li spojeni otevrene a worker ma otevrene spojeni
+    if (!IsConnected() && workerWithCon->IsConnected()) // only if the connection is not open and the worker has an open connection
     {
-        // prohodime sockety a interni data objektu tykajici se socketu (read/write buffery, atd.)
+        // swap sockets and the object's internal data related to the socket (read/write buffers, etc.)
         SocketsThread->BeginSocketsSwap(this, workerWithCon);
-        workerWithCon->RefreshCopiesOfUIDAndMsg(); // obnovime kopie UID+Msg (doslo k jejich zmene)
+        workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
         BOOL ok = IsConnected();
-        if (ok) // paranoid check: mezi workerWithCon->IsConnected() a SocketsThread->BeginSocketsSwap() jeste mohlo vypadnout spojeni, to by zadne prohazovani nemelo smysl
+        if (ok) // paranoid check: the connection might still drop between workerWithCon->IsConnected() and SocketsThread->BeginSocketsSwap(); swapping would make no sense then
         {
             HANDLES(EnterCriticalSection(&workerWithCon->WorkerCritSect));
-            workerWithCon->SocketClosed = TRUE;       // socket uz neni otevreny, prebirame zavreny socket z panelu
-            int workerLogUID = workerWithCon->LogUID; // UID logu workera
-            workerWithCon->ErrorDescr[0] = 0;         // predani connectiony neni zadna chyba
+            workerWithCon->SocketClosed = TRUE;       // the socket is no longer open; we are taking over the closed socket from the panel
+            int workerLogUID = workerWithCon->LogUID; // log UID of this worker
+            workerWithCon->ErrorDescr[0] = 0;         // handing over the connection is not an error
             HANDLES(LeaveCriticalSection(&workerWithCon->WorkerCritSect));
 
             HANDLES(EnterCriticalSection(&SocketCritSect));
             HANDLES(EnterCriticalSection(&workerWithCon->SocketCritSect));
 
-            // prebirame od workera informace o connectione a data socketu
+            // take over from the worker the information about the connection and the socket data
             workerWithCon->ControlConnectionUID = -1;
             if (workerWithCon->HaveWorkingPath)
             {
@@ -1560,34 +1561,34 @@ void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker* workerWithCon
             if (ConnectionLostMsg != NULL)
                 SalamanderGeneral->Free(ConnectionLostMsg);
             ConnectionLostMsg = NULL;
-            int logUID = LogUID; // UID logu teto connectiony
+            int logUID = LogUID; // log UID of this connection
 
             HANDLES(LeaveCriticalSection(&workerWithCon->SocketCritSect));
             HANDLES(LeaveCriticalSection(&SocketCritSect));
 
-            workerWithCon->ResetBuffersAndEvents(); // vycistime frontu udalosti (mela by obsahovat jen ccsevNewBytesRead)
+            workerWithCon->ResetBuffersAndEvents(); // clear the event queue (it should contain only ccsevNewBytesRead)
 
-            // oznamime Logu, ze je "control connection" prevzata od workera (tudiz opet "active")
+            // inform the log that the "control connection" has been taken from the worker (and is therefore "active" again)
             Logs.LogMessage(logUID, LoadStr(IDS_LOGMSGCONFROMWORKER), -1, TRUE);
             Logs.SetIsConnected(logUID, IsConnected());
             Logs.LogMessage(workerLogUID, LoadStr(IDS_LOGMSGWORKERRETCON), -1, TRUE);
             Logs.SetIsConnected(workerLogUID, workerWithCon->IsConnected());
-            Logs.RefreshListOfLogsInLogsDlg(); // hlaseni "connection active"
+            Logs.RefreshListOfLogsInLogsDlg(); // "connection active" notification
         }
-        else // pokud prohozeni nema smysl, vratime objekty do puvodniho stavu
+        else // if swapping makes no sense, restore the objects to their original state
         {
             SocketsThread->BeginSocketsSwap(this, workerWithCon);
-            workerWithCon->RefreshCopiesOfUIDAndMsg(); // obnovime kopie UID+Msg (doslo k jejich zmene)
+            workerWithCon->RefreshCopiesOfUIDAndMsg(); // refresh copies of UID+Msg (they changed)
             SocketsThread->EndSocketsSwap();
         }
         SocketsThread->EndSocketsSwap();
 
         if (ok)
         {
-            // rozjedeme znovu keep-alive
+            // restart keep-alive
             ReleaseKeepAlive();
-            WaitForEndOfKeepAlive(SalamanderGeneral->GetMsgBoxParent(), 0); // nemuze otevrit wait-okenko (je ve stavu 'kamNone')
-            SetupKeepAliveTimer(TRUE);                                      // nastavime timer pro keep-alive, nechame hned provest keep-alive prikaz (nevime jak dlouho nebyla connectiona v provozu, tak at o ni zbytecne neprijdeme)
+            WaitForEndOfKeepAlive(SalamanderGeneral->GetMsgBoxParent(), 0); // cannot open the wait window (it is in state 'kamNone')
+            SetupKeepAliveTimer(TRUE);                                      // set up the keep-alive timer; trigger the keep-alive command right away (we do not know how long the connection was inactive, so let us avoid losing it)
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -20,8 +21,8 @@ HACCEL ViewerTable = NULL;
 BOOL UseCustomViewerFont = FALSE;
 LOGFONT ViewerLogFont;
 HMENU ViewerMenu = NULL;
-int CharWidth = 1,  // sirka znaku (v bodech), touho hodnotou se deli = nebudeme ji vubec davat na nulu
-    CharHeight = 1; // vyska znaku (v bodech), touho hodnotou se deli = nebudeme ji vubec davat na nulu
+int CharWidth = 1,  // character width (in points); we divide by this value, so we will never set it to zero
+    CharHeight = 1; // character height (in points); we divide by this value, so we will never set it to zero
 
 CRITICAL_SECTION ViewerFontMeasureCS;
 BOOL ViewerFontMeasured = FALSE;
@@ -70,7 +71,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                 SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
             }
 
-            // osetreni hex-modu
+            // hex mode handling
             if (hexMode)
             {
                 char* s = Text;
@@ -89,7 +90,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                 }
                 if (openedQuotes)
                     s = lastQuotes;
-                if (*s != 0) // obsahuje ne-hexa znak
+                if (*s != 0) // contains a non-hex character
                 {
                     if (!changeOnlyHistory)
                     {
@@ -101,7 +102,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                     ti.ErrorOn(ctrlID);
                 }
             }
-            // vse o.k. zalozime do historie
+            // everything is fine; store it in the history
             if (ti.IsGood())
             {
                 if (Text[0] != 0)
@@ -112,8 +113,8 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                     {
                         if (history[i] != NULL)
                         {
-                            if (strcmp(history[i], Text) == 0) // je-li uz v historii
-                            {                                  // pujde na 0. pozici
+                            if (strcmp(history[i], Text) == 0) // already in the history
+                            {                                  // move it to position 0
                                 if (i > 0)
                                 {
                                     char* swap = history[i];
@@ -150,7 +151,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
         if (!changeOnlyHistory)
         {
             int i;
-            for (i = 0; i < historySize; i++) // naplneni listu combo-boxu
+            for (i = 0; i < historySize; i++) // fill the combo-box list
                 if (history[i] != NULL)
                     SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)history[i]);
                 else
@@ -298,15 +299,15 @@ void ConvertHexToString(char* text, char* hex, int& len)
             if (*s != ' ')
             {
                 if (*s == 0)
-                    break; // konec retezce
+                    break; // end of string
                 else
                 {
                     if (*s >= '0' && *s <= '9')
-                        value = (BYTE)(*s - '0'); // prvni cislice
+                        value = (BYTE)(*s - '0'); // first digit
                     else
                         value = (BYTE)(10 + (LowerCase[*s] - 'a'));
                     s++;
-                    if (*s != ' ' && *s != 0 && *s != '"') // druha cislice
+                    if (*s != ' ' && *s != 0 && *s != '"') // second digit
                     {
                         value <<= 4;
                         if (*s >= '0' && *s <= '9')
@@ -319,7 +320,7 @@ void ConvertHexToString(char* text, char* hex, int& len)
                 }
             }
             else
-                s++; // preskok mezery
+                s++; // skip the space
         }
     }
 }
@@ -336,9 +337,9 @@ void CFindSetDialog::Transfer(CTransferInfo& ti)
     HistoryComboBox(HWindow, ti, IDC_FINDTEXT, Text, FIND_TEXT_LEN, !Regular && HexMode,
                     VIEWER_HISTORY_SIZE, ViewerHistory);
     if (ti.Type == ttDataToWindow)
-    { // inicializace hledaneho textu podle oznaceni ve viewru (parent tohoto dialogu)
+    { // initialize the search text based on the selection in the viewer (the parent of this dialog)
         CWindowsObject* win = WindowsManager.GetWindowPtr(Parent);
-        if (win != NULL && win->Is(otViewerWindow)) // pro jistotu test je-li to okno viewru
+        if (win != NULL && win->Is(otViewerWindow)) // just to be sure, check that it is a viewer window
         {
             CViewerWindow* view = (CViewerWindow*)win;
             char buf[FIND_TEXT_LEN];
@@ -394,7 +395,7 @@ CFindSetDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_USER_CLEARHISTORY:
     {
-        // mame promazat historie
+        // we should clear the histories
         ClearComboboxListbox(GetDlgItem(HWindow, IDC_FINDTEXT));
         return 0;
     }
@@ -405,7 +406,7 @@ CFindSetDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case IDCANCEL:
         {
-            HexMode = CancelHexMode; // aby byl Cancel korektni
+            HexMode = CancelHexMode; // keep Cancel correct
             Regular = CancelRegular;
             break;
         }
@@ -419,12 +420,12 @@ CFindSetDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL regular = (IsDlgButtonChecked(HWindow, IDC_VIEWREGEXP) == BST_CHECKED);
                 if (item->Keyword == EXECUTE_HELP)
                 {
-                    // otevreme help se strankou venovanou regular expressions
+                    // open the help page dedicated to regular expressions
                     OpenHtmlHelp(NULL, HWindow, HHCDisplayContext, IDH_REGEXP, FALSE);
                 }
                 if (item->Keyword != EXECUTE_HELP && !regular)
                 {
-                    // user zvolil nejaky vyraz -> zaskrtneme checkbox pro hledani regularu
+                    // the user selected an expression, so tick the checkbox for regular search
                     CheckDlgButton(HWindow, IDC_VIEWREGEXP, BST_CHECKED);
                     PostMessage(HWindow, WM_COMMAND, MAKELPARAM(IDC_VIEWREGEXP, BN_CLICKED), 0);
                 }
@@ -497,11 +498,11 @@ CViewerGoToOffsetDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
     {
         if (LOWORD(wParam) == IDC_VGTO_HEX && HIWORD(wParam) == BN_CLICKED)
-        { // prepnuti HEX = zmena offsetu z dec na hex a opacne
+        { // switching HEX = change the offset from decimal to hex and back
             BOOL h = IsDlgButtonChecked(HWindow, IDC_VGTO_HEX) != BST_UNCHECKED;
             CTransferInfo ti(HWindow, ttDataFromWindow);
             __int64 off;
-            ti.EditLine(IDE_VGTO_OFFSET, off, TRUE, TRUE, !h, FALSE, TRUE); // chybu neukazujeme, jen neprevadime
+            ti.EditLine(IDE_VGTO_OFFSET, off, TRUE, TRUE, !h, FALSE, TRUE); // do not show an error; just skip conversion
             if (ti.IsGood())
             {
                 CTransferInfo ti2(HWindow, ttDataToWindow);
@@ -525,21 +526,21 @@ CViewerWindow::CViewerWindow(const char* fileName, CViewType type, const char* c
     : CWindow(origin), LineOffset(300, 100),
       FindDialog(HLanguage, IDD_FINDSET, IDD_FINDSET)
 {
-    // GDI promenne
+    // GDI variables
     BkgndBrush = NULL;
     BkgndBrushSel = NULL;
     ViewerFont = NULL;
 
     Width = Height = 0;
 
-    // dummy bitmapa -- spravna velikost az ve WM_SIZE
+    // dummy bitmap -- the correct size will be set in WM_SIZE
     if (!Bitmap.CreateBmp(NULL, 1, 1))
         TRACE_E("Unable to create bitmap or memory DC for viewer.");
 
     CreateViewerBrushs();
-    SetViewerFont(); // pouziva Bitmap (musi byt alokovana aspon jako 1x1) a Width (musi byt aspon inicializovana na 0)
+    SetViewerFont(); // uses Bitmap (must already be allocated to at least 1x1) and Width (must already be initialized to at least 0)
 
-    // ostatni promenne
+    // other variables
     HexOffsetLength = 0;
     CanSwitchToHex = TRUE;
     CanSwitchQuietlyToHex = FALSE;
@@ -555,7 +556,7 @@ CViewerWindow::CViewerWindow(const char* fileName, CViewType type, const char* c
     CodeTables.Init(MainWindow->HWindow);
     UseCodeTable = FALSE;
     if (fileName == NULL)
-        FileName = NULL; // chyba
+        FileName = NULL; // error
     else
     {
         char name[MAX_PATH];
@@ -579,8 +580,8 @@ CViewerWindow::CViewerWindow(const char* fileName, CViewType type, const char* c
     ViewSize = FileSize = 0;
     LastLineSize = FirstLineSize = 0;
     EnablePaint = TRUE;
-    StartSelection = -1; // zadna selectiona zatim nebyla
-    EndSelection = -1;   // zadna selectiona zatim nebyla
+    StartSelection = -1; // no selection yet
+    EndSelection = -1;   // no selection yet
     TooBigSelAction = 0;
     EndSelectionRow = -1;
     EndSelectionPrefX = -1;
@@ -627,7 +628,7 @@ CViewerWindow::~CViewerWindow()
     if (Lock != NULL)
     {
         SetEvent(Lock);
-        Lock = NULL; // ted uz je to jen na disk-cache
+        Lock = NULL; // now it is up to the disk cache
     }
     if (Buffer != NULL)
         free(Buffer);
@@ -684,29 +685,29 @@ int GetHexOffsetMode(unsigned __int64 fileSize, int& hexOffsetLength)
     if (fileSize == 0)
     {
         hexOffsetLength = 4;
-        return 1; // min. 4 mista
+        return 1; // at least 4 characters
     }
-    --fileSize;                                              // nejvetsi mozny offset v souboru je o jednu mensi nez velikost souboru
-    if (fileSize <= CQuadWord(0x0000FFFF, 0x00000000).Value) // staci 4 mista
+    --fileSize;                                              // the largest possible offset in the file is one less than the file size
+    if (fileSize <= CQuadWord(0x0000FFFF, 0x00000000).Value) // 4 characters are enough
     {
         hexOffsetLength = 4;
         return 1;
     }
     else
     {
-        if (fileSize <= CQuadWord(0xFFFFFFFF, 0x00000000).Value) // staci 8 mist
+        if (fileSize <= CQuadWord(0xFFFFFFFF, 0x00000000).Value) // 8 characters are enough
         {
             hexOffsetLength = 9;
             return 2;
         }
         else
         {
-            if (fileSize <= CQuadWord(0xFFFFFFFF, 0x0000FFFF).Value) // staci 12 mist
+            if (fileSize <= CQuadWord(0xFFFFFFFF, 0x0000FFFF).Value) // 12 characters are enough
             {
                 hexOffsetLength = 14;
                 return 3;
             }
-            else // nutnych 16 mist
+            else // 16 characters are necessary
             {
                 hexOffsetLength = 19;
                 return 4;
@@ -723,17 +724,17 @@ void PrintHexOffset(char* s, unsigned __int64 offset, int mode)
     {
     case 1:
         sprintf(s, "%04X", LOWORD64(offset));
-        return; // staci 4 mista
+        return; // 4 characters are enough
     case 2:
         sprintf(s, "%04X %04X", LOWORD64(offset >> 16), LOWORD64(offset));
-        return; // staci 8 mist
+        return; // 8 characters are enough
     case 3:
         sprintf(s, "%04X %04X %04X", LOWORD64(offset >> 32), LOWORD64(offset >> 16), LOWORD64(offset));
-        return; // staci 12 mist
+        return; // 12 characters are enough
     case 4:
         sprintf(s, "%04X %04X %04X %04X", LOWORD64(offset >> 48), LOWORD64(offset >> 32),
                 LOWORD64(offset >> 16), LOWORD64(offset));
-        return; // nutnych 16 mist
+        return; // 16 characters are necessary
     }
     TRACE_E("Unexpected situation in PrintHexOffset().");
 }
@@ -789,23 +790,23 @@ void CViewerWindow::Paint(HDC dc)
         r.right = BORDER_WIDTH;
         r.top = 0;
         r.bottom = Height;
-        FillRect(dc, &r, BkgndBrush); // vymaz sloupce vlevo od textu
+        FillRect(dc, &r, BkgndBrush); // clear the columns to the left of the text
         RECT fullLine;
         fullLine.left = 0;
         fullLine.top = 0;
         fullLine.right = Width - BORDER_WIDTH;
-        fullLine.bottom = CharHeight /*Height*/; //j.r. W2K pomalostni patch
+        fullLine.bottom = CharHeight /*Height*/; // j.r. W2K slowness patch
 
         r.right = Width;
         ViewSize = 0;
         int lines = Height / CharHeight + 1;
         int columns = (Width - BORDER_WIDTH) / CharWidth;
-        char line[2001]; // max. 2000 plne viditelnych znaku na radku + 1 znak castecne viditelny
+        char line[2001]; // holds at most 2000 fully visible characters per line plus 1 partially visible character
         char* s;
         BOOL fatalErr = FALSE;
-        if (columns <= 2000) // jen kdyz neni prekroceno toto max.
+        if (columns <= 2000) // only when this maximum is not exceeded
         {
-            // urcim interval radku, ktery je treba prekreslit
+            // determine which rows need to be repainted
             RECT clipRect;
             int clipRet = GetClipBox(dc, &clipRect);
             int clipFirstRow = 0;
@@ -837,33 +838,33 @@ void CViewerWindow::Paint(HDC dc)
                 for (i = 0; i < lines; i++)
                 {
                     __int64 len = Prepare(NULL, lineOffset, 16, fatalErr);
-                    // if (fatalErr) FatalFileErrorOccured(); // je nize
+                    // if (fatalErr) FatalFileErrorOccured(); // see below
                     if (fatalErr)
                         break;
                     if (len == 0 && i + 1 != lines && SeekY != 0)
                     {
                         __int64 size = FileSize;
                         FileChanged(NULL, TRUE, fatalErr, FALSE);
-                        // if (fatalErr) FatalFileErrorOccured(); // je nize
+                        // if (fatalErr) FatalFileErrorOccured(); // see below
                         if (fatalErr || ExitTextMode)
                             break;
                         if (size != FileSize)
                         {
-                            setFindOffset = FALSE; // nechame to udelat az pri nasledujicim kole kresleni
+                            setFindOffset = FALSE; // leave it for the next drawing pass
                             ViewSize = 0;
                             FindNewSeekY(SeekY, fatalErr);
                             if (fatalErr || ExitTextMode)
                                 break;
                             FirstLineSize = LastLineSize = 0;
-                            // pokud se prohlizel zvetsujici se textovy soubor, kde posledni radka koncila
-                            // prechodem na novy radek pri rolovani dolu na konci souboru dochazelo k vadnemu
-                            // prekreslovani, ocekavam to i u HEX view, nasledujici invalidate zajisti komplet prekresleni
+                            // when viewing a growing text file whose last line ended with a line break,
+                            // scrolling down at the end of the file caused incorrect repainting;
+                            // we expect the same in HEX view, so the following invalidate ensures a full repaint
                             InvalidateRect(HWindow, NULL, FALSE);
                             break;
                         }
                     }
                     if (i + 1 != lines)
-                        ViewSize += len; // jen cele viditelne radky
+                        ViewSize += len; // count only fully visible lines
 
                     s = line;
                     if (len != 0)
@@ -890,7 +891,7 @@ void CViewerWindow::Paint(HDC dc)
                         s += len;
                     }
 
-                    int lineLen = (int)(s - line); // vypis radky
+                    int lineLen = (int)(s - line); // length of the line to print
                     if (OriginX < lineLen)
                     {
                         int u1, u2;
@@ -917,12 +918,12 @@ void CViewerWindow::Paint(HDC dc)
 
                         if (i >= clipFirstRow && i <= clipLastRow)
                         {
-                            RECT myLine = fullLine; // myLine je oblast s textem, kterou budeme kreslit pomalym BitBlt
+                            RECT myLine = fullLine; // myLine is the text area that we will draw with the slower BitBlt path
                             myLine.right = min(myLine.right, (lineLen + 1) * CharWidth);
                             FillRect(Bitmap.HMemDC, &myLine, BkgndBrush);
                             if (lineLen > OriginX)
                             {
-                                char* text = line + OriginX; // posun textu dle OriginX
+                                char* text = line + OriginX; // shift the text buffer according to OriginX
                                 u1 -= (int)OriginX;
                                 if (u1 < 0)
                                     u1 = 0;
@@ -935,7 +936,7 @@ void CViewerWindow::Paint(HDC dc)
                                 t2 -= (int)OriginX;
                                 if (t2 < 0)
                                     t2 = 0;
-                                // vypis textu odzadu - kvuli kurzive
+                                // render text backwards because of italics
                                 // u2, lineLen - OriginX norm
                                 if (u2 < lineLen - OriginX)
                                 {
@@ -974,10 +975,10 @@ void CViewerWindow::Paint(HDC dc)
                                     MyTextOut(Bitmap.HMemDC, 0, 0, text, t1);
                             }
 
-                            // bitblt celeho radku do obrazovky
-                            BitBlt(dc, BORDER_WIDTH, CharHeight * i, (lineLen + 1) * CharWidth, // kvuli kurzive o prodlouzime radek o znak
+                            // bitblt the entire row to the screen
+                            BitBlt(dc, BORDER_WIDTH, CharHeight * i, (lineLen + 1) * CharWidth, // extend the line by one character so italics fit
                                    CharHeight, Bitmap.HMemDC, 0, 0, SRCCOPY);
-                            // je-li treba, domazeme prostor vpravo
+                            // if needed, clear the space on the right
                             if (myLine.right < fullLine.right)
                             {
                                 myLine.top = CharHeight * i;
@@ -993,7 +994,7 @@ void CViewerWindow::Paint(HDC dc)
                     if (lineOffset == FileSize)
                     {
                         r.left = BORDER_WIDTH;
-                        if (FileSize > 0) // JR: do AS2.52b1 (vcetne) jsme 0-bajtovy soubor v hex zobrazili tak, ze jsme prvni radek nepodmazavali (prijevilo se pri zmene velikosti okna)
+                        if (FileSize > 0) // JR: up to AS2.52b1 (inclusive) we rendered a 0-byte file in hex without clearing the first line (it appeared when resizing the window)
                             r.top = CharHeight * (i + 1);
                         else
                             r.top = 0;
@@ -1015,7 +1016,7 @@ void CViewerWindow::Paint(HDC dc)
                 if (WrapText && SeekY > 0)
                 {
                     __int64 len = Prepare(NULL, SeekY - (SeekY > 1 ? 2 : 1), SeekY > 1 ? 2 : 1, fatalErr);
-                    // if (fatalErr) FatalFileErrorOccured(); // je nize
+                    // if (fatalErr) FatalFileErrorOccured(); // see below
                     if (fatalErr)
                         break;
 
@@ -1030,34 +1031,34 @@ void CViewerWindow::Paint(HDC dc)
                 }
 
                 RECT endRect = fullLine;
-                __int64 lineOffset = SeekY; // offset zacatku radky v bytech
-                BOOL EOL = FALSE;           // TRUE pokud posledni radka koncila EOLem (dalsi radek existuje, muze byt prazdny)
-                int lineEOLSize = 0;        // delka EOLu (CR=1, LF=1, CRLF=2, NULL=1)
+                __int64 lineOffset = SeekY; // offset of the beginning of the line in bytes
+                BOOL EOL = FALSE;           // TRUE if the previous line ended with an EOL (the next line exists, it may be empty)
+                int lineEOLSize = 0;        // length of the EOL (CR=1, LF=1, CRLF=2, NULL=1)
                 for (int i = 0; i < lines; i++)
                 {
                     __int64 len = Prepare(NULL, lineOffset, APROX_LINE_LEN, fatalErr);
-                    // if (fatalErr) FatalFileErrorOccured(); // je nize
+                    // if (fatalErr) FatalFileErrorOccured(); // see below
                     if (fatalErr)
                         break;
                     if (len == 0 && i + 1 != lines && SeekY != 0)
                     {
                         __int64 size = FileSize;
                         FileChanged(NULL, TRUE, fatalErr, FALSE);
-                        // if (fatalErr) FatalFileErrorOccured(); // je nize
+                        // if (fatalErr) FatalFileErrorOccured(); // see below
                         if (fatalErr || ExitTextMode)
                             break;
                         if (size != FileSize)
                         {
-                            setFindOffset = FALSE; // nechame to udelat az pri nasledujicim kole kresleni
+                            setFindOffset = FALSE; // leave it for the next drawing pass
                             LineOffset.DestroyMembers();
                             ViewSize = 0;
                             FindNewSeekY(SeekY, fatalErr);
                             if (fatalErr || ExitTextMode)
                                 break;
                             FirstLineSize = LastLineSize = 0;
-                            // pokud se prohlizel zvetsujici se textovy soubor, kde posledni radka koncila
-                            // prechodem na novy radek pri rolovani dolu na konci souboru dochazelo k vadnemu
-                            // prekreslovani, nasledujici invalidate zajisti komplet prekresleni
+                            // when viewing a growing text file whose last line ended with a line break,
+                            // scrolling down at the end of the file caused incorrect repainting;
+                            // this invalidate call ensures a full repaint
                             InvalidateRect(HWindow, NULL, FALSE);
                             break;
                         }
@@ -1067,7 +1068,7 @@ void CViewerWindow::Paint(HDC dc)
                     {
                         int redrI = i;
                         if (redrI < clipFirstRow)
-                            redrI = clipFirstRow; // nebudeme prekreslovat zbytecne
+                            redrI = clipFirstRow; // avoid repainting unnecessarily
                         r.left = BORDER_WIDTH;
                         r.top = CharHeight * redrI;
                         r.bottom = CharHeight * clipLastRow;
@@ -1076,7 +1077,7 @@ void CViewerWindow::Paint(HDC dc)
                         if (r.top <= r.bottom)
                             FillRect(dc, &r, BkgndBrush);
 
-                        if (EOL) // pridani posledni prazdne radky do pole LineOffset -> radku nelze ignorovat
+                        if (EOL) // add the last empty line to the LineOffset array -> the line cannot be ignored
                         {
                             LineOffset.Add(lineOffset);
                             LineOffset.Add(lineOffset);
@@ -1085,25 +1086,25 @@ void CViewerWindow::Paint(HDC dc)
                         break;
                     }
 
-                    unsigned char* st;                                               // zacatek bufferu s obsahem radky
-                    unsigned char* s2;                                               // zpracovavany znak z bufferu s obsahem radky
-                    __int64 lineLen = 0;                                             // delka radky ve znacich (tabelator != 1 znak)
-                    BOOL lineEndIsWrapped = FALSE;                                   // je konec radky zalomeny kvuli zaplemu wrap rezimu?
-                    __int64 fullLineLen = 0;                                         // delka radky v bytech
-                    __int64 endX = OriginX + (Width - BORDER_WIDTH) / CharWidth + 1; // offset okraje obrazovky ve znacich
-                    BOOL onlyOne = (len == 1);                                       // posledni znak souboru ?
-                    __int64 startSel = min(StartSelection, EndSelection);            // zacatek oznaceni - offset v bytech
+                    unsigned char* st;                                               // start of the buffer with the line content
+                    unsigned char* s2;                                               // processed character from the buffer with the line content
+                    __int64 lineLen = 0;                                             // line length in characters (tab != 1 character)
+                    BOOL lineEndIsWrapped = FALSE;                                   // is the end of the line wrapped because wrap mode is enabled?
+                    __int64 fullLineLen = 0;                                         // line length in bytes
+                    __int64 endX = OriginX + (Width - BORDER_WIDTH) / CharWidth + 1; // screen edge offset in characters
+                    BOOL onlyOne = (len == 1);                                       // last character of the file?
+                    __int64 startSel = min(StartSelection, EndSelection);            // selection start - offset in bytes
                     if (startSel == -1)
                         startSel = 0;
-                    __int64 endSel = max(StartSelection, EndSelection); // konec oznaceni - offset v bytech
+                    __int64 endSel = max(StartSelection, EndSelection); // selection end - offset in bytes
                     if (endSel == -1)
                         endSel = 0;
                     if (startSel == endSel)
                         startSel = endSel = 0;
-                    BOOL startSelDone = startSel <= lineOffset; // zacatek oznaceni uz je nakresleny
-                    BOOL endSelDone = endSel < lineOffset;      // konec oznaceni uz je nakresleny
+                    BOOL startSelDone = startSel <= lineOffset; // the selection start has already been drawn
+                    BOOL endSelDone = endSel < lineOffset;      // the selection end has already been drawn
 
-                    __int64 tabSpaces = 0; // posun kvuli tabelatorum
+                    __int64 tabSpaces = 0; // shift caused by tabs
                     EOL = FALSE;
                     lineEOLSize = 0;
                     while (len != 0)
@@ -1111,7 +1112,7 @@ void CViewerWindow::Paint(HDC dc)
                         st = s2 = Buffer + (lineOffset + fullLineLen - Seek);
                         while (len--)
                         {
-                            if (*s2 == '\r') // 'konec radky \r' nebo '\r\n'
+                            if (*s2 == '\r') // 'end of line \r' or '\r\n'
                             {
                                 BOOL ok = FALSE;
                                 if (len > 0)
@@ -1135,7 +1136,7 @@ void CViewerWindow::Paint(HDC dc)
                                 else
                                 {
                                     if (!onlyOne)
-                                    { // radka jeste neskoncila, za hranici muze byt '\n'
+                                    { // the line has not ended yet; there may be '\n' beyond the boundary
                                         if (Configuration.EOL_CRLF)
                                         {
                                             len = -1;
@@ -1157,7 +1158,7 @@ void CViewerWindow::Paint(HDC dc)
                                         if (Configuration.EOL_CR)
                                         {
                                             ok = TRUE;
-                                            s2++; // posledni znak souboru je '\r'
+                                            s2++; // the last character of the file is '\r'
                                             EOL = TRUE;
                                             lineEOLSize = 1;
                                         }
@@ -1171,7 +1172,7 @@ void CViewerWindow::Paint(HDC dc)
                             }
                             else
                             {
-                                if (*s2 == '\n' || *s2 == 0) // konec radky '\n' nebo 0
+                                if (*s2 == '\n' || *s2 == 0) // end of line '\n' or 0
                                 {
                                     if ((*s2 == '\n') ? Configuration.EOL_LF : Configuration.EOL_NULL)
                                     {
@@ -1201,7 +1202,7 @@ void CViewerWindow::Paint(HDC dc)
                                         int tab = (int)(Configuration.TabSize - (lineLen % Configuration.TabSize));
                                         if (WrapText && lineLen + tab - 1 >= columns)
                                         {
-                                            tab = (int)max(1, columns - lineLen); // max. ke kraji, minimalne 1 znak
+                                            tab = (int)max(1, columns - lineLen); // at most to the edge, at least 1 character
                                         }
                                         tabSpaces += tab - 1;
                                         if (lineLen > OriginX - tab && endX > lineLen)
@@ -1225,14 +1226,14 @@ void CViewerWindow::Paint(HDC dc)
                                     TRACE_E("something's wrong");
 #endif // _DEBUG
                                 lineEndIsWrapped = TRUE;
-                                break; // predcasny konec radky
+                                break; // premature end of line
                             }
                             s2++;
                             lineLen++;
                         }
                         fullLineLen += s2 - st;
 
-                        // test na delku textove radky (nad 10000 znaku nabizime HEX mod)
+                        // test the text line length (over 10000 characters we offer HEX mode)
                         if (CanSwitchToHex && !ForceTextMode && fullLineLen > TEXT_MAX_LINE_LEN)
                         {
                             if (!CanSwitchQuietlyToHex)
@@ -1252,22 +1253,22 @@ void CViewerWindow::Paint(HDC dc)
                             }
                         }
 
-                        if (len == -1) // radka pokracuje do zatim nenacteneho useku
+                        if (len == -1) // the line continues into a yet unread section
                         {
                             len = Prepare(NULL, lineOffset + fullLineLen, APROX_LINE_LEN, fatalErr);
-                            // if (fatalErr) FatalFileErrorOccured(); // je nize
+                            // if (fatalErr) FatalFileErrorOccured(); // see below
                             if (fatalErr)
                                 break;
                             onlyOne = (len == 1);
                         }
                         else
-                            break; // radka je nactena cela
+                            break; // the entire line has been loaded
                     }
                     if (fatalErr || ExitTextMode)
                         break;
-                    LineOffset.Add(lineOffset);                             // offset zacatku radku
-                    LineOffset.Add(lineOffset + fullLineLen - lineEOLSize); // offset konce radku (pred EOL)
-                    LineOffset.Add(lineLen);                                // delka radku v zobrazenych znacich (TAB je vic znaku)
+                    LineOffset.Add(lineOffset);                             // line start offset
+                    LineOffset.Add(lineOffset + fullLineLen - lineEOLSize); // line end offset (before EOL)
+                    LineOffset.Add(lineLen);                                // line length in displayed characters (TAB is more characters)
                     if (!startSelDone)
                         startSel += tabSpaces;
                     if (!endSelDone)
@@ -1277,7 +1278,7 @@ void CViewerWindow::Paint(HDC dc)
                     {
                         int len2 = (Width - BORDER_WIDTH) / CharWidth;
                         if (len2 - 2 * xRollLimit < endSel - startSel)
-                        { // siroke retezce zkusime zobrazit co nejvice, takze xRollLimit -> 0
+                        { // try to show as much of long strings as possible, so set xRollLimit -> 0
                             xRollLimit = (len2 - (endSel - startSel)) / 2;
                             if (xRollLimit < 0)
                                 xRollLimit = 0;
@@ -1287,7 +1288,7 @@ void CViewerWindow::Paint(HDC dc)
                         if (startSel < lineOffset + lineLen)
                         {
                             __int64 originX = OriginX;
-                            if (startSel < left) // pohled je prilis vpravo
+                            if (startSel < left) // the view is too far to the right
                             {
                                 originX = startSel - lineOffset - xRollLimit;
                                 if (originX < 0)
@@ -1297,7 +1298,7 @@ void CViewerWindow::Paint(HDC dc)
                             {
                                 if (startSel >= right ||
                                     endSel < lineOffset + lineLen && endSel >= right)
-                                { // pohled je prilis vlevo
+                                { // the view is too far to the left
                                     originX = startSel - lineOffset - xRollLimit;
                                     if (originX < 0)
                                         originX = 0;
@@ -1307,15 +1308,15 @@ void CViewerWindow::Paint(HDC dc)
                                     originX = min(originX, originX2);
                                 }
                             }
-                            if (originX != OriginX) // doslo ke zmene
+                            if (originX != OriginX) // there was a change
                             {
-                                setFindOffset = FALSE; // reset FindOffset tu asi nehrozi, ale kdyby byl potreba, udelame ho az pri nasledujicim kole kresleni
+                                setFindOffset = FALSE; // resetting FindOffset probably is not needed here, but if it is, we will do it during the next drawing pass
                                 OriginX = originX;
                                 InvalidateRect(HWindow, NULL, FALSE);
-                                break; // je potreba zacit znovu
+                                break; // we need to start over
                             }
                             else
-                                ScrollToSelection = FALSE; // neni potreba
+                                ScrollToSelection = FALSE; // not necessary
                         }
                     }
 
@@ -1323,7 +1324,7 @@ void CViewerWindow::Paint(HDC dc)
                         FirstLineSize = fullLineLen;
                     if (i + 1 < lines)
                     {
-                        ViewSize += fullLineLen; // jen cele viditelne radky
+                        ViewSize += fullLineLen; // count only fully visible lines
                         if (i + 2 == lines)
                             LastLineSize = fullLineLen;
                     }
@@ -1357,8 +1358,8 @@ void CViewerWindow::Paint(HDC dc)
 
                         if (i >= clipFirstRow && i <= clipLastRow)
                         {
-                            RECT myLine = fullLine;                                        // myLine je oblast s textem, kterou budeme kreslit pomalym BitBlt
-                            myLine.right = min(myLine.right, (int)(len2 + 1) * CharWidth); // znak navic kvuli kurzive
+                            RECT myLine = fullLine;                                        // myLine is the text area that we will draw with the slower BitBlt path
+                            myLine.right = min(myLine.right, (int)(len2 + 1) * CharWidth); // allow one extra character so italics fit
 
                             if (blackEnd)
                             {
@@ -1373,7 +1374,7 @@ void CViewerWindow::Paint(HDC dc)
                                 FillRect(Bitmap.HMemDC, &myLine, BkgndBrush);
 
                             if (lineLen > OriginX)
-                            { // vypis textu do Bitmap.HMemDC
+                            { // output text to Bitmap.HMemDC
                                 if (u3 > 0)
                                     MyTextOut(Bitmap.HMemDC, (int)((u1 + u2) * CharWidth), 0, line + u1 + u2, (int)u3);
                                 if (u2 > 0)
@@ -1390,11 +1391,11 @@ void CViewerWindow::Paint(HDC dc)
                                     MyTextOut(Bitmap.HMemDC, 0, 0, line, (int)u1);
                             }
 
-                            // bitblt celeho radku do obrazovky
+                            // bitblt the entire row to the screen
                             BitBlt(dc, BORDER_WIDTH, CharHeight * i, myLine.right,
                                    CharHeight, Bitmap.HMemDC, 0, 0, SRCCOPY);
 
-                            // je-li treba, domazeme prostor vpravo
+                            // if needed, clear the space on the right
                             if (myLine.right < fullLine.right)
                             {
                                 myLine.top = CharHeight * i;
@@ -1445,14 +1446,14 @@ void CViewerWindow::Paint(HDC dc)
         SetScrollBar();
         //    SetCursor(oldCursor);
     }
-    else // udelame alespon vymaz obrazovky
+    else // at least clear the screen
     {
         RECT r;
         r.left = 0;
         r.right = Width;
         r.top = 0;
         r.bottom = Height;
-        FillRect(dc, &r, BkgndBrush); // vymaz sloupce vlevo od textu
+        FillRect(dc, &r, BkgndBrush); // clear the column to the left of the text
         SetScrollBar();
     }
 }
@@ -1575,7 +1576,7 @@ void ClearViewerHistory(BOOL dataOnly)
 
     if (!dataOnly)
     {
-        // mame podriznout take combobox v otevrenych Find oknech
+        // also clear the combobox in any open Find windows
         ViewerWindowQueue.BroadcastMessage(WM_USER_CLEARHISTORY, 0, 0);
     }
 }
@@ -1584,7 +1585,7 @@ void ReleaseViewer()
 {
     if (ViewerMenu != NULL)
         DestroyMenu(ViewerMenu);
-    ClearViewerHistory(TRUE); // chceme pouze podriznout data
+    ClearViewerHistory(TRUE); // we only want to clear the data
     if (ViewerContinue != NULL)
         HANDLES(CloseHandle(ViewerContinue));
     HANDLES(DeleteCriticalSection(&ViewerFontMeasureCS));
@@ -1629,9 +1630,9 @@ void CViewerWindow::SetViewerFont()
 
         HANDLES(EnterCriticalSection(&ViewerFontMeasureCS));
 
-        // Vista: font fixedsys obsahuje znaky, ktere nemaji ocekavanou sirku (i kdyz je to fixed-width font), proto
-        // omerujeme jednotlive znaky a ty ktere nemaji spravnou sirku mapujeme na nahradni znak o spravne sirce
-        if (!WindowsXP64AndLater && !ViewerFontMeasured) // pred XP64 a Vistou jsme na tuhle prasecinku nenarazili, takze to nebudeme ani testovat (na XP, W2K, NT4, atd.)
+        // Vista: the fixedsys font contains characters that do not have the expected width (even though it is a fixed-width font), therefore
+        // we measure individual characters and map those with an incorrect width to a replacement character with the correct width
+        if (!WindowsXP64AndLater && !ViewerFontMeasured) // before XP64 and Vista we did not run into this mess, so we will not even test it (on XP, W2K, NT4, etc.)
         {
             ViewerFontMeasured = TRUE;
             ViewerFontNeedsMapping = FALSE;
@@ -1659,7 +1660,7 @@ void CViewerWindow::SetViewerFont()
                 {
                     if (rect.right - rect.left != CharWidth)
                     {
-                        if (x == 0xB7 /* middle dot */) // pokud je 'middle-dot' take spatne siroky, substituujeme za mezeru, ktera snad musi byt OK
+                        if (x == 0xB7 /* middle dot */) // if the 'middle dot' is also incorrectly wide, substitute a space, which should be OK
                         {
                             substChar = ' ';
                             int z;

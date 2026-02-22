@@ -3,42 +3,42 @@
 
 #include "precomp.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; Salamander calls its methods
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// additional parts of the CPluginInterface interface
 CPluginInterfaceForFS InterfaceForFS;
 
-// ConfigVersion: 0 - zadna konfigurace se z Registry nenacetla (jde o instalaci pluginu nebo verzi bez konfigurace - do/vcetne 2.5 beta 7),
-//                1 - prvni verze konfigurace (s 2.5 beta 8; duvod zavedeni: automaticke vypinani polozky v menu Alt+F1/F2 pokud neni instalovane rapi.dll)
+// ConfigVersion: 0 - no configuration was read from the Registry (plugin installation or a version without configuration - up to and including 2.5 beta 7),
+//                1 - first configuration version (since 2.5 beta 8; introduced to automatically disable the Alt+F1/F2 menu item when rapi.dll is not installed)
 
-int ConfigVersion = 0;           // verze nactene konfigurace z registry (popis verzi viz vyse)
-#define CURRENT_CONFIG_VERSION 1 // aktualni verze konfigurace (uklada se do registry pri unloadu pluginu)
+int ConfigVersion = 0;           // version of the configuration loaded from the registry (see description above)
+#define CURRENT_CONFIG_VERSION 1 // current configuration version (stored in the registry when the plugin unloads)
 const char* CONFIG_VERSION = "Version";
 
-// globalni data
+// global data
 
-// ukazatele na tabulky mapovani na mala/velka pismena
+// pointers to lower/upper case mapping tables
 unsigned char* LowerCase = NULL;
 unsigned char* UpperCase = NULL;
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander general interface - valid from startup until the plugin terminates
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
-char TitleWMobile[100] = "Windows Mobile Plugin";                  // v entry pointu se nahradi IDS_WMPLUGINTITLE
-char TitleWMobileError[100] = "Windows Mobile Plugin Error";       // v entry pointu se nahradi IDS_WMPLUGINTITLE_ERROR
-char TitleWMobileQuestion[100] = "Windows Mobile Plugin Question"; // v entry pointu se nahradi IDS_WMPLUGINTITLE_QUESTION
+char TitleWMobile[100] = "Windows Mobile Plugin";                  // replaced with IDS_WMPLUGINTITLE in the entry point
+char TitleWMobileError[100] = "Windows Mobile Plugin Error";       // replaced with IDS_WMPLUGINTITLE_ERROR in the entry point
+char TitleWMobileQuestion[100] = "Windows Mobile Plugin Question"; // replaced with IDS_WMPLUGINTITLE_QUESTION in the entry point
 
 // ****************************************************************************
 
@@ -107,28 +107,28 @@ void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Windows Mobile Plugin" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Windows Mobile Plugin" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Windows Mobile Plugin" /* neprekladat! */);
+    // load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Windows Mobile Plugin" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderGeneral->GetLowerAndUpperCase(&LowerCase, &UpperCase);
 
@@ -136,30 +136,30 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     strncpy_s(TitleWMobileError, LoadStr(IDS_WMPLUGINTITLE_ERROR), _TRUNCATE);
     strncpy_s(TitleWMobileQuestion, LoadStr(IDS_WMPLUGINTITLE_QUESTION), _TRUNCATE);
 
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface that provides customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("wmobile.chm");
 
-    if (!InitializeWinLib("WMOBILE" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("WMOBILE" /* do not translate! */, DLLInstance))
         return FALSE;
     SetupWinLibHelp(HTMLHelpCallback);
 
     if (!InitFS())
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // configure the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_FILESYSTEM | FUNCTION_LOADSAVECONFIGURATION,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "WMOBILE" /* neprekladat! */, NULL, "CE");
+                                   "WMOBILE" /* do not translate! */, NULL, "CE");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
-    // ziskame nase FS-name (nemusi byt "cefs", Salamander ho muze upravit)
+    // obtain our FS name (it may not be "cefs"; Salamander can adjust it)
     SalamanderGeneral->GetPluginFSName(AssignedFSName, 0);
 
     return &PluginInterface;
@@ -188,12 +188,12 @@ CPluginInterface::Release(HWND parent, BOOL force)
 
         ReleaseWinLib(DLLInstance);
 
-        // zrusime vsechny kopie souboru z FS v disk-cache (teoreticky zbytecne, kazdy FS po sobe kopie rusi)
+        // remove all copies of FS files from the disk cache (theoretically redundant, every FS should delete its own copies)
         char uniqueFileName[MAX_PATH];
         strcpy(uniqueFileName, AssignedFSName);
         strcat(uniqueFileName, ":");
-        // jmena na disku jsou "case-insensitive", disk-cache je "case-sensitive", prevod
-        // na mala pismena zpusobi, ze se disk-cache bude chovat take "case-insensitive"
+        // disk names are case-insensitive while the disk cache is case-sensitive; converting
+        // to lowercase makes the disk cache behave case-insensitively as well
         SalamanderGeneral->ToLowerCase(uniqueFileName);
         SalamanderGeneral->RemoveFilesFromCache(uniqueFileName);
     }
@@ -209,7 +209,7 @@ CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistr
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD));
     }
@@ -235,20 +235,20 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // prechod na ikonky s podporou alfa kanalu
+    // switch to icons with alpha-channel support
     CGUIIconListAbstract* iconList = SalamanderGUI->CreateIconList();
     iconList->Create(16, 16, 1);
     HICON hIcon = (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(IDI_FS), IMAGE_ICON, 16, 16, SalamanderGeneral->GetIconLRFlags());
     iconList->ReplaceIcon(0, hIcon);
     DestroyIcon(hIcon);
-    salamander->SetIconListForGUI(iconList); // o destrukci iconlistu se postara Salamander
+    salamander->SetIconListForGUI(iconList); // Salamander takes care of destroying the icon list
     salamander->SetChangeDriveMenuItem("\tMobile Device", 0);
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    if (ConfigVersion < 1) // delame jen pri instalaci pluginu nebo prechodu z verze 2.5 beta 7 nebo starsi (abysme nemenili nastaveni usera)
+    if (ConfigVersion < 1) // do this only during plugin installation or upgrade from 2.5 beta 7 or older (to keep the user's settings)
     {
-        // pokud neni nainstalovane rapi, tak schovame ikonu, aby neprekazela
+        // if rapi is not installed, hide the icon so it does not get in the way
         HINSTANCE hLib = LoadLibrary("rapi.dll");
         if (hLib != NULL)
             FreeLibrary(hLib);
@@ -260,7 +260,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 void WINAPI
 CPluginInterface::ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData)
 {
-    //JR v Windows Mobile pluginu nepouzivam zadany data interface
+    //JR the Windows Mobile plugin does not use a dedicated data interface
 }
 
 void WINAPI

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -29,8 +30,8 @@ const char* FILTERCRITERIA_USETOTIME_REG = "UseToTime";
 const char* FILTERCRITERIA_TOLO_REG = "ToLo";
 const char* FILTERCRITERIA_TOHI_REG = "ToHi";
 
-// nasledujici promenne jsme pouzivali do Altap Salamander 2.5,
-// kde jsme presli na CFilterCriteria a jeho Save/Load
+// we used the following variables in Altap Salamander 2.5,
+// where we switched to CFilterCriteria and its Save/Load
 const char* OLD_FINDOPTIONSITEM_ARCHIVE_REG = "Archive";
 const char* OLD_FINDOPTIONSITEM_READONLY_REG = "ReadOnly";
 const char* OLD_FINDOPTIONSITEM_HIDDEN_REG = "Hidden";
@@ -49,10 +50,10 @@ const char* OLD_FINDOPTIONSITEM_HOUR_REG = "Hour";
 const char* OLD_FINDOPTIONSITEM_MINUTE_REG = "Minute";
 const char* OLD_FINDOPTIONSITEM_SECOND_REG = "Second";
 
-// prestupny rok
+// leap year
 #define IsLeapYear(_yr) ((!((_yr) % 400) || ((_yr) % 100) && !((_yr) % 4)) ? TRUE : FALSE)
 
-// pocty dnu v mesicich
+// number of days in months
 const static WORD DaysPerMonth[] =
     {
         31, //  JAN
@@ -102,14 +103,14 @@ void CFilterCriteria::Reset()
     UseToDate = TRUE;
     UseToTime = FALSE;
 
-    // 'From' nastavime den zpet, 'To' na aktualni datum
+    // Set 'From' to one day back and 'To' to the current date
     SYSTEMTIME st;
     GetSystemTime(&st);
     SystemTimeToFileTime(&st, (FILETIME*)&To);
-    From = To - (unsigned __int64)10000000 * 60 * 60 * 24; // jeden den zpet
+    From = To - (unsigned __int64)10000000 * 60 * 60 * 24; // one day back
 
-    // interni promenne
-    NeedPrepare = FALSE; // za uvedene situace neni treba volat PrepareForTest
+    // internal variables
+    NeedPrepare = FALSE; // in this given situation it is not necessary to call PrepareForTest
     UseMinTime = FALSE;
     UseMaxTime = FALSE;
 }
@@ -146,7 +147,7 @@ void SizeToBytes(CQuadWord* out, const CQuadWord* in, CFilterCriteriaSizeUnitsEn
     }
 }
 
-// vraci maximalni cislo, ktere se po prevodu na bajty jeste vejde do CQuadWord
+// returns the maximum number that still fits into CQuadWord after conversion to bytes
 void MaxSizeForUnits(CQuadWord* out, CFilterCriteriaSizeUnitsEnum units)
 {
     switch (units)
@@ -179,10 +180,10 @@ void MaxSizeForUnits(CQuadWord* out, CFilterCriteriaSizeUnitsEnum units)
     }
 }
 
-// vraci maximalni cislo, ktere se po prevodu na vteriny jeste vejde do unsigned __int64
+// returns the maximum number that after conversion to seconds still fits into unsigned __int64
 void MaxTimeForUnits(unsigned __int64* out, CFilterCriteriaTimeUnitsEnum units)
 {
-    // budeme umet hledat jen 300 let zpet :)
+    // we'll only handle searching 300 years back :)
     switch (units)
     {
     case fctuSeconds:
@@ -218,7 +219,7 @@ void CFilterCriteria::PrepareForTest()
     UseMinTime = FALSE;
     UseMaxTime = FALSE;
 
-    // urcime velikosti v bajtech
+    // determine sizes in bytes
     if (UseMinSize)
         SizeToBytes(&MinSizeBytes, &MinSize, MinSizeUnits);
 
@@ -227,11 +228,11 @@ void CFilterCriteria::PrepareForTest()
 
     if (TimeMode == fctmDuring)
     {
-        SYSTEMTIME st; // st muze byt meneno, viz nulovani hodin, minut a vterin
+        SYSTEMTIME st; // 'st' can be modified, see the reset of hours, minutes, and seconds
         GetLocalTime(&st);
-        // den v tydnu je redundantni informace, nebudeme s ni pracovat
+        // weekday is redundant information; we will not work with it
         st.wDayOfWeek = 0;
-        SYSTEMTIME stCurrent = st; // aktualni cas, ktery nebudeme modifikovat
+        SYSTEMTIME stCurrent = st; // current time that we won't modify
 
         unsigned __int64 offset = 0;
         switch (DuringTimeUnits)
@@ -257,7 +258,7 @@ void CFilterCriteria::PrepareForTest()
         case fctuDays:
         case fctuWeeks:
         {
-            // v pripade dni a tydnu nezalezi na casovem udaji, ridime se pouze datumem
+            // in the case of days and weeks, the time value does not matter, we go by the date only
             st.wHour = 0;
             st.wMinute = 0;
             st.wSecond = 0;
@@ -265,9 +266,9 @@ void CFilterCriteria::PrepareForTest()
 
             unsigned __int64 days;
             if (DuringTimeUnits == fctuDays)
-                days = DuringTime.Value; // dny
+                days = DuringTime.Value; // days
             else
-                days = DuringTime.Value * 7; // tydny
+                days = DuringTime.Value * 7; // weeks
 
             offset = days * (unsigned __int64)10000000 * 60 * 60 * 24;
 
@@ -277,7 +278,7 @@ void CFilterCriteria::PrepareForTest()
         case fctuMonths:
         case fctuYears:
         {
-            // v pripade mesicu a roku nezalezi na casovem udaji, ridime se pouze datumem
+            // in the case of months and years, the time value does not matter, we go by the date only
             st.wHour = 0;
             st.wMinute = 0;
             st.wSecond = 0;
@@ -288,12 +289,12 @@ void CFilterCriteria::PrepareForTest()
                 unsigned __int64 i;
                 for (i = 0; i < DuringTime.Value; i++)
                 {
-                    // vratime se o mesic zpet
+                    // we go back by one month
                     if (st.wMonth > 1)
                         st.wMonth--;
                     else
                     {
-                        // leden -> prosinec && rok zpet
+                        // January -> December and one year back
                         st.wMonth = 12;
                         st.wYear--;
                     }
@@ -302,12 +303,12 @@ void CFilterCriteria::PrepareForTest()
             else
                 st.wYear = st.wYear - (WORD)DuringTime.Value;
 
-            // pokud den neexistuje, vracime se k existujicimu
+            // if the day does not exist, we move back to an existing one
             if (st.wMonth >= 1 && st.wMonth <= 12)
             {
                 int maxDay = DaysPerMonth[st.wMonth - 1];
                 if (IsLeapYear(st.wYear) && st.wMonth == 2)
-                    maxDay++; // na prestupny rok ma unor o den vic
+                    maxDay++; // February has one extra day in a leap year
                 if (st.wDay > maxDay)
                     st.wDay = maxDay;
             }
@@ -322,7 +323,7 @@ void CFilterCriteria::PrepareForTest()
         }
         if (SystemTimeToFileTime(&stCurrent, (FILETIME*)&MaxTime))
         {
-            // od 2.52b1 nebereme u "Modified during" budouci soubry, viz hlaseni na foru
+            // since 2.52b1, we do not include future files in "Modified during"; see report on the forum
             // https://forum.altap.cz/viewtopic.php?t=2818
             UseMaxTime = TRUE;
         }
@@ -335,7 +336,7 @@ void CFilterCriteria::PrepareForTest()
             SYSTEMTIME st;
             if (FileTimeToSystemTime((FILETIME*)&From, &st))
             {
-                st.wMilliseconds = 0; // control vraci podezrele hodnoty, orezeme je
+                st.wMilliseconds = 0; // the control returns suspicious values, so we trim them
                 if (!UseFromTime)
                 {
                     st.wHour = 0;
@@ -354,7 +355,7 @@ void CFilterCriteria::PrepareForTest()
             SYSTEMTIME st;
             if (FileTimeToSystemTime((FILETIME*)&To, &st))
             {
-                st.wMilliseconds = 0; // control vraci podezrele hodnoty, orezeme je
+                st.wMilliseconds = 0; // the control returns suspicious values, so we trim them
                 if (!UseToTime)
                 {
                     st.wHour = 23;
@@ -363,9 +364,9 @@ void CFilterCriteria::PrepareForTest()
                 }
                 if (SystemTimeToFileTime(&st, (FILETIME*)&MaxTime))
                 {
-                    // chceme byt opravdu maximalni cas, nalepime se uplne na konec intervalu
-                    // pri rozlisovaci schopnosti FILETIME
-                    MaxTime += 9999999; // temer jedna vterina
+                    // we want to be the absolute maximum time, sticking right at the very end of the interval
+                    // at the resolution of FILETIME
+                    MaxTime += 9999999; // almost one second
 
                     UseMaxTime = TRUE;
                 }
@@ -389,12 +390,12 @@ BOOL CFilterCriteria::Test(DWORD attributes, const CQuadWord* size, const FILETI
     {
         if ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
-            // jde o adresar, vypadneme
+            // it's a directory, so we'll skip it
             ok = FALSE;
         }
         else
         {
-            // jedna se o soubor, muzeme provnat velikost
+            // it's a file, so we can compare its size
             if (UseMinSize)
                 ok = *size >= MinSizeBytes;
             if (ok && UseMaxSize)
@@ -407,7 +408,7 @@ BOOL CFilterCriteria::Test(DWORD attributes, const CQuadWord* size, const FILETI
     {
         unsigned __int64 time;
         if (!FileTimeToLocalFileTime(modified, (FILETIME*)&time))
-            time = 0; // pri chybe dame nulu (at je chovani deterministicke)
+            time = 0; // in case of an error, set to zero (so that the behavior is deterministic)
 
         if (UseMinTime)
             ok = time >= MinTime;
@@ -488,8 +489,8 @@ BOOL CFilterCriteria::GetAdvancedDescription(char* buffer, int maxLen, BOOL& dir
 
 BOOL CFilterCriteria::Save(HKEY hKey)
 {
-    // optimalizace na velikost v Registry: ukladame pouze "non-default hodnoty";
-    // pred ukladanim je proto treba promazat klic, do ktereho se budeme ukladat
+    // space optimization in the Registry: we store only "non-default values"
+    // before saving, it is necessary to clear the key where we will store the data
     CFilterCriteria def;
 
     // Attributes
@@ -533,10 +534,10 @@ BOOL CFilterCriteria::Save(HKEY hKey)
     if (UseFromTime != def.UseFromTime)
         SetValue(hKey, FILTERCRITERIA_USEFROMTIME_REG, REG_DWORD, &UseFromTime, sizeof(DWORD));
 
-    // poznamka: od 2.53 budeme "zapominat" casy v disablenych FROM/TO controlech (viz podminka TimeMode == fctmFromTo)
-    // pokud si uzivatele vyzadaji navrat ke staremu chovani, mohly bychom defaultne vypinat checkboxy v Date controlech,
-    // cimz by nebyla splnena podminka UseFromDate/UseToDate; checkbox bychom zapnuli az ve chvili, kdy by user control enabloval radiakem
-    if (From != def.From && TimeMode == fctmFromTo && (UseFromDate || UseFromTime)) // casy nema smysl ukladat, pokud se nepouzivaji (controly pak dosadi aktualni cas)
+    // note: starting with 2.53 we'll "forget" the times in disabled FROM/TO controls (see TimeMode == fctmFromTo condition)
+    // if users request a return to the old behavior, we could by default disable the checkboxes in the Date controls,
+    // which would not meet the UseFromDate/UseToDate condition; we would enable the checkbox only when the user enables the control via radio buttons
+    if (From != def.From && TimeMode == fctmFromTo && (UseFromDate || UseFromTime)) // there's no point in storing times when they are not used (controls would insert the current time)
     {
         SetValue(hKey, FILTERCRITERIA_FROMLO_REG, REG_DWORD, &(((FILETIME*)&From)->dwLowDateTime), sizeof(DWORD));
         SetValue(hKey, FILTERCRITERIA_FROMHI_REG, REG_DWORD, &(((FILETIME*)&From)->dwHighDateTime), sizeof(DWORD));
@@ -545,7 +546,7 @@ BOOL CFilterCriteria::Save(HKEY hKey)
         SetValue(hKey, FILTERCRITERIA_USETODATE_REG, REG_DWORD, &UseToDate, sizeof(DWORD));
     if (UseToTime != def.UseToTime)
         SetValue(hKey, FILTERCRITERIA_USETOTIME_REG, REG_DWORD, &UseToTime, sizeof(DWORD));
-    if (To != def.To && TimeMode == fctmFromTo && (UseToDate || UseToTime)) // casy nema smysl ukladat, pokud se nepouzivaji (controly pak dosadi aktualni cas)
+    if (To != def.To && TimeMode == fctmFromTo && (UseToDate || UseToTime)) // there's no point in storing times when they are not used (controls would insert the current time)
     {
         SetValue(hKey, FILTERCRITERIA_TOLO_REG, REG_DWORD, &(((FILETIME*)&To)->dwLowDateTime), sizeof(DWORD));
         SetValue(hKey, FILTERCRITERIA_TOHI_REG, REG_DWORD, &(((FILETIME*)&To)->dwHighDateTime), sizeof(DWORD));
@@ -754,9 +755,9 @@ BOOL CFilterCriteria::LoadOld(HKEY hKey)
             if (dateAction == 1) // older than
             {
                 if (timeAction == 1)
-                    To -= (unsigned __int64)10000000; // vterina
+                    To -= (unsigned __int64)10000000; // second
                 else
-                    To -= (unsigned __int64)10000000 * 60 * 60 * 24; // den
+                    To -= (unsigned __int64)10000000 * 60 * 60 * 24; // day
             }
         }
         break;
@@ -802,9 +803,9 @@ BOOL CFilterCriteria::LoadOld(HKEY hKey)
             if (dateAction == 5) // newer than
             {
                 if (timeAction == 1)
-                    From += (unsigned __int64)10000000; // vterina
+                    From += (unsigned __int64)10000000; // second
                 else
-                    From += (unsigned __int64)10000000 * 60 * 60 * 24; // den
+                    From += (unsigned __int64)10000000 * 60 * 60 * 24; // day
             }
         }
         break;
@@ -885,7 +886,7 @@ BOOL AttributeCheckBox(CTransferInfo* ti, int ctrlID, DWORD attribute, DWORD* at
             if (value == 2)
             {
                 *attrMask &= ~attribute;
-                *attrValue &= ~attribute; // pouze pro formu
+                *attrValue &= ~attribute; // just for the form
             }
             else
             {
@@ -908,7 +909,7 @@ void CFilterCriteriaDialog::FillUnits(int editID, int comboID, int* units, BOOL 
     HWND hEdit = GetDlgItem(HWindow, editID);
     HWND hCombo = GetDlgItem(HWindow, comboID);
 
-    // vytahnu z edit line ridici hodnotu
+    // extract the control value from the edit line
     char buff[100];
     char buff2[100];
     SendMessage(hEdit, WM_GETTEXT, 22, (LPARAM)buff);
@@ -916,7 +917,7 @@ void CFilterCriteriaDialog::FillUnits(int editID, int comboID, int* units, BOOL 
     CQuadWord editValue;
     editValue.Value = StrToUInt64(buff, (int)strlen(buff));
 
-    BOOL dirty = FALSE; // pokud neuspinime
+    BOOL dirty = FALSE; // if we keep it clean
     SendMessage(hCombo, WM_SETREDRAW, FALSE, 0);
     int curSel = (int)SendMessage(hCombo, CB_GETCURSEL, 0, 0);
 
@@ -1028,7 +1029,7 @@ void CFilterCriteriaDialog::Transfer(CTransferInfo& ti)
         }
         st.wMilliseconds = 0;
         if (!SystemTimeToFileTime(&st, (FILETIME*)&Data->From))
-            Data->From = (unsigned __int64)0; // error pro Validate
+            Data->From = (unsigned __int64)0; // error for validation
 
         Data->UseToDate = DateTime_GetSystemtime(GetDlgItem(HWindow, IDC_FFA_TO_DATE), &st) == GDT_VALID;
         Data->UseToTime = DateTime_GetSystemtime(GetDlgItem(HWindow, IDC_FFA_TO_TIME), &st2) == GDT_VALID;
@@ -1046,7 +1047,7 @@ void CFilterCriteriaDialog::Transfer(CTransferInfo& ti)
         }
         st.wMilliseconds = 0;
         if (!SystemTimeToFileTime(&st, (FILETIME*)&Data->To))
-            Data->To = (unsigned __int64)0; // error pro Validate
+            Data->To = (unsigned __int64)0; // error for validation
     }
 
     if (ti.Type == ttDataToWindow)
@@ -1059,9 +1060,9 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 {
     CALL_STACK_MESSAGE1("CFilterCriteriaDialog::Validate()");
 
-    // ulozime ukazatel na data
+    // we store a pointer to the data
     CFilterCriteria* oldData = Data;
-    // a prejdeme na docasnou kopii
+    // and we switch to a temporary copy
     CFilterCriteria data;
     memmove(&data, Data, sizeof(data));
     Data = &data;
@@ -1072,7 +1073,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
     if (ti.IsGood() && Data->UseMinSize)
     {
-        // hodnota prevedena na bajty se musi vejit do unsigned __int64
+        // the value converted to bytes must fit into unsigned __int64
         CQuadWord limit;
         MaxSizeForUnits(&limit, Data->MinSizeUnits);
         if (Data->MinSize > limit)
@@ -1085,7 +1086,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
     if (ti.IsGood() && Data->UseMaxSize)
     {
-        // hodnota prevedena na bajty se musi vejit do unsigned __int64
+        // the value converted to bytes must fit into unsigned __int64
         CQuadWord limit;
         MaxSizeForUnits(&limit, Data->MaxSizeUnits);
         if (Data->MaxSize > limit)
@@ -1098,7 +1099,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
     if (ti.IsGood() && Data->UseMinSize && Data->UseMaxSize)
     {
-        // pokud uzivatel nastavi obe meze, maximum nesmi byt mensi nez minimum
+        // if the user sets both limits, the maximum must not be lower than the minimum
         CQuadWord minSizeBytes;
         CQuadWord maxSizeBytes;
         SizeToBytes(&minSizeBytes, &Data->MinSize, Data->MinSizeUnits);
@@ -1113,7 +1114,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
     if (Data->TimeMode == fctmDuring)
     {
-        // hodnota musi byt nejmene 1
+        // the value must be at least 1
         if (ti.IsGood() && Data->DuringTime.Value < 1)
         {
             SalMessageBox(HWindow, LoadStr(IDS_TIME_MIN), LoadStr(IDS_ERRORTITLE),
@@ -1123,7 +1124,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
         if (ti.IsGood())
         {
-            // hodnota nesmi presahnout stanoveny limit
+            // the value must not exceed the defined limit
             unsigned __int64 limit;
             MaxTimeForUnits(&limit, Data->DuringTimeUnits);
             if (Data->DuringTime.Value > limit)
@@ -1136,7 +1137,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
 
         if (ti.IsGood())
         {
-            // overime, ze s v PrepareForTest podarilo cas prevest na existujici datum
+            // verify that in PrepareForTest the time was successfully converted to an existing date
             Data->PrepareForTest();
             if (!Data->UseMinTime)
             {
@@ -1184,7 +1185,7 @@ void CFilterCriteriaDialog::Validate(CTransferInfo& ti)
         }
     }
 
-    // navrat k puvodnim datum
+    // return to the original date
     Data = oldData;
 }
 
@@ -1250,8 +1251,8 @@ void CFilterCriteriaDialog::EnableControls()
     }
     EnableWindow(GetDlgItem(HWindow, IDC_FFA_TO_TIME), enabledTo);
 
-    // pokud user stisknul tlacitko Reset pres hot key, mohlo by dojit
-    // disablu controlu, kde stoji focus, osetrime to
+    // if the user pressed the Reset button via hot key, it could
+    // disable the control that currently has focus; we handle it
     if (hFocus != NULL && !IsWindowEnabled(hFocus))
         SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(HWindow, IDC_FFA_SIZEMIN), TRUE);
 }
@@ -1264,7 +1265,7 @@ CFilterCriteriaDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // pripojime UpDown control do editlajn
+        // attach the UpDown control to the edit line
         int resID[] = {IDC_FFA_SIZEMIN_VALUE, IDC_FFA_SIZEMAX_VALUE, IDC_FFA_TIMEDURING_VALUE, -1};
         int upDownID[] = {IDC_FFA_SIZEMIN_UPDOWN, IDC_FFA_SIZEMAX_UPDOWN, IDC_FFA_TIMEDURING_UPDOWN};
         int i;
@@ -1275,9 +1276,9 @@ CFilterCriteriaDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS,
                                             0, 0, 0, 0, HWindow, upDownID[i], HInstance,
                                             hEdit, 10000, i == 2 ? 1 : 0, 0);
-            // posuneme UpDown control v z-orderu hned za editline, jinak
-            // zobrazovani dialogu na pomalem stroji vypadalo divne
-            // (UpDown se dokreslil az po vsech ostatnich controlech)
+            // move the UpDown control in the z-order right after the edit line, otherwise
+            // on a slow machine the dialog display looked odd
+            // (the UpDown was drawn after all the other controls)
             SetWindowPos(hWnd, hEdit, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         }
         if (!EnableDirectory)
@@ -1288,11 +1289,11 @@ CFilterCriteriaDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        // zmena na nejakem combo boxu
+        // a change on some combo box
         if (HIWORD(wParam) == BN_CLICKED || HIWORD(wParam) == CBN_SELCHANGE)
             EnableControls();
 
-        // zmena v ridicich edit line
+        // a change in controlling edit line
         if (HIWORD(wParam) == EN_UPDATE)
         {
             int sizeUnits[] = {IDS_FFA_BYTES,

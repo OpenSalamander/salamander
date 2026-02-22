@@ -5,10 +5,10 @@
 
 #define SizeOf(x) (sizeof(x) / sizeof(x[0]))
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin shuts down
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 extern CSalamanderGUIAbstract* SalamanderGUI;
 
 // ZLIB compression/decompression interface
@@ -17,10 +17,10 @@ extern CSalamanderZLIBAbstract* SalZLIB;
 // BZIP2 compression/decompression interface
 extern CSalamanderBZIP2Abstract* SalBZIP2;
 
-// interface pro komfortni praci se soubory
+// interface for comfortable work with files
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 
-// aktualni hodnota konfiguracni promenne Salamandera SALCFG_SORTBYEXTDIRSASFILES
+// current value of Salamander's configuration variable SALCFG_SORTBYEXTDIRSASFILES
 extern int SortByExtDirsAsFiles;
 
 class CISOImage;
@@ -71,7 +71,7 @@ public:
     virtual void WINAPI DeleteTmpCopy(const char* fileName, BOOL firstFile) {}
     virtual BOOL WINAPI PrematureDeleteTmpCopy(HWND parent, int copiesCount) { return FALSE; }
 
-    // vlastni metody pluginu
+    // plugin's own methods
 public:
     BOOL Init();
 };
@@ -139,10 +139,10 @@ public:
     BOOL DisplayMissingCCDWarning;
 };
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
-//extern DWORD Options;// konfigurace
+//extern DWORD Options;// configuration
 struct COptions
 {
     BOOL ClearReadOnly;      // Clear read-only attribute when copying from archive
@@ -150,7 +150,7 @@ struct COptions
     BOOL BootImageAsFile;    // Show boot image disk as file
 };
 
-extern COptions Options; // konfigurace
+extern COptions Options; // configuration
 
 char* LoadStr(int resID);
 void GetInfo(char* buffer, FILETIME* lastWrite, unsigned size);

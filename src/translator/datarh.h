@@ -10,9 +10,9 @@
 
 struct CDataRHItem
 {
-    WORD ID;    // ciselne ID vytazene z RH souboru
-    char* Name; // alokovany nazev odpovidajici tomuto ID
-    int Row;    // cislo odpovidajici radky
+    WORD ID;    // numeric ID extracted from the RH file
+    char* Name; // allocated name corresponding to this ID
+    int Row;    // number of the matching line
 };
 
 //*****************************************************************************
@@ -22,10 +22,10 @@ struct CDataRHItem
 
 struct CDataRHIncompleteItem
 {
-    char* Name;    // alokovany nazev odpovidajici tomuto ID
-    int Row;       // cislo odpovidajici radky
-    char* SymbVal; // alokovana symbolicka hodnota v dobe cteni teto polozky nebyla znama jeji hodnota
-    int AddConst;  // kolik se ma pridat k hodnote 'SymbVal' (napr. 5 pokud bylo v .RH "IDC_CONST + 5")
+    char* Name;    // allocated name corresponding to this ID
+    int Row;       // number of the matching line
+    char* SymbVal; // allocated symbolic value; when this item was read the numeric value was unknown
+    int AddConst;  // value added to 'SymbVal' (e.g. 5 for "IDC_CONST + 5" in the .RH file)
 };
 
 //*****************************************************************************
@@ -36,40 +36,40 @@ struct CDataRHIncompleteItem
 class CDataRH
 {
 public:
-    TDirectArray<CDataRHItem> Items;                     // konstanty (serazene podle podle ID)
-    TDirectArray<CDataRHItem> FileMarks;                 // rozdeleni do souboru (poradi dle souboru, ID se nepouziva)
-    TDirectArray<CDataRHIncompleteItem> IncompleteItems; // konstanty, kterych hodnota jeste neni znama (jsou relativni k jine konstante uvedene dale v souboru)
+    TDirectArray<CDataRHItem> Items;                     // constants sorted by ID
+    TDirectArray<CDataRHItem> FileMarks;                 // file boundaries (ordered by file; the ID field is unused)
+    TDirectArray<CDataRHIncompleteItem> IncompleteItems; // constants whose value is not known yet (relative to another constant later in the file)
     char* Data;
     DWORD DataSize;
 
-    BOOL ContainsUnknownIdentifier; // TRUE = aspon jeden dotaz na jmeno konstanty, ktera neni v symbols (donutime obsluhu ji tam doplnit)
+    BOOL ContainsUnknownIdentifier; // TRUE = at least one request for a constant name missing in Symbols (forces the user to add it)
 
 public:
     CDataRH();
     ~CDataRH();
 
-    // nacte RH soubor
+    // load an RH file
     BOOL Load(const char* fileName);
 
-    // naleje soubor do listboxu
+    // populate the list box with the file contents
     void FillListBox();
 
-    // pokud existuje, vrati ukazatel na textovy nazev IDcka a jeho numerickou hodnotu
-    // jinak vrati jen jeho numerickou hodnotu
+    // if it exists, returns a pointer to the textual name and its numeric value
+    // otherwise returns only the numeric value
     const char* GetIdentifier(WORD id, BOOL inclNum = TRUE);
 
-    // v listboxu ukaze patricny identifikator
+    // highlight the identifier in the list box
     void ShowIdentifier(WORD id);
 
-    // vyhleda polozku lezici na dane radce 'row' (zacina od jedne) v RH souboru
-    // vraci index do pole Items nebo -1 pokud ji nenasel
+    // find the item located on line 'row' (1-based) in the RH file
+    // returns the index in Items or -1 when missing
     int RowToIndex(int row);
 
-    // binarnim pulenim hleda dane ID; vrati TRUE a index pokud ho najde
-    // jinak vrati FALSE
+    // search for the given ID using binary search; returns TRUE and the index if it succeeds
+    // otherwise returns FALSE
     BOOL GetIDIndex(WORD id, int& index);
 
-    // vraci TRUE, pokud identifikator jiz existuje (zaroven naplni jeho hodnotu do 'id')
+    // returns TRUE if the identifier already exists (and stores the value in 'id')
     BOOL GetIDForIdentifier(const char* identifier, WORD* id);
 
     void Clean();
@@ -77,21 +77,21 @@ public:
 protected:
     void CleanIncompleteItems();
 
-    // provede analysu radky a pokud jde o define, prida ho do pole
+    // analyse the line and add it to the array if it is a define
     BOOL ProcessLine(const char* line, const char* lineEnd, int row);
 
-    // prevede hodnotu 'param' na numericke id, pokud je hodnota zatim neznama, protoze
-    // je definovana jako symbolicka hodnota s pripadnym offsetem, vraci 'isIncomplete'
-    // TRUE a symbolickou hodnotu s offsetem vraci v 'incomplItem'
+    // convert 'param' to a numeric ID; when the value is still unknown because
+    // it is defined as a symbolic value with an optional offset, set 'isIncomplete' to TRUE
+    // and return the symbolic value plus offset via 'incomplItem'
     BOOL GetID(const char* param, int row, WORD* id, BOOL* isIncomplete, CDataRHIncompleteItem* incomplItem);
 
-    // seradi pole Items podle ID
+    // sort Items by ID
     void SortItems(int left, int right);
 
-    // najde redundance ID
+    // find duplicate IDs
     BOOL FindEqualItems();
 
-    // na zaklade pole FileMarks dohleda jmeno/radek originalniho include souboru
+    // look up the file name and line of the original include file using FileMarks
     BOOL GetOriginalFile(int line, char* originalFile, int buffSize, int* originalFileLine);
 };
 

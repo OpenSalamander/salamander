@@ -14,8 +14,8 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 //HINSTANCE PakLibDLL = NULL;
 
 /*
@@ -23,18 +23,18 @@ FPAKGetIFace PAKGetIFace;
 FPAKReleaseIFace PAKReleaseIFace;
 */
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are called from Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// additional parts of the CPluginInterface interface
 CPluginInterfaceForArchiver InterfaceForArchiver;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// Salamander's general interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
-// interface pro komfortni praci se soubory
+// interface for comfortable work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -70,34 +70,34 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is made for the current version of Salamander and newer - perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "PAK" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let the language module (.slg) load
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "PAK" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain Salamander's general interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("pak.chm");
 
     /*
-  //beta plati do konce unora 2001
+  //beta valid until the end of February 2001
   SYSTEMTIME st;
   GetLocalTime(&st);
   if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
@@ -135,7 +135,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
   }
 */
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_PANELARCHIVEREDIT |
                                        FUNCTION_CUSTOMARCHIVERPACK | FUNCTION_CUSTOMARCHIVERUNPACK,
@@ -144,7 +144,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
                                    NULL, "pak");
 
-    // nastavime URL home-page pluginu
+    // set the plugin home page URL
     salamander->SetPluginHomePageURL("www.altap.cz");
 
     return &PluginInterface;
@@ -203,12 +203,12 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     salamander->AddCustomUnpacker("PAK (Plugin)", "*.pak", FALSE);
     salamander->AddPanelArchiver("pak", TRUE, FALSE);
 
-    // j.r. Tahle polozka zbytecne strasi v menu, uz to pravdepodobne nikdo nepouziva.
-    // Zkusebne ji vyhodim a uvidime zda se nekdo ozve.
+    // j.r. This item needlessly haunts the menu; probably nobody uses it anymore.
+    // I'll remove it experimentally and see if anyone speaks up.
     /*
   
-///* slouzi pro skript export_mnu.py, ktery generuje salmenu.mnu pro Translator
-//   udrzovat synchronizovane s volani salamander->AddMenuItem() dole...
+///* serves the export_mnu.py script, which generates salmenu.mnu for the Translator
+//   keep synchronized with the salamander->AddMenuItem() call below...
 //MENU_TEMPLATE_ITEM PluginMenu[] = 
 //{
 //  {MNTT_PB, 0
@@ -219,7 +219,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
   
   salamander->AddMenuItem(-1, LoadStr(IDS_MENUOPTIMIZE), 0, OPTIMIZE_MENUID, TRUE, 0, 0,
                           MENU_SKILLLEVEL_INTERMEDIATE | MENU_SKILLLEVEL_ADVANCED);
-  // nastavime ikonku pluginu
+  // set the plugin's icon
   HBITMAP hBmp = (HBITMAP)LoadImage(DLLInstance, MAKEINTRESOURCE(IDB_PAK),
                                     IMAGE_BITMAP, 16, 16, LR_DEFAULTCOLOR);
   salamander->SetBitmapWithIcons(hBmp);
@@ -305,13 +305,13 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
                 lstrcpy(fileData.Name, name);
                 fileData.Ext = strrchr(fileData.Name, '.');
                 if (fileData.Ext != NULL)
-                    fileData.Ext++; // ".cvspass" ve Windows je pripona
+                    fileData.Ext++; // ".cvspass" is an extension in Windows
                 else
                     fileData.Ext = fileData.Name + lstrlen(fileData.Name);
                 fileData.Size = CQuadWord(size, 0);
                 fileData.Attr = FILE_ATTRIBUTE_NORMAL;
                 fileData.Hidden = 0;
-                fileData.PluginData = -1; // zbytecne, jen tak pro formu
+                fileData.PluginData = -1; // unnecessary, just for form's sake
                 PakIFace->GetPakTime(&fileData.LastWrite);
                 fileData.DosName = NULL;
                 fileData.NameLen = lstrlen(fileData.Name);
@@ -711,7 +711,7 @@ BOOL CPluginInterfaceForArchiver::MakeFileList2(TIndirectArray2<char>& masks, TI
     while (*file)
     {
         const char* fileName = SalamanderGeneral->SalPathFindFileName(file);
-        BOOL fileNameHasExt = strchr(fileName, '.') != NULL; // ".cvspass" ve Windows je pripona
+        BOOL fileNameHasExt = strchr(fileName, '.') != NULL; // ".cvspass" is an extension in Windows
         int i;
         for (i = 0; i < masks.Count; i++)
         {

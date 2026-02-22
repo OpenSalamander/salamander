@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -32,7 +33,7 @@ CSimpleDlgControlWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     else
     {
-        if (uMsg == WM_GETDLGCODE) // postarame se, aby nam porad neoznacovali text v editboxu
+        if (uMsg == WM_GETDLGCODE) // make sure the text in the edit box does not stay selected all the time
         {
             LRESULT ret = CWindow::WindowProc(uMsg, wParam, lParam);
             return (ret & (~DLGC_HASSETSEL));
@@ -96,7 +97,7 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetDlgItemText(HWindow, IDE_WELCOMEMSG, Text);
         else
         {
-            char* t = (char*)malloc(TextSize + 1); // neda se nic delat, musime to naalokovat i s koncovou nulu
+            char* t = (char*)malloc(TextSize + 1); // nothing we can do, we have to allocate it including the trailing null
             if (t != NULL)
             {
                 memcpy(t, Text, TextSize);
@@ -106,33 +107,33 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        // nechame i u ServerReply a RawListing -> potlacuje se tak oznaceni v editboxu
+        // keep it even for ServerReply and RawListing -> suppresses selection in the edit box
         CSimpleDlgControlWindow* wnd = new CSimpleDlgControlWindow(HWindow, IDE_WELCOMEMSG,
                                                                    !ServerReply && !RawListing);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // attaching failed - it will not deallocate itself
 
         if (!ServerReply && !RawListing)
         {
             wnd = new CSimpleDlgControlWindow(HWindow, IDOK);
             if (wnd != NULL && wnd->HWindow == NULL)
-                delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+                delete wnd; // attaching failed - it will not deallocate itself
         }
 
         RECT r1, r2, r3;
         GetWindowRect(HWindow, &r1);
         GetClientRect(GetDlgItem(HWindow, IDE_WELCOMEMSG), &r2);
-        MinDlgHeight = r1.bottom - r1.top - r2.bottom; // edit nechame zmensit na 0 bodu client area
+        MinDlgHeight = r1.bottom - r1.top - r2.bottom; // allow the edit control to shrink to zero client area height
         GetWindowRect(GetDlgItem(HWindow, IDOK), &r3);
         ButtonWidth = r3.right - r3.left;
-        MinDlgWidth = r1.right - r1.left - r2.right + r3.right - r3.left; // do client area editu nechame vejit aspon OK button
+        MinDlgWidth = r1.right - r1.left - r2.right + r3.right - r3.left; // ensure at least the OK button fits into the edit control's client area
 
         if (RawListing)
         {
             GetWindowRect(GetDlgItem(HWindow, IDB_SAVEMSGAS), &r1);
             SaveAsButtonWidth = r1.right - r1.left;
             SaveAsButtonOffset = r1.left - r3.right;
-            MinDlgWidth += SaveAsButtonWidth + SaveAsButtonOffset; // nechame vejit jeste button "save as"
+            MinDlgWidth += SaveAsButtonWidth + SaveAsButtonOffset; // also make room for the "save as" button
         }
         else
             SaveAsButtonWidth = SaveAsButtonOffset = 0;
@@ -147,7 +148,7 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         EditBorderWidth = r1.right - (r2.right - r2.left);
         EditBorderHeight = r1.bottom - (r2.bottom - r2.top);
 
-        // do praveho spodniho ruzku vlozime znacek pro resize okna
+        // put a resize grip into the bottom-right corner of the window
         SizeBox = CreateWindowEx(0,
                                  "scrollbar",
                                  "",
@@ -161,7 +162,7 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(SizeBox, &r2);
         SizeBoxWidth = r2.right;
         SizeBoxHeight = r2.bottom;
-        // break;  // tady byt nema -> pokracujeme do WM_SIZE
+        // break;  // must not be here -> continue into WM_SIZE
     }
     case WM_SIZE:
     {
@@ -200,7 +201,7 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                               clientRect.bottom - SizeBoxHeight, SizeBoxWidth, SizeBoxHeight, SWP_NOZORDER));
                 if (uMsg != WM_INITDIALOG)
                 {
-                    // pry nejde show/hide kombinovat se zmenou velikosti a posunem
+                    // apparently show/hide cannot be combined with resizing and moving
                     hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, 0, 0, 0, 0,
                                                   SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | (wParam == SIZE_RESTORED ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)));
                 }
@@ -208,7 +209,7 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             HANDLES(EndDeferWindowPos(hdwp));
         }
-        break; // jak pro WM_INITDIALOG, tak pro WM_SIZE
+        break; // applies to both WM_INITDIALOG and WM_SIZE
     }
 
     case WM_GETMINMAXINFO:
@@ -231,12 +232,12 @@ CWelcomeMsgDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_DESTROY: // zavira se - vyhodime ho z pole
+    case WM_DESTROY: // closing - remove it from the array
     {
-        if (!Modal) // z pole budeme vyhazovat jen nemodalni dialogy
+        if (!Modal) // only remove modeless dialogs from the array
         {
             int i;
-            for (i = ModelessDlgs.Count - 1; i >= 0; i--) // hledame od zadu (optimalizace pro ReleaseFS())
+            for (i = ModelessDlgs.Count - 1; i >= 0; i--) // search from the end (optimization for ReleaseFS())
             {
                 if (ModelessDlgs[i] == this)
                 {
@@ -267,7 +268,7 @@ void CWelcomeMsgDlg::OnSaveTextAs()
     ofn.hwndOwner = HWindow;
     char* s = LoadStr(IDS_RAWLISTINGFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create the double-null-terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -294,7 +295,7 @@ void CWelcomeMsgDlg::OnSaveTextAs()
             initDir[s - fileName] = 0;
         }
 
-        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // aby sel prepsat i read-only soubor
+        if (SalamanderGeneral->SalGetFileAttributes(fileName) != 0xFFFFFFFF) // allow overwriting even a read-only file
             SetFileAttributes(fileName, FILE_ATTRIBUTE_ARCHIVE);
         HANDLE file = HANDLES_Q(CreateFile(fileName, GENERIC_WRITE,
                                            FILE_SHARE_READ, NULL,
@@ -303,7 +304,7 @@ void CWelcomeMsgDlg::OnSaveTextAs()
                                            NULL));
         if (file != INVALID_HANDLE_VALUE)
         {
-            // zapis listingu
+            // write the listing
             ULONG written;
             BOOL success;
             DWORD err = NO_ERROR;
@@ -318,12 +319,12 @@ void CWelcomeMsgDlg::OnSaveTextAs()
 
             HANDLES(CloseHandle(file));
             SetCursor(oldCur);
-            if (err != NO_ERROR) // vypis chyby
+            if (err != NO_ERROR) // show the error
             {
                 sprintf(buf, LoadStr(IDS_RAWLISTSAVEERROR), SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
                                                  MB_OK | MB_ICONEXCLAMATION);
-                DeleteFile(fileName); // pri chybe soubor smazem
+                DeleteFile(fileName); // delete the file if an error occurred
             }
         }
         else
@@ -335,7 +336,7 @@ void CWelcomeMsgDlg::OnSaveTextAs()
                                              MB_OK | MB_ICONEXCLAMATION);
         }
 
-        // ohlasime zmenu na ceste (mozna pribyl nas soubor)
+        // announce the change on the path (our file may have been added)
         SalamanderGeneral->CutDirectory(fileName);
         SalamanderGeneral->PostChangeOnPathNotification(fileName, FALSE);
     }
@@ -376,15 +377,15 @@ void CLogsDlg::LoadListOfLogs(BOOL update)
     int prevUID = -1;
     HWND combo = GetDlgItem(HWindow, IDC_LISTOFLOGS);
     if (update)
-        prevUID = LastLogUID; // bereme posledni log v editu (nelze brat cur-selection z comba, pri dropped down a fokusu mysi zlobi)
+        prevUID = LastLogUID; // use the last log in the edit (cannot take the current selection from the combo, mouse focus misbehaves when dropped down)
 
-    MSG msg; // odstranime dalsi zpravy zadajici o update listu (prave jeden probehne)
+    MSG msg; // remove other messages requesting the list update (only one will run)
     while (PeekMessage(&msg, NULL, WM_APP_UPDATELISTOFLOGS, WM_APP_UPDATELISTOFLOGS, PM_REMOVE))
         ;
 
     int index;
     Logs.AddLogsToCombo(combo, prevUID, &index, &Empty);
-    if (index == -1) // nenasel prevUID -> zmena logu (jinak edit neprekreslujeme, je v nem stale stejny log)
+    if (index == -1) // prevUID not found -> the log changed (otherwise we do not repaint the edit, it still holds the same log)
     {
         PostMessage(HWindow, WM_COMMAND, MAKELONG(IDC_LISTOFLOGS, CBN_SELCHANGE), 0);
         if (index == -1)
@@ -397,30 +398,30 @@ void CLogsDlg::LoadLog(int updateUID)
 {
     HWND edit = GetDlgItem(HWindow, IDE_SERVERLOG);
     int actLogUID = -1;
-    if (updateUID == -1) // zmena logu
+    if (updateUID == -1) // log changed
     {
         HWND combo = GetDlgItem(HWindow, IDC_LISTOFLOGS);
         int i = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
         if (i != CB_ERR)
-            actLogUID = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // x64: log UID je index, nejde o ukazatel
+            actLogUID = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // x64: log UID is an index, not a pointer
         LastLogUID = actLogUID;
     }
     else
-        actLogUID = LastLogUID; // jen update (necteme cur-selection, protoze pri dropped stavu vraci aktualni fokus mysi - neodpovida indexu v combu)
+        actLogUID = LastLogUID; // just an update (do not read current selection, dropped state returns the current mouse focus - does not match the combo index)
 
-    if (updateUID != -1) // ma se updatnout log s UID 'updateUID'
+    if (updateUID != -1) // the log with UID 'updateUID' should be updated
     {
-        BOOL found = (actLogUID == updateUID); // TRUE = v combu je vybran updatovany log s UID 'actLogUID'
-        MSG msg;                               // odstranime dalsi zpravy zadajici o update logu (provedeme update aktualniho logu)
+        BOOL found = (actLogUID == updateUID); // TRUE = the combo has the updated log with UID 'actLogUID' selected
+        MSG msg;                               // remove other messages requesting a log update (update the current log)
         while (PeekMessage(&msg, NULL, WM_APP_UPDATELOG, WM_APP_UPDATELOG, PM_REMOVE))
         {
-            if (!found) // pokud jeste neni jasne, ze update se ma provest
+            if (!found) // if it is not yet clear that the update should run
                 found = (actLogUID == (int)msg.wParam);
         }
         if (found)
             Logs.SetLogToEdit(edit, actLogUID, TRUE);
     }
-    else // v combu se zmenil oznaceny log -> ukazeme text noveho logu
+    else // the selected log in the combo changed -> show the new log text
     {
         if (actLogUID != -1)
             Logs.SetLogToEdit(edit, actLogUID, FALSE);
@@ -445,16 +446,16 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         CSimpleDlgControlWindow* wnd = new CSimpleDlgControlWindow(HWindow, IDC_LISTOFLOGS);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // attaching failed - it will not deallocate itself
         wnd = new CSimpleDlgControlWindow(HWindow, IDE_SERVERLOG);
         if (wnd != NULL && wnd->HWindow == NULL)
-            delete wnd; // nepodarilo se attachnout - nedealokuje se samo
+            delete wnd; // attaching failed - it will not deallocate itself
 
         RECT r1, r2;
         GetWindowRect(HWindow, &r1);
         GetClientRect(GetDlgItem(HWindow, IDE_SERVERLOG), &r2);
-        MinDlgHeight = r1.bottom - r1.top - r2.bottom; // edit nechame zmensit na 0 bodu client area
-        MinDlgWidth = r1.right - r1.left - r2.right;   // edit nechame zmensit na 0 bodu client area
+        MinDlgHeight = r1.bottom - r1.top - r2.bottom; // allow the edit control to shrink to zero client area height
+        MinDlgWidth = r1.right - r1.left - r2.right;   // allow the edit control to shrink to zero client area width
 
         GetClientRect(HWindow, &r1);
         GetWindowRect(GetDlgItem(HWindow, IDC_LISTOFLOGS), &r2);
@@ -466,7 +467,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetWindowRect(GetDlgItem(HWindow, IDC_MENULINE), &r2);
         LineHeight = r2.bottom - r2.top;
 
-        // do praveho spodniho ruzku vlozime znacek pro resize okna
+        // put a resize grip into the bottom-right corner of the window
         SizeBox = CreateWindowEx(0,
                                  "scrollbar",
                                  "",
@@ -486,11 +487,11 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (ShowLogUID != -1)
             SendMessage(HWindow, WM_APP_ACTIVATELOG, ShowLogUID, 0);
 
-        if (Config.LogsDlgPlacement.length != 0) // pozice je platna
+        if (Config.LogsDlgPlacement.length != 0) // the position is valid
         {
             WINDOWPLACEMENT place = Config.LogsDlgPlacement;
-            // GetWindowPlacement cti Taskbar, takze pokud je Taskbar nahore nebo vlevo,
-            // jsou hodnoty posunute o jeho rozmery. Provedeme korekci.
+            // GetWindowPlacement respects the Taskbar, so if the Taskbar is at the top or left,
+            // the values are offset by its size. Apply a correction.
             RECT monitorRect;
             RECT workRect;
             SalamanderGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -508,7 +509,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (CenterToWnd != NULL)
             {
-                // horizontalni i vertikalni vycentrovani dialogu k 'CenterToWnd'
+                // center the dialog both horizontally and vertically to 'CenterToWnd'
                 SalamanderGeneral->MultiMonCenterWindow(HWindow, CenterToWnd, TRUE);
             }
         }
@@ -517,37 +518,37 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        if (SendWMClose != NULL &&     // pokud je mozne nechat si poslat WM_CLOSE +
-            !IsWindowEnabled(HWindow)) // pokud mame otevreny modalni dialog, musime ho najit a zavrit,
-        {                              // pak si nechame poslat znovu WM_CLOSE (zajisti "vynoreni"
-                                       // z messageloopy toho modalniho dialogu)
+        if (SendWMClose != NULL &&     // if it is possible to have WM_CLOSE sent to us +
+            !IsWindowEnabled(HWindow)) // if a modal dialog is open, we must find and close it,
+        {                              // then request WM_CLOSE again (ensures "surfacing"
+                                       // from the message loop of that modal dialog)
             SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow);
-            *SendWMClose = TRUE; // nechame si znovu poslat WM_CLOSE
-            return TRUE;         // dale nezpracovavat (close byl zakazan)
+            *SendWMClose = TRUE; // request WM_CLOSE to be sent again
+            return TRUE;         // do not process further (close was disallowed)
         }
         break;
     }
 
     case WM_APP_UPDATELISTOFLOGS:
         LoadListOfLogs(TRUE);
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
 
     case WM_TIMER:
     {
-        if (wParam == LOGSDLG_DELAYEDUPDATETIMER) // provedeme zpozdeny refresh
+        if (wParam == LOGSDLG_DELAYEDUPDATETIMER) // perform the delayed refresh
         {
-            if (DelayedUpdateLogUID != -1) // behem doby "hajeni" bylo potreba refreshnout, timer nechame
+            if (DelayedUpdateLogUID != -1) // a refresh was needed during the "grace" period, keep the timer
             {
                 int uid = DelayedUpdateLogUID;
                 DelayedUpdateLogUID = -1;
                 LoadLog(uid);
             }
-            else // behem doby "hajeni" nebylo potreba refreshnout, zrusime timer
+            else // no refresh was needed during the "grace" period, cancel the timer
             {
                 HasDelayedUpdateTimer = FALSE;
                 KillTimer(HWindow, LOGSDLG_DELAYEDUPDATETIMER);
             }
-            return TRUE; // dale nezpracovavat
+            return TRUE; // do not process further
         }
         break;
     }
@@ -556,21 +557,21 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!HasDelayedUpdateTimer)
         {
-            LoadLog((int)wParam); // provedeme refresh
+            LoadLog((int)wParam); // perform the refresh
 
-            // dalsi refresh provedeme nejdrive za 1/10 sekundy
+            // do the next refresh no sooner than after 1/10 of a second
             HasDelayedUpdateTimer = (SetTimer(HWindow, LOGSDLG_DELAYEDUPDATETIMER, 100, NULL) != 0);
-            DelayedUpdateLogUID = -1; // pro sychr
+            DelayedUpdateLogUID = -1; // just in case
         }
         else
         {
             if (DelayedUpdateLogUID != -1 && DelayedUpdateLogUID != (int)wParam)
-            { // rozdilne updatovane UID logu, provedeme refresh predchoziho UID (aby doslo k doruceni poporade)
+            { // different log UID updated, refresh the previous UID (to deliver them in order)
                 LoadLog(DelayedUpdateLogUID);
             }
             DelayedUpdateLogUID = (int)wParam;
         }
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_APP_ACTIVATELOG:
@@ -580,16 +581,16 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         int i;
         for (i = 0; i < count; i++)
         {
-            if (SendMessage(combo, CB_GETITEMDATA, i, 0) == (int)wParam) // najdeme UID // FIXME_X64 podezrele pretypovani
-            {                                                            // (bohuzel nejde hledat primo v Logs - pri zmene poctu logu by index nesedel)
+            if (SendMessage(combo, CB_GETITEMDATA, i, 0) == (int)wParam) // find the UID // FIXME_X64 suspicious cast
+            {                                                            // (unfortunately we cannot search directly in Logs - a changed log count would misalign the index)
                 if (SendMessage(combo, CB_GETCURSEL, 0, 0) != i)
                 {
                     SendMessage(combo, CB_SETCURSEL, i, 0);
-                    // x64 - log UID je index, nejde o ukazatel
-                    LastLogUID = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // musi se nastavit, jinak LoadListOfLogs zmeni nastaveni indexu v 'combo'
+                    // x64 - log UID is an index, not a pointer
+                    LastLogUID = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // must be set, otherwise LoadListOfLogs changes the combo index
                     PostMessage(HWindow, WM_COMMAND, MAKELONG(IDC_LISTOFLOGS, CBN_SELCHANGE), 0);
                 }
-                if (GetForegroundWindow() == HWindow || !IsWindowVisible(HWindow)) // aktivni nebo se prave otevira
+                if (GetForegroundWindow() == HWindow || !IsWindowVisible(HWindow)) // active or currently opening
                 {
                     HWND edit = GetDlgItem(HWindow, IDE_SERVERLOG);
                     if (GetFocus() != edit)
@@ -598,7 +599,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
             }
         }
-        return TRUE; // dale nezpracovavat
+        return TRUE; // do not process further
     }
 
     case WM_INITMENU:
@@ -623,7 +624,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         switch (LOWORD(wParam))
         {
         case IDOK:
-            return TRUE; // dale nezpracovavat, Enter nesmi ukoncovat dialog
+            return TRUE; // do not process further, Enter must not close the dialog
 
         case IDC_LISTOFLOGS:
         {
@@ -633,11 +634,11 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
             // ***************************************************************************
-            // POZOR: aby sla modalni okna "nenasilne" zavrit (napr. pri unloadu pluginu),
-            //        musi vsechna otevrena modalni okna umet skoncit na WM_CLOSE
-            //        (asi kdyz umi skoncit na klavesu Esc) + nesmi se vyvolavat
-            //        vic modalnich oken po sobe, pokud predchazejici modalni
-            //        okno bylo ukonceno pres Esc
+            // WARNING: to allow modal windows to be closed "gently" (e.g. during plugin unload),
+            //          every open modal window must be able to terminate on WM_CLOSE
+            //          (probably if it can end on the Esc key) + do not invoke
+            //          multiple modal windows in succession if the previous
+            //          modal window was closed via Esc
             // ***************************************************************************
 
         case CM_SAVELOG:
@@ -652,7 +653,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (i != CB_ERR && SendMessage(combo, CB_GETLBTEXTLEN, i, 0) < 300)
             {
                 SendMessage(combo, CB_GETLBTEXT, i, (LPARAM)buf);
-                int uid = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // x64 - log UID je index, nejde o ukazatel
+                int uid = (int)SendMessage(combo, CB_GETITEMDATA, i, 0); // x64 - log UID is an index, not a pointer
                 switch (LOWORD(wParam))
                 {
                 case CM_SAVELOG:
@@ -693,7 +694,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     case WM_QUERYDRAGICON:
-        return (BOOL)(INT_PTR)FTPLogIconBig; // nejpis zbytecne
+        return (BOOL)(INT_PTR)FTPLogIconBig; // probably unnecessary
 
     case WM_SIZE:
     {
@@ -722,7 +723,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, clientRect.right - SizeBoxWidth,
                                               clientRect.bottom - SizeBoxHeight, SizeBoxWidth, SizeBoxHeight, SWP_NOZORDER));
-                // pry nejde show/hide kombinovat se zmenou velikosti a posunem
+                // apparently show/hide cannot be combined with resizing and moving
                 hdwp = HANDLES(DeferWindowPos(hdwp, SizeBox, NULL, 0, 0, 0, 0,
                                               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | (wParam == SIZE_RESTORED ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)));
             }
@@ -740,7 +741,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SalamanderGeneral->OpenHtmlHelp(HWindow, HHCDisplayContext, IDH_FTPLOGSWINDOW, FALSE);
             break;
         }
-        return TRUE; // F1 nenechame propadnout do parenta
+        return TRUE; // do not let F1 fall through to the parent
     }
 
     case WM_GETMINMAXINFO:
@@ -759,7 +760,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         Logs.SaveLogsDlgPos();
         if (!CloseDlg)
-            Logs.SetLogsDlg(NULL); // od ted jiz objekt dialogu neni platny
+            Logs.SetLogsDlg(NULL); // the dialog object is no longer valid from now on
         PostQuitMessage(0);
         break;
     }
@@ -790,7 +791,7 @@ void CSetWaitCursorWindow::AttachToWindow(HWND hWnd)
     HWindow = hWnd;
     SetWindowLongPtr(HWindow, GWLP_WNDPROC, (LONG_PTR)CSetWaitCursorWindow::CWindowProc);
 
-    if (DefWndProc == CSetWaitCursorWindow::CWindowProc) // to by byla rekurze
+    if (DefWndProc == CSetWaitCursorWindow::CWindowProc) // that would be recursion
     {
         TRACE_E("Tak tohle by se vubec nemelo stat.");
         DefWndProc = DefWindowProc;
@@ -820,23 +821,23 @@ CSetWaitCursorWindow::CWindowProc(HWND hwnd, UINT uMsg,
                                   WPARAM wParam, LPARAM lParam)
 {
     CSetWaitCursorWindow* wnd = (CSetWaitCursorWindow*)GetProp(hwnd, (LPCTSTR)AtomObject2);
-    if (uMsg == WM_DESTROY && wnd != NULL) // posledni zprava - odpojeni objektu od okna
+    if (uMsg == WM_DESTROY && wnd != NULL) // last message - detach the object from the window
     {
         LRESULT res = CallWindowProc((WNDPROC)wnd->DefWndProc, hwnd, uMsg, wParam, lParam);
-        // ted uz zase do stare procedury (kvuli subclassingu)
+        // back to the original procedure now (because of subclassing)
         RemoveProp(hwnd, (LPCTSTR)AtomObject2);
         SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wnd->DefWndProc);
         if (res == 0)
-            return 0; // aplikace ji zpracovala
+            return 0; // the application handled it
         wnd = NULL;
     }
-    //--- zavolani metody WindowProc(...) prislusneho objektu okna
+    //--- call the WindowProc(...) method of the corresponding window object
     if (wnd != NULL)
     {
         if (uMsg == WM_SETCURSOR)
         {
             BOOL activePopupExists = FALSE;
-            if (!IsWindowEnabled(hwnd)) // pokud mame otevreny modalni dialog, nemuzeme provadet aktivaci tohoto okna (jeho parenta)
+            if (!IsWindowEnabled(hwnd)) // if a modal dialog is open, we cannot activate this window (its parent)
             {
                 HWND dlg = GetLastActivePopup(hwnd);
                 activePopupExists = dlg != NULL && dlg != hwnd && IsWindowEnabled(dlg) && IsWindowVisible(dlg);
@@ -862,20 +863,20 @@ CSetWaitCursorWindow::CWindowProc(HWND hwnd, UINT uMsg,
 
 void ShowWaitWindow(HWND hwnd, HWND parent)
 {
-    // tato silenost zavedene jen kvuli (neuspesnemu) pokusu o otevreni Logs dialogu v hl. threadu
-    // (jako nemodalni dialog); klidne mozne nahradit ShowWindow(hwnd, SW_SHOWNA)
+    // this madness was introduced only because of an (unsuccessful) attempt to open the Logs dialog in the main thread
+    // (as a modeless dialog); feel free to replace with ShowWindow(hwnd, SW_SHOWNA)
 
     HWND p = GetNextWindow(parent, GW_HWNDPREV);
     UINT flags = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER;
-    if (p == hwnd) // nad parentem visi primo wait-okenko, jen ho ukazeme
+    if (p == hwnd) // the wait window is right above the parent, just show it
     {
         flags |= SWP_NOZORDER;
         p = NULL;
     }
-    else // nad parentem je jine nemodalni okno - wait-okenko ukazeme tesne nad parentem
+    else // another modeless window is above the parent - show the wait window right above the parent
     {
         if (p == NULL)
-            p = HWND_TOP; // pro jistotu, nemelo by asi vubec nastat
+            p = HWND_TOP; // just in case, this probably should not happen at all
     }
     SetWindowPos(hwnd, p, 0, 0, 0, 0, flags);
 }
@@ -951,14 +952,14 @@ HWND CWaitWindow::Create(DWORD showTime)
     if (!IsZoomed(hCenterWnd) && !IsIconic(hCenterWnd))
     {
         GetWindowRect(hCenterWnd, &parentRect);
-        parW = (int)(parentRect.right - parentRect.left) - 10; // -10 jako rezerva, at to neni pres cely okno
+        parW = (int)(parentRect.right - parentRect.left) - 10; // -10 as a buffer so it does not span the entire window
     }
     if (parW < scrW / 3)
         parW = scrW / 3;
     if (parW > scrW - 10)
-        parW = scrW - 10; // -10 jako rezerva, at to neni pres celou obrazovku
+        parW = scrW - 10; // -10 as a buffer so it does not span the whole screen
 
-    // napocitame velikost textu -> velikost okna
+    // calculate the text size -> window size
     NeedWrap = FALSE;
     HDC dc = HANDLES(GetDC(NULL));
     if (dc != NULL)
@@ -1034,9 +1035,9 @@ void CWaitWindow::Show(BOOL show)
     {
         if (HasTimer)
         {
-            // zabijeme timer, aby se nedorucilo pripadne "show"
+            // kill the timer so a potential "show" is not delivered
             KillTimer(HWindow, WAITWND_SHOWTIMER);
-            // vycistime message-queue od pripadnych WM_TIMER
+            // clear the message queue of any WM_TIMER messages
             MSG msg;
             while (PeekMessage(&msg, HWindow, WM_TIMER, WM_TIMER, PM_REMOVE))
                 ;
@@ -1083,8 +1084,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
     {
         if (HasTimer)
-            KillTimer(HWindow, WAITWND_SHOWTIMER); // pro jistotu ho zrusime sami
-        if (GetForegroundWindow() == HWindow)      // predame fokus parentovi
+            KillTimer(HWindow, WAITWND_SHOWTIMER); // cancel it ourselves just to be sure
+        if (GetForegroundWindow() == HWindow)      // pass focus to the parent
         {
             HWND hActivate = (HParent != NULL ? HParent : SalamanderGeneral->GetMainWindowHWND());
             SetForegroundWindow(hActivate);
@@ -1094,7 +1095,7 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NCACTIVATE:
     {
-        wParam = FALSE; // vzdy kreslit "inactive" caption
+        wParam = FALSE; // always draw an "inactive" caption
         break;
     }
 
@@ -1107,21 +1108,21 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATEAPP:
     {
-        // deaktivace aplikace + ma se zobrazit wait-okno (neni uz schovane kvuli dialogu)
+        // the application was deactivated and the wait window should be shown (no longer hidden because of a dialog)
         if (!Visible && wParam == FALSE && HasTimer)
-            Show(TRUE); // je nutne okno ukazat, aby se dalo do Salama vratit pres Alt+Tab
-        break;          // WM_ACTIVATEAPP chodi, i kdyz neni wait-okenko ani jeho parent aktivni (aktivni
-    } // jakykoliv nemodalni dialog bez parenta - drive Logs dialog) - nelze aktivovat wait-okenko
+            Show(TRUE); // the window must be shown so Salamander can be reached via Alt+Tab
+        break;          // WM_ACTIVATEAPP arrives even when neither the wait window nor its parent is active (any
+    } // modeless dialog without a parent - previously the Logs dialog) - the wait window cannot be activated
 
     case WM_ACTIVATE:
     {
-        if (Visible &&                                    // wait okenko je viditelne +
-            uMsg == WM_ACTIVATE && wParam != WA_INACTIVE) // jakakoliv aktivace -> predame fokus parentovi
+        if (Visible &&                                    // the wait window is visible +
+            uMsg == WM_ACTIVATE && wParam != WA_INACTIVE) // any activation -> pass focus to the parent
         {
-            PostMessage(HWindow, WM_APP_ACTIVATEPARENT, 0, 0); // na W2K+ uz je asi zbytecne
+            PostMessage(HWindow, WM_APP_ACTIVATEPARENT, 0, 0); // probably unnecessary on W2K+
             if (uMsg == WM_ACTIVATE && wParam == WA_CLICKACTIVE)
             {
-                // pokud user kliknul na Close tlacitko, nastavime globalni promennou
+                // if the user clicked the Close button, set the global variable
                 if (CWindow::WindowProc(WM_NCHITTEST, NULL, GetMessagePos()) == HTCLOSE)
                     WindowClosePressed = TRUE;
             }
@@ -1148,8 +1149,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 hOldFont = (HFONT)SelectObject(dc, SystemFont);
             int prevBkMode = SetBkMode(dc, TRANSPARENT);
             SetTextColor(dc, GetSysColor(COLOR_BTNTEXT));
-            // nebudeme klipovat, abychom ustali drobne prodlouzeni textu, ke kteremu
-            // muze dojit behem volani SetText
+            // do not clip so we survive a slight text extension that
+            // may occur while calling SetText
             DrawText(dc, Text, (int)strlen(Text), &r, DT_LEFT | DT_NOPREFIX | DT_NOCLIP | (NeedWrap ? DT_WORDBREAK : 0));
             SetBkMode(dc, prevBkMode);
             if (hOldFont != NULL)
@@ -1160,8 +1161,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NCHITTEST:
     {
-        // zabranime presouvani okna pomoci tazeni za titulek
-        // zaroven zablokujeme tooltip nad Close tlacitkem
+        // prevent moving the window by dragging its title bar
+        // also block the tooltip above the Close button
         return HTCLIENT;
     }
 
@@ -1190,7 +1191,7 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP ||
             uMsg == WM_NCLBUTTONDOWN || uMsg == WM_NCLBUTTONUP)
         {
-            // pokud user kliknul na Close tlacitko, nastavime globalni promennou
+            // if the user clicked the Close button, set the global variable
             if (CWindow::WindowProc(WM_NCHITTEST, NULL, GetMessagePos()) == HTCLOSE)
                 WindowClosePressed = TRUE;
         }
@@ -1267,7 +1268,7 @@ class CGetSizesOfListWaitDlg : public CDialog
 public:
     int Width;
     int Height;
-    HWND NewParent; // kam se maji presunout controly
+    HWND NewParent; // where the controls should be moved to
 
 public:
     CGetSizesOfListWaitDlg(HWND newParent);
@@ -1294,7 +1295,7 @@ CGetSizesOfListWaitDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         Width = r.right - r.left;
         Height = r.bottom - r.top;
 
-        // presuneme child okna dialogu (odpojime je od tohoto dialogu)
+        // move the dialog's child windows (detach them from this dialog)
         ::SetParent(GetDlgItem(HWindow, IDT_ACTION), NewParent);
         ::SetParent(GetDlgItem(HWindow, IDT_PATHONFTP1), NewParent);
         ::SetParent(GetDlgItem(HWindow, IDT_PATHONFTP2), NewParent);
@@ -1306,7 +1307,7 @@ CGetSizesOfListWaitDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         ::SetParent(GetDlgItem(HWindow, IDT_OPERSTATUS2), NewParent);
         ::SetParent(GetDlgItem(HWindow, IDC_OPERPROGRESS), NewParent);
 
-        EndDialog(HWindow, IDABORT); // rozmery a childy uz mame, ukoncime dialog
+        EndDialog(HWindow, IDABORT); // dimensions and children are ready, close the dialog
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
 }
@@ -1344,10 +1345,10 @@ HWND CListWaitWindow::Create(DWORD showTime)
 
     if (HWindow != NULL)
     {
-        CGetSizesOfListWaitDlg getSizesOfListWaitDlg(HWindow); // presuneme controly z dialogu do noveho okna
-        getSizesOfListWaitDlg.Execute();                       // dialog se zrusi jeste pred svym otevrenim
+        CGetSizesOfListWaitDlg getSizesOfListWaitDlg(HWindow); // move controls from the dialog into the new window
+        getSizesOfListWaitDlg.Execute();                       // the dialog closes before it even opens
 
-        // napocitame umisteni okenka; prioritne centrujeme k HParent; v druhe rade k MainWindow
+        // compute the window position; primarily center to HParent; secondly to MainWindow
         HWND hCenterWnd = (HParent != NULL ? HParent : SalamanderGeneral->GetMainWindowHWND());
         MoveWindow(HWindow, 0, 0, getSizesOfListWaitDlg.Width, getSizesOfListWaitDlg.Height, FALSE);
         SalamanderGeneral->MultiMonCenterWindow(HWindow, hCenterWnd, TRUE);
@@ -1417,7 +1418,7 @@ void CListWaitWindow::SetVisible(BOOL visible)
         if (!HasRefreshStatusTimer)
         {
             HasRefreshStatusTimer = (SetTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER,
-                                              DATACON_ACTSPEEDSTEP, NULL) != 0); // zaridime timer od ted za 1 sekundu
+                                              DATACON_ACTSPEEDSTEP, NULL) != 0); // set up the timer to fire one second from now
         }
     }
     else
@@ -1435,7 +1436,7 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
     CALL_STACK_MESSAGE2("CListWaitWindow::RefreshTimeAndStatusAndProgress(%d)", fromTimer);
 
     if (*Aborted)
-    { // pokud doslo k abortu, nebudeme jiz nic obnovovat (nesmyslne klesa rychlost prenosu, atd.)
+    { // if the operation was aborted, stop refreshing (transfer speed would decrease pointlessly, etc.)
         if (HasRefreshStatusTimer)
         {
             KillTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER);
@@ -1446,8 +1447,8 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
 
     int asciiTrForBinFileHowToSolve = 0;
     if (Visible && DataConnection->IsAsciiTrForBinFileProblem(&asciiTrForBinFileHowToSolve))
-    {                                         // byl detekovan problem "ascii transfer mode for binary file", optame se co s tim
-        if (asciiTrForBinFileHowToSolve == 0) // mame se zeptat uzivatele
+    {                                         // detected the "ascii transfer mode for binary file" problem, ask how to solve it
+        if (asciiTrForBinFileHowToSolve == 0) // we should ask the user
         {
             Show(FALSE);
             INT_PTR res = CViewErrAsciiTrForBinFileDlg(HParent).Execute();
@@ -1460,16 +1461,16 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
                 else
                 {
                     asciiTrForBinFileHowToSolve = 2;
-                    SalamanderGeneral->WaitForESCRelease(); // opatreni, aby se neprerusovala dalsi akce po kazdem ESC v predeslem messageboxu
+                    SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
                 }
             }
             DataConnection->SetAsciiTrModeForBinFileHowToSolve(asciiTrForBinFileHowToSolve);
             if (asciiTrForBinFileHowToSolve != 3)
-            { // mame pouzit binarni rezim nebo zrusit viewovani, abortneme nasilne download (pokud nezabere, musi user dat ESC pro preruseni control-connectiony, to uz automaticky neresime, temer by to nemelo byt potreba)
+            { // use the binary mode or cancel viewing, forcibly abort the download (if that fails, the user must press ESC to interrupt the control connection; we no longer handle that automatically, it should almost never be necessary)
                 SetText(LoadStr(IDS_LISTWNDDOWNLFILEABORTING));
                 if (DataConnection->IsTransfering(NULL) || DataConnection->IsFlushingDataToDisk())
                 {
-                    DataConnection->CancelConnectionAndFlushing(); // zavreme "data connection", system se pokusi o "graceful" shutdown (nedozvime se o vysledku)
+                    DataConnection->CancelConnectionAndFlushing(); // close the "data connection", the system will attempt a "graceful" shutdown (we will not know the result)
                     Logs.LogMessage(DataConnection->GetLogUID(), LoadStr(IDS_LOGMSGDATACONTERMINATED), -1, TRUE);
                 }
                 *Aborted = TRUE;
@@ -1479,18 +1480,18 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
     }
 
     DWORD downloaded, total, connectionIdleTime, speed;
-    DataConnection->StatusMessageReceived(); // posledni okamzik pred nactenim novych hodnot, dalsi zmeny uz je treba opet hlasit
+    DataConnection->StatusMessageReceived(); // last moment before reading new values; further changes must be reported again
     CQuadWord qwDownloaded, qwTotal;
     DataConnection->GetStatus(&qwDownloaded, &qwTotal, &connectionIdleTime, &speed);
-    downloaded = (DWORD)qwDownloaded.Value; // listing nikdy nebude mit vic nez 2GB
-    total = (DWORD)qwTotal.Value;           // listing nikdy nebude mit vic nez 2GB
+    downloaded = (DWORD)qwDownloaded.Value; // a listing will never exceed 2 GB
+    total = (DWORD)qwTotal.Value;           // a listing will never exceed 2 GB
 
-    if (!fromTimer) // je-li  tento refresh na zaklade timeru, neni treba timer upravovat (automaticky se ozve zase za 1 sekundu)
+    if (!fromTimer) // if this refresh was not triggered by the timer, we do not need to adjust it (it will fire again automatically after one second)
     {
         if (HasRefreshStatusTimer)
             KillTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER);
         if (Visible)
-            HasRefreshStatusTimer = (SetTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER, DATACON_ACTSPEEDSTEP, NULL) != 0); // zaridime timer od ted za 1 sekundu
+            HasRefreshStatusTimer = (SetTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER, DATACON_ACTSPEEDSTEP, NULL) != 0); // set up the timer to fire one second from now
         else
             HasRefreshStatusTimer = FALSE;
     }
@@ -1508,7 +1509,7 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
         SalamanderGeneral->PrintTimeLeft(num1, CQuadWord(connectionIdleTime, 0));
         _snprintf_s(num3, _TRUNCATE, LoadStr(IDS_LISTWNDCONNECTIONIDLE), num1);
     }
-    SalamanderGeneral->PrintDiskSize(num1, CQuadWord(downloaded, 0), 0); // pozor num1 pouzito u tvorby num3
+    SalamanderGeneral->PrintDiskSize(num1, CQuadWord(downloaded, 0), 0); // note: num1 is reused when building num3
     char buf[100];
     if (total != -1)
     {
@@ -1540,11 +1541,11 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
 
     if (downloaded <= total && total != -1 && speed > 0)
     {
-        DWORD secs = (total - downloaded) / speed; // odhad zbyvajicich sekund
-        secs++;                                    // jedna vterina navic, abysme koncili operaci s "time left: 1 sec" (misto 0 sec)
+        DWORD secs = (total - downloaded) / speed; // estimate of the remaining seconds
+        secs++;                                    // add one more second so we finish the operation with "time left: 1 sec" (instead of 0 sec)
         if (LastTimeEstimation != -1)
             secs = (2 * secs + LastTimeEstimation) / 3;
-        // vypocet zaokrouhleni (zhruba 10% chyba + zaokrouhlujeme po hezkych cislech 1,2,5,10,20,40)
+        // compute rounding (roughly 10% error + we round to nice numbers 1,2,5,10,20,40)
         int dif = (secs + 5) / 10;
         int expon = 0;
         while (dif >= 50)
@@ -1566,7 +1567,7 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
             dif = 40;
         while (expon--)
             dif *= 60;
-        secs = ((secs + dif / 2) / dif) * dif; // zaokrouhlime 'secs' na 'dif' sekund
+        secs = ((secs + dif / 2) / dif) * dif; // round 'secs' to 'dif' seconds
         SalamanderGeneral->PrintTimeLeft(buf, CQuadWord(secs, 0));
         LastTimeEstimation = secs;
     }
@@ -1610,14 +1611,14 @@ CListWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-            if (wParam == LISTWAITWND_DELAYEDUPDATETIMER) // provedeme zpozdeny refresh
+            if (wParam == LISTWAITWND_DELAYEDUPDATETIMER) // perform the delayed refresh
             {
-                if (NeedDelayedUpdate) // behem doby "hajeni" bylo potreba refreshnout, timer nechame
+                if (NeedDelayedUpdate) // a refresh was needed during the "grace" period, keep the timer
                 {
                     NeedDelayedUpdate = FALSE;
                     RefreshTimeAndStatusAndProgress(FALSE);
                 }
-                else // behem doby "hajeni" nebylo potreba refreshnout, zrusime timer
+                else // no refresh was needed during the "grace" period, cancel the timer
                 {
                     HasDelayedUpdateTimer = FALSE;
                     KillTimer(HWindow, LISTWAITWND_DELAYEDUPDATETIMER);
@@ -1632,11 +1633,11 @@ CListWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (!HasDelayedUpdateTimer)
         {
-            RefreshTimeAndStatusAndProgress(FALSE); // provedeme refresh
+            RefreshTimeAndStatusAndProgress(FALSE); // perform the refresh
 
-            // dalsi refresh provedeme nejdrive za 1/10 sekundy
+            // do the next refresh no sooner than after 1/10 of a second
             HasDelayedUpdateTimer = (SetTimer(HWindow, LISTWAITWND_DELAYEDUPDATETIMER, 100, NULL) != 0);
-            NeedDelayedUpdate = FALSE; // pro sychr
+            NeedDelayedUpdate = FALSE; // just in case
         }
         else
             NeedDelayedUpdate = TRUE;
@@ -1645,7 +1646,7 @@ CListWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        // pro jistotu zrusime timery
+        // cancel the timers just to be safe
         if (HasRefreshStatusTimer)
             KillTimer(HWindow, LISTWAITWND_AUTOUPDATETIMER);
         if (HasDelayedUpdateTimer)
@@ -1653,7 +1654,7 @@ CListWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         HasRefreshStatusTimer = HasDelayedUpdateTimer = FALSE;
 
         DataConnection->SetWindowWithStatus(NULL, 0);
-        break; // odpojime okno od "data connection"
+        break; // detach the window from the "data connection"
     }
     }
     return CWaitWindow::WindowProc(uMsg, wParam, lParam);

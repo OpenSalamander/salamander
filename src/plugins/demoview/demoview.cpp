@@ -11,45 +11,45 @@
 
 #include "precomp.h"
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object, its methods are called by Salamander
 CPluginInterface PluginInterface;
-// dalsi casti interfacu CPluginInterface
+// other parts of the CPluginInterface interface
 CPluginInterfaceForViewer InterfaceForViewer;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 CPluginInterfaceForThumbLoader InterfaceForThumbLoader;
 
-// globalni data
-const char* PluginNameEN = "DemoView";    // neprekladane jmeno pluginu, pouziti pred loadem jazykoveho modulu + pro debug veci
-const char* PluginNameShort = "DEMOVIEW"; // jmeno pluginu (kratce, bez mezer)
+// global data
+const char* PluginNameEN = "DemoView";    // untranslated plugin name, used before loading the language module and for debugging
+const char* PluginNameShort = "DEMOVIEW"; // plugin name (short, without spaces)
 
-BOOL CfgSavePosition = FALSE;             // ukladat pozici okna/umistit dle hlavniho okna
-WINDOWPLACEMENT CfgWindowPlacement = {0}; // neplatne, pokud CfgSavePosition != TRUE
+BOOL CfgSavePosition = FALSE;             // whether to store the window position / align with the main window
+WINDOWPLACEMENT CfgWindowPlacement = {0}; // invalid if CfgSavePosition != TRUE
 
 DWORD LastCfgPage = 0; // start page (sheet) in configuration dialog
 
 const char* CONFIG_SAVEPOS = "SavePosition";
 const char* CONFIG_WNDPLACEMENT = "WindowPlacement";
 
-// ConfigVersion: 0 - zadna konfigurace se z Registry nenacetla (jde o instalaci pluginu),
-//                1 - prvni verze konfigurace
+// ConfigVersion: 0 - no configuration was loaded from the Registry (plugin installation),
+//                1 - first configuration version
 
-int ConfigVersion = 0;           // verze nactene konfigurace z registry (popis verzi viz vyse)
-#define CURRENT_CONFIG_VERSION 1 // aktualni verze konfigurace (uklada se do registry pri unloadu pluginu)
+int ConfigVersion = 0;           // configuration version loaded from the registry (see description above)
+#define CURRENT_CONFIG_VERSION 1 // current configuration version (stored in the registry when unloading the plugin)
 const char* CONFIG_VERSION = "Version";
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is unloaded
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+// interface providing customized Windows controls used in Salamander
 CSalamanderGUIAbstract* SalamanderGUI = NULL;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -131,45 +131,45 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
     HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    PluginNameEN, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), PluginNameEN);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
-    // ziskame rozhrani poskytujici upravene Windows controly pouzivane v Salamanderovi
+    // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    // nastavime jmeno souboru s helpem
+    // set the help file name
     SalamanderGeneral->SetHelpFileName("demoview.chm");
 
     if (!InitViewer())
-        return NULL; // chyba
+        return NULL; // error
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION | FUNCTION_VIEWER,
                                    VERSINFO_VERSION_NO_PLATFORM, VERSINFO_COPYRIGHT, LoadStr(IDS_PLUGIN_DESCRIPTION),
                                    PluginNameShort, NULL, NULL);
 
-    // nastavime URL home-page pluginu
+    // set the plugin home-page URL
     salamander->SetPluginHomePageURL(LoadStr(IDS_PLUGIN_HOME));
 
     // test SetPluginBugReportInfo
@@ -215,10 +215,10 @@ CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistr
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
-            ConfigVersion = CURRENT_CONFIG_VERSION; // asi nejakej nenechavec... ;-)
+            ConfigVersion = CURRENT_CONFIG_VERSION; // probably some rascal... ;-)
 
         registry->GetValue(regKey, CONFIG_SAVEPOS, REG_DWORD, &CfgSavePosition, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_WNDPLACEMENT, REG_BINARY, &CfgWindowPlacement, sizeof(WINDOWPLACEMENT));
@@ -249,7 +249,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // zakladni cast:
+    // basic part:
     salamander->AddViewer("*.dmv", FALSE);
 
     salamander->AddMenuItem(-1, "&View Bitmap from Clipboard", SALHOTKEY('T', HOTKEYF_CONTROL | HOTKEYF_SHIFT),
@@ -262,7 +262,7 @@ CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamander)
     salamander->SetPluginIcon(0);
     salamander->SetPluginMenuAndToolbarIcon(0);
 
-    salamander->SetThumbnailLoader("*.bmv"); // poskytujeme thumbnaily pro .bmv soubory
+    salamander->SetThumbnailLoader("*.bmv"); // provide thumbnails for .bmv files
 }
 
 void WINAPI

@@ -5,7 +5,7 @@
 
 #define CURRENT_CONFIG_VERSION 1
 
-// definice IDs do menu
+// menu ID definitions
 #define MID_FIND 1
 #define MID_NEWKEY 2
 #define MID_NEWVAL 3
@@ -13,11 +13,11 @@
 #define MID_FOCUS 5
 
 #ifndef REG_QWORD
-// viz. winnt.h
+// see winnt.h
 #define REG_QWORD (11) // 64-bit number
 #endif
 
-// viz. winreg.h
+// see winreg.h
 #ifndef HKEY_PERFORMANCE_TEXT
 #define HKEY_PERFORMANCE_TEXT ((HKEY)0x80000050)
 #endif
@@ -31,18 +31,18 @@
 #define MAX_FULL_KEYNAME (MAX_KEYNAME + MAX_PREDEF_KEYNAME + 1)
 #define MAX_VAL_DATA 32767
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods Salamander invokes
 class CPluginInterface;
 extern CPluginInterface PluginInterface;
 class CPluginInterfaceForMenuExt;
 extern CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plugin startup until shutdown
 extern CSalamanderGeneralAbstract* SG;
 
 extern CSalamanderGUIAbstract* SalGUI;
 
-// FS-name pridelene Salamanderem po loadu pluginu
+// FS name assigned by Salamander after loading the plugin
 extern char AssignedFSName[MAX_PATH];
 
 class CWindowQueueEx : public CWindowQueue
@@ -55,7 +55,7 @@ public:
         CS.Enter();
         HWND w = NULL;
         CWindowQueueItem* next = Head;
-        if (next != NULL) // najdeme posledni okno
+        if (next != NULL) // find the last window
         {
             while (next->Next)
                 next = next->Next;
@@ -97,7 +97,7 @@ int SalPrintfW(LPWSTR buffer, unsigned count, LPCWSTR format, ...);
 
 // ****************************************************************************
 //
-// Interface pluginu
+// Plug-in interface
 //
 
 class CPluginInterface : public CPluginInterfaceAbstract
@@ -132,7 +132,7 @@ public:
 
 class CPluginInterfaceForMenuExt : public CPluginInterfaceForMenuExtAbstract
 {
-    // pouzite pro fokuseni polozek z jineho nez hlavniho threadu
+    // used to focus items from a non-main thread
     char Path[MAX_FULL_KEYNAME + 1];
     char Name[MAX_KEYNAME];
 
@@ -235,18 +235,19 @@ public:
 //
 // CTopIndexMem
 //
-// pamet top-indexu listboxu v panelu - pouziva CPluginFSInterface pro korektni
-// chovani ExecuteOnFS (zachovani top-indexu po vstupu a vystupu z podadresare)
+// listbox top-index cache in the panel - used by CPluginFSInterface to keep
+// ExecuteOnFS behavior correct (preserve the top index when entering and
+// leaving a subdirectory)
 
-#define TOP_INDEX_MEM_SIZE 50 // pocet pamatovanych top-indexu (urovni), minimalne 1
+#define TOP_INDEX_MEM_SIZE 50 // number of remembered top indexes (levels), at least 1
 
 class CTopIndexMem
 {
 protected:
-    // cesta pro posledni zapamatovany top-index
+    // path for the last remembered top index
     WCHAR Path[MAX_PATH];
-    int TopIndexes[TOP_INDEX_MEM_SIZE]; // zapamatovane top-indexy
-    int TopIndexesCount;                // pocet zapamatovanych top-indexu
+    int TopIndexes[TOP_INDEX_MEM_SIZE]; // cached top indexes
+    int TopIndexesCount;                // number of cached top indexes
 
 public:
     CTopIndexMem() { Clear(); }
@@ -254,9 +255,9 @@ public:
     {
         Path[0] = L'\0';
         TopIndexesCount = 0;
-    } // vycisti pamet
-    void Push(LPCWSTR path, int topIndex);        // uklada top-index pro danou cestu
-    BOOL FindAndPop(LPCWSTR path, int& topIndex); // hleda top-index pro danou cestu, FALSE->nenalezeno
+    } // clear the cache
+    void Push(LPCWSTR path, int topIndex);        // store the top index for the given path
+    BOOL FindAndPop(LPCWSTR path, int& topIndex); // find the top index for the given path, FALSE -> not found
 };
 
 // ****************************************************************************
@@ -298,14 +299,14 @@ class CPluginFSInterface : public CPluginFSInterfaceAbstract
 public:
     int CurrentKeyRoot;
     WCHAR CurrentKeyName[MAX_KEYNAME];
-    CTopIndexMem TopIndexMem; // pamet top-indexu pro ExecuteOnFS()
+    CTopIndexMem TopIndexMem; // top-index cache for ExecuteOnFS()
     BOOL FocusFirstNewItem;
 
 protected:
     BOOL PathError;
     WCHAR NewPath[MAX_KEYNAME];
     BOOL NewPathValid;
-    BOOL FirstChangePath; // pri prvnim volani ChangePath ignorujeme chyby
+    BOOL FirstChangePath; // ignore errors on the first ChangePath call
 
 public:
     CPluginFSInterface();
@@ -427,7 +428,7 @@ public:
 
 struct CPluginData
 {
-    WCHAR* Name; // jmeno v unicode
+    WCHAR* Name; // name in Unicode
     DWORD Type;
     DWORD_PTR Data;
     unsigned Allocated : 1;
@@ -494,8 +495,8 @@ class CPluginDataInterface : public CPluginDataInterfaceAbstract
 
 // ****************************************************************************
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to SLG - language-dependent resources
 extern BOOL WindowsVistaAndLater;
 
 char* LoadStr(int resID);

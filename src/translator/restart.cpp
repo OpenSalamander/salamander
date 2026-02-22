@@ -83,7 +83,7 @@ BOOL StartSalamander(const char* path)
     se.hwnd = FrameWindow.HWindow;
     se.nShow = SW_SHOWNORMAL;
     se.lpFile = path;
-    se.lpParameters = "-i 2"; // modra ikona
+    se.lpParameters = "-i 2"; // blue icon
     ShellExecuteEx(&se);
     return TRUE;
 }

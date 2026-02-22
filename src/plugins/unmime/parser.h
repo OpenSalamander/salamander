@@ -3,14 +3,14 @@
 
 #pragma once
 
-//// hlavni export ////////////////////////////////////////////////////////////
+//// main export //////////////////////////////////////////////////////////////
 
 #include "arraylt.h"
 
-#define BLOCK_HEADER 0     // jakakoliv hlavicka
-#define BLOCK_MAINHEADER 1 // hlavicka (zacatek) mailu
-#define BLOCK_BODY 2       // jakekoliv telo
-#define BLOCK_PREAMBLE 3   // MIME preambule
+#define BLOCK_HEADER 0     // any header
+#define BLOCK_MAINHEADER 1 // mail header (start)
+#define BLOCK_BODY 2       // any body
+#define BLOCK_PREAMBLE 3   // MIME preamble
 #define BLOCK_EPILOG 4     // MIME epilog
 
 #define ENCODING_NONE 0    // "7bit", "8bit", "binary", ???
@@ -20,12 +20,12 @@
 #define ENCODING_XX 4      // xxencode
 #define ENCODING_BINHEX 5  // BinHex 4.0
 #define ENCODING_YENC 6    // yEncode
-#define ENCODING_UNKNOWN 7 // nezname kodovani - tyto bloky nutno preskocit
+#define ENCODING_UNKNOWN 7 // unknown encoding - these blocks must be skipped
 
 typedef enum eMarkerType
 {
-    MARKER_START = 0, // znacka zacatku bloku
-    MARKER_END        // znacka konce bloku
+    MARKER_START = 0, // marker for the start of a block
+    MARKER_END        // marker for the end of a block
 } eMarkerType;
 
 #define BADBLOCK_DAMAGED 1
@@ -34,23 +34,23 @@ typedef enum eMarkerType
 class CMarker
 {
 public:
-    eMarkerType iMarkerType; // typ znacky, viz MARKER_XXX
-    int iLine;               // radka, pro StartMarker tato radka do bloku patri,
-}; // pro EndMarker uz radka do bloku nepatri
+    eMarkerType iMarkerType; // marker type, see MARKER_XXX
+    int iLine;               // line number; for StartMarker this line belongs to the block,
+}; // for EndMarker the line no longer belongs to the block
 
 class CStartMarker : public CMarker
 {
 public:
-    char iBlockType;          // typ bloku, viz BLOCK_XXX
-    char iEncoding;           // kodovani, viz ENCODING_XXX
-    char bEmpty;              // priznak, ze blok je prazdny (jen whitespace)
-    char bSelected;           // priznak vybrani pro dekodovani
-    char bAttachment;         // 1 pokud je tento soubor attachment
-    char cFileName[MAX_PATH]; // jmeno souboru do ktereho bude blok dekodovan
-    char cCharset[20];        // nazev znakove sady
-    int iSize;                // velikost dekodovaneho souboru
-    int iBadBlock;            // 0 nebo BADBLOCK_XXX
-    int iPart;                // cislo yEnc multipart souboru, 0 pokud neni multipart
+    char iBlockType;          // block type, see BLOCK_XXX
+    char iEncoding;           // encoding, see ENCODING_XXX
+    char bEmpty;              // flag indicating the block is empty (just whitespace)
+    char bSelected;           // flag showing selection for decoding
+    char bAttachment;         // 1 if this file is an attachment
+    char cFileName[MAX_PATH]; // file name the block will be decoded into
+    char cCharset[20];        // name of the character set
+    int iSize;                // size of the decoded file
+    int iBadBlock;            // 0 or BADBLOCK_XXX
+    int iPart;                // yEnc multipart file number, 0 if not multipart
 };
 
 typedef CMarker CEndMarker;
@@ -74,7 +74,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
 
 extern int iErrorStr;
 
-//// export pro decoder.cpp ///////////////////////////////////////////////////
+//// export for decoder.cpp ///////////////////////////////////////////////////
 
 class CInputFile
 {

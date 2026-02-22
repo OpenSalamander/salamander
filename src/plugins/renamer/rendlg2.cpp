@@ -13,15 +13,14 @@ struct CRenameScriptEntry
     CSourceFile* Source;
     char* NewName;
     char* NewPart;
-    int Blocks : 28;            // stavba skriptu: index polozky zavisle na teto
-                                // zpracovani skriptu: nasledujici polozka zavisi
-                                // na teto
-    unsigned int Overwrite : 1; // uzivatel potvrdil prepis existujiciho souboru
+    int Blocks : 28;            // script construction: index of an item depending on this one
+                                // script processing: the following item depends on this entry
+    unsigned int Overwrite : 1; // the user confirmed overwriting the existing file
 
-    // pomocne promene pro stavbu skriptu
-    unsigned int Skip : 1;    // nebude se prejmenovavat
-    unsigned int Done : 1;    // polozka uz byla pridana do skriptu
-    unsigned int Blocked : 1; // polozka zavisi na nejake dalsi polozce
+    // helper variables for building the script
+    unsigned int Skip : 1;    // will not be renamed
+    unsigned int Done : 1;    // the item has already been added to the script
+    unsigned int Blocked : 1; // the item depends on another item
 
     CRenameScriptEntry()
     {
@@ -133,7 +132,7 @@ void CRenamerDialog::Rename(BOOL validate)
         }
 
         Errors = FALSE;
-        // undo stack mazeme vzdycky
+        // always clear the undo stack
         // if (ProcessRenamed)
         // {
         RenamedFiles.DestroyMembers();
@@ -206,7 +205,7 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
     int i = 0;
     BOOL usrBreak = FALSE;
 
-    // nastavime options
+    // set the options
     CRenamer renamer(Root, RootLen);
     if (!ManualMode && !renamer.SetOptions(&RenamerOptions))
     {
@@ -239,8 +238,8 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
             HWND wnd = GetFocus();
             while (wnd != NULL && wnd != ctrl)
                 wnd = GetParent(wnd);
-            if (wnd == NULL) // fokusime jen pokud neni ctrl predek GetFocusu
-            {                // jako napr. edit-line v combo-boxu
+            if (wnd == NULL) // focus only if the control is not an ancestor of GetFocus
+            {                // such as the edit line in a combo box
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
             }
             SendMessage(ctrl, CB_SETEDITSEL, 0, MAKELONG(errorPos1, errorPos2));
@@ -248,19 +247,19 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
         goto LBUILD_SCRIPT_ERROR;
     }
 
-    // vytvorime progress
+    // create the progress dialog
     Progress = new CProgressDialog(HWindow);
     Progress->Create();
     EnableWindow(HWindow, FALSE);
     Progress->SetText(LoadStr(IDS_PREPARING));
     Progress->EmptyMessageLoop();
 
-    // vytvorim pomocny skript
+    // create the helper script
     tmpScript = new CRenameScriptEntry[SourceFiles.Count];
     for (i = 0; i < SourceFiles.Count; i++)
     {
         tmpScript[i].Source = SourceFiles[i];
-        // vytvorime nove jmeno
+        // create a new name
         int l = ManualMode ? GetManualModeNewName(SourceFiles[i], i, newName, newPart) : renamer.Rename(SourceFiles[i], i, newName, &newPart);
         if (l < 0)
         {
@@ -271,7 +270,7 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
             tmpScript[i].Skip = 1;
             continue;
         }
-        // overime spravnost jmena
+        // verify the correctness of the name
         if (!ValidateFileName(newPart, l, RenamerOptions.Spec, &skip, &skipAllBadNames))
         {
             if (!skip)
@@ -285,7 +284,7 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
         somethingToDo = somethingToDo || strcmp(SourceFiles[i]->FullName, newName);
     }
 
-    // vyhazeme duplicitni jmena
+    // remove duplicate names
     qsort(tmpScript, SourceFiles.Count, sizeof(*tmpScript), CRenameScriptEntry::CompareNewNames);
     for (i = 1; i < SourceFiles.Count; i++)
         if (!tmpScript[i - 1].Skip && !tmpScript[i].Skip &&
@@ -303,15 +302,15 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
             continue;
         }
 
-    // seradime skript podle puvodniho jmena (pro binarni vyhledavani)
+    // sort the script by the original name (for binary search)
     qsort(tmpScript, SourceFiles.Count, sizeof(*tmpScript), CRenameScriptEntry::CompareOldNames);
 
-    // otestujeme spravnost pomocneho skriptu
+    // test the helper script for correctness
     for (i = 0; i < SourceFiles.Count; i++)
     {
         if (!tmpScript[i].Skip)
         {
-            // overime, ze adresare maji stejny koren (neumime rekurzivni kopie adresaru)
+            // verify that directories share the same root (we cannot handle recursive directory copies)
             if (tmpScript[i].Source->IsDir &&
                 !SG->HasTheSameRootPath(tmpScript[i].Source->FullName, tmpScript[i].NewName))
             {
@@ -322,7 +321,7 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
                 tmpScript[i].Skip = 1;
                 continue;
             }
-            // overime, ze cilova jmena neexistuji, a nechame si potvrdit prepisy
+            // verify that target names do not exist and request overwrite confirmation
             DWORD attr = SG->SalGetFileAttributes(tmpScript[i].NewName);
             if (attr != 0xFFFFFFFF)
             {
@@ -331,11 +330,11 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
                     (attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) &&
                         !(Silent & (SILENT_OVERWRITE_FILE_SYSHID | SILENT_SKIP_FILE_SYSHID)))
                 {
-                    // nove jmeno neni mezi soubory, ktere budou prejmenovany
+                    // the new name is not among the files that will be renamed
                     if (!bsearch(tmpScript[i].NewName, tmpScript, SourceFiles.Count,
                                  sizeof(*tmpScript), CRenameScriptEntry::CompareOldName))
                     {
-                        if (attr & FILE_ATTRIBUTE_DIRECTORY) // nelze prepsat adresar
+                        if (attr & FILE_ATTRIBUTE_DIRECTORY) // cannot overwrite a directory
                         {
                             FileError(HWindow, tmpScript[i].Source->FullName,
                                       tmpScript[i].Source->IsDir ? IDS_DIRDIR : IDS_FILEDIR,
@@ -378,14 +377,14 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
             goto LBUILD_SCRIPT_ERROR;
     }
 
-    // nalezneme optimalni poradi pro provedeni rename operace
-    // a vytvorime skript podle, ktereho budeme prejmenovavat
+    // find the optimal order for performing the rename operation
+    // and create the script according to which we will rename
     if (!validate)
         script = new CRenameScriptEntry[SourceFiles.Count];
     count = 0;
     int skipped;
     skipped = 0;
-    for (i = 0; i < SourceFiles.Count; i++) // detekce retezcu zavislosti
+    for (i = 0; i < SourceFiles.Count; i++) // detect dependency chains
     {
         if (tmpScript[i].Skip)
             skipped++;
@@ -401,10 +400,10 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
             }
         }
     }
-    for (i = 0; i < SourceFiles.Count; i++) // stavba skriptu
+    for (i = 0; i < SourceFiles.Count; i++) // build the script
     {
-        // nalezneme zacatek retezce zavislosti a pridame jeho cleny
-        // do skriptu
+        // find the start of the dependency chain and add its members
+        // to the script
         if (!tmpScript[i].Skip && !tmpScript[i].Done && !tmpScript[i].Blocked)
         {
             int prev = i;
@@ -426,7 +425,7 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
         }
     }
 
-    // jsou-li zde polozky, ktere nejdou prejmenovat, zobrazime je
+    // if there are items that cannot be renamed, display them
     if (count < SourceFiles.Count - skipped)
     {
         for (i = 0; i < SourceFiles.Count; i++)
@@ -441,20 +440,20 @@ BOOL CRenamerDialog::BuildScript(CRenameScriptEntry*& script, int& count,
         }
     }
 
-    ret = TRUE; // dosli jsem az sem, vse je OK
+    ret = TRUE; // if we got here, everything is OK
     Progress->Update(1000);
 
 LBUILD_SCRIPT_ERROR:
 
     if (!ret && !usrBreak)
     {
-        // fokusime polozku z chybou
+        // focus the item with the error
         ListView_SetItemState(Preview->HWindow, i,
                               LVIS_FOCUSED | LVIS_SELECTED,
                               LVIS_FOCUSED | LVIS_SELECTED);
         ListView_EnsureVisible(Preview->HWindow, i, FALSE);
 
-        // nastavime cursor na radku z chybou
+        // position the cursor on the line with the error
         if (ManualMode)
         {
             int charIndex = (int)SendMessage(ManualEdit->HWindow, EM_LINEINDEX, i, 0);
@@ -463,7 +462,7 @@ LBUILD_SCRIPT_ERROR:
                 HWND wnd = GetFocus();
                 if (wnd != ManualEdit->HWindow)
                 {
-                    if (Progress) // aby sel nastavit fokus na edit
+                    if (Progress) // so the focus can be set to the edit control
                     {
                         EnableWindow(HWindow, TRUE);
                         DestroyWindow(Progress->HWindow);
@@ -513,7 +512,7 @@ int CRenamerDialog::GetManualModeNewName(CSourceFile* file, int index, char* new
     newPart = newName;
 
     int charIndex = (int)SendMessage(ManualEdit->HWindow, EM_LINEINDEX, index, 0);
-    if (charIndex < 0) // tohle by nemelo nastat -- neprojde CRenamerDialog::Validate
+    if (charIndex < 0) // this should not happen -- CRenamerDialog::Validate would fail
     {
         *newName = 0;
         return 0;
@@ -529,7 +528,7 @@ int CRenamerDialog::GetManualModeNewName(CSourceFile* file, int index, char* new
         {
             *LPWORD(newName) = MAX_PATH - pathLen;
             int l2 = (int)SendMessage(ManualEdit->HWindow, EM_GETLINE, index, (LPARAM)newName);
-            newName[l2] = 0; // pro jistotu
+            newName[l2] = 0; // just to be sure
         }
         return l;
     }
@@ -545,7 +544,7 @@ void CRenamerDialog::ExecuteScript(CRenameScriptEntry* script, int count)
 
     Progress->SetText(LoadStr(IDS_RENAMING));
 
-    // provedeme rename
+    // perform the rename
     BOOL blocked = FALSE;
     BOOL success = TRUE;
     int i;
@@ -570,7 +569,7 @@ void CRenamerDialog::ExecuteScript(CRenameScriptEntry* script, int count)
                 do
                 {
                     SG->CutDirectory(dir);
-                    SG->ClearReadOnlyAttr(dir); // aby sel smazat
+                    SG->ClearReadOnlyAttr(dir); // so it can be deleted
                 } while (RemoveDirectory(dir));
             }
             script[i].Source->State = 1;
@@ -603,7 +602,7 @@ void CRenamerDialog::Undo()
             SkipAllDirChangeCase = SkipAllCreateDir = SkipAllFileDir =
                 SkipAllDependingNames = SkipAllRemoveDir = FALSE;
 
-    // vytvorime progress
+    // create the progress dialog
     Progress = new CProgressDialog(HWindow);
     Progress->Create();
     EnableWindow(HWindow, FALSE);
@@ -663,11 +662,11 @@ void CRenamerDialog::Undo()
             if (Progress->Update(done * 1000 / total))
             {
                 if (pathSuccess)
-                    entry->Independent = 1; // aby bylo mozne pozdeji pokracovat
+                    entry->Independent = 1; // to allow continuing later
                 break;
             }
 
-            // uklid cesty jen kdyz se podarilo uklidit soubor
+            // clean up the path only when the file was successfully removed
             if (pathSuccess || entry->Independent)
             {
                 if (entry->Target)
@@ -685,7 +684,7 @@ void CRenamerDialog::Undo()
                         if (!FileError(HWindow, entry->Source, IDS_DIRCASEERROR,
                                        TRUE, &skip, &SkipAllDirChangeCase, IDS_ERROR))
                         {
-                            entry->Independent = 1; // aby bylo mozne pozdeji pokracovat
+                            entry->Independent = 1; // to allow continuing later
                             if (!skip)
                                 goto LUNDONE;
                             break;
@@ -707,7 +706,7 @@ void CRenamerDialog::Undo()
                         if (!FileError(HWindow, entry->Source, IDS_REMOVEDIR,
                                        TRUE, &skip, &SkipAllRemoveDir, IDS_ERROR))
                         {
-                            entry->Independent = 1; // aby bylo mozne pozdeji pokracovat
+                            entry->Independent = 1; // to allow continuing later
                             if (!skip)
                                 goto LUNDONE;
                             break;

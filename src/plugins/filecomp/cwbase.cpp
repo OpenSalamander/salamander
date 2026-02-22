@@ -21,7 +21,7 @@ CFilecompCoWorkerBase<CChar>::CFilecompCoWorkerBase(HWND mainWindow,
 template <class CChar>
 void CFilecompCoWorkerBase<CChar>::ReadFilesAndFindLines(CTextFileReader (&reader)[2], bool& binaryIdentical)
 {
-    // nacteme soubory
+    // load files
     int i;
     for (i = 0; i < 2; i++)
     {
@@ -30,7 +30,7 @@ void CFilecompCoWorkerBase<CChar>::ReadFilesAndFindLines(CTextFileReader (&reade
         Files[i].End = Files[i].Begin + Files[i].Length;
     }
 
-    // nejsou nahodou shodne?
+    // are they identical by any chance?
     binaryIdentical = false;
     if (reader[0].HasMD5() && reader[1].HasMD5())
     {
@@ -41,7 +41,7 @@ void CFilecompCoWorkerBase<CChar>::ReadFilesAndFindLines(CTextFileReader (&reade
         binaryIdentical = memcmp(md5_1, md5_2, 16) == 0;
     }
 
-    // najdeme zacatky radku
+    // find the beginnings of lines
     for (i = 0; i < 2; i++)
     {
         CChar* lineStart = Files[i].Begin;
@@ -60,11 +60,11 @@ void CFilecompCoWorkerBase<CChar>::ReadFilesAndFindLines(CTextFileReader (&reade
             else
                 ++iterator;
         }
-        // ukazatel za posledni radku
+        // pointer past the last line
         Files[i].Lines.push_back(lineStart);
     }
 
-    // jen pro klid duse
+    // just for peace of mind
     if (Files[i].Lines.size() >= size_t(CLineSpec::MaxLines()))
         CFilecompWorker::CException::Raise(IDS_MAXLINES, 0);
 }
@@ -203,10 +203,10 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
     if (d == -1)
         CFilecompWorker::CException::Raise(IDS_INTERNALERROR, 0);
 
-    // TODO az budu implementovat strict, tak tohle by se melo osetrit
+    // TODO once I implement strict mode this should be handled
     // if (d == 0)
 
-    // shift-boundaries se vola pred RemoveSingleCharMatches
+    // shift-boundaries is called before RemoveSingleCharMatches
     ShiftBoundaries(Strict.EditScript, Strict.CompareData);
 
     // remove sigle char matches
@@ -226,11 +226,11 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
         Strict.Changes[i].clear();
     }
 
-    // NOTE prefixy i suffixy mohou byt ruzne dlouhe -- jinak zalamany stejny
-    // text
+    // NOTE prefixes and suffixes can have different lengths -- otherwise the same
+    // wrapped text
     for (CEditScript::iterator esi = Strict.EditScript.begin();; ++esi)
     {
-        // zpracujeme spolecnou cast
+        // process the shared part
         mstart = cdi[0];
         mend = esi >= Strict.EditScript.end() ? Strict.CompareData[0].end() : Strict.CompareData[0].begin() + esi->DeletePos;
         // break condition is at the loop end
@@ -262,7 +262,7 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
             {
                 if (lineChanged[i] && script[i].size() < script[1 - i].size())
                 {
-                    // dorovname
+                    // align
                     fill_n(back_inserter(script[i]),
                            script[1 - i].size() - script[i].size(),
                            CLineSpec(CLineSpec::lcBlank));
@@ -274,12 +274,12 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
                 break;
             ++cdi[0], ++cdi[1];
         }
-        // konec?
+        // the end?
         if (esi >= Strict.EditScript.end())
             break;
         if (CancelFlag)
             throw CFilecompWorker::CAbortByUserException();
-        // zpracujeme rozdilnou cast
+        // process the differing part
         for (i = 0; i < 2; ++i)
         {
             if (cdi[i] >= Strict.CompareData[i].end())
@@ -289,19 +289,19 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
             if (endline > line[i])
             {
                 _ASSERT(cdi[i]->CharLine == line[i]);
-                // skript pro aktualni radku
+                // script for the current line
                 Strict.Changes[i].push_back((int)(cdi[i]->Position - Files[i].Lines[line[i]]));
                 Strict.Changes[i].push_back(
                     (int)(Files[i].Lines[line[i] + 1] - Files[i].Lines[line[i]] - 1));
                 script[i].push_back(CLineSpec(CLineSpec::lcChange, int(line[i]), Strict.Changes[i]));
                 Strict.Changes[i].clear();
-                // doplnime radkama ktere jsou ciste zmeny
+                // append lines that are pure changes
                 while (endline > ++line[i])
                     script[i].push_back(CLineSpec(CLineSpec::lcChange, int(line[i]), 0,
                                                   int(Files[i].Lines[line[i] + 1] - Files[i].Lines[line[i]]) - 1));
                 if (cdi[i] + esi->Length[i] < Strict.CompareData[i].end())
                 {
-                    // zahajime skript pro posledni radku zmeny
+                    // start the script for the last line of the change
                     Strict.Changes[i].push_back(0);
                     Strict.Changes[i].push_back(
                         (int)((cdi[i] + esi->Length[i])->Position - Files[i].Lines[line[i]]));
@@ -310,7 +310,7 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
             else
             {
                 _ASSERT(cdi[i] + esi->Length[i] < Strict.CompareData[i].end());
-                // zmena zustava v aktualni radce
+                // the change stays in the current line
                 Strict.Changes[i].push_back((int)(cdi[i]->Position - Files[i].Lines[line[i]]));
                 Strict.Changes[i].push_back(
                     (int)((cdi[i] + esi->Length[i])->Position - Files[i].Lines[line[i]]));
@@ -332,7 +332,7 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
             script[i].push_back(CLineSpec(lcCommon, int(line[i])));
     }
 
-    // // doplnime do plneho poctu radku
+    // // pad out to the full number of lines
     // int i;
     // for (i = 0; i < 2; ++i)
     // {
@@ -343,7 +343,7 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
     //   }
     // }
 
-    // dorovname kratsi script
+    // align the shorter script
     int s = script[0].size() < script[1].size() ? 0 : 1;
     fill_n(back_inserter(script[s]),
            script[1 - s].size() - script[s].size(),
@@ -393,8 +393,8 @@ void CFilecompCoWorkerBase<CChar>::ShiftBoundaries(CEditScript& editScript, CCom
 {
     //CCounterDriver sb(::ShiftBoundaries);
 
-    // TODO na vektoru tohle muze byt dost pomale, overit, zda se nevyplati
-    // to docasne prekopirovat do listu
+    // TODO this may be quite slow on a vector; check whether it is worth
+    // copying it temporarily to a list
     int f;
     for (f = 0; f < 2; ++f)
     {

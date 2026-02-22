@@ -3,14 +3,14 @@
 
 #pragma once
 
-// definice IDs do menu
+// menu ID definitions
 #define MID_COMPAREFILES 1
 
 #define CURRENT_CONFIG_VERSION_PRESEPARATEOPTIONS 6
 #define CURRENT_CONFIG_VERSION_NORECOMPAREBUTTON 7
 #define CURRENT_CONFIG_VERSION 8
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object whose methods are invoked by Salamander
 class CPluginInterface;
 extern CPluginInterface PluginInterface;
 extern BOOL AlwaysOnTop;
@@ -19,7 +19,7 @@ extern BOOL LoadOnStart;
 
 // ****************************************************************************
 //
-// Interface pluginu
+// Plugin interface
 //
 
 class CPluginInterface : public CPluginInterfaceAbstract
@@ -51,18 +51,19 @@ public:
 class CPluginInterfaceForMenu : public CPluginInterfaceForMenuExtAbstract
 {
 public:
-    // vraci stav polozky menu s identifikacnim cislem 'id'; navratova hodnota je kombinaci
-    // flagu (viz MENU_ITEM_STATE_XXX); 'eventMask' viz CSalamanderConnectAbstract::AddMenuItem
+    // returns the state of the menu item with the identifier 'id'; the return value is a
+    // combination of flags (see MENU_ITEM_STATE_XXX); 'eventMask' corresponds to
+    // CSalamanderConnectAbstract::AddMenuItem
     virtual DWORD WINAPI GetMenuItemState(int id, DWORD eventMask) { return 0; }
 
-    // spousti prikaz menu s identifikacnim cislem 'id', 'eventMask' viz
-    // CSalamanderConnectAbstract::AddMenuItem, 'salamander' je sada pouzitelnych metod
-    // Salamandera pro provadeni operaci, 'parent' je parent messageboxu, vraci TRUE pokud
-    // ma byt v panelu zruseno oznaceni (nebyl pouzit Cancel, mohl byt pouzit Skip), jinak
-    // vraci FALSE (neprovede se odznaceni);
-    // POZOR: Pokud prikaz zpusobi zmeny na nejake ceste (diskove/FS), mel by pouzit
-    //        CSalamanderGeneralAbstract::PostChangeOnPathNotification pro informovani
-    //        panelu bez automatickeho refreshe a otevrene FS (aktivni i odpojene)
+    // executes the menu command identified by 'id'; see
+    // CSalamanderConnectAbstract::AddMenuItem for the meaning of 'eventMask'; 'salamander'
+    // exposes helper methods for performing operations; 'parent' is the owner for message
+    // boxes; returns TRUE if the panel selection should be cleared (Cancel was not used but
+    // Skip might have been), otherwise FALSE (leave the selection as is);
+    // NOTE: If the command modifies any path (disk or FS), it should call
+    //       CSalamanderGeneralAbstract::PostChangeOnPathNotification to notify panels
+    //       without automatic refresh and any open FS windows (both active and detached)
     virtual BOOL WINAPI ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
                                         int id, DWORD eventMask);
     virtual BOOL WINAPI HelpForMenuItem(HWND parent, int id);
@@ -94,5 +95,5 @@ public:
     virtual unsigned Body();
 };
 
-extern CWindowQueue MainWindowQueue; // seznam vsech oken filecompu
-extern CThreadQueue ThreadQueue;     // seznam vsech oken+workeru filecompu + remote control
+extern CWindowQueue MainWindowQueue; // list of all FileComp windows
+extern CThreadQueue ThreadQueue;     // list of all FileComp windows, workers, and the remote control

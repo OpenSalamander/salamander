@@ -151,7 +151,7 @@ int LzmaDecodeProperties(CLzmaProperties *propsRes, const unsigned char *propsDa
 }
 
 extern void RefreshProgress(unsigned long inend, unsigned long inptr, int diskSavePart);
-int LzmaShouldRefreshProgress = 0; // LzmaDecode se vola jeste pred vlastni dekompresi, tak at nesasime s progressbar
+int LzmaShouldRefreshProgress = 0; // LzmaDecode is invoked before actual decompression, so keep the progress bar steady
 
 #define kLzmaStreamWasFinishedId (-1)
 
@@ -165,7 +165,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
 {
   CProb *p = vs->Probs;
   SizeT nowPos = 0;
-  SizeT nowPosLast = 0; // pouze pro progress
+  SizeT nowPosLast = 0; // used only for progress reporting
   Byte previousByte = 0;
   UInt32 posStateMask = (1 << (vs->Properties.pb)) - 1;
   UInt32 literalPosMask = (1 << (vs->Properties.lp)) - 1;
@@ -287,7 +287,7 @@ int LzmaDecode(CLzmaDecoderState *vs,
         )
         & posStateMask);
 
-    if (LzmaShouldRefreshProgress && nowPos + 100000 > nowPosLast) // budeme volat pouze po 100 kilech
+    if (LzmaShouldRefreshProgress && nowPos + 100000 > nowPosLast) // call only every 100 KB
     {
       RefreshProgress(outSize, nowPos, 0);
       nowPosLast = nowPos;

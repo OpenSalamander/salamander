@@ -16,7 +16,7 @@ int CData::FindBookmark(DWORD treeItem, WORD textItem)
 
 void CData::ToggleBookmark(DWORD treeItem, WORD textItem)
 {
-    // pokud bookmark existuje, budeme prepinat jeho stav
+    // If the bookmark exists, toggle its state
     int index = FindBookmark(treeItem, textItem);
     if (index != -1)
         Bookmarks.Delete(index);

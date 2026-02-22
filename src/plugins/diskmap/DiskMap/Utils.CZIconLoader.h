@@ -25,12 +25,12 @@ protected:
     CZIconLoader(CZFile* file, DWORD flags)
     {
         int len = (int)file->GetFullName(this->_filename, ARRAYSIZE(CZIconLoader::_filename));
-        //pokud moc dlouha cesta, kterou SHGetFileInfo() nezvladne...
+        //if the path is too long for SHGetFileInfo() to handle...
         if (len > MAX_PATH)
         {
             _tcscpy(this->_filename, file->GetName());
             flags |= SHGFI_USEFILEATTRIBUTES;
-            //flags &= ~SHGFI_ADDOVERLAYS; //vypada, ze neni nutne
+            //flags &= ~SHGFI_ADDOVERLAYS; //seems unnecessary
         }
         this->_flags = flags;
     }
@@ -74,8 +74,8 @@ public:
     }
     static HICON LoadIconSync(TCHAR* path, DWORD flags)
     {
-        flags |= SHGFI_ICON;     //ziskej ikonu
-        flags &= SHGFI_ICONMASK; //vyskrtni nezadouci flagy
+        flags |= SHGFI_ICON;     //get the icon
+        flags &= SHGFI_ICONMASK; //remove unwanted flags
         SHFILEINFO shfi;
         if (SHGetFileInfo(path, 0, &shfi, sizeof shfi, flags) == 0)
             return NULL;

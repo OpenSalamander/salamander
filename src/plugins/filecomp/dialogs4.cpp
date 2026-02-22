@@ -86,11 +86,11 @@ void CPropPageGeneral::LoadControls(BOOL initCombo)
 {
     CALL_STACK_MESSAGE2("CPropPageGeneral::LoadControls(%d)", initCombo);
 
-    // inicializuje edit linu pro ukazku fontu
+    // initialize the edit line for displaying the font sample
     HWND hEdit = GetDlgItem(HWindow, IDE_FONT);
     LOGFONT logFont;
     logFont = LogFont;
-    logFont.lfHeight = SalGUI->GetWindowFontHeight(hEdit); // pro prezentaci fontu v edit line pouzijeme jeji velikost fontu
+    logFont.lfHeight = SalGUI->GetWindowFontHeight(hEdit); // use the edit line font size to present the font
     if (HFont)
         DeleteObject(HFont);
     HFont = CreateFontIndirect(&logFont);
@@ -103,7 +103,7 @@ void CPropPageGeneral::LoadControls(BOOL initCombo)
             LogFont.lfFaceName);
     SetWindowText(hEdit, logFont.lfFaceName);
 
-    // inicializuje comba pro vyber znaku
+    // initialize the combo boxes for character selection
     HWND whiteSpace = GetDlgItem(HWindow, IDC_WHITESPACE);
     SendMessage(whiteSpace, WM_SETFONT, (WPARAM)HFont, FALSE);
     if (initCombo)
@@ -202,7 +202,7 @@ CPropPageGeneral::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // CConfigurationDialog
 //
 
-// pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
+// helper object for centering the configuration dialog over its parent
 class CCenteredPropertyWindow : public CWindow
 {
 protected:
@@ -218,10 +218,10 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_APP + 1000: // we should detach from the dialog (centering is done)
         {
             DetachWindow();
-            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            delete this; // a bit of a hack, but nothing will touch 'this' anymore so it's fine
             return 0;
         }
         }
@@ -247,25 +247,25 @@ typedef struct DLGTEMPLATEEX
 #include <poppack.h>
 #endif // LPDLGTEMPLATEEX
 
-// pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
+// helper callback for centering the configuration dialog over the parent and removing the '?' button from the caption
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
     CALL_STACK_MESSAGE3("CenterCallback(, 0x%X, 0x%IX)", uMsg, lParam);
-    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
+    if (uMsg == PSCB_INITIALIZED) // attach to the dialog
     {
         CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
         if (wnd != NULL)
         {
             wnd->AttachToWindow(HWindow);
             if (wnd->HWindow == NULL)
-                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+                delete wnd; // the window is not attached, delete it right here
             else
             {
-                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // detach CCenteredPropertyWindow from the dialog
             }
         }
     }
-    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    if (uMsg == PSCB_PRECREATE) // remove the '?' button from the property sheet header
     {
         // Remove the DS_CONTEXTHELP style from the dialog box template
         if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -20,7 +21,7 @@ void CFTPParser::BeforeParsing(const char* listingBeg, const char* listingEnd, i
     SkipThisLineItIsIncomlete = FALSE;
     AllowedLanguagesMask = PARSER_LANG_ALL;
 
-    // predpocitame prvni neprazdnou radku
+    // precompute the first non-empty line
     const char* s = listingBeg;
     const char* beg = s;
     BOOL nonEmpty = FALSE;
@@ -49,10 +50,10 @@ void CFTPParser::BeforeParsing(const char* listingBeg, const char* listingEnd, i
     if (nonEmpty)
     {
         FirstNonEmptyBeg = beg;
-        FirstNonEmptyEnd = listingEnd + 1; // aby to fungovalo i po preskoceni posledniho znaku listingu (posledni radka neukoncena EOLem)
+        FirstNonEmptyEnd = listingEnd + 1; // make it work even after skipping the last listing character (the last line is not terminated by an EOL)
     }
 
-    // predpocitame posledni neprazdnou radku
+    // precompute the last non-empty line
     s = listingEnd - 1;
     const char* end = s + 1;
     nonEmpty = FALSE;
@@ -66,7 +67,7 @@ void CFTPParser::BeforeParsing(const char* listingBeg, const char* listingEnd, i
                 LastNonEmptyBeg = s + 1;
                 LastNonEmptyEnd = end;
                 if (!lastRowHasEOL && LastNonEmptyEnd == listingEnd)
-                    LastNonEmptyEnd++; // aby to fungovalo i po preskoceni posledniho znaku listingu (posledni radka neukoncena EOLem)
+                    LastNonEmptyEnd++; // make it work even after skipping the last listing character (the last line is not terminated by an EOL)
                 nonEmpty = FALSE;
                 break;
             }
@@ -87,7 +88,7 @@ void CFTPParser::BeforeParsing(const char* listingBeg, const char* listingEnd, i
         LastNonEmptyBeg = listingBeg;
         LastNonEmptyEnd = end;
         if (!lastRowHasEOL && LastNonEmptyEnd == listingEnd)
-            LastNonEmptyEnd++; // aby to fungovalo i po preskoceni posledniho znaku listingu (posledni radka neukoncena EOLem)
+            LastNonEmptyEnd++; // make it work even after skipping the last listing character (the last line is not terminated by an EOL)
     }
 }
 
@@ -125,7 +126,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
             {
                 switch (col->Type)
                 {
-                // case stctName:   // ten to byt nemuze, muze byt jen v prvnim sloupci
+                // case stctName:   // this cannot occur here; it can only be in the first column
                 case stctGeneralText:
                 {
                     char* str = SalamanderGeneral->DupStr(col->EmptyValue);
@@ -140,26 +141,26 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                     break;
                 }
 
-                case stctExt:                           // pripona se nemuze nikdy priradit pri parsovani -> tato cast se provadi
-                {                                       //  vzdycky, kdyz existuje sloupec s typem "Extension"
-                    if (SortByExtDirsAsFiles || !isDir) // u adresaru se pripona nerozpoznava
+                case stctExt:                           // the extension can never be assigned during parsing -> this part is executed
+                {                                       //  whenever a column of type "Extension" exists
+                    if (SortByExtDirsAsFiles || !isDir) // extensions are not detected for directories
                     {
-                        char* t = file->Ext; // uz se provedlo: file->Ext = file->Name + file->NameLen
+                        char* t = file->Ext; // already done: file->Ext = file->Name + file->NameLen
                         while (--t >= file->Name && *t != '.')
                             ;
-                        //              if (t > file->Name) file->Ext = t + 1;   // ".cvspass" ve Windows je pripona ...
+                        //              if (t > file->Name) file->Ext = t + 1;   // ".cvspass" in Windows is treated as an extension ...
                         if (t >= file->Name)
                             file->Ext = t + 1;
                     }
                     break;
                 }
 
-                    // case stctType: // ignorujeme, neni co nastavovat
+                    // case stctType: // we ignore it; there is nothing to set
 
                 case stctSize:
                 {
                     if (isDir)
-                        file->Size = CQuadWord(0, 0); // u adresaru velikost pro poradek nulujeme (zbytecne)
+                        file->Size = CQuadWord(0, 0); // for directories we reset the size to zero just in case (unnecessary)
                     else
                         file->Size = qwVal;
                     break;
@@ -173,7 +174,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                 {
                     lastWriteUsed = TRUE;
                     if (emptyCol != NULL &&
-                        (emptyCol[i] & DATE_MASK_DATE) == DATE_MASK_DATE) // datum byl nacten komplet
+                        (emptyCol[i] & DATE_MASK_DATE) == DATE_MASK_DATE) // the date was read completely
                     {
                         CFTPDate* d = (CFTPDate*)&(file->LastWrite.dwLowDateTime);
                         lastWriteDate.wYear = d->Year;
@@ -183,13 +184,13 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                         {
                             if (lastWriteDate.wMonth > actualMonth ||
                                 lastWriteDate.wMonth == actualMonth && lastWriteDate.wDay > actualDay)
-                            { // datum v budoucnosti je nesmysl (UNIX u takoveho pise rovnou rok a ne
-                                // cas) -> jde o datum z minuleho roku
+                            { // a date in the future is nonsense (UNIX servers write the year directly instead of the time)
+                                // -> this is a date from the previous year
                                 lastWriteDate.wYear--;
                             }
                         }
                     }
-                    else // datum neni kompletni -> bereme prazdnou hodnotu
+                    else // the date is incomplete -> take the empty value
                     {
                         lastWriteDate.wYear = stVal.wYear;
                         lastWriteDate.wMonth = stVal.wMonth;
@@ -202,7 +203,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                 {
                     lastWriteUsed = TRUE;
                     if (emptyCol != NULL &&
-                        (emptyCol[i] & DATE_MASK_TIME) == DATE_MASK_TIME) // cas byl nacten
+                        (emptyCol[i] & DATE_MASK_TIME) == DATE_MASK_TIME) // the time was read
                     {
                         CFTPTime* t = (CFTPTime*)&(file->LastWrite.dwHighDateTime);
                         lastWriteDate.wHour = t->Hour;
@@ -210,7 +211,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                         lastWriteDate.wSecond = t->Second;
                         lastWriteDate.wMilliseconds = t->Millisecond;
                     }
-                    else // cas nebyl nacten -> bereme prazdnou hodnotu
+                    else // the time was not read -> take the empty value
                     {
                         lastWriteDate.wHour = stVal.wHour;
                         lastWriteDate.wMinute = stVal.wMinute;
@@ -223,7 +224,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                 case stctGeneralDate:
                 {
                     if (emptyCol == NULL ||
-                        (emptyCol[i] & DATE_MASK_DATE) != DATE_MASK_DATE) // datum neni kompletni -> bereme prazdnou hodnotu
+                        (emptyCol[i] & DATE_MASK_DATE) != DATE_MASK_DATE) // the date is incomplete -> take the empty value
                     {
                         dataIface->StoreDateToColumn(*file, i, (BYTE)stVal.wDay, (BYTE)stVal.wMonth, stVal.wYear);
                     }
@@ -234,13 +235,13 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                         {
                             if (testDate.wMonth > actualMonth ||
                                 testDate.wMonth == actualMonth && testDate.wDay > actualDay)
-                            { // datum v budoucnosti je nesmysl (UNIX u takoveho pise rovnou rok a ne
-                                // cas) -> jde o datum z minuleho roku
+                            { // a date in the future is nonsense (UNIX servers write the year directly instead of the time)
+                                // -> this is a date from the previous year
                                 testDate.wYear--;
                                 dataIface->StoreYearToColumn(*file, i, testDate.wYear);
                             }
                         }
-                        if (!SystemTimeToFileTime(&testDate, &ft)) // invalidni datum -> nastavime 1.1.1602
+                        if (!SystemTimeToFileTime(&testDate, &ft)) // invalid date -> set it to 1/1/1602
                             dataIface->StoreDateToColumn(*file, i, 1, 1, 1602);
                     }
                     break;
@@ -249,7 +250,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                 case stctGeneralTime:
                 {
                     if (emptyCol == NULL ||
-                        (emptyCol[i] & DATE_MASK_TIME) != DATE_MASK_TIME) // cas nebyl nacten -> bereme prazdnou hodnotu
+                        (emptyCol[i] & DATE_MASK_TIME) != DATE_MASK_TIME) // the time was not read -> take the empty value
                     {
                         dataIface->StoreTimeToColumn(*file, i, (BYTE)stVal.wHour, (BYTE)stVal.wMinute,
                                                      (BYTE)stVal.wSecond, stVal.wMilliseconds);
@@ -262,11 +263,11 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
             }
         }
     }
-    if (!err && lastWriteUsed) // nastaveni file->LastWrite podle hodnot ve sloupcich
+    if (!err && lastWriteUsed) // set file->LastWrite according to the values in the columns
     {
         if (!SystemTimeToFileTime(&lastWriteDate, &ft) ||
             !LocalFileTimeToFileTime(&ft, &file->LastWrite))
-        { // chyba nastaveni datumu -> invalidni datum (cas nemuze byt spatne) -> nastavime 1.1.1602
+        { // error setting the date -> invalid date (the time cannot be wrong) -> set it to 1/1/1602
             lastWriteDate.wYear = 1602;
             lastWriteDate.wMonth = 1;
             lastWriteDate.wDay = 1;
@@ -283,7 +284,7 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
                                         const char** itemStart, BOOL* lowMem, DWORD* emptyCol)
 {
     DEBUG_SLOW_CALL_STACK_MESSAGE1("CFTPParser::GetNextItemFromListing()");
-    // nastavime defaultni hodnoty (soubor a neni skryty)
+    // set default values (it is a file and not hidden)
     *isDir = FALSE;
     memset(file, 0, sizeof(CFileData));
 
@@ -299,12 +300,12 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
 
     if (!err)
     {
-        // pro kazdy sloupec obsahuje pole 'emptyCol' TRUE dokud se do sloupce nepriradi nejaka hodnota
+        // for each column the 'emptyCol' array contains TRUE until some value is assigned
         int i;
         for (i = 0; i < columns->Count; i++)
             emptyCol[i] = TRUE;
 
-        // provadeni parsingu
+        // perform the parsing
         const char* s = *listing;
         while (s < listingEnd)
         {
@@ -317,24 +318,24 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
                 BOOL brk = FALSE;
                 if (Rules[j]->UseRule(file, isDir, dataIface, columns, &s, listingEnd, this, &err, emptyCol))
                 {
-                    if (SkipThisLineItIsIncomlete || // zjisten nekompletni listing - preskocime zpracovavanou koncovou cast listingu
+                    if (SkipThisLineItIsIncomlete || // an incomplete listing was detected - skip the processed trailing part of the listing
                         !emptyCol[0])
-                        break;  // pravidlo uspelo - nacteni souboru nebo adresare - jdeme zpracovat data
-                    brk = TRUE; // pravidlo uspelo - preskok radky - jdeme parsovat dalsi radek
+                        break;  // the rule succeeded - a file or directory was read - proceed to process the data
+                    brk = TRUE; // the rule succeeded - skip the line - continue parsing the next line
                 }
                 else
                 {
-                    if (err) // chyba - nedostatek pameti
+                    if (err) // error - out of memory
                     {
                         if (lowMem != NULL)
                             *lowMem = TRUE;
                         break;
                     }
-                    // chyba - pravidlo nelze pouzit - jdeme zkusit dalsi pravidlo na stejnem textu
+                    // error - the rule cannot be used - try the next rule on the same text
                     s = restart;
                 }
 
-                // provedeme uvolneni a nulovani dat pred jejich dalsim plnenim
+                // release and reset the data before filling them again
                 dataIface->ClearPluginData(*file);
                 if (file->Name != NULL)
                     SalamanderGeneral->Free(file->Name);
@@ -349,39 +350,39 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
                 if (brk)
                     break;
             }
-            if (j == Rules.Count) // na dany text nelze pouzit zadne pravidlo, vracime chybu
+            if (j == Rules.Count) // no rule can be applied to this text, return an error
             {
-                // s = restart;  // pozice chyby (uz je prirazena)
+                // s = restart;  // error position (already assigned)
                 break;
             }
             if (err || SkipThisLineItIsIncomlete || !emptyCol[0])
-                break; // chyba nebo mame vysledek
+                break; // an error occurred or we have a result
         }
         *listing = s;
     }
 
     BOOL ret = FALSE;
     if (!SkipThisLineItIsIncomlete &&
-        !err && !emptyCol[0] && file->Name != NULL /* always true */) // doslo k naplneni Name -> mame soubor/adresar
+        !err && !emptyCol[0] && file->Name != NULL /* always true */) // Name was populated -> we have a file/directory
     {
-        // nastavime zatim ignorovane slozky 'file'
+        // set the previously ignored members of 'file'
         file->NameLen = strlen(file->Name);
         file->Ext = file->Name + file->NameLen;
 
-        // doplnime prazdne hodnoty do prazdnych sloupcu
+        // fill the empty values into empty columns
         FillEmptyValues(err, file, *isDir, dataIface, columns, lowMem, emptyCol, ActualYear,
                         ActualMonth, ActualDay);
 
         if (!err)
-            ret = TRUE; // uspesne jsme ziskali dalsi soubor nebo adresar
+            ret = TRUE; // we successfully obtained another file or directory
     }
-    if (!ret) // doslo k chybe nebo jiz nebyl nalezen zadny soubor/adresar, musime uvonit alokovanou pamet
+    if (!ret) // an error occurred or no file/directory was found, we must free the allocated memory
     {
         dataIface->ReleasePluginData(*file, *isDir);
         if (file->Name != NULL)
             SalamanderGeneral->Free(file->Name);
         if (SkipThisLineItIsIncomlete)
-            *listing = listingEnd; // uz by melo byt, ale pro jistotu...
+            *listing = listingEnd; // it should already be set, but just in case...
     }
     return ret;
 }
@@ -406,10 +407,10 @@ BOOL CFTPParserRule::UseRule(CFileData* file, BOOL* isDir,
                                        actualParser, lowMemErr, emptyCol))
             break;
     }
-    // jsou-li uspesne pouzite vsechny funkce pravidla a "ukazovatko" je na konci
-    // listingu nebo na konci radky, hlasime uspech
+    // if all functions of the rule are successfully used and the "pointer" is at the end
+    // of the listing or at the end of the line, report success
     BOOL ret = FALSE;
-    if (file->Name == NULL || file->Name[0] != 0) // prirazeni prazdneho retezce do Name je chyba parsovani
+    if (file->Name == NULL || file->Name[0] != 0) // assigning an empty string to Name is a parsing error
     {
         if (actualParser->SkipThisLineItIsIncomlete)
             ret = TRUE;
@@ -418,7 +419,7 @@ BOOL CFTPParserRule::UseRule(CFileData* file, BOOL* isDir,
             if (!(*lowMemErr) && i == Functions.Count && (s == listingEnd || *s == '\r' || *s == '\n'))
             {
                 ret = TRUE;
-                // preskocime pripadny konec radky
+                // skip a possible end of line
                 if (s < listingEnd && *s == '\r')
                     s++;
                 if (s < listingEnd && *s == '\n')
@@ -427,7 +428,7 @@ BOOL CFTPParserRule::UseRule(CFileData* file, BOOL* isDir,
         }
     }
     else
-        actualParser->SkipThisLineItIsIncomlete = FALSE; // i kdyby byla radka nekompletni, doslo k chybe -> budeme to dale ignorovat
+        actualParser->SkipThisLineItIsIncomlete = FALSE; // even if the line was incomplete, an error occurred -> ignore it from now on
     *listing = s;
     return ret;
 }
@@ -442,7 +443,7 @@ BOOL AssignDayToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, int day
 {
     if (col >= 0 && col < columns->Count) // "always true"
     {
-        emptyCol[col] |= DATE_MASK_DAY; // priORuju den
+        emptyCol[col] |= DATE_MASK_DAY; // OR the day into the mask
         switch (columns->At(col)->Type)
         {
         case stctDate:
@@ -468,7 +469,7 @@ BOOL AssignMonthToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, int m
 {
     if (col >= 0 && col < columns->Count) // "always true"
     {
-        emptyCol[col] |= DATE_MASK_MONTH; // priORuju mesic
+        emptyCol[col] |= DATE_MASK_MONTH; // OR the month into the mask
         switch (columns->At(col)->Type)
         {
         case stctDate:
@@ -495,8 +496,8 @@ BOOL AssignYearToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, int ye
 {
     if (col >= 0 && col < columns->Count) // "always true"
     {
-        // priORuju rok + korekci roku (potreba pro "year_or_time" - cas u souboru mladsich sesti
-        // mesicu - nelze jen brat aktualni rok)
+        // OR the year plus the year correction (needed for "year_or_time" - the time for files younger than six
+        // months - we cannot just take the current year)
         emptyCol[col] |= DATE_MASK_YEAR | (yearCorrectionNeeded ? DATE_MASK_YEARCORRECTIONNEEDED : 0);
         switch (columns->At(col)->Type)
         {
@@ -523,7 +524,7 @@ BOOL AssignDateToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, CFTPDa
 {
     if (col >= 0 && col < columns->Count) // "always true"
     {
-        emptyCol[col] |= DATE_MASK_DATE; // nastavuje se kompletni datum
+        emptyCol[col] |= DATE_MASK_DATE; // store the complete date
         switch (columns->At(col)->Type)
         {
         case stctDate:
@@ -550,7 +551,7 @@ BOOL AssignTimeToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, int ho
 {
     if (col >= 0 && col < columns->Count) // "always true"
     {
-        emptyCol[col] |= DATE_MASK_TIME; // priORuju cas
+        emptyCol[col] |= DATE_MASK_TIME; // OR the time into the mask
         switch (columns->At(col)->Type)
         {
         case stctTime:
@@ -595,9 +596,9 @@ BOOL AssignNumberToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, BOOL
             if (minus)
             {
                 if (onlyPositiveNumber)
-                    file->Size.Set(0, 0); // funkce "positive_number" - pro zaporne hodnoty uklada defaultni prazdnou hodnotu
+                    file->Size.Set(0, 0); // the "positive_number" function - stores the default empty value for negative numbers
                 else
-                    return FALSE; // do Size nelze ulozit zaporne cislo (nemuzeme ignorovat -> user by ziral -666 B =~ 18 EB)
+                    return FALSE; // Size cannot store a negative number (we cannot ignore it -> the user would stare at -666 B =~ 18 EB)
             }
             else
                 file->Size.SetUI64((unsigned __int64)number);
@@ -607,7 +608,7 @@ BOOL AssignNumberToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, BOOL
         case stctGeneralNumber:
         {
             if (minus && onlyPositiveNumber)
-                dataIface->StoreNumberToColumn(*file, col, INT64_EMPTYNUMBER); // funkce "positive_number" - pro zaporne hodnoty uklada defaultni prazdnou hodnotu
+                dataIface->StoreNumberToColumn(*file, col, INT64_EMPTYNUMBER); // the "positive_number" function - stores the default empty value for negative numbers
             else
                 dataIface->StoreNumberToColumn(*file, col, number);
             break;
@@ -654,7 +655,7 @@ BOOL AssignStringToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, cons
             file->Name = str;
             if (end - beg > MAX_PATH - 5)
             {
-                file->Name[MAX_PATH - 5] = 0; // file->Name muze byt dlouhe max. MAX_PATH - 5 (omezeni Salamandera - pro viewovani snad moc nevadi, operace bude muset user provest v jinem softu)
+                file->Name[MAX_PATH - 5] = 0; // file->Name can be at most MAX_PATH - 5 characters long (Salamander limitation - hopefully not an issue for viewing, the user must perform the operation in other software)
                 TRACE_E("Too long file or directory name, cutting to MAX_PATH-5 characters! Using name: " << file->Name);
             }
             break;
@@ -676,13 +677,13 @@ BOOL AssignStringToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, cons
     else
     {
         TRACE_E("AssignStringToColumn(): Invalid column index!");
-        *lowMemErr = TRUE; // fatal error - simulace "low memory"
+        *lowMemErr = TRUE; // fatal error - simulating "low memory"
         return FALSE;
     }
 }
 
-// vraci cislo mesice jehoz nazev je kodovany tremi pismeny; pokud jde o neznamy
-// kod mesice, vraci -1
+// returns the number of the month whose name is encoded by three letters; if it is an unknown
+// month code, returns -1
 int GetMonthFromThreeLetters(const char* month, const char* monthStr)
 {
     char firstLetter = LowerCase[*month++];
@@ -707,8 +708,8 @@ struct CMonthNameNumberLanguage
     DWORD AllowedLanguagesMask;
 };
 
-// predpocitana tabulka pro hledani cisla mesice + masky povolenych jazyku
-// POZOR: mesice musi byt malymi pismeny!
+// precomputed table for looking up the month number + the mask of allowed languages
+// NOTE: months must be in lowercase!
 // PARSER_LANG_ENGLISH:   "jan feb mar apr may jun jul aug sep oct nov dec"
 // PARSER_LANG_GERMAN:    "jan feb mär apr mai jun jul aug sep okt nov dez"
 // PARSER_LANG_NORWEIGAN: "jan feb mar apr mai jun jul aug sep okt nov des"
@@ -735,14 +736,14 @@ CMonthNameNumberLanguage MonthNameNumberLanguageArr[] =
         {"maj", 5, PARSER_LANG_SWEDISH},
         {NULL, -1, 0}};
 
-// vraci cislo mesice jehoz nazev je kodovany tremi pismeny, kontroluje jestli jde
-// o nazev mesice v povolenem jazyce a pripadne omezi povolene jazyky pro dalsi
-// rozpoznavani jazyku; pokud jde o neznamy mesic nebo mesic v nepovolenem jazyce,
-// vraci -1
+// returns the number of the month whose name is encoded by three letters, checks whether it is
+// a month name in an allowed language and possibly restricts the allowed languages for further
+// language detection; if it is an unknown month or a month in a disallowed language,
+// returns -1
 int GetMonthFromThreeLettersAllLangs(const char* month, DWORD* allowedLanguagesMask)
 {
     int res = -1;
-    DWORD mask = 0; // maska jazyku, ve kterych se tento mesic jmenuje stejne
+    DWORD mask = 0; // mask of languages in which this month has the same name
     char lowerMonth[4];
     lowerMonth[0] = LowerCase[month[0]];
     lowerMonth[1] = LowerCase[month[1]];
@@ -760,7 +761,7 @@ int GetMonthFromThreeLettersAllLangs(const char* month, DWORD* allowedLanguagesM
         i++;
     }
     if (res == -1 || (*allowedLanguagesMask & mask) == 0)
-        return -1; // chyba (nenalezeny mesic nebo mesic z nepovoleneho jazyka)
+        return -1; // error (month not found or month from a disallowed language)
     else
     {
         *allowedLanguagesMask &= mask;
@@ -768,8 +769,8 @@ int GetMonthFromThreeLettersAllLangs(const char* month, DWORD* allowedLanguagesM
     }
 }
 
-// vraci cislo mesice jehoz nazev je kodovany textem; pokud jde o neznamy
-// kod mesice, vraci -1
+// returns the number of the month whose name is encoded by text; if it is an unknown
+// month code, returns -1
 int GetMonthFromText(const char** month, const char* monthEnd, const char* monthStr)
 {
     const char* s = *month;
@@ -800,7 +801,7 @@ struct CMonthTxtNameNumberLanguage
     DWORD AllowedLanguagesMask;
 };
 
-// predpocitana tabulka pro hledani cisla mesice + masky povolenych jazyku
+// precomputed table for looking up the month number + the mask of allowed languages
 // PARSER_LANG_GERMAN:  "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez."
 CMonthTxtNameNumberLanguage MonthTxtNameNumberLanguageArr[] =
     {
@@ -818,15 +819,15 @@ CMonthTxtNameNumberLanguage MonthTxtNameNumberLanguageArr[] =
         {"Dez.", 4, 12, PARSER_LANG_GERMAN},
         {NULL, -1, 0}};
 
-// vraci cislo mesice jehoz nazev je text '*month', kontroluje jestli jde
-// o nazev mesice v povolenem jazyce a pripadne omezi povolene jazyky pro dalsi
-// rozpoznavani jazyku; pokud jde o neznamy mesic nebo mesic v nepovolenem jazyce,
-// vraci -1
+// returns the number of the month whose name is the text '*month', checks whether it is
+// a month name in an allowed language and possibly restricts the allowed languages for further
+// language detection; if it is an unknown month or a month in a disallowed language,
+// returns -1
 int GetMonthFromTextAllLangs(const char** month, const char* monthEnd, DWORD* allowedLanguagesMask)
 {
     const char* s = *month;
     int res = -1;
-    DWORD mask = 0; // maska jazyku, ve kterych se tento mesic jmenuje stejne
+    DWORD mask = 0; // mask of languages in which this month has the same name
     int monthLen = 0;
     CMonthTxtNameNumberLanguage* i = MonthTxtNameNumberLanguageArr;
     while (i->Name != NULL)
@@ -841,7 +842,7 @@ int GetMonthFromTextAllLangs(const char** month, const char* monthEnd, DWORD* al
         i++;
     }
     if (res == -1 || (*allowedLanguagesMask & mask) == 0)
-        return -1; // chyba (nenalezeny mesic nebo mesic z nepovoleneho jazyka)
+        return -1; // error (month not found or month from a disallowed language)
     else
     {
         *allowedLanguagesMask &= mask;
@@ -861,21 +862,21 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
     const char* s = *listing;
     switch (Function)
     {
-    case fpfSkip_white_spaces: // preskocime white-spaces (krome CR a LF)
+    case fpfSkip_white_spaces: // skip white-space characters (except CR and LF)
     {
         while (s < listingEnd && (*s <= ' ' && *s != '\r' && *s != '\n'))
             s++;
         break;
     }
 
-    case fpfSkip_to_number: // preskocime az k nejblizsi dekadicke cislici (krome CR a LF)
+    case fpfSkip_to_number: // skip ahead to the nearest decimal digit (except CR and LF)
     {
         while (s < listingEnd && ((*s < '0' || *s > '9') && *s != '\r' && *s != '\n'))
             s++;
         break;
     }
 
-    case fpfWhite_spaces: // preskocime white-spaces (krome CR a LF)
+    case fpfWhite_spaces: // skip white-space characters (except CR and LF)
     {
         if (Parameters.Count > 0)
         {
@@ -883,31 +884,31 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             while (num-- && s < listingEnd && (*s <= ' ' && *s != '\r' && *s != '\n'))
                 s++;
             if (num != -1)
-                ret = FALSE; // uspech jen pri posunu "ukazovatka" o 'num'
+                ret = FALSE; // success only if the "pointer" advances by 'num'
         }
         else
         {
             while (s < listingEnd && (*s <= ' ' && *s != '\r' && *s != '\n'))
                 s++;
             if (s == *listing)
-                ret = FALSE; // uspech jen pri posunu "ukazovatka"
+                ret = FALSE; // success only if the "pointer" advances
         }
         break;
     }
 
-    case fpfWhite_spaces_and_line_ends: // preskocime white-spaces (vcetne CR a LF)
+    case fpfWhite_spaces_and_line_ends: // skip white-space characters (including CR and LF)
     {
         while (s < listingEnd && *s <= ' ')
             s++;
         if (s == *listing)
-            ret = FALSE; // uspech jen pri posunu "ukazovatka"
+            ret = FALSE; // success only if the "pointer" advances
         else
         {
-            if (s == listingEnd) // uspech jen pokud se ukazovatko zastavilo na nejakem znaku a ne na konci listingu
+            if (s == listingEnd) // success only if the pointer stopped on a character and not at the end of the listing
             {
                 if (actualParser->ListingIncomplete)
-                { // listing je nekompletni -> predpokladame, ze kdyby byl kompletni, toto se
-                    // nestane -> skipneme koncovou cast listingu zpracovanou timto pravidlem
+                { // the listing is incomplete -> assume that if it were complete, this would not happen
+                    // so skip the trailing part of the listing processed by this rule
                     actualParser->SkipThisLineItIsIncomlete = TRUE;
                 }
                 else
@@ -917,15 +918,15 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfRest_of_line: // zbytek radky az do CR nebo LF
+    case fpfRest_of_line: // the rest of the line up to CR or LF
     {
         while (s < listingEnd && *s != '\r' && *s != '\n')
             s++;
         if (s == *listing)
-            ret = FALSE; // uspech jen pri posunu "ukazovatka"
+            ret = FALSE; // success only if the "pointer" advances
         else
         {
-            if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+            if (Parameters.Count > 0 && // also assign it to the column
                 !AssignStringToColumn(Parameters[0]->GetColumnIndex(), columns, *listing,
                                       s, lowMemErr, emptyCol, file, dataIface))
             {
@@ -935,15 +936,15 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfWord: // slovo (do nejblizsiho white-space nebo konce radky)
+    case fpfWord: // word (up to the nearest white-space or end of line)
     {
         while (s < listingEnd && *s > ' ')
             s++;
         if (s == *listing)
-            ret = FALSE; // uspech jen pri posunu "ukazovatka"
+            ret = FALSE; // success only if the "pointer" advances
         else
         {
-            if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+            if (Parameters.Count > 0 && // also assign it to the column
                 !AssignStringToColumn(Parameters[0]->GetColumnIndex(), columns, *listing,
                                       s, lowMemErr, emptyCol, file, dataIface))
             {
@@ -953,8 +954,8 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfNumber:         // cislo (jen '+'/'-' a cislice)
-    case fpfPositiveNumber: // jen kladne cislo (jen '+'/'-' a cislice) - najde-li zaporne cislo, priradi defaultni prazdnou hodnotu
+    case fpfNumber:         // number (only '+'/'-' and digits)
+    case fpfPositiveNumber: // only a positive number (only '+'/'-' and digits) - if it finds a negative number, assigns the default empty value
     {
         BOOL minus = FALSE;
         if (s < listingEnd)
@@ -977,10 +978,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         if (minus)
             num = -num;
         if (s == beg || s < listingEnd && IsCharAlpha(*s))
-            ret = FALSE; // uspech jen pokud cislo existuje (aspon jedna cislice) a neni ukoncene pismenem
+            ret = FALSE; // success only if the number exists (at least one digit) and does not end with a letter
         else
         {
-            if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+            if (Parameters.Count > 0 && // also assign it to the column
                 !AssignNumberToColumn(Parameters[0]->GetColumnIndex(), columns, minus, num,
                                       emptyCol, file, dataIface, Function == fpfPositiveNumber))
             {
@@ -990,7 +991,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfNumber_with_separators: // cislo se separatory
+    case fpfNumber_with_separators: // number with separators
     {
         BOOL needDealloc = FALSE;
         const char* sep = Parameters.Count > 1 ? Parameters[1]->GetString(s, listingEnd, &needDealloc, lowMemErr) : NULL;
@@ -1001,7 +1002,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         }
         if (sep == NULL)
             sep = "";
-        // preskocime separatory krome '+', '-' a cislic
+        // skip separators except '+', '-' and digits
         while (s < listingEnd && *s != '+' && *s != '-' && (*s < '0' || *s > '9') && strchr(sep, *s) != NULL)
             s++;
         BOOL minus = FALSE;
@@ -1034,10 +1035,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         if (minus)
             num = -num;
         if (s == *listing || s < listingEnd && IsCharAlpha(*s))
-            ret = FALSE; // uspech jen pokud cislo existuje (aspon jeden znak) a neni ukoncene pismenem
+            ret = FALSE; // success only if the number exists (at least one character) and does not end with a letter
         else
         {
-            if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+            if (Parameters.Count > 0 && // also assign it to the column
                 !AssignNumberToColumn(Parameters[0]->GetColumnIndex(), columns, minus, num,
                                       emptyCol, file, dataIface, FALSE))
             {
@@ -1049,7 +1050,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfMonth_3: // mesic kodovany do tri pismen ("jan", "feb", "mar", atd.)
+    case fpfMonth_3: // month encoded into three letters ("jan", "feb", "mar", etc.)
     {
         if (s + 2 < listingEnd)
         {
@@ -1060,10 +1061,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 month = GetMonthFromThreeLettersAllLangs(s, &actualParser->AllowedLanguagesMask);
             s += 3;
             if (month == -1 || s < listingEnd && IsCharAlpha(*s))
-                ret = FALSE; // uspech jen pokud jsme poznali mesic a neni ukonceny pismenem
+                ret = FALSE; // success only if the month was recognized and it does not end with a letter
             else
             {
-                if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+                if (Parameters.Count > 0 && // also assign it to the column
                     !AssignMonthToColumn(Parameters[0]->GetColumnIndex(), columns, month,
                                          emptyCol, file, dataIface))
                 {
@@ -1072,11 +1073,11 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             }
         }
         else
-            ret = FALSE; // tri pismena ani nejsou k dispozici
+            ret = FALSE; // even three letters are not available
         break;
     }
 
-    case fpfMonth_txt: // mesic kodovany do textu ("Jan.", "Feb.", "März", "Apr.", "Mai", atd.)
+    case fpfMonth_txt: // month encoded as text ("Jan.", "Feb.", "März", "Apr.", "Mai", etc.)
     {
         const char* wordEnd = s;
         while (wordEnd < listingEnd && *wordEnd > ' ')
@@ -1089,10 +1090,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             else
                 month = GetMonthFromTextAllLangs(&s, wordEnd, &actualParser->AllowedLanguagesMask);
             if (month == -1 || s < listingEnd && IsCharAlpha(*s))
-                ret = FALSE; // uspech jen pokud jsme poznali mesic a neni ukonceny pismenem
+                ret = FALSE; // success only if the month was recognized and it does not end with a letter
             else
             {
-                if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+                if (Parameters.Count > 0 && // also assign it to the column
                     !AssignMonthToColumn(Parameters[0]->GetColumnIndex(), columns, month,
                                          emptyCol, file, dataIface))
                 {
@@ -1101,22 +1102,22 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             }
         }
         else
-            ret = FALSE; // neni k dispozici slovo, ve kterem bysme hledali
+            ret = FALSE; // there is no word available to search in
         break;
     }
 
     case fpfMonth:
     case fpfDay:
-    case fpfYear: // mesic, den a rok ciselne
+    case fpfYear: // year in numeric form
     {
         int num = 0;
         while (s < listingEnd && *s >= '0' && *s <= '9')
             num = num * 10 + (*s++ - '0');
         if (s == *listing || s < listingEnd && IsCharAlpha(*s))
-            ret = FALSE; // uspech jen pokud cislo existuje (aspon jedna cislice) a neni ukoncene pismenem
+            ret = FALSE; // success only if the number exists (at least one digit) and does not end with a letter
         else
         {
-            if (Parameters.Count > 0) // provedeme prirazeni do sloupce
+            if (Parameters.Count > 0) // assign it to the column
             {
                 switch (Function)
                 {
@@ -1149,10 +1150,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                         if (num < 80)
                             num += 2000;
                         else
-                            num += 1900; // napr. "102" = "2002"
+                            num += 1900; // e.g. "102" = "2002"
                     }
                     if (num == 1601)
-                        num = 1602; // nektere wokeni FTP servery posilaji datumy jako 1.1.1601 (nesmyslny datum) - zmenime jim to na 1602 (stejny nesmysl, jen jiz zobrazitelny ve vsech casovych zonach)
+                        num = 1602; // some Windows FTP servers send dates like 1.1.1601 (a nonsensical date) - change it to 1602 (the same nonsense, but displayable in all time zones)
                     if (num < 1602 || num > 9999 ||
                         !AssignYearToColumn(Parameters[0]->GetColumnIndex(), columns, num,
                                             emptyCol, file, dataIface, FALSE))
@@ -1167,7 +1168,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfTime: // cas ve formatech 00:00, 00:00:00, 00:00:00.00 + pripona 'a' a 'p' za a.m. a p.m.
+    case fpfTime: // time in formats 00:00, 00:00:00, 00:00:00.00 + suffix 'a' and 'p' for a.m. and p.m.
     {
         const char* beg = s;
         int hour = 0;
@@ -1180,11 +1181,11 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             int minute = 0;
             while (s < listingEnd && *s >= '0' && *s <= '9')
                 minute = minute * 10 + (*s++ - '0');
-            if (beg != s && minute >= 0 && minute < 60) // uz mame cas ve formatu hh:mm
+            if (beg != s && minute >= 0 && minute < 60) // we already have the time in the hh:mm format
             {
                 int second = 0;
                 int millisecond = 0;
-                if (s < listingEnd && *s == ':') // cas ve formatu hh:mm:ss
+                if (s < listingEnd && *s == ':') // time in the hh:mm:ss format
                 {
                     s++;
                     beg = s;
@@ -1194,7 +1195,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                         ret = FALSE;
                     else
                     {
-                        if (s < listingEnd && *s == '.') // cas ve formatu hh:mm:ss.ms
+                        if (s < listingEnd && *s == '.') // time in the hh:mm:ss.ms format
                         {
                             s++;
                             beg = s;
@@ -1207,21 +1208,21 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
                 if (ret)
                 {
-                    if (s < listingEnd && (LowerCase[*s] == 'a' || LowerCase[*s] == 'p')) // pripona 'a'/'am' nebo 'p'/'pm' (a.m., p.m.)
+                    if (s < listingEnd && (LowerCase[*s] == 'a' || LowerCase[*s] == 'p')) // suffix 'a'/'am' or 'p'/'pm' (a.m., p.m.)
                     {
                         if (LowerCase[*s] == 'p' && hour < 12)
-                            hour += 12; // trochu nelogicke, ale "12:03pm" == "12:03"
+                            hour += 12; // slightly illogical, but "12:03pm" == "12:03"
                         s++;
                         if (s < listingEnd && LowerCase[*s] == 'm')
-                            s++; // byla to pripona 'am' nebo 'pm'
+                            s++; // it was the suffix 'am' or 'pm'
                     }
                     if (ret)
                     {
                         if (s < listingEnd && IsCharAlphaNumeric(*s))
-                            ret = FALSE; // uspech jen pokud neni ukonceny pismenem
+                            ret = FALSE; // success only if it does not end with a letter
                         else
                         {
-                            if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+                            if (Parameters.Count > 0 && // also assign it to the column
                                 !AssignTimeToColumn(Parameters[0]->GetColumnIndex(), columns, hour, minute,
                                                     second, millisecond, emptyCol, file, dataIface))
                             {
@@ -1239,7 +1240,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfYear_or_time: // rok (pak je cas neznamy) nebo cas (pak jde o tento rok)
+    case fpfYear_or_time: // year (then the time is unknown) or time (then it is this year)
     {
         const char* beg = s;
         int year = actualParser->ActualYear;
@@ -1264,17 +1265,17 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             {
                 year = hour;
                 if (year == 1601)
-                    year = 1602; // nektere wokeni FTP servery posilaji datumy jako 1.1.1601 (nesmyslny datum) - zmenime jim to na 1602 (stejny nesmysl, jen jiz zobrazitelny ve vsech casovych zonach)
+                    year = 1602; // some Windows FTP servers send dates like 1.1.1601 (a nonsensical date) - change it to 1602 (the same nonsense, but displayable in all time zones)
                 hour = 0;
             }
             else
                 ret = FALSE; // invalid time or year format
         }
         if (ret &&
-            (s < listingEnd && IsCharAlpha(*s) || // uspech jen pokud neni ukonceny pismenem
-             Parameters.Count > 1 &&              // provedeme jeste prirazeni do sloupce
+            (s < listingEnd && IsCharAlpha(*s) || // success only if it does not end with a letter
+             Parameters.Count > 1 &&              // also assign it to the column
                  (!AssignYearToColumn(Parameters[0]->GetColumnIndex(), columns, year,
-                                      emptyCol, file, dataIface, !timeIsEmpty /* TRUE = je nutna korekce roku, ActualYear je jen prvni odhad */) ||
+                                      emptyCol, file, dataIface, !timeIsEmpty /* TRUE = a year correction is needed, ActualYear is only the first estimate */) ||
                   !timeIsEmpty && !AssignTimeToColumn(Parameters[1]->GetColumnIndex(), columns, hour, minute,
                                                       0, 0, emptyCol, file, dataIface))))
         {
@@ -1283,7 +1284,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
         break;
     }
 
-    case fpfAll: // N znaku
+    case fpfAll: // N characters
     {
         if (Parameters.Count > 0)
         {
@@ -1291,10 +1292,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             while (num-- && s < listingEnd && *s != '\r' && *s != '\n')
                 s++;
             if (num != -1)
-                ret = FALSE; // uspech jen pri posunu "ukazovatka" o 'num'
+                ret = FALSE; // success only if the "pointer" advances by 'num'
             else
             {
-                if (Parameters.Count > 1 && // provedeme jeste prirazeni do sloupce
+                if (Parameters.Count > 1 && // also assign it to the column
                     !AssignStringToColumn(Parameters[0]->GetColumnIndex(), columns, *listing,
                                           s, lowMemErr, emptyCol, file, dataIface))
                 {
@@ -1303,12 +1304,12 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             }
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfAll_to:    // vse az do hledaneho retezce (vcetne)
-    case fpfAll_up_to: // vse az do hledaneho retezce (bez)
+    case fpfAll_to:    // everything up to the searched string (inclusive)
+    case fpfAll_up_to: // everything up to the searched string (exclusive)
     {
         if (Parameters.Count > 0)
         {
@@ -1326,8 +1327,8 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 {
                     while (s < listingEnd && *s != '\r' && *s != '\n')
                     {
-                        if (LowerCase[*str] == LowerCase[*s]) // shoduje se prvni pismeno hledaneho vzorku
-                        {                                     // hledame 'str' v 's' (tim nejhloupejsim algoritmem - O(m*n), ovsem v realnych pripadech temer O(1))
+                        if (LowerCase[*str] == LowerCase[*s]) // the first letter of the searched pattern matches
+                        {                                     // search for 'str' in 's' (using the simplest algorithm - O(m*n), but almost O(1) in real cases)
                             const char* m = str + 1;
                             const char* t = s + 1;
                             while (*m != 0 && t < listingEnd && *t != '\r' && *t != '\n' &&
@@ -1336,7 +1337,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                                 m++;
                                 t++;
                             }
-                            if (*m == 0) // nalezeno
+                            if (*m == 0) // found
                             {
                                 found = s;
                                 s = t;
@@ -1349,10 +1350,10 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 else
                     found = s;
                 if (found == NULL)
-                    ret = FALSE; // uspech jen pri nalezeni 'str'
+                    ret = FALSE; // success only when 'str' is found
                 else
                 {
-                    if (Parameters.Count > 1 && // provedeme jeste prirazeni do sloupce
+                    if (Parameters.Count > 1 && // also assign it to the column
                         !AssignStringToColumn(Parameters[0]->GetColumnIndex(), columns, *listing,
                                               Function == fpfAll_to ? s : found, lowMemErr, emptyCol,
                                               file, dataIface))
@@ -1362,16 +1363,16 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
             }
             else
-                ret = FALSE; // nemelo by nikdy nastat (NULL jen pri low-memory a to sem nejde)
+                ret = FALSE; // should never happen (NULL only on low-memory, which does not reach here)
             if (needDealloc && str != NULL)
                 free((void*)str);
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfUnix_link: // unixovy link - format: "link_name -> target_name" nebo "link_name" (bez pristupovych prav k linku)
+    case fpfUnix_link: // Unix link - format: "link_name -> target_name" or "link_name" (without access rights to the link)
     {
         if (Parameters.Count > 2)
         {
@@ -1382,7 +1383,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             BOOL firstChar = FALSE;
             const char* nameEnd = NULL;
             const char* linkBeg = NULL;
-            if (s < listingEnd && *s > ' ') // prvni znak nesmi byt white-space (ani konec radky)
+            if (s < listingEnd && *s > ' ') // the first character must not be white-space (or the end of line)
             {
                 while (s < listingEnd && *s != '\r' && *s != '\n')
                 {
@@ -1390,7 +1391,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     {
                     case 0:
                         state = 1;
-                        break; // prvni znak ignorujeme ('.' neznamena priponu, "->" by byla chyba)
+                        break; // ignore the first character ('.' does not mean an extension, "->" would be an error)
 
                     case 1:
                     {
@@ -1398,16 +1399,16 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                             hasPoint = TRUE;
                         else
                         {
-                            if (*s == '-' && s + 1 < listingEnd && *(s + 1) == '>') // nalezena "->" - detekce konce jmena a zacatku linku
+                            if (*s == '-' && s + 1 < listingEnd && *(s + 1) == '>') // "->" found - detect the end of the name and the start of the link
                             {
                                 if (*(s - 1) == ' ')
                                     nameEnd = s - 1;
                                 else
                                     nameEnd = s;
-                                s++; // preskok '-'
+                                s++; // skip '-'
                                 if (s + 1 < listingEnd && *(s + 1) == ' ')
-                                    s++;         // pokud nasleduje ' ', preskocime ji (format: " -> ")
-                                linkBeg = s + 1; // zacatek linku je za "->" nebo " -> "
+                                    s++;         // if a space follows, skip it (format: " -> ")
+                                linkBeg = s + 1; // the link begins after "->" or " -> "
                                 state = 2;
                                 hasPoint = FALSE;
                             }
@@ -1422,7 +1423,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
 
                     case 2:
                         state = 3;
-                        break; // prvni znak ignorujeme ('.' neznamena priponu)
+                        break; // ignore the first character ('.' does not mean an extension)
 
                     case 3:
                     {
@@ -1455,8 +1456,8 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     isFile = TRUE;
             }
             if (state != 1 && state != 3)
-                ret = FALSE; // neocekavany format
-            else             // provedeme jeste prirazeni do sloupcu
+                ret = FALSE; // unexpected format
+            else             // also assign them to the columns
             {
                 if (state == 1)
                     nameEnd = s;
@@ -1471,31 +1472,31 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             }
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfUnix_device: // unixovy device - format: cislo + mezery + "," + mezery + cislo
+    case fpfUnix_device: // Unix device - format: number + spaces + "," + spaces + number
     {
         if (Parameters.Count > 0)
         {
             int state = 0;
-            if (s < listingEnd && *s >= '0' && *s <= '9') // prvni znak musi byt cislice
+            if (s < listingEnd && *s >= '0' && *s <= '9') // the first character must be a digit
             {
                 while (s < listingEnd && *s != '\r' && *s != '\n')
                 {
                     switch (state)
                     {
-                    case 0: // prvni cislo
+                    case 0: // first number
                     {
                         if (*s < '0' || *s > '9')
                         {
                             if (*s <= ' ')
-                                state = 1; // prvni mezery
+                                state = 1; // first spaces
                             else
                             {
                                 if (*s == ',')
-                                    state = 2; // druhy mezery
+                                    state = 2; // second spaces
                                 else
                                     state = 100; // error
                             }
@@ -1503,36 +1504,36 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                         break;
                     }
 
-                    case 1: // prvni mezery
+                    case 1: // first spaces
                     {
                         if (*s > ' ')
                         {
                             if (*s == ',')
-                                state = 2; // druhy mezery
+                                state = 2; // second spaces
                             else
                                 state = 100; // error
                         }
                         break;
                     }
 
-                    case 2: // druhy mezery
+                    case 2: // second spaces
                     {
                         if (*s > ' ')
                         {
                             if (*s >= '0' && *s <= '9')
-                                state = 3; // druhy cislo
+                                state = 3; // second number
                             else
                                 state = 100; // error
                         }
                         break;
                     }
 
-                    case 3: // druhy cislo
+                    case 3: // second number
                     {
                         if (*s < '0' || *s > '9')
                         {
                             if (!IsCharAlpha(*s))
-                                state = 4; // uspech
+                                state = 4; // success
                             else
                                 state = 100; // error
                         }
@@ -1540,15 +1541,15 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     }
                     }
                     if (state > 3)
-                        break; // konec
+                        break; // end
                     s++;
                 }
             }
             if (state != 3 && state != 4)
-                ret = FALSE; // neocekavany format nebo ukonceni
+                ret = FALSE; // unexpected format or termination
             else
             {
-                if (Parameters.Count > 0 && // provedeme jeste prirazeni do sloupce
+                if (Parameters.Count > 0 && // also assign it to the column
                     !AssignStringToColumn(Parameters[0]->GetColumnIndex(), columns, *listing,
                                           s, lowMemErr, emptyCol, file, dataIface))
                 {
@@ -1557,21 +1558,21 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             }
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfIf: // podminka (neni-li vyraz splnen, vyhlas chybu)
+    case fpfIf: // condition (if the expression is not met, report an error)
     {
-        if (Parameters.Count < 1 || // "nemuze nastat"
+        if (Parameters.Count < 1 || // "cannot happen"
             !Parameters[0]->GetBoolean(file, isDir, dataIface, columns, s, listingEnd, actualParser))
         {
-            ret = FALSE; // FALSE = dale nemuzeme pokracovat
+            ret = FALSE; // FALSE = we cannot continue further
         }
         break;
     }
 
-    case fpfAssign: // prirazeni hodnoty vyrazu do sloupce
+    case fpfAssign: // assign the value of the expression to the column
     {
         if (Parameters.Count > 1)
         {
@@ -1580,8 +1581,8 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             {
                 switch (columns->At(i)->Type)
                 {
-                // case stctExt:   // chyba kompilace (nemelo by sem vubec prijit)
-                // case stctType:  // chyba kompilace (nemelo by sem vubec prijit)
+                // case stctExt:   // compilation error (should never get here)
+                // case stctType:  // compilation error (should never get here)
                 case stctName:
                 case stctGeneralText: // pfptColumnString
                 {
@@ -1627,7 +1628,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
 
                 default:
-                    ret = FALSE; // "nemuze nastat"
+                    ret = FALSE; // "cannot happen"
                 }
             }
             else
@@ -1647,17 +1648,17 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     }
                 }
                 else
-                    ret = FALSE; // "nemuze nastat"
+                    ret = FALSE; // "cannot happen"
             }
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfCut_white_spaces_end:   // oriznuti white-space znaku z konce
-    case fpfCut_white_spaces_start: // oriznuti white-space znaku ze zacatku
-    case fpfCut_white_spaces:       // oriznuti white-space znaku z obou stran
+    case fpfCut_white_spaces_end:   // trim white-space characters from the end
+    case fpfCut_white_spaces_start: // trim white-space characters from the beginning
+    case fpfCut_white_spaces:       // trim white-space characters from both sides
     {
         if (Parameters.Count > 0)
         {
@@ -1682,7 +1683,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                             newEnd--;
                     if (newBeg != beg || newEnd != end)
                     {
-                        char* str = (char*)malloc((newEnd - newBeg) + 1); // + 1 at nejsou potize s prazdnymi retezci
+                        char* str = (char*)malloc((newEnd - newBeg) + 1); // +1 to avoid issues with empty strings
                         if (str == NULL)
                         {
                             TRACE_E(LOW_MEMORY);
@@ -1702,18 +1703,18 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
 
                 default:
-                    ret = FALSE; // "nemuze nastat"
+                    ret = FALSE; // "cannot happen"
                 }
             }
             else
-                ret = FALSE; // "nemuze nastat"
+                ret = FALSE; // "cannot happen"
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfBack: // posun "ukazovatka" zpet o N znaku
+    case fpfBack: // move the "pointer" back by N characters
     {
         if (Parameters.Count > 0)
         {
@@ -1721,14 +1722,14 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             while (num-- && s > actualParser->ListingBeg && *(s - 1) != '\r' && *(s - 1) != '\n')
                 s--;
             if (num != -1)
-                ret = FALSE; // uspech jen pri posunu "ukazovatka" o 'num'
+                ret = FALSE; // success only if the "pointer" advances by 'num'
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfAdd_string_to_column: // pridani retezce ziskaneho jako hodnota vyrazu do sloupce
+    case fpfAdd_string_to_column: // add the string obtained as the value of the expression to the column
     {
         if (Parameters.Count > 1)
         {
@@ -1737,8 +1738,8 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
             {
                 switch (columns->At(i)->Type)
                 {
-                // case stctExt:   // chyba kompilace (nemelo by sem vubec prijit)
-                // case stctType:  // chyba kompilace (nemelo by sem vubec prijit)
+                // case stctExt:   // compilation error (should never get here)
+                // case stctType:  // compilation error (should never get here)
                 case stctName:
                 case stctGeneralText: // pfptColumnString
                 {
@@ -1748,7 +1749,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     const char* beg;
                     const char* end;
                     Parameters[1]->GetStringOperand(&beg, &end, file, dataIface, columns, s, listingEnd);
-                    if (beg < end) // nejde-li o pridani prazdneho retezce (to ignorujeme)
+                    if (beg < end) // if we are not adding an empty string (that is ignored)
                     {
                         char* str = (char*)malloc((endDst - begDst) + (end - beg));
                         if (str == NULL)
@@ -1771,18 +1772,18 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
 
                 default:
-                    ret = FALSE; // "nemuze nastat"
+                    ret = FALSE; // "cannot happen"
                 }
             }
             else
-                ret = FALSE; // "nemuze nastat"
+                ret = FALSE; // "cannot happen"
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 
-    case fpfCut_end_of_string: // oriznuti 'number' znaku z konce retezce
+    case fpfCut_end_of_string: // trim 'number' characters from the end of the string
     {
         if (Parameters.Count > 1)
         {
@@ -1801,7 +1802,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                     if (num <= end - beg)
                     {
                         const char* newEnd = end - num;
-                        char* str = (char*)malloc((newEnd - beg) + 1); // + 1 at nejsou potize s prazdnymi retezci
+                        char* str = (char*)malloc((newEnd - beg) + 1); // +1 to avoid issues with empty strings
                         if (str == NULL)
                         {
                             TRACE_E(LOW_MEMORY);
@@ -1823,14 +1824,14 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
 
                 default:
-                    ret = FALSE; // "nemuze nastat"
+                    ret = FALSE; // "cannot happen"
                 }
             }
             else
-                ret = FALSE; // "nemuze nastat"
+                ret = FALSE; // "cannot happen"
         }
         else
-            ret = FALSE; // "nemuze nastat"
+            ret = FALSE; // "cannot happen"
         break;
     }
 

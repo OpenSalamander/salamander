@@ -60,8 +60,8 @@ struct CPVW32DLL
     TPVCalculateHistogram CalculateHistogram;
     TPVCreateThumbnail CreateThumbnail;
     TPVSimplifyImageSequence SimplifyImageSequence;
-    HMODULE Handle;   // handle otevrene knihovny PVW32Cnv.DLL
-    char Version[28]; // inicializuje se s Handle v DllMain na DLL_PROCESS_ATTACH
+    HMODULE Handle;   // handle of the opened PVW32Cnv.DLL library
+    char Version[28]; // initialized together with Handle in DllMain on DLL_PROCESS_ATTACH
 };
 
 #define WINDOW_POS_SAME 0
@@ -97,7 +97,7 @@ class CWiaWrap;
 class CTwain;
 #endif // ENABLE_TWAIN32
 
-// pocet polozek CopyTo dialogu; pokud se bude menit, musi se take upravit resource dialogu
+// number of entries in the CopyTo dialog; if changed, adjust the dialog resource as well
 #define COPYTO_LINES 5
 
 typedef struct tagGlobals
@@ -121,7 +121,7 @@ typedef struct tagGlobals
     BOOL CaptureCursor;                      // include mouse cursor to the captured image
     ATOM CaptureAtomID;                      // ID for hot key
     HACCEL HAccel;                           // Accelerator table for the plugin
-    CRITICAL_SECTION CS;                     // pro pristup k FilesHistory a DirsHistory
+    CRITICAL_SECTION CS;                     // for accessing FilesHistory and DirsHistory
     LPTSTR FilesHistory[FILES_HISTORY_SIZE]; // Recent Files
     LPTSTR DirsHistory[DIRS_HISTORY_SIZE];   // Recent Directories
     int LastSaveAsFilterIndexMono;           // OPENFILENAME.nFilterIndex for bilevel save
@@ -148,8 +148,8 @@ typedef struct tagGlobals
     } Save;
 
     // Copy To dialog uses globals:
-    LPTSTR CopyToDestinations[COPYTO_LINES]; // alokovane cesty s destinacemi pro Copy To
-    int CopyToLastIndex;                     // ktera z cest byla posledne zvolena
+    LPTSTR CopyToDestinations[COPYTO_LINES]; // allocated paths with destinations for Copy To
+    int CopyToLastIndex;                     // which path was chosen most recently
 
     // Print dialog:
     DEVNAMES* pDevNames; // DEVNAMES struct used by ::PrintDlg()
@@ -305,32 +305,32 @@ public:
 enum CViewerWindowEnablerEnum
 {
     vweAlwaysEnabled,    // zero index is reserved
-    vweFileOpened,       // je otevreny soubor
-    vweFileOpened2,      // je otevreny soubor a jde o soubor z disku (ne scan, clipboard...)
-    vwePaste,            // je ve schrance bitmapa
-    vwePrevPage,         // je k dispozici predesla stranka
-    vweNextPage,         // je k dispozici nasledujici stranka
-    vweMorePages,        // existuje vice stranek
+    vweFileOpened,       // a file is open
+    vweFileOpened2,      // a file is open and it comes from disk (not scan, clipboard...)
+    vwePaste,            // a bitmap is in the clipboard
+    vwePrevPage,         // a previous page is available
+    vweNextPage,         // a next page is available
+    vweMorePages,        // more pages exist
     vweImgInfoAvailable, // format supported (not necessarily subformat)
-    vweImgExifAvailable, // obsahuje EXIF
-    vweNotLoading,       // zadny nebo otevreny soubor
-    vweSelSrcFile,       // je otevreny soubor a jde o soubor z disku (ne scan, clipboard...) + mame spojeni se zdrojem (panel/Find), takze soubor muzeme oznacit/odznacit ve zdroji
-    vweNextFile,         // mame spojeni se zdrojem (panel/Find) + existuje nejaky dalsi soubor ve zdroji
-    vwePrevFile,         // mame spojeni se zdrojem (panel/Find) + existuje nejaky predchazejici soubor ve zdroji
-    vweNextSelFile,      // mame spojeni se zdrojem (panel/Find) + existuje nejaky dalsi selected soubor ve zdroji
-    vwePrevSelFile,      // mame spojeni se zdrojem (panel/Find) + existuje nejaky predchazejici selected soubor ve zdroji
-    vweFirstFile,        // mame spojeni se zdrojem (panel/Find)
-    vweSelection,        // existuje selection
+    vweImgExifAvailable, // EXIF is present
+    vweNotLoading,       // no file or a file is open
+    vweSelSrcFile,       // a file is open from disk (not scan, clipboard...) and we have a source connection (panel/Find), so it can be toggled in the source
+    vweNextFile,         // we have a source connection (panel/Find) and another file exists in the source
+    vwePrevFile,         // we have a source connection (panel/Find) and a previous file exists in the source
+    vweNextSelFile,      // we have a source connection (panel/Find) and another selected file exists in the source
+    vwePrevSelFile,      // we have a source connection (panel/Find) and a previous selected file exists in the source
+    vweFirstFile,        // we have a source connection (panel/Find)
+    vweSelection,        // a selection exists
     vweCount
 };
 
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock;              // 'lock' objekt nebo NULL (do signaled stavu az zavreme soubor)
+    HANDLE Lock;              // 'lock' object or NULL (set to signaled state when the file closes)
     CRendererWindow Renderer; // inner window
 
-    HWND HRebar; // drzi MenuBar a ToolBar
+    HWND HRebar; // holds the MenuBar and ToolBar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
@@ -347,11 +347,11 @@ public:
     BOOL AlwaysOnTop;      // from Open Salamander
     HWND HHistogramWindow; // for notifications only
 
-    HIMAGELIST HGrayToolBarImageList; // toolbar a menu v sedivem provedeni (pocitano z barevneho)
-    HIMAGELIST HHotToolBarImageList;  // toolbar a menu v barevnem provedeni
+    HIMAGELIST HGrayToolBarImageList; // toolbar and menu in the gray variant (computed from the colored one)
+    HIMAGELIST HHotToolBarImageList;  // toolbar and menu in the colored variant
 
     DWORD Enablers[vweCount];
-    BOOL IsSrcFileSelected; // platne jen je-li Enablers[vweSelSrcFile]==TRUE: TRUE/FALSE zdrojovy soubor je selected/unselected
+    BOOL IsSrcFileSelected; // valid only if Enablers[vweSelSrcFile]==TRUE: TRUE/FALSE means the source file is selected/unselected
 
 public:
     CViewerWindow(int enumFilesSourceUID, int enumFilesCurrentIndex, BOOL alwaysOnTop);
@@ -362,11 +362,11 @@ public:
     BOOL IsMenuBarMessage(CONST MSG* lpMsg);
     void UpdateEnablers();
     void UpdateToolBar();
-    void ToggleToolBar(); // zobrazi/zhasne toolbar
+    void ToggleToolBar(); // show/hide the toolbar
     void ToggleStatusBar();
 
-    BOOL IsFullScreen();     // vraci TRUE, pokud je viewer fullscreen
-    void ToggleFullScreen(); // nahodi/vypne full screen mode
+    BOOL IsFullScreen();     // returns TRUE if the viewer is full-screen
+    void ToggleFullScreen(); // enable/disable full-screen mode
 
 #ifdef ENABLE_WIA
     BOOL InitWiaWrap();
@@ -383,7 +383,7 @@ public:
     void ReleaseExtraScanImages(BOOL deleteImgs = TRUE);
     void OnSize(void);
 
-    // nahazi do status bar polozky
+    // populate the status bar items
     void SetupStatusBarItems();
     void SetStatusBarTexts(int ID = 0);
     void InitProgressBar();
@@ -406,15 +406,15 @@ protected:
 // Consts
 //
 
-// [0, 0] - pro otevrena okna viewru: konfigurace pluginu se zmenila
+// [0, 0] - for open viewer windows: plugin configuration changed
 #define WM_USER_VIEWERCFGCHNG WM_APP + 3246
 
 #define WM_USER_CFGDLGDETACH WM_APP + 3247
 
-// [0, 0] - pro otevrena okna viewru: Salamander pregeneroval fonty, mame zavolat SetFont() listam
+// [0, 0] - for open viewer windows: Salamander regenerated fonts, call SetFont() on lists
 #define WM_USER_SETTINGCHANGE WM_APP + 3248
 
-// [zoom ve stovkach procent, 0]
+// [zoom in hundreds of percent, 0]
 #define WM_USER_ZOOM WM_APP + 3249
 
 // Handles SaveAs in PV window
@@ -423,20 +423,20 @@ protected:
 // asks user if we should open extra windows for extra images received from scanner
 #define WM_USER_SCAN_EXTRA_IMAGES WM_APP + 3251
 
-//Velikosti kroku pri scrollovani okna
+// Scroll step sizes for the window
 #define XLine 10
 #define YLine 10
-//Docasne; flag, zda se maji pikcry centrovat v okne; bude nahrazeno konfiguraci (??)
+// Temporary; flag indicating whether pictures should be centered in the window; will be replaced by configuration (??)
 #define CFGCenterImage 1
 
 #define ZOOM_SCALE_FACTOR 100000
 #define ZOOM_STEP_FACT 1259
 #define ZOOM_MAX 16 // 16 means 1600% (like Photoshop)
 
-#define CAPTURE_TIMER_ID 111  // id pro timer spoustejici screen capture
-#define CURSOR_TIMER_ID 112   // id pro timer pro zhasnuti kurzoru
-#define BRUSH_TIMER_ID 113    // id pro timer pro posouvani pocatku brushe selectiony
-#define SCROLL_TIMER_ID 114   // id pro timer resici scrolovani obrazku pri vyjeti kurzoru za hranici okna
+#define CAPTURE_TIMER_ID 111  // timer ID starting the screen capture
+#define CURSOR_TIMER_ID 112   // timer ID for hiding the cursor
+#define BRUSH_TIMER_ID 113    // timer ID for shifting the origin of the selection brush
+#define SCROLL_TIMER_ID 114   // timer ID handling image scrolling when the cursor leaves the window
 #define IMGSEQ_TIMER_ID 115   // id of timer to display next frame of a an image sequence
 #define ENABLERS_TIMER_ID 116 // id of timer to run enablers
 #define SAVEAS_TIMER_ID 117   // id of timer to wait for path in active panel
@@ -474,8 +474,8 @@ void UpdateThumbnails(CSalamanderForOperationsAbstract* Salamander);
 // Externs
 //
 
-extern HINSTANCE DLLInstance; // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;   // handle k SLG-cku - jazykove zavisle resourcy
+extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
+extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 extern CSalamanderGUIAbstract* SalamanderGUI;
@@ -487,7 +487,7 @@ extern LPCTSTR PLUGIN_NAME_EN;
 extern LPCTSTR TIP_WINDOW_CLASSNAME;
 extern LPCTSTR CLIPBOARD;
 
-extern BOOL SalamanderRegistered; // TRUE = Salamander je licencovany (byl nalezen platny registracni klic)
+extern BOOL SalamanderRegistered; // TRUE = Salamander is licensed (a valid registration key was found)
 
 extern int PredefinedZooms[];
 void TrailZeros(LPTSTR buff);
@@ -496,4 +496,4 @@ extern SGlobals G;
 
 extern MENU_TEMPLATE_ITEM PopupMenuTemplate[];
 
-extern CWindowQueue ViewerWindowQueue; // seznam vsech oken viewru
+extern CWindowQueue ViewerWindowQueue; // list of all viewer windows

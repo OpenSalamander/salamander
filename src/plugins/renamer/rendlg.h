@@ -31,8 +31,8 @@ struct CUndoStackEntry
     CSourceFile* RenamedFile;
     unsigned int IsDir : 1;
     unsigned int Blocks : 1;
-    unsigned int Independent : 1; // pro komponenty cesty, aby bylo mozne znovu navazat
-                                  // undo operaci
+    unsigned int Independent : 1; // for path components so the undo operation can be reattached
+                                  // later
     CUndoStackEntry(char* source, char* target, CSourceFile* renamedFile,
                     BOOL isDir, BOOL blocks);
     ~CUndoStackEntry();
@@ -41,7 +41,7 @@ struct CUndoStackEntry
 class CRenamerDialog : public CDialog
 {
 protected:
-    CRenamerDialog** ZeroOnDestroy; // hodnota ukazatele bude pri destrukci nulovana
+    CRenamerDialog** ZeroOnDestroy; // the pointer value will be cleared during destruction
     int MinDlgW, MinDlgH;
     int MenuDY;
     int RenameRX, RenameY;
@@ -75,7 +75,7 @@ protected:
     CGUIMenuBarAbstract* MenuBar;
 
     // options
-    char DefMask[MAX_GROUPMASK]; // maska z panelu
+    char DefMask[MAX_GROUPMASK]; // mask from the panel
     char Mask[MAX_GROUPMASK];
     BOOL Subdirs;
     CRenamerOptions RenamerOptions;

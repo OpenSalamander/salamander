@@ -31,8 +31,8 @@ public:
 
     void SetTitle();
 
-    // pokud je mozne program zavrit, vrati TRUE; jinak vrati FALSE
-    // jsou-li zmenena data, nabidne ulozeni a provede ho
+    // Returns TRUE when it is safe to close the program; otherwise FALSE.
+    // Offers to save modified data and performs the save when required.
     BOOL QueryClose();
 
     void ProcessCmdLineParams(char* argv[], int p);

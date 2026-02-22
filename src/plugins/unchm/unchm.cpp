@@ -14,27 +14,27 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called by Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// archiver-specific part of CPluginInterface
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin shuts down
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
-// konfigurace
+// configuration
 COptions Options;
 
 //const SYSTEMTIME  MinTime = { 1980, 01, 2, 01, 00, 00, 00, 000};
@@ -74,45 +74,45 @@ int WINAPI SalamanderPluginGetReqVer()
 
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and newer - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnCHM" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnCHM" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnCHM" /* neprekladat! */);
+    // let it load the language module (.slg)
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnCHM" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     if (!InterfaceForArchiver.Init())
         return NULL;
 
-    if (!InitializeWinLib("UnCHM" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("UnCHM" /* do not translate! */, DLLInstance))
         return NULL;
     SetWinLibStrings(LoadStr(IDS_INVALIDNUMBER), LoadStr(IDS_PLUGINNAME));
 
-    // nastavime zakladni informace o pluginu
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK,
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnCHM" /* neprekladat! */, "chm");
+                                   "UnCHM" /* do not translate! */, "chm");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -154,7 +154,7 @@ BOOL Error(int resID, BOOL quiet, ...)
 BOOL Error(char* msg, DWORD err, BOOL quiet)
 {
     if (!quiet)
-        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // jde o chybu
+        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // this is an error
         {
             char buf[1024];
             sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
@@ -260,10 +260,10 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
     BOOL ret = FALSE;
     HWND hParent = SalamanderGeneral->GetMsgBoxParent();
-    CCHMFile chm; // destruktor zavola Close
+    CCHMFile chm; // destructor calls Close
     if (chm.Open(fileName, FALSE))
     {
-        // predame kompletni listing jadru Salamandera
+        // pass the complete listing to Salamander's core
         if (chm.EnumObjects(dir, pluginData))
             ret = TRUE;
     }
@@ -294,13 +294,13 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
         return FALSE;
     }
 
-    // pokusime se otevrit CHM image
-    CCHMFile chm; // destruktor zavola Close
+    // try to open the CHM image
+    CCHMFile chm; // destructor calls Close
     if (!chm.Open(fileName, FALSE))
         return FALSE;
 
     BOOL ret = FALSE;
-    // spocitat 'totalSize' pro progress dialog
+    // compute 'totalSize' for the progress dialog
     BOOL isDir;
     CQuadWord size;
     CQuadWord totalSize(0, 0);
@@ -318,12 +318,12 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
         totalSize += CQuadWord(1, 0);
     }
-    // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    // check whether no error occurred and the user did not request to cancel the operation (Cancel button)
     if (errorOccured == SALENUM_CANCEL)
         return FALSE;
 
     chm.ButtonFlags = BUTTONS_SKIPCANCEL;
-    // vybalit
+    // unpack
     BOOL delTempDir = TRUE;
     if (SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(),
                                          targetDir, totalSize, LoadStr(IDS_UNPACKING_ARCHIVE)))
@@ -339,9 +339,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
         ret = TRUE;
         next(NULL, -1, NULL, NULL, NULL, nextParam, NULL);
-        while ((name = next(NULL /* podruhe uz chyby nepiseme */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
+        while ((name = next(NULL /* do not report errors the second time */, 1, &isDir, &size, &fileData, nextParam, NULL)) != NULL)
         {
-            // adresare nas nezajimaji, jejich vytvareni se dela pri vybalovani souboru
+            // directories do not concern us; they are created when unpacking files
             char destPath[MAX_PATH];
             strcpy(destPath, targetDir);
 
@@ -358,9 +358,9 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                 }
                 else
                 {
-                    salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+                    salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE so we do not slow down
 
-                    //  pokud neexistuje cesta kam rozbalujeme -> vytvorit ji
+                    //  if the path we are unpacking to does not exist -> create it
                     char* lastComp = strrchr(destPath, '\\');
                     if (lastComp != NULL)
                     {
@@ -408,8 +408,8 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
         return FALSE;
     }
 
-    // otevrit CHM
-    CCHMFile chm; // destruktor zavola Close
+    // open the CHM
+    CCHMFile chm; // destructor calls Close
     if (!chm.Open(fileName, FALSE))
         return FALSE;
 
@@ -431,7 +431,7 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
         DWORD silent = 0;
         BOOL toSkip = FALSE;
 
-        salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE, abychom nebrzdili
+        salamander->ProgressDialogAddText(name, TRUE); // delayedPaint==TRUE so we do not slow down
 
         char srcPath[MAX_PATH];
         lstrcpy(srcPath, nameInArchive);
@@ -513,8 +513,8 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             char modmask[256];
             SalamanderGeneral->PrepareMask(modmask, mask);
 
-            // pokusime se otevrit CHM image
-            CCHMFile chm; // destruktor zavola Close
+            // try to open the CHM image
+            CCHMFile chm; // destructor calls Close
             if (chm.Open(fileName, FALSE))
             {
                 DWORD silent = 0;

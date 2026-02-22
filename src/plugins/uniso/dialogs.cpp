@@ -26,10 +26,10 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        // horizontal and vertical centering of the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // chci focus od DefDlgProc
+        break; // let DefDlgProc handle setting the focus
     }
     } // switch
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -64,14 +64,14 @@ CConfigurationDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // nastavit (enable/disable) 'boot image as file' podle 'sessions as dirs'
+        // set (enable/disable) 'boot image as file' according to 'sessions as dirs'
         EnableWindow(GetDlgItem(HWindow, IDC_CFG_BOOTIMAGEASFILE), Options.SessionAsDirectory);
-        break; // chci focus od DefDlgProc
+        break; // let DefDlgProc handle setting the focus
     }
 
     case WM_COMMAND:
     {
-        // enabler pro 'show boot disk as file'
+        // toggle the 'show boot disk as file' option
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CFG_SESSIONASDIR)
         {
             BOOL enable = IsDlgButtonChecked(HWindow, IDC_CFG_SESSIONASDIR) == BST_CHECKED;

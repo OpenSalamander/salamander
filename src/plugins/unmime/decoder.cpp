@@ -4,11 +4,11 @@
 /****************************************************************************************\
 **                                                                                      **
 **                                                                                      **
-**   decoder.cpp - MIME dekoder                                                         **
+**   decoder.cpp - MIME decoder                                                         **
 **                                                                                      **
 **   v.1.0                                                                              **
 **                                                                                      **
-**   autor: Jakub Cerveny                                                               **
+**   author: Jakub Cerveny                                                              **
 **                                                                                      **
 **                                                                                      **
 \****************************************************************************************/
@@ -24,8 +24,8 @@
 
 #define XX 127
 #define EE 126
-#define BUFSIZE (256 * 1024)     // velikost bufferu pro zapis
-#define PROGRESS_MASK 0xffff8000 // pozice progress-meteru se updatuje kazdych 32KB
+#define BUFSIZE (256 * 1024)     // buffer size for writing
+#define PROGRESS_MASK 0xffff8000 // the progress meter position is updated every 32 KB
 
 static CSalamanderForOperationsAbstract* Salamander;
 static CQuadWord currentProgress;
@@ -68,7 +68,7 @@ void BuildUUTable(BYTE* pTable)
     int i;
     for (i = 0; i < 64; i++)
         pTable[i + 32] = i;
-    pTable[96] = 0; // ` bude to samy jako mezera
+    pTable[96] = 0; // treat ` the same as a space
 }
 
 void BuildXXTable(BYTE* pTable)
@@ -94,7 +94,7 @@ static void BuildBinHexTable(BYTE* pTable)
 
 // *****************************************************************************
 //
-//  CDecoder - predek pro ostatni dekodery
+//  CDecoder - base class for the other decoders
 //
 
 BOOL CDecoder::Start(HANDLE hFile, char* fileName, BOOL bJustCalcSize)
@@ -120,7 +120,7 @@ BOOL CDecoder::Start(HANDLE hFile, char* fileName, BOOL bJustCalcSize)
 
 BOOL CDecoder::BufferedWrite(const void* pData, int nBytes)
 {
-    // CALLSTACK nemam protoze zpomaloval...
+    // CALLSTACK is disabled because it slowed things down...
     iDecodedSize += nBytes;
     if (!bCalcSize)
     {
@@ -145,7 +145,7 @@ BOOL CDecoder::BufferedWrite(const void* pData, int nBytes)
         if (!SafeWriteFile(HFile, PBuffer, BUFSIZE, &numw, FileName))
         {
             iErrorStr = -1;
-            iBufPos = 0; // aby CDecoder::End() nehlasil taky chybu...
+            iBufPos = 0; // so that CDecoder::End() does not report an error as well...
             return FALSE;
         }
         memcpy(PBuffer, (char*)pData + n, iBufPos = (nBytes - n));
@@ -187,7 +187,7 @@ void CDecoder::RestoreState()
 
 // *****************************************************************************
 //
-//  CTextDecoder - dekoder pro Plain Text nebo None
+//  CTextDecoder - decoder for Plain Text or None
 //
 
 BOOL CTextDecoder::DecodeLine(LPTSTR pszLine, BOOL bLastLine)
@@ -215,19 +215,19 @@ BOOL CQPDecoder::Start(HANDLE hFile, char* fileName, BOOL bJustCalcSize)
 
 BOOL CQPDecoder::DecodeLine(LPTSTR pszLine, BOOL bLastLine)
 {
-    // CALLSTACK nemam protoze zpomaloval...
-    // urizneme whitespace z konce radky, tak jak to rika RFC (MPACK to nedela...)
+    // CALLSTACK is disabled because it slowed things down...
+    // trim whitespace from the end of the line, as required by the RFC (MPACK does not do this...)
     int i = (int)strlen(pszLine) - 1;
     while (i >= 0 && (pszLine[i] == ' ' || pszLine[i] == '\t'))
         pszLine[i--] = 0;
-    // sekvence '=XX' nahradime znaky s hexa hodnotou XX
+    // replace '=XX' sequences with the character whose hexadecimal value is XX
     while (*pszLine)
     {
         if (*pszLine == '=')
         {
             char c;
             if (!pszLine[1] || !pszLine[2])
-                return TRUE; // soft line break (viz RFC)
+                return TRUE; // soft line break (see RFC)
             int c1 = table[(unsigned char)pszLine[1]];
             int c2 = table[(unsigned char)pszLine[2]];
             c = (c1 << 4 | c2) & 0xff;
@@ -262,14 +262,14 @@ BOOL CBase64Decoder::Start(HANDLE hFile, char* fileName, BOOL bJustCalcSize)
 
 BOOL CBase64Decoder::DecodeChar(char newchar)
 {
-    // CALLSTACK nemam protoze zpomaloval...
+    // CALLSTACK is disabled because it slowed things down...
     if (bDataDone)
-        return TRUE; // pokud jsme skoncili, ale nasleduji dalsi znaky, ignorujeme je
+        return TRUE; // if we already finished and more characters follow, ignore them
     char b64 = table[(unsigned char)newchar];
     if (b64 == XX)
-        return TRUE; // ilegalni znaky taky ignorujeme
+        return TRUE; // ignore illegal characters as well
     c[n++] = b64;
-    if (n == 4) // mame naakumulovany 4 znaky?
+    if (n == 4) // have we accumulated 4 characters?
     {
         n = 0;
         if (c[0] == EE || c[1] == EE)
@@ -302,7 +302,7 @@ BOOL CBase64Decoder::DecodeChar(char newchar)
 
 BOOL CBase64Decoder::DecodeLine(LPTSTR pszLine, BOOL)
 {
-    // CALLSTACK nemam protoze zpomaloval...
+    // CALLSTACK is disabled because it slowed things down...
     while (*pszLine)
         if (!DecodeChar(*pszLine++))
             return FALSE;
@@ -446,7 +446,7 @@ BOOL CBinHexDecoder::DecodeChar(char c)
     default:
         return TRUE;
     }
-    // sem se skace pri dosazeni konce z tech breaku nahore, trochu prasarna sorry...
+    // execution jumps here once the breaks above reach the end; a bit of a hack, sorry...
     bFinished = TRUE;
     eCharState = CS_END;
     return TRUE;
@@ -480,7 +480,7 @@ void CBinHexDecoder::DecodeRLE(BYTE b)
 #pragma runtime_checks("c", off)
 void CBinHexDecoder::DecodeBinary(BYTE b)
 {
-    // vypocet CRC, prevzato z MPacku
+    // CRC calculation, taken from MPack
     if (eBinaryState == BS_DATA || eBinaryState == BS_DATACRC)
     {
         WORD tmpcrc, cval;
@@ -666,7 +666,7 @@ static BOOL Decode(CDecoder* pDec, BOOL bOnlyOneFile)
         if (InputFile.iCurrentLine >= pNextMarker->iLine)
         {
             iNextMarker++;
-            char text[MAX_PATH + 32]; // musi byt delsi nez MAX_PATH kvuli "too long name" (niz nize)
+            char text[MAX_PATH + 32]; // must be longer than MAX_PATH due to "too long name" (see below)
             if (pNextMarker->iMarkerType == MARKER_START)
             {
                 CStartMarker* pStartMarker = (CStartMarker*)pNextMarker;
@@ -683,7 +683,7 @@ static BOOL Decode(CDecoder* pDec, BOOL bOnlyOneFile)
                 {
                     strncpy_s(text, MAX_PATH, pszDir, _TRUNCATE);
                     if (!SalamanderGeneral->SalPathAppend(text, pStartMarker->cFileName, MAX_PATH))
-                    { // too long name - ohlasi se v SalamanderSafeFile->SafeFileCreate
+                    { // too long name - reported in SalamanderSafeFile->SafeFileCreate
                         char* end = text + strlen(text);
                         if (end > text && *(end - 1) != '\\')
                             *end++ = '\\';

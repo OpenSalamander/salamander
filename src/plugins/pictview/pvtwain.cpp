@@ -218,7 +218,7 @@ BOOL CTwain::OpenSourceManager()
         TRACE_E("CTwain::OpenSourceManager(): TwainState != 2");
         return FALSE;
     }
-    ShouldCloseViewerAfterClosingSM = FALSE; // prevence proti necekanemu zavreni vieweru (zatim o to neslo pozadat)
+    ShouldCloseViewerAfterClosingSM = FALSE; // prevents the viewer from being closed unexpectedly (no request for that yet)
 
     TW_UINT16 ret_val = CallTwainProc(&AppIdentity, NULL, DG_CONTROL, DAT_PARENT, MSG_OPENDSM, (TW_MEMREF)&HParent);
     if (ret_val == TWRC_SUCCESS)
@@ -249,7 +249,7 @@ BOOL CTwain::CloseSourceManager(BOOL* closingViewer)
         if (ShouldCloseViewerAfterClosingSM)
         {
             if (closingViewer != NULL)
-                *closingViewer = TRUE; // nepocitat enablery, nezdrzovat
+                *closingViewer = TRUE; // do not recalculate enablers, do not delay
             ShouldCloseViewerAfterClosingSM = FALSE;
             PostMessage(Viewer->HWindow, WM_CLOSE, 0, 0);
         }
@@ -393,11 +393,11 @@ BOOL CTwain::TransferImage()
                 }
                 DWORD bytes = ((lpdib->biBitCount * lpdib->biWidth + 31) >> 3) & ~3;
 
-                // preneseme data
+                // transfer the data
                 memcpy(bits, (BYTE*)lpdib + sizeof(BITMAPINFOHEADER) + paletteSize * sizeof(RGBQUAD), lpdib->biHeight * bytes);
 
-                // original uz nepotrebujeme, staci kopie, uvolnime ho pred predanim 'hBmp' do
-                // vieweru (tam se dela dalsi kopie)
+                // we no longer need the original; the copy is enough, so release it before passing 'hBmp' to
+                // the viewer (it creates another copy there)
                 GlobalUnlock((HBITMAP)(UINT_PTR)hBitmap);
                 GlobalFree((void*)(UINT_PTR)hBitmap);
                 hBitmap = NULL;
@@ -427,15 +427,15 @@ BOOL CTwain::TransferImage()
 
             case TWRC_FAILURE:
             {
-                // Petr: bez nasledujiciho volani se mi skenovani pri Paper Jam kouslo, skenovaci okna
-                // zustala otevrena, musel jsem to cely killnout; na netu jsem nasel sample TWAIN, kde
-                // pri TWRC_FAILURE volaji nasledujici a i u me to resi situaci, uz se to nekouse...
+                // Petr: without the following call the scan froze on a paper jam, the scanning windows
+                // stayed open and I had to kill the entire process; I found a TWAIN sample online where
+                // they call the following on TWRC_FAILURE and it solves the situation for me as well, no more freezing...
 
                 // abort all pending images
                 TW_PENDINGXFERS twPendingXfers2;
                 TW_UINT16 rc2 = CallTwainProc(&AppIdentity, &SrcIdentity, DG_CONTROL, DAT_PENDINGXFERS, MSG_RESET, (TW_MEMREF)&twPendingXfers2);
                 TwainState = 5;
-                pendingXfers = FALSE; // vratime rizeni do message loop
+                pendingXfers = FALSE; // return control to the message loop
 
                 break;
             }
@@ -445,7 +445,7 @@ BOOL CTwain::TransferImage()
             {
                 if (hBitmap != NULL)
                 {
-                    // GlobalUnlock((HBITMAP)hBitmap);  // Petr: neni zamcene, tedy neodemykame
+                    // GlobalUnlock((HBITMAP)hBitmap);  // Petr: it is not locked, so we do not unlock it
                     GlobalFree((void*)(UINT_PTR)hBitmap);
                     hBitmap = NULL;
                 }
@@ -456,24 +456,24 @@ BOOL CTwain::TransferImage()
                 if (rc == TWRC_SUCCESS)
                 {
                     // Patera 2009.03.12: FIXME: this prevents multipage scan, we don't support it in the PictView engine
-                    // twPendingXfers.Count = 0;  // Petr: toto vynulovani vede k zablokovani skeneru a PV, pomuze az restart, takze to resime jinak...
+                    // twPendingXfers.Count = 0;  // Petr: resetting this blocks the scanner and PictView; only a restart helps, so we handle it differently...
                     if (twPendingXfers.Count == 0)
                     {
                         TwainState = 5;
-                        pendingXfers = FALSE; // vratime rizeni do message loop
+                        pendingXfers = FALSE; // return control to the message loop
                     }
                     if (twPendingXfers.Count == (TW_UINT16)-1 || twPendingXfers.Count > 0)
                     {
-                        TwainState = 6; // pokracujeme dalsim obrazkem
+                        TwainState = 6; // continue with the next image
 
-                        // nasledujici kod bohuzel na mem skeneru (Canon i-SENSYS MF8030Cn) nefunguje = kousne se to
-                        // a musi se sestrelit driver skeneru nez to zase jde pouzivat
+                        // the following code unfortunately does not work on my scanner (Canon i-SENSYS MF8030Cn) -> it freezes
+                        // and the scanner driver must be killed before it can be used again
                         //            // abort all pending images
                         //            rc = CallTwainProc(&AppIdentity, &SrcIdentity, DG_CONTROL, DAT_PENDINGXFERS, MSG_RESET, (TW_MEMREF)&twPendingXfers);
                         //            if (rc == TWRC_SUCCESS)
                         //            {
                         //              TwainState = 5;
-                        //              pendingXfers = FALSE; // vratime rizeni do message loop
+                        //              pendingXfers = FALSE; // return control to the message loop
                         //            }
                     }
                 }

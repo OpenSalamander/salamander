@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -11,7 +12,7 @@
 #include <uxtheme.h>
 
 //
-// modul plugins3 je vyhrazen pro GUI vystavovane pluginum
+// plugins3 module is reserved for the GUI exposed to plugins
 //
 
 //****************************************************************************
@@ -23,7 +24,7 @@ BOOL CSalamanderGUI::CheckControlAndDeleteOnError(CWindow* control)
 {
     if (control != NULL)
     {
-        if (control->HWindow == NULL) // nepovedl se attach (duvod uz je v TRACE)
+        if (control->HWindow == NULL) // attach failed (the reason is already in TRACE)
         {
             delete control;
             return FALSE;
@@ -79,7 +80,7 @@ void CGUIProgressBar::Stop()
 class CProgressBarForPlugin : public CProgressBar
 {
 protected:
-    CGUIProgressBar PluginIface; // rozhrani pro plugin
+    CGUIProgressBar PluginIface; // plugin interface
 
 public:
     CProgressBarForPlugin(HWND hParent, int ctrlID)
@@ -141,7 +142,7 @@ void CGUIStaticText::SetToolTip(HWND hNotifyWindow, DWORD id)
 class CStaticTextForPlugin : public CStaticText
 {
 protected:
-    CGUIStaticText PluginIface; // rozhrani pro plugin
+    CGUIStaticText PluginIface; // plugin interface
 
 public:
     CStaticTextForPlugin(HWND hParent, int ctrlID, DWORD flags)
@@ -213,7 +214,7 @@ void CGUIHyperLink::SetToolTip(HWND hNotifyWindow, DWORD id)
 class CHyperLinkForPlugin : public CHyperLink
 {
 protected:
-    CGUIHyperLink PluginIface; // rozhrani pro plugin
+    CGUIHyperLink PluginIface; // plugin interface
 
 public:
     CHyperLinkForPlugin(HWND hParent, int ctrlID, DWORD flags)
@@ -255,7 +256,7 @@ void CGUIButton::SetToolTip(HWND hNotifyWindow, DWORD id)
 class CButtonForPlugin : public CButton
 {
 protected:
-    CGUIButton PluginIface; // rozhrani pro plugin
+    CGUIButton PluginIface; // plugin interface
 
 public:
     CButtonForPlugin(HWND hParent, int ctrlID, DWORD flags)
@@ -318,7 +319,7 @@ CGUIColorArrowButton::GetBkgndColor()
 class CColorArrowButtonForPlugin : public CColorArrowButton
 {
 protected:
-    CGUIColorArrowButton PluginIface; // rozhrani pro plugin
+    CGUIColorArrowButton PluginIface; // plugin interface
 
 public:
     CColorArrowButtonForPlugin(HWND hParent, int ctrlID, BOOL showArrow)
@@ -406,7 +407,7 @@ BOOL CSalamanderGUI::CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF tra
 {
     BOOL ret = ::CreateGrayscaleAndMaskBitmaps(hSource, transparent, hGrayscale, hMask);
     if (ret)
-    { // handly se podavaji ven do pluginu, za jejich zruseni je odpovedny plugin, vyradime je ze Salamanderovskych HANDLES
+    { // handles are passed out to plugins; the plugin is responsible for deleting them, so remove them from Salamander's HANDLES tracking
         HANDLES_REMOVE(hGrayscale, __htHandle_comp_with_DeleteObject, "DeleteObject");
         HANDLES_REMOVE(hMask, __htHandle_comp_with_DeleteObject, "DeleteObject");
     }
@@ -461,7 +462,7 @@ void CSalamanderGUI::SuppressToolTipOnCurrentMousePos()
 
 BOOL CSalamanderGUI::DisableWindowVisualStyles(HWND hWindow)
 {
-    SetWindowTheme(hWindow, (L" "), (L" ")); // JRYFIXME - zrusit tohle API, od W7 lze volat primo
+    SetWindowTheme(hWindow, (L" "), (L" ")); // JRYFIXME - remove this API; since W7 it can be called directly
     return FALSE;
 }
 
@@ -577,7 +578,7 @@ void CGUIToolbarHeader::SetNotifyWindow(HWND hWnd)
 class CToolbarHeaderForPlugin : public CToolbarHeader
 {
 protected:
-    CGUIToolbarHeader PluginIface; // rozhrani pro plugin
+    CGUIToolbarHeader PluginIface; // plugin interface
 
 public:
     CToolbarHeaderForPlugin(HWND hDlg, int ctrlID, HWND hAlignWindow, DWORD buttonMask)

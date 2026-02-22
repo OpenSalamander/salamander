@@ -7,12 +7,12 @@ BOOL CRenamerDialog::ExportToTempFile()
 {
     CALL_STACK_MESSAGE1("CRenamerDialog::ExportToTempFile()");
 
-    // vytvorime jmeno tmp soubor
+    // create the name of the tmp file
     if (!SG->SalGetTempFileName(NULL, "SAL", TempFile, FALSE, NULL) ||
         !SG->SalPathAppend(TempFile, "list.txt", MAX_PATH))
         return Error(IDS_CREATETEMP);
 
-    // vytvorime/otevreme tmp soubor
+    // create/open the tmp file
     HANDLE file = CreateFile(TempFile, GENERIC_WRITE, FILE_SHARE_READ, NULL,
                              CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -50,7 +50,7 @@ BOOL CRenamerDialog::ExportToTempFile()
 BOOL CRenamerDialog::ImportFromTempFile()
 {
     CALL_STACK_MESSAGE1("CRawEditValDialog::ImportFromTempFile()");
-    // otevreme tmp soubor
+    // open the tmp file
     HANDLE file = CreateFile(TempFile, GENERIC_READ, FILE_SHARE_READ, NULL,
                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
@@ -120,7 +120,7 @@ BOOL EscapeQuotes(const char* string, char* escaped)
 BOOL CRenamerDialog::ExecuteCommand(const char* command)
 {
     CALL_STACK_MESSAGE2("CRenamerDialog::ExecuteCommand(%s)", command);
-    // vytvorime commandlinu
+    // create the command line
     char shell[MAX_PATH];
     if (!GetEnvironmentVariable("SHELL", shell, MAX_PATH))
     {
@@ -158,18 +158,18 @@ BOOL CRenamerDialog::ExecuteCommand(const char* command)
     CQuadWord size;
     BOOL ret = TRUE;
 
-    // aby mohli byt handly dedeny
+    // so the handles can be inherited
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.lpSecurityDescriptor = NULL;
     saAttr.bInheritHandle = TRUE;
 
-    // vytvorime jmena pro tmp soubory
+    // create names for the tmp files
     if (!SG->SalGetTempFileName(NULL, "SAL", tempDir, FALSE, NULL) ||
         !SG->SalPathAppend(strcpy(outName, tempDir), "stdout", MAX_PATH) ||
         !SG->SalPathAppend(strcpy(errName, tempDir), "stderr", MAX_PATH))
         return Error(IDS_CREATETEMP);
 
-    // vytvorime trubku pro vstup
+    // create the pipe for input
     if (!CreatePipe(&inPipeRd, &inPipeWr, &saAttr, 0))
     {
         inPipeWr = INVALID_HANDLE_VALUE;
@@ -185,7 +185,7 @@ BOOL CRenamerDialog::ExecuteCommand(const char* command)
     CloseHandle(inPipeWr);
     inPipeWr = INVALID_HANDLE_VALUE;
 
-    // vytvorime/otevreme tmp soubory pro vystup
+    // create/open tmp files for output
     outFile = CreateFile(outName, GENERIC_READ | GENERIC_WRITE,
                          FILE_SHARE_READ | FILE_SHARE_WRITE, &saAttr, CREATE_ALWAYS,
                          FILE_ATTRIBUTE_TEMPORARY, NULL);
@@ -250,7 +250,7 @@ BOOL CRenamerDialog::ExecuteCommand(const char* command)
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    // overime, ze nenastala chyba
+    // verify that no error occurred
     size.HiDWord = 0;
     size.LoDWord = SetFilePointer(errFile, 0, LPLONG(&size.HiDWord), FILE_END);
     if (exitCode || size.LoDWord)
@@ -283,7 +283,7 @@ BOOL CRenamerDialog::ExecuteCommand(const char* command)
     if (!ret)
         goto LERROR;
 
-    // nacteme text ze souboru
+    // read the text from the file
     size.HiDWord = 0;
     size.LoDWord = SetFilePointer(outFile, 0, LPLONG(&size.HiDWord), FILE_END);
 

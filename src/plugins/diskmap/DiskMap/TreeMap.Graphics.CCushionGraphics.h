@@ -5,8 +5,8 @@
 
 #include <xmmintrin.h>
 
-// opatreni proti runtime check failure v debug verzi: puvodni verze makra pretypovava rgb na WORD,
-// takze hlasi ztratu dat (RED slozky)
+// precaution against runtime check failure in the debug version: the original macro casted RGB to WORD,
+// so it reported data loss (RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
@@ -126,7 +126,7 @@ public:
 
     BOOL Load(BYTE* dta, int size)
     {
-        if (size < 10) //10byte hlavicka... 8header + 2version
+        if (size < 10) //10-byte header... 8 header + 2 version bytes
         {
             //_tcscpy(errbuff, TEXT("Internal error: Wrong data size"));
             //errlen = _tcslen(errbuff);
@@ -146,7 +146,7 @@ public:
             return FALSE;
         }
 
-        if ((dta[0x08] == 2) && (dta[0x09] == 0)) //VERZE
+        if ((dta[0x08] == 2) && (dta[0x09] == 0)) //VERSION
         {
             return this->Load_version2(dta, size) && this->PremultiplyAlpha();
         }
@@ -283,7 +283,7 @@ public:
                         int c = *tbs++;
                         if ((c & 0x80) == 0) // base data
                         {
-                            c++; //vzdy o jedno vice
+                            c++; //always one more
                             x += c;
                             for (int i = 0; i < c; i++)
                             {
@@ -295,11 +295,11 @@ public:
                         {
                             if ((c & 0x40) == 0) // RLE
                             {
-                                for (int i = 0; i <= (c & 0x3F); i++) //vzdy o jedno vice
+                                for (int i = 0; i <= (c & 0x3F); i++) //always one more
                                 {
                                     int dw = *tbs++;
                                     int t2 = *tbs++;
-                                    dw++; //vzdy o jedno vice
+                                    dw++; //always one more
                                     x += dw;
                                     for (int j = 0; j < dw; j++)
                                     {
@@ -313,11 +313,11 @@ public:
                                 int t1 = *tbs++;
                                 int dw = 0;
                                 int t2 = 0;
-                                for (int i = 0; i <= (c & 0x3F); i++) //vzdy o jedno vice
+                                for (int i = 0; i <= (c & 0x3F); i++) //always one more
                                 {
                                     dw = *tbs++;
                                     t2 = *tbs++;
-                                    dw++; //vzdy o jedno vice
+                                    dw++; //always one more
                                     x += dw;
                                     for (int j = 0; j < dw; j++)
                                     {
@@ -436,17 +436,17 @@ private:
                 else
                     rightpart++;
             }
-            DrawLinePartSimple(dst, src, atab, leftpart, r, g, b);  //nakresli levy okraj
-            dst += leftpart * 4;                                    // posun ve vysledku o to, co nakreslil (lp * 4bytes per pixel)
-            src += (sourcewidth - rightpart) << 1;                  // posun zdroje na zacatek praveho okraje
-            DrawLinePartSimple(dst, src, atab, rightpart, r, g, b); //nakresli pravy okraj
+            DrawLinePartSimple(dst, src, atab, leftpart, r, g, b);  //draw the left edge
+            dst += leftpart * 4;                                    // shift the output by what was drawn (lp * 4 bytes per pixel)
+            src += (sourcewidth - rightpart) << 1;                  // move the source to the start of the right edge
+            DrawLinePartSimple(dst, src, atab, rightpart, r, g, b); //draw the right edge
         }
         else
         {
             DrawLinePartSimple(dst, src, atab, fixed_left, r, g, b);
             src += fixed_left << 1;
             dst += fixed_left * 4;
-            unsigned int sourcemiddle = sourcewidth - fixed_size; //melo by byt vzdy vetsi nez nula, ale compiler radsi, kdyz ohlidano?
+            unsigned int sourcemiddle = sourcewidth - fixed_size; //should always be greater than zero, but the compiler prefers it guarded
             unsigned int cushionmiddle = width - fixed_size;
             //if (sourcemiddle >= 0)
             //__assume(sourcemiddle >= 0);
@@ -454,7 +454,7 @@ private:
                 //__assume(sourcemiddle >= 0);
                 //__assume(cushionmiddle >= 0);
                 DrawLinePart(dst, src, atab, sourcemiddle, cushionmiddle, r, g, b);
-                __assume(sourcemiddle >= 0); //nevim, proc to tady pomaha... :(
+                __assume(sourcemiddle >= 0); //no idea why this helps here... :(
                 src += sourcemiddle << 1;
             }
             //__assume(cushionmiddle >= 0);

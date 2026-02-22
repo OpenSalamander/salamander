@@ -280,7 +280,7 @@ void FillTypeFmt(HWND hDlg, OPENFILENAME* lpOFN, BOOL bUpdCompressions, BOOL bUp
                 for (i = 0; i < SendMessage(hCtrl, CB_GETCOUNT, 0, 0); i++)
                 {
 
-                    DWORD clrs2 = (DWORD)SendMessage(hCtrl, CB_GETITEMDATA, i, 0); // X64 - ITEMDATA obsahuje DWORD
+                    DWORD clrs2 = (DWORD)SendMessage(hCtrl, CB_GETITEMDATA, i, 0); // X64 - ITEMDATA contains a DWORD
                     if (!(clrs2 & SAVEAS_GRAY_FLAG))
                     {
                         SendMessage(hCtrl, CB_SETCURSEL, i, 0);
@@ -365,7 +365,7 @@ void FillTypeFmt(HWND hDlg, OPENFILENAME* lpOFN, BOOL bUpdCompressions, BOOL bUp
     GetWindowRect(GetDlgItem(hDlg, IDC_SAVE_ADVANCED), &r2);
     BOOL advancedVersion = r2.bottom + 50 <= r1.bottom;
     if (!advancedVersion)
-        EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, FALSE); // Advanced je zabaleny -> disable vseho (aby pres to nechodil TAB)
+        EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, FALSE); // Advanced section is collapsed -> disable everything (prevents TAB navigation through it)
 } /* FillTypeFmt */
 
 void OnSaveAsCommand(HWND hDlg, WPARAM wParam, LPARAM lParam)
@@ -383,9 +383,9 @@ void OnSaveAsCommand(HWND hDlg, WPARAM wParam, LPARAM lParam)
             CheckDlgButton(hDlg, IDC_SAVE_ADVANCED, shortVersion ? BST_CHECKED : BST_UNCHECKED);
             if (shortVersion)
             {
-                // short version visible only
+                // only the short version is visible
                 GetWindowRect(GetDlgItem(hDlg, IDC_SAVE_GROUP_TIFF), &r2);
-                EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, TRUE); // Advanced bude vybaleny -> enable vseho (aby pres to chodil TAB)
+                EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, TRUE); // Advanced section will be expanded -> enable everything (allows TAB navigation through it)
             }
             r1.bottom = r2.bottom + 10;
             SetWindowPos(GetParent(hDlg), 0, 0, 0,
@@ -463,13 +463,13 @@ UINT_PTR CALLBACK SaveAsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch (uMsg)
     {
     case WM_INITDIALOG:
-        // SalamanderGUI->ArrangeHorizontalLines(hDlg);  // pro Windows common dialogy tohle nedelame
+        // SalamanderGUI->ArrangeHorizontalLines(hDlg);  // not used for Windows common dialogs
         PositionControls(hDlg);
 
         SalamanderGUI->AttachButton(hDlg, IDC_SAVE_ADVANCED, BTF_MORE | BTF_CHECKBOX);
 
         FillTypeFmt(hDlg, (OPENFILENAME*)lParam, TRUE, TRUE, FALSE);
-        EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, FALSE); // Advanced je zabaleny -> disable vseho (aby pres to nechodil TAB)
+        EnableDisableControls(hDlg, IDC_SAVE_ADVANCED_FIRST, IDC_SAVE_ADVANCED_LAST, FALSE); // Advanced section is collapsed -> disable everything (prevents TAB navigation through it)
         SetWindowLongPtr(hDlg, GWLP_USERDATA, lParam);
         psai = (SAVEAS_INFO_PTR)(((OPENFILENAME*)lParam)->lCustData);
         FillCombo(hDlg, IDC_SAVE_ROTATION, sRots, psai->Rotation);
@@ -697,7 +697,7 @@ BOOL CRendererWindow::OnFileSaveAs(LPCTSTR pInitDir)
     ofn.ofn.lpstrFilter = s;
     DWORD filtersDoubledCount = 0;
     while (*s != 0)
-    { // vytvoreni double-null terminated listu
+    { // create a double-null-terminated list
         if (*s == '|')
         {
             *s = 0;
@@ -885,7 +885,7 @@ BOOL CRendererWindow::OnFileSaveAs(LPCTSTR pInitDir)
     }
     ret = SaveImage(fileName, format, &lsai);
 
-    // ohlasime zmenu na ceste (pribyl nas soubor)
+    // report the change on the path (our file has appeared)
     TCHAR changedPath[MAX_PATH];
     lstrcpyn(changedPath, fileName, MAX_PATH);
     SalamanderGeneral->CutDirectory(changedPath);
@@ -932,8 +932,8 @@ BOOL CRendererWindow::OnFileSaveAs(LPCTSTR pInitDir)
     return TRUE;
 }
 
-// ulozi obrazek do souboru 'name' ve formatu 'format' (PVF_xxx)
-// vraci navratovou hodnotu funkce PVSaveImage
+// saves the image into the file 'fileName' using format 'format' (PVF_xxx)
+// returns the PVSaveImage function's return value
 int CRendererWindow::SaveImage(LPCTSTR fileName, DWORD format, SAVEAS_INFO_PTR psai)
 {
     PVSaveImageInfo sii;
@@ -1021,7 +1021,7 @@ int CRendererWindow::SaveImage(LPCTSTR fileName, DWORD format, SAVEAS_INFO_PTR p
         sii.CommentSize = (int)strlen(sii.Comment) + (sii.Format == PVF_TIFF ? 1 : 0);
     }
 
-    // zajistime prekresleni okna, at nestrasi behem delsich savu v rozhrabanem stavu po SaveAs dialogu
+    // refresh the window so it does not look messy during longer saves after the SaveAs dialog
     UpdateWindow(Viewer->HWindow);
     HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
     CALL_STACK_MESSAGE6("Save pars: %ux%ux%u, %u, %u", pvii.Width, pvii.Height, sii.Colors, sii.Format, sii.Flags);

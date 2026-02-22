@@ -44,7 +44,7 @@ void CRendererWindow::OnFileOpen()
     ofn.hwndOwner = HWindow;
     char* s = LoadStr(IDS_VIEWERFILTER);
     ofn.lpstrFilter = s;
-    while (*s != 0) // vytvoreni double-null terminated listu
+    while (*s != 0) // create a double-null terminated list
     {
         if (*s == '|')
             *s = 0;
@@ -63,7 +63,7 @@ void CRendererWindow::OnFileOpen()
 
 BOOL CRendererWindow::OpenFile(const char* name)
 {
-    // pokud pri OpenFile dojde k chybe, bude podmazano pozadi
+    // if an error occurs during OpenFile, the background will be repainted
     InvalidateRect(HWindow, NULL, TRUE);
 
     Output.DestroyItems();
@@ -104,7 +104,7 @@ BOOL CRendererWindow::OpenFile(const char* name)
         int headerW = ComputeExtents(hDC, sLeft, FALSE, TRUE);
         ComputeExtents(hDC, sRight, TRUE);
 
-        //nedelej sirsi, blbe se to cte
+        // do not make it wider; it's hard to read
         if (sRight.cx > 800)
             sRight.cx = 800;
 
@@ -251,21 +251,21 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam)
                                                       &srcBusy);
         }
 
-        if (ok) // mame nove jmeno
+        if (ok) // we have a new name
         {
             if (lstrcmpi(fileName, FileName) != 0)
             {
                 if (Viewer->Lock != NULL)
                 {
                     SetEvent(Viewer->Lock);
-                    Viewer->Lock = NULL; // ted uz je to jen na disk-cache
+                    Viewer->Lock = NULL; // now it's just up to the disk cache
                 }
                 if (!OpenFile(fileName))
                 {
                     FileName[0] = 0;
                 }
 
-                // index nastavime i v pripade neuspechu, aby user mohl prejit na dalsi/predchozi obrazek
+                // set the index even if it fails so the user can move to the next/previous image
                 EnumFilesCurrentIndex = enumFilesCurrentIndex;
             }
         }
@@ -279,7 +279,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam)
         char fname[MAX_PATH];
         char* ext = LoadStr(IDS_HTMLEXT);
         strcpy(fname, FileName);
-        char* b = strrchr(fname, '.'); // ".cvspass" ve Windows je pripona
+        char* b = strrchr(fname, '.'); // ".cvspass" is an extension in Windows
         if (b)
             *b = 0;
         strcat(fname, ext);
@@ -301,7 +301,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam)
                 {
                 case -1:
                 case -2:
-                default: //prozatim vsechny chyby write error
+                default: // for now treat all errors as write errors
                     SalGeneral->SalMessageBox(HWindow, LoadStr(IDS_MMV_WRITE_ERROR), LoadStr(IDS_PLUGIN_NAME), MB_OK | MB_ICONEXCLAMATION);
                     break;
                 }
@@ -314,7 +314,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam)
     {
         char fname[MAX_PATH];
         strcpy(fname, FileName);
-        char* b = strrchr(fname, '.'); // ".cvspass" ve Windows je pripona
+        char* b = strrchr(fname, '.'); // ".cvspass" is an extension in Windows
         if (b)
             *b = 0;
         strcat(fname, ".xml");
@@ -373,7 +373,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (KEY_DOWN(VK_SHIFT))
                 {
-                    //najdi prvni edit control odzadu
+                    // find the first edit control from the back
                     int i;
                     for (i = Output.GetCount(); i--;)
                         if (Output.GetItem(i)->hwnd)
@@ -384,7 +384,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    //najdi prvni edit control odpredu
+                    // find the first edit control from the front
                     int i;
                     for (i = 0; i < Output.GetCount(); i++)
                         if (Output.GetItem(i)->hwnd)
@@ -530,7 +530,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetScrollInfo(HWindow, SB_HORZ, &si);
 
         InvalidateRect(HWindow, NULL, TRUE);
-        Paint(NULL, TRUE); //posun editboxy
+        Paint(NULL, TRUE); // shift the edit boxes
     }
         return 0;
 
@@ -589,13 +589,13 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetScrollInfo(HWindow, SB_VERT, &si);
 
         InvalidateRect(HWindow, NULL, TRUE);
-        Paint(NULL, TRUE); //posun editboxy
+        Paint(NULL, TRUE); // shift the edit boxes
     }
         return 0;
 
     case WM_SIZE:
         SetupScrollBars();
-        Paint(NULL, TRUE); //posun editboxy
+        Paint(NULL, TRUE); // shift the edit boxes
         InvalidateRect(HWindow, NULL, TRUE);
         return 0;
 
@@ -666,7 +666,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetScrollInfo(HWindow, SB_HORZ, &si, TRUE);
 
         InvalidateRect(HWindow, NULL, TRUE);
-        Paint(NULL, TRUE); //posun editboxy
+        Paint(NULL, TRUE); // shift the edit boxes
     }
         return 0;
     }

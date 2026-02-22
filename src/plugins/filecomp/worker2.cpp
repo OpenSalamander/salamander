@@ -217,8 +217,8 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
 
     for (;;)
     {
-        // zjistime delku difference
-        // offset ukazuje na zacatek difference
+        // determine the length of the difference
+        // offset points to the start of the difference
 
         offsetSave = offset;
         remain = totalSize - offset;
@@ -283,7 +283,7 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
         {
             changes.push_back(CBinaryChange(offsetSave, lenghtSave));
             if (changes.size() == MaxBinChanges)
-                break; // dale uz nehledame, je jich az az
+                break; // stop searching; we already have plenty
             HWND hComboWnd = (HWND)SendMessage(MainWindow, WM_USER_WORKERNOTIFIES, WN_GET_CHANGESCOMBO, NULL);
             if (hComboWnd)
             {
@@ -310,10 +310,10 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
         else
             break;
 
-        // hledame zacatek dalsi difference
-        offset = changes.back().Offset + changes.back().Length; // zacne za posledni differenci
+        // look for the start of the next difference
+        offset = changes.back().Offset + changes.back().Length; // starts after the last difference
         if (offset >= totalSize)
-            break; // uz jsme na konci souboru
+            break; // already at the end of the file
         remain = totalSize - offset;
 
         while (remain)
@@ -331,7 +331,7 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
                 }
             }
 
-            // porovnavame po blokach o velikosti size
+            // compare data in chunks of the requested size
             DWORD size = (DWORD)__min(blokSize, remain);
 
             ptr0 = cf[0].ReadBuffer(offset, size, CancelFlag);
@@ -367,7 +367,7 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
 
         if (remain)
         {
-            offset = ptr0 - start + offset; // offset nyni ukazuje na zacatek nasledujici difference
+            offset = ptr0 - start + offset; // offset now points to the start of the next difference
         }
     }
 

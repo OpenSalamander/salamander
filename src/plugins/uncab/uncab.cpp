@@ -18,24 +18,24 @@
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
+HINSTANCE DLLInstance = NULL; // handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // handle to the SLG - language-dependent resources
 
-// objekt interfacu pluginu, jeho metody se volaji ze Salamandera
+// plugin interface object; its methods are called from Salamander
 CPluginInterface PluginInterface;
-// cast interfacu CPluginInterface pro archivator
+// the part of CPluginInterface interface for the archiver
 CPluginInterfaceForArchiver InterfaceForArchiver;
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from startup until the plugin is unloaded
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 CSalamanderSafeFileAbstract* SalamanderSafeFile = NULL;
 
-// definice promenne pro "dbg.h"
+// variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// zatim staci tohleto misto konfigurace
+// for now this is sufficient instead of configuration
 DWORD Options;
 
 const SYSTEMTIME MinTime = {1980, 01, 2, 01, 00, 00, 00, 000};
@@ -75,31 +75,31 @@ int WINAPI SalamanderPluginGetReqVer()
 CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbstract* salamander)
 {
     CALL_STACK_MESSAGE_NONE
-    // nastavime SalamanderDebug pro "dbg.h"
+    // set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // this plugin is built for the current Salamander version and higher - verify it
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
-    { // starsi verze odmitneme
+    { // we reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    "UnCAB" /* neprekladat! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // let it load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnCAB" /* neprekladat! */);
     if (HLanguage == NULL)
         return NULL;
 
-    // ziskame obecne rozhrani Salamandera
+    // obtain the general Salamander interface
     SalamanderGeneral = salamander->GetSalamanderGeneral();
     SalamanderSafeFile = salamander->GetSalamanderSafeFile();
 
     /*
-  //beta plati do konce unora 2001
+  //beta valid until the end of February 2001
   SYSTEMTIME st;
   GetLocalTime(&st);
   if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
@@ -112,7 +112,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     if (!InterfaceForArchiver.Init())
         return NULL;
 
-    // nastavime zakladni informace o pluginu
+    // set the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_PANELARCHIVERVIEW | FUNCTION_CUSTOMARCHIVERUNPACK |
                                        FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION,
@@ -211,7 +211,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
     Options = 0;
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from the registry
     {
         registry->GetValue(regKey, CONFIG_OPTIONS, REG_DWORD, &Options, sizeof(DWORD));
     }
@@ -309,7 +309,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     if (ret && NotWholeArchListed && !(Options & OP_NO_VOL_ATTENTION))
         AttentionDialog(SalamanderGeneral->GetMainWindowHWND());
 
-    //nejake soubory jsme jiz vylistovali, tak to nezabalime a zobrazime je
+    // we have already listed some files, so do not abort and display them
     if (!ret && Count)
         ret = TRUE;
 
@@ -592,16 +592,16 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
     if (ret && Masks.Count)
     {
         Salamander->ProgressDialogAddText(LoadStr(IDS_EXTRACTFILES), FALSE);
-        //Salamander->ProgressSetTotalSize(CQuadWord(-1, -1), ProgressTotal); // FIXME: ProgressTotal total neni napocitany; potom pujde povolit druhy progress
+        //Salamander->ProgressSetTotalSize(CQuadWord(-1, -1), ProgressTotal); // FIXME: ProgressTotal is not computed; then the second progress can be enabled
         while (!Abort)
         {
             FirstCABINET_INFO = TRUE;
             if (delArchiveWhenDone)
             {
-                // Petr: jmena svazku multi-volume archivu posbirame tady, tady se projde cely archiv svazek po svazku;
-                // uvnitr FDICopy v Notify (viz fdintCABINET_INFO) se prochazi dalsi svazky v pripade, ze soubor
-                // z aktualniho svazku presahuje do dalsich svazku ... nicmene ty dalsi se projdou i tady pak znovu,
-                // takze sbirani v Notify mi neprijde zrovna stastne (nutne zahazovani opakujicich se jmen svazku)
+                // Petr: we collect the names of multi-volume archive volumes here; the entire archive is processed volume by volume here;
+                // inside FDICopy in Notify (see fdintCABINET_INFO) additional volumes are traversed if a file
+                // from the current volume spills into subsequent volumes ... nevertheless those additional ones are processed again here,
+                // so collecting them in Notify does not seem particularly fortunate (it would require discarding repeated volume names)
                 int len = (int)strlen(CurrentCABPath);
                 archiveVolumes->Add(CurrentCABPath, len);
                 if (len > 0 && CurrentCABPath[len - 1] != '\\' && CurrentCABPath[len - 1] != '/')
@@ -791,7 +791,7 @@ BOOL CPluginInterfaceForArchiver::MakeFilesList(TIndirectArray2<char>& files, Sa
             ProgressTotal += size;
         }
     }
-    return errorOccured != SALENUM_CANCEL && // test, jestli nenastala chyba a uzivatel si nepral prerusit operaci (tlacitko Cancel)
+    return errorOccured != SALENUM_CANCEL && // test whether no error occurred and the user did not wish to cancel the operation (Cancel button)
            SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(), targetDir, ProgressTotal, LoadStr(IDS_PLUGINNAME));
 }
 
@@ -924,13 +924,13 @@ BOOL CPluginInterfaceForArchiver::ListFile(char* fileName, DWORD size, WORD date
     }
     fileData.Ext = strrchr(fileData.Name, '.');
     if (fileData.Ext != NULL)
-        fileData.Ext++; // ".cvspass" ve Windows je pripona
+        fileData.Ext++; // ".cvspass" is an extension in Windows
     else
         fileData.Ext = fileData.Name + lstrlen(fileData.Name);
     fileData.Size = CQuadWord(size, 0);
     fileData.Attr = attributes & FILE_ATTRIBUTE_MASK;
     fileData.Hidden = fileData.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
-    fileData.PluginData = -1; // zbytecne, jen tak pro formu
+    fileData.PluginData = -1; // unnecessary, just for form's sake
     FILETIME ft;
     if (!DosDateTimeToFileTime(date, time, &ft))
     {
@@ -981,7 +981,7 @@ BOOL CPluginInterfaceForArchiver::DoThisFile(char* fileName)
     case CA_UNPACK_WHOLE_ARCHIVE:
     {
         const char* name = SalamanderGeneral->SalPathFindFileName(fileName);
-        BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" ve Windows je pripona
+        BOOL nameHasExt = strchr(name, '.') != NULL; // ".cvspass" is an extension in Windows
         int i;
         for (i = 0; i < Masks.Count; i++)
         {
@@ -1093,17 +1093,17 @@ CPluginInterfaceForArchiver::UnpackFile(char* fileName, DWORD size, WORD date, W
     }
     if (q == CQuadWord(0, 0x80000000))
     {
-        // allokace se nepovedla a uz se o to snazit nebudem
+        // allocation failed and we will not try it anymore
         AllocateWholeFile = false;
         TestAllocateWholeFile = false;
     }
     else if (q == CQuadWord(0, 0x00000000))
     {
-        // allokace se nepovedla, ale priste to zkusime znova
+        // allocation failed, but we will try again next time
     }
     else
     {
-        // allokace se povedla
+        // allocation succeeded
         TestAllocateWholeFile = false;
     }
     ret->Flags = FF_EXTRFILE;
@@ -1456,7 +1456,7 @@ int CPluginInterfaceForArchiver::Close(INT_PTR hf)
     CALL_STACK_MESSAGE1("CPluginInterfaceForArchiver::Close( )");
     CFile* file = (CFile*)hf;
     CloseHandle(file->Handle);
-    //nebyl uspesne robaleny tak ho smazeme
+    // it was not successfully unpacked, so delete it
     if (file->Flags & FF_EXTRFILE)
         DeleteFile(file->FileName);
     delete file;
