@@ -3,10 +3,10 @@
 
 #pragma once
 
-// obecne rozhrani Salamandera - platne od startu az do ukonceni pluginu
+// general Salamander interface - valid from plugin start until its termination
 extern CSalamanderGeneralAbstract* SalamanderGeneral;
 
-// interface pro komfortni praci se soubory
+// interface for convenient work with files
 extern CSalamanderSafeFileAbstract* SalamanderSafeFile;
 
 char* LoadStr(int resID);

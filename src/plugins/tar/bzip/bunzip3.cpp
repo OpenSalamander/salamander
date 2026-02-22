@@ -19,7 +19,7 @@ CBZip3::CBZip3(const char* filename, HANDLE file, unsigned char* buffer, unsigne
 {
     CALL_STACK_MESSAGE2("CBZip3::CBZip3(%s, , , )", filename);
 
-    // check if parent has initialized successfully
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
@@ -73,7 +73,7 @@ CBZip3::CBZip3(const char* filename, HANDLE file, unsigned char* buffer, unsigne
         return;
     }
 
-    // initialization done
+    // done
 }
 
 CBZip3::~CBZip3()
