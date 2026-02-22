@@ -1,0 +1,12 @@
+[Files]
+Original=$BUILD_DIR\plugins\undelete\lang\english.slg
+Translated=$BUILD_DIR\plugins\undelete\lang\english.slg
+Include=..\..\symbols\plugins\undelete\symbols.inc
+SalMenu=..\..\symbols\plugins\undelete\salmenu.mnu
+IgnoreList=..\..\symbols\plugins\undelete\ignore.lst
+SalamanderExe=$BUILD_DIR\salamand.exe
+
+[Settings]
+ExpandStrings=0
+ExpandMenus=0
+ExpandDialogs=0
