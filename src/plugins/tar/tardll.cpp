@@ -183,17 +183,19 @@ void CPluginInterface::About(HWND parent)
     char buf[3000];
     _snprintf_s(buf, _TRUNCATE,
                 "%s " VERSINFO_VERSION "\n" VERSINFO_COPYRIGHT "\n\n"
-                "bzip2 library Copyright © 1996-2025 Julian R Seward (version %.*s)\n"
-                "bzip3 library Copyright © by Kamila Szewczyk, 2022-2025 (version %s)\n"
-                "lzma library (version %s)\n"
-                "Zstandard library Copyright © 2016-2025 Facebook, Inc. (version %s)\n\n"
-                "%s",
+                "%s\n\n"
+                "Built with 3rd party libraries:\n"
+                "- bzip2, Copyright © 1996-2025 Julian R Seward (version %.*s)\n"
+                "- bzip3, Copyright © by Kamila Szewczyk, 2022-2025 (version %s)\n"
+                "- lzma (version %s)\n"
+                "- Zstandard, Copyright © 2016-2025 Facebook, Inc. (version %s)\n\n",
                 LoadStr(IDS_PLUGINNAME),
+                LoadStr(IDS_PLUGIN_DESCRIPTION),
                 static_cast<int>(bzip_ver_len), bzip_ver,
                 bz3_version(),
                 lzma_version_string(),
-                ZSTD_versionString(),
-                LoadStr(IDS_PLUGIN_DESCRIPTION));
+                ZSTD_versionString()
+                );
     SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_ABOUT), MB_OK | MB_ICONINFORMATION);
 }
 
