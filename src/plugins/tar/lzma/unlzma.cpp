@@ -15,18 +15,18 @@ CLZMa::CLZMa(const char* filename, HANDLE file, unsigned char* buffer, unsigned 
 {
     CALL_STACK_MESSAGE2("CLZMa::CLZMa(%s, , , )", filename);
 
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
-    // nemuze to byt lzma, pokud mame min nez hlavicku...
+    // this cannot be a lzma archive if we have less than the identifier...
     if (DataEnd - DataStart < 6)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // pokud neni "magicke cislo" na zacatku, nejde o lzma
+    // if the "magic number" is not at the start, it is not a lzma stream
     if (DataStart[0] != 0xFD || DataStart[1] != '7' ||
         DataStart[2] != 'z' || DataStart[3] != 'X' ||
         DataStart[4] != 'Z' || DataStart[5] != 0)
@@ -35,9 +35,9 @@ CLZMa::CLZMa(const char* filename, HANDLE file, unsigned char* buffer, unsigned 
         FreeBufAndFile = FALSE;
         return;
     }
-    // mame lzma, ale precteny header nepotvrzujeme, knihovna ho bude overovat znovu...
+    // a valid archive is present; confirm the consumed header
 
-    // inicializace streamu
+    // stream initialization
     lzma_ret ret = lzma_stream_decoder(&m_strm, UINT64_MAX, LZMA_CONCATENATED);
     if (ret != LZMA_OK)
     {
@@ -57,7 +57,7 @@ CLZMa::CLZMa(const char* filename, HANDLE file, unsigned char* buffer, unsigned 
         return;
     }
 
-    // hotovo
+    // done
 }
 
 CLZMa::~CLZMa()
@@ -75,7 +75,7 @@ BOOL CLZMa::DecompressBlock(unsigned short needed)
     while (ret != LZMA_STREAM_END && ExtrEnd < Window + BUFSIZE)
     {
         unsigned char* src = DataStart;
-        // aspon jeden byte musi byt v bufferu
+        // at least one byte must already be buffered
         if (DataEnd == DataStart)
             src = (unsigned char*)FReadBlock(0);
         if (src == NULL)
@@ -109,7 +109,7 @@ BOOL CLZMa::DecompressBlock(unsigned short needed)
             }
             return FALSE;
         }
-        // commitnu prectena data ze vstupu
+        // commit the consumed input bytes
         FReadBlock((unsigned int)(m_strm.next_in - (uint8_t*)DataStart));
         unsigned short extracted = (unsigned short)((unsigned char*)m_strm.next_out - ExtrEnd);
         ExtrEnd = (unsigned char*)m_strm.next_out;

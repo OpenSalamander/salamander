@@ -17,18 +17,18 @@ CZStd::CZStd(const char* filename, HANDLE file, unsigned char* buffer, unsigned 
 {
     CALL_STACK_MESSAGE2("CZStd::CZStd(%s, , , )", filename);
 
-    // pokud neprosel konstruktor parenta, balime to rovnou
+    // if the parent constructor failed, bail out immediately
     if (!Ok)
         return;
 
-    // nemuze to byt zstd, pokud mame min nez hlavicku...
+    // this cannot be a zstd archive if we have less than the identifier...
     if (DataEnd - DataStart < 4)
     {
         Ok = FALSE;
         FreeBufAndFile = FALSE;
         return;
     }
-    // pokud neni "magicke cislo" na zacatku, nejde o zstd
+    // if the "magic number" is not at the start, it is not a zstd stream
     if (DataStart[0] != 0x28 || DataStart[1] != 0xB5 ||
         DataStart[2] != 0x2F || DataStart[3] != 0xFD)
     {
@@ -36,16 +36,16 @@ CZStd::CZStd(const char* filename, HANDLE file, unsigned char* buffer, unsigned 
         FreeBufAndFile = FALSE;
         return;
     }
-    // mame zstd, ale precteny header nepotvrzujeme, knihovna ho bude overovat znovu...
+    // a valid archive is present; confirm the consumed header
 
-    m_DContext = ZSTD_createDCtx();
+    // stream initialization
     if (!m_DContext)
     {
         ErrorCode = IDS_ERR_INTERNAL;
         return;
     }
 
-    // hotovo
+    // done
 }
 
 CZStd::~CZStd()
@@ -63,7 +63,7 @@ BOOL CZStd::DecompressBlock(unsigned short needed)
     while (lastRet != 0 && ExtrEnd < Window + BUFSIZE)
     {
         unsigned char* src = DataStart;
-        // aspon jeden byte musi byt v bufferu
+        // at least one byte must already be buffered
         if (DataEnd == DataStart)
             src = (unsigned char*)FReadBlock(0);
         if (src == NULL)
@@ -97,12 +97,12 @@ BOOL CZStd::DecompressBlock(unsigned short needed)
                 return FALSE;
             }
 
-            // commitnu prectena data ze vstupu
+            // commit the consumed input bytes
             FReadBlock((unsigned int)(((unsigned char*)input.src + input.pos) - (unsigned char*)DataStart));
             unsigned short extracted = (unsigned short)(((unsigned char*)output.dst + output.pos) - ExtrEnd);
             ExtrEnd = (unsigned char*)output.dst + output.pos;
 
-            // vystupni buffer je plny, nechme ho zpracovat
+            // output buffer is full, let process it
             if (output.pos == output.size)
                 break;
         }
