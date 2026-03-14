@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -7,7 +8,7 @@ struct NSVGrasterizer;
 struct NSVGimage;
 void RenderSVGImage(NSVGrasterizer* rast, HDC hDC, int x, int y, const char* svgName, int iconSize, COLORREF bkColor, BOOL enabled);
 
-// vraci SysColor ve formatu pro SVG knihovnu (BGR misto Win32 RGB)
+// returns SysColor in the format for the SVG library (BGR instead of Win32 RGB)
 DWORD GetSVGSysColor(int index);
 
 //*****************************************************************************
@@ -15,55 +16,55 @@ DWORD GetSVGSysColor(int index);
 // CSVGSprite
 //
 
-#define SVGSTATE_ORIGINAL 0x0001 // nezmenena puvodni podoba SVG
-#define SVGSTATE_ENABLED 0x0002  // SVG nakolorovane do barvy enabled textu
-#define SVGSTATE_DISABLED 0x0004 // SVG nakolorovane do barvy disabled textu
+#define SVGSTATE_ORIGINAL 0x0001 // unchanged original form of the SVG
+#define SVGSTATE_ENABLED 0x0002  // SVG recolored to the enabled text color
+#define SVGSTATE_DISABLED 0x0004 // SVG recolored to the disabled text color
 #define SVGSTATE_COUNT 3
 
-// Objekt slouzi k vykresleni SVG prostrednictvi cachovaci bitmapy.
-// Primarne drzi barevnou verzi obrazku vyrenderovanou podle barev ve zdrojovem SVG.
-// Dale dokaze drzet barevne verze bitmapy (odtud Sprite v nazvu - vnitrne pouziva vetsi bitmapu s vice obrazky),
-// napriklad "disabled", "active", "selected".
+// Object used to render SVGs via a cached bitmap.
+// Primarily stores the colored variant of the image rendered with the colors defined in the source SVG.
+// It can also hold other color variants of the bitmap (hence Sprite in the name — it internally uses a larger bitmap with multiple images),
+// for example "disabled", "active", "selected".
 class CSVGSprite
 {
 public:
     CSVGSprite();
     ~CSVGSprite();
 
-    // zahodi bitmapu, inicializuje promenne na vychozi stav
+    // discards the bitmap and initializes variables to their default values
     void Clean();
 
-    // 'states' je kombinace bitu z rodiny SVGSTATE_*
+    // 'states' is a combination of bits from the SVGSTATE_* family
     BOOL Load(int resID, int width, int height, DWORD states);
 
     void GetSize(SIZE* s);
     int GetWidth();
     int GetHeight();
 
-    // 'hDC' je cilove DC, kam se ma bitmapa vykreslit
-    // 'x' a 'y' jsou cilove souradnice v 'hDC'
-    // 'width' a 'height' je cilovy rozmer; pokud jsou -1, pouzije se rozmer 'Width'/'Height'
+    // 'hDC' is the destination DC where the bitmap should be rendered
+    // 'x' and 'y' are the destination coordinates in 'hDC'
+    // 'width' and 'height' are the destination size; if they are -1, the stored 'Width'/'Height' size is used
     void AlphaBlend(HDC hDC, int x, int y, int width, int height, DWORD state);
 
 protected:
-    // nacte resource do pameti, naalokuje buffer o bajt delsi a terminuje resource nulou
-    // pri uspechu vraci ukazatel na alokovanou pamet (je treba uvolnit), pri chybe vraci NULL
+    // loads the resource into memory, allocates a buffer one byte longer, and terminates the resource with zero
+    // on success returns a pointer to the allocated memory (it has to be freed), on failure returns NULL
     char* LoadSVGResource(int resID);
 
-    // Vstupni 'sz' urcuje velikost v bodech, do ktere se ma SVG po prevodu na bitmapu vepsat.
-    // Pokud je jeden rozmer -1, neni urcen a dopocita se na zaklade zachovani pomeru stran.
-    // Pokud nejsou urceny oba rozmery, prevezmou se ze zdrojovych dat.
-    // Na vystupu se vrati velikost vystupni bitmapy v bodech.
+    // Input 'sz' specifies the size in points that the SVG should fit into after conversion to a bitmap.
+    // If one dimension is -1, it is unspecified and is computed to preserve the aspect ratio.
+    // If neither dimension is specified, they are taken from the source data.
+    // Returns the output bitmap dimensions in points.
     void GetScaleAndSize(const NSVGimage* image, const SIZE* sz, float* scale, int* width, int* height);
 
-    // vytvori DIB o velikosti 'width' a 'height', vraci jeho handle a ukazatel na data
+    // creates a DIB of size 'width' and 'height', returns its handle and a pointer to its data
     void CreateDIB(int width, int height, HBITMAP* hMemBmp, void** lpMemBits);
 
-    // natonuje SVG 'image' do barvy urcene stavem 'state'
+    // tints the SVG 'image' with the color determined by 'state' state
     void ColorizeSVG(NSVGimage* image, DWORD state);
 
 protected:
-    int Width; // rozmer jednoho obrazku v bodech
+    int Width; // dimension of a single image in points
     int Height;
     HBITMAP HBitmaps[SVGSTATE_COUNT];
 };
@@ -73,8 +74,8 @@ protected:
 // global variables
 //
 
-//extern HBITMAP HArrowRight;         // bitmapa vytvorena z SVG, pouzivame pro tlacitka jako sipku vpravo
-//extern SIZE ArrowRightSize;         // rozmery v bodech
+//extern HBITMAP HArrowRight;         // bitmap created from SVG, used for buttons as the right arrow
+//extern SIZE ArrowRightSize;         // dimensions in points
 //HBITMAP HArrowRight = NULL;
 //SIZE ArrowRightSize = { 0 };
 
