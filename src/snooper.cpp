@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -12,38 +13,38 @@ CWindowArray WindowArray(10, 5);
 CObjectArray ObjectArray(10, 5);
 
 HANDLE Thread = NULL;
-HANDLE DataUsageMutex = NULL;       // kvuli arrayum s daty pro thread i proces
-HANDLE RefreshFinishedEvent = NULL; // kvuli "PostMessage", ceka na zprac.
-HANDLE WantDataEvent = NULL;        // hl. thread chce pristoupit ke spolecnym datum
-HANDLE TerminateEvent = NULL;       // hl. thread chce terminovat thread cmuchala
-HANDLE ContinueEvent = NULL;        // pomocne event pro synchronizaci
-HANDLE BeginSuspendEvent = NULL;    // zacatek suspend modu
-HANDLE EndSuspendEvent = NULL;      // konec suspend modu pro cmuchala
-HANDLE SharesEvent = NULL;          // bude signaled pokud se zmeni LanMan Shares
+HANDLE DataUsageMutex = NULL;       // for arrays with data shared by the thread and the process
+HANDLE RefreshFinishedEvent = NULL; // due to "PostMessage" waits for processing to complete
+HANDLE WantDataEvent = NULL;        // main thread requests access to the shared data
+HANDLE TerminateEvent = NULL;       // main thread requests termination of the snooper thread
+HANDLE ContinueEvent = NULL;        // helper event used for synchronization
+HANDLE BeginSuspendEvent = NULL;    // beginning of suspend mode
+HANDLE EndSuspendEvent = NULL;      // end of the snooper's suspend mode
+HANDLE SharesEvent = NULL;          // signaled when LanMan Shares changes
 
 int SnooperSuspended = 0;
 
-CRITICAL_SECTION TimeCounterSection; // pro synchronizaci pristupu k MyTimeCounter
-int MyTimeCounter = 0;               // aktualni cas
+CRITICAL_SECTION TimeCounterSection; // synchronizes access to MyTimeCounter
+int MyTimeCounter = 0;               // current time
 
-HANDLE SafeFindCloseThread = NULL;              // thread "safe handle killer"
-TDirectArray<HANDLE> SafeFindCloseCNArr(10, 5); // bezpecne (netuhnouci) zavirani handlu change-notify
-CRITICAL_SECTION SafeFindCloseCS;               // krit. sekce pro pristup do pole handlu
-BOOL SafeFindCloseTerminate = FALSE;            // pro ukonceni threadu
-HANDLE SafeFindCloseStart = NULL;               // "starter" threadu - je-li non-signaled, ceka
-HANDLE SafeFindCloseFinished = NULL;            // signaled -> thread uz zavrel vsechny handly
+HANDLE SafeFindCloseThread = NULL;              // "safe handle killer" thread
+TDirectArray<HANDLE> SafeFindCloseCNArr(10, 5); // safely (without hanging) closes change-notify handles
+CRITICAL_SECTION SafeFindCloseCS;               // critical section for accessing the handle array
+BOOL SafeFindCloseTerminate = FALSE;            // until thread termination is requested
+HANDLE SafeFindCloseStart = NULL;               // thread "starter"—waits while non-signaled
+HANDLE SafeFindCloseFinished = NULL;            // signaled once the thread has closed all handles
 
 DWORD WINAPI ThreadFindCloseChangeNotification(void* param);
 
 void DoWantDataEvent()
 {
-    ReleaseMutex(DataUsageMutex);                  // uvolnime data pro hl. thread
-    WaitForSingleObject(WantDataEvent, INFINITE);  // pockame az je zabere
-    WaitForSingleObject(DataUsageMutex, INFINITE); // az skonci jsou opet nase
-    SetEvent(ContinueEvent);                       // uz jsou nase, pustime dale hl. thread
+    ReleaseMutex(DataUsageMutex);                  // release the data to the main thread
+    WaitForSingleObject(WantDataEvent, INFINITE);  // wait until it takes ownership
+    WaitForSingleObject(DataUsageMutex, INFINITE); // once it finishes, take ownership again
+    SetEvent(ContinueEvent);                       // we own it again, let the main thread continue
 }
 
-unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani TRACE) !!!
+unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions (not even TRACE) !!!
 {
     CALL_STACK_MESSAGE1("ThreadSnooperBody()");
     SetThreadNameInVCAndTrace("Snooper");
@@ -59,7 +60,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
         sharesKey = NULL;
         TRACE_E("Unable to open key in registry (LanMan Shares). error: " << GetErrorText(res));
     }
-    else // klic je o.k., nahodime notifikace (bez toho se uz RegNotifyChangeKeyValue nezavola)
+    else // the key is OK, enable notifications (otherwise RegNotifyChangeKeyValue will not be called again)
     {
         if ((res = RegNotifyChangeKeyValue(sharesKey, TRUE, REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET, SharesEvent,
                                            TRUE)) != ERROR_SUCCESS)
@@ -70,9 +71,9 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
 
     if (WaitForSingleObject(DataUsageMutex, INFINITE) == WAIT_OBJECT_0)
     {
-        SetEvent(ContinueEvent); // ted uz jsou data cmuchala, hl. thread muze pokracovat
+        SetEvent(ContinueEvent); // the data now belong to the snooper; the main thread can continue
 
-        WindowArray.Add(NULL); // zakladni objekty, musi byt na zacatku !
+        WindowArray.Add(NULL); // base objects; must come first!
         WindowArray.Add(NULL);
         WindowArray.Add(NULL);
         WindowArray.Add(NULL);
@@ -81,8 +82,8 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
         ObjectArray.Add(BeginSuspendEvent);
         ObjectArray.Add(SharesEvent);
 
-        BOOL ignoreRefreshes = FALSE;        // TRUE = ignorovat refreshe (zmeny v adresarich), jinak fungujeme normalne
-        DWORD ignoreRefreshesAbsTimeout = 0; // az bude (int)(GetTickCount() - ignoreRefreshesAbsTimeout) >= 0, prepneme ignoreRefreshes na FALSE
+        BOOL ignoreRefreshes = FALSE;        // TRUE = ignore refreshes (directory changes); otherwise operate normally
+        DWORD ignoreRefreshesAbsTimeout = 0; // when (int)(GetTickCount() - ignoreRefreshesAbsTimeout) >= 0, set ignoreRefreshes to FALSE
         BOOL notEnd = TRUE;
         while (notEnd)
         {
@@ -110,16 +111,16 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
             {
                 TRACE_I("Start suspend mode");
 
-                SetEvent(ContinueEvent); // uz jsme v suspendu -> pustime dale hl. thread
+                SetEvent(ContinueEvent); // we are already in suspend; allow the main thread to continue
 
-                TDirectArray<HWND> refreshPanels(10, 5); // pro pripad smazani sledovaneho adresare
+                TDirectArray<HWND> refreshPanels(10, 5); // for the case where the monitored directory is deleted
 
-                ObjectArray[2] = EndSuspendEvent; // misto beginu ted end suspend modu
+                ObjectArray[2] = EndSuspendEvent; // replace the begin event with the end-of-suspend event
 
-                BOOL setSharesEvent = FALSE; // TRUE => znovu nahodit sledovani registry
+                BOOL setSharesEvent = FALSE; // TRUE => rearm registry monitoring
                 BOOL suspendNotFinished = TRUE;
-                while (suspendNotFinished) // pockame na konec suspend modu
-                {                          // osetreni vseho krome zmen v adresarich
+                while (suspendNotFinished) // wait for suspend mode to end
+                {                          // handle everything except directory changes
                     timeout = ignoreRefreshes ? (int)(ignoreRefreshesAbsTimeout - GetTickCount()) : INFINITE;
                     if (ignoreRefreshes && timeout <= 0)
                     {
@@ -145,13 +146,13 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                         break;              // EndSuspendEvent
                     case WAIT_OBJECT_0 + 3: // SharesEvent
                     {
-                        // obnovime shary + refreshneme prip. i panely (pomoci WM_USER_REFRESH_SHARES)
+                        // refresh shares and, if needed, panels (via WM_USER_REFRESH_SHARES)
                         setSharesEvent = TRUE;
                         break;
                     }
 
                     case WAIT_TIMEOUT:
-                        break; // ignorujeme (konec rezimu ignorovani zmen v adresarich)
+                        break; // ignore it (the mode for ignoring directory changes has just ended)
 
                     default:
                     {
@@ -159,12 +160,12 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                         if (index < 0 || index >= WindowArray.Count)
                         {
                             TRACE_E("Unexpected value returned from WaitForMultipleObjects(): " << res);
-                            break; // pro pripad nejake jine hodnoty res
+                            break; // in case res holds some other value
                         }
 
-                        // volani FindCloseChangeNotification znehodnoti ostatni handly na stejnou cestu
-                        // (dela u UNC cest), proto signaled-state simulujeme nasilne
-                        HANDLE sameHandle = NULL; // != NULL -> handle na stejnou cestu
+                        // calling FindCloseChangeNotification invalidates other handles for the same path
+                        // (happens for UNC paths), so simulate the signaled state manually
+                        HANDLE sameHandle = NULL; // != NULL -> handle for the same path
                         CFilesWindow* actWin = WindowArray[index];
                         int e;
                         for (e = 0; e < WindowArray.Count; e++)
@@ -177,7 +178,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                             }
                         }
 
-                        // uz doslo ke zmenene, dalsi nas nezajima, za suspend prijde refresh
+                        // a change already occurred; ignore further ones because a refresh will follow after suspend
                         if (MainWindowCS.LockIfNotClosed())
                         {
                             //                  TRACE_I("Change notification in suspend mode: " << (MainWindow->LeftPanel == WindowArray[index] ? "left" : "right"));
@@ -190,11 +191,11 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                             WindowArray[index]->DeviceNotification = NULL;
                         }
                         HANDLES(FindCloseChangeNotification((HANDLE)ObjectArray[index]));
-                        refreshPanels.Add(WindowArray[index]->HWindow); // pridame mezi obnovovane
-                        ObjectArray.Delete(index);                      // vyhodime ho ze seznamu
+                        refreshPanels.Add(WindowArray[index]->HWindow); // add to the refresh list
+                        ObjectArray.Delete(index);                      // remove it from the list
                         WindowArray.Delete(index);
 
-                        // pokud je potreba obejit chybu systemu, provedeme to zde
+                        // work around any system bug here
                         if (sameHandle != NULL)
                         {
                             for (index = 0; index < ObjectArray.Count; index++)
@@ -208,8 +209,8 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                                         WindowArray[index]->DeviceNotification = NULL;
                                     }
                                     HANDLES(FindCloseChangeNotification((HANDLE)ObjectArray[index]));
-                                    refreshPanels.Add(WindowArray[index]->HWindow); // pridame mezi obnovovane
-                                    ObjectArray.Delete(index);                      // vyhodime ho ze seznamu
+                                    refreshPanels.Add(WindowArray[index]->HWindow); // add to the refresh list
+                                    ObjectArray.Delete(index);                      // remove it from the list
                                     WindowArray.Delete(index);
                                 }
                             }
@@ -218,9 +219,9 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                     }
                     }
                 }
-                SetEvent(ContinueEvent); // uz nejsme suspendu -> pustime dale hl. thread
+                SetEvent(ContinueEvent); // no longer suspended; allow the main thread to continue
 
-                if (setSharesEvent) // budeme sledovat dalsi zmeny v registry
+                if (setSharesEvent) // resume monitoring further registry changes
                 {
                     if (MainWindowCS.LockIfNotClosed())
                     {
@@ -241,7 +242,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                 CALL_STACK_MESSAGE1("ThreadSnooperBody::post_refresh");
 
                 HANDLES(EnterCriticalSection(&TimeCounterSection));
-                // refreshneme zmenene panely
+                // refresh panels that changed
                 int i;
                 for (i = 0; i < refreshPanels.Count; i++)
                 {
@@ -252,7 +253,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                     }
                 }
                 HANDLES(LeaveCriticalSection(&TimeCounterSection));
-                // jeste posleme notifikaci o ukonceni suspend modu
+                // also notify that suspend mode ended
                 if (MainWindowCS.LockIfNotClosed())
                 {
                     if (MainWindow != NULL && MainWindow->LeftPanel != NULL && MainWindow->RightPanel != NULL)
@@ -265,7 +266,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
 
                 if (refreshPanels.Count > 0)
                 {
-                    // dame si prestavku, aby se nezahltil system
+                    // pause briefly so the system is not overwhelmed
                     ignoreRefreshes = TRUE;
                     ignoreRefreshesAbsTimeout = GetTickCount() + REFRESH_PAUSE;
                 }
@@ -273,14 +274,14 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
             }
 
             case WAIT_OBJECT_0 + 3: // SharesEvent
-            {                       // nechame refreshout panely
+            {                       // let the panels refresh
                 if (MainWindowCS.LockIfNotClosed())
                 {
                     if (MainWindow != NULL)
                         PostMessage(MainWindow->HWindow, WM_USER_REFRESH_SHARES, 0, 0);
                     MainWindowCS.Unlock();
                 }
-                // budeme sledovat dalsi zmeny v registry
+                // resume monitoring further registry changes
                 if ((res = RegNotifyChangeKeyValue(sharesKey, TRUE, REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET, SharesEvent,
                                                    TRUE)) != ERROR_SUCCESS)
                 {
@@ -290,7 +291,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
             }
 
             case WAIT_TIMEOUT:
-                break; // ignorujeme (konec rezimu ignorovani zmen v adresarich)
+                break; // ignore it (end of directory change ignoring mode)
 
             default:
             {
@@ -300,12 +301,12 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                 {
                     DWORD err = GetLastError();
                     TRACE_E("Unexpected value returned from WaitForMultipleObjects(): " << res);
-                    break; // pro pripad nejake jine hodnoty res
+                    break; // in case res holds some other value
                 }
 
-                // volani FindNextChangeNotification znehodnoti ostatni handly na stejnou cestu
-                // (dela u UNC cest), proto signaled-state simulujeme nasilne
-                HANDLE sameHandle = NULL; // != NULL -> handle na stejnou cestu
+                // calling FindNextChangeNotification invalidates other handles for the same path
+                // (happens for UNC paths), so simulate the signaled state manually
+                HANDLE sameHandle = NULL; // != NULL -> handle for the same path
                 CFilesWindow* actWin = WindowArray[index];
                 int e;
                 for (e = 0; e < WindowArray.Count; e++)
@@ -326,19 +327,19 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                 HANDLES(EnterCriticalSection(&TimeCounterSection));
                 PostMessage(WindowArray[index]->HWindow, WM_USER_REFRESH_DIR, TRUE, MyTimeCounter++);
                 HANDLES(LeaveCriticalSection(&TimeCounterSection));
-                FindNextChangeNotification((HANDLE)ObjectArray[index]); // stornujem tuto zmenu
-                                                                        // indexy se muzou zmenit...
+                FindNextChangeNotification((HANDLE)ObjectArray[index]); // discard this change
+                                                                        // indexes might change...
             ERROR_BYPASS:
 
                 HANDLE objects[4];
-                objects[0] = WantDataEvent;        // v refreshi se muzou menit data
-                objects[1] = TerminateEvent;       // pro pripad konce bez stihnuti refreshe
-                objects[2] = BeginSuspendEvent;    // pro pripad volani BeginSuspendMode pri refreshi
-                objects[3] = RefreshFinishedEvent; // zprava od hl. threadu o ukonceni r.
+                objects[0] = WantDataEvent;        // data may change during the refresh
+                objects[1] = TerminateEvent;       // in case it terminates before the refresh finishes
+                objects[2] = BeginSuspendEvent;    // in case BeginSuspendMode is called during the refresh
+                objects[3] = RefreshFinishedEvent; // message from the main thread about finishing the refresh
 
                 BOOL refreshNotFinished = TRUE;
-                while (refreshNotFinished) // pockame na zpracovani
-                {                          // osetreni vseho krome zmen v adresarich
+                while (refreshNotFinished) // wait for processing to finish
+                {                          // handle everything except directory changes
                     res = WaitForMultipleObjects(4, objects, FALSE, INFINITE);
 
                     switch (res)
@@ -359,23 +360,23 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                     }
                 }
 
-                // pokud je potreba obejit chybu systemu, provedeme to zde
+                // work around any system bug here
                 if (sameHandle != NULL)
                 {
                     for (index = 0; index < ObjectArray.Count; index++)
                     {
                         if (sameHandle == (HANDLE)ObjectArray[index])
                         {
-                            int r = WaitForSingleObject(sameHandle, 0); // simulace wait-funkce pro pripad, ze chyba zanikne
+                            int r = WaitForSingleObject(sameHandle, 0); // simulate the wait function in case the error clears
                             sameHandle = NULL;
 
                             HANDLES(EnterCriticalSection(&TimeCounterSection));
                             PostMessage(WindowArray[index]->HWindow, WM_USER_REFRESH_DIR, TRUE, MyTimeCounter++);
                             HANDLES(LeaveCriticalSection(&TimeCounterSection));
 
-                            if (r != WAIT_TIMEOUT) // pokud neni chyba hledame dalsi zmenu
+                            if (r != WAIT_TIMEOUT) // if the error is cleared, request the next change
                             {
-                                FindNextChangeNotification((HANDLE)ObjectArray[index]); // stornujem tuto zmenu
+                                FindNextChangeNotification((HANDLE)ObjectArray[index]); // discard this change
                             }
 
                             goto ERROR_BYPASS;
@@ -383,7 +384,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // nevolat funkce hl. threadu (ani T
                     }
                 }
 
-                // dame si prestavku, aby se nezahltil system
+                // take a break to avoid overloading the system
                 ignoreRefreshes = TRUE;
                 ignoreRefreshesAbsTimeout = GetTickCount() + REFRESH_PAUSE;
 
@@ -412,7 +413,7 @@ unsigned ThreadSnooperEH(void* param)
     {
         TRACE_I("Thread Snooper: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // more forceful exit (this one still calls something)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -428,7 +429,7 @@ DWORD WINAPI ThreadSnooper(void* param)
 
 BOOL InitializeThread()
 {
-    //---  vytvoreni eventu a mutexu pro synchronizaci
+    //--- create events and the mutex for synchronization
     DataUsageMutex = HANDLES(CreateMutex(NULL, FALSE, NULL));
     if (DataUsageMutex == NULL)
     {
@@ -478,7 +479,7 @@ BOOL InitializeThread()
         return FALSE;
     }
 
-    // event "starteru" pro thread "safe handle killer"
+    // "starter" event for the "safe handle killer" thread
     SafeFindCloseStart = HANDLES(CreateEvent(NULL, FALSE, FALSE, NULL));
     if (SafeFindCloseStart == NULL)
     {
@@ -493,7 +494,7 @@ BOOL InitializeThread()
     }
 
     HANDLES(InitializeCriticalSection(&TimeCounterSection));
-    //---  start threadu cmuchala
+    //---  start the snooper thread
     DWORD ThreadID;
     Thread = HANDLES(CreateThread(NULL, 0, ThreadSnooper, NULL, 0, &ThreadID));
     if (Thread == NULL)
@@ -502,18 +503,18 @@ BOOL InitializeThread()
         return FALSE;
     }
     //  SetThreadPriority(Thread, THREAD_PRIORITY_LOWEST);
-    WaitForSingleObject(ContinueEvent, INFINITE); // pockame na zabrani dat cmuchalem
+    WaitForSingleObject(ContinueEvent, INFINITE); // wait until the snooper acquires the data
 
     HANDLES(InitializeCriticalSection(&SafeFindCloseCS));
-    //---  start threadu "safe handle killer"
+    //---  start the "safe handle killer" thread
     SafeFindCloseThread = HANDLES(CreateThread(NULL, 0, ThreadFindCloseChangeNotification, NULL, 0, &ThreadID));
     if (SafeFindCloseThread == NULL)
     {
         TRACE_E("Unable to start safe-handle-killer thread.");
         return FALSE;
     }
-    // nutne zvyseni priority aby bezel pred hl. threadem (hl. thread
-    // potrebuje mit zavrene handly okamzite, pri chybe nedochazi k aktivnimu cekani, pohoda)
+    // raise its priority so it runs ahead of the main thread (the main thread
+    // needs the handles closed immediately; on error there is no busy waiting, so this is acceptable)
     SetThreadPriority(SafeFindCloseThread, THREAD_PRIORITY_HIGHEST);
 
     return TRUE;
@@ -521,11 +522,11 @@ BOOL InitializeThread()
 
 void TerminateThread()
 {
-    if (Thread != NULL) // terminovani threadu cmuchala
+    if (Thread != NULL) // terminate the snooper thread
     {
-        SetEvent(TerminateEvent);              // pozadame cmuchala o ukonceni cinnosti
-        WaitForSingleObject(Thread, INFINITE); // pockame az chcipne
-        HANDLES(CloseHandle(Thread));          // zavreme handle threadu
+        SetEvent(TerminateEvent);              // request the snooper to terminate
+        WaitForSingleObject(Thread, INFINITE); // wait until it terminates
+        HANDLES(CloseHandle(Thread));          // close the thread handle
     }
     if (DataUsageMutex != NULL)
         HANDLES(CloseHandle(DataUsageMutex));
@@ -547,12 +548,12 @@ void TerminateThread()
 
     if (SafeFindCloseThread != NULL)
     {
-        SafeFindCloseTerminate = TRUE; // zakilujeme thread
+        SafeFindCloseTerminate = TRUE; // request thread termination
         SetEvent(SafeFindCloseStart);
-        if (WaitForSingleObject(SafeFindCloseThread, 1000) == WAIT_TIMEOUT) // pockame az se ukonci
+        if (WaitForSingleObject(SafeFindCloseThread, 1000) == WAIT_TIMEOUT) // wait for it to exit
         {
-            TerminateThread(SafeFindCloseThread, 666);          // nepovedlo se, zabijeme ho natvrdo
-            WaitForSingleObject(SafeFindCloseThread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
+            TerminateThread(SafeFindCloseThread, 666);          // failed, kill it forcefully
+            WaitForSingleObject(SafeFindCloseThread, INFINITE); // wait until the thread actually ends; this can take quite a while
         }
         HANDLES(CloseHandle(SafeFindCloseThread));
     }
@@ -566,12 +567,12 @@ void TerminateThread()
 void AddDirectory(CFilesWindow* win, const char* path, BOOL registerDevNotification)
 {
     CALL_STACK_MESSAGE3("AddDirectory(, %s, %d)", path, registerDevNotification);
-    SetEvent(WantDataEvent);                       // pozadame cmuchala o uvolneni DataUsageMutexu
-    WaitForSingleObject(DataUsageMutex, INFINITE); // pockame na nej
-    SetEvent(WantDataEvent);                       // cmuchal uz zase muze zacit cekat na DataUsageMutex
-                                                   //---  ted uz jsou data hl. threadu, cmuchal ceka
-    // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak FindFirstChangeNotification
-    // mezery/tecky orizne a pracuje tak s jinou cestou
+    SetEvent(WantDataEvent);                       // ask the snooper to release the DataUsageMutex
+    WaitForSingleObject(DataUsageMutex, INFINITE); // wait for it
+    SetEvent(WantDataEvent);                       // the snooper can resume waiting on DataUsageMutex
+                                                   //--- the data now belong to the main thread; the snooper is waiting
+    // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
+    // trims the trailing spaces/dots and thus works with a different path
     char pathCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(path, pathCopy);
     HANDLE h = HANDLES_Q(FindFirstChangeNotification(path, FALSE,
@@ -588,7 +589,7 @@ void AddDirectory(CFilesWindow* win, const char* path, BOOL registerDevNotificat
 
         if (registerDevNotification)
         {
-            // zaregistrujeme okno panelu pro prijem zprav o zmenach media (odstraneni, atd.)
+            // register the panel window to receive notifications about media changes (removal, etc.)
             DEV_BROADCAST_HANDLE dbh;
             memset(&dbh, 0, sizeof(dbh));
             dbh.dbch_size = sizeof(dbh);
@@ -608,11 +609,11 @@ void AddDirectory(CFilesWindow* win, const char* path, BOOL registerDevNotificat
         TRACE_W("Unable to receive change notifications for directory '" << path << "' (auto-refresh will not work).");
     }
     //---
-    ReleaseMutex(DataUsageMutex);                 // uvolnime cmuchalovi DataUsageMutex
-    WaitForSingleObject(ContinueEvent, INFINITE); // a pockame az si ho zabere
+    ReleaseMutex(DataUsageMutex);                 // release the DataUsageMutex back to the snooper
+    WaitForSingleObject(ContinueEvent, INFINITE); // and wait until it acquires it
 }
 
-// thread, ve kterem provedeme zavreni handlu na "odpojene" sitove zarizeni (dlouhe cekani)
+// thread used to close handles for a "disconnected" network device (long wait)
 unsigned ThreadFindCloseChangeNotificationBody(void* param)
 {
     CALL_STACK_MESSAGE1("ThreadFindCloseChangeNotificationBody()");
@@ -621,11 +622,11 @@ unsigned ThreadFindCloseChangeNotificationBody(void* param)
 
     while (!SafeFindCloseTerminate)
     {
-        WaitForSingleObject(SafeFindCloseStart, INFINITE); // cekame na odstartovani nebo ukonceni
+        WaitForSingleObject(SafeFindCloseStart, INFINITE); // wait for start or termination
 
         while (1)
         {
-            // vyzvedneme handle
+            // retrieve a handle
             HANDLES(EnterCriticalSection(&SafeFindCloseCS));
             HANDLE h;
             BOOL br = FALSE;
@@ -635,21 +636,21 @@ unsigned ThreadFindCloseChangeNotificationBody(void* param)
                 h = SafeFindCloseCNArr[SafeFindCloseCNArr.Count - 1];
                 SafeFindCloseCNArr.Delete(SafeFindCloseCNArr.Count - 1);
                 if (!SafeFindCloseCNArr.IsGood())
-                    SafeFindCloseCNArr.ResetState(); // nemuze se nepovest, hlasi jen nedostatek pameti pro zmenseni pole
+                    SafeFindCloseCNArr.ResetState(); // cannot fail; it only reports lack of memory when shrinking the array
             }
             else
                 br = TRUE;
             HANDLES(LeaveCriticalSection(&SafeFindCloseCS));
 
             if (br)
-                break; // uz neni co zavirat, pockame na dalsi start
+                break; // nothing left to close, wait for the next start
 
-            // zavreme handle
+            // close the handle
             //      TRACE_I("Killing ... " << h);
             HANDLES(FindCloseChangeNotification(h));
         }
 
-        SetEvent(SafeFindCloseFinished); // pustime hl. thread dale ...
+        SetEvent(SafeFindCloseFinished); // let the main thread continue ...
     }
     //  TRACE_I("End");
     return 0;
@@ -668,7 +669,7 @@ unsigned ThreadFindCloseChangeNotificationEH(void* param)
     {
         TRACE_I("Safe Handle Killer: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // tvrdsi exit (tenhle jeste neco vola)
+        TerminateProcess(GetCurrentProcess(), 1); // more forceful exit (this one still performs some calls)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -685,12 +686,12 @@ DWORD WINAPI ThreadFindCloseChangeNotification(void* param)
 void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNotification)
 {
     CALL_STACK_MESSAGE3("ChangeDirectory(, %s, %d)", newPath, registerDevNotification);
-    SetEvent(WantDataEvent);                       // pozadame cmuchala o uvolneni DataUsageMutexu
-    WaitForSingleObject(DataUsageMutex, INFINITE); // pockame na nej
-    SetEvent(WantDataEvent);                       // cmuchal uz zase muze zacit cekat na DataUsageMutex
+    SetEvent(WantDataEvent);                       // ask the snooper to release the DataUsageMutex
+    WaitForSingleObject(DataUsageMutex, INFINITE); // wait for it
+    SetEvent(WantDataEvent);                       // the snooper can resume waiting on DataUsageMutex
     BOOL registerDevNot = FALSE;
     HANDLE registerDevNotHandle = NULL;
-    //---  ted uz jsou data hl. threadu, cmuchal ceka
+    //--- the data now belong to the main thread; the snooper is waiting
     if (win->DeviceNotification != NULL)
     {
         UnregisterDeviceNotification(win->DeviceNotification);
@@ -701,19 +702,19 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
     for (i = 0; i < WindowArray.Count; i++)
         if (win == WindowArray[i])
         {
-            // pokud je change notifikace na odpojenem sitovem disku
-            // nemuzem si dovolit cekat ... nechame to zavrit jiny thread
+            // if the change notification targets a disconnected network drive
+            // we can't afford to wait... let another thread close it
             HANDLES(EnterCriticalSection(&SafeFindCloseCS));
             SafeFindCloseCNArr.Add(ObjectArray[i]);
             if (!SafeFindCloseCNArr.IsGood())
-                SafeFindCloseCNArr.ResetState(); // chyby ignorujeme
+                SafeFindCloseCNArr.ResetState(); // ignore errors
             HANDLES(LeaveCriticalSection(&SafeFindCloseCS));
-            ResetEvent(SafeFindCloseFinished);               // budeme cekat na nahozeni...
-            SetEvent(SafeFindCloseStart);                    // nastartujeme uklid
-            WaitForSingleObject(SafeFindCloseFinished, 200); // 200 ms time-out pro zavreni handlu
+            ResetEvent(SafeFindCloseFinished);               // wait for it to be signaled...
+            SetEvent(SafeFindCloseStart);                    // start the cleanup
+            WaitForSingleObject(SafeFindCloseFinished, 200); // 200 ms timeout for closing the handle
 
-            // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak FindFirstChangeNotification
-            // mezery/tecky orizne a pracuje tak s jinou cestou
+            // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
+            // trims the trailing spaces/dots and thus works with a different path
             char newPathCopy[3 * MAX_PATH];
             MakeCopyWithBackslashIfNeeded(newPath, newPathCopy);
             ObjectArray[i] = HANDLES_Q(FindFirstChangeNotification(newPath, FALSE,
@@ -725,7 +726,7 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
             if ((HANDLE)ObjectArray[i] == INVALID_HANDLE_VALUE)
             {
                 win->SetAutomaticRefresh(FALSE);
-                ObjectArray.Delete(i); // vyhodime ho ze seznamu
+                ObjectArray.Delete(i); // delete it from the list
                 WindowArray.Delete(i);
                 TRACE_W("Unable to receive change notifications for directory '" << newPath << "' (auto-refresh will not work).");
             }
@@ -739,11 +740,11 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
             }
             break;
         }
-    //---  nebylo nalezeno -> pridame
+    //---  not found -> add it
     if (i == WindowArray.Count)
     {
-        // pokud cesta konci mezerou/teckou, musime pripojit '\\', jinak FindFirstChangeNotification
-        // mezery/tecky orizne a pracuje tak s jinou cestou
+        // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
+        // trims the trailing spaces/dots and thus works with a different path
         char newPathCopy[3 * MAX_PATH];
         MakeCopyWithBackslashIfNeeded(newPath, newPathCopy);
         HANDLE h = HANDLES_Q(FindFirstChangeNotification(newPath, FALSE,
@@ -771,7 +772,7 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
     }
     if (registerDevNot)
     {
-        // zaregistrujeme okno panelu pro prijem zprav o zmenach media (odstraneni, atd.)
+        // register the panel window to receive notifications about media changes (removal, etc.)
         DEV_BROADCAST_HANDLE dbh;
         memset(&dbh, 0, sizeof(dbh));
         dbh.dbch_size = sizeof(dbh);
@@ -780,17 +781,17 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
         win->DeviceNotification = RegisterDeviceNotificationA(win->HWindow, &dbh, DEVICE_NOTIFY_WINDOW_HANDLE);
     }
     //---
-    ReleaseMutex(DataUsageMutex);                 // uvolnime cmuchalovi DataUsageMutex
-    WaitForSingleObject(ContinueEvent, INFINITE); // a pockame az si ho zabere
+    ReleaseMutex(DataUsageMutex);                 // release the DataUsageMutex back to the snooper
+    WaitForSingleObject(ContinueEvent, INFINITE); // and wait until the snooper grabs it
 }
 
 void DetachDirectory(CFilesWindow* win, BOOL waitForHandleClosure, BOOL closeDevNotifification)
 {
     CALL_STACK_MESSAGE3("DetachDirectory(, %d, %d)", waitForHandleClosure, closeDevNotifification);
-    SetEvent(WantDataEvent);                       // pozadame cmuchala o uvolneni DataUsageMutexu
-    WaitForSingleObject(DataUsageMutex, INFINITE); // pockame na nej
-    SetEvent(WantDataEvent);                       // cmuchal uz zase muze zacit cekat na DataUsageMutex
-                                                   //---  ted uz jsou data hl. threadu, cmuchal ceka
+    SetEvent(WantDataEvent);                       // ask the snooper to release the DataUsageMutex
+    WaitForSingleObject(DataUsageMutex, INFINITE); // wait for it
+    SetEvent(WantDataEvent);                       // the snooper can resume waiting on DataUsageMutex
+                                                   //--- the data now belong to the main thread; the snooper is waiting
     if (closeDevNotifification && win->DeviceNotification != NULL)
     {
         UnregisterDeviceNotification(win->DeviceNotification);
@@ -801,24 +802,24 @@ void DetachDirectory(CFilesWindow* win, BOOL waitForHandleClosure, BOOL closeDev
     for (i = 0; i < WindowArray.Count; i++)
         if (win == WindowArray[i])
         {
-            // pokud je change notifikace na odpojenem sitovem disku
-            // nemuzem si dovolit cekat ... nechame to zavrit jiny thread
+            // if the change notification targets a disconnected network drive
+            // we can't afford to wait... let another thread close it
             HANDLES(EnterCriticalSection(&SafeFindCloseCS));
             SafeFindCloseCNArr.Add(ObjectArray[i]);
             if (!SafeFindCloseCNArr.IsGood())
-                SafeFindCloseCNArr.ResetState(); // chyby ignorujeme
+                SafeFindCloseCNArr.ResetState(); // ignore errors
             HANDLES(LeaveCriticalSection(&SafeFindCloseCS));
-            ResetEvent(SafeFindCloseFinished);                                             // budeme cekat na nahozeni...
-            SetEvent(SafeFindCloseStart);                                                  // nastartujeme uklid
-            WaitForSingleObject(SafeFindCloseFinished, waitForHandleClosure ? 5000 : 200); // 200 ms time-out pro zavreni handlu
+            ResetEvent(SafeFindCloseFinished);                                             // wait for it to be signaled...
+            SetEvent(SafeFindCloseStart);                                                  // start the cleanup
+            WaitForSingleObject(SafeFindCloseFinished, waitForHandleClosure ? 5000 : 200); // 200 ms timeout for handle closure
 
-            ObjectArray.Delete(i); // vyhodime ho ze seznamu
+            ObjectArray.Delete(i); // delete it from the list
             WindowArray.Delete(i);
             win->SetAutomaticRefresh(FALSE);
         }
     //---
-    ReleaseMutex(DataUsageMutex);                 // uvolnime cmuchalovi DataUsageMutex
-    WaitForSingleObject(ContinueEvent, INFINITE); // a pockame az si ho zabere
+    ReleaseMutex(DataUsageMutex);                 // release the DataUsageMutex back to the snooper
+    WaitForSingleObject(ContinueEvent, INFINITE); // and wait until the snooper grabs it
 }
 
 /*
@@ -827,14 +828,14 @@ void DetachDirectory(CFilesWindow* win, BOOL waitForHandleClosure, BOOL closeDev
 class CSuspModeStack
 {
   protected:
-    DWORD CallerCalledFromArr[SUSPMODESTACKSIZE];  // pole navratovych adres funkci, odkud se volal BeginSuspendMode()
-    DWORD CalledFromArr[SUSPMODESTACKSIZE];        // pole adres, odkud se volal BeginSuspendMode()
-    int Count;                                     // pocet prvku v predchozich dvou polich
-    int Ignored;                                   // pocet volani BeginSuspendMode(), ktere jsme museli ignorovat (prilis male SUSPMODESTACKSIZE -> pripadne zvetsit)
+    DWORD CallerCalledFromArr[SUSPMODESTACKSIZE];  // array of return addresses of functions from which BeginSuspendMode() was called
+    DWORD CalledFromArr[SUSPMODESTACKSIZE];        // array of addresses from which BeginSuspendMode() was called
+    int Count;                                     // number of elements in the previous two arrays
+    int Ignored;                                   // number of BeginSuspendMode() calls we had to ignore (SUSPMODESTACKSIZE too small -> enlarge if needed)
 
   public:
     CSuspModeStack() {Count = 0; Ignored = 0;}
-    ~CSuspModeStack() {CheckIfEmpty(1);}  // jeden BeginSuspendMode() je OK: vola se pri deaktivaci hl. okna Salama (pred uzavrenim hl. okna)
+    ~CSuspModeStack() {CheckIfEmpty(1);}  // one BeginSuspendMode() is OK: invoked when the main Salamander window is deactivated (before the main window closes)
 
     void Push(DWORD caller_called_from, DWORD called_from);
     void Pop(DWORD caller_called_from, DWORD called_from);
@@ -899,7 +900,7 @@ CSuspModeStack SuspModeStack;
 void BeginSuspendMode(BOOL debugDoNotTestCaller)
 {
     /*
-#ifdef _DEBUG     // testujeme, jestli se BeginSuspendMode() a EndSuspendMode() volaji ze stejne funkce (podle navratove adresy volajici funkce -> takze nepozna "chybu" pri volani z ruznych funkci, ktere se obe volaji ze stejne funkce)
+#ifdef _DEBUG     // verify whether BeginSuspendMode() and EndSuspendMode() are invoked from the same function (based on the return address of the calling function -> cannot detect a "bug" when called from different functions that are both invoked from the same function)
   DWORD *register_ebp;
   __asm mov register_ebp, ebp
   DWORD called_from, caller_called_from;
@@ -907,7 +908,7 @@ void BeginSuspendMode(BOOL debugDoNotTestCaller)
   {
     called_from = *(DWORD*)((char*)register_ebp + 4);
 
-pokud bude jeste nekdy potreba ozivit tenhle kod, vyuzit toho, ze lze nahradit (x86 i x64):
+if this code ever needs to be revived, use the fact that it can be replaced (x86 and x64):
     called_from = *(DWORD_PTR *)_AddressOfReturnAddress();
 
     caller_called_from = *(DWORD*)((char*)(*register_ebp) + 4);
@@ -940,7 +941,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
     if (SnooperSuspended < 1)
     {
         TRACE_E("Incorrect call to EndSuspendMode()");
-        SnooperSuspended = 0; // nepouziva zase nekdo blbe CM_LEFTREFRESH, CM_RIGHTREFRESH nebo CM_ACTIVEREFRESH
+        SnooperSuspended = 0; // reset; maybe someone is misusing CM_LEFTREFRESH, CM_RIGHTREFRESH, or CM_ACTIVEREFRESH again
     }
     else
     {
@@ -954,7 +955,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
 }
 
 /*
-#ifdef _DEBUG     // testujeme, jestli se BeginSuspendMode() a EndSuspendMode() volaji ze stejne funkce (podle navratove adresy volajici funkce -> takze nepozna "chybu" pri volani z ruznych funkci, ktere se obe volaji ze stejne funkce)
+#ifdef _DEBUG     // verify whether BeginSuspendMode() and EndSuspendMode() are invoked from the same function (based on the return address of the calling function -> cannot detect a "bug" when called from different functions that are both invoked from the same function)
 void EndSuspendMode(BOOL debugDoNotTestCaller)
 {
   DWORD *register_ebp;
@@ -964,7 +965,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
   {
     called_from = *(DWORD*)((char*)register_ebp + 4);
 
-pokud bude jeste nekdy potreba ozivit tenhle kod, vyuzit toho, ze lze nahradit (x86 i x64):
+if this code ever needs to be revived, use the fact that it can be replaced (x86 and x64):
     called_from = *(DWORD_PTR *)_AddressOfReturnAddress();
 
     caller_called_from = *(DWORD*)((char*)(*register_ebp) + 4);
