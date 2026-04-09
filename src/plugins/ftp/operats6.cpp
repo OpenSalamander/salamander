@@ -17,7 +17,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
         if (SubState != fwssPrepQuitSent && SubState != fwssPrepWaitForDiskAfterQuitSent && !SocketClosed)
         {
             SubState = (SubState == fwssPrepWaitForDisk ? fwssPrepWaitForDiskAfterQuitSent : fwssPrepQuitSent); // so that we do not send "QUIT" more than once
-            sendQuitCmd = TRUE;                                                                                 // we are supposed to finish and the connection is open -> send the server the "QUIT" command (we ignore the reply, it should lead to closing the connection and nothing else matters now)
+            sendQuitCmd = TRUE;                                                                                 // we should terminate and the connection is open -> send the server the "QUIT" command (ignore the reply; it should close the connection, and nothing else matters now)
         }
     }
     else // normal activity
@@ -32,7 +32,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
             {
             case fqitCopyResolveLink: // copy: detect whether it is a link to a file or directory (object of class CFTPQueueItemCopyOrMove)
             case fqitMoveResolveLink: // move: detect whether it is a link to a file or directory (object of class CFTPQueueItemCopyOrMove)
-                break;                // nothing to check
+                break;                // nothing to verify
 
             case fqitCopyExploreDir:     // explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
             case fqitMoveExploreDir:     // explore a directory for moving (deletes the directory after completion) (object of class CFTPQueueItemCopyMoveExplore)
@@ -51,7 +51,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                                      ((CFTPQueueItemCopyMoveExplore*)CurItem)->TgtPath,
                                      ((CFTPQueueItemCopyMoveExplore*)CurItem)->TgtName,
                                      CurItem->ForceAction, FALSE, NULL, NULL, NULL, 0, NULL);
-                        if (CurItem->ForceAction != fqiaNone) // the forced action stops being valid here
+                        if (CurItem->ForceAction != fqiaNone) // the forced action no longer applies here
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                         if (FTPDiskThread->AddWork(&DiskWork))
                         {
@@ -121,7 +121,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                     switch (Oper->GetUploadCannotCreateDir())
                     {
                     case CANNOTCREATENAME_AUTORENAME:
-                        break; // autorename (when it happens) must deal even with a bad name
+                        break; // autorename must also handle an invalid name when it gets to it
 
                     case CANNOTCREATENAME_SKIP:
                     {
@@ -145,10 +145,10 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
             }
 
             case fqitDeleteExploreDir: // explore directories for delete (note: links to directories are deleted as a whole, the operation's purpose is fulfilled and nothing "extra" is removed) (object of class CFTPQueueItemDelExplore)
-            case fqitDeleteLink:       // delete for a link (object of class CFTPQueueItemDel)
-            case fqitDeleteFile:       // delete for a file (object of class CFTPQueueItemDel)
+            case fqitDeleteLink:       // delete a link (object of class CFTPQueueItemDel)
+            case fqitDeleteFile:       // delete a file (object of class CFTPQueueItemDel)
             {
-                if (CurItem->Type == fqitDeleteExploreDir && ((CFTPQueueItemDelExplore*)CurItem)->IsHiddenDir || // if the directory/file/link is hidden, check what the user wants to do with it
+                if (CurItem->Type == fqitDeleteExploreDir && ((CFTPQueueItemDelExplore*)CurItem)->IsHiddenDir || // if the directory, file, or link is hidden, check what the user wants to do with it
                     (CurItem->Type == fqitDeleteLink || CurItem->Type == fqitDeleteFile) &&
                         ((CFTPQueueItemDel*)CurItem)->IsHiddenFile)
                 {
@@ -208,7 +208,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                 }
             }
 
-            case fqitDeleteDir:             // delete for a directory (object of class CFTPQueueItemDir)
+            case fqitDeleteDir:             // delete a directory (object of class CFTPQueueItemDir)
             case fqitChAttrsExploreDir:     // explore directories for attribute changes (also adds an item for changing the directory attributes) (object of class CFTPQueueItemChAttrExplore)
             case fqitChAttrsResolveLink:    // attribute change: determine whether it is a link to a directory (object of class CFTPQueueItem)
             case fqitChAttrsExploreDirLink: // explore a link to a directory for attribute changes (object of class CFTPQueueItem)
@@ -242,7 +242,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                                      CurItem->ForceAction,
                                      strcmp(CurItem->Name, ((CFTPQueueItemCopyOrMove*)CurItem)->TgtName) != 0,
                                      NULL, NULL, NULL, 0, NULL);
-                        if (CurItem->ForceAction != fqiaNone) // the forced action stops being valid here
+                        if (CurItem->ForceAction != fqiaNone) // the forced action no longer applies here
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                         if (FTPDiskThread->AddWork(&DiskWork))
                         {
@@ -328,7 +328,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
                         switch (Oper->GetUploadCannotCreateFile())
                         {
                         case CANNOTCREATENAME_AUTORENAME:
-                            break; // autorename (when it happens) must deal even with a bad name
+                            break; // autorename must handle even an invalid name
 
                         case CANNOTCREATENAME_SKIP:
                         {
@@ -484,7 +484,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
             case fqitChAttrsFile: // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
             case fqitChAttrsDir:  // change directory attributes (object of class CFTPQueueItemChAttrDir)
             {
-                if (CurItem->Type == fqitChAttrsFile && ((CFTPQueueItemChAttr*)CurItem)->AttrErr || // respond to the error "an unknown attribute should be preserved, which we cannot do"
+                if (CurItem->Type == fqitChAttrsFile && ((CFTPQueueItemChAttr*)CurItem)->AttrErr || // handle the error "an unknown attribute should be preserved, which we cannot do"
                     CurItem->Type == fqitChAttrsDir && ((CFTPQueueItemChAttrDir*)CurItem)->AttrErr)
                 {
                     switch (Oper->GetUnknownAttrs())
@@ -533,7 +533,7 @@ void CFTPWorker::HandleEventInPreparingState(CFTPWorkerEvent event, BOOL& sendQu
 
         if (!wait)
         {
-            if (fail) // the item cannot be performed, it already has an error set, go find another item
+            if (fail) // the item cannot be processed; an error is already set, so find another item
             {
                 CurItem = NULL;
                 State = fwsLookingForWork; // no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
@@ -577,7 +577,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
     {
         run = FALSE;              // when changed to TRUE, the loop runs again immediately
         BOOL closeSocket = FALSE; // TRUE = the worker's socket should be closed
-        if (ShouldStop)           // we should terminate the worker (everything inside the loop due to 'closeSocket')
+        if (ShouldStop)           // terminate the worker (everything is inside the loop because of 'closeSocket')
         {
             switch (SubState)
             {
@@ -599,8 +599,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
 
             case fwssConWaitForConRes: // close the connection and delete the WORKER_CONTIMEOUTTIMID timer
             {
-                // because we are already inside CSocketsThread::CritSect, this call is also possible
-                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                // since we are already in CSocketsThread::CritSect, this call is also possible
+                // from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                 SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
                 closeSocket = TRUE;
                 break;
@@ -611,21 +611,21 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
             case fwssConWaitForInitCmdRes:   // close the connection and delete the WORKER_TIMEOUTTIMERID timer (it might no longer exist, but that does not matter)
             case fwssConWaitForSystRes:      // close the connection and delete the WORKER_TIMEOUTTIMERID timer (it might no longer exist, but that does not matter)
             {
-                // because we are already inside CSocketsThread::CritSect, this call is also possible
-                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                // since we are already in CSocketsThread::CritSect, this call
+                                // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                 SocketsThread->DeleteTimer(UID, WORKER_TIMEOUTTIMERID);
                 closeSocket = TRUE;
                 break;
             }
             }
         }
-        else // normal activity
+        else // normal operation
         {
             switch (SubState)
             {
             case fwssNone: // determine whether we need to obtain the IP address
             {
-                if (ConnectAttemptNumber == 0) // for this worker it is the first attempt to establish a connection
+                if (ConnectAttemptNumber == 0) // this is the first connection attempt for this worker
                 {
                     ConnectAttemptNumber = 1;
                 }
@@ -643,7 +643,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                             SubState = fwssNone;
                             postActivate = TRUE; // post an activation for the next worker state
                             reportWorkerChange = TRUE;
-                            break; // end of executing the fwsConnecting state
+                            break; // end of the fwsConnecting state
                         }
                         else
                             ConnectAttemptNumber++;
@@ -662,8 +662,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 }
                 else // we only have a host name
                 {
-                    // because we are already inside CSocketsThread::CritSect, this call is also possible
-                    // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                    // since we are already in CSocketsThread::CritSect, this call
+                                        // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                     BOOL getHostByAddressRes = GetHostByAddress(host, ++IPRequestUID);
                     RefreshCopiesOfUIDAndMsg(); // refresh the UID+Msg copies (they changed)
                     if (!getHostByAddressRes)
@@ -759,8 +759,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 ResetBuffersAndEvents(); // clear the buffers (discard old data) and initialize variables related to the connection
 
                 DWORD error;
-                // because we are already inside CSocketsThread::CritSect, this call is also possible
-                // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                // since we are already in CSocketsThread::CritSect, this call
+                                // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                 BOOL conRes = ConnectWithProxy(serverIP, port, proxyType, &error, host, hostPort,
                                                proxyUser, proxyPassword, hostIP);
                 RefreshCopiesOfUIDAndMsg(); // refresh the UID+Msg copies (they changed)
@@ -803,8 +803,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                     // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
                     SocketsThread->DeleteTimer(UID, WORKER_CONTIMEOUTTIMID);
 
-                    // set the worker state so it starts waiting for a command reply (even if we did not
-                    // send any command, we wait for the server response) - set the timeout for receiving a command reply
+                    // set the worker state to wait for a command reply (even though we did not
+                    // send any command, we are waiting for the server response) and set the timeout for receiving it
                     CommandState = fwcsWaitForLoginPrompt;
                     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                     if (serverTimeout < 1000)
@@ -815,7 +815,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                             WORKER_TIMEOUTTIMERID, NULL); // ignore the error, at worst the user hits Stop
 
                     SubState = fwssConWaitForPrompt;
-                    // run = TRUE; // pointless (no event has occurred yet)
+                    // run = TRUE; // no point yet (no event has occurred yet)
                     break;
                 }
 
@@ -832,8 +832,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
 
                 case fweConTimeout:
                 {
-                    // because we are already inside CSocket::SocketCritSect, this call is also possible
-                    // from within CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                    // because we are already in CSocket::SocketCritSect, this call is also allowed
+                    // from CFTPWorker::WorkerCritSect (no deadlock risk)
                     if (!GetProxyTimeoutDescr(ErrorDescr, FTPWORKER_ERRDESCR_BUFSIZE))
                         lstrcpyn(ErrorDescr, LoadStr(IDS_OPENCONTIMEOUT), FTPWORKER_ERRDESCR_BUFSIZE);
                     CorrectErrorDescr();
@@ -878,13 +878,13 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                 SubState = fwssConReconnect;
                                 run = TRUE;
                             }
-                            else // unexpected response, ignore it
+                            else // unexpected reply, ignore it
                             {
                                 TRACE_E("Unexpected reply: " << CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
                             }
                         }
                     }
-                    else // not an FTP server
+                    else // not an FTP server error
                     {
                         _snprintf_s(ErrorDescr, _TRUNCATE, LoadStr(IDS_NOTFTPSERVERERROR),
                                     CopyStr(errBuf, 50 + FTP_MAX_PATH, reply, replySize));
@@ -922,7 +922,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 SubState = fwssConWaitForAUTHCmdRes;
                 break;
 
-            case fwssConSendPBSZ: // After AUTH TLS, but only if encrypting also data
+            case fwssConSendPBSZ: // After AUTH TLS, but only if data is also encrypted
                 strcpy(buf, "PBSZ 0\r\n");
                 cmdLen = (int)strlen(buf);
                 strcpy(errBuf, buf); // For logging purposes
@@ -958,7 +958,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 {
                     if (buf[0] == 0) // end of the script
                     {
-                        if (ProxyScriptLastCmdReply == -1) // the script does not contain any command that would be sent to the server - e.g. commands were skipped because they contain optional variables
+                        if (ProxyScriptLastCmdReply == -1) // the script does not contain any command to send to the server, e.g. because commands were skipped due to optional variables
                         {
                             lstrcpyn(ErrorDescr, LoadStr(IDS_INCOMPLETEPRXSCR2), FTPWORKER_ERRDESCR_BUFSIZE);
                             CorrectErrorDescr();
@@ -970,7 +970,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                             {
                                 Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGLOGINSUCCESS), -1, TRUE);
                                 NextInitCmd = 0;                                                             // send the first init-ftp command
-                                SubState = Oper->GetCompressData() ? fwssConSendMODEZ : fwssConSendInitCmds; // we are logged in, now send the init-ftp commands
+                                SubState = Oper->GetCompressData() ? fwssConSendMODEZ : fwssConSendInitCmds; // we are logged in, now send the initial FTP commands
                                 run = TRUE;
                             }
                             else // FTP_DIGIT_1(ProxyScriptLastCmdReply) == FTP_D1_PARTIALSUCCESS  // e.g. 331 User name okay, need password
@@ -982,7 +982,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                             }
                         }
                     }
-                    else // there is another command to send
+                    else // another command remains to be sent
                     {
                         sendCmd = TRUE;
                         SubState = fwssConWaitForScriptCmdRes;
@@ -1040,7 +1040,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                 HANDLES(EnterCriticalSection(&WorkerCritSect));
                                 if (ret)
                                 {
-                                    if (unverifiedCert != NULL) // close the connection and retry only after the user learns about the untrusted certificate and accepts it or ensures it becomes trusted (in the Solve Error dialog)
+                                    if (unverifiedCert != NULL) // close the connection and retry only after the user is informed about the untrusted certificate and either accepts it or makes it trusted (in the Solve Error dialog)
                                     {
                                         if (UnverifiedCertificate != NULL)
                                             UnverifiedCertificate->Release();
@@ -1095,7 +1095,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
 
                         closeSocket = TRUE; // close the connection (no point in continuing)
 
-                        if (retryLoginWithoutAsking) // try again
+                        if (retryLoginWithoutAsking) // retry
                         {
                             SubState = fwssConReconnect;
                             run = TRUE;
@@ -1177,8 +1177,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                             {
                                 BOOL retryLoginWithoutAsking;
                                 if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                { // convenient handling of the "too many users" error - no questions, immediately retry
-                                    // this may be a problem: this code is accompanied by a message that requires changing the user/password
+                                { // convenient handling of the "too many users" error - retry immediately without prompting
+// possible issue: this code may be followed by a message that requires changing the user/password
                                     retryLoginWithoutAsking = TRUE;
                                 }
                                 else
@@ -1189,7 +1189,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                                 CorrectErrorDescr();
                                 closeSocket = TRUE; // close the connection (no point in continuing)
 
-                                if (retryLoginWithoutAsking) // try again
+                                if (retryLoginWithoutAsking) // retry
                                 {
                                     SubState = fwssConReconnect;
                                     run = TRUE;
@@ -1266,7 +1266,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 if (sendCmd) // sending another init-ftp command
                 {
                     SubState = fwssConWaitForInitCmdRes;
-                    // run = TRUE; // pointless (no event has occurred yet)
+                    // run = TRUE; // no point yet (no event has occurred yet)
                 }
                 else // all init-ftp commands have been sent (or none exist)
                 {
@@ -1303,7 +1303,7 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                 PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH, ftpcmdSystem, &cmdLen); // cannot report an error
                 sendCmd = TRUE;
                 SubState = fwssConWaitForSystRes;
-                // run = TRUE; // pointless (no event has occurred yet)
+                // run = TRUE; // no point yet (no event has occurred yet)
                 break;
             }
 
@@ -1362,20 +1362,20 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
                         // wait for a reconnect
                         ConnectAttemptNumber++;
 
-                        // because we are already inside CSocketsThread::CritSect, this call is also possible
-                        // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                        // since we are already in CSocketsThread::CritSect, this call
+                                                // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                         SocketsThread->DeleteTimer(UID, WORKER_RECONTIMEOUTTIMID);
 
                         // start a timer for the next connect attempt
                         int delayBetweenConRetries = Config.GetDelayBetweenConRetries() * 1000;
-                        // because we are already inside CSocketsThread::CritSect, this call is also possible
-                        // from within CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of dead-lock)
+                        // since we are already in CSocketsThread::CritSect, this call
+                                                // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                         SocketsThread->AddTimer(Msg, UID, GetTickCount() + delayBetweenConRetries,
                                                 WORKER_RECONTIMEOUTTIMID, NULL); // ignore the error, at worst the user hits Stop
 
                         State = fwsWaitingForReconnect; // NOTE: assumes ErrorDescr is set; no need to call Oper->OperationStatusMaybeChanged(), the operation state does not change (it is not paused and will not be after this change)
                         SubState = fwssNone;
-                        // postActivate = TRUE;  // no reason, waiting for the timeout
+                        // postActivate = TRUE;  // no reason to do this, waiting for the timeout
                         reportWorkerChange = TRUE;
                     }
                 }
@@ -1387,8 +1387,8 @@ void CFTPWorker::HandleEventInConnectingState(CFTPWorkerEvent event, BOOL& sendQ
         {
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
-            // because we are already inside CSocketsThread::CritSect, this call is also possible
-            // from within CSocket::SocketCritSect (no risk of dead-lock)
+            // because we are already in CSocketsThread::CritSect, this call is also allowed
+            // from CSocket::SocketCritSect (no deadlock risk)
             ForceClose();
 
             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -1472,7 +1472,7 @@ BOOL CFTPWorker::ParseListingToFTPQueue(TIndirectArray<CFTPQueueItem>* ftpQueueI
                 {
                     CFTPQueueItemCopyMoveExplore* cmItem = (CFTPQueueItemCopyMoveExplore*)CurItem;
                     lstrcpyn(targetPath, cmItem->TgtPath, MAX_PATH);
-                    SalamanderGeneral->SalPathAppend(targetPath, cmItem->TgtName, MAX_PATH); // must succeed, the directory already exists on disk and its full name is at most PATH_MAX_PATH-1 characters
+                    SalamanderGeneral->SalPathAppend(targetPath, cmItem->TgtName, MAX_PATH); // must succeed; the directory already exists on disk and its full name is at most MAX_PATH-1 characters
                 }
                 else
                     targetPath[0] = 0;
