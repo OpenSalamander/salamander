@@ -82,12 +82,12 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
         {
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
             char* flushBuffer;
-            // because we are already inside CSocketsThread::CritSect, this call is also possible
-            // from inside CSocket::SocketCritSect (no deadlock risk)
+            // since we are already in CSocketsThread::CritSect, this call
+            // is also possible from CSocket::SocketCritSect (no deadlock risk)
             BOOL haveBufferForData = WorkerUploadDataCon->GiveBufferForData(&flushBuffer);
             HANDLES(EnterCriticalSection(&WorkerCritSect));
 
-            if (haveBufferForData) // we have 'flushBuffer'; it must be handed over to the disk thread, where it will be filled with file data (if there is an error we release it)
+            if (haveBufferForData) // we have 'flushBuffer'; it must be passed to the disk thread, where it will be filled with file data (if an error occurs, we release it)
             {
                 if (DiskWorkIsUsed)
                     TRACE_E("Unexpected situation in CFTPWorker::HandleEventInWorkingState5(): DiskWorkIsUsed may not be TRUE here!");
@@ -108,7 +108,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already inside CSocketsThread::CritSect, this call is also possible
                         // from inside CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the data connection; the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
                         WorkerUploadDataCon->FreeBufferedData();
                         DeleteSocket(WorkerUploadDataCon);
@@ -140,8 +140,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // because we are already inside CSocketsThread::CritSect, this call is also possible
                     // from inside CSocket::SocketCritSect (no deadlock risk)
-                    if (WorkerUploadDataCon->IsConnected())       // close the data connection; the system will attempt a "graceful"
-                        WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
+                    if (WorkerUploadDataCon->IsConnected())       // close the data connection; the system will attempt a "graceful" shutdown
+                        WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (result unavailable)
                     WorkerUploadDataCon->FreeBufferedData();
                     DeleteSocket(WorkerUploadDataCon);
                     WorkerUploadDataCon = NULL;
@@ -152,7 +152,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 }
                 else
                 {
-                    if (WorkerUploadDataCon != NULL) // if the data connection exists, pass the buffer into it for writing into the data connection
+                    if (WorkerUploadDataCon != NULL) // if the data connection exists, pass it the buffer for writing
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already inside CSocketsThread::CritSect, this call is also possible
@@ -167,7 +167,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     }
                     DiskWork.FlushDataBuffer = NULL;
 
-                    // take over the new offset in the file (we cannot simply add it because text files convert all LF to CRLF)
+                    // use the new file offset (we cannot just add it because text files convert all LF to CRLF)
                     OpenedInFileCurOffset = DiskWork.WriteOrReadFromOffset;
                     if (OpenedInFileCurOffset > OpenedInFileSize)
                         OpenedInFileSize = OpenedInFileCurOffset;
@@ -188,7 +188,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // because we are already inside CSocketsThread::CritSect, this call is also possible
                     // from inside CSocket::SocketCritSect (no deadlock risk)
-                    if (WorkerUploadDataCon->IsConnected())       // close the data connection; the system will attempt a "graceful"
+                    if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                         WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
                     WorkerUploadDataCon->FreeBufferedData();
                     DeleteSocket(WorkerUploadDataCon);
@@ -229,7 +229,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                           &notAccessible, &getListing, curItem->TgtName,
                                                           &existingItem, NULL))
                         {
-                            if (listingInProgress) // listing is currently taking place or is about to happen
+                            if (listingInProgress) // the listing is currently in progress or is about to start
                             {
                                 if (getListing) // we are to obtain the listing and then notify any other waiting workers
                                 {
@@ -238,7 +238,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                 }
                                 else
                                 {
-                                    SubState = fwssWorkUploadWaitForListing; // we should wait until another worker finishes listing
+                                    SubState = fwssWorkUploadWaitForListing; // wait until another worker finishes the listing
                                     reportWorkerChange = TRUE;               // the worker prints the fwssWorkUploadWaitForListing state to the window, so a redraw is needed
                                 }
                             }
@@ -252,7 +252,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                 else // the listing is available; check for a possible file name collision
                                 {
                                     nextLoop = TRUE;
-                                    if (CurItem->ForceAction == fqiaUploadContinueAutorename) // continuing auto-rename (try another name + another STOR)
+                                    if (CurItem->ForceAction == fqiaUploadContinueAutorename) // continue auto-rename (try another name + another STOR)
                                     {
                                         UploadType = utAutorename;
                                         if (curItem->RenamedName != NULL)
@@ -267,17 +267,17 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                         else
                                         {
                                             BOOL nameValid = FTPMayBeValidNameComponent(curItem->TgtName, curItem->TgtPath, FALSE, pathType);
-                                            if (existingItem == NULL && nameValid) // no collision and a valid name -> attempt to create the directory
+                                            if (existingItem == NULL && nameValid) // no collision and a valid name -> attempt to create the file
                                                 SubState = fwssWorkUploadNewFile;
                                             else
-                                            {                                                              // if existingItem == NULL, then (!nameValid==TRUE), so tests for existingItem != NULL are unnecessary
+                                            {                                                              // if existingItem == NULL, then !nameValid is TRUE, so checks for existingItem != NULL are unnecessary
                                                 if (!nameValid || existingItem->ItemType == ulitDirectory) // invalid name or collision with a directory -> "file cannot be created"
                                                     SubState = !nameValid ? fwssWorkUploadCantCreateFileInvName : fwssWorkUploadCantCreateFileDirEx;
                                                 else
                                                 {
                                                     if (existingItem->ItemType == ulitFile) // collision with a file -> "file already exists"
                                                         SubState = fwssWorkUploadFileExists;
-                                                    else // (existingItem->ItemType == ulitLink): collision with a link -> determine what the link is (file/directory)
+                                                    else // (existingItem->ItemType == ulitLink): collision with a link -> determine whether the link is a file or directory
                                                         SubState = fwssWorkUploadResolveLink;
                                                 }
                                             }
@@ -307,7 +307,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     handleShouldStop = TRUE; // check whether the worker should stop
                 else
                 {
-                    if (event == fweTgtPathListingFinished) // the designated worker has already finished, so try to use the new listing
+                    if (event == fweTgtPathListingFinished) // the designated worker has finished its work, so try to use the new listing
                     {
                         SubState = fwssWorkStartWork;
                         reportWorkerChange = TRUE; // the worker prints the fwssWorkUploadWaitForListing state to the window, so a redraw is needed
@@ -333,7 +333,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
 
                     HaveWorkingPath = FALSE; // changing the current working path on the server
                 }
-                else // path syntax error or the path would become too long
+                else // path syntax error or the resulting path would be too long
                 {
                     // error on the item; record this state into it
                     Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_INVALIDPATHTOLINK, NO_ERROR, NULL, Oper);
@@ -342,7 +342,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadResLnkWaitForCWDRes: // upload copy/move file: waiting for the result of "CWD" (changing into the examined link - if it succeeds, the link points to a directory)
+            case fwssWorkUploadResLnkWaitForCWDRes: // upload copy/move file: waiting for the result of "CWD" (changing to the link being examined - if it succeeds, the link points to a directory)
             {
                 switch (event)
                 {
@@ -386,7 +386,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
             case fwssWorkUploadCantCreateFileInvName: // upload copy/move file: handling the "target file cannot be created" error (invalid name)
             case fwssWorkUploadCantCreateFileDirEx:   // upload copy/move file: handling the "target file cannot be created" error (name already used for a directory or a link to a directory)
             {
-                if (CurItem->ForceAction == fqiaUseAutorename) // forced auto-rename
+                if (CurItem->ForceAction == fqiaUseAutorename) // forced autorename
                 {
                     SubState = fwssWorkUploadAutorenameFile;
                     nextLoop = TRUE;
@@ -693,8 +693,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 {
                     if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS) // the target path is set; start generating target directory names
                     {                                             // we have successfully changed the working path; since this path was once returned
-                        // by the server in response to PWD, we assume PWD would return it again now, and therefore
-                        // we will not send it (an optimization hopefully with very low risk)
+                        // returned by the server in response to PWD; we assume PWD would return this path again now, and therefore
+                        // we will not send it (an optimization with hopefully very low risk)
                         HaveWorkingPath = TRUE;
                         lstrcpyn(WorkingPath, curItem->TgtPath, FTP_MAX_PATH);
 
@@ -774,10 +774,10 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         handleShouldStop = TRUE; // check whether the worker should stop
                     else
                     {
-                        if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)                                    // success is returned (should be 200)
+                        if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS)                                    // a success reply was received (should be 200)
                             CurrentTransferMode = (curItem->AsciiTransferMode ? ctrmASCII : ctrmBinary); // the transfer mode was changed
                         else
-                            CurrentTransferMode = ctrmUnknown; // unknown error; it may not matter, but we will not cache the transfer mode
+                            CurrentTransferMode = ctrmUnknown; // unknown error; it may not matter, but we will not cache the data transfer mode
 
                         nextLoop = TRUE;
                         switch (UploadType)
@@ -833,7 +833,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 // case fweCmdInfoReceived:  // "1xx" replies are ignored (they are only written into the log)
                 case fweCmdReplyReceived:
                 {
-                    if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS) // success is returned (should be 213)
+                    if (FTP_DIGIT_1(replyCode) == FTP_D1_SUCCESS) // success response returned (should be 213)
                     {
                         if (ShouldStop)
                             handleShouldStop = TRUE; // check whether the worker should stop
@@ -901,7 +901,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                     else
                                     {
                                         int resumeMinFileSize = Config.GetResumeMinFileSize();
-                                        if ((unsigned __int64)resumeMinFileSize <= size) // resume makes sense (the portion of the file is larger than the minimum for resume)
+                                        if ((unsigned __int64)resumeMinFileSize <= size) // resume makes sense (the partial file is larger than the minimum size for resume)
                                         {
                                             ResumingFileOnServer = TRUE;
                                             OpenedInFileCurOffset.SetUI64(size);
@@ -953,7 +953,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
 
             case fwssWorkUploadGetFileSizeFromListing: // file upload: resume - the SIZE command failed (or is not implemented), determine the file size from the listing
             {
-                if (existingItem == NULL) // if it did not arrive here directly, retrieve target file information from the listing again
+                if (existingItem == NULL) // if it was not obtained directly, retrieve the target file information from the listing again
                 {
                     Oper->GetUserHostPort(userBuf, hostBuf, &portBuf);
                     CFTPServerPathType pathType = Oper->GetFTPServerPathType(curItem->TgtPath);
@@ -963,7 +963,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                       &notAccessible, &getListing, curItem->TgtName,
                                                       &existingItem, NULL))
                     {
-                        if (listingInProgress) // listing is currently taking place or is about to happen
+                        if (listingInProgress) // the listing is currently in progress or is about to start
                         {
                             if (getListing) // we are to obtain the listing and then notify any other waiting workers
                             {
@@ -973,7 +973,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                             }
                             else
                             {
-                                SubState = fwssWorkUploadWaitForListing; // we should wait until another worker finishes listing
+                                SubState = fwssWorkUploadWaitForListing; // wait until another worker finishes the listing
                                 reportWorkerChange = TRUE;               // the worker prints the fwssWorkUploadWaitForListing state to the window, so a redraw is needed
                             }
                             break;
@@ -1157,7 +1157,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 }
                 else
                 {
-                    Queue->UpdateItemState(CurItem, sqisWaiting, ITEMPR_OK, NO_ERROR, NULL, Oper); // at least this worker will go look for new work, so some worker will surely handle this item (no need to post "new work available")
+                    Queue->UpdateItemState(CurItem, sqisWaiting, ITEMPR_OK, NO_ERROR, NULL, Oper); // at least this worker will look for new work, so some worker will handle this item (no need to post "new work available")
                     lookForNewWork = TRUE;
                 }
                 break;
@@ -1170,18 +1170,18 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 BOOL notAccessible, getListing, listingInProgress, nameExists;
                 int index = 0;
                 UploadAutorenamePhase = curItem->AutorenamePhase;
-                int usedUploadAutorenamePhase = UploadAutorenamePhase; // in case of a name collision - the phase in which we should try to generate another name
+                int usedUploadAutorenamePhase = UploadAutorenamePhase; // in case of a name collision - the phase in which we should try generating another name
                 while (1)
                 {
                     FTPGenerateNewName(&UploadAutorenamePhase, UploadAutorenameNewName, &index,
                                        curItem->TgtName, pathType, FALSE, strcmp(curItem->TgtName, curItem->Name) != 0);
-                    // we have a new name; verify whether it collides with a name from the target path listing
+                    // we have a new name; verify that it does not collide with any name in the target path listing
                     if (UploadListingCache.GetListing(userBuf, hostBuf, portBuf, curItem->TgtPath,
                                                       pathType, Msg, UID, &listingInProgress,
                                                       &notAccessible, &getListing,
                                                       UploadAutorenameNewName, NULL, &nameExists))
                     {
-                        if (listingInProgress) // listing is currently taking place or is about to happen
+                        if (listingInProgress) // the listing is currently in progress or is about to start
                         {
                             if (getListing) // we are to obtain the listing and then notify any other waiting workers
                             {
@@ -1191,20 +1191,20 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                             }
                             else
                             {
-                                SubState = fwssWorkUploadWaitForListing; // we should wait until another worker finishes listing
+                                SubState = fwssWorkUploadWaitForListing; // wait until another worker finishes the listing
                                 reportWorkerChange = TRUE;               // the worker prints the fwssWorkUploadWaitForListing state to the window, so a redraw is needed
                             }
                             break;
                         }
                         else // the listing is already cached or marked as "unobtainable"
                         {
-                            if (notAccessible) // the listing is cached, but only as "unobtainable" (very unlikely; the listing was "ready" a moment ago)
+                            if (notAccessible) // the listing is cached, but only as "unobtainable" (very unlikely; it was "ready" a moment ago)
                             {
                                 Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UPLOADCANNOTLISTTGTPATH, 0, NULL, Oper);
                                 lookForNewWork = TRUE;
                                 break;
                             }
-                            else // the listing is available; check for a potential file name collision
+                            else // the listing is available; check for a possible file name collision
                             {
                                 if (LockedFileUID != 0)
                                     TRACE_E("Unexpected situation in CFTPWorker::HandleEventInWorkingState5(): LockedFileUID != 0!");
@@ -1251,11 +1251,11 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 if (FTPOpenedFiles.OpenFile(userBuf, hostBuf, portBuf, curItem->TgtPath,
                                             Oper->GetFTPServerPathType(curItem->TgtPath),
                                             curItem->TgtName, &LockedFileUID, ffatWrite))
-                { // the file on the server is not open yet; we can work with it
+                { // the file on the server is not open yet; we can still work with it
                     SubState = fwssWorkUploadDelForOverwrite;
                     nextLoop = TRUE;
                 }
-                else // another operation is already in progress on this file; let the user try again later
+                else // another operation is already in progress on this file; the user should try again later
                 {
                     // error on the item; record this state into it
                     Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_TGTFILEINUSE, NO_ERROR, NULL, Oper);
@@ -1264,7 +1264,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadDelForOverwrite: // file upload: if overwrite should delete first, perform it here
+            case fwssWorkUploadDelForOverwrite: // file upload: if this is an overwrite and delete should be done first, perform the delete here
             {
                 if (UseDeleteForOverwrite && UploadType == utOverwriteFile)
                 { // the file is already locked for writing; deletion is just an intermediate step, no need to call FTPOpenedFiles.OpenFile()
@@ -1424,8 +1424,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                             int logUID = LogUID;
                             HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
-                            // because we are already inside CSocketsThread::CritSect, these calls are also possible
-                            // from inside CSocket::SocketCritSect (no deadlock risk)
+                            // since we are already in CSocketsThread::CritSect, these calls
+                            // are also possible from CSocket::SocketCritSect (no deadlock risk)
                             if (WorkerUploadDataCon != NULL)
                             {
                                 WorkerUploadDataCon->SetPassive(ip, port, logUID);
@@ -1497,8 +1497,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
 
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
-                // because we are already inside CSocketsThread::CritSect, these calls are also possible
-                // from inside CSocket::SocketCritSect (no deadlock risk)
+                // since we are already in CSocketsThread::CritSect, these calls
+                // are also possible from CSocket::SocketCritSect (no deadlock risk)
                 GetLocalIP(&localIP, NULL); // should not even be able to return an error
                 BOOL retOpenForListening = FALSE;
                 BOOL listenError = TRUE;
@@ -1526,12 +1526,12 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     int serverTimeout = Config.GetServerRepliesTimeout() * 1000;
                     if (serverTimeout < 1000)
                         serverTimeout = 1000; // at least one second
-                    // because we are already in CSocketsThread::CritSect, this call is also
-                    // possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
+                    // because we are already in CSocketsThread::CritSect, this call can also be made
+                    // from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                     SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
                                             WORKER_LISTENTIMEOUTTIMID, NULL); // ignore the error; at worst the user will press Stop
                 }
-                else // failed to open the "listen" socket to accept the data connection from
+                else // failed to open the "listen" socket to accept the data connection from the server
                 {    // the server (local operation, most likely never happens) or cannot open the connection to the proxy server
                     if (WorkerUploadDataCon != NULL)
                     {
@@ -1550,7 +1550,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_LISTENFAILURE, error, NULL, Oper);
                         lookForNewWork = TRUE;
                     }
-                    else // unable to open the connection to the proxy server, perform a retry...
+                    else // unable to open the connection to the proxy server, retry...
                     {
                         if (error != NO_ERROR)
                         {
@@ -1583,7 +1583,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadWaitForListen: // upload copy/move file: waiting for the "listen" port to open (opening the active data connection) - local or on the proxy server
+            case fwssWorkUploadWaitForListen: // upload file copy/move: waiting for the "listen" port to open (opening the active data connection), locally or on the proxy server
             {
                 if (ShouldStop)
                 {
@@ -1596,7 +1596,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already in CSocketsThread::CritSect, this call is also
                         // possible from CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                         DeleteSocket(WorkerUploadDataCon);
                         WorkerUploadDataCon = NULL;
@@ -1638,7 +1638,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                 sendCmd = TRUE;
                                 SubState = fwssWorkUploadWaitForPORTRes;
                             }
-                            else // error when opening the "listen" port on the proxy server - perform a retry...
+                            else // error opening the "listen" port on the proxy server - retry...
                             {
                                 // close the data connection
                                 if (WorkerUploadDataCon != NULL)
@@ -1646,7 +1646,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                     // because we are already in CSocketsThread::CritSect, this call is also
                                     // possible from CSocket::SocketCritSect (no deadlock risk)
-                                    if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                                    if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                                         WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                                     DeleteSocket(WorkerUploadDataCon);
                                     WorkerUploadDataCon = NULL;
@@ -1678,7 +1678,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                 errBuf[0] = 0;
                             // because we are already in CSocketsThread::CritSect, this call is also
                             // possible from CSocket::SocketCritSect (no deadlock risk)
-                            if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                            if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                                 WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                             DeleteSocket(WorkerUploadDataCon);
                             WorkerUploadDataCon = NULL;
@@ -1734,7 +1734,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already in CSocketsThread::CritSect, this call is also
                         // possible from CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                         DeleteSocket(WorkerUploadDataCon);
                         WorkerUploadDataCon = NULL;
@@ -1760,7 +1760,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already in CSocketsThread::CritSect, this call is also
                         // possible from CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                         DeleteSocket(WorkerUploadDataCon);
                         WorkerUploadDataCon = NULL;
@@ -1810,7 +1810,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadActivateDataCon: // upload copy/move file: activate the data connection (right after sending the STOR command)
+            case fwssWorkUploadActivateDataCon: // file upload during copy/move: activate the data connection (right after sending the STOR command)
             {
                 if (!Oper->GetEncryptDataConnection() && (WorkerUploadDataCon != NULL))
                 { // FIXME: 2009.01.29: I believe ActivateConnection can be called later
@@ -1827,7 +1827,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadWaitForSTORRes: // upload copy/move file: waiting for the "STOR/APPE" result (waiting for the upload to finish)
+            case fwssWorkUploadWaitForSTORRes: // upload copy/move of a file: waiting for the "STOR/APPE" result (waiting for the file upload to finish)
             {
                 switch (event)
                 {
@@ -1885,7 +1885,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                             errBuf[0] = 0;
                         // because we are already in CSocketsThread::CritSect, this call is also
                         // possible from CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                         WorkerUploadDataCon->FreeBufferedData();
                         DeleteSocket(WorkerUploadDataCon);
@@ -1898,8 +1898,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     BOOL canUseRenamedName = TRUE;
                     BOOL canClearForceAction = TRUE;
                     if (!ShouldStop && PrepareDataError == pderASCIIForBinaryFile)
-                    { // when a binary file is detected in ASCII mode, ensure the target file is deleted
-                        // the file is already locked for writing, deletion is only an intermediate step, no need to call FTPOpenedFiles.OpenFile()
+                    { // when a binary file is detected in ASCII mode, delete the target file
+                        // the file is already locked for writing; deletion is only an intermediate step, so FTPOpenedFiles.OpenFile() need not be called
                         PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
                                           ftpcmdDeleteFile, &cmdLen,
                                           UploadType == utAutorename ? curItem->RenamedName : curItem->TgtName); // cannot report an error
@@ -1923,7 +1923,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                     // close the source file on disk
                                     CloseOpenedInFile();
 
-                                    // mark the file as already transferred (in case deleting the source file fails during Move we need to distinguish this situation)
+                                    // mark the file as already transferred (for a Move, we must distinguish this case if deleting the source file fails)
                                     Queue->UpdateTgtFileState(curItem, UPLOADTGTFILESTATE_TRANSFERRED);
 
                                     if (uploadRealSize != UPLOADSIZE_UNKNOWN && curItem->Size != uploadRealSize)
@@ -1942,7 +1942,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                                   FTP_DIGIT_1(replyCode) == FTP_D1_ERROR))
                                     {
                                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                                        if (IsConnected()) // "manually" close the control connection
+                                        if (IsConnected()) // close the control connection manually
                                         {
                                             // because we are already in CSocketsThread::CritSect, this call is also
                                             // possible from CSocket::SocketCritSect (no deadlock risk)
@@ -1955,10 +1955,10 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                     {
                                         if ((!ResumingFileOnServer || Oper->GetDataConWasOpenedForAppendCmd()) && // proftpd (Linux) repeatedly returns 45x (append disabled, enabled somewhere in the config), warftpd repeatedly returns 42x (some write error) -- in any case we cannot keep trying APPE endlessly (however if APPE opened the data connection, perform auto-retry because APPE works 99.9% of the time)
                                                 FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR &&
-                                                (FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION ||  // mainly "426 data connection closed, transfer aborted" (I cannot tell whether it was caused by the server admin or a connection failure, so priority goes to assuming a connection issue -> retry the upload)
+                                                (FTP_DIGIT_2(replyCode) == FTP_D2_CONNECTION ||  // mainly "426 data connection closed, transfer aborted" (it is not possible to tell whether this was caused by the server admin or by a connection failure, so it is treated as a connection problem first -> retry the upload)
                                                  FTP_DIGIT_2(replyCode) == FTP_D2_FILESYSTEM) && // "450 Transfer aborted.  Link to file server lost."
                                                 dataSSLErrorOccured != SSLCONERR_DONOTRETRY ||   // take 426 and 450 only if they were not caused by: failed to encrypt the connection, which is a permanent problem
-                                            dataConNoDataTransTimeout ||                         // connection interrupted by us due to the no-data-transfer timeout (happens during "50%" network outages, the data connection stays up but data transfer stalls, can remain open for 14000 seconds, this should address it) -> retry the upload attempt
+                                            dataConNoDataTransTimeout ||                         // connection interrupted by us due to the no-data-transfer timeout (this happens during "50%" network outages: the data connection stays up, but data transfer stalls and can remain open for 14000 seconds; this should handle that) -> retry the upload attempt
                                             dataSSLErrorOccured == SSLCONERR_CANRETRY)           // failed to encrypt the connection, but it is not a permanent problem
                                         {
                                             SubState = fwssWorkCopyDelayedAutoRetry; // use delayed auto-retry so all unexpected replies from the server can arrive
@@ -1993,7 +1993,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                             canUseRenamedName = FALSE;                                                     // keep TgtName as the original (forget RenamedName; another name will be generated by the next FTPGenerateNewName phase)
                                                             Queue->UpdateItemState(CurItem, sqisWaiting, ITEMPR_OK, NO_ERROR, NULL, Oper); // at least this worker will look for new work, so some worker will take care of this item (no need to post "new work available")
                                                         }
-                                                        else // we no longer know what other name could be created, so report an error
+                                                        else // we no longer know what other name can be generated, so report an error
                                                         {
                                                             CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                                             Queue->UpdateItemState(CurItem, sqisFailed, ITEMPR_UPLOADFILEAUTORENFAILED, NO_ERROR,
@@ -2063,7 +2063,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                 }
                                                 else
                                                 {
-                                                    if (ResumingFileOnServer && UploadType == utResumeOrOverwriteFile && // resume failed, try overwrite instead
+                                                    if (ResumingFileOnServer && UploadType == utResumeOrOverwriteFile && // resume failed, try overwriting instead
                                                         dataSSLErrorOccured == SSLCONERR_NOERROR)
                                                     {
                                                         Logs.LogMessage(LogUID, LoadStr(IDS_LOGMSGUPLRESUMEERR), -1, TRUE);
@@ -2080,11 +2080,11 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                                                         {
                                                             errText[0] = 0;
                                                             if (FTP_DIGIT_1(replyCode) != FTP_D1_SUCCESS)
-                                                            { // if we have no description of the network error from the server, fall back to the system description
+                                                            { // if we do not have a network error description from the server, use the system description
                                                                 CopyStr(errText, 200 + FTP_MAX_PATH, reply, replySize);
                                                             }
 
-                                                            if (errText[0] == 0 && errBuf[0] != 0) // try to use the error text from the proxy server
+                                                            if (errText[0] == 0 && errBuf[0] != 0) // try to get the error text from the proxy server
                                                                 lstrcpyn(errText, errBuf, 200 + FTP_MAX_PATH);
                                                         }
 
@@ -2108,9 +2108,9 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     if (CurItem->ForceAction != fqiaNone && canClearForceAction) // the forced action no longer applies
                         Queue->UpdateForceAction(CurItem, fqiaNone);
 
-                    // autorename: record the new name in the item - even if STOR failed, it is still more accurate that the file
-                    // was stored under the new name than under the original one - for example when overwriting an existing file this is obvious
-                    // NOTE: no need to call Oper->ReportItemChange(CurItem->UID), because RenamedName is used
+                    // autorename: record the new name in the item - even if STOR returns an error, it is still more accurate that the file
+                    // was stored under the new name than under the original one - for example, when overwriting an existing file
+                    // NOTE: there is no need to call Oper->ReportItemChange(CurItem->UID), because RenamedName is used
                     // before TgtName (so the new name has already been displayed)
                     if (uploadTypeIsAutorename && canUseRenamedName)
                         Queue->ChangeTgtNameToRenamedName(curItem);
@@ -2120,15 +2120,15 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 case fweCmdConClosed: // the connection closed/timed out (see ErrorDescr for details) -> try to restore it
                 {
                     if (UploadType == utAutorename)
-                        Queue->ChangeTgtNameToRenamedName(curItem); // even if STOR failed, it is still more accurate that the file was stored under the new name than the original one - for example when overwriting an existing file this is obvious
+                        Queue->ChangeTgtNameToRenamedName(curItem); // even if STOR failed, it is still more accurate to say that the file was stored under the new name than under the original name; for example, when overwriting an existing file, this is obvious
                     // the result of the STOR command is unknown, invalidate the listing
                     Oper->GetUserHostPort(userBuf, hostBuf, &portBuf);
                     UploadListingCache.ReportFileUploaded(userBuf, hostBuf, portBuf, curItem->TgtPath,
                                                           Oper->GetFTPServerPathType(curItem->TgtPath),
                                                           curItem->TgtName, UPLOADSIZE_UNKNOWN, TRUE);
 
-                    // except for the case when STOR reports the "cannot create target file name" error (which is when STOR reports
-                    // some error + nothing was uploaded) we consider sending the STOR/APPE command to complete
+                    // except when STOR reports the "cannot create target file name" error (that is, when STOR reports
+                    // an error and nothing was uploaded), we consider sending the STOR/APPE command to complete
                     // the forced actions: "overwrite", "resume", and "resume or overwrite"
                     if (CurItem->ForceAction != fqiaNone) // the forced action no longer applies
                         Queue->UpdateForceAction(CurItem, fqiaNone);
@@ -2138,7 +2138,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // because we are already in CSocketsThread::CritSect, this call is also
                         // possible from CSocket::SocketCritSect (no deadlock risk)
-                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection", the system will attempt a "graceful"
+                        if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                             WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                         WorkerUploadDataCon->FreeBufferedData();
                         DeleteSocket(WorkerUploadDataCon);
@@ -2227,7 +2227,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                         lookForNewWork = TRUE;
                     }
                 }
-                else // Copy - nothing more to handle, done
+                else // Copy - nothing else to do, done
                 {
                     SubState = fwssWorkUploadCopyDone;
                     nextLoop = TRUE;
@@ -2271,7 +2271,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                 break;
             }
 
-            case fwssWorkUploadCopyDone: // upload copy/move file: finished, move on to the next item
+            case fwssWorkUploadCopyDone: // upload copy/move: finished, move on to the next item
             {
                 // the item was completed successfully, store this state in it
                 Queue->UpdateItemState(CurItem, sqisDone, ITEMPR_OK, NO_ERROR, NULL, Oper);
@@ -2297,11 +2297,11 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
             if (FTPDiskThread->CancelWork(&DiskWork, &workIsInProgress))
             {
                 if (workIsInProgress)
-                    DiskWork.FlushDataBuffer = NULL; // work is in progress; we cannot free the buffer with read data, leave it to the disk-work thread (see the cancellation section) - we can write to DiskWork because after Cancel the disk thread must no longer access it (it might not even exist)
+                    DiskWork.FlushDataBuffer = NULL; // work is in progress; we cannot free the buffer containing the read data, so leave it to the disk-work thread (see the cancellation section) - we can write to DiskWork because after Cancel the disk thread must no longer access it (it might not even exist)
             }
             // if we cancelled the work before it started, we must release the flush buffer, and
-            // if the work has already finished, release the flush buffer here because fweDiskWorkReadFinished
-            // it will be delivered elsewhere (where it will be ignored)
+                        // if the work has already finished, release the flush buffer here because fweDiskWorkReadFinished
+                        // will arrive elsewhere (where it will be ignored)
             if (DiskWork.FlushDataBuffer != NULL)
             {
                 free(DiskWork.FlushDataBuffer);
