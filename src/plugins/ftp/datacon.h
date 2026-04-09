@@ -188,7 +188,7 @@ protected:
     // shared among all threads - set to "signaled" after the "data connection" closes (after receiving all bytes) and also after the flush to disk is completed (see TgtDiskFileName)
     HANDLE TransferFinished;
 
-    HWND WindowWithStatus;  // handle of the window that should receive notifications about changes in the "data connection" state (NULL = do not send anything)
+    HWND WindowWithStatus;  // handle of the window that should receive messages about changes in the "data connection" state (NULL = do not send anything)
     UINT StatusMessage;     // message sent when the "data connection" state changes
     BOOL StatusMessageSent; // TRUE = the previous message has not been delivered yet, so there is no point sending another one
 
@@ -245,7 +245,7 @@ public:
 
     // returns NetEventLastError, ReadBytesLowMemory, TgtFileLastError, NoDataTransTimeout,
     // SSLErrorOccured, DecomprErrorOccured
-    // (these use a critical section)
+    // (protected by a critical section)
     void GetError(DWORD* netErr, BOOL* lowMem, DWORD* tgtFileErr, BOOL* noDataTransTimeout,
                   int* sslErrorOccured, BOOL* decomprErrorOccured);
 
@@ -287,8 +287,8 @@ public:
     void SetDirectFlushParams(const char* tgtFileName, CCurrentTransferMode currentTransferMode);
 
     // returns the state of the target file when flushing data directly to the TgtDiskFileName file;
-    // in 'fileCreated' it returns TRUE if the file was created; in 'fileSize' it returns the size
-    // of the file
+    // returns TRUE in 'fileCreated' if the file was created; returns the size
+    // of the file in 'fileSize'
     void GetTgtFileState(BOOL* fileCreated, CQuadWord* fileSize);
 
     // called after the data transfer finishes (successful or not); meaningful only when flushing
@@ -296,14 +296,14 @@ public:
     void CloseTgtFile();
 
     // called by the worker after data flushing finishes; 'flushBuffer' is the buffer that was just flushed
-    // (it is therefore returned to this object - retrieve it via GiveFlushData();
-    // WARNING: it can also be a buffer from 'DecomprDataBuffer'); if there is more data to flush,
-    // the buffers are swapped and WorkerMsgFlushData is posted to the worker; if necessary it will also post
-    // FD_READ or FD_CLOSE to this socket (see NeedFlushReadBuf);
+    // (it is thus returned to this object - see GiveFlushData() to retrieve it;
+    // WARNING: it can also be a buffer from 'DecomprDataBuffer'); if more data need to be flushed,
+    // the buffers are swapped and WorkerMsgFlushData is posted to the worker; if needed,
+    // FD_READ or FD_CLOSE is also posted to this socket (see NeedFlushReadBuf);
     // 'enterSocketCritSect' is TRUE except for the exception described below
     // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
-    //          SocketsThread), exception: if we are in CSocketsThread::CritSect and
-    //          SocketCritSect, the call is possible if we set 'enterSocketCritSect' to FALSE
+    //          SocketsThread); exception: if the caller is in both CSocketsThread::CritSect and
+    //          SocketCritSect, the call is allowed if 'enterSocketCritSect' is set to FALSE
     void FlushDataFinished(char* flushBuffer, BOOL enterSocketCritSect);
 
     // if new data are present in FlushBuffer it returns TRUE and the data in 'flushBuffer'
@@ -320,10 +320,10 @@ public:
     // were flushed)
     void FreeFlushData();
 
-    // called after this data connection closes; returns TRUE if all data are
-    // flushed (meaning the data connection no longer contains any data); if 'onlyTest'
+    // called after this data connection is closed; returns TRUE if all data are
+    // flushed (that is, the data connection no longer contains any data); if 'onlyTest'
     // is FALSE and necessary, it swaps buffers and posts WorkerMsgFlushData
-    // to the worker (flush the data); it returns TRUE only after FlushDataFinished is called for
+    // to the worker to flush the data; returns TRUE only after FlushDataFinished is called for
     // the last flushed data
     // WARNING: this method must not be called from the SocketCritSect critical section (the method uses
     //          SocketsThread)
@@ -338,10 +338,10 @@ public:
     // if data are being flushed; otherwise returns FALSE
     BOOL IsFlushingDataToDisk();
 
-    // returns TRUE if the "ASCII transfer mode for binary file" problem needs to be handled, then
-    // in 'howToSolve' it returns how to handle the problem: 0 = ask the user, 1 = download
-    // again in binary mode, 2 = interrupt the file download (cancel); returns FALSE if
-    // the problem did not occur or the user chose: ignore (finish the download in ASCII
+    // returns TRUE if the "ASCII transfer mode for binary file" problem needs to be handled; in
+    // 'howToSolve' it stores how to handle it: 0 = ask the user, 1 = download
+    // again in binary mode, 2 = cancel the file download; returns FALSE if
+    // the problem did not occur or the user chose to ignore it (finish the download in ASCII
     // mode)
     BOOL IsAsciiTrForBinFileProblem(int* howToSolve);
 
@@ -400,7 +400,7 @@ protected:
     // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // receiving a timer with ID 'id' and parameter 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
     // receiving a posted message with ID 'id' and parameter 'param'
@@ -473,7 +473,7 @@ public:
 
     BOOL IsGood() { return BytesToWrite != NULL && FlushBuffer != NULL; }
 
-    // returns NetEventLastError, NoDataTransTimeout, and SSLErrorOccured (use a critical section)
+    // returns NetEventLastError, NoDataTransTimeout, and SSLErrorOccured (protected by a critical section)
     void GetError(DWORD* netErr, BOOL* noDataTransTimeout, int* sslErrorOccured);
 
     // just calls CloseSocket() + sets SocketCloseTime
@@ -515,10 +515,10 @@ public:
 
     // called by the worker after finishing reading data from disk; 'flushBuffer' is the buffer that was just filled;
     // if the second data buffer is free and we have not reached the end of the file yet,
-    // the buffers are swapped and WorkerMsgPrepareData is posted to the worker; if necessary it will also post
-    // FD_WRITE to this socket (see WaitingForWriteEvent); with compression it ensures
-    // gradually fills the FlushBuffer with compressed data (until it is full and we are not
-    // at the end of the file, posts WorkerMsgPrepareData to the worker)
+    // the buffers are swapped and WorkerMsgPrepareData is posted to the worker; if needed, it also posts
+    // FD_WRITE to this socket (see WaitingForWriteEvent); with compression, it ensures that
+    // FlushBuffer is gradually filled with compressed data (while it is not full and we are not yet at
+    // the end of the file, it posts WorkerMsgPrepareData to the worker)
     void DataBufferPrepared(char* flushBuffer, int validBytesInFlushBuffer, BOOL enterCS);
 
     // called by the worker after receiving the response to the STOR/APPE command from the server (upload is finished on the server side)
@@ -567,7 +567,7 @@ protected:
     // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // receiving a timer with ID 'id' and parameter 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
     // called after FD_ACCEPT is received and processed (assuming CSocket::ReceiveNetEvent is used for FD_ACCEPT)
@@ -603,7 +603,7 @@ protected:
     DWORD NetEventLastError; // code of the last error reported to ReceiveNetEvent() or that occurred in PassiveConnect()
     int SSLErrorOccured;     // see constants SSLCONERR_XXX
     BOOL ReceivedConnected;  // TRUE = the "data connection" opened (connect or accept); does not describe the current state
-    DWORD LastActivityTime;  // GetTickCount() from when we last worked with the "data connection" (tracks initialization (SetPassive() and SetActive()), successful connect, and read)
+    DWORD LastActivityTime;  // GetTickCount() value from the last activity on the "data connection" (tracks initialization (SetPassive() and SetActive()), a successful connect, and a read)
     DWORD SocketCloseTime;   // GetTickCount() from the moment the "data connection" socket closed
 
     // used when closing the "data connection" (evaluates whether the keep-alive command has finished)
@@ -621,11 +621,11 @@ public:
     CKeepAliveDataConSocket(CControlConnectionSocket* parentControlSocket, CFTPProxyForDataCon* proxyServer, int encryptConnection, CCertificate* certificate);
     virtual ~CKeepAliveDataConSocket();
 
-    // called when the "control connection" receives the server's response ('replyCode')
-    // announcing the end of the data transfer; returns TRUE if the transfer really finished (the
+    // called when the "control connection" receives the server response ('replyCode')
+    // indicating the end of the data transfer; returns TRUE if the transfer has actually finished (the
     // "data connection" can be released); returns FALSE if the transfer has not finished yet (the "data connection"
     // cannot be released); once the transfer actually ends, it indirectly calls SetupNextKeepAliveTimer()
-    // of the ParentControlSocket object
+    // on the ParentControlSocket object
     BOOL FinishDataTransfer(int replyCode);
 
     // returns TRUE if the "data connection" is open for data transfer (the connection to the server has already been established)
@@ -708,7 +708,7 @@ protected:
     // a Windows error code (came with FD_CLOSE or occurred while handling FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // timer reception with ID 'id' and parameter 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
     // called after FD_ACCEPT is received and processed (assuming CSocket::ReceiveNetEvent is used for FD_ACCEPT)
