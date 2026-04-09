@@ -49,8 +49,8 @@ int GetOneDriveStorages();
 // CDrivesList
 //
 
-// WARNING: in CDrivesList::BuildData test "DriveType > drvtRAMDisk" is used, so
-//          it is necessary to bear this in mind when changing the enum !!!
+// WARNING: CDrivesList::BuildData uses the test "DriveType > drvtRAMDisk", so
+//          this must be taken into account when changing the enum.
 
 enum CDriveTypeEnum
 {
@@ -106,19 +106,19 @@ protected:
     DWORD_PTR* DriveTypeParam; // x64: the referenced value must be able to hold a pointer, so DWORD_PTR
     int* PostCmd;              // post-cmd for context menu of a FS plugin
     void** PostCmdParam;       // post-cmd-parameter for context menu of a FS plugin
-    BOOL* FromContextMenu;     // set to TRUE if the menu was invoked from a context menu
+    BOOL* FromContextMenu;     // set to TRUE if the menu command was triggered by a context menu
     char CurrentPath[MAX_PATH];
     TDirectArray<CDriveData>* Drives;
     CMenuPopup* MenuPopup;
     int FocusIndex; // what item from the Drives array should be focused
 
-    DWORD CachedDrivesMask;        // bit array of drives, which we got during the last BuildData()
-    DWORD CachedCloudStoragesMask; // bit array of cloud storages, which we got during the last BuildData()
+    DWORD CachedDrivesMask;        // bitmask of drives obtained during the last BuildData()
+    DWORD CachedCloudStoragesMask; // bitmask of cloud storages obtained during the last BuildData()
 
 public:
     // input:
-    // driveType = dummy
-    // driveTypeParam = letter of the drive to activate (or 0 (PluginFS) or '\\' (UNC))
+    //   driveType = dummy
+    //   driveTypeParam = drive letter to activate (or 0 (PluginFS) or '\\' (UNC))
     CDrivesList(CFilesWindow* filesWindow, const char* currentPath, CDriveTypeEnum* driveType,
                 DWORD_PTR* driveTypeParam, int* postCmd, void** postCmdParam, BOOL* fromContextMenu);
     ~CDrivesList()
@@ -141,14 +141,17 @@ public:
     // CM_DRIVEBAR_MIN, otherwise from CM_DRIVEBAR2_MIN
     BOOL FillDriveBar(CDriveBar* driveBar, BOOL bar2);
 
-    // here FilesWindows passes information that user right-clicked on item
-    // 'posByMouse' says whether we should popup the menu at mouse coordinates or under the selected item;
-    // 'panel' says which panel is active (it can be also inactive panel when there are two DriveBars - from
-    // Change Drive menu it is always PANEL_SOURCE, from DriveBars it is PANEL_LEFT or PANEL_RIGHT);
-    // if 'pluginFSDLLName' is not NULL and we are popping up a context menu for a FS item, it returns the
-    // name of the plugin DLL (or SPL); returns TRUE if we should execute the command on which the context
-    // menu was popped up (FALSE does nothing); 'itemIndex' says for which item we are popping up the context
-    // menu, 'posByMouse' must be TRUE; if 'itemIndex' is -1, the item is taken from the menu
+    // FilesWindow uses this to pass information that the user right-clicked an item.
+    // 'posByMouse' specifies whether the menu should be opened at the mouse coordinates or
+    // under the selected item; 'panel' specifies which panel is involved (with two Drive
+    // bars, this can also be the inactive panel - from the Change Drive menu it is always
+    // PANEL_SOURCE, from the Drive bars it is PANEL_LEFT or PANEL_RIGHT); if
+    // 'pluginFSDLLName' is not NULL and a context menu is being opened for an FS item, the
+    // plugin DLL name (more precisely, the SPL name) is returned through it; returns TRUE
+    // if the command for which the context menu was opened should be executed (FALSE does
+    // nothing); 'itemIndex' specifies for which item the context menu should be opened;
+    // then 'posByMouse' must be TRUE; if 'itemIndex' is -1, the item is obtained from
+    // the menu
     BOOL OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const char** pluginFSDLLName);
 
     // A new loading of items into the menu is requested here. It is assumed that the menu is displayed
@@ -179,14 +182,14 @@ public:
     // 'index' to its index and returns TRUE, otherwise it returns FALSE
     BOOL FindPanelPathIndex(CFilesWindow* panel, DWORD* index);
 
-    // returns bit array of drives, which we got during the last BuildData()
-    // if BuildDate() has not been called yet, returns 0
-    // can be used for quick detection of any change in the drives
+    // returns the bitmask of drives obtained during the last BuildData()
+    // if BuildData() has not been called yet, returns 0
+    // can be used to quickly detect drive changes
     DWORD GetCachedDrivesMask();
 
-    // returns bit array of available cloud storages, which we got during the last BuildData()
-    // if BuildDate() has not been called yet, returns 0
-    // can be used for quick detection of any changes in the availability of cloud storages
+    // returns the bitmask of available cloud storages obtained during the last BuildData()
+    // if BuildData() has not been called yet, returns 0
+    // can be used to quickly detect changes in cloud storage availability
     DWORD GetCachedCloudStoragesMask();
 
     TDirectArray<CDriveData>* GetDrives() { return Drives; }
@@ -223,7 +226,7 @@ struct CNBWNetAC3Thread
     {
         if (Thread != NULL)
         {
-            AddAuxThread(Thread, TRUE); // thread can run only during shutdown, we will kill it by this
+            AddAuxThread(Thread, TRUE); // the thread may run only during shutdown; this lets it be terminated
             Thread = NULL;
         }
         if (shutdown)
