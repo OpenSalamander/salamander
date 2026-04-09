@@ -30,8 +30,8 @@ public:
         CALL_STACK_MESSAGE1("COperationDlgThread::Body()");
 
         // 'sendWMClose': the dialog sets it to TRUE when WM_CLOSE is received
-        // when a modal dialog above the operation dialog is open - once that
-        // modal dialog closes, WM_CLOSE is sent again to the operation dialog
+        // while a modal dialog is open over the operation dialog - once that
+        // modal dialog closes, WM_CLOSE is sent to the operation dialog again
         BOOL sendWMClose = FALSE;
         OperDlg->SendWMClose = &sendWMClose;
         if (OperDlg->Create() == NULL || OperDlg->CloseDlg)
@@ -44,7 +44,7 @@ public:
         else
         {
             HWND dlg = OperDlg->HWindow; // safely stored window handle (valid even after OperDlg is destroyed)
-            if (AlwaysOnTop)             // handle always-on-top at least "statically" (it's not in the system menu)
+            if (AlwaysOnTop)             // handle always-on-top at least statically (it is not in the system menu)
                 SetWindowPos(dlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
             SetForegroundWindow(dlg);
@@ -91,7 +91,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
     BOOL err = (host == NULL || *host == 0);
     Host = SalamanderGeneral->DupStr(host);
     Port = port;
-    User = SalamanderGeneral->DupStr((user != NULL && *user == 0) ? NULL : user); // remains NULL if it is NULL
+    User = SalamanderGeneral->DupStr((user != NULL && *user == 0) ? NULL : user); // remains NULL if user is NULL
     Password = SalamanderGeneral->DupStr((password != NULL && *password == 0) ? NULL : password);
     Account = SalamanderGeneral->DupStr((account != NULL && *account == 0) ? NULL : account);
     InitFTPCommands = SalamanderGeneral->DupStr((initFTPCommands != NULL && *initFTPCommands == 0) ? NULL : initFTPCommands);
@@ -119,7 +119,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
     {
         ProxyScriptText = GetProxyScriptText(proxyType, FALSE);
         if (ProxyScriptText[0] == 0)
-            ProxyScriptText = GetProxyScriptText(fpstNotUsed, FALSE); // undefined script = "not used (direct connection)" script - SOCKS 4/4A/5, HTTP 1.1
+            ProxyScriptText = GetProxyScriptText(fpstNotUsed, FALSE); // undefined script means the "not used (direct connection)" script for SOCKS 4/4A/5 and HTTP 1.1
     }
     if (!err)
     {
@@ -131,7 +131,7 @@ BOOL CFTPOperation::SetConnection(CFTPProxyServer* proxyServer, const char* host
                                &proxyScriptParams, connectToHost, &ConnectToPort,
                                NULL, NULL, errBuf, NULL))
         {
-            if (proxyScriptParams.NeedUserInput()) // theoretically should not happen (already verified by running it in the panel)
+            if (proxyScriptParams.NeedUserInput()) // this should theoretically never happen (already verified by running it in the panel)
             {
                 err = TRUE;
                 TRACE_E("CFTPOperation::SetConnection(): unexpected situation: proxy script needs user input!");
@@ -153,7 +153,7 @@ void CFTPOperation::SetBasicData(char* operationSubject, const char* listingServ
     CALL_STACK_MESSAGE1("CFTPOperation::SetBasicData()");
 
     OperationSubject = SalamanderGeneral->DupStr(operationSubject);
-    ListingServerType = SalamanderGeneral->DupStr(listingServerType); // remains NULL if it is NULL
+    ListingServerType = SalamanderGeneral->DupStr(listingServerType); // remains NULL if user is NULL
 }
 
 void CFTPOperation::SetOperationDelete(const char* sourcePath, char srcPathSeparator,
@@ -426,7 +426,7 @@ void CFTPOperation::AddToNotDoneSkippedFailed(int notDone, int skipped, int fail
     {
         BOOL softRefresh = state == opstFinishedWithErrors || // FIXME: once a window with the operation queue exists, we must replace OperationDlg->DlgWillCloseIfOpFinWithSkips with a different detection of whether the worker closes (passing the connection back to the panel)
                            state == opstFinishedWithSkips && (OperationDlg != NULL ? !OperationDlg->DlgWillCloseIfOpFinWithSkips : TRUE);
-        PostChangeOnPathNotifications(softRefresh); // the line is free now (at least for this operation), so we can afford listing refreshes
+        PostChangeOnPathNotifications(softRefresh); // the connection is free now (at least for this operation), so we can afford to refresh the listing
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
 }
@@ -517,7 +517,7 @@ BOOL CFTPOperation::ActivateOperationDlg(HWND dropTargetWnd)
                 else
                     ret = TRUE; // success
             }
-            else // low memory, error
+            else // out of memory, error
             {
                 delete OperationDlg;
                 OperationDlg = NULL;
@@ -528,7 +528,7 @@ BOOL CFTPOperation::ActivateOperationDlg(HWND dropTargetWnd)
             }
         }
         else
-            TRACE_E(LOW_MEMORY); // low memory, error
+            TRACE_E(LOW_MEMORY); // out of memory, error
     }
     HANDLES(LeaveCriticalSection(&OperCritSect));
     return ret;
@@ -849,7 +849,7 @@ BOOL CFTPOperation::PrepareNextScriptCmd(char* buf, int bufSize, char* logBuf, i
     char proxyLogCmdBuf[FTPCOMMAND_MAX_SIZE];
     BOOL ret = TRUE;
     if (*proxyScriptExecPoint == NULL)
-        *proxyScriptExecPoint = ProxyScriptStartExecPoint; // we should prepare the first script command
+        *proxyScriptExecPoint = ProxyScriptStartExecPoint; // prepare the first script command
     if (ProcessProxyScript(ProxyScriptText, proxyScriptExecPoint, proxyScriptLastCmdReply,
                            &proxyScriptParams, NULL, NULL, proxySendCmdBuf,
                            proxyLogCmdBuf, errDescrBuf, NULL))
@@ -860,7 +860,7 @@ BOOL CFTPOperation::PrepareNextScriptCmd(char* buf, int bufSize, char* logBuf, i
             int resID = 0;
             if (proxyScriptParams.NeedProxyHost)
             {
-                resID = IDS_WORKERUNKNOWNPROXYHOST; // we do say we need it, but the user cannot provide it - if it is ever required (should not happen yet because the login in the panel succeeded even without ProxyHost, so it likely will not be needed here either), add a dialog for entering ProxyHost...
+                resID = IDS_WORKERUNKNOWNPROXYHOST; // we indicate that it is required, but the user cannot enter it; if that ever becomes necessary (it should not for now, because login in the panel already succeeded without ProxyHost, so it is not expected here either), add a dialog for entering ProxyHost...
                 TRACE_E("CFTPOperation::PrepareNextScriptCmd(): unexpected situation: ProxyHost is empty!");
             }
             if (proxyScriptParams.NeedProxyPassword)
@@ -1500,7 +1500,7 @@ void CFTPOperation::SetCertificate(CCertificate* certificate)
     CALL_STACK_MESSAGE1("CFTPOperation::SetCertificate()");
 
     HANDLES(EnterCriticalSection(&OperCritSect));
-    CCertificate* old = pCertificate; // ensures AddRef is called via Release (in case pCertificate == certificate)
+    CCertificate* old = pCertificate; // ensures AddRef is called before Release (in case pCertificate == certificate)
     pCertificate = certificate;
     if (pCertificate)
         pCertificate->AddRef();
@@ -1684,7 +1684,7 @@ void CFTPOperation::PostNewWorkAvailable(BOOL onlyOneItem)
 BOOL CFTPOperation::GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker)
 {
     CALL_STACK_MESSAGE1("CFTPOperation::GiveWorkToSleepingConWorker()");
-    return WorkersList.GiveWorkToSleepingConWorker(sourceWorker); // synchronization is inside WorkersList (the OperCritSect section is not needed here)
+    return WorkersList.GiveWorkToSleepingConWorker(sourceWorker); // synchronization is handled within WorkersList (the OperCritSect section is not needed here)
 }
 
 CFTPServerPathType
@@ -2107,7 +2107,7 @@ void CFTPQueueItem::SetItem(int parentUID, CFTPQueueItemType type, CFTPQueueItem
 
 BOOL CFTPQueueItem::HasErrorToSolve(BOOL* canSkip, BOOL* canRetry)
 {
-    BOOL solvableErr = ProblemID != ITEMPR_INVALIDPATHTODIR && // not an unsolvable problem (no Retry can help)
+    BOOL solvableErr = ProblemID != ITEMPR_INVALIDPATHTODIR && // not an unsolvable problem (where Retry cannot help)
                        ProblemID != ITEMPR_DIREXPLENDLESSLOOP &&
                        ProblemID != ITEMPR_INVALIDPATHTOLINK;
     if (canSkip != NULL)
@@ -2240,7 +2240,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
             }
             if (attrs == NULL)
                 attrs = LoadStr(IDS_OPERDOPPR_UNKEXISTATTR);
-            _snprintf_s(buf, bufSize, _TRUNCATE, LoadStr(IDS_OPERDOPPR_UNKNOWNATTRS), attrs); // attrs might even be NULL (on error); sprintf can cope with that
+            _snprintf_s(buf, bufSize, _TRUNCATE, LoadStr(IDS_OPERDOPPR_UNKNOWNATTRS), attrs); // attrs might even be NULL (on failure); _snprintf_s can cope with that
             break;
         }
 
@@ -2548,7 +2548,7 @@ void CFTPQueueItemAncestor::ChangeStateAndCounters(CFTPQueueItemState state, CFT
         break;
     }
     }
-    queue->UpdateCounters((CFTPQueueItem*)this, FALSE); // handle the state change by virtually removing the item and adding it back after the state changes
+    queue->UpdateCounters((CFTPQueueItem*)this, FALSE); // handle the state change by virtually removing the item and adding it back after the state change
     State = state;
     queue->UpdateCounters((CFTPQueueItem*)this, TRUE);
     if (((CFTPQueueItem*)this)->IsItemInSimpleErrorState())
@@ -2591,7 +2591,7 @@ void CFTPQueueItemDir::SetStateAndNotDoneSkippedFailed(int childItemsNotDone, in
     ChildItemsSkipped = childItemsSkipped;
     ChildItemsFailed = childItemsFailed;
     ChildItemsUINeeded = childItemsUINeeded;
-    if (GetItemState() == sqisWaiting) // if the item is ready to process, check whether
+    if (GetItemState() == sqisWaiting) // if the item is ready to process, check whether it needs to be delayed or must fail because of child items
     {                                  // it needs to be delayed or must fail because of child items
         if (ChildItemsNotDone - ChildItemsSkipped - ChildItemsFailed - ChildItemsUINeeded > 0)
             SetStateInternal(sqisDelayed);
