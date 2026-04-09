@@ -139,7 +139,7 @@ void CFTPOperationsList::DeleteOperation(int uid, BOOL doNotPostChangeOnPathNoti
             if (FirstFreeIndexInOperations >= Operations.Count)
                 FirstFreeIndexInOperations = -1;
         }
-        else // deleting inside the array, no array deallocation is possible
+        else // deletion inside the array; no array deallocation is possible
         {
             if (FirstFreeIndexInOperations == -1 || uid < FirstFreeIndexInOperations)
                 FirstFreeIndexInOperations = uid;
@@ -150,7 +150,7 @@ void CFTPOperationsList::DeleteOperation(int uid, BOOL doNotPostChangeOnPathNoti
     HANDLES(LeaveCriticalSection(&OpListCritSect));
 
     // if an upload operation was canceled and no other upload operation is working with
-    // the server used by the canceled operation, we can release this server from the upload
+    // the server used by the canceled operation, we can release that server from the upload
     // listing cache
     if (uploadOperDeleted && !IsUploadingToServer(uploadUser, uploadHost, uploadPort))
         UploadListingCache.RemoveServer(uploadUser, uploadHost, uploadPort);
@@ -171,7 +171,7 @@ void CFTPOperationsList::CloseAllOperationDlgs()
             oper->CloseOperationDlg(&t);
             if (t != NULL)
             {
-                HANDLES(LeaveCriticalSection(&OpListCritSect)); // we must leave the section; the dialog thread calls CFTPOperationsList::SetOperationDlg()
+                HANDLES(LeaveCriticalSection(&OpListCritSect)); // we must leave the critical section; the dialog thread calls CFTPOperationsList::SetOperationDlg()
                 CALL_STACK_MESSAGE1("AuxThreadQueue.WaitForExit()");
                 AuxThreadQueue.WaitForExit(t, INFINITE);
                 HANDLES(EnterCriticalSection(&OpListCritSect));
@@ -211,7 +211,7 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
             waitTime = cycleTime;
         DWORD waitRes = MsgWaitForMultipleObjects(1, &WorkerMayBeClosedEvent, FALSE, waitTime, QS_ALLINPUT);
 
-        // check the ESC key first (so we do not ignore it for the user)
+        // check for ESC first (so we do not ignore the user's key press)
         if (milliseconds != 0 &&                                                          // if the timeout is zero we are only pumping messages, do not handle ESC
             ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // ESC pressed
              waitWnd != NULL && waitWnd->GetWindowClosePressed()))                        // close button in the wait window
@@ -222,7 +222,7 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
             reason = wwsrEsc;
             break; // report ESC
         }
-        if (waitRes != WAIT_OBJECT_0) // no additional worker was closed (we ignore this event; it only "wakes" the waiting)
+        if (waitRes != WAIT_OBJECT_0) // no additional worker was closed (we ignore this event; it only wakes the wait)
         {
             if (waitRes == WAIT_OBJECT_0 + 1) // process Windows messages
             {
@@ -247,11 +247,11 @@ void CFTPOperationsList::WaitForFinishOrESC(HWND parent, int milliseconds, CWait
                     restOfWaitTime == waitTime) // this is not just the ESC key test cycle timeout but the global timeout
                 {
                     reason = wwsrTimeout;
-                    break; // report the timeout
+                    break; // indicate a timeout
                 }
             }
         }
-        if (milliseconds != INFINITE) // recalculate the remaining wait time (according to real time)
+        if (milliseconds != INFINITE) // recalculate the remaining wait time based on actual elapsed time
         {
             DWORD t = GetTickCount() - timeStart; // works even when the tick counter overflows
             if (t < (DWORD)milliseconds)
@@ -269,7 +269,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
     CALL_STACK_MESSAGE3("CFTPOperationsList::StopWorkers(, %d, %d)", operUID, workerInd);
 
     parent = FindPopupParent(parent);
-    // remember the focus from 'parent' (store NULL if the focus is not within 'parent')
+    // remember the focused window in 'parent' (store NULL if the focus is not within 'parent')
     HWND focusedWnd = GetFocus();
     HWND hwnd = focusedWnd;
     while (hwnd != NULL && hwnd != parent)
@@ -320,7 +320,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         for (i = 0; i < count; i++)
             victims[i]->CloseDataConnectionOrPostShouldStop();
         if (done)
-            break; // all operations reported they do not want another call
+            break; // all operations reported they do not want any further calls
     }
 
     // ensure that the "elapsed time" stops in the operation dialogs of the halted operations
@@ -400,9 +400,9 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
             // case wwsrWorkerSocketClosure: break;  // only check whether all worker sockets are already closed
         }
 
-        if (terminate) // cancel or timeout, force workers to finish quickly and continue waiting for them to end
+        if (terminate) // cancel or timeout, force workers to terminate quickly and continue waiting for them to finish
         {
-            lastOpIndex = 0; // optimization (index of the last processed operation - start with it in the next round)
+            lastOpIndex = 0; // optimization (index of the last processed operation - start from it in the next round)
             while (1)
             {
                 BOOL done = TRUE;
@@ -435,7 +435,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
                 for (i = 0; i < count; i++)
                     victims[i]->ForceClose();
                 if (done)
-                    break; // all operations reported they do not want another call
+                    break; // all operations reported that they do not want any further calls
             }
         }
 
@@ -516,7 +516,7 @@ void CFTPOperationsList::StopWorkers(HWND parent, int operUID, int workerInd)
         for (i = 0; i < count; i++)
             DeleteSocket(victims[i]);
         if (done)
-            break; // all operations reported they do not want another call
+            break; // all operations reported that they do not want another call
     }
 
     Logs.RefreshListOfLogsInLogsDlg(); // refresh the Log - workers are closed
@@ -1061,10 +1061,10 @@ int CFTPQueue::GetUserInputNeededCount(BOOL onlyUINeeded, TDirectArray<DWORD>* U
         if (item->UID == focusedItemUID)
         {
             *indexInAll = i;
-            if (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail nebo sqisUserInputNeeded */)
+            if (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail, or sqisUserInputNeeded */)
                 *indexInUIN = c;
         }
-        if (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail nebo sqisUserInputNeeded */)
+        if (item->GetItemState() >= sqisSkipped /* sqisSkipped, sqisFailed, sqisForcedToFail, or sqisUserInputNeeded */)
         {
             if (onlyUINeeded)
                 UINeededArr->Add(i);
@@ -1526,7 +1526,7 @@ int CFTPQueue::RetryItem(int UID, CFTPOperation* oper)
             ret = LastFoundIndex;
             found->ChangeStateAndCounters(newState, oper, this);
             if (found->ProblemID == ITEMPR_UNABLETORESUME)
-                oper->SetResumeIsNotSupported(FALSE); // so Retry makes any sense at all
+                oper->SetResumeIsNotSupported(FALSE); // so that Retry makes sense at all
             oper->SetSizeCmdIsSupported(TRUE);        // so that the SIZE command is tried again if needed
             found->ProblemID = ITEMPR_OK;
             found->WinError = NO_ERROR;
@@ -1535,7 +1535,7 @@ int CFTPQueue::RetryItem(int UID, CFTPOperation* oper)
                 SalamanderGeneral->Free(found->ErrAllocDescr);
                 found->ErrAllocDescr = NULL;
             }
-            found->ForceAction = fqiaNone; // to ensure Autorename is not performed instead of Retry
+            found->ForceAction = fqiaNone; // so that, for example, Autorename is not performed instead of Retry
         }
         else
             TRACE_I("CFTPQueue::RetryItem(): cannot retry item because it's not in any of error states!");
@@ -2190,7 +2190,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
         case 45: // upload: unable to resume (Copy/Move) - server does not support resuming
         case 46: // upload: unable to resume the file because the target file size is unknown
         case 47: // upload: unable to resume the file because the target file is larger than the source file
-        case 51: // issue "unable to verify whether the file was uploaded successfully" (we sent the entire file and the server simply did not respond; the file is most likely OK but we cannot test it - reasons: ASCII transfer mode or we do not have the size in bytes (neither listing nor the SIZE command))
+        case 51: // issue "unable to verify whether the file was uploaded successfully" (we sent the entire file and the server simply did not respond; the file is most likely OK, but we cannot verify it - reasons: ASCII transfer mode or we do not have the size in bytes (neither from a listing nor from the SIZE command))
         {
             CSolveServerCmdErr2 dlg(parent,
                                     openDlgWithID == 21 || openDlgWithID == 22 || openDlgWithID == 44 ||
@@ -2266,7 +2266,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
         }
         }
 
-        if (dlgResult != IDCANCEL) // store the values entered by the user in the item
+        if (dlgResult != IDCANCEL) // store the user-entered values in the item
         {
             HANDLES(EnterCriticalSection(&QueueCritSect));
             found = FindItemWithUID(UID);
@@ -2348,7 +2348,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 }
                                 if (openDlgWithID == 12 &&
                                     (item->Type == fqitUploadCopyExploreDir || item->Type == fqitUploadMoveExploreDir))
-                                { // invalidate the target path listing (if an outdated listing containing the target directory is used, CWD into this directory reports "path not found" - with an up-to-date listing the directory is created via MKD)
+                                { // invalidate the target path listing (if an outdated listing containing the target directory is used, CWD to this directory returns "path not found"; with an up-to-date listing, the directory is created via MKD)
                                     CFTPQueueItemCopyMoveUploadExplore* curItem = (CFTPQueueItemCopyMoveUploadExplore*)item;
                                     UpdateUploadTgtDirState(curItem, UPLOADTGTDIRSTATE_UNKNOWN);
                                     oper->GetUserHostPort(userBuf, hostBuf, &portBuf);
@@ -2356,7 +2356,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                     UploadListingCache.InvalidatePathListing(userBuf, hostBuf, portBuf, curItem->TgtPath, pathType);
                                 }
                                 if (found->ProblemID == ITEMPR_UNABLETORESUME)
-                                    oper->SetResumeIsNotSupported(FALSE); // so Retry makes any sense at all
+                                    oper->SetResumeIsNotSupported(FALSE); // so that Retry makes sense at all
                                 item->ProblemID = ITEMPR_OK;
                                 item->WinError = NO_ERROR;
                                 if (item->ErrAllocDescr != NULL)
@@ -2459,7 +2459,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                                 ((CFTPQueueItemChAttrDir*)item)->AttrErr = FALSE; // fqitChAttrsDir
                                         }
 
-                                        if (dlgResult == CM_SIEA_SETNEWATTRS) // wants to set a new attribute value
+                                        if (dlgResult == CM_SIEA_SETNEWATTRS) // set a new attribute value
                                         {
                                             if (item->Type == fqitChAttrsFile)
                                             {
@@ -2501,11 +2501,11 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                 break;
                             }
 
-                            case fqitDeleteExploreDir: // explore a directory for delete (note: directory links are removed as a whole, the operation objective is met and nothing "extra" is deleted) (object of class CFTPQueueItemDelExplore)
+                            case fqitDeleteExploreDir: // explore a directory for a delete operation (note: links to directories are deleted as a whole; the purpose of the operation is achieved and nothing "extra" is deleted) (object of class CFTPQueueItemDelExplore)
                             case fqitDeleteLink:       // delete for a link (object of class CFTPQueueItemDel)
                             case fqitDeleteFile:       // delete for a file (object of class CFTPQueueItemDel)
                             {
-                                if (openDlgWithID == 9 ||  // delete directory error: the directory is hidden (more a confirmation than an error)
+                                if (openDlgWithID == 9 ||  // delete directory error: the directory is hidden (more of a confirmation than an error)
                                     openDlgWithID == 10 || // delete file or link error: the file is hidden (more a confirmation than an error)
                                     openDlgWithID == 11)   // delete directory error: the directory is not empty (more a confirmation than an error)
                                 {
@@ -2529,7 +2529,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             {
                                                 if (openDlgWithID == 9) // error: hidden directory
                                                     ((CFTPQueueItemDelExplore*)item)->IsHiddenDir = FALSE;
-                                                else // error: directory not empty
+                                                else // error: non-empty directory
                                                     ((CFTPQueueItemDelExplore*)item)->IsTopLevelDir = FALSE;
                                                 break;
                                             }
@@ -2544,7 +2544,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                         item->ChangeStateAndCounters(sqisWaiting, oper, this);
                                         item->ProblemID = ITEMPR_OK;
                                         item->WinError = NO_ERROR;
-                                        if (item->ErrAllocDescr != NULL) // just to be safe (probably not needed)
+                                        if (item->ErrAllocDescr != NULL) // as a precaution (probably not needed)
                                         {
                                             SalamanderGeneral->Free(item->ErrAllocDescr);
                                             item->ErrAllocDescr = NULL;
@@ -2723,7 +2723,7 @@ int CFTPQueue::SolveErrorOnItem(HWND parent, int UID, CFTPOperation* oper)
                                             {
                                             case IDOK:
                                                 item->ForceAction = fqiaNone;
-                                                break; // to make sure Retry is performed and not, for example, Autorename
+                                                break; // to ensure Retry is used instead of, for example, Autorename
                                             case CM_SCRD_USEALTNAME:
                                                 item->ForceAction = fqiaUseAutorename;
                                                 break; // force Autorename on the next attempt
@@ -2823,7 +2823,7 @@ void CFTPQueue::UpdateItemState(CFTPQueueItem* item, CFTPQueueItemState state, D
     else
     {
         if (errAllocDescr != NULL)
-            free(errAllocDescr); // there is nowhere to store the value, so at least free it
+            free(errAllocDescr); // no place to store the value, so at least free it
     }
     HANDLES(LeaveCriticalSection(&QueueCritSect));
 }
@@ -3226,7 +3226,7 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
     CALL_STACK_MESSAGE1("CFTPQueue::SearchItemWithNewError()");
     HANDLES(EnterCriticalSection(&QueueCritSect));
     BOOL res = FALSE;
-    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // +1 is here because -1 is used as the initial value
+    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // +1 is here because -1 is used as the initial values
     {                                                                 // it makes sense to search
         int foundUID = -1;
         int foundIndex = -1;
@@ -3239,7 +3239,7 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
             if (item->IsItemInSimpleErrorState() && item->HasErrorToSolve(NULL, NULL))
                 itemErrorOccurenceTime = item->ErrorOccurenceTime;
             if (itemErrorOccurenceTime != -1 &&                                       // the item contains an error
-                itemErrorOccurenceTime >= LastFoundErrorOccurenceTime + 1 &&          // it is a "new" error
+                itemErrorOccurenceTime >= LastFoundErrorOccurenceTime + 1 &&          // this is a "new" error
                 (foundUID == -1 || foundErrorOccurenceTime > itemErrorOccurenceTime)) // so far the first found or the "oldest" (we resolve errors in the order they occurred)
             {
                 foundErrorOccurenceTime = itemErrorOccurenceTime;
@@ -3525,7 +3525,7 @@ void CFTPQueue::ReturnToWaitingItems(CFTPQueueItem* item, CFTPOperation* oper)
             BOOL exploreOrResolve = item->IsExploreOrResolveItem();
             if (exploreOrResolve || !GetOnlyExploreAndResolveItems)
             {
-                FirstWaitingItemIndex = 0; // we will not determine the index of the returned item (computationally as difficult as finding the first "waiting" item - which is done only once, unlike calling this function)
+                FirstWaitingItemIndex = 0; // we will not determine the index of the returned item (that is as computationally expensive as finding the first "waiting" item, which is done only once, unlike calls to this function)
                 if (exploreOrResolve)
                     GetOnlyExploreAndResolveItems = TRUE;
             }
