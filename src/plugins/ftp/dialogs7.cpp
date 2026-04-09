@@ -134,10 +134,10 @@ void CSolveItemErrorDlg::Validate(CTransferInfo& ti)
     }
 }
 
-// meaning of the button in connection with "do the same action for all operations with the same error":
+// button meaning in connection with "do the same action for all operations with the same error":
 // buttons (order of values in one row of the array):
 //   use-alternate-name, resume, resume or overwrite, overwrite, skip, use-existing-dir, ignore, in-binary-mode
-// special value: -1 = does not make sense
+// special value: -1 = not applicable
 int ButtonActionsTbl[][8] = {
     // row 0 = file exists: download+upload
     {FILEALREADYEXISTS_AUTORENAME, FILEALREADYEXISTS_RESUME, FILEALREADYEXISTS_RES_OVRWR, FILEALREADYEXISTS_OVERWRITE, FILEALREADYEXISTS_SKIP, -1, -1, -1},
@@ -316,7 +316,7 @@ void CSolveItemErrorDlg::Transfer(CTransferInfo& ti)
                 case CM_SIED_OVERWRITE:
                     value = ButtonActionsTbl[typeIndex][3];
                     break;
-                // case CM_SIED_OVERWRITEALL:  // is changed to CM_SIED_OVERWRITE + *ApplyToAll==TRUE
+                // case CM_SIED_OVERWRITEALL:  // changes to CM_SIED_OVERWRITE + *ApplyToAll==TRUE
                 case IDB_SCRD_SKIP:
                     value = ButtonActionsTbl[typeIndex][4];
                     break;
@@ -1047,7 +1047,7 @@ COperDlgListView::~COperDlgListView()
         DestroyWindow(HToolTip);
 }
 
-#define TTS_NOANIMATE 0x10 // it is not in the headers, so I define the constant here
+#define TTS_NOANIMATE 0x10 // not in the headers, so define the constant here
 
 void COperDlgListView::Attach(HWND hListView, COperationDlg* operDlg, BOOL consOrItems)
 {
@@ -1063,9 +1063,9 @@ void COperDlgListView::Attach(HWND hListView, COperationDlg* operDlg, BOOL consO
     if (dlgFont != NULL || SystemFont != NULL)
         SendMessage(HToolTip, WM_SETFONT, (WPARAM)(dlgFont != NULL ? dlgFont : SystemFont), TRUE);
 
-    // I commented out SetWindowPos(HWND_TOPMOST) because otherwise message boxes above the operation dialog do not work
-    // completely correctly - when Alt+TAB to the message box it does not activate automatically (it is not brought to the front)
-    // operation dialog
+    // SetWindowPos(HWND_TOPMOST) is commented out because otherwise message boxes above the operation dialog do not work
+    // completely correctly: when Alt+TAB switches to a message box, the operation dialog is not activated automatically
+    // (not brought to the front).
     //  SetWindowPos(HToolTip, HWND_TOPMOST, 0, 0, 0, 0,
     //               SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOSIZE);
 
@@ -1235,9 +1235,9 @@ COperDlgListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (pt.x + width > monRect.right)
                 pt.x = monRect.right - width;
 
-            // I commented out SetWindowPos(HWND_TOPMOST) because otherwise message boxes above the operation dialog do not work
-            // completely correctly - when Alt+TAB to the message box it does not activate automatically (it is not brought to the front)
-            // operation dialog
+            // SetWindowPos(HWND_TOPMOST) is commented out because otherwise message boxes above the operation dialog do not work
+            // completely correctly: when Alt+TAB switches to a message box, the operation dialog is not activated automatically
+            // (not brought to the front).
             /*
         SetWindowPos(HToolTip, HWND_TOPMOST,
                      pt.x,
@@ -1409,7 +1409,7 @@ void CSolveItemErrorSimpleDlg::Transfer(CTransferInfo& ti)
             int value = -1;
             switch (UsedButtonID)
             {
-                // case CM_SISE_RETRY:  // it makes no sense for Retry
+                // case CM_SISE_RETRY:  // does not make sense for Retry
 
             case IDOK:
             {
