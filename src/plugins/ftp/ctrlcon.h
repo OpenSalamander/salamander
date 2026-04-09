@@ -12,10 +12,10 @@
 // returns 'buf'
 char* CopyStr(char* buf, int bufSize, const char* txt, int size);
 
-// helper function for decomposing a string with initial FTP commands (separated by ';')
+// helper function for splitting a string with initial FTP commands (separated by ';')
 // into individual commands; returns TRUE if another command is available (the
 // command is returned in 's'); 'next' is an IN/OUT variable, initialize it to
-// the start of the string and leave it unchanged between calls to GetToken
+// the start of the string and do not modify it between calls to GetToken
 BOOL GetToken(char** s, char** next);
 
 // command codes for PrepareFTPCommand (parameters in [] are passed through the ellipsis)
@@ -53,7 +53,7 @@ enum CFtpCmdCode
 BOOL PrepareFTPCommand(char* buf, int bufSize, char* logBuf, int logBufSize,
                        CFtpCmdCode ftpCmd, int* cmdLen, ...);
 
-// helper function for preparing error texts
+// helper function for preparing error messages
 const char* GetFatalErrorTxt(int fatalErrorTextID, char* errBuf);
 // helper function for preparing error texts
 const char* GetOperationFatalErrorTxt(int opFatalError, char* errBuf);
@@ -164,13 +164,13 @@ protected:
     unsigned short Port; // port used on the server
     char* User;          // user name
 
-    BOOL CtrlConOrWorker; // TRUE/FALSE = logging the "control connection" from the panel / from a worker
+    BOOL CtrlConOrWorker; // TRUE/FALSE = the "control connection" log is from the panel / from a worker
     BOOL WorkerIsAlive;   // TRUE/FALSE = the worker exists / no longer exists
     // the "control connection" we are logging (NULL == FS no longer exists);
     // WARNING: we must not access the "control connection" object - nesting critical sections is forbidden
     CControlConnectionSocket* CtrlCon;
     BOOL Connected;    // TRUE/FALSE == active/inactive "control connection" (panel and worker)
-    int DisconnectNum; // if (CtrlCon==NULL && !WorkerIsAlive), holds the number describing how old the dead log is (so that we always delete starting from the longest dead log)
+    int DisconnectNum; // if (CtrlCon==NULL && !WorkerIsAlive), holds how long the log has been dead (so that we always delete the log that has been dead the longest first)
 
     CDynString Text;  // the actual log text
     int SkippedChars; // number of skipped characters since the last output to the edit window in Logs
@@ -244,9 +244,9 @@ public:
     // called after logging parameters change in the configuration
     void ConfigChanged();
 
-    // adds logs to the combo box; returns the focus in 'focusIndex' (must not be NULL) based on
-    // 'prevItemUID' (the UID of the item we want to select, it may also be -1); if 'prevItemUID'
-    // is not found, it returns -1 in 'focusIndex'; in 'empty' (must not be NULL) it returns TRUE if
+    // adds logs to the combo box; stores the focus index in 'focusIndex' (must not be NULL) based on
+    // 'prevItemUID' (the UID of the item to select, which may also be -1); if 'prevItemUID'
+    // is not found, it stores -1 in 'focusIndex'; stores TRUE in 'empty' (must not be NULL) if
     // no logs exist
     void AddLogsToCombo(HWND combo, int prevItemUID, int* focusIndex, BOOL* empty);
 
@@ -357,14 +357,14 @@ public:
     CListingCache();
     ~CListingCache();
 
-    // returns TRUE if a usable listing of the path 'path' (of type 'pathType') is available on the
-    // server 'host', where user 'user' is connected on port 'port'; the listing is returned in the
-    // allocated string 'cachedListing' (must not be NULL; returning NULL means an allocation error),
-    // the string length is returned in 'cachedListingLen' (must not be NULL); the caller is
-    // responsible for deallocation; the date when the listing was captured is returned in
-    // 'cachedListingDate' (must not be NULL); 'path' returns the exact text of the cached path (as
-    // provided by the server when it was inserted into the cache); 'path' is a buffer of size
-    // 'pathBufSize' bytes
+    // returns TRUE if a usable listing of path 'path' (of type 'pathType') is available on server
+    // 'host' for user 'user' connected on port 'port'; the listing is returned in an allocated
+    // string via 'cachedListing' (the parameter must not be NULL; a NULL returned pointer
+    // indicates a memory allocation error), its length is returned in 'cachedListingLen' (must not
+    // be NULL); the caller is responsible for deallocation; the date when the listing was captured
+    // is returned in 'cachedListingDate' (must not be NULL); 'path' receives the exact text of the
+    // cached path (as returned by the server when it was inserted into the cache); 'path' is a
+    // buffer of size 'pathBufSize' bytes
     // can be called from any thread
     BOOL GetPathListing(const char* host, unsigned short port, const char* user,
                         CFTPServerPathType pathType, char* path, int pathBufSize,
@@ -493,9 +493,9 @@ public:
                                                                               // CanFinishSending() that
                                                                               // returns FALSE
     virtual void HandleDataConTimeout(DWORD* start) = 0;                      // called only if
-                                                                              // BeforeWaitingForFinish
-                                                                              // returns TRUE in
-                                                                              // 'useTimeout'
+                                                                              // BeforeWaitingForFinish()
+                                                                              // sets 'useTimeout' to
+                                                                              // TRUE
     virtual HANDLE GetFinishedEvent() = 0;                                    // once it is signaled,
                                                                               // CanFinishSending() is
                                                                               // tested again
@@ -881,21 +881,21 @@ public:
     // checks whether 'ServerSystem' contains the name 'systemName'
     BOOL IsServerSystem(const char* systemName);
 
-    // if the "control connection" is closed, offers the user to reopen it (WARNING: does not set the
-    // working directory on the server); returns TRUE when the "control connection" is ready for use,
-    // and in that case sets SetStartTime() (so further waiting can continue after a possible
-    // reconnect); 'notInPanel' is TRUE for a detached FS (not in a panel); if 'notInPanel' is FALSE,
-    // the connection is in a panel - if 'leftPanel' is TRUE it is the left panel, otherwise the right
-    // panel; 'parent' is the thread's foreground window (after ESC is pressed it is used to detect
-    // whether ESC was pressed in this window and not, for example, in another application; in the
-    // main thread this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin);
-    // 'parent' is also the parent of any error message boxes; 'userBuf' + 'userBufSize' is the buffer
-    // for a new user name on the FTP server (it may change during reconnect); 'reconnected' (if not
-    // NULL) returns TRUE when the connection was restored (the "control connection" was reopened); if
-    // 'setStartTimeIfConnected' is FALSE and reconnecting is unnecessary, SetStartTime() is not set;
-    // 'totalAttemptNum' + 'retryMsg' + 'reconnectErrResID' + 'useFastReconnect' are parameters for
-    // StartControlConnection(); 'userRejectsReconnect' (if not NULL) returns TRUE if the user refuses
-    // to perform a reconnect
+    // if the "control connection" is closed, offers to reopen it (WARNING: does not set the
+    // working directory on the server); returns TRUE if the "control connection" is ready for use,
+    // and in that case also sets SetStartTime() (so any further waiting can continue after a possible
+    // reconnect); 'notInPanel' is TRUE for a detached file system (not in a panel); if 'notInPanel'
+    // is FALSE, the connection is in a panel - if 'leftPanel' is TRUE, it is the left panel;
+    // otherwise it is the right panel; 'parent' is the thread's foreground window (after ESC is
+    // pressed, it is used to detect whether ESC was pressed in this window and not, for example, in
+    // another application; in the main thread this is SalamanderGeneral->GetMsgBoxParent() or a
+    // dialog opened by the plugin); 'parent' is also the parent of any error message boxes;
+    // 'userBuf' + 'userBufSize' is a buffer for the new user name on the FTP server (it may change
+    // during reconnect); 'reconnected' (if not NULL) returns TRUE if the connection was restored (the
+    // "control connection" was reopened); if 'setStartTimeIfConnected' is FALSE and reconnecting is
+    // not needed, SetStartTime() is not set; 'totalAttemptNum' + 'retryMsg' +
+    // 'reconnectErrResID' + 'useFastReconnect' are parameters for StartControlConnection();
+    // 'userRejectsReconnect' (if not NULL) returns TRUE if the user refuses to reconnect
     // can be called only from the main thread (uses wait windows, etc.)
     BOOL ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel, HWND parent, char* userBuf,
                            int userBufSize, BOOL* reconnected, BOOL setStartTimeIfConnected,
@@ -903,8 +903,8 @@ public:
                            BOOL* userRejectsReconnect, int reconnectErrResID,
                            BOOL useFastReconnect);
 
-    // sends a command to the FTP server and returns the server's reply (WARNING: does not return
-    // replies of type FTP_D1_MAYBESUCCESS - it automatically waits for the next server reply);
+    // sends a command to the FTP server and returns the server's reply (WARNING: replies of type
+    // FTP_D1_MAYBESUCCESS are not returned - it automatically waits for the next server reply);
     // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether
     // ESC was pressed in this window and not, for example, in another application; in the main thread
     // this is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also
@@ -915,25 +915,25 @@ public:
     // first ESC sends "ABOR" (probably only makes sense for commands with a data connection) and the
     // connection is aborted only after the second ESC; if 'allowCmdAbort' is FALSE, the connection is
     // aborted after the first ESC; if 'resetWorkingPathCache' is TRUE, ResetWorkingPathCache() is
-    // called after sending the command (used when the command may change the current working
-    // directory); if 'resetCurrentTransferModeCache' is TRUE, ResetCurrentTransferModeCache() is called
-    // after sending the command (used when the command may change the current transfer mode); returns
-    // TRUE if sending the command or aborting it and receiving the reply succeeded; 'cmdAborted'
-    // (if not NULL) returns TRUE when the command was successfully aborted; the reply code is returned
-    // in 'ftpReplyCode' (must not be NULL) - it is valid (!=-1) even when 'cmdAborted' == TRUE; the
+    // called after sending the command (used when the command may change the current working path);
+    // if 'resetCurrentTransferModeCache' is TRUE, ResetCurrentTransferModeCache() is called after
+    // sending the command (used when the command may change the current transfer mode); returns TRUE
+    // if sending the command or aborting it and receiving the reply succeeded; 'cmdAborted' (if not
+    // NULL) returns TRUE when the command was successfully aborted; the reply code is returned in
+    // 'ftpReplyCode' (must not be NULL) - it is valid (!=-1) even when 'cmdAborted' == TRUE; the
     // reply text is stored in the buffer 'ftpReplyBuf' (maximum size 'ftpReplyBufSize'),
     // null-terminated - if it is longer than the buffer, it is simply truncated; if
-    // 'specialUserInterface' is NULL, the standard wait window is used for the user interface,
-    // otherwise the object provided via 'specialUserInterface' should be used (for example when
-    // listing the current path);
-    // returns FALSE if the connection was interrupted (on timeout it automatically closes the
-    // connection hard - sending "QUIT" makes no sense); if 'canRetry' is not NULL, the error text can
-    // be returned in 'retryMsg' (buffer of size 'retryMsgBufSize') - 'canRetry' returns TRUE; otherwise
-    // the error is shown in a message box ('canRetry' is either NULL or FALSE is returned there);
-    // can be called only from the main thread (uses wait windows, etc.)
+    // 'specialUserInterface' is NULL, the standard wait window is used for the user interface;
+    // otherwise, the object provided via 'specialUserInterface' is used (for example when listing the
+    // current path);
+    // returns FALSE if the connection is interrupted (on timeout it automatically forcibly closes the
+    // connection - sending "QUIT" makes no sense); if 'canRetry' is not NULL, the error text may be
+    // returned in 'retryMsg' (a buffer of size 'retryMsgBufSize') and TRUE is returned in 'canRetry';
+    // otherwise, the error is shown in a message box ('canRetry' is either NULL or FALSE is returned
+    // in it); can be called only from the main thread (uses wait windows, etc.)
     //
-    // WARNING: when aborting commands ('allowCmdAbort'==TRUE) the system for receiving server replies
-    //          is not fully resolved (servers return either one reply just for ABOR or two replies
+    // WARNING: when aborting commands ('allowCmdAbort'==TRUE), the handling of server replies is not
+    //          fully resolved (servers return either one reply just for ABOR or two replies
     //          (list + abort); unfortunately both use code 226, so it is impossible to tell which case
     //          occurred) - this is handled by trying to receive everything the server sends in one
     //          packet (it probably sends both replies together); any additional replies are ignored as
@@ -1061,20 +1061,20 @@ public:
                      char* userBuf, int userBufSize, BOOL isVMS, BOOL isDir);
 
     // sends a request to open a "listen" port (either on the local machine or on the proxy server) for
-    // the data connection 'dataConnection'; inputs 'listenOnIP' + 'listenOnPort' specify the IP+port
-    // where the "listen" port should be opened (makes sense only without a proxy server);
-    // 'parent' is the thread's foreground window (after ESC is pressed it is used to detect whether ESC
+    // the data connection 'dataConnection'; on input, 'listenOnIP' + 'listenOnPort' specify the IP+port
+    // where the "listen" port should be opened (relevant only without a proxy server);
+    // 'parent' is the thread's foreground window (after ESC is pressed, it is used to detect whether ESC
     // was pressed in this window and not, for example, in another application; in the main thread this
     // is SalamanderGeneral->GetMsgBoxParent() or a dialog opened by the plugin); 'parent' is also the
     // parent of any error message boxes; 'waitWndTime' is the delay before displaying the wait window;
-    // returns TRUE on success - 'listenOnIP' + 'listenOnPort' then contain the IP+port where we wait
-    // for the FTP server to connect; returns FALSE if an interruption or error occurred; if retrying is
-    // meaningful, the connection is forcibly closed (we could send "QUIT", but for now we simplify
-    // our lives) and the error text is returned in 'retryMsg' (buffer of size 'retryMsgBufSize', must
-    // not be 0) and 'canRetry' (must not be NULL) returns TRUE; if retrying makes no sense, the error
-    // is shown in a message box and 'canRetry' returns FALSE (the connection is not interrupted);
-    // 'errBuf' is a helper buffer of size 'errBufSize' (must not be 0) - used for texts displayed in
-    // message boxes;
+    // returns TRUE on success - 'listenOnIP' + 'listenOnPort' then contain the IP+port where the
+    // connection from the FTP server is expected; returns FALSE if an interruption or error occurs; if
+    // retrying makes sense, the connection is forcibly closed ("QUIT" could be sent instead, but this is
+    // kept simpler for now), the error text is returned in 'retryMsg' (buffer of size 'retryMsgBufSize',
+    // must not be 0), and 'canRetry' (must not be NULL) returns TRUE; if retrying does not make sense,
+    // the error is shown in a message box and 'canRetry' returns FALSE (the connection is not
+    // interrupted); 'errBuf' is a helper buffer of size 'errBufSize' (must not be 0), used for texts
+    // displayed in message boxes;
     // can be called only from the main thread (uses wait windows, etc.)
     BOOL OpenForListeningAndWaitForRes(HWND parent, CDataConnectionSocket* dataConnection,
                                        DWORD* listenOnIP, unsigned short* listenOnPort,
@@ -1229,7 +1229,7 @@ class CClosedCtrlConChecker
 protected:
     CRITICAL_SECTION DataSect; // critical section for accessing the object's data
 
-    // array of closed sockets that we check (whenever FTPCMD_CLOSECONNOTIF is received)
+    // array of closed sockets to check (whenever FTPCMD_CLOSECONNOTIF is received)
     TIndirectArray<CControlConnectionSocket> CtrlConSockets;
 
     BOOL CmdNotPost; // FALSE if the FTPCMD_CLOSECONNOTIF command has already been posted
