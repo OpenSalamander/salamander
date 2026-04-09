@@ -131,7 +131,7 @@ BOOL CDataConnectionBaseSocket::PassiveConnect(DWORD* error)
             conRes = Connect(auxServerIP, auxServerPort, &err);
         }
         BOOL ret = TRUE;
-        if (!conRes) // there is no hope for success
+        if (!conRes) // no chance of success
         {
             HANDLES(EnterCriticalSection(&SocketCritSect));
             NetEventLastError = err; // record the error (except fatal errors such as insufficient memory, etc.)
@@ -824,7 +824,7 @@ void CDataConnectionSocket::ReceivePostMessage(DWORD id, void* param)
                 }
 
                 TgtFileLastError = DiskWork.WinError; // store the error when creating/writing to the target file
-                CloseSocketEx(NULL);                  // shut down (we will not learn about the result)
+                CloseSocketEx(NULL);                  // shutdown (we will not learn the result)
                 FreeFlushData();
                 // since we are already in the CSocketsThread::CritSect section, this call
                 // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
@@ -844,8 +844,8 @@ void CDataConnectionSocket::JustConnected()
 {
     ReceivedConnected = TRUE; // if FD_READ arrives before FD_CONNECT (either way it must be connected)
     TransferSpeedMeter.JustConnected();
-    // since we are already in the CSocketsThread::CritSect section, this call
-    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+    // Since we are already in CSocketsThread::CritSect, this call
+        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectedToServer);
     // since we are already in the CSocketsThread::CritSect section, this call
     // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
@@ -907,21 +907,21 @@ void CDataConnectionSocket::MoveReadBytesToFlushBuffer()
 void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
 {
     SLOW_CALL_STACK_MESSAGE3("CDataConnectionSocket::ReceiveNetEvent(0x%IX, %d)", lParam, index);
-    DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
+    DWORD eventError = WSAGETSELECTERROR(lParam); // extract the event error code
     BOOL logLastErr = FALSE;
     switch (WSAGETSELECTEVENT(lParam)) // extract event
     {
     case FD_CLOSE: // sometimes arrives before the last FD_READ, so we first try FD_READ and if it succeeds, post FD_CLOSE again (FD_READ may succeed again before it)
     case FD_READ:
     {
-        BOOL sendFDCloseAgain = FALSE;     // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ) => post FD_CLOSE again (the current FD_CLOSE was a false alarm)
+        BOOL sendFDCloseAgain = FALSE;     // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ), so post FD_CLOSE again (the current FD_CLOSE was spurious)
         BOOL skipSendingOfFDClose = FALSE; // TRUE = FD_CLOSE arrived and we are waiting for the data flush, so delay it (do not process it now)
         HANDLES(EnterCriticalSection(&SocketCritSect));
         if (ReceivedConnected || UsePassiveMode) // ignore closing of the "listen" socket
         {
             if (eventError == NO_ERROR) // only if no error occurred (according to the help only WSAENETDOWN can happen)
             {
-                if (UsePassiveMode) // for an active connection we have to wait for FD_ACCEPT (this socket is the "listen" one, and only then comes the "data connection")
+                if (UsePassiveMode) // for a passive connection we have to wait for FD_ACCEPT (this socket is the "listen" socket, and only then comes the "data connection")
                 {
                     if (!ReceivedConnected)
                         JustConnected();
@@ -1044,12 +1044,12 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                     sendFDCloseAgain = TRUE;
 
                                                 // if no timer for flushing data with the DATACON_FLUSHTIMEOUT timeout has been created yet,
-                                                // and at the same time the need to flush the buffer is not recorded (NeedFlushReadBuf == 0),
-                                                // then create a timer for flushing the data
+                                                                                                // and the need to flush the buffer has not yet been recorded (NeedFlushReadBuf == 0),
+                                                                                                // create a timer for flushing the data
                                                 if (!FlushTimerAdded && NeedFlushReadBuf == 0)
                                                 {
-                                                    // since we are already in the CSocketsThread::CritSect section, this call
-                                                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                                    // since we are already in CSocketsThread::CritSect, this call
+                                                    // can also be made from CSocket::SocketCritSect (no deadlock risk)
                                                     FlushTimerAdded = SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_FLUSHTIMEOUT,
                                                                                               DATACON_FLUSHTIMERID, NULL);
                                                 }
@@ -1142,12 +1142,12 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                     len = SSLLib.SSL_read(SSLConn, ReadBytes + ValidBytesInReadBytesBuf,
                                                           ReadBytesAllocatedSize - ValidBytesInReadBytesBuf);
                                 }
-                                if (len >= 0) // we may have read something (0 = the connection is already closed)
+                                if (len >= 0) // data may have been read (0 = the connection is already closed)
                                 {
                                     if (len > 0)
                                     {
-                                        ValidBytesInReadBytesBuf += len;          // adjust the number of bytes already read by the newly read ones
-                                        TotalReadBytesCount += CQuadWord(len, 0); // adjust the total number of bytes already read by the newly read ones
+                                        ValidBytesInReadBytesBuf += len;          // adjust the number of bytes already read by the newly read bytes
+                                        TotalReadBytesCount += CQuadWord(len, 0); // add the newly read bytes to the total number of bytes already read
                                         LastActivityTime = GetTickCount();        // successfully read bytes from the socket
                                         if (GlobalLastActivityTime != NULL)
                                             GlobalLastActivityTime->Set(LastActivityTime);
@@ -1223,7 +1223,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
         // now process FD_CLOSE
         if (WSAGETSELECTEVENT(lParam) == FD_CLOSE && !skipSendingOfFDClose)
         {
-            if (sendFDCloseAgain) // FD_CLOSE came instead of FD_READ => post FD_CLOSE again
+            if (sendFDCloseAgain) // FD_CLOSE arrived instead of FD_READ => post FD_CLOSE again
             {
                 PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                             (WPARAM)GetSocket(), lParam);
@@ -1286,12 +1286,12 @@ void CDataConnectionSocket::SocketWasClosed(DWORD error)
     if (error != NO_ERROR)
         NetEventLastError = error;
 
-    // since we are already in the CSocketsThread::CritSect section, this call
-    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+    // Since we are already in CSocketsThread::CritSect, this call
+        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectionClosed);
 
-    // since we are already in the CSocketsThread::CritSect section, this call
-    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+    // Since we are already in CSocketsThread::CritSect, this call
+        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     SocketsThread->DeleteTimer(UID, DATACON_TESTNODATATRTIMERID);
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1376,13 +1376,13 @@ void CDataConnectionSocket::CloseTgtFile()
     HANDLES(EnterCriticalSection(&SocketCritSect));
     if (TgtDiskFileName[0] != 0)
     {
-        if (DiskWorkIsUsed) // if some disk flush is in progress, cancel it
+        if (DiskWorkIsUsed) // if any disk flush is in progress, cancel it
         {
             BOOL workIsInProgress;
             if (FTPDiskThread->CancelWork(&DiskWork, &workIsInProgress))
             {
                 if (workIsInProgress)
-                    DiskWork.FlushDataBuffer = NULL; // the work is in progress; we cannot free the buffer with the data being written/tested, leave it to the disk-work thread (see the cancellation part) - we can write to DiskWork because after Cancel the disk thread must no longer access it (it may no longer exist)
+                    DiskWork.FlushDataBuffer = NULL; // the work is in progress; we cannot free the buffer with the data being written/tested, leave it to the disk-work thread (see the cancellation part) - DiskWork can be written because after Cancel the disk thread must no longer access it (it may no longer exist)
                 else
                 { // the work was cancelled before the disk thread started processing it - deallocate the flush buffer
                     if (DiskWork.FlushDataBuffer != NULL)
@@ -1392,7 +1392,7 @@ void CDataConnectionSocket::CloseTgtFile()
                     }
                 }
             }
-            else // the work is already finished, DATACON_DISKWORKWRITEFINISHED is supposedly on its way (has not arrived yet)
+            else // the work is already finished, DATACON_DISKWORKWRITEFINISHED should already be on its way (has not arrived yet)
             {
                 if (DiskWork.FlushDataBuffer != NULL) // the flush buffer is now useless
                 {
@@ -1443,7 +1443,7 @@ BOOL CDataConnectionSocket::WaitForFileClose(DWORD timeout)
 
     if (tgtDiskFileCloseIndex != -1)
         return FTPDiskThread->WaitForFileClose(tgtDiskFileCloseIndex, timeout);
-    return FALSE; // the file probably was not opened at all (or the closing+delete is handled on the disk-work thread - cancellation during the first create+flush disk job)
+    return FALSE; // the file was probably never opened at all (or the close+delete operation is handled on the disk worker thread - cancellation during the first create+flush disk task)
 }
 
 void CDataConnectionSocket::SetDataTotalSize(CQuadWord const& size)
@@ -1551,7 +1551,7 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
             {
                 int newBytes = (DecomprDataAllocatedSize - DecomprDataDelayedBytes - ZLIBInfo.avail_out) -
                                (ValidBytesInFlushBuffer - AlreadyDecomprPartOfFlushBuffer - ZLIBInfo.avail_in);
-                if (newBytes != 0) // balance the difference caused by decompression (WARNING: it can also be negative)
+                if (newBytes != 0) // adjust for the difference caused by decompression (WARNING: it can also be negative)
                 {
                     if (newBytes > 0)
                     {
@@ -1580,7 +1580,7 @@ BOOL CDataConnectionSocket::GiveFlushData(char** flushBuffer, int* validBytesInF
             {
                 *flushBuffer = DecomprDataBuffer;
                 if (err != SAL_Z_STREAM_END && !isFirstDecompFromFlushBuffer && *validBytesInFlushBuffer < DecomprDataAllocatedSize)
-                { // when continuing to decompress data from FlushBuffer, if it is not the end of the file and the DecomprDataBuffer was not filled (fill level depends on compression ratio, in extreme cases it may be just a single byte), wait with writing to the file until the next cycle (to avoid unnecessary fragmentation)
+                { // when continuing to decompress data from FlushBuffer, if this is not the end of the file and DecomprDataBuffer is not full (the fill level depends on the compression ratio and in extreme cases may be just one byte), postpone writing to the file until the next cycle (to avoid unnecessary fragmentation)
                     //          TRACE_I("flushing: buffer is not full (only " << *validBytesInFlushBuffer << " bytes), waiting...");
                     DecomprDataDelayedBytes = *validBytesInFlushBuffer;
                     *validBytesInFlushBuffer = 0; // do not write an empty buffer
@@ -1658,8 +1658,8 @@ void CDataConnectionSocket::FlushDataFinished(char* flushBuffer, BOOL enterSocke
 
     if (CompressData && AlreadyDecomprPartOfFlushBuffer < ValidBytesInFlushBuffer)
     { // if it is necessary to continue decompressing data from 'FlushBuffer'
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+        // Since we are already in CSocketsThread::CritSect, this call
+        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         DoPostMessageToWorker(WorkerMsgFlushData);
 
         // if this is direct flushing of data to a file from the data connection, perform it here
