@@ -179,8 +179,8 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
         }
         else
         {
-            // if the user has custom text, pull it out, otherwise use indexes from the last selection
-            // in the combo (finding the index by looking up the string in the list is impossible, duplicate strings may occur)
+            // if the user has custom text, retrieve it; otherwise use the indexes from the last selection
+            // in the combo box (finding the index by looking up the string in the list is impossible because duplicate strings may occur)
             if (LastUsedIndexForName == -1)
                 GetWindowText(comboName, bufName, STC_NAME_MAX_SIZE);
             if (LastUsedIndexForDescr == -1)
@@ -957,7 +957,7 @@ void CSrvTypeTestParserDlg::LoadTextFromFile()
 
             HANDLES(CloseHandle(file));
             SetCursor(oldCur);
-            if (err != NO_ERROR) // print the error
+            if (err != NO_ERROR) // display the error
             {
                 sprintf(buf, LoadStr(IDS_SRVTYPE_READRAWLISTERR), SalamanderGeneral->GetErrorText(err));
                 SalamanderGeneral->SalMessageBox(HWindow, buf, LoadStr(IDS_FTPERRORTITLE),
