@@ -219,8 +219,8 @@ BOOL CBitmap::Enlarge(int width, int height)
         if (Height > height)
             height = Height;
         // try to create a larger bitmap
-        // !CAUTION! Sal 2.5b6 was slow when painting to Viewer (PgDn) compared to 2.0
-        // Caused by creating the cache with CreateBitmap() instead of CreateCompatibleBitmap()
+        // !CAUTION! Sal 2.5b6 was slow when painting in Viewer (PgDn) compared to 2.0
+        // This was caused by creating the cache with CreateBitmap() instead of CreateCompatibleBitmap()
         // According to MSDN, CreateBitmap() should only be used for B&W bitmaps.
         HBITMAP hTmpBmp;
         if (HMemDC == NULL || BlackAndWhite)
