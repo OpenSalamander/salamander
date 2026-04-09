@@ -118,9 +118,9 @@ CControlConnectionSocket::~CControlConnectionSocket()
         HANDLES(CloseHandle(NewEvent));
     HANDLES(DeleteCriticalSection(&EventCritSect));
 
-    // Logs cannot touch the "control connection" (nested critical sections are forbidden),
-    // this call synchronizes only the validity of the pointer to the "control connection" (not the object contents,
-    // therefore it can be at the very end of the destructor)
+    // Logs cannot access the "control connection" (nested critical sections are forbidden),
+        // this call synchronizes only the validity of the pointer to the "control connection" (not the object contents,
+        // so it can be at the very end of the destructor)
     if (LogUID != -1)
         Logs.ClosingConnection(LogUID);
 }
@@ -227,7 +227,7 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
     CALL_STACK_MESSAGE3("CControlConnectionSocket::WaitForEventOrESC(, , , , %d, , , %d)",
                         milliseconds, waitForUserIfaceFinish);
 
-    const DWORD cycleTime = 200; // period of testing the ESC key press in ms (200 = 5 times per second)
+    const DWORD cycleTime = 200; // ESC key polling interval in ms (200 = 5 times per second)
     DWORD timeStart = GetTickCount();
     DWORD restOfWaitTime = milliseconds; // remaining waiting time
 
@@ -263,7 +263,7 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
         DWORD waitRes = MsgWaitForMultipleObjects(1, &watchedEvent, FALSE, waitTime, QS_ALLINPUT);
 
         // first check for ESC press (so we do not ignore it for the user)
-        if (milliseconds != 0 &&                                                          // if the timeout is zero, we are only pumping messages, ignore ESC
+        if (milliseconds != 0 &&                                                          // if the timeout is zero, we are only pumping messages; do not handle ESC
             ((GetAsyncKeyState(VK_ESCAPE) & 0x8001) && GetForegroundWindow() == parent || // ESC key pressed
              waitWnd != NULL && waitWnd->GetWindowClosePressed() ||                       // close button in the wait window
              userIface != NULL && userIface->GetWindowClosePressed()))                    // close button in the user interface
@@ -314,7 +314,7 @@ void CControlConnectionSocket::WaitForEventOrESC(HWND parent, CControlConnection
                     *event = ccsevTimeout; // no time remains
                     *data1 = 0;
                     *data2 = 0;
-                    break; // report timeout
+                    break; // report a timeout
                 }
             }
         }
@@ -351,7 +351,7 @@ void CControlConnectionSocket::SetConnectionParameters(const char* host, unsigne
         ProxyServer = NULL;
     else
     {
-        ProxyServer = Config.FTPProxyServerList.MakeCopyOfProxyServer(proxyServerUID, NULL); // ignore lack of memory (automatically "not used (direct connection)")
+        ProxyServer = Config.FTPProxyServerList.MakeCopyOfProxyServer(proxyServerUID, NULL); // ignore out-of-memory; it will automatically be "not used (direct connection)"
         if (ProxyServer != NULL)
         {
             if (ProxyServer->ProxyEncryptedPassword != NULL)
@@ -415,8 +415,8 @@ enum CStartCtrlConStates // states of the automaton for CControlConnectionSocket
     // connect to the FTP server (retrieved IP is in 'auxServerIP')
     sccsConnect,
 
-    // retry the connection (based on Config.DelayBetweenConRetries + Config.ConnectRetries),
-    // if it should not retry anymore, it transitions to the state from 'noRetryState' + if 'fastRetry' is TRUE, it must not
+    // retry the connection (according to Config.DelayBetweenConRetries and Config.ConnectRetries),
+    // if it should no longer retry, it transitions to the state from 'noRetryState' + if 'fastRetry' is TRUE, it must not
     // wait before the next attempt
     sccsRetry,
 
@@ -432,7 +432,7 @@ enum CStartCtrlConStates // states of the automaton for CControlConnectionSocket
     // retry the login (without waiting and losing the connection) - only transitions to sccsStartLoginScript - cannot be used with a proxy server!!!
     sccsRetryLogin,
 
-    // end of the method (successful or unsuccessful - according to 'ret' TRUE/FALSE)
+    // end of the method (successful or unsuccessful, depending on whether 'ret' is TRUE or FALSE)
     sccsDone
 };
 
@@ -562,7 +562,7 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     if (serverTimeout < 1000)
         serverTimeout = 1000; // at least one second
 
-    // store the focus from 'parent' (if the focus is not from 'parent', store NULL)
+    // remember the focused window in 'parent' (store NULL if the focus is not within 'parent')
     HWND focusedWnd = GetFocus();
     HWND hwnd = focusedWnd;
     while (hwnd != NULL && hwnd != parent)
@@ -594,13 +594,13 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     {
         const char* txt = GetProxyScriptText(proxyType, FALSE);
         if (txt[0] == 0)
-            txt = GetProxyScriptText(fpstNotUsed, FALSE); // undefined script = "not used (direct connection)" script - SOCKS 4/4A/5, HTTP 1.1
+            txt = GetProxyScriptText(fpstNotUsed, FALSE); // no script defined = the "not used (direct connection)" script - SOCKS 4/4A/5, HTTP 1.1
         lstrcpyn(proxyScriptText, txt, PROXYSCRIPT_MAX_SIZE);
     }
     DWORD auxServerIP = ServerIP;
     srvAddr.s_addr = auxServerIP;
-    ResetWorkingPathCache();         // after connecting to the server it is necessary to determine the working dir
-    ResetCurrentTransferModeCache(); // after connecting to the server it is necessary to set the transfer mode (it should be ASCII, but we do not trust it)
+    ResetWorkingPathCache();         // after connecting to the server, the working directory must be determined
+    ResetCurrentTransferModeCache(); // after connecting to the server, the transfer mode must be set (it should be ASCII, but that is not trusted)
     HANDLES(LeaveCriticalSection(&SocketCritSect));
 
     const char* proxyScriptExecPoint = NULL;
@@ -630,7 +630,7 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
 
     CStartCtrlConStates state = (auxServerIP == INADDR_NONE ? sccsGetIP : sccsConnect);
 
-    if (retryMsg != NULL) // simulate the state when the connection was interrupted directly in this method - "retry" connection
+    if (retryMsg != NULL) // simulate the state as if the connection had been interrupted directly in this method - retry the connection
     {
         lstrcpyn(errBuf, retryMsg, 300); // store the retry message in errBuf (for sccsOperationFatalError)
         opFatalErrorTextID = reconnectErrResID != -1 ? reconnectErrResID : IDS_SENDCOMMANDERROR;
@@ -645,7 +645,7 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
     if (ProcessProxyScript(proxyScriptText, &proxyScriptExecPoint, proxyLastCmdReply,
                            &proxyScriptParams, host, &port, NULL, NULL, errBuf2, NULL))
     {
-        if (proxyScriptParams.NeedUserInput()) // theoretically should not happen
+        if (proxyScriptParams.NeedUserInput()) // should theoretically not happen
         {                                      // only proxyScriptParams->NeedProxyHost can be TRUE (otherwise ProcessProxyScript would return an error)
             strcpy(errBuf, LoadStr(IDS_PROXYSRVADREMPTY));
             lstrcpyn(errBuf, errBuf2, 300);
@@ -656,7 +656,7 @@ BOOL CControlConnectionSocket::StartControlConnection(HWND parent, char* user, i
         else
             proxyScriptStartExecPoint = proxyScriptExecPoint;
     }
-    else // theoretically should never happen (saved scripts are validated)
+    else // this should theoretically never happen (saved scripts are validated)
     {
         lstrcpyn(errBuf, errBuf2, 300);
         opFatalError = -1; // error is directly in errBuf
@@ -673,7 +673,7 @@ RETRY_LABEL:
         {
         case sccsGetIP: // obtain an IP address from the textual address of the FTP server
         {
-            if (!GetHostByAddress(host, 0)) // must be outside the SocketCritSect section
+            if (!GetHostByAddress(host, 0)) // must be outside the SocketCritSect critical section
             {                               // no chance of success -> report an error
                 sprintf(formatBuf, LoadStr(IDS_GETIPERROR), host);
                 opFatalErrorTextID = -1; // the text is in 'formatBuf'
@@ -727,7 +727,7 @@ RETRY_LABEL:
 
                     case ccsevIPReceived: // data1 == IP, data2 == error
                     {
-                        if (data1 != INADDR_NONE) // we have an IP
+                        if (data1 != INADDR_NONE) // we have the IP address
                         {
                             HANDLES(EnterCriticalSection(&SocketCritSect));
                             auxServerIP = ServerIP = data1;
@@ -814,7 +814,7 @@ RETRY_LABEL:
 
             ResetBuffersAndEvents(); // empty the buffers (discard old data) and discard old events
             if (useWelcomeMessage)
-                welcomeMessage.Clear(); // clear the previous attempt (only makes sense after a "retry")
+                welcomeMessage.Clear(); // clear the welcome message from the previous attempt (only makes sense after a "retry")
 
             if ((proxyType == fpstSocks5 || proxyType == fpstHTTP1_1) &&
                 proxyScriptParams.ProxyUser[0] != 0 && proxyScriptParams.ProxyPassword[0] == 0)
@@ -825,7 +825,7 @@ RETRY_LABEL:
                                  proxyScriptParams.ProxyPassword, PASSWORD_MAX_SIZE, TRUE,
                                  connectingToAs, FALSE)
                         .Execute() != IDCANCEL)
-                { // value change -> we must update the originals as well
+                { // value changed -> we must update the originals as well
                     HANDLES(EnterCriticalSection(&SocketCritSect));
                     if (ProxyServer != NULL)
                         ProxyServer->SetProxyPassword(proxyScriptParams.ProxyPassword);
@@ -887,7 +887,7 @@ RETRY_LABEL:
                             fatalErrorTextID = -1; // the description is directly in 'errBuf'
                         else
                             fatalErrorTextID = IDS_OPENCONTIMEOUT;
-                        noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                        noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                         state = sccsRetry;
                         break;
                     }
@@ -906,12 +906,12 @@ RETRY_LABEL:
                                 sprintf(formatBuf, LoadStr(IDS_OPENCONERROR), host, inet_ntoa(srvAddr), port);
                             }
                             opFatalErrorTextID = -1;                  // the text is in 'formatBuf'
-                            noRetryState = sccsOperationFatalError;   // if retry is not performed, execute sccsOperationFatalError
+                            noRetryState = sccsOperationFatalError;   // if retry is not performed, transition to sccsOperationFatalError
                             if (opFatalError == -1 && errBuf[0] == 0) // simple error -> convert it to sccsFatalError
                             {
                                 fatalErrorTextID = -1;
                                 lstrcpyn(errBuf, formatBuf, 300);
-                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                             }
                             state = sccsRetry;
                         }
@@ -931,14 +931,14 @@ RETRY_LABEL:
                 opFatalError = error;
                 sprintf(formatBuf, LoadStr(IDS_OPENCONERROR), host, inet_ntoa(srvAddr), port);
                 opFatalErrorTextID = -1;                // the text is in 'formatBuf'
-                noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                noRetryState = sccsOperationFatalError; // if retry is not performed, transition to sccsOperationFatalError
                 state = sccsRetry;
             }
             break;
         }
 
         case sccsRetry: // try connecting again (based on Config.DelayBetweenConRetries + Config.ConnectRetries),
-        {               // if it should no longer try, transition to the state from 'noRetryState' + if 'fastRetry' is TRUE,
+        {               // if no more retries should be attempted, transition to the state in 'noRetryState'; if 'fastRetry' is TRUE,
                         // do not wait before the next attempt
             // Resend AUTH TLS if needed
             if (EncryptControlConnection)
@@ -984,7 +984,7 @@ RETRY_LABEL:
             *s1 = 0; // trim end-of-line characters from the last error text
 
             // when the server closes the control connection, keep-alive changes to 'kamNone', therefore:
-            // prepare keep-alive for further use + set keep-alive to 'kamForbidden' (a normal command is in progress)
+            // prepare keep-alive for further use and set it to 'kamForbidden' (a normal command is in progress)
             ReleaseKeepAlive();
             WaitForEndOfKeepAlive(parent, 0); // cannot open the wait window (it is in the 'kamNone' state)
 
@@ -995,7 +995,7 @@ RETRY_LABEL:
                 // if necessary, close the socket; the system will attempt a graceful shutdown (we will not learn the result)
                 CloseSocket(NULL);
                 Logs.SetIsConnected(logUID, IsConnected());
-                Logs.RefreshListOfLogsInLogsDlg(); // display "connection inactive"
+                Logs.RefreshListOfLogsInLogsDlg(); // "connection inactive" in the log
 
                 state = sccsConnect; // try to connect again (the IP is already known)
             }
@@ -1044,7 +1044,7 @@ RETRY_LABEL:
                             s++;
                         if (*s == '\n')
                         {
-                            if (*(s + 1) == '\n') // remove an empty line in the text
+                            if (*(s + 1) == '\n') // remove the empty line in the text
                                 memmove(s, s + 1, strlen(s + 1) + 1);
                             s++;
                         }
@@ -1075,7 +1075,7 @@ RETRY_LABEL:
                         if (now - start < (DWORD)delayBetweenConRetries * 1000)
                         { // rebuild the text for the retry wait window (contains the countdown)
                             DWORD wait = delayBetweenConRetries * 1000 - (now - start);
-                            if (now != start) // it makes no sense the first time
+                            if (now != start) // no point on the first pass
                             {
                                 _snprintf_s(retryBuf, _TRUNCATE, LoadStr(IDS_WAITINGTORETRYSUF), buf, (1 + (wait - 1) / 1000),
                                             attemptNum, Config.GetConnectRetries() + 1);
@@ -1122,7 +1122,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                 { // gives up further login attempts
                                     state = sccsDone;
                                     run = FALSE;
-                                    // actionCanceled = TRUE;   // do not log cancel in "retry"
+                                    // actionCanceled = TRUE;   // do not log cancellation during "retry"
                                 }
                                 else
                                 {
@@ -1134,7 +1134,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                     else
                                     {
                                         SalamanderGeneral->WaitForESCRelease(); // measure to prevent interrupting the next action after every ESC in the previous message box
-                                        waitWnd.Show(TRUE);                     // wants to continue waiting
+                                        waitWnd.Show(TRUE);                     // continue waiting
                                     }
                                 }
                                 break;
@@ -1208,7 +1208,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 case ccsevTimeout:
                 {
                     fatalErrorTextID = IDS_WAITFORLOGTIMEOUT;
-                    noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                    noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                     state = sccsRetry;
                     break;
                 }
@@ -1221,7 +1221,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     int replyCode;
 
                     HANDLES(EnterCriticalSection(&SocketCritSect));
-                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
+                    while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have a server reply
                     {
                         if (useWelcomeMessage)
                             welcomeMessage.Append(reply, replySize);
@@ -1256,11 +1256,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                     if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR ||
                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) // e.g. 421 Service not available, closing control connection
                                     {
-                                        if (state == sccsServerReady) // if we are not reporting another error yet
+                                        if (state == sccsServerReady) // if we are not already reporting another error
                                         {
                                             CopyStr(errBuf, 300, reply, replySize);
                                             fatalErrorTextID = -1;         // the error text is in 'errBuf'
-                                            noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                            noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                                             retryLogError = FALSE;         // the error is already in the log, do not add it again
                                             state = sccsRetry;
                                         }
@@ -1274,7 +1274,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         }
                         else // not an FTP server
                         {
-                            if (state == sccsServerReady) // if we are not reporting another error yet
+                            if (state == sccsServerReady) // if we are not already reporting another error
                             {
                                 opFatalErrorTextID = IDS_NOTFTPSERVERERROR;
                                 CopyStr(errBuf, 300, reply, replySize);
@@ -1292,7 +1292,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         if (state == sccsServerReady) // close without a reason
                         {
                             fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                            noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                            noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                             state = sccsRetry;
                         }
                         if (data1 != NO_ERROR)
@@ -1344,7 +1344,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                        &proxyScriptParams, NULL, NULL, proxySendCmdBuf,
                                        proxyLogCmdBuf, errBuf, NULL))
                 {
-                    if (sslisNone == SSLInitSequence && proxyScriptParams.NeedUserInput()) // it is necessary to enter some data (user, password, etc.)
+                    if (sslisNone == SSLInitSequence && proxyScriptParams.NeedUserInput()) // some data needs to be entered (user, password, etc.)
                     {
                         if (proxyScriptParams.NeedProxyHost)
                         {
@@ -1485,7 +1485,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         }
                         if (proxySendCmdBuf[0] == 0) // end of the login script
                         {
-                            if (proxyLastCmdReply == -1) // the script contains no command sent to the server - e.g. commands skipped because they contain optional variables
+                            if (proxyLastCmdReply == -1) // the script contains no command to send to the server - e.g. commands skipped because they contain optional variables
                             {
                                 fatalErrorTextID = IDS_INCOMPLETEPRXSCR2;
                                 state = sccsFatalError;
@@ -1495,7 +1495,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                 if (FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_SUCCESS) // e.g. 230 User logged in, proceed
                                 {
                                     state = sccsDone;
-                                    ret = TRUE; // SUCCESS, we are logged in!
+                                    ret = TRUE; // success, logged in
                                 }
                                 else // FTP_DIGIT_1(proxyLastCmdReply) == FTP_D1_PARTIALSUCCESS  // e.g. 331 User name okay, need password
                                 {
@@ -1561,7 +1561,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                     case ccsevTimeout:
                                     {
                                         fatalErrorTextID = IDS_SNDORABORCMDTIMEOUT;
-                                        noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                        noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                                         state = sccsRetry;
                                         allBytesWritten = TRUE; // no longer important, the socket will be closed
                                         break;
@@ -1578,7 +1578,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
 
                                         HANDLES(EnterCriticalSection(&SocketCritSect));
                                         BOOL sectLeaved = FALSE;
-                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
+                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have a server reply
                                         {
                                             if (useWelcomeMessage)
                                                 welcomeMessage.Append(reply, replySize);
@@ -1588,7 +1588,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                             {
                                                 if ((FTP_DIGIT_1(replyCode) == FTP_D1_ERROR) && CompressData && !_strnicmp(proxySendCmdBuf, "MODE Z", sizeof("MODE Z") - 1))
                                                 {
-                                                    // Server does not support compression -> swallow the error, disable compression and go on
+                                                    // Server does not support compression -> ignore the error, disable compression, and continue
                                                     replyCode = 200; // Emulate Full success
                                                     CompressData = FALSE;
                                                     Logs.LogMessage(logUID, LoadStr(IDS_MODEZ_LOG_UNSUPBYSERVER), -1);
@@ -1614,8 +1614,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // e.g. 530 Not logged in (invalid password)
                                                     {
                                                         if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                                        { // convenient handling of the "too many users" error - no questions, immediately "retry"
-                                                            // drawback: with this code comes a message that may require changing user/password
+                                                        { // convenient handling of the "too many users" error - retry immediately without prompting
+// possible issue: this code may be followed by a message that requires changing the user/password
                                                             retryLoginWithoutAsking = TRUE;
                                                         }
 
@@ -1668,7 +1668,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                                     if (dlg.LoginChanged && event != ccsevClosed && !proxyUsed)
                                                                     { // retry login (without waiting and closing the connection) - handles responses such as "invalid user/password"
                                                                         state = sccsRetryLogin;
-                                                                        // allBytesWritten = TRUE;   // the connection will not be closed, we must wait (besides, once a reply arrived, it is likely the whole command was sent)
+                                                                        // allBytesWritten = TRUE;   // the connection will not be closed, so we must wait (once a reply has arrived, the whole command was presumably sent)
                                                                     }
                                                                 }
                                                                 else // cancel
@@ -1687,7 +1687,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                             opFatalErrorTextID = IDS_LOGINERROR;
                                                             // CopyStr(errBuf, 300, reply, replySize);   // done earlier - before leaving the critical section
                                                             opFatalError = -1;                      // the error text is in 'errBuf'
-                                                            noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                                                            noRetryState = sccsOperationFatalError; // if retry is not performed, transition to sccsOperationFatalError
                                                             retryLogError = FALSE;                  // the error is already in the log, do not add it again
                                                             state = sccsRetry;
                                                             allBytesWritten = TRUE; // no longer important, the socket will be closed
@@ -1701,11 +1701,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                             }
                                             else // not an FTP server
                                             {
-                                                if (state == sccsProcessLoginScript) // if we are not reporting another error yet
+                                                if (state == sccsProcessLoginScript) // if we are not already reporting another error
                                                 {
                                                     opFatalErrorTextID = IDS_NOTFTPSERVERERROR;
                                                     CopyStr(errBuf, 300, reply, replySize);
-                                                    opFatalError = -1; // the "error" (reply) is directly in errBuf
+                                                    opFatalError = -1; // the "error" reply is already in errBuf
                                                     state = sccsOperationFatalError;
                                                     fatalErrLogMsg = FALSE; // already in the log, no point adding it again
                                                     allBytesWritten = TRUE; // no longer important, the socket will be closed
@@ -1722,7 +1722,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                             if (state == sccsProcessLoginScript) // close without a reason
                                             {
                                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                                noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                                                 state = sccsRetry;
                                             }
                                             if (data1 != NO_ERROR)
@@ -1747,7 +1747,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                     int err;
                                                     CCertificate* unverifiedCert;
                                                     if (!EncryptSocket(logUID, &err, &unverifiedCert, &errID, errBuf, 300,
-                                                                       NULL /* it's always NULL for the control connection */))
+                                                                       NULL /* for the control connection this is always NULL */))
                                                     {
                                                         allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                         if (errBuf[0] == 0)
@@ -1816,7 +1816,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         }
                                                     }
                                                 }
-                                                else // Error! OpenSSL libs not found? Or not W2K+?
+                                                else // Error: OpenSSL libraries not found, or the system is not W2K+
                                                 {
                                                     allBytesWritten = TRUE; // no longer important, the socket will be closed
                                                     state = sccsFatalError;
@@ -1864,7 +1864,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             {
                                 while (state == sccsProcessLoginScript)
                                 {
-                                    // pick an event on the socket
+                                    // select an event on the socket
                                     CControlConnectionSocketEvent event;
                                     DWORD data1, data2;
                                     WaitForEventOrESC(parent, &event, &data1, &data2, 0, NULL, NULL, FALSE); // do not wait, just receive events
@@ -1875,7 +1875,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                     {
                                         opFatalErrorTextID = IDS_SENDCOMMANDERROR;
                                         opFatalError = error;
-                                        noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                                        noRetryState = sccsOperationFatalError; // if retry is not performed, transition to sccsOperationFatalError
                                         state = sccsRetry;
                                         break;
                                     }
@@ -1888,11 +1888,11 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                         int replyCode;
 
                                         HANDLES(EnterCriticalSection(&SocketCritSect));
-                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have some server response
+                                        while (ReadFTPReply(&reply, &replySize, &replyCode)) // while we have any server reply
                                         {
                                             Logs.LogMessage(logUID, reply, replySize);
 
-                                            if (replyCode == -1 ||                                 // not an FTP reply
+                                            if (replyCode == -1 ||                                 // not an FTP response
                                                 FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR || // description of a temporary error
                                                 FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // description of an error
                                             {
@@ -1900,10 +1900,10 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                 CopyStr(errBuf, 300, reply, replySize);
                                                 SkipFTPReply(replySize);
                                                 opFatalError = -1;                      // the "error" (reply) is directly in errBuf
-                                                noRetryState = sccsOperationFatalError; // if retry is not performed, execute sccsOperationFatalError
+                                                noRetryState = sccsOperationFatalError; // if retry is not performed, transition to sccsOperationFatalError
                                                 retryLogError = FALSE;                  // the error is already in the log, do not add it again
                                                 state = sccsRetry;
-                                                break; // no need to read another message
+                                                break; // no need to read another reply
                                             }
                                             SkipFTPReply(replySize);
                                         }
@@ -1914,7 +1914,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                             if (state == sccsProcessLoginScript) // close without a reason
                                             {
                                                 fatalErrorTextID = IDS_CONNECTIONLOSTERROR;
-                                                noRetryState = sccsFatalError; // if retry is not performed, execute sccsFatalError
+                                                noRetryState = sccsFatalError; // if retry is not performed, transition to sccsFatalError
                                                 state = sccsRetry;
                                             }
                                             if (data1 != NO_ERROR)
@@ -2080,7 +2080,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                         errBuf, 300, NULL))
                     {
                         ret = FALSE; // we are no longer connected
-                        break;       // go perform the "retry"
+                        break;       // perform the "retry"
                     }
                 }
             }
@@ -2101,13 +2101,13 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 HANDLES(LeaveCriticalSection(&SocketCritSect));
             }
             else
-                ret = FALSE; // error -> connection closed - go perform the "retry"
+                ret = FALSE; // error -> connection closed - proceed with the "retry"
         }
 
         if (ret && workDir != NULL &&
             !GetCurrentWorkingPath(parent, workDir, workDirBufSize, FALSE, &canRetry, errBuf, 300))
         {
-            ret = FALSE; // error -> connection closed - go perform the "retry"
+            ret = FALSE; // error -> connection closed - proceed with the "retry"
         }
 
         if (canRetry && !ret) // assumes 'errBuf' has been set
@@ -2166,7 +2166,7 @@ BOOL CControlConnectionSocket::ReconnectIfNeeded(BOOL notInPanel, BOOL leftPanel
     {
         if (retryMsg == NULL) // connection interrupted for an unknown reason - display it and ask about reconnecting
         {
-            // if we have not yet displayed what led to the connection closing, do it now
+            // if we have not yet reported what led to the connection closing, do it now
             CheckCtrlConClose(notInPanel, leftPanel, parent, FALSE);
 
             BOOL reconnectToSrv = FALSE;
