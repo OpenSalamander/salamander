@@ -4,12 +4,12 @@
 
 #pragma once
 
-#pragma pack(push, enter_include_operats_h_dt) // so that all structures are as small as possible (speed is not needed, we mainly save space)
+#pragma pack(push, enter_include_operats_h_dt) // to keep all structures as small as possible (speed is not important; the main goal is to save space)
 #pragma pack(1)
 
-// returns a pointer to the textual description of the 'error'; if 'error' is NO_ERROR, returns
-// a text like "unknown, maybe insufficient system resources", otherwise returns the standard
-// Windows description of the error (it uses the buffer 'errBuf'+'errBufSize' to store it)
+// returns a pointer to the text description of 'error'; if 'error' is NO_ERROR, returns
+// a string such as "unknown, maybe insufficient system resources"; otherwise returns the standard
+// Windows error description (using 'errBuf' and 'errBufSize' to store it)
 const char* GetWorkerErrorTxt(int error, char* errBuf, int errBufSize);
 
 //
@@ -22,7 +22,7 @@ enum CFTPQueueItemType
 {
     fqitNone, // empty item (must be set to one of the following types)
 
-    fqitDeleteExploreDir,      // explore directory for delete (note: we delete links to directories as a whole, the goal of the operation is fulfilled and nothing "extra" gets deleted) (object of class CFTPQueueItemDelExplore)
+    fqitDeleteExploreDir,      // directory exploration for a delete operation (note: links to directories are deleted as a whole; the purpose of the operation is fulfilled and nothing "extra" is deleted) (object of class CFTPQueueItemDelExplore)
     fqitCopyResolveLink,       // download: copy: find out whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
     fqitMoveResolveLink,       // download: move: find out whether it is a link to a file or a directory (object of class CFTPQueueItemCopyOrMove)
     fqitCopyExploreDir,        // download: explore a directory or a link to a directory for copying (object of class CFTPQueueItemCopyMoveExplore)
@@ -36,15 +36,15 @@ enum CFTPQueueItemType
 
     fqitLastResolveOrExploreItem, // numeric constant only for distinguishing types (processing priority) of items
 
-    fqitDeleteLink,          // delete for a link (object of class CFTPQueueItemDel)
-    fqitDeleteFile,          // delete for a file (object of class CFTPQueueItemDel)
-    fqitDeleteDir,           // delete for a directory (object of class CFTPQueueItemDir)
+    fqitDeleteLink,          // delete operation for a link (object of class CFTPQueueItemDel)
+    fqitDeleteFile,          // delete operation for a file (object of class CFTPQueueItemDel)
+    fqitDeleteDir,           // delete operation for a directory (object of class CFTPQueueItemDir)
     fqitCopyFileOrFileLink,  // download: copying a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
     fqitMoveFileOrFileLink,  // download: moving a file or a link to a file (object of class CFTPQueueItemCopyOrMove)
     fqitMoveDeleteDir,       // download: delete a directory after moving its contents (object of class CFTPQueueItemDir)
     fqitMoveDeleteDirLink,   // download: delete a link to a directory after moving its contents (object of class CFTPQueueItemDir)
     fqitChAttrsFile,         // change file attributes (note: attributes cannot be changed on links) (object of class CFTPQueueItemChAttr)
-    fqitChAttrsDir,          // change directory attributes (object of class CFTPQueueItemChAttrDir)
+    fqitChAttrsDir,          // change directory attributes (object of type CFTPQueueItemChAttrDir)
     fqitUploadCopyFile,      // upload: copy a file (object of class CFTPQueueItemCopyOrMoveUpload)
     fqitUploadMoveFile,      // upload: move a file (object of class CFTPQueueItemCopyOrMoveUpload)
     fqitUploadMoveDeleteDir, // upload: delete a directory after moving its contents (object of class CFTPQueueItemDir)
@@ -95,23 +95,23 @@ enum CFTPQueueItemState
 #define ITEMPR_UNABLETODELETEDIR 23          // issue "unable to delete the directory, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_UNABLETOCHATTRS 24            // issue "unable to change file/directory attributes, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_UNABLETORESUME 25             // issue "unable to resume file transfer"
-#define ITEMPR_RESUMETESTFAILED 26           // issue "unable to resume file transfer, unexpected tail of file (file has changed)"
+#define ITEMPR_RESUMETESTFAILED 26           // problem: "unable to resume file transfer, unexpected tail of file (file has changed)"
 #define ITEMPR_TGTFILEREADERROR 27           // issue "error reading the target file" (uses WinError)
 #define ITEMPR_TGTFILEWRITEERROR 28          // issue "error writing the target file" (uses WinError)
 #define ITEMPR_INCOMPLETEDOWNLOAD 29         // issue "unable to retrieve file from server: %s" (uses WinError and ErrAllocDescr)
 #define ITEMPR_UNABLETODELSRCFILE 30         // issue "Move: unable to delete the source file, server response: %s" (uses ErrAllocDescr to store the server response - it may span multiple lines)
-#define ITEMPR_UPLOADCANNOTCREATETGTDIR 31   // upload: issue "the target directory cannot be created" (if FTPMayBeValidNameComponent() returns FALSE, ErrAllocDescr==NULL and WinError==NO_ERROR; if a file/link is in the way, WinError==ERROR_ALREADY_EXISTS; otherwise it uses ErrAllocDescr to store the server response - it may span multiple lines)
+#define ITEMPR_UPLOADCANNOTCREATETGTDIR 31   // upload: issue "the target directory cannot be created" (if FTPMayBeValidNameComponent() returns FALSE, ErrAllocDescr==NULL and WinError==NO_ERROR; if a file/link blocks the path, WinError==ERROR_ALREADY_EXISTS; otherwise it uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_UPLOADCANNOTLISTTGTPATH 32    // upload: issue "unable to list the target path" (unable to detect possible name collisions) (uses WinError and ErrAllocDescr)
 #define ITEMPR_UPLOADTGTDIRALREADYEXISTS 33  // upload: issue "the target directory or a link to the directory already exists"
 #define ITEMPR_UPLOADCRDIRAUTORENFAILED 34   // upload: issue "unable to create the target directory under any name" (uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_UPLOADCANNOTLISTSRCPATH 35    // upload: issue "unable to list the source path" (uses WinError)
 #define ITEMPR_UNABLETOCWDONLYPATH 36        // issue "error while changing the working directory on the server, server response: %s" - change of the path to Path or TgtPath (uses ErrAllocDescr to store the server response - it may span multiple lines)
-#define ITEMPR_UNABLETODELETEDISKDIR 37      // issue "unable to delete directory on disk, error:" (uses WinError)
+#define ITEMPR_UNABLETODELETEDISKDIR 37      // error "unable to delete directory on disk, error:" (uses WinError)
 #define ITEMPR_UPLOADCANNOTCREATETGTFILE 38  // upload: issue "the target file cannot be created or opened" (if FTPMayBeValidNameComponent() returns FALSE, ErrAllocDescr==NULL and WinError==NO_ERROR; if a directory/link is in the way, WinError==ERROR_ALREADY_EXISTS; otherwise it uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_UPLOADCANNOTOPENSRCFILE 39    // issue "the source file cannot be opened" (uses WinError)
 #define ITEMPR_UPLOADTGTFILEALREADYEXISTS 40 // upload: issue "the target file or a link to the file already exists"
 #define ITEMPR_SRCFILEINUSE 41               // issue "the source file or link is locked by another operation"
-#define ITEMPR_TGTFILEINUSE 42               // issue "the target file or link is locked by another operation"
+#define ITEMPR_TGTFILEINUSE 42               // problem "the target file or link is locked by another operation"
 #define ITEMPR_SRCFILEREADERROR 43           // issue "error reading the source file" (uses WinError)
 #define ITEMPR_INCOMPLETEUPLOAD 44           // issue "unable to store file to server: %s" (uses WinError and ErrAllocDescr)
 #define ITEMPR_UNABLETODELETEDISKFILE 45     // issue "unable to delete file on disk, error:" (uses WinError)
@@ -120,7 +120,7 @@ enum CFTPQueueItemState
 #define ITEMPR_UPLOADUNABLETORESUMEBIGTGT 48 // issue "unable to resume the file because the target file is larger than the source file"
 #define ITEMPR_UPLOADFILEAUTORENFAILED 49    // upload: issue "unable to create the target file under any name" (uses ErrAllocDescr to store the server response - it may span multiple lines)
 #define ITEMPR_SKIPPEDBYUSER 50              // after pressing the Skip button on a waiting item in the operation dialog
-#define ITEMPR_UPLOADTESTIFFINISHEDNOTSUP 51 // issue "unable to verify whether the file uploaded successfully" (we sent the entire file + the server "just" did not respond, most likely the file is OK, but we are unable to test it - reasons: ASCII transfer mode or we do not have the size in bytes (neither listing nor the SIZE command))
+#define ITEMPR_UPLOADTESTIFFINISHEDNOTSUP 51 // issue "unable to verify whether the file was uploaded successfully" (the entire file was sent, but the server did not respond; the file is most likely OK, but this cannot be verified - reasons: ASCII transfer mode or the size in bytes is unavailable (neither from a listing nor from the SIZE command))
 
 enum CFTPQueueItemAction
 {
@@ -133,7 +133,7 @@ enum CFTPQueueItemAction
     fqiaReduceFileSizeAndResume,  // the existing file should be truncated and then resumed
     fqiaUploadForceAutorename,    // upload: autorename (use alternate name) should be used no matter what
     fqiaUploadContinueAutorename, // upload: continuation of autorename (use alternate name)
-    fqiaUploadTestIfFinished,     // upload: we sent the entire file + the server "just" did not respond, most likely the file is OK, we will test it
+    fqiaUploadTestIfFinished,     // upload: the entire file was sent, but the server did not respond; the file is probably OK, so this will be tested
 };
 
 class CFTPQueueItemAncestor
@@ -164,7 +164,7 @@ public:
     //   - if it is already in the queue: access only from the queue critical section
 
     static CRITICAL_SECTION NextItemUIDCritSect; // critical section for accessing NextItemUID
-    static int NextItemUID;                      // global counter for item UIDs (access only inside the NextItemUIDCritSect section!)
+    static int NextItemUID;                      // global counter for item UIDs (access only inside the NextItemUIDCritSect critical section!)
 
     int UID;       // unique item number
     int ParentUID; // UID of the parent item (-1 = the parent is the operation)
@@ -176,7 +176,7 @@ public:
 
     DWORD ErrorOccurenceTime; // "time" when the error occurred (used to keep the order of error resolution according to their occurrence); -1 = no error occurred
 
-    CFTPQueueItemAction ForceAction; // action forced by the user (for example an autorename entered from the Solve Error dialog)
+    CFTPQueueItemAction ForceAction; // action forced by the user (for example an autorename specified in the Solve Error dialog)
 
     char* Path; // path to the processed file/directory (local path on the server or a Windows path)
     char* Name; // name of the processed file/directory (name without the path)
@@ -204,9 +204,9 @@ public:
     void SetItem(int parentUID, CFTPQueueItemType type, CFTPQueueItemState state,
                  DWORD problemID, const char* path, const char* name);
 
-    // enabler for buttons in the operation dialog: returns TRUE if the "Solve Error" button makes sense;
-    // in 'canSkip' (if not NULL) it returns TRUE if the "Skip" button makes sense;
-    // in 'canRetry' (if not NULL) it returns TRUE if the "Retry" button makes sense
+    // button enable states in the operation dialog: returns TRUE if the "Solve Error" button should be enabled;
+    // in 'canSkip' (if not NULL), returns TRUE if the "Skip" button should be enabled;
+    // in 'canRetry' (if not NULL), returns TRUE if the "Retry" button should be enabled
     // CAUTION: call only from the queue critical section
     BOOL HasErrorToSolve(BOOL* canSkip, BOOL* canRetry);
 
@@ -437,7 +437,7 @@ class CFTPQueueItemChAttr : public CFTPQueueItem
 public:
     WORD Attr;        // requested mode (conversion to a string in octal digits is necessary)
     BYTE AttrErr;     // TRUE = an unknown attribute should be preserved, which we cannot do (FALSE = everything OK)
-    char* OrigRights; // original file permissions (!=NULL only if they contain unknown permissions + if a permissions column was found at all)
+    char* OrigRights; // original file permissions (!=NULL only if they contain unknown permissions and a permissions column was found at all)
 
 public:
     CFTPQueueItemChAttr();
@@ -461,7 +461,7 @@ class CFTPQueueItemChAttrDir : public CFTPQueueItemDir
 public:
     WORD Attr;        // requested mode (conversion to a string in octal digits is necessary)
     BYTE AttrErr;     // TRUE = an unknown attribute should be preserved, which we cannot do (FALSE = everything OK)
-    char* OrigRights; // original directory permissions (!=NULL only if they contain unknown permissions + if a permissions column was found at all)
+    char* OrigRights; // original directory permissions (!=NULL only if they contain unknown permissions and a permissions column was found)
 
 public:
     CFTPQueueItemChAttrDir();
@@ -483,7 +483,7 @@ public:
 class CFTPQueueItemChAttrExplore : public CFTPQueueItem
 {
 public:
-    char* OrigRights; // original directory permissions for computing Attr of the explored directory (!=NULL if a permissions column was found)
+    char* OrigRights; // original directory permissions for computing Attr of the directory being explored (!=NULL if a permissions column was found)
 
 public:
     CFTPQueueItemChAttrExplore();
@@ -514,7 +514,7 @@ protected:
     int LastFoundUID;   // UID of the last found item
     int LastFoundIndex; // index of the last found item (always a non-negative number, even after initialization)
 
-    int FirstWaitingItemIndex;          // first item in the queue (array Items) that can (but does not have to) be in state sqisWaiting and if GetOnlyExploreAndResolveItems==TRUE it can also be an "explore" or "resolve" item (there simply are none before this index)
+    int FirstWaitingItemIndex;          // first item in the queue (Items array) that may, but does not have to, be in state sqisWaiting; if GetOnlyExploreAndResolveItems==TRUE, it may also be an "explore" or "resolve" item (there are simply no such items before this index)
     BOOL GetOnlyExploreAndResolveItems; // TRUE = for now we return only "explore" and "resolve" items from the queue (FALSE only when no such item is in the "waiting" state) (Type < fqitLastResolveOrExploreItem)
 
     int ExploreAndResolveItemsCount;            // number of queue items of type "explore" and "resolve" (Type < fqitLastResolveOrExploreItem)
@@ -574,10 +574,10 @@ public:
     // returns the number of items in state sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail
     // in the queue; if 'onlyUINeeded' is TRUE, fills the array 'UINeededArr' with items in state
     // sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail; if 'focusedItemUID' is not -1,
-    // it returns in 'indexInAll' the index of the item with UID 'focusedItemUID' in the queue +
-    // returns in 'indexInUIN' the index of the item with UID 'focusedItemUID' in the array of items in state
-    // sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail; if it does not find
-    // the item with UID 'focusedItemUID', it returns both 'indexInAll' and 'indexInUIN' equal to -1
+    // returns in 'indexInAll' the index of the item with UID 'focusedItemUID' in the queue and in
+    // 'indexInUIN' the index of the item with UID 'focusedItemUID' in the array of items in state
+    // sqisUserInputNeeded, sqisSkipped, sqisFailed or sqisForcedToFail; if the item with UID
+    // 'focusedItemUID' is not found, sets both 'indexInAll' and 'indexInUIN' to -1
     int GetUserInputNeededCount(BOOL onlyUINeeded, TDirectArray<DWORD>* UINeededArr,
                                 int focusedItemUID, int* indexInAll, int* indexInUIN);
 
@@ -593,10 +593,10 @@ public:
     // valid, it does nothing (the list view refresh is already on the way)
     void GetListViewDataFor(int index, NMLVDISPINFO* lvdi, char* buf, int bufSize);
 
-    // button enabler in the operation dialog for the item at index 'index':
-    // returns TRUE if "Solve Error" makes sense; returns FALSE for an invalid index;
-    // in 'canSkip' (if not NULL) it returns TRUE if "Skip" makes sense;
-    // in 'canRetry' (if not NULL) it returns TRUE if "Retry" makes sense
+    // determines which buttons should be enabled in the operation dialog for the item at index 'index':
+    // returns TRUE if "Solve Error" should be enabled; returns FALSE for an invalid index;
+    // in 'canSkip' (if not NULL) returns TRUE if "Skip" should be enabled;
+    // in 'canRetry' (if not NULL) returns TRUE if "Retry" should be enabled
     BOOL IsItemWithErrorToSolve(int index, BOOL* canSkip, BOOL* canRetry);
 
     // performs Skip on the item with UID 'UID' (change to state "skipped"); returns the index
@@ -660,7 +660,7 @@ public:
     // assigns 'attrErr' to AttrErr of item 'item'
     void UpdateAttrErr(CFTPQueueItemChAttrDir* item, BYTE attrErr);
 
-    // assigns 'attrErr' to AttrErr of item 'item'
+    // assigns 'attrErr' to the AttrErr member of 'item'
     void UpdateAttrErr(CFTPQueueItemChAttr* item, BYTE attrErr);
 
     // assigns 'isHiddenDir' to IsHiddenDir of item 'item'
@@ -669,7 +669,7 @@ public:
     // assigns 'isHiddenFile' to IsHiddenFile of item 'item'
     void UpdateIsHiddenFile(CFTPQueueItemDel* item, BOOL isHiddenFile);
 
-    // assigns 'size' to Size and 'sizeInBytes' to SizeInBytes of item 'item' + adjusts
+    // assigns 'size' to Size and 'sizeInBytes' to SizeInBytes of item 'item' and adjusts
     // TotalSizeInBytes and TotalSizeInBlocks in the operation ('oper')
     void UpdateFileSize(CFTPQueueItemCopyOrMove* item, CQuadWord const& size,
                         BOOL sizeInBytes, CFTPOperation* oper);
@@ -677,23 +677,23 @@ public:
     // assigns 'asciiTransferMode' to AsciiTransferMode of item 'item'
     void UpdateAsciiTransferMode(CFTPQueueItemCopyOrMove* item, BOOL asciiTransferMode);
 
-    // assigns 'ignoreAsciiTrModeForBinFile' to IgnoreAsciiTrModeForBinFile of item 'item'
+    // assigns 'ignoreAsciiTrModeForBinFile' to the IgnoreAsciiTrModeForBinFile member of item 'item'
     void UpdateIgnoreAsciiTrModeForBinFile(CFTPQueueItemCopyOrMove* item, BOOL ignoreAsciiTrModeForBinFile);
 
-    // for upload: assigns 'asciiTransferMode' to AsciiTransferMode of item 'item'
+    // for upload: assigns 'asciiTransferMode' to the AsciiTransferMode member of item 'item'
     void UpdateAsciiTransferMode(CFTPQueueItemCopyOrMoveUpload* item, BOOL asciiTransferMode);
 
-    // for upload: assigns 'ignoreAsciiTrModeForBinFile' to IgnoreAsciiTrModeForBinFile of item 'item'
+    // for upload: assigns 'ignoreAsciiTrModeForBinFile' to the IgnoreAsciiTrModeForBinFile member of item 'item'
     void UpdateIgnoreAsciiTrModeForBinFile(CFTPQueueItemCopyOrMoveUpload* item, BOOL ignoreAsciiTrModeForBinFile);
 
-    // assigns 'tgtFileState' to TgtFileState of item 'item'
+    // assigns 'tgtFileState' to the TgtFileState member of 'item'
     void UpdateTgtFileState(CFTPQueueItemCopyOrMoveUpload* item, unsigned tgtFileState);
 
-    // assigns 'size' to Size of item 'item' + adjusts TotalSizeInBytes in the operation ('oper')
+    // assigns 'size' to the Size member of item 'item' and adjusts TotalSizeInBytes in operation 'oper'
     void UpdateFileSize(CFTPQueueItemCopyOrMoveUpload* item, CQuadWord const& size,
                         CFTPOperation* oper);
 
-    // sets SizeWithCRLF_EOLs and NumberOfEOLs of item 'item'
+    // sets the SizeWithCRLF_EOLs and NumberOfEOLs members of item 'item'
     void UpdateTextFileSizes(CFTPQueueItemCopyOrMoveUpload* item, CQuadWord const& sizeWithCRLF_EOLs,
                              CQuadWord const& numberOfEOLs);
 
@@ -702,25 +702,25 @@ public:
     // on error it throws TRACE_E
     void DebugCheckCounters(CFTPOperation* oper);
 
-    // returns progress based on the ratio between completed ('doneOrSkippedCount') and all
-    // items ('totalCount'); returns in 'unknownSizeCount' the number of unfinished items
-    // with unknown size; returns in 'waitingCount' the number of items waiting for
+    // returns progress based on the ratio between done or skipped items ('doneOrSkippedCount') and all
+    // items ('totalCount'); stores in 'unknownSizeCount' the number of unfinished items
+    // with unknown size; stores in 'waitingCount' the number of items waiting for
     // processing (waiting + delayed + processing)
     int GetSimpleProgress(int* doneOrSkippedCount, int* totalCount, int* unknownSizeCount,
                           int* waitingCount);
 
-    // returns information for download - copy/move progress; returns in 'downloaded' the sum of downloaded
-    // sizes in bytes; returns in 'unknownSizeCount' the number of unfinished items with
-    // unknown size; returns in 'totalWithoutErrors' the sum of sizes (in bytes)
-    // of items that are not in an error state (a prompt to the user is also an error state)
+    // returns information for download copy/move progress; 'downloaded' receives the total
+    // number of downloaded bytes; 'unknownSizeCount' receives the number of unfinished items
+    // with unknown size; 'totalWithoutErrors' receives the total size (in bytes)
+    // of items that are not in an error state (a prompt to the user is also considered an error state)
     void GetCopyProgressInfo(CQuadWord* downloaded, int* unknownSizeCount,
                              CQuadWord* totalWithoutErrors, int* errorsCount,
                              int* doneOrSkippedCount, int* totalCount, CFTPOperation* oper);
 
-    // returns information for upload - copy/move progress; returns in 'uploaded' the sum of uploaded
-    // sizes in bytes; returns in 'unknownSizeCount' the number of unfinished items with
-    // unknown size; returns in 'totalWithoutErrors' the sum of sizes (in bytes)
-    // of items that are not in an error state (a prompt to the user is also an error state)
+    // returns information for upload copy/move progress; 'uploaded' receives the total
+    // number of uploaded bytes; 'unknownSizeCount' receives the number of unfinished items
+    // with unknown size; 'totalWithoutErrors' receives the total size (in bytes)
+    // of items that are not in an error state (a prompt to the user is also considered an error state)
     void GetCopyUploadProgressInfo(CQuadWord* uploaded, int* unknownSizeCount,
                                    CQuadWord* totalWithoutErrors, int* errorsCount,
                                    int* doneOrSkippedCount, int* totalCount, CFTPOperation* oper);
@@ -732,11 +732,11 @@ public:
     // CAUTION: call only in the QueueCritSect critical section!!!
     DWORD GiveLastErrorOccurenceTime() { return ++LastErrorOccurenceTime; }
 
-    // searches for the UID of the item that needs to open the Solve Error dialog (a
-    // "new" error appeared in it (the user has not seen it yet)); returns TRUE if such an
-    // item was found, its UID is returned in 'itemUID' + its index
+    // searches for the UID of the item for which the Solve Error dialog needs to be opened (a
+    // "new" error has appeared in it, which the user has not seen yet); returns TRUE if such an
+    // item was found; its UID is returned in 'itemUID' and its index
     // in the queue in 'itemIndex' (the index may change immediately, so it should
-    // be taken only as indicative)
+    // be treated as indicative only)
     BOOL SearchItemWithNewError(int* itemUID, int* itemIndex);
 
 protected:
@@ -761,7 +761,7 @@ enum CFTPDiskWorkType
     fdwtNone,               // initialization value
     fdwtCreateDir,          // creating a directory
     fdwtCreateFile,         // creating/opening a file in a situation where the file state is unknown
-    fdwtRetryCreatedFile,   // creating/opening a file in a situation where the file has already been created/overwritten/resumed_with_overwrite_option
+    fdwtRetryCreatedFile,   // creating/opening a file when the file has already been created/overwritten/resumed with overwrite enabled
     fdwtRetryResumedFile,   // creating/opening a file in a situation where the file has already been resumed
     fdwtCheckOrWriteFile,   // verifying contents or writing to a file (for "resume" it checks the end of the file, writing happens beyond the end of the file)
     fdwtCreateAndWriteFile, // if the file is not open, it creates it (overwrites an existing file if any) + writes flush data to the file (at the position of the current seek, so normally at the end of the file)
@@ -847,7 +847,7 @@ struct CFTPDiskWork
 struct CFTPFileToClose
 {
     char FileName[MAX_PATH]; // file name
-    HANDLE File;             // file handle we should close
+    HANDLE File;             // file handle to close
     BOOL DeleteIfEmpty;      // TRUE = if the file being closed is empty, delete it
     BOOL SetDateAndTime;     // TRUE = set 'Date'+'Time' before closing the file
     CFTPDate Date;           // date to set as the last write time of the file; if Date.Day==0, it is an "empty value"
@@ -866,7 +866,7 @@ protected:
     HANDLE ContEvent; // "signaled" if there is work in the Work array or if the thread should terminate
 
     // critical section for accessing the data part of the object
-    // CAUTION: consult access to critical sections in servers\critsect.txt!!!
+    // CAUTION: consult servers\critsect.txt before accessing critical sections
     CRITICAL_SECTION DiskCritSect;
 
     TIndirectArray<CFTPDiskWork> Work;
@@ -892,9 +892,9 @@ public:
     // or until CancelWork() is called; returns success
     BOOL AddWork(CFTPDiskWork* work);
 
-    // cancels the work 'work' added to the thread; returns TRUE if the work has not started yet
-    // or if it can still be interrupted (it is in progress and after finishing the opposite
-    // action will be performed); if the work is in progress, returns TRUE in 'workIsInProgress' (if not NULL); returns
+    // cancels work 'work' added to the thread; returns TRUE if the work has not started yet
+    // or if it can still be canceled (it is in progress and, after finishing, the reverse
+    // action will be performed); if the work is in progress, sets 'workIsInProgress' to TRUE (if not NULL); returns
     // FALSE if the work has already finished
     BOOL CancelWork(const CFTPDiskWork* work, BOOL* workIsInProgress);
 
@@ -986,7 +986,7 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
     fwssWorkExplWaitForPWDRes,                 // explore-dir: waiting for the result of "PWD" (obtaining the working path of the explored directory)
     fwssWorkExplWaitForPASVRes,                // explore-dir: waiting for the result of "PASV" (getting IP+port for the passive data connection)
     fwssWorkExplOpenActDataCon,                // explore-dir: open the active data connection
-    fwssWorkExplWaitForListen,                 // explore-dir: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkExplWaitForListen,                 // explore-dir: waiting for the "listen" port to open (opening an active data connection), either locally or on the proxy server
     fwssWorkExplSetTypeA,                      // explore-dir: set transfer mode to ASCII
     fwssWorkExplWaitForPORTRes,                // explore-dir: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
     fwssWorkExplWaitForTYPERes,                // explore-dir: waiting for the result of "TYPE" (switch to ASCII data transfer mode)
@@ -1004,13 +1004,13 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
     fwssWorkChAttrWaitForCHMODQuotedRes,       // change attributes (name in quotes): waiting for the result of "SITE CHMOD" (change file/directory mode, probably Unix only)
     fwssWorkCopyWaitForPASVRes,                // copy/move file: waiting for the result of "PASV" (getting IP+port for the passive data connection)
     fwssWorkCopyOpenActDataCon,                // copy/move file: open the active data connection
-    fwssWorkCopyWaitForListen,                 // copy/move file: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkCopyWaitForListen,                 // copy/move file: waiting for the listening port to open (opening an active data connection), either locally or on the proxy server
     fwssWorkCopySetType,                       // copy/move file: set the required transfer mode (ASCII / binary)
     fwssWorkCopyWaitForPORTRes,                // copy/move file: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
     fwssWorkCopyWaitForTYPERes,                // copy/move file: waiting for the result of "TYPE" (switch to ASCII / binary data transfer mode)
     fwssWorkCopyResumeFile,                    // copy/move file: optionally ensure resume (send the REST command)
     fwssWorkCopyWaitForResumeRes,              // copy/move file: waiting for the result of the "REST" command (resume file)
-    fwssWorkCopyResumeError,                   // copy/move file: error of the "REST" command (not implemented, etc.) or we already know REST will fail
+    fwssWorkCopyResumeError,                   // copy/move file: "REST" command error (not implemented, etc.) or REST is already known to fail
     fwssWorkCopySendRetrCmd,                   // copy/move file: send the RETR command (start reading the file, possibly from the offset specified by Resume)
     fwssWorkCopyActivateDataCon,               // copy/move file: activate the data connection (right after sending the RETR command)
     fwssWorkCopyWaitForRETRRes,                // copy/move file: waiting for the result of "RETR" (waiting for the file reading to finish)
@@ -1018,7 +1018,7 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
     fwssWorkCopyFinishFlushData,               // copy/move file: ensure flushing the data from the data connection is finished (the connection is already closed)
     fwssWorkCopyFinishFlushDataAfterQuitSent,  // copy/move file: after sending "QUIT" wait for the control connection to close + wait for the data flush to disk to finish
     fwssWorkCopyProcessRETRRes,                // copy/move file: process the result of "RETR" (after ending the "data connection", flushing data to disk and receiving the server response to "RETR")
-    fwssWorkCopyDelayedAutoRetry,              // copy/move file: wait WORKER_DELAYEDAUTORETRYTIMEOUT milliseconds for auto-retry (so that all unexpected responses from the server can arrive)
+    fwssWorkCopyDelayedAutoRetry,              // copy/move file: wait WORKER_DELAYEDAUTORETRYTIMEOUT milliseconds before auto-retry (so that all unexpected responses from the server can arrive)
     fwssWorkCopyTransferFinished,              // copy/move file: file transferred, in case of Move delete the source file
     fwssWorkCopyMoveWaitForDELERes,            // copy/move file: waiting for the result of "DELE" (Move: delete the source file/link after finishing the file transfer)
     fwssWorkCopyDone,                          // copy/move file: done, close the file and go to the next item
@@ -1037,26 +1037,26 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
     fwssWorkUploadAutorenDirSendMKD,           // upload copy/move file: autorename - try to generate another new name for the target directory and try to create it
     fwssWorkUploadAutorenDirWaitForMKDRes,     // upload copy/move file: autorename - waiting for the result of "MKD" (creating the target directory under a new name)
     fwssWorkUploadGetTgtPath,                  // upload copy/move file: determine the path to the target directory on the server - start by changing to it
-    fwssWorkUploadGetTgtPathWaitForCWDRes,     // upload copy/move file: waiting for the result of "CWD" (setting the path to the target directory)
+    fwssWorkUploadGetTgtPathWaitForCWDRes,     // upload copy/move file: waiting for the result of "CWD" (changing to the target directory)
     fwssWorkUploadGetTgtPathSendPWD,           // upload copy/move file: send "PWD" (getting the path to the target directory)
     fwssWorkUploadGetTgtPathWaitForPWDRes,     // upload copy/move file: waiting for the result of "PWD" (getting the path to the target directory)
-    fwssWorkUploadListDiskDir,                 // upload copy/move file: list the directory being uploaded from disk
+    fwssWorkUploadListDiskDir,                 // upload copy/move file: list the source directory on disk
     fwssWorkUploadListDiskWaitForDisk,         // upload copy/move file: waiting for the disk operation to finish (listing the directory)
     fwssWorkUploadListDiskWaitForDiskAftQuit,  // upload copy/move file: after sending the "QUIT" command wait for the disk operation to finish (listing the directory)
     fwssWorkUploadCantCreateFileInvName,       // upload copy/move file: handle error "target file cannot be created" (invalid name)
     fwssWorkUploadCantCreateFileDirEx,         // upload copy/move file: handle error "target file cannot be created" (name already used for directory or link to directory)
     fwssWorkUploadFileExists,                  // upload copy/move file: handle error "target file already exists"
     fwssWorkUploadNewFile,                     // upload copy/move file: the target file does not exist, start uploading it
-    fwssWorkUploadAutorenameFile,              // upload copy/move file: handle the error when creating the target file - autorename
+    fwssWorkUploadAutorenameFile,              // upload copy/move file: handle the error when creating the target file - auto-rename
     fwssWorkUploadResumeFile,                  // upload copy/move file: problem "target file exists" - resume
     fwssWorkUploadTestIfFinished,              // upload copy/move file: we sent the entire file + the server "just" did not respond, most likely the file is OK, we will test it
-    fwssWorkUploadResumeOrOverwriteFile,       // upload copy/move file: problem "target file exists" - resume or overwrite
+    fwssWorkUploadResumeOrOverwriteFile,       // upload copy/move file: issue "target file exists" - resume or overwrite
     fwssWorkUploadOverwriteFile,               // upload copy/move file: problem "target file exists" - overwrite
     fwssWorkUploadFileSetTgtPath,              // upload file: set the target path
     fwssWorkUploadFileSetTgtPathWaitForCWDRes, // upload file: waiting for the result of "CWD" (setting the target path)
     fwssWorkUploadGenNewName,                  // upload file: autorename: generate a new name
     fwssWorkUploadLockFile,                    // upload file: open the file in FTPOpenedFiles
-    fwssWorkUploadDelForOverwrite,             // upload file: if this is an overwrite and delete should be used first, do it here
+    fwssWorkUploadDelForOverwrite,             // upload file: if this is an overwrite and delete should be used first, perform the delete here
     fwssWorkUploadDelForOverWaitForDELERes,    // upload file: waiting for the DELE result before overwrite
     fwssWorkUploadFileAllocDataCon,            // upload file: allocate the data connection
     fwssWorkUploadGetFileSize,                 // upload file: resume: determine the file size (via the SIZE command or from the listing)
@@ -1066,7 +1066,7 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
     fwssWorkUploadTestFileSizeFailed,          // upload copy/move file: after an upload error the file size test failed
     fwssWorkUploadWaitForPASVRes,              // upload copy/move file: waiting for the result of "PASV" (getting IP+port for the passive data connection)
     fwssWorkUploadOpenActDataCon,              // upload copy/move file: open the active data connection
-    fwssWorkUploadWaitForListen,               // upload copy/move file: waiting for the "listen" port to open (we open an active data connection) - local or on the proxy server
+    fwssWorkUploadWaitForListen,               // upload copy/move file: waiting for the "listen" port to open (opening an active data connection), locally or on the proxy server
     fwssWorkUploadWaitForPORTRes,              // upload copy/move file: waiting for the result of "PORT" (passing IP+port to the server for the active data connection)
     fwssWorkUploadSetType,                     // upload copy/move file: set the required transfer mode (ASCII / binary)
     fwssWorkUploadWaitForTYPERes,              // upload copy/move file: waiting for the result of "TYPE" (switch to ASCII / binary data transfer mode)
@@ -1082,11 +1082,11 @@ enum CFTPWorkerSubState // substates for individual states from CFTPWorkerState
 
 enum CFTPWorkerSocketEvent
 {
-    fwseConnect,       // [error, 0], connection to the server opened
+    fwseConnect,       // [error, 0], opening a connection to the server
     fwseClose,         // [error, 0], socket was closed
-    fwseNewBytesRead,  // [error, 0], another block of data read into the socket buffer
+    fwseNewBytesRead,  // [error, 0], another block of data was read into the socket buffer
     fwseWriteDone,     // [error, 0], buffer write finished (only if Write returned 'allBytesWritten'==FALSE)
-    fwseIPReceived,    // [IP, error], we received the IP (while resolving the host name)
+    fwseIPReceived,    // [IP, error], IP address received (while resolving the host name)
     fwseTimeout,       // [0, 0], timer delivery reports timeout while sending FTP commands (see WORKER_TIMEOUTTIMERID)
     fwseWaitForCmdErr, // [0, 0], sending a command to the server failed, waiting whether FD_CLOSE arrives, if not, close the socket "manually"
 };
@@ -1152,11 +1152,11 @@ enum CFTPWorkerCmdState
     // the command or connection loss while sending/waiting for the reply or a timeout - connection closed
     // because we did not receive the server's reply to the FTP command)
     fwcsWaitForCmdReply,
-    fwcsWaitForLoginPrompt, // same functionality as fwcsWaitForCmdReply, we distinguish only because of error messages
+    fwcsWaitForLoginPrompt, // same functionality as fwcsWaitForCmdReply; distinguished only because of error messages
 
-    // waiting for the reason of an error that occurred when sending a command (writing to the socket): waiting for fwseClose,
-    // if it does not arrive we close the socket "manually" (on fwseWaitForCmdErr timeout); at the same time we capture an error
-    // message from the socket or at least from fwseClose; if we capture nothing, we at least print WaitForCmdErrError
+    // waiting for the cause of an error that occurred when sending a command (writing to the socket): waiting for fwseClose,
+    // if it does not arrive, close the socket "manually" (on fwseWaitForCmdErr timeout); at the same time, capture an error
+    // message from the socket or at least from fwseClose; if nothing is captured, at least print WaitForCmdErrError
     fwcsWaitForCmdError,
 };
 
@@ -1235,7 +1235,7 @@ enum CUploadType
 #define WORKER_RECONTIMEOUTTIMID 33     // timer ID for waiting for another connect attempt (reconnect)
 #define WORKER_STATUSUPDATETIMID 34     // timer ID for periodically updating the status
 #define WORKER_DATACONSTARTTIMID 35     // timer ID for detecting a timeout while waiting for the data connection to open after receiving the server reply to RETR (WarFTPD illogically sends 226 even before our data connection accept)
-#define WORKER_DELAYEDAUTORETRYTIMID 36 // timer ID for delaying auto-retry (e.g. Quick&Easy FTPD returns 426 for RETR and immediately 220 - if you retry immediately, responses shift (220 is taken as the response to the next command instead of this command and everything goes wrong))
+#define WORKER_DELAYEDAUTORETRYTIMID 36 // timer ID used to delay auto-retry (e.g. Quick&Easy FTPD returns 426 for RETR and immediately afterwards 220; if retried immediately, the replies become misaligned, so 220 is taken as the response to the next command instead of this one)
 #define WORKER_LISTENTIMEOUTTIMID 37    // timer ID ensuring timeout detection when opening the "listen" port on the proxy server (when opening an active data connection)
 
 #define WORKER_STATUSUPDATETIMEOUT 1000     // time in milliseconds after which the status in the worker (and the worker progress and overall progress in the operation dialog) is updated - NOTE: linked to OPERDLG_STATUSMINIDLETIME
@@ -1267,8 +1267,8 @@ protected:
     int ReadBytesOffset;        // number of bytes already processed (skipped) in the 'ReadBytes' buffer
     int ReadBytesAllocatedSize; // allocated size of the 'ReadBytes' buffer
 
-    CDataConnectionSocket* WorkerDataCon;             // NULL; otherwise, the data connection currently used by this worker (state see WorkerDataConState)
-    CUploadDataConnectionSocket* WorkerUploadDataCon; // NULL; otherwise, the data connection currently used by this worker for upload (state see WorkerDataConState)
+    CDataConnectionSocket* WorkerDataCon;             // NULL; otherwise, the data connection currently used by this worker (see WorkerDataConState for its state)
+    CUploadDataConnectionSocket* WorkerUploadDataCon; // NULL; otherwise, the data connection currently used by this worker for upload (state: see WorkerDataConState)
 
     // critical section for accessing the data part of the object (data for display in dialogs)
     // WARNING: consult access to critical sections in the file servers\critsect.txt !!!
@@ -1281,7 +1281,7 @@ protected:
     int LogUID;                                  // log UID for this worker (-1 if the log is not created); NOTE: it is in WorkerCritSect and not SocketCritSect !!!
     CFTPWorkerState State;                       // worker state, see CFTPWorkerState
     CFTPWorkerSubState SubState;                 // state inside the worker state (substate for the processing steps of each State), see CFTPWorkerSubState
-    CFTPQueueItem* CurItem;                      // read-only data: processed item (in state sqisProcessing), NULL=worker has no work; write via Queue and CurItem->UID
+    CFTPQueueItem* CurItem;                      // read-only data: item being processed (in state sqisProcessing), NULL = worker has no work; write via Queue and CurItem->UID
     char ErrorDescr[FTPWORKER_ERRDESCR_BUFSIZE]; // textual description of the error, contains no CR or LF and does not end with a period; ensuring these conditions see CorrectErrorDescr(); displayed for fwsWaitingForReconnect and fwsConnectionError, filled on errors see CFTPWorkerEvent
     int ConnectAttemptNumber;                    // number of the current attempt to establish the connection; before the very first attempt this is zero (set to one when the connection is established)
     CCertificate* UnverifiedCertificate;         // SSL: if the attempt to connect fails due to an unknown untrusted certificate, the connection is closed and the certificate is stored here (we show it to the user in the Solve Error dialog)
@@ -1306,7 +1306,7 @@ protected:
     const char* ProxyScriptExecPoint; // current proxy script command (NULL = first command); WARNING: not intended for reading, only for passing to CFTPOperation::PrepareNextScriptCmd()
     int ProxyScriptLastCmdReply;      // reply to the last command sent from the proxy script (-1 = none)
 
-    BOOL DiskWorkIsUsed; // TRUE if DiskWork is inserted in FTPDiskThread
+    BOOL DiskWorkIsUsed; // TRUE if DiskWork is added to FTPDiskThread
 
     HANDLE OpenedFile;                   // target file for copy/move operations
     CQuadWord OpenedFileSize;            // current size of the 'OpenedFile'
@@ -1347,7 +1347,7 @@ protected:
 
     BOOL UploadDirGetTgtPathListing; // only when processing upload-dir-explore or upload-file items: TRUE = the target path listing should be fetched
 
-    int UploadAutorenamePhase;              // upload: current phase of generating names for the target directory/file (see FTPGenerateNewName()); 0 = beginning of the autorename process; -1 = it was the last generation phase, we simply cannot generate another name of that type
+    int UploadAutorenamePhase;              // upload: current phase of generating names for the target directory/file (see FTPGenerateNewName()); 0 = beginning of the autorename process; -1 = this was the last generation phase, and another name of that type cannot be generated
     char UploadAutorenameNewName[MAX_PATH]; // upload: buffer for the last generated name for the target directory/file
 
     CUploadType UploadType; // type of upload (according to the state of the target file): new, resume, resume or overwrite, overwrite, autorename
@@ -1379,8 +1379,8 @@ public:
     // returns State (in the WorkerCritSect critical section)
     CFTPWorkerState GetState();
 
-    // returns ShouldBePaused (in the WorkerCritSect critical section); in 'isWorking' (must not be
-    // NULL) returns TRUE if the worker is working (not sleeping, not waiting for the user, and not terminated);
+    // returns ShouldBePaused (in the WorkerCritSect critical section); sets 'isWorking' (must not be
+    // NULL) to TRUE if the worker is working (not sleeping, not waiting for the user, and not terminated);
     BOOL IsPaused(BOOL* isWorking);
 
     // sets 'CopyOfUID' and 'CopyOfMsg' (in the CSocket::SocketCritSect and
@@ -1422,9 +1422,9 @@ public:
     // if we already attempted deletion via DeleteWorkers); returns TRUE if cancellation is possible
     BOOL CanDeleteFromRetCons();
 
-    // used to query whether the worker can be cancelled from DeleteWorkers (only if the
-    // connection from the worker is not being returned to the panel, or if we already attempted deletion
-    // from the CReturningConnections methods); returns TRUE if cancellation is possible
+    // used to query whether the worker can be deleted from DeleteWorkers (only if the
+    // worker's connection is not being returned to the panel, or if we have already attempted deletion
+    // from the CReturningConnections methods); returns TRUE if deletion is possible
     BOOL CanDeleteFromDelWorkers();
 
     // informs the worker that it should attempt to stop; returns TRUE if the worker
@@ -1440,7 +1440,7 @@ public:
     // informs the worker that it should attempt to pause/resume; returns TRUE if the worker
     // wants to post WORKER_SHOULDPAUSE or WORKER_SHOULDRESUME (fweWorkerShouldPause
     // or fweWorkerShouldResume) by calling PostShouldPauseOrResume() after this
-    // method; 'pause' is TRUE/FALSE depending on pause/resume
+    // method finishes; 'pause' is TRUE for pause and FALSE for resume
     // WARNING: may be called for one worker several times in a row (check whether it has already been called; if so, do nothing and return FALSE)!
     BOOL InformAboutPause(BOOL pause);
 
@@ -1449,9 +1449,9 @@ public:
     // critical sections
     void PostShouldPauseOrResume();
 
-    // determines whether the worker "control connection" socket is closed and the worker
-    // "data connection" does not exist; returns TRUE if the "control connection" socket is closed
-    // and the "data connection" does not exist (the worker can be cancelled)
+    // checks whether the worker's "control connection" socket is closed and the worker
+    // has no "data connection"; returns TRUE if the "control connection" socket is closed
+    // and no "data connection" exists (the worker can be deleted)
     BOOL SocketClosedAndDataConDoesntExist();
 
     // determines whether the worker has work in the disk thread; returns FALSE if it has no work
@@ -1478,13 +1478,13 @@ public:
     // clears the read and write buffers (useful for example before reopening the connection)
     void ResetBuffersAndEvents();
 
-    // writes to the socket (performs "send") bytes from the 'buffer' of length 'bytesToWrite'
+    // writes bytes from 'buffer' to the socket (using "send") with length 'bytesToWrite'
     // (if 'bytesToWrite' is -1, writes strlen(buffer) bytes); on error returns FALSE and,
-    // if the Windows error code is known, returns it in 'error' (if not NULL); if it returns TRUE,
-    // at least part of the buffer was successfully written; in 'allBytesWritten' (must not be
-    // NULL) returns TRUE if the entire buffer was written; if 'allBytesWritten'
-    // returns FALSE, before the next call to Write you must wait for the fwseWriteDone event
-    // (once it arrives, the write is complete)
+    // if the Windows error code is known, stores it in 'error' (if not NULL); if it returns TRUE,
+    // at least part of the buffer was written successfully; 'allBytesWritten' (must not be
+    // NULL) is set to TRUE if the entire buffer was written; if 'allBytesWritten' is
+    // FALSE, you must wait for the fwseWriteDone event before the next call to Write
+    // (once it occurs, the write is complete)
     BOOL Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL* allBytesWritten);
 
     // helper method to detect whether the entire reply from the FTP server is already in the 'ReadBytes' buffer;
@@ -1553,10 +1553,10 @@ public:
     // a Windows error code (arrived with FD_CLOSE or arose while processing FD_CLOSE)
     virtual void SocketWasClosed(DWORD error);
 
-    // reception of a timer with ID 'id' and parameter 'param'
+    // receives a timer with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param);
 
-    // reception of a posted message with ID 'id' and parameter 'param'
+    // receives a posted message with ID 'id' and parameter 'param'
     virtual void ReceivePostMessage(DWORD id, void* param);
 
 protected:
@@ -1669,7 +1669,7 @@ protected:
                       CQuadWord const* writeOrReadFromOffset, int validBytesInFlushDataBuffer,
                       HANDLE workFile);
 
-    // returns the processed 'CurItem' back to the queue (returns it to the "waiting" state so another
+    // returns the current item being processed, 'CurItem', back to the queue (puts it back into the "waiting" state so another
     // worker can process it)
     // WARNING: call only inside the WorkerCritSect critical section !!!
     void ReturnCurItemToQueue();
@@ -1719,7 +1719,7 @@ class CFTPWorkersList
 {
 protected:
     // critical section for accessing the object's data
-    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
+    // WARNING: consult servers\critsect.txt before accessing critical sections.
     CRITICAL_SECTION WorkersListCritSect;
 
     TIndirectArray<CFTPWorker> Workers; // array of workers
@@ -1738,10 +1738,10 @@ public:
 
     // informs workers that they should attempt to stop; operates on all workers
     // of the operation (if 'workerInd' is -1) or only on the worker at index 'workerInd'; must
-    // be called repeatedly until it returns TRUE (processing is batched); 'victims'+'maxVictims'
+    // be called repeatedly as long as it returns TRUE (processing is batched); 'victims'+'maxVictims'
     // is an array for workers that need to close the data connection or post WORKER_SHOULDSTOP
     // (fweWorkerShouldStop) by calling CloseDataConnectionOrPostShouldStop() after this method
-    // finishes; 'foundVictims' receives the number of filled items in the 'victims' array on input and
+    // finishes; 'foundVictims' contains the number of filled items in the 'victims' array on input and
     // returns the updated count of filled items
     BOOL InformWorkersAboutStop(int workerInd, CFTPWorker** victims, int maxVictims, int* foundVictims);
 
@@ -1842,13 +1842,13 @@ public:
     // WARNING: enters the CSocketsThread::CritSect section !!!
     void PostLoginChanged(int workerID);
 
-    // informs workers in the "sleeping" state about the existence of new work (impulse to search
-    // for work in the item queue); if 'onlyOneItem' is TRUE, there is just one item
-    // (informing one worker is enough), otherwise there are more items (inform all
-    // workers); informing the workers = posting WORKER_WAKEUP;
-    // WARNING: does not fully lock the WorkersListCritSect, it may not be executed for a worker
-    //          added while the method is running (see AddWorker()) !!!
-    // WARNING: enters the CSocketsThread::CritSect section !!!
+    // informs workers in the "sleeping" state that new work is available (a signal to search
+    // for work in the item queue); if 'onlyOneItem' is TRUE, there is only one item
+    // (informing one worker is enough), otherwise there are multiple items (inform all
+    // workers); workers are notified by posting WORKER_WAKEUP;
+    // WARNING: does not fully use the WorkersListCritSect critical section, so a worker
+    //          added while the method is running may not be informed (see AddWorker()) !!!
+    // WARNING: enters the CSocketsThread::CritSect critical section !!
     void PostNewWorkAvailable(BOOL onlyOneItem);
 
     // attempts to find a "sleeping" worker with an open connection; on success,
@@ -1864,11 +1864,11 @@ public:
     // adds to 'uploaded' the size (in bytes) of the files currently being uploaded by all workers
     void AddCurrentUploadSize(CQuadWord* uploaded);
 
-    // searches for the index of a worker that needs to open the Solve Error dialog (a
-    // "new" error appeared there (the user has not seen it yet)); 'lastErrorOccurenceTime' is the "time"
-    // assigned to the last error (used for a quick test whether it even makes sense to look
-    // for a "new" error); returns TRUE if such a worker was found,
-    // its index is returned in 'index'
+    // searches for the index of a worker that needs the Solve Error dialog to be opened (a
+    // "new" error has appeared for that worker and the user has not seen it yet); 'lastErrorOccurenceTime' is the "time"
+    // assigned to the last error (used as a quick test of whether it makes sense to search
+    // for a "new" error at all); returns TRUE if such a worker is found,
+    // and returns its index in 'index'
     BOOL SearchWorkerWithNewError(int* index, DWORD lastErrorOccurenceTime);
 
     // returns TRUE if the worker list is empty or all workers should stop
@@ -1908,8 +1908,8 @@ public:
     // can be called from any thread
     void Clear();
 
-    // returns the connection speed in bytes per second; in 'transferIdleTime' (may be NULL)
-    // returns the time in seconds since the last data reception
+    // returns the connection speed in bytes per second; stores in 'transferIdleTime' (may be NULL)
+    // the time in seconds since the last data was received
     // can be called from any thread
     DWORD GetSpeed(DWORD* transferIdleTime);
 
@@ -1999,35 +1999,35 @@ enum CFTPOperationType
 #define RETRYONRESUMFILE_SKIP 5       // skip (simply do not perform the operation)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// how to solve the problem "ASCII transfer mode for a binary file"
+// how to handle the problem "ASCII transfer mode for a binary file"
 #define ASCIITRFORBINFILE_USERPROMPT 0 // ask the user
 #define ASCIITRFORBINFILE_IGNORE 1     // ignore it, the user knows what they are doing
 #define ASCIITRFORBINFILE_INBINMODE 2  // change the transfer mode to binary and restart the transfer (assuming nothing has been written to the file yet)
 #define ASCIITRFORBINFILE_SKIP 3       // skip (simply do not perform the operation)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// how to solve the situation "deleting a non-empty directory"
+// how to handle the situation "deleting a non-empty directory"
 #define NONEMPTYDIRDEL_USERPROMPT 0 // ask the user
 #define NONEMPTYDIRDEL_DELETEIT 1   // delete it without asking
 #define NONEMPTYDIRDEL_SKIP 2       // skip (simply do not perform the operation)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// how to solve the situation "deleting a hidden file"
+// how to handle the situation "deleting a hidden file"
 #define HIDDENFILEDEL_USERPROMPT 0 // ask the user
 #define HIDDENFILEDEL_DELETEIT 1   // delete it without asking
 #define HIDDENFILEDEL_SKIP 2       // skip (simply do not perform the operation)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// how to solve the situation "deleting a hidden directory"
+// how to handle the situation "deleting a hidden directory"
 #define HIDDENDIRDEL_USERPROMPT 0 // ask the user
 #define HIDDENDIRDEL_DELETEIT 1   // delete it without asking
 #define HIDDENDIRDEL_SKIP 2       // skip (simply do not perform the operation)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
-// how to solve the problem "file/directory has unknown attributes that we cannot preserve (permissions other than 'r'+'w'+'x')"
+// how to handle the problem "a file/directory has unknown attributes that we cannot preserve (permissions other than 'r'+'w'+'x')"
 #define UNKNOWNATTRS_USERPROMPT 0 // ask the user
 #define UNKNOWNATTRS_IGNORE 1     // ignore it, the user knows what they are doing (set attributes as close to the requested ones as possible)
-#define UNKNOWNATTRS_SKIP 2       // we will not change attributes on this file/directory (skip the file/directory)
+#define UNKNOWNATTRS_SKIP 2       // do not change attributes on this file/directory (skip the file/directory)
 // WARNING: when adding a value, check the bit range in CFTPOperation !!!
 
 class CExploredPaths
@@ -2052,7 +2052,7 @@ public:
     BOOL AddPath(const char* path);
 
 protected:
-    // returns "found?" and the index of the item or where it should be inserted (sorted array)
+    // returns "found?" and the item index or the insertion position (sorted array)
     BOOL GetPathIndex(const char* path, int pathLen, int& index);
 };
 
@@ -2065,7 +2065,7 @@ enum COperationState
     opstFinishedWithErrors    // the operation was completed but with errors (items are in the sqisDone, sqisSkipped, sqisFailed or sqisForcedToFail states)
 };
 
-#define SMPLCMD_APPROXBYTESIZE 1000 // approximate size of processing a single item in bytes for measuring the speed of Delete and ChangeAttrs operations
+#define SMPLCMD_APPROXBYTESIZE 1000 // approximate number of bytes to process one item, for measuring the speed of Delete and ChangeAttrs operations
 
 class CFTPOperation
 {
@@ -2075,7 +2075,7 @@ public:
 
 protected:
     // critical section for accessing the object's data
-    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
+    // WARNING: consult servers\critsect.txt before accessing critical sections.
     CRITICAL_SECTION OperCritSect;
 
     int UID;           // unique operation number (index in the CFTPOperationsList::Operations array + link for items in the Queue)
@@ -2100,16 +2100,16 @@ protected:
     char* User;                   // user (NULL = unknown) WARNING: anonymous is already part of the string here
     char* Password;               // password (NULL = unknown) WARNING: anonymous password (email) is already part of the string here
     char* Account;                // account info (see FTP command "ACCT") (NULL = unknown)
-    BOOL RetryLoginWithoutAsking; // TRUE = the worker should try to reconnect even for "error" server replies (code "5xx"); FALSE = reconnect only for "transient-error" replies (code "4xx"); set later by the user when resolving the worker connection problem
+    BOOL RetryLoginWithoutAsking; // TRUE = the worker should try to reconnect even for "error" server replies (code "5xx"); FALSE = reconnect only for "transient-error" replies (code "4xx"); set later by the user when resolving the worker's connection problem
     char* InitFTPCommands;        // list of FTP commands to send to the server immediately after connecting (NULL = no commands)
     BOOL UsePassiveMode;          // TRUE/FALSE = passive/active data connection mode
-    BOOL SizeCmdIsSupported;      // FALSE = the SIZE command received the server reply "not supported" (no point trying again)
+    BOOL SizeCmdIsSupported;      // FALSE = the server replied "not supported" to the SIZE command (no point trying again)
     char* ListCommand;            // command to obtain a listing of a path on this server (NULL = "LIST")
     DWORD ServerIP;               // IP address of the FTP/Proxy server 'ConnectToHost' (==INADDR_NONE until the IP is known)
     char* ServerSystem;           // server system (reply to the SYST command) - may also be NULL
     char* ServerFirstReply;       // first server reply (often contains the FTP server version) - may also be NULL
     BOOL UseListingsCache;        // TRUE = the user wants to store listings in the cache for this connection
-    char* ListingServerType;      // server type for parsing listings: NULL = autodetect; otherwise the server type name (without the optional leading '*'; if it stops existing, it switches to autodetect)
+    char* ListingServerType;      // server type for parsing listings: NULL = autodetect; otherwise the server type name (without the optional leading '*'; if it no longer exists, it switches to autodetect)
     BOOL EncryptControlConnection;
     BOOL EncryptDataConnection;
     int CompressData;
@@ -2134,7 +2134,7 @@ protected:
     int ChildItemsNotDone;  // number of unfinished "child" items (except type sqisDone)
     int ChildItemsSkipped;  // number of skipped "child" items (type sqisSkipped)
     int ChildItemsFailed;   // number of failed "child" items (types sqisFailed and sqisForcedToFail)
-    int ChildItemsUINeeded; // number of user-input-needed "child" items (types sqisFailed and sqisForcedToFail)
+    int ChildItemsUINeeded; // number of "child" items that require user input (types sqisFailed and sqisForcedToFail)
 
     char* SourcePath;                 // operation source path (full path, possibly including fs-name)
     char SrcPathSeparator;            // most frequently used source path separator ('/', '.', etc.)
@@ -2168,8 +2168,8 @@ protected:
     // valid only for download:
     // data for estimating the block size (for VMS, MVS and other servers that use
     // blocks - ignored elsewhere)
-    CQuadWord BlkSizeTotalInBytes;  // total size of files obtained so far in bytes (we take only files with a size of at least two blocks)
-    CQuadWord BlkSizeTotalInBlocks; // total size of files obtained so far in blocks (we take only files with a size of at least two blocks)
+    CQuadWord BlkSizeTotalInBytes;  // total size of files obtained so far in bytes (counting only files at least two blocks in size)
+    CQuadWord BlkSizeTotalInBlocks; // total size of files obtained so far in blocks (counting only files at least two blocks in size)
     DWORD BlkSizeActualValue;       // current value of the real block size (for progress estimation) (-1 = unknown)
 
     BOOL ResumeIsNotSupported;         // TRUE = the FTP REST/APPE command returns a permanent error (e.g. "not implemented")
@@ -2208,7 +2208,7 @@ protected:
     unsigned ConfirmDelOnHiddenDir : 2;   // see constants HIDDENDIRDEL_XXX
 
     // ****************************************************************************
-    // more for Change Attributes:
+    // additional settings for Change Attributes:
     // ****************************************************************************
 
     unsigned ChAttrOfFiles : 1; // TRUE/FALSE = change/do not change file attributes
@@ -2326,9 +2326,9 @@ public:
     void AddToNotDoneSkippedFailed(int notDone, int skipped, int failed, int uiNeeded,
                                    BOOL onlyUINeededOrFailedToSkipped);
 
-    // determines whether the name matches the aggregate ASCIIFileMasks mask; 'name'+'ext' are pointers
-    // to the name and extension (or the end of the name), both placed in a single buffer; returns TRUE if
-    // the name matches the aggregate mask
+    // determines whether the name matches the ASCIIFileMasks wildcard mask; 'name' and 'ext' are pointers
+    // to the name and extension (or the end of the name), both pointing into a single buffer; returns TRUE if
+    // the name matches the wildcard mask
     BOOL IsASCIIFile(const char* name, const char* ext);
 
     // adds/subtracts 'size' to/from 'TotalSizeInBytes' (if 'sizeInBytes' is TRUE) or to/from 'TotalSizeInBlocks'
@@ -2341,7 +2341,7 @@ public:
     // sets OperationDlg (in the critical section)
     void SetOperationDlg(COperationDlg* operDlg);
 
-    // activates or opens the operation dialog (see OperationDlg); returns success of the operation
+    // activates or opens the operation dialog (see OperationDlg); returns whether the operation succeeded
     BOOL ActivateOperationDlg(HWND dropTargetWnd);
 
     // closes the operation dialog (if open) and returns the handle of the thread in which the
@@ -2449,16 +2449,16 @@ public:
     void ReportWorkerChange(int workerID, BOOL reportProgressChange);
 
     // called by the operation dialog after a change is reported via ReportWorkerChange(); returns the ID of the changed worker
-    // or -1 if more than one changed; in 'reportProgressChange' (if not NULL) returns TRUE if
-    // it was a worker change associated with a progress (status) change
+    // or -1 if more than one worker changed; stores TRUE in 'reportProgressChange' (if not NULL) if
+    // the worker change was associated with a progress/status change
     int GetChangedWorker(BOOL* reportProgressChange);
 
     // just calls CFTPWorkersList::PostNewWorkAvailable()
     // WARNING: enters the CSocketsThread::CritSect section !!!
     void PostNewWorkAvailable(BOOL onlyOneItem);
 
-    // just calls CFTPWorkersList::GiveWorkToSleepingConWorker()
-    // WARNING: enters the CSocketsThread::CritSect section !!!
+    // only calls CFTPWorkersList::GiveWorkToSleepingConWorker()
+    // WARNING: enters the CSocketsThread::CritSect critical section !!
     BOOL GiveWorkToSleepingConWorker(CFTPWorker* sourceWorker);
 
     // called to report an item change (only changes that affect the item display in the Operations listview
@@ -2528,7 +2528,7 @@ public:
     BOOL GetEncryptControlConnection() { return EncryptControlConnection; }
     BOOL GetEncryptDataConnection() { return EncryptDataConnection; }
     int GetCompressData() { return CompressData; }
-    CCertificate* GetCertificate(); // WARNING: returns the certificate only after calling its AddRef(), so the caller is responsible for releasing it by calling Release()
+    CCertificate* GetCertificate(); // WARNING: returns the certificate after calling AddRef() on it, so the caller is responsible for releasing it by calling Release()
 
     void SetEncryptDataConnection(BOOL encryptDataConnection) { EncryptDataConnection = encryptDataConnection; }
     void SetEncryptControlConnection(BOOL encryptControlConnection) { EncryptControlConnection = encryptControlConnection; }
@@ -2593,10 +2593,10 @@ public:
     // determines whether 'ServerSystem' contains the name 'systemName'
     BOOL IsServerSystem(const char* systemName);
 
-    // returns TRUE if the path 'path' is already in the list of explored paths (see 'ExploredPaths');
+    // returns TRUE if 'path' is already in the list of explored paths (see 'ExploredPaths');
     // WARNING: assumes that 'path' is a path returned by the server, so paths
     // are compared only as case-sensitive strings (slashes/backslashes/dots, etc., are not trimmed)
-    // - a cycle may be detected only on its second pass, which is sufficient for our purposes
+    // - a cycle may be detected only when it is encountered a second time, which is sufficient for our purposes
     BOOL IsAlreadyExploredPath(const char* path);
 
     // stores the path 'path' in the list of explored paths (see 'ExploredPaths');
@@ -2755,9 +2755,9 @@ public:
                               const char* path, CFTPServerPathType pathType,
                               int userLength);
 
-    // determines whether among the operations there is an upload to the server 'user'+'host'+'port';
-    // 'user' is NULL for anonymous connections; 'userLength' is zero if we do not know how long the username is
-    // or if it does not contain "forbidden" characters, otherwise it is the expected username length
+    // determines whether the operations include an upload to the server 'user'+'host'+'port';
+    // 'user' is NULL for anonymous connections; 'userLength' is zero if the username length is unknown
+    // or if the username does not contain "forbidden" characters, otherwise it is the expected username length
     BOOL IsUploadingToServer(const char* user, const char* host, unsigned short port,
                              int userLength);
 
@@ -2783,7 +2783,7 @@ class CFTPOperationsList
 {
 protected:
     // critical section for accessing the object's data
-    // WARNING: consult access to critical sections in the servers\critsect.txt file !!!
+    // WARNING: consult servers\critsect.txt before accessing critical sections.
     CRITICAL_SECTION OpListCritSect;
 
     // list of existing operations; the operation UID is the index into this array,
@@ -2800,32 +2800,32 @@ public:
     // returns TRUE if there is no operation in the list
     BOOL IsEmpty();
 
-    // adds a new operation to the array (works with FirstFreeIndexInOperations); in 'newuid' (if not NULL)
+    // adds a new operation to the array (uses FirstFreeIndexInOperations); in 'newuid' (if not NULL)
     // returns the UID of the added operation; returns TRUE on success
     BOOL AddOperation(CFTPOperation* newOper, int* newuid);
 
     // closes all open operation dialogs and waits for all dialog threads to finish
     void CloseAllOperationDlgs();
 
-    // stops and cancels selected workers of operations; 'parent' is the thread's "foreground" window (after
-    // pressing ESC it is used to determine whether ESC was pressed in this window and not
-    // for example in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
+    // stops and cancels the selected operation workers; 'parent' is the thread's "foreground" window (after
+    // pressing ESC, it is used to determine whether ESC was pressed in this window and not,
+    // for example, in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
     // or a dialog opened by the plugin); if 'operUID' is -1, it works with all workers of all
     // operations; if 'operUID' is not -1 and 'workerInd' is -1, it works with all workers
     // of the operation with UID 'operUID'; if neither 'operUID' nor 'workerInd' is -1, it works with the worker
     // at index 'workerInd' of the operation with UID 'operUID'
-    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect critical sections !!
     void StopWorkers(HWND parent, int operUID, int workerInd);
 
-    // pauses or resumes selected workers of operations; 'parent' is the thread's "foreground" window (after
-    // pressing ESC it is used to determine whether ESC was pressed in this window and not
-    // for example in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
+    // pauses or resumes the selected operation workers; 'parent' is the thread's "foreground" window (after
+    // pressing ESC, it is used to determine whether ESC was pressed in this window and not,
+    // for example, in another application; in the main thread it is SalamanderGeneral->GetMsgBoxParent()
     // or a dialog opened by the plugin); if 'operUID' is -1, it works with all workers of all
     // operations; if 'operUID' is not -1 and 'workerInd' is -1, it works with all workers
     // of the operation with UID 'operUID'; if neither 'operUID' nor 'workerInd' is -1, it works with the worker
-    // at index 'workerInd' of the operation with UID 'operUID'; if 'pause' is TRUE the selected
-    // workers should pause, otherwise they should resume
-    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect sections !!!
+    // at index 'workerInd' of the operation with UID 'operUID'; if 'pause' is TRUE, the selected
+    // workers are paused, otherwise they are resumed
+    // WARNING: enters the CSocketsThread::CritSect and CSocket::SocketCritSect critical sections !!
     void PauseWorkers(HWND parent, int operUID, int workerInd, BOOL pause);
 
     // removes the operation with UID 'uid' from the array (updates FirstFreeIndexInOperations);
@@ -2905,7 +2905,7 @@ public:
 
 struct CReturningConnectionData
 {
-    int ControlConUID;         // to which "control connection" in the panel we return the connection
+    int ControlConUID;         // control connection in the panel to which the connection is returned
     CFTPWorker* WorkerWithCon; // worker with the returned connection
 
     CReturningConnectionData(int controlConUID, CFTPWorker* workerWithCon)
@@ -2966,7 +2966,7 @@ struct CUploadListingItem // data of a single file/directory/link in the listing
 
 enum CUploadListingChangeType
 {
-    ulctDelete,       // deleting a name
+    ulctDelete,       // deleting a file name
     ulctCreateDir,    // creating a directory
     ulctStoreFile,    // start uploading a file (may also overwrite a file/link)
     ulctFileUploaded, // upload finished (may also overwrite a file/link)
@@ -3018,7 +3018,7 @@ public:
     CUploadListingChange* LastChange;         // only in ulsInProgress: last change in the listing (a new change is appended after this one)
     DWORD LatestChangeTime;                   // IncListingCounter() from the moment of the last listing change (used to check whether it is possible to update the listing with a new listing - only if LatestChangeTime is less than the start time of downloading the new listing)
     CUploadWaitingWorker* FirstWaitingWorker; // only in ulsInProgress* states: list of workers waiting for the path listing to finish (or fail)
-    BOOL FromPanel;                           // TRUE = listing taken from the panel (may be outdated; if there is doubt about the listing freshness, refresh it)
+    BOOL FromPanel;                           // TRUE = listing taken from the panel (may be outdated; if its freshness is in doubt, it is refreshed)
 
     TIndirectArray<CUploadListingItem> ListingItem; // array of listing items
 
@@ -3040,13 +3040,13 @@ public:
     // a possible new item with CUploadListingItem::Name == 'name' should be inserted
     BOOL FindItem(const char* name, int& index);
 
-    // parses the listing 'pathListing'+'pathListingLen'+'pathListingDate'; 'welcomeReply' (must not
+    // parses the listing from 'pathListing'+'pathListingLen'+'pathListingDate'; 'welcomeReply' (must not
     // be NULL) is the first server reply (often contains the FTP server version);
     // 'systReply' (must not be NULL) is the server system (reply to the SYST command);
-    // 'suggestedListingServerType' is the server type used for parsing the listing: NULL = autodetect,
-    // otherwise the server type name (without the optional leading '*'; if it stops existing, it switches
-    // to autodetect); if 'lowMemory' is not NULL, it returns TRUE in it when memory is low;
-    // returns TRUE if the entire listing was successfully parsed and the object is filled with new items
+    // 'suggestedListingServerType' is the server type for parsing the listing: NULL = autodetect,
+    // otherwise the server type name (without the optional leading '*'; if that type no longer exists,
+    // parsing switches to autodetect); if 'lowMemory' is not NULL, TRUE is returned in it when memory is low;
+    // returns TRUE if the entire listing was parsed successfully and the object is populated with new items
     BOOL ParseListing(const char* pathListing, int pathListingLen, const CFTPDate& pathListingDate,
                       CFTPServerPathType pathType, const char* welcomeReply, const char* systReply,
                       const char* suggestedListingServerType, BOOL* lowMemory);
@@ -3070,10 +3070,10 @@ public:
     // WARNING: do not call directly, called through CUploadListingCache::ReportStoreFile()
     void ReportStoreFile(const char* name, BOOL* lowMem);
 
-    // see CUploadListingCache::ReportFileUploaded(); returns TRUE in 'lowMem' (must not be NULL)
-    // if there is not enough memory to add the change to the change queue (only in the
-    // ulsInProgress state)
-    // WARNING: do not call directly, called through CUploadListingCache::ReportFileUploaded()
+    // for a description, see CUploadListingCache::ReportFileUploaded(); 'lowMem' (must not be NULL)
+    // is set to TRUE if there is not enough memory to add the change to the change queue (only in
+    // the ulsInProgress state)
+    // WARNING: do not call directly; call through CUploadListingCache::ReportFileUploaded()
     void ReportFileUploaded(const char* name, const CQuadWord& fileSize, BOOL* lowMem);
 
     // applies the change 'change' to the listing; returns success (failure = the entire listing must be invalidated)
@@ -3083,10 +3083,10 @@ public:
     // to finish (or fail); returns FALSE only when memory is low
     BOOL AddWaitingWorker(int workerMsg, int workerUID);
 
-    // to all workers from the FirstWaitingWorker list: if 'uploadFirstWaitingWorker' is NULL,
+    // for all workers in the FirstWaitingWorker list: if 'uploadFirstWaitingWorker' is NULL,
     // WORKER_TGTPATHLISTINGFINISHED messages are sent; otherwise 'uploadFirstWaitingWorker'
-    // is the list where these workers should be added
-    // WARNING: if 'uploadFirstWaitingWorker' is NULL, must be called inside CSocketsThread::CritSect!
+    // is the list to which these workers should be added
+    // WARNING: if 'uploadFirstWaitingWorker' is NULL, this must be called inside CSocketsThread::CritSect
     void InformWaitingWorkers(CUploadWaitingWorker** uploadFirstWaitingWorker);
 
 private:
@@ -3151,10 +3151,10 @@ public:
     // see CUploadListingCache::IsListingFromPanel
     BOOL IsListingFromPanel(const char* path, CFTPServerPathType pathType);
 
-    // adds an empty listing for path 'path'+'dirName' of type 'pathType' with state 'listingState';
+    // adds an empty listing for the path 'path'+'dirName' of type 'pathType' with state 'listingState';
     // 'dirName' may also be NULL (a listing for the path 'path' is added); 'doNotCheckIfPathIsKnown'
-    // is TRUE if we know the path is not in the 'Listing' array; returns a pointer to the new
-    // listing on success, otherwise returns NULL
+    // is TRUE if we know the path is not in the 'Listings' array; returns a pointer to the new
+    // listing on success, otherwise NULL
     CUploadPathListing* AddEmptyListing(const char* path, const char* dirName,
                                         CFTPServerPathType pathType,
                                         CUploadListingState listingState,
@@ -3195,8 +3195,8 @@ public:
     // invalidates the listing at index 'index' (e.g. after an "unknown change" in this listing)
     void InvalidateListing(int index);
 
-    // see CUploadListingCache::GetListing()
-    // WARNING: do not call directly, called through CUploadListingCache::GetListing()
+    // for a description, see CUploadListingCache::GetListing()
+    // WARNING: do not call directly; call through CUploadListingCache::GetListing()
     BOOL GetListing(const char* path, CFTPServerPathType pathType, int workerMsg,
                     int workerUID, BOOL* listingInProgress, BOOL* notAccessible,
                     BOOL* getListing, const char* name, CUploadListingItem** existingItem,
@@ -3230,18 +3230,19 @@ public:
     ~CUploadListingCache();
 
     // adds or updates a listing from the panel (before starting an upload operation and after a panel refresh
-    // during the upload operation); 'user'+'host'+'port' describes the server; 'path' is the
-    // local path on the server of type 'pathType'; 'pathListing'+'pathListingLen' is the listing text;
-    // 'pathListingDate' is the listing timestamp (needed for "year_or_time");
-    // 'listingStartTime' is IncListingCounter() from the moment the LIST command was sent to the server
-    // (listing started); if 'onlyUpdate' is TRUE, only an update of a listing already in the cache is performed;
-    // 'welcomeReply' (must not be NULL) is the first server reply (often contains the FTP server version);
-    // 'systReply' (must not be NULL) is the server system (reply to the SYST command);
-    // 'suggestedListingServerType' is the server type for parsing the listing:
-    // NULL = autodetect, otherwise the server type name (without the optional leading '*'; if it stops existing,
-    // it switches to autodetect); returns FALSE if the listing cannot be parsed or if memory is low or parameters are invalid;
-    // returns TRUE if the listing was added or updated or was not updated because 'onlyUpdate'==TRUE or because
-    // an update is not needed (i.e. returns TRUE if the cached path listing can be used)
+    // during an upload operation); 'user'+'host'+'port' describes the server; 'path' is the
+    // local path on the server of type 'pathType'; 'pathListing'+'pathListingLen' is the listing
+    // text; 'pathListingDate' is the date when the listing was obtained (needed for "year_or_time");
+    // 'listingStartTime' is IncListingCounter() from the moment the LIST command was sent to the
+    // server (listing start); if 'onlyUpdate' is TRUE, only a listing already in the cache is
+    // updated; 'welcomeReply' (must not be NULL) is the first server reply (often containing the
+    // FTP server version); 'systReply' (must not be NULL) is the server system reply (reply to the
+    // SYST command); 'suggestedListingServerType' is the server type for parsing the listing:
+    // NULL = autodetection, otherwise the server type name (without an optional leading '*'; if it
+    // no longer exists, it switches to autodetection); returns FALSE if the listing cannot be
+    // parsed, on out-of-memory, or on invalid parameters; returns TRUE if the listing was added or
+    // updated, or was not updated because 'onlyUpdate'==TRUE or because no update is needed (i.e.
+    // returns TRUE if the cached path listing can be used)
     BOOL AddOrUpdateListing(const char* user, const char* host, unsigned short port,
                             const char* path, CFTPServerPathType pathType,
                             const char* pathListing, int pathListingLen,
@@ -3313,19 +3314,18 @@ public:
     void ReportUnknownChange(const char* user, const char* host, unsigned short port,
                              const char* workPath, CFTPServerPathType pathType);
 
-    // obtaining the listing of path 'path' (of type 'pathType') on server 'user'+'host'+'port'
-    // from the cache - if it is not yet in the cache, it is added; if it is already being fetched, we wait;
-    // if the path is not in the cache, it is added in the ulsInProgress state, returns TRUE in 'getListing'
-    // and TRUE in 'listingInProgress'; if the path listing is "unobtainable", returns TRUE
-    // in 'notAccessible' and FALSE in 'listingInProgress'; if the path is in the cache
-    // in one of the ulsInProgress* states, returns FALSE in 'getListing', TRUE
-    // in 'listingInProgress', and after the listing download finishes (or fails)
-    // posts WORKER_TGTPATHLISTINGFINISHED to worker 'workerMsg'+'workerUID';
-    // if the path is in the cache in the ulsReady state, returns FALSE in 'notAccessible',
-    // FALSE in 'listingInProgress', returns the item named 'name' in the allocated
-    // structure 'existingItem' (NULL if an item with that name was not found),
-    // and TRUE/FALSE in 'nameExists' depending on whether an item named 'name' was found;
-    // returns FALSE only when memory is low
+    // obtains the listing of path 'path' (of type 'pathType') on server 'user'+'host'+'port'
+    // from the cache - if it is not yet in the cache, it is added; if it is already being fetched,
+    // the caller waits; if the path is not in the cache, it is added in the ulsInProgress state,
+    // returns TRUE in 'getListing' and TRUE in 'listingInProgress'; if the path listing is
+    // "unobtainable", it returns TRUE in 'notAccessible' and FALSE in 'listingInProgress'; if the
+    // path is in the cache in one of the ulsInProgress* states, it returns FALSE in 'getListing',
+    // TRUE in 'listingInProgress', and after the listing download finishes (or on failure) it posts
+    // WORKER_TGTPATHLISTINGFINISHED to worker 'workerMsg'+'workerUID'; if the path is in the cache
+    // in the ulsReady state, it returns FALSE in 'notAccessible', FALSE in 'listingInProgress',
+    // returns the item named 'name' in the allocated structure 'existingItem' (NULL if no item
+    // with that name was found), and TRUE/FALSE in 'nameExists' depending on whether an item
+    // named 'name' was found; returns FALSE only on out-of-memory
     BOOL GetListing(const char* user, const char* host, unsigned short port,
                     const char* path, CFTPServerPathType pathType, int workerMsg,
                     int workerUID, BOOL* listingInProgress, BOOL* notAccessible,
@@ -3411,8 +3411,8 @@ public:
              const char* path, CFTPServerPathType pathType, const char* name,
              CFTPFileAccessType accessType);
 
-    // compares this opened file with the file specified by the method parameters; returns TRUE if
-    // it is the same file
+    // compares this open file with the file specified by the method parameters; returns TRUE if
+    // they are the same file
     BOOL IsSameFile(const char* user, const char* host, unsigned short port,
                     const char* path, CFTPServerPathType pathType, const char* name);
 
