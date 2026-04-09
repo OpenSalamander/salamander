@@ -53,7 +53,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                             }
                             else
                             {
-                                SubState = fwssWorkUploadWaitForListing; // we should wait until another worker finishes the listing
+                                SubState = fwssWorkUploadWaitForListing; // wait until another worker finishes the listing
                                 reportWorkerChange = TRUE;               // the worker displays the fwssWorkUploadWaitForListing state in the window, so it needs to be redrawn
                             }
                         }
@@ -71,7 +71,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                                 if (existingItem == NULL && nameValid) // no collision and the name is valid -> try to create the directory
                                     SubState = fwssWorkUploadCreateDir;
                                 else
-                                {                                                         // if existingItem == NULL then (!nameValid==TRUE), so there is no need to test for existingItem != NULL
+                                {                                                         // if existingItem == NULL, then !nameValid is TRUE, so there is no need to test existingItem != NULL
                                     if (!nameValid || existingItem->ItemType == ulitFile) // invalid name or a collision with a file -> "dir cannot be created"
                                         SubState = !nameValid ? fwssWorkUploadCantCreateDirInvName : fwssWorkUploadCantCreateDirFileEx;
                                     else
@@ -106,7 +106,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                 handleShouldStop = TRUE; // check whether the worker should stop
             else
             {
-                if (event == fweTgtPathListingFinished) // the designated worker has finished, try to use the new listing
+                if (event == fweTgtPathListingFinished) // the designated worker has finished its work; try to use the new listing
                 {
                     SubState = fwssWorkStartWork;
                     reportWorkerChange = TRUE; // the worker displays the fwssWorkUploadWaitForListing state in the window, so it needs to be redrawn
@@ -121,7 +121,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
             lstrcpyn(ftpPath, curItem->TgtPath, FTP_MAX_PATH);
             CFTPServerPathType type = Oper->GetFTPServerPathType(ftpPath);
             if (FTPPathAppend(type, ftpPath, FTP_MAX_PATH, curItem->TgtName, TRUE))
-            { // we have the path, send CWD to the examined directory on the server
+            { // we have the path; send CWD to the directory being examined on the server
                 _snprintf_s(errText, 200 + FTP_MAX_PATH, _TRUNCATE, LoadStr(IDS_LOGMSGRESOLVINGLINK), ftpPath);
                 Logs.LogMessage(LogUID, errText, -1, TRUE);
 
@@ -141,7 +141,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
             break;
         }
 
-        case fwssWorkUploadResLnkWaitForCWDRes: // upload copy/move file: wait for the "CWD" result (changing into the examined link; if it succeeds, the link is a directory)
+        case fwssWorkUploadResLnkWaitForCWDRes: // upload copy/move file: wait for the "CWD" result (change to the tested link; if it succeeds, the link points to a directory)
         {
             switch (event)
             {
@@ -291,7 +291,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                             case CANNOTCREATENAME_USERPROMPT:
                             {
                                 Queue->UpdateItemState(CurItem, sqisUserInputNeeded, ITEMPR_UPLOADCANNOTCREATETGTDIR, NO_ERROR,
-                                                       SalamanderGeneral->DupStr(errText) /* low memory = the error will be without details */,
+                                                       SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                        Oper);
                                 lookForNewWork = TRUE;
                                 break;
@@ -300,7 +300,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                             case CANNOTCREATENAME_SKIP:
                             {
                                 Queue->UpdateItemState(CurItem, sqisSkipped, ITEMPR_UPLOADCANNOTCREATETGTDIR, NO_ERROR,
-                                                       SalamanderGeneral->DupStr(errText) /* low memory = the error will be without details */,
+                                                       SalamanderGeneral->DupStr(errText) /* low memory = the error will have no details */,
                                                        Oper);
                                 lookForNewWork = TRUE;
                                 break;
@@ -514,7 +514,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                         }
                         else
                         {
-                            SubState = fwssWorkUploadWaitForListing; // we should wait until another worker finishes the listing
+                            SubState = fwssWorkUploadWaitForListing; // wait until another worker finishes the listing
                             reportWorkerChange = TRUE;               // the worker displays the fwssWorkUploadWaitForListing state in the window, so it needs to be redrawn
                         }
                         break;
@@ -638,7 +638,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
             lstrcpyn(ftpPath, curItem->TgtPath, FTP_MAX_PATH);
             CFTPServerPathType type = Oper->GetFTPServerPathType(ftpPath);
             if (FTPPathAppend(type, ftpPath, FTP_MAX_PATH, curItem->TgtName, TRUE))
-            { // we have the path, send CWD to the examined directory on the server
+            { // we have the path; send CWD to the server for the directory being explored
                 PrepareFTPCommand(buf, 200 + FTP_MAX_PATH, errBuf, 50 + FTP_MAX_PATH,
                                   ftpcmdChangeWorkingPath, &cmdLen, ftpPath); // cannot report an error
                 sendCmd = TRUE;
@@ -900,7 +900,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                             int count = ftpQueueItems->Count - (parentItemAdded ? 1 : 0);
                             int childItemsNotDone = count;
                             int i;
-                            for (i = 0; i < count; i++) // set the parent for items created by the explore
+                            for (i = 0; i < count; i++) // set the parent for items created by Explore
                             {
                                 CFTPQueueItem* actItem = ftpQueueItems->At(i);
                                 actItem->ParentUID = parentUID;
@@ -949,7 +949,7 @@ void CFTPWorker::HandleEventInWorkingState4(CFTPWorkerEvent event, BOOL& sendQui
                                 // notify all potentially sleeping workers that new work has appeared
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 // since we are already in CSocketsThread::CritSect, this call is also possible
-                                // from within CSocket::SocketCritSect (no deadlock threat)
+                                // from CSocket::SocketCritSect (no deadlock risk)
                                 Oper->PostNewWorkAvailable(FALSE);
                                 HANDLES(EnterCriticalSection(&WorkerCritSect));
                             }
