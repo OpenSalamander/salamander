@@ -300,7 +300,7 @@ BOOL CFTPListingPluginDataInterface::GetInfoLineContent(int panel, const CFileDa
     {
         if (selectedFiles == 0 && selectedDirs == 0)                                  // Information Line for an empty panel
             return FALSE;                                                             // let Salamander print the text
-        if (BytesColumnOffset == -1 && BlocksColumnOffset == -1 || selectedDirs != 0) // no size in bytes nor blocks or directories are selected too
+        if (BytesColumnOffset == -1 && BlocksColumnOffset == -1 || selectedDirs != 0) // no size in bytes or blocks, or directories are selected too
             return FALSE;                                                             // let Salamander print the counts of selected files and folders
         // when only files are selected (block size is unknown for directories)
         // sum up the number of blocks
@@ -649,7 +649,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
             char subject[MAX_PATH + 200];
             sprintf(subject, LoadStr(IDS_DELETEFROMFTP), subjectSrc);
 
-            // open a message box asking about the delete
+            // open a message box asking for delete confirmation
             const char* Shell32DLLName = "shell32.dll";
             HINSTANCE Shell32DLL;
             Shell32DLL = HANDLES(LoadLibraryEx(Shell32DLLName, NULL, LOAD_LIBRARY_AS_DATAFILE));
@@ -691,7 +691,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
         if (cert)
             cert->Release();
         oper->SetCompressData(ControlConnection->GetCompressData());
-        if (ControlConnection->InitOperation(oper)) // initialize the server connection according to the "control connection"
+        if (ControlConnection->InitOperation(oper)) // initialize the server connection using the "control connection"
         {
             oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
             char path[2 * MAX_PATH];
@@ -713,7 +713,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                 {
                     if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
                         dataIface = NULL; // we care only about a data interface of type CFTPListingPluginDataInterface
-                    int rightsCol = -1;   // column index with permissions (used to detect links)
+                    int rightsCol = -1;   // permissions column index (used to detect links)
                     if (dataIface != NULL)
                         rightsCol = dataIface->FindRightsColumn();
                     const CFileData* f = NULL; // pointer to the file/directory/link in the panel to process
@@ -791,7 +791,7 @@ BOOL CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int p
                 }
                 if (!ok)
                     FTPOperationsList.DeleteOperation(operUID, TRUE);
-                oper = NULL; // the operation is already added to the array, do not release it via 'delete' (see below)
+                oper = NULL; // the operation has already been added to the array, so do not release it via 'delete' (see below)
             }
         }
         if (oper != NULL)
@@ -928,7 +928,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
     char subject[MAX_PATH + 200];
     sprintf(subject, LoadStr(copy ? IDS_COPYFROMFTP : IDS_MOVEFROMFTP), subjectSrc);
 
-    if (mode == 1 && targetPath[0] != 0) // only when opening the dialog for the first time and the target path is selected
+    if (mode == 1 && targetPath[0] != 0) // only when opening the dialog for the first time and a target path is selected
     {
         SalamanderGeneral->SalPathAppend(targetPath, "*.*", 2 * MAX_PATH);
         SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the path in the target panel
@@ -1035,7 +1035,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
             if (cert)
                 cert->Release();
             oper->SetCompressData(ControlConnection->GetCompressData());
-            if (ControlConnection->InitOperation(oper)) // initialize the server connection according to the "control connection"
+            if (ControlConnection->InitOperation(oper)) // initialize the connection to the server based on the "control connection"
             {
                 oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
                 char path[2 * MAX_PATH];
@@ -1069,8 +1069,8 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                         if (queue != NULL)
                         {
                             if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
-                                dataIface = NULL; // we care only about a data interface of type CFTPListingPluginDataInterface
-                            int rightsCol = -1;   // column index with permissions (used to detect links)
+                                dataIface = NULL; // we are only interested in a data interface of type CFTPListingPluginDataInterface
+                            int rightsCol = -1;   // index of the permissions column (used to detect links)
                             if (dataIface != NULL)
                                 rightsCol = dataIface->FindRightsColumn();
                             CQuadWord totalSize(0, 0); // total size (in bytes or blocks)
@@ -1097,7 +1097,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                                     if (!is_AS_400_QSYS_LIB_Path)
                                     {
                                         if (donotUseOpMask)
-                                            lstrcpyn(targetName, f->Name, 2 * MAX_PATH); // masks trim '.' from name ends, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - probably rare, so for now we solve it only provisionally like this
+                                            lstrcpyn(targetName, f->Name, 2 * MAX_PATH); // masks trim trailing '.' characters from names, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - this is probably rare, so for now we handle it only provisionally like this
                                         else
                                             SalamanderGeneral->MaskName(targetName, 2 * MAX_PATH, f->Name, opMask);
                                     }
@@ -1106,7 +1106,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                                         char mbrName[MAX_PATH];
                                         FTPAS400CutFileNamePart(mbrName, f->Name);
                                         if (donotUseOpMask)
-                                            lstrcpyn(targetName, mbrName, 2 * MAX_PATH); // masks trim '.' from name ends, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - probably rare, so for now we solve it only provisionally like this
+                                            lstrcpyn(targetName, mbrName, 2 * MAX_PATH); // masks trim '.' from the ends of names, which is not always OK (e.g. directories "a.b" and "a.b." would merge) - this is probably rare, so for now we handle it provisionally like this
                                         else
                                             SalamanderGeneral->MaskName(targetName, 2 * MAX_PATH, mbrName, opMask);
                                     }
@@ -1211,7 +1211,7 @@ CFTPQueueItem* CreateItemForChangeAttrsOperation(const CFileData* f, BOOL isDir,
     char* rights = NULL;
     if (rightsCol != -1 && IsUNIXLink((rights = dataIface->GetStringFromColumn(*f, rightsCol))))
     {                       // link
-        if (includeSubdirs) // try whether it is a link to a directory (otherwise there is nothing to do)
+        if (includeSubdirs) // try to determine whether this is a link to a directory (otherwise there is nothing to do)
         {
             *type = fqitChAttrsResolveLink;
             item = new CFTPQueueItem;
