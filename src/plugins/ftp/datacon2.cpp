@@ -456,7 +456,7 @@ void CKeepAliveDataConSocket::ConnectionAccepted(BOOL success, DWORD winError, B
         JustConnected();
         LastActivityTime = GetTickCount(); // a successful accept occurred
     }
-    else // an error occurred - log it at least
+    else // error: log it at least
     {
         NetEventLastError = winError;
         if (proxyError && NetEventLastError == NO_ERROR)
@@ -468,20 +468,20 @@ void CKeepAliveDataConSocket::ConnectionAccepted(BOOL success, DWORD winError, B
 void CKeepAliveDataConSocket::ReceiveNetEvent(LPARAM lParam, int index)
 {
     CALL_STACK_MESSAGE3("CKeepAliveDataConSocket::ReceiveNetEvent(0x%IX, %d)", lParam, index);
-    DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
+    DWORD eventError = WSAGETSELECTERROR(lParam); // extract the event error code
     BOOL logLastErr = FALSE;
     switch (WSAGETSELECTEVENT(lParam)) // extract event
     {
     case FD_CLOSE: // sometimes arrives before the final FD_READ, so try FD_READ first and if it succeeds post FD_CLOSE again (another FD_READ may still succeed before it)
     case FD_READ:
     {
-        BOOL sendFDCloseAgain = FALSE; // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ) => post FD_CLOSE again (the current FD_CLOSE was a false alarm)
+        BOOL sendFDCloseAgain = FALSE; // TRUE = FD_CLOSE arrived and there was data to read (handled as FD_READ) => post FD_CLOSE again (the current FD_CLOSE was premature)
         HANDLES(EnterCriticalSection(&SocketCritSect));
         if (ReceivedConnected || UsePassiveMode) // ignore closing of the listen socket
         {
             if (eventError == NO_ERROR) // only if no error occurred (documentation says only WSAENETDOWN can happen)
             {
-                if (UsePassiveMode) // for an active connection we must wait for FD_ACCEPT (this socket is the listener, then the data connection)
+                if (UsePassiveMode) // for a passive connection we must wait for FD_ACCEPT (this socket is the listener, then the data connection)
                 {
                     if (!ReceivedConnected)
                         JustConnected();
@@ -928,7 +928,7 @@ void CUploadDataConnectionSocket::UploadFinished()
     HANDLES(EnterCriticalSection(&SocketCritSect));
 
     if (ConnectionClosedOnEOF && SkippedWriteAfterConnect > 0)
-    { // account bytes from local buffers in the upload speed (we are not sure the local buffers will be sent, but without them the speed on small files that fit almost entirely into local buffers would be completely wrong—absurdly low)
+    { // include bytes from local buffers in the upload speed (we are not sure the local buffers will be sent, but without them the speed for small files that fit almost entirely into local buffers would be completely wrong: absurdly low)
         DWORD ti = GetTickCount();
         TransferSpeedMeter.BytesReceived(SkippedWriteAfterConnect, ti);
         if (GlobalTransferSpeedMeter != NULL)
@@ -1017,7 +1017,7 @@ void CUploadDataConnectionSocket::ConnectionAccepted(BOOL success, DWORD winErro
         SSLErrorOccured = SSLCONERR_NOERROR;
         JustConnected();
     }
-    else // an error occurred - log it at least
+    else // error: log it at least
     {
         NetEventLastError = winError;
         if (proxyError && NetEventLastError == NO_ERROR)
@@ -1031,7 +1031,7 @@ DWORD GetPacketSizeEstimation(DWORD speed, DWORD tooBigPacketSize)
     if (tooBigPacketSize == -1)
         tooBigPacketSize = 1000000; // disable tooBigPacketSize
     if (speed < 4096 || tooBigPacketSize <= 1024)
-        return 512; // select this even if tooBigPacketSize forbids it (something must be chosen)
+        return 512; // choose this even if tooBigPacketSize forbids it (something must be chosen)
     else
     {
         if (speed < 8192 || tooBigPacketSize <= 4096)
@@ -1108,7 +1108,7 @@ void CUploadDataConnectionSocket::MoveFlushBufferToBytesToWrite()
 void CUploadDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
 {
     CALL_STACK_MESSAGE3("CUploadDataConnectionSocket::ReceiveNetEvent(0x%IX, %d)", lParam, index);
-    DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
+    DWORD eventError = WSAGETSELECTERROR(lParam); // extract the event error code
     BOOL logLastErr = FALSE;
     switch (WSAGETSELECTEVENT(lParam)) // extract event
     {
@@ -1121,7 +1121,7 @@ void CUploadDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
             WaitingForWriteEvent = FALSE; // assumption: starting the write will require posting FD_WRITE (if send returns a "would-block" error we switch the value to TRUE)
             if (eventError == NO_ERROR)
             {
-                if (UsePassiveMode) // for an active connection we must wait for FD_ACCEPT (this socket is the listener, then the data connection)
+                if (UsePassiveMode) // for a passive connection we must wait for FD_ACCEPT (this socket is the listener, then the data connection)
                 {
                     if (!ReceivedConnected)
                         JustConnected(); // if FD_WRITE arrives before FD_CONNECT (it still must be connected)
@@ -1206,7 +1206,7 @@ void CUploadDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                     if (GlobalLastActivityTime != NULL)
                                         GlobalLastActivityTime->Set(LastActivityTime);
                                     if (LastActivityTime - FirstWriteAfterConnectTime > 100)
-                                    { // during upload the local buffer fills first (e.g. 8KB in 1ms or 45KB in 8ms when connected to localhost, apparently both send and receive buffers fill up), we do not measure the rate of this filling because it would artificially and unfairly boost the upload speed
+                                    { // during upload, the local buffer fills first (e.g. 8KB in 1ms or 45KB in 8ms when connected to localhost, apparently both send and receive buffers fill up); we do not measure this fill rate because it would artificially and meaninglessly increase the upload speed
                                         TransferSpeedMeter.BytesReceived(decomprSentLen, LastActivityTime);
                                         if (CompressData)
                                             ComprTransferSpeedMeter.BytesReceived(sentLen, LastActivityTime);
@@ -1533,7 +1533,7 @@ void CUploadDataConnectionSocket::DataBufferPrepared(char* flushBuffer, int vali
         AlreadyComprPartOfFlushBuffer = (int)(ZLIBInfo.next_out - (BYTE*)FlushBuffer);
         DecomprBytesInFlushBuffer += validBytesInFlushBuffer - ZLIBInfo.avail_in;
         if (err == SAL_Z_STREAM_END)
-            EndOfFileReached = TRUE; // managed to compress all data and finish the stream == we are at the end of the file
+            EndOfFileReached = TRUE; // all data was compressed and the stream was finished == we are at the end of the file
         if (err < 0)
             TRACE_E("SalZLIB->Deflate returns unexpected error: " << err);
         else // successful compression
