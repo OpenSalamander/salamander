@@ -124,7 +124,7 @@ CFTPWorker::CFTPWorker(CFTPOperation* oper, CFTPQueue* queue, const char* host,
     UploadType = utNone;
     UseDeleteForOverwrite = FALSE;
 
-    if (Config.EnableLogging && !Config.DisableLoggingOfWorkers) // without synchronization, not needed
+    if (Config.EnableLogging && !Config.DisableLoggingOfWorkers) // no synchronization needed
     {
         Logs.CreateLog(&LogUID, host, port, user, NULL, FALSE, TRUE);
         Oper->SendHeaderToLog(LogUID);
@@ -788,7 +788,7 @@ BOOL CFTPWorker::InformAboutStop()
             ret = TRUE;
         }
         else
-        { // if a "data-connection" exists and we are not waiting for the server connection, we need to close the "data-connection"
+        { // if a "data-connection" exists and we are not waiting for the server connection, we need to close it
             ret = WorkerDataConState == wdcsOnlyAllocated || WorkerDataConState == wdcsTransferingData ||
                   WorkerDataConState == wdcsTransferFinished;
         }
@@ -829,7 +829,7 @@ void CFTPWorker::CloseDataConnectionOrPostShouldStop()
         if (workerDataCon->IsConnected()) // close the "data connection"; the system will attempt a "graceful" shutdown
         {
             workerDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
-            postShouldStop = TRUE;              // we must "get the worker moving" so it terminates (WORKER_DATACON_CLOSED will not arrive)
+            postShouldStop = TRUE;              // we must wake the worker so it terminates (WORKER_DATACON_CLOSED will not arrive)
         }
         workerDataCon->FreeFlushData();
         DeleteSocket(workerDataCon);
@@ -839,7 +839,7 @@ void CFTPWorker::CloseDataConnectionOrPostShouldStop()
         if (workerUploadDataCon->IsConnected()) // close the "data connection"; the system will attempt a "graceful" shutdown
         {
             workerUploadDataCon->CloseSocketEx(NULL); // shutdown (we do not learn the result)
-            postShouldStop = TRUE;                    // we must "get the worker moving" so it terminates (WORKER_UPLDATACON_CLOSED will not arrive)
+            postShouldStop = TRUE;                    // we must wake the worker so it terminates (WORKER_UPLDATACON_CLOSED will not arrive)
         }
         workerUploadDataCon->FreeBufferedData();
         DeleteSocket(workerUploadDataCon);
@@ -995,7 +995,7 @@ void CFTPWorker::ForceClose()
 void CFTPWorker::ForceCloseDiskWork()
 {
     CALL_STACK_MESSAGE1("CFTPWorker::ForceCloseDiskWork()");
-    // WARNING: may be called repeatedly (see calls from CFTPWorkersList::ForceCloseWorkers())
+    // WARNING: this may be called repeatedly (see CFTPWorkersList::ForceCloseWorkers())
     HANDLES(EnterCriticalSection(&WorkerCritSect));
     if (DiskWorkIsUsed)
     {
@@ -1079,7 +1079,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 case fwssWorkDelDirWaitForRMDRes:
                 case fwssWorkCopyMoveWaitForDELERes:
                 {
-                    // if we do not know how deleting the file/link/directory ended, invalidate the listing in the cache
+                    // if we do not know how the file/link/directory deletion ended, invalidate the cached listing
                     Oper->GetUserHostPort(userBuf, hostBuf, &port);
                     UploadListingCache.ReportDelete(userBuf, hostBuf, port, CurItem->Path,
                                                     Oper->GetFTPServerPathType(CurItem->Path),
@@ -1129,7 +1129,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
 
                         // except when STOR reports "cannot create target file name" (i.e. STOR reports an error and nothing was uploaded) we consider sending the STOR/APPE command as completion
                         // forced actions: "overwrite", "resume", and "resume or overwrite"
-                        if (CurItem->ForceAction != fqiaNone) // the forced action stops applying
+                        if (CurItem->ForceAction != fqiaNone) // the forced action no longer applies
                             Queue->UpdateForceAction(CurItem, fqiaNone);
                     }
                     break;
@@ -1140,7 +1140,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
                 {
                     if (CurItem->Type == fqitUploadCopyFile || CurItem->Type == fqitUploadMoveFile) // "always true"
                     {
-                        // if we do not know how deleting the file/link/directory ended, invalidate the listing in the cache
+                        // if we do not know how the file/link/directory deletion ended, invalidate the cached listing
                         Oper->GetUserHostPort(userBuf, hostBuf, &port);
                         CFTPQueueItemCopyOrMoveUpload* curItem = (CFTPQueueItemCopyOrMoveUpload*)CurItem;
                         UploadListingCache.ReportDelete(userBuf, hostBuf, port, curItem->TgtPath,
@@ -1156,7 +1156,7 @@ void CFTPWorker::ReleaseData(CUploadWaitingWorker** uploadFirstWaitingWorker)
             ((CFTPQueueItemCopyOrMoveUpload*)CurItem)->RenamedName != NULL)
         {
             if (State == fwsWorking && SubState == fwssWorkUploadWaitForSTORRes)
-                Queue->ChangeTgtNameToRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem); // even if STOR has not yet run, it is still more accurate that the file was stored under the new name than under the original one - obvious for overwriting an existing file
+                Queue->ChangeTgtNameToRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem); // even if STOR has not run yet, it is still more accurate that the file is being stored under the new name than under the original one; this is obvious when overwriting an existing file
             else
                 Queue->UpdateRenamedName((CFTPQueueItemCopyOrMoveUpload*)CurItem, NULL);
         }
@@ -1542,13 +1542,13 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
                         {
                             if (error != NULL)
                                 *error = err;
-                            break; // return the error
+                            break; // return an error
                         }
                     }
                 }
             }
 
-            if (ret) // successfully sent; 'len' is the number of sent bytes (the rest will be sent after FD_WRITE)
+            if (ret) // send succeeded; 'len' is the number of bytes sent (the rest will be sent after FD_WRITE)
             {
                 if (allBytesWritten != NULL)
                     *allBytesWritten = (len >= bytesToWrite);
@@ -1581,7 +1581,7 @@ BOOL CFTPWorker::Write(const char* buffer, int bytesToWrite, DWORD* error, BOOL*
                 }
             }
         }
-        else // not everything was sent yet -> incorrect use of Write
+        else // not everything has been sent yet -> incorrect use of Write
         {
             TRACE_E("Incorrect use of CFTPWorker::Write(): called again before waiting for fwseWriteDone event.");
         }
@@ -1640,7 +1640,7 @@ void CFTPWorker::ReceiveHostByAddress(DWORD ip, int hostUID, int err)
 void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
 {
     CALL_STACK_MESSAGE3("CFTPWorker::ReceiveNetEvent(0x%IX, %d)", lParam, index);
-    DWORD eventError = WSAGETSELECTERROR(lParam); // extract error code of event
+    DWORD eventError = WSAGETSELECTERROR(lParam); // extract the event error code
     switch (WSAGETSELECTEVENT(lParam))            // extract event
     {
     case FD_CLOSE: // sometimes arrives before the last FD_READ, so we must first try FD_READ and if it succeeds, post FD_CLOSE again (another FD_READ may succeed before it)
@@ -1674,7 +1674,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                         ReadBytesOffset = 0;
                     }
 
-                    if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // still a small 'ReadBytes' buffer
+                    if (ReadBytesAllocatedSize - ReadBytesCount < FTPWORKER_BYTESTOREADONSOCKET) // the 'ReadBytes' buffer is still too small
                     {
                         int newSize = ReadBytesCount + FTPWORKER_BYTESTOREADONSOCKET +
                                       FTPWORKER_BYTESTOREADONSOCKETPREALLOC;
@@ -1693,8 +1693,8 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                 }
 
                 if (!lowMem)
-                { // read as many bytes as possible into the buffer; do not read cyclically so the data is processed sequentially
-                    // (smaller buffers are enough); if there is still data to read we receive FD_READ again
+                { // read as many bytes as possible into the buffer; do not read cyclically, so the data is processed sequentially
+                    // (smaller buffers are sufficient); if there is still data to read, we will receive FD_READ again
                     if (!SSLConn)
                     {
                         int len = recv(Socket, ReadBytes + ReadBytesCount, ReadBytesAllocatedSize - ReadBytesCount, 0);
@@ -1743,9 +1743,9 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
             }
             else
             {
-                // can happen: the main or operation-dialog thread manages to call CloseSocket() before FD_READ is delivered
+                // This can happen if the main or operation-dialog thread calls CloseSocket() before FD_READ is delivered
                 // TRACE_E("Unexpected situation in CFTPWorker::ReceiveNetEvent(FD_READ): Socket is not connected.");
-                // we will not generate an event for this unexpected error (solution: user presses ESC)
+                // We will not generate an event for this unexpected error (workaround: the user presses ESC)
             }
         }
         else // FD_READ error report (documentation says only WSAENETDOWN)
@@ -1766,7 +1766,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
         // now process FD_CLOSE
         if (WSAGETSELECTEVENT(lParam) == FD_CLOSE)
         {
-            if (sendFDCloseAgain) // FD_CLOSE acted instead of FD_READ => post FD_CLOSE again
+            if (sendFDCloseAgain) // FD_CLOSE arrived instead of FD_READ => post FD_CLOSE again
             {
                 PostMessage(SocketsThread->GetHiddenWindow(), WM_APP_SOCKET_MIN + index,
                             (WPARAM)GetSocket(), lParam);
@@ -1852,7 +1852,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // return the error
+                                    break; // report the error
                                 }
                             }
                         }
@@ -1872,7 +1872,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                 }
                 else
                 {
-                    // can happen: the main or operation-dialog thread manages to call CloseSocket() before FD_WRITE is delivered
+                    // can happen: the main or operation-dialog thread calls CloseSocket() before FD_WRITE is delivered
                     //TRACE_E("Unexpected situation in CFTPWorker::ReceiveNetEvent(FD_WRITE): Socket is not connected.");
                     BytesToWriteCount = 0; // error -> reset the buffer
                     BytesToWriteOffset = 0;
@@ -1989,8 +1989,8 @@ void CFTPWorker::ReceiveTimer(DWORD id, void* param)
                 // request another status update cycle
                 clearStatusType = FALSE;
 
-                // since we are already in the CSocketsThread::CritSect section, this call
-                // is possible even from the CSocket::SocketCritSect and CFTPWorker::WorkerCritSect sections (no deadlock risk)
+                // since we are already in CSocketsThread::CritSect, this call
+                                // is allowed even from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                 SocketsThread->AddTimer(Msg, UID, GetTickCount() + WORKER_STATUSUPDATETIMEOUT,
                                         WORKER_STATUSUPDATETIMID, NULL); // ignore errors; at worst the status will not update
             }
@@ -2081,8 +2081,8 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_DATACON_CONNECTED:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConConnectedToServer, NULL, 0, 0);
         //      else   // may arrive after WorkerDataCon is closed (if the LIST reply arrives immediately and the data connection is also immediately closed - short listing)
@@ -2092,8 +2092,8 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_DATACON_CLOSED:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConConnectionClosed, NULL, 0, 0);
         //      else   // may arrive after WorkerDataCon is closed (if the LIST reply arrives immediately and the data connection is also immediately closed - short listing)
@@ -2103,8 +2103,8 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_DATACON_FLUSHDATA:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConFlushData, NULL, 0, 0);
         //      else   // may arrive after WorkerDataCon has been closed
@@ -2114,8 +2114,8 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_DATACON_LISTENINGFORCON:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         if (WorkerDataCon != NULL && (int)(INT_PTR)param == WorkerDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweDataConListeningForCon, NULL, 0, 0);
         else
@@ -2125,8 +2125,8 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_LISTENINGFORCON:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
         if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current data connection (discard others immediately)
             HandleEvent(fweUplDataConListeningForCon, NULL, 0, 0);
         else
@@ -2136,9 +2136,9 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_CONNECTED:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConConnectedToServer, NULL, 0, 0);
         //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_CONNECTED for nonexistent data-connection!");
@@ -2147,9 +2147,9 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_CLOSED:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConConnectionClosed, NULL, 0, 0);
         //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_CLOSED for nonexistent data-connection!");
@@ -2158,9 +2158,9 @@ void CFTPWorker::ReceivePostMessage(DWORD id, void* param)
 
     case WORKER_UPLDATACON_PREPAREDATA:
     {
-        // since we are already in the CSocketsThread::CritSect section, this call
-        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
-        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message came from the current upload data connection (discard others immediately)
+        // since we are already in CSocketsThread::CritSect, this call
+                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+        if (WorkerUploadDataCon != NULL && (int)(INT_PTR)param == WorkerUploadDataCon->GetUID()) // message from the current upload data connection (discard others immediately)
             HandleEvent(fweUplDataConPrepareData, NULL, 0, 0);
         //      else  // may arrive after WorkerUploadDataCon has been closed
         //        TRACE_E("CFTPWorker::ReceivePostMessage(): received WORKER_UPLDATACON_PREPAREDATA for nonexistent data-connection!");
@@ -2192,7 +2192,7 @@ void CFTPWorker::ReadFTPErrorReplies()
     char* reply;
     int replySize;
     int replyCode;
-    while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have a server reply
+    while (ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have any server reply
     {                                                    // log any error messages from the server
         Logs.LogMessage(LogUID, reply, replySize, TRUE);
         if (ErrorDescr[0] == 0 &&                               // we do not have an error description yet
@@ -2267,7 +2267,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
             {
                 switch (event)
                 {
-                case fwseNewBytesRead: // if it is an error, we want its text
+                case fwseNewBytesRead: // if it is an error, we want to know its text
                 {
                     ReadFTPErrorReplies();
                     break;
@@ -2280,7 +2280,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                         FTPGetErrorTextForLog(data1, errBuf, 300);
                         Logs.LogMessage(LogUID, errBuf, -1, TRUE);
                     }
-                    if (ErrorDescr[0] == 0) // when closing the connection we must fill ErrorDescr (even with "unknown error")
+                    if (ErrorDescr[0] == 0) // on connection close, we must populate ErrorDescr (even with "unknown error")
                     {
                         lstrcpyn(ErrorDescr, GetWorkerErrorTxt(data1, errBuf, 300), FTPWORKER_ERRDESCR_BUFSIZE);
                         CorrectErrorDescr();
@@ -2304,7 +2304,7 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                     int replyCode;
                     BOOL firstRound = TRUE;
                     while (BytesToWriteOffset == BytesToWriteCount &&    // test "write done" (we wait for the server reply only after the full command is sent)
-                           ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have some server reply (one read may contain several at once)
+                           ReadFTPReply(&reply, &replySize, &replyCode)) // as long as we have a server reply (one read may contain several at once)
                     {
                         if (!firstRound)
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -2319,8 +2319,8 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         if (FTP_DIGIT_1(replyCode) != FTP_D1_MAYBESUCCESS) // command reply
                         {
-                            // since we are already in the CSocketsThread::CritSect section, this call
-                            // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                            // since we are already in CSocketsThread::CritSect, this call
+                                                        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
                             SocketsThread->DeleteTimer(uid, WORKER_TIMEOUTTIMERID); // HandleEvent() will probably send another command, so delete the timer "in advance"
 
                             HandleEvent(fweCmdReplyReceived, reply, replySize, replyCode);
@@ -2364,13 +2364,13 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                         BOOL trFinished;
                         DWORD start;
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
-                        // since we are already in the CSocketsThread::CritSect section, this call
-                        // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                        // since we are already in CSocketsThread::CritSect, this call
+                                                    // is allowed even from CSocket::SocketCritSect (no deadlock risk)
                         BOOL isTransfering = WorkerDataCon != NULL ? WorkerDataCon->IsTransfering(&trFinished) : WorkerUploadDataCon->IsTransfering(&trFinished);
                         if (isTransfering)
                         { // waiting for data, so this is not a timeout
-                            // since we are already in the CSocketsThread::CritSect section, this call
-                            // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                            // since we are already in CSocketsThread::CritSect, this call
+                            // is possible even from CSocket::SocketCritSect (no deadlock risk)
                             SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
                                                     WORKER_TIMEOUTTIMERID, NULL); // ignore the error; at worst the user will press Stop
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -2380,15 +2380,15 @@ void CFTPWorker::HandleSocketEvent(CFTPWorkerSocketEvent event, DWORD data1, DWO
                         {
                             if (trFinished)
                             {
-                                // the timeout is measured from closing the connection (moment when the server can react - it also learns
-                                // about the connection closing)
-                                // since we are already in the CSocketsThread::CritSect section, this call
-                                // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                                // the timeout is measured from the moment the connection is closed (the moment the server can react and also learns
+                                                                // that the connection was closed)
+                                                                // since we are already in the CSocketsThread::CritSect critical section, this call
+                                                                // is possible even from the CSocket::SocketCritSect critical section (no deadlock risk)
                                 start = WorkerDataCon != NULL ? WorkerDataCon->GetSocketCloseTime() : WorkerUploadDataCon->GetSocketCloseTime();
                                 if ((GetTickCount() - start) < (DWORD)serverTimeout) // the timeout since closing the connection has not yet expired
                                 {
-                                    // since we are already in the CSocketsThread::CritSect section, this call
-                                    // is possible even from the CSocket::SocketCritSect section (no deadlock risk)
+                                    // since we are already in CSocketsThread::CritSect, this call
+                                                                // is allowed even from CSocket::SocketCritSect (no deadlock risk)
                                     SocketsThread->AddTimer(Msg, UID, start + serverTimeout,
                                                             WORKER_TIMEOUTTIMERID, NULL); // ignore the error; at worst the user will press Stop
                                     HANDLES(EnterCriticalSection(&WorkerCritSect));
