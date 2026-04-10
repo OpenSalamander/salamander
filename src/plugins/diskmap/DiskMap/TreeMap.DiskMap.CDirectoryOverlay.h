@@ -420,7 +420,7 @@ protected:
                         else //text pixel
                         {
                             if (tx > titlewidth)
-                                titlewidth = tx; //extend the maximum text length
+                                titlewidth = tx; //extend the maximum text width
 
                             txt_data[cxp] = 0xff; //text pixel will be white
 
@@ -429,7 +429,7 @@ protected:
                                 for (int px = 0; px < 4; px++)
                                 {
                                     if ((px == 0) && (py == 0))
-                                        continue; //no need for the center
+                                        continue; //center pixel not needed
 
                                     int txa = CDirectoryOverlay_shadowdata[py * 4 + px];
                                     if (tx - px > 0)
