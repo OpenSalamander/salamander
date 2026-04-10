@@ -456,7 +456,7 @@ CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract* sal
     while ((name = next(SalamanderGeneral->GetMsgBoxParent(), 3, &dosName, &isDir, &size,
                         &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
-        if (errorOccured == SALENUM_ERROR) // SALENUM_CANCEL cannot appear here
+        if (errorOccured == SALENUM_ERROR) // SALENUM_CANCEL cannot occur here
             TRACE_I("Not all files and directories from disk will be packed.");
 
         totalSize += size;
@@ -623,7 +623,7 @@ CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbstract
 
     BOOL ret = FALSE;
     if (delArchiveWhenDone)
-        archiveVolumes->Add(fileName, -2); // FIXME: once the plugin learns multi-volume archives we must add all archive volumes here (to delete the entire archive)
+        archiveVolumes->Add(fileName, -2); // FIXME: once the plugin supports multi-volume archives, we must add all archive volumes here (to delete the entire archive)
     salamander->OpenProgressDialog("Unpacking DemoPlug Archive", FALSE, NULL, FALSE);
     salamander->ProgressSetTotalSize(CQuadWord(100, 0), CQuadWord(-1, -1));
 
@@ -797,9 +797,9 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char* fileName, BOOL firstFile)
     CALL_STACK_MESSAGE3("CPluginInterfaceForArchiver::DeleteTmpCopy(%s, %d)", fileName, firstFile);
 
     /*
-  // message box test (message boxes should be used only in an extreme situation) - it makes a mess
+  // message box test (use message boxes only in extreme situations) - it causes problems
   // if another plugin has its own modal dialog open (cosmetic issue: the message box for this dialog is not modal
-  // and after closing it activates the dialog's parent)
+  // and activates the dialog's parent after it is closed)
   char buf[500];
   sprintf(buf, "File \"%s\" will be deleted.", fileName);
   SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
@@ -807,8 +807,8 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char* fileName, BOOL firstFile)
                                    MB_OK | MB_ICONINFORMATION);
 */
 
-    // if this is a critical shutdown it is not a good time for slow file deletion (our process will be killed soon),
-    // at the first subsequent plugin start in the first Salamander instance this will be deleted "calmly",
+    // if this is a critical shutdown, it is not a good time for slow file deletion (our process will be killed soon),
+    // at the first subsequent plugin start in the first Salamander instance, this will be deleted normally,
     // we probably cannot come up with anything better
     if (SalamanderGeneral->IsCriticalShutdown())
         return;
@@ -849,8 +849,8 @@ CPluginInterfaceForArchiver::PrematureDeleteTmpCopy(HWND parent, int copiesCount
 {
     CALL_STACK_MESSAGE2("CPluginInterfaceForArchiver::PrematureDeleteTmpCopy(, %d)", copiesCount);
 
-    // if this is a critical shutdown it is not a good time for slow file deletion (our process will be killed soon),
-    // at the first subsequent plugin start in the first Salamander instance this will be deleted "calmly",
+    // if this is a critical shutdown, it is not a good time for slow file deletion (our process will be killed soon),
+    // at the first subsequent plugin start in the first Salamander instance, this will be deleted normally,
     // we probably cannot come up with anything better
     if (SalamanderGeneral->IsCriticalShutdown())
         return FALSE; // during a critical shutdown we do not ask any questions
