@@ -52,7 +52,7 @@ void DisplayException(EXCEPINFO& ei, bool bFree = true);
 /// Releases resources associated with the EXCEPINFO structure.
 void FreeException(EXCEPINFO& ei);
 
-/// Formats textual description of the system error code.
+/// Formats a textual description of the system error code.
 void FormatErrorText(
     HRESULT hrCode,
     TCHAR* pszBuffer,
@@ -67,10 +67,10 @@ UINT HashString(__in_z PCTSTR s);
 void QuadWordToVariant(LARGE_INTEGER q, __out VARIANT* var);
 void QuadWordToVariant(const CQuadWord& q, __out VARIANT* var);
 
-/// Retrieved property value from the IDispatch interface.
+/// Retrieves a property value from the IDispatch interface.
 /// \param pdisp Pointer to the IDispatch interface.
 /// \param name Name of the property to retrieve.
-/// \param result Property value.
+/// \param result Receives the property value.
 HRESULT DispPropGet(IDispatch* pdisp, PCWSTR name, VARIANT* result);
 HRESULT DispPropGet(IUnknown* punk, PCWSTR name, VARIANT* result);
 
@@ -84,6 +84,6 @@ int ButtonToFriendlyNumber(int button);
 /// See CScriptInfo::ExecuteWorker for detailed explanation.
 void ResetKeyboardState();
 
-/// Checks if the script execution was aborted and if so, fills appropriately
-/// the exception information.
+/// Checks whether script execution was aborted and, if so, fills the
+/// exception information accordingly.
 HRESULT CheckAbort(__in class CScriptInfo* pScriptInfo, __out EXCEPINFO* pExcepInfo);
