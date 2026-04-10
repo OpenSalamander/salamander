@@ -128,9 +128,9 @@ static int DisplayError(
 
 static void AdjustSourcePosition(ULONG& line, LONG& col, CScriptEngineShim* pShim)
 {
-    // Some engines return zero-based line number, others one-based
-    // try to normalize to one-base line numbers since it is more
-    // natural for humans and editors start counting from one too.
+    // Some engines return zero-based line numbers, others one-based.
+    // Try to normalize to one-based line numbers since that is more
+    // natural for humans, and editors start counting from one too.
 
     if (pShim != NULL)
     {
@@ -293,7 +293,7 @@ void QuadWordToVariant(const CQuadWord& q, __out VARIANT* var)
     }
     else
     {
-        // 64b integer is not OLE Automation type, coerce to double
+        // 64-bit integer is not an OLE Automation type; coerce to double
         V_VT(var) = VT_R8;
         V_R8(var) = (double)q.Value;
     }
@@ -310,7 +310,7 @@ void QuadWordToVariant(LARGE_INTEGER q, __out VARIANT* var)
     }
     else
     {
-        // 64b integer is not OLE Automation type, coerce to double
+        // 64-bit integer is not an OLE Automation type; coerce to double
         V_VT(var) = VT_R8;
         V_R8(var) = (double)q.QuadPart;
     }
