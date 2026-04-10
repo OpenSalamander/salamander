@@ -16,7 +16,7 @@
 
 #define TIMER_SCROLL_ID 1
 
-BOOL IsAlphaNumeric[256]; // TRUE/FALSE table for characters (FALSE = neither a letter nor a digit)
+BOOL IsAlphaNumeric[256]; // TRUE/FALSE array for characters (FALSE = not a letter or digit)
 BOOL IsAlpha[256];
 
 //****************************************************************************
@@ -514,7 +514,7 @@ void CRendererWindow::Find(BOOL forward, BOOL wholeWords,
             {
                 const CDatabaseColumn* column = Database.GetVisibleColumn(col);
 
-                // too narrow columns are not searched in non-regexp mode
+                // columns that are too narrow are not searched in non-regexp mode
                 // other possible optimizations: do not search DBF_FTYPE_INT_V7,
                 // DBF_FTYPE_TSTAMP, DBF_FTYPE_AUTOINC & DBF_FTYPE_DOUBLE columns if
                 // the search pattern contains non-numeric characters
@@ -541,7 +541,7 @@ void CRendererWindow::Find(BOOL forward, BOOL wholeWords,
                         LPCWSTR textW = Database.GetCellTextW(column, &textLen);
                         textLen = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, textW, (int)textLen, buf, bufSize, NULL, NULL);
                         if (textLen < 0)
-                            textLen = 0; // Error - swallow it ;-)
+                            textLen = 0; // ignore the error
                         text = buf;
                     }
                     do
@@ -580,7 +580,7 @@ void CRendererWindow::Find(BOOL forward, BOOL wholeWords,
                         }
                         return;
                     }
-                } // of if (!bmSearchData || (column->Length >= patLen))
+                } // end of if (!bmSearchData || (column->Length >= patLen))
             }
 
             if (forward)
@@ -949,7 +949,7 @@ BOOL CRendererWindow::HitTestColumnSplit(int x, int* column, int* offset)
     {
         if (i > 0 && x >= colX - 3 && x <= colX)
         {
-            // if this is not the left edge of the first column and the point overlaps a divider, we found it
+            // if this is not the left edge of the first column and the point is within a divider range, we found it
             if (column != NULL)
                 *column = i - 1;
             if (offset != NULL)
@@ -1495,7 +1495,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
-    if (uMsg == WM_MOUSEHWHEEL) // horizontall scroll, supported from Windows Vista
+    if (uMsg == WM_MOUSEHWHEEL) // horizontal scroll, supported from Windows Vista
     {
         short zDelta = (short)HIWORD(wParam);
         if ((zDelta < 0 && MouseHWheelAccumulator > 0) || (zDelta > 0 && MouseHWheelAccumulator < 0))
