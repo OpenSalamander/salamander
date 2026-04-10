@@ -22,7 +22,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
     case FTPCMD_TRMODEBINARY:
     {
         CPluginFSInterfaceAbstract* fs = SalamanderGeneral->GetPanelPluginFS(PANEL_SOURCE);
-        if (fs != NULL) // it is our FS; otherwise it would be NULL
+        if (fs != NULL) // our FS; otherwise it would be NULL
         {
             return ((CPluginFSInterface*)fs)->GetTransferModeCmdState(id);
         }
