@@ -86,7 +86,7 @@ bool IsUTF8Encoded(const char* s, int cnt)
     }
 
     if (nUTF8 > 0)
-    { // At least one 2-or-more-bytes UTF8 sequence found and no invalid sequences found
+    { // At least one UTF-8 sequence of 2 or more bytes found and no invalid sequences found
         return true;
     }
     return false;
@@ -95,10 +95,10 @@ bool IsUTF8Encoded(const char* s, int cnt)
 void CParserInterfaceAbstract::ShowParserError(HWND hParent, CParserStatusEnum status)
 {
     if (this != NULL)
-    { // this is NULL when called from CDatabase::Open when opening the file failed
+    { // this is NULL when called from CDatabase::Open if opening the file failed
         if (bShowingError)
         {
-            // Avoid recursive error showing on WM_PAINT
+            // Avoid recursive error display on WM_PAINT
             return;
         }
         bShowingError = true;
@@ -496,7 +496,7 @@ char* Int64ToCurrency(char* buffer, __int64 number)
   else
   {
     DecimalSeparatorLen--;
-    DecimalSeparator[DecimalSeparatorLen] = 0;  // ensure a zero terminator at the end
+    DecimalSeparator[DecimalSeparatorLen] = 0;  // ensure a null terminator at the end
   }
   */
     // other DBF values use '.' as the decimal separator, so we do not use the system one
@@ -528,12 +528,12 @@ void TimeStampToDate(int jdays, int* pDay, int* pMon, int* pYear, BOOL bJulianDa
     }
     else
     {
-        // old code assuming it was number of Julian days (since 1.1.4713 BC)
-        // 1.1.1993 is claimed to be Julian Day 2448989
-        // get the number of days since 1.1.1600 (jday == 1 means 1.1.1600)
+        // Old code assumed this was the number of Julian days (since 1.1.4713 BC).
+        // 1.1.1993 is claimed to be Julian Day 2448989.
+        // Get the number of days since 1.1.1600 (jday == 1 means 1.1.1600).
         if (jdays < 2448989 - 93 * 365 - 23 - 3 * 100 * 365 - 2 * 24 - 25)
         {
-            // Before 1.1. 1600. We do no support Julian calendar introduced AFAIR around 1584
+            // Before 1.1.1600. The Julian calendar, introduced around 1584, is not supported.
             return;
         }
         // get the number of days since 1.1.1600 (jday == 1 means 1.1.1600
@@ -617,8 +617,8 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
 
     case DBF_FTYPE_INT:
     {
-        // Patera 2003.06.05: Why was there short int?
-        // FoxPro is supposed to use this type as 32bit int!
+        // Patera 2003.06.05: Why was this a short int?
+        // FoxPro is supposed to use this type as a 32-bit int
         sprintf(Buffer, "%d", *((int*)text));
         *textLen = strlen(Buffer);
         return Buffer;
@@ -627,9 +627,9 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
     case DBF_FTYPE_AUTOINC:
     case DBF_FTYPE_INT_V7:
     { // Used by Visual dBase 7:
-        //  The DOC: left-most bit used for sign, 0 means negative
-        //  Observation: Seems to be big-endian.
-        //  Wow! Got it! Its for faster string-based comparison (for indexing)!
+        //  The documentation says the leftmost bit is used for the sign; 0 means negative.
+        //  Observation: seems to be big-endian.
+        //  This is probably for faster string-based comparison (for indexing).
         UINT32 val = LongSwap(*(int*)text);
 
         sprintf(Buffer, "%u", val ? (val ^ 0x80000000) : 0);
@@ -671,9 +671,9 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
     }
 
     case DBF_FTYPE_DTIME:
-    { // Visual FoxPro DateTime field: 8BYTE type:
-        // Lower 4 bytes:  Julian day (since 1/1/4713 BC)
-        // Higher 4 bytes: time in miliseconds
+    { // Visual FoxPro DateTime field: 8-byte value:
+        // Lower 4 bytes: Julian day (since 1/1/4713 BC)
+        // Upper 4 bytes: time in milliseconds
         int day, mon, year, jd;
         int hour, min, sec;
         __int64 tmp64;
@@ -702,7 +702,7 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
     case DBF_FTYPE_CHAR:
     {
         const void* zero = memchr(text, 0, field->len);
-        // ignore terminating binary zeros
+        // ignore trailing zero bytes
         *textLen = zero ? ((char*)zero - text) : field->len;
         return text;
     }
@@ -713,8 +713,8 @@ CParserInterfaceDBF::GetCellText(DWORD index, size_t* textLen)
         __int64 tmp64;
         UINT32 tmp[2];
 
-        // according to dBase doc, this type consists of two 32bits, number of days since 1/1/4713BC and miliseconds
-        // VCL takes it as double whose integer part is number of miliseconds since 1/1/1
+        // According to the dBase documentation, this type consists of two 32-bit values: the number of days since 1/1/4713 BC and milliseconds.
+        // VCL treats it as a double whose integer part is the number of milliseconds since 1/1/1.
 
         // convert from big-endian to little-endian and again, as for long & autoinc, flip the sign
         tmp[1] = LongSwap(*(UINT32*)text);
@@ -877,7 +877,7 @@ CParserInterfaceCSV::OpenFile(const char* fileName)
     {
         WORD w;
         fread(&w, 1, 2, f);
-        IsUnicode = (w == 0xFEFF) || (w == 0xFFFE); // UTFE16 LE & BE BOM's
+        IsUnicode = (w == 0xFEFF) || (w == 0xFFFE); // UTF-16 LE and BE BOMs
         // CP_UTF8
         if (w == 0xBBEF)
         {
