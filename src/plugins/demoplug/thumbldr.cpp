@@ -16,11 +16,11 @@
 // ****************************************************************************
 
 // opens the specified file and converts it into a sequence of DWORDs
-// that means 24 bits for color (R, G, B) and 8 bits of padding
+// i.e. 24 bits for color (R, G, B) and 8 unused bits
 // the size of a single row in bytes is: image_width * sizeof(DWORD)
 /*
-// simple variant built on LoadImage, which blocks the rest of the OS
-// and the loading process cannot be interrupted
+// simple variant based on LoadImage, which blocks the rest of the system
+// and does not allow the loading process to be interrupted
 CPluginInterfaceForThumbLoader::LoadThumbnail(const char *filename, int thumbWidth, int thumbHeight,
                                               CSalamanderThumbnailMakerAbstract *thumbMaker,
                                               BOOL fastThumbnail)
@@ -29,18 +29,18 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char *filename, int thumbWid
                                                   IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
   if (hSrcBitmap != NULL)
   {
-    // get the width and height of the image
+    // get the image width and height
     BITMAP srcBitmap;
     if (GetObject(hSrcBitmap, sizeof(BITMAP), &srcBitmap) != 0)
     {
-      // create a copy in which every pixel is represented as COLORREF
+      // create a copy in which each pixel is represented as COLORREF
 	    BITMAPINFO tmpBI;
 	    memset(&tmpBI, NULL, sizeof(BITMAPINFO));
 	    tmpBI.bmiHeader.biSize     = sizeof(BITMAPINFOHEADER);
 	    tmpBI.bmiHeader.biWidth    = srcBitmap.bmWidth;
             tmpBI.bmiHeader.biHeight   = -srcBitmap.bmHeight; // send a top-down bitmap to Salamander
 	    tmpBI.bmiHeader.biPlanes   = 1;
-            tmpBI.bmiHeader.biBitCount = 32;  // R, G, B, one byte of padding
+            tmpBI.bmiHeader.biBitCount = 32;  // R, G, B, one unused byte
 
       void* ptr;
       HBITMAP hTmpBitmap = HANDLES(CreateDIBSection(NULL, &tmpBI, DIB_RGB_COLORS, &ptr, NULL, NULL));
@@ -48,7 +48,7 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char *filename, int thumbWid
 
       if (hTmpBitmap != NULL && tmpBitmapBits != NULL) 
       {
-        // if the bitmap was allocated, convert it into our format
+        // if the bitmap was allocated successfully, convert it to the required format
 
         HDC hDC = HANDLES(GetDC(NULL));
         HDC hSrcDC = HANDLES(CreateCompatibleDC(hDC));
@@ -64,9 +64,9 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char *filename, int thumbWid
         HANDLES(DeleteDC(hTmpDC));
         HANDLES(ReleaseDC(NULL, hDC));
 
-        GdiFlush(); // we are going to work with raw data, ensure GDI operations are flushed
+        GdiFlush(); // flush pending GDI operations before working with raw data
 
-        // hand the image to Salamander for downscaling
+        // pass the image to Salamander for downscaling
         thumbMaker->SetParameters(srcBitmap.bmWidth, srcBitmap.bmHeight, 0);
 //        int i = 0;
 //        while (i < srcBitmap.bmHeight)
@@ -82,7 +82,7 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char *filename, int thumbWid
         thumbMaker->SetError(); // probably not enough memory; the file gets a simple icon
     }
     else
-      thumbMaker->SetError(); // it's a bitmap, but probably corrupted; the file gets a simple icon
+      thumbMaker->SetError(); // it is a bitmap, but it is probably corrupted; the file gets a simple icon
 
     HANDLES(DeleteObject(hSrcBitmap));
   }
@@ -106,7 +106,7 @@ DWORD GetClrUsed(const BITMAPINFOHEADER* bih, BOOL max)
     case 8:
         return 256;
     default:
-        return 0; // A 24 or 32 bitcount DIB has no color table
+        return 0; // A 24- or 32-bit DIB has no color table
     }
 }
 
@@ -271,7 +271,7 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char* filename,
                                 processTopDown = TRUE;
                                 height *= -1;
                             }
-                            // pass picture format to Open Salamander
+                            // pass image parameters to Open Salamander
                             if (thumbMaker->SetParameters(width, height, processTopDown ? 0 : SSTHUMB_MIRROR_VERT))
                             {
                                 LOGPALETTE* palette = NULL;
