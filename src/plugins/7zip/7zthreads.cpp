@@ -126,7 +126,7 @@ HRESULT LaunchAndDo7ZipTask(LPTHREAD_START_ROUTINE threadProc, LPVOID args)
 
             GetExitCodeThread(hThread, &exitCode);
             CloseHandle(hThread);
-            return exitCode; // Our thread body func returns HRESULT
+            return exitCode; // Our thread body function returns HRESULT
         }
 
         MSG msg;
@@ -155,9 +155,9 @@ HRESULT DoDecompress(CSalamanderForOperationsAbstract* salamander, CDecompressPa
 
         if (FAILED(result) && ((FACILITY_WIN32 << 16) == (result & 0x7FFF0000)))
         {
-            // LastError error encoded into HRESULT
-            // There is something strange: E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
-            // even when not truncated to 16 bits while 0x80000002L prints as "Ran out of memory"
+            // LastError encoded as HRESULT
+            // Oddly, E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
+            // even without truncating to 16 bits, while 0x80000002L prints as "Ran out of memory"
             SysError(label, (result == E_OUTOFMEMORY) ? 0x80000002L : (result & 0xFFFF), FALSE);
         }
         else
