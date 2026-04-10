@@ -40,27 +40,27 @@ void HandleOperationsCombo(int* value, CTransferInfo& ti, int resID, int arrValu
 void ProxyComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, int& proxyUID, BOOL addDefault,
                    CFTPProxyServerList* proxyServerList);
 
-// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
-// 'valueBuf' is a buffer for the value in the "checked" state with size of at least 31 characters,
-// 'valueBuf' initializes to an empty string;
+// 'lastCheck' (in/out) stores the last checkbox state; 'lastCheck' is initialized to -1;
+// 'valueBuf' is a buffer for the value in the "checked" state, at least 31 characters long;
+// 'valueBuf' is initialized to an empty string;
 // 'checkedVal' is the initial value in the "checked" state;
-// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
+// 'globValUsed'+'globVal' specify the third checkbox state (whether it is used and its value)
 void CheckboxEditLineInteger(HWND dlg, int checkboxID, int editID, int* lastCheck, char* valueBuf,
                              int checkedVal, BOOL globValUsed, int globVal);
 
-// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
-// 'valueBuf' is a buffer for the value in the "checked" state with size of at least 31 characters,
-// 'valueBuf' initializes to an empty string;
+// 'lastCheck' (in/out) stores the last checkbox state value; initialize 'lastCheck' to -1.
+// 'valueBuf' is a buffer for the value in the "checked" state, with a size of at least 31 characters;
+// initialize 'valueBuf' to an empty string.
 // 'checkedVal' is the initial value in the "checked" state;
-// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
+// 'globValUsed'+'globVal' - value for the third state of the checkbox (used? + value)
 void CheckboxEditLineDouble(HWND dlg, int checkboxID, int editID, int* lastCheck, char* valueBuf,
                             double checkedVal, BOOL globValUsed, double globVal);
 
-// 'lastCheck' (in/out) stores the last state of the checkbox, 'lastCheck' initializes to -1;
-// 'valueBuf' is a buffer for the value in the "checked" state (index in the combo box),
-// 'valueBuf' initializes to -1;
-// 'checkedVal' is the initial value in the "checked" state (index in the combo box);
-// 'globValUsed'+'globVal' - value for the third state of the checkbox (is it used? + value)
+// 'lastCheck' (in/out) stores the last checkbox state; 'lastCheck' is initialized to -1;
+// 'valueBuf' stores the value in the "checked" state (combo box index);
+// 'valueBuf' is initialized to -1;
+// 'checkedVal' is the initial value in the "checked" state (combo box index);
+// 'globValUsed'+'globVal' specify the third checkbox state (whether it is used and its value)
 void CheckboxCombo(HWND dlg, int checkboxID, int comboID, int* lastCheck, int* valueBuf,
                    int checkedVal, BOOL globValUsed, int globVal);
 
@@ -193,7 +193,7 @@ class CConfigPageLogs : public CCommonPropSheetPage
 {
 protected:
     int LastLogMaxSize;           // last value of the "log max size" checkbox
-    char LogMaxSizeBuf[31];       // buffer to keep the contents of the "log max size" line
+    char LogMaxSizeBuf[31];       // buffer holding the contents of the "log max size" field
     int LastMaxClosedConLogs;     // last value of the "max disconnected connection logs" checkbox
     char MaxClosedConLogsBuf[31]; // buffer to keep the contents of the "max disconnected connection logs" line
 
@@ -416,8 +416,8 @@ public:
 
 protected:
     char* Name;         // listbox item name (for edit line + checkbox)
-    BOOL NewServer;     // TRUE/FALSE: dialog New/Rename
-    BOOL AddBookmark;   // TRUE/FALSE: Connect:Add Bookmark dialog / applies to NewServer
+    BOOL NewServer;     // TRUE/FALSE: New/Rename dialog
+    BOOL AddBookmark;   // TRUE/FALSE: Connect:Add Bookmark dialog / only when NewServer is TRUE
     BOOL ServerTypes;   // FALSE/TRUE: Connect/Configuration:Servers dialog
     char* CopyFromName; // only if ServerTypes==TRUE: name for the checkbox (differs from the name for the edit line)
 
@@ -478,8 +478,8 @@ public:
     CWaitWindow(HWND hParent, BOOL showCloseButton);
     ~CWaitWindow();
 
-    // returns TRUE if the user clicked the wait-window close button with the mouse; it returns TRUE
-    // only once and the next TRUE comes only after another click of the close button
+    // returns TRUE if the user clicked the wait-window close button with the mouse;
+    // it returns TRUE only once per click of the close button
     BOOL GetWindowClosePressed()
     {
         BOOL ret = WindowClosePressed;
@@ -785,7 +785,7 @@ class CEditServerTypeDlg : public CCenteredDialog
 {
 protected:
     HWND HListView;                             // listview with columns
-    BOOL CanReadListViewChanges;                // TRUE = record checkbox changes in the list-view, FALSE = undesirable while filling the list-view
+    BOOL CanReadListViewChanges;                // TRUE = record checkbox changes in the list-view; FALSE = do not record them while filling the list-view
     CServerType* ServerType;                    // edited server type (changes may occur only after pressing the OK button)
     TIndirectArray<CSrvTypeColumn> ColumnsData; // columns shown in the dialog (data for the listview with columns)
 
@@ -821,10 +821,10 @@ protected:
     BOOL Edit;                                   // TRUE = editing, FALSE = adding a new column
     int* EditedColumn;                           // IN: index (in 'ColumnsData') of the edited column, OUT: focus index
 
-    int LastUsedIndexForName;  // -1==invalid, otherwise index in the combo of the last Name selection
-    int LastUsedIndexForDescr; // -1==invalid, otherwise index in the combo of the last Description selection
+    int LastUsedIndexForName;  // -1==invalid, otherwise the index of the last Name selection in the combo box
+    int LastUsedIndexForDescr; // -1==invalid, otherwise the index of the last Description selection in the combo box
 
-    BOOL FirstSelNotifyAfterTransfer; // TRUE = data were just set into the dialog, the posted CBN_SELCHANGE for combo Type must not change Alignment
+    BOOL FirstSelNotifyAfterTransfer; // TRUE = data were just set into the dialog; the posted CBN_SELCHANGE for combo Type must not change the Alignment value
 
 public:
     CEditSrvTypeColumnDlg(HWND parent, TIndirectArray<CSrvTypeColumn>* columnsData,
@@ -990,7 +990,7 @@ protected:
 #define OPERDLG_STATUSMINIDLETIME 950    // minimum time gap for the next update (periodic or from a worker) after the last worker update - WARNING: tied to WORKER_STATUSUPDATETIMEOUT
 #define OPERDLG_GETDISKSPACEPERIOD 3000  // time after which free space on the target disk is fetched again
 #define OPERDLG_SHOWERRMINIDLETIME 10000 // minimum idle time in the dialog before an error is shown automatically (see Config.OpenSolveErrIfIdle)
-#define OPERDLG_AUTOSHOWERRTIMER 4       // timer ID for a periodic test whether a Show Error dialog should appear
+#define OPERDLG_AUTOSHOWERRTIMER 4       // timer ID for periodically checking whether a Show Error dialog should be displayed
 #define OPERDLG_AUTOSHOWERRPERIOD 1000   // timer period for testing whether a Show Error dialog should appear
 #define OPERDLG_AUTOSHOWERRTIMER2 5      // helper timer: ensures "immediate" delivery of OPERDLG_AUTOSHOWERRTIMER
 #define OPERDLG_CORRECTBTNSTIMER 6       // timer ID for checking button states shortly after the dialog is activated (focus is unfortunately unknown at activation)
@@ -998,7 +998,7 @@ protected:
 #define WM_APP_DISABLEDETAILED WM_APP + 1   // [0, 0] - disable the Detailed button after maximizing
 #define WM_APP_ACTIVATEWORKERS WM_APP + 2   // [0, 0] - activate workers after opening the dialog
 #define WM_APP_WORKERCHANGEREP WM_APP + 3   // [0, 0] - a worker change was reported, we must read from the operation where the change happened (see CFTPOperation::GetChangedWorker())
-#define WM_APP_ITEMCHANGEREP WM_APP + 4     // [0, 0] - an item change was reported, we must read from the operation where the changes happened (see CFTPOperation::GetChangedItems())
+#define WM_APP_ITEMCHANGEREP WM_APP + 4     // [0, 0] - an item change was reported; query the operation for where the changes happened (see CFTPOperation::GetChangedItems())
 #define WM_APP_OPERSTATECHANGE WM_APP + 5   // [0, 0] - the operation state changed (done/in progress/completed with errors), we must read the state from the operation (see CFTPOperation::GetOperationState())
 #define WM_APP_HAVEDISKFREESPACE WM_APP + 6 // [0, 0] - the thread checking disk free space reports that it has a result
 #define WM_APP_CLOSEDLG WM_APP + 7          // [0, 0] - the progress dialog should close (uses auto-close)
@@ -1048,7 +1048,7 @@ class COperDlgListView : public CWindow
 public:
     HWND HToolTip;
     COperationDlg* OperDlg; // dialog in which the listview exists
-    BOOL ConsOrItems;       // TRUE/FALSE = take data from the Connections/Operations listview
+    BOOL ConsOrItems;       // TRUE/FALSE = take data from the Connections/Operations listview, respectively
 
     int LastItem;
     int LastSubItem;
@@ -1102,12 +1102,12 @@ protected:
     char ItemsTextBuf[3][OPERDLG_ITEMSTEXTBUFSIZE]; // buffers for LVN_GETDISPINFO text in the Operations listview
     int ItemsActTextBuf;                            // which of the three buffers is currently free for LVN_GETDISPINFO in the Operations listview
 
-    BOOL SimpleLook; // TRUE/FALSE = simple (after the split bar) / detailed (complete) dialog look
+    BOOL SimpleLook; // TRUE/FALSE = simple / detailed (complete) dialog appearance
 
     char* TitleText; // text for the dialog title (without the initial "(XX%) ")
 
     BOOL IsDirtyStatus;                 // TRUE = status/progress of the operation needs update (the dialog must redraw status/progress)
-    BOOL IsDirtyProgress;               // TRUE = a worker changed; maybe (if the worker changed due to progress) status/progress needs update (the dialog must redraw status/progress)
+    BOOL IsDirtyProgress;               // TRUE = a worker changed; status/progress of the operation may need an update (the dialog must redraw status/progress if the worker changed due to progress)
     DWORD LastUpdateOfProgressByWorker; // GetTickCount at the last update of progress triggered by a worker (used to skip unnecessarily frequent updates with multiple workers + skip periodic updates)
     BOOL IsDirtyConsListView;           // TRUE = the Connections listview content changed (needs repaint in the dialog)
     BOOL IsDirtyItemsListView;          // TRUE = the Operations listview content changed (needs repaint in the dialog)
@@ -1124,8 +1124,8 @@ protected:
     BOOL EnableChangeFocusedItemUID; // TRUE = change FocusedItemUID when focus changes (FALSE is used during listview refresh to prevent unwanted changes to FocusedItemUID)
 
     BOOL UserWasActive;       // TRUE = prevent the window from closing automatically after the operation finishes successfully (the user was doing something and the dialog would vanish)
-    BOOL DelayAfterCancel;    // TRUE = do not open another Solve Error dialog immediately after Cancel in the previous Solve Error dialog
-    BOOL CloseDlgWhenOperFin; // FALSE = do not close the window after operation completion = the window may close only if Config.CloseOperationDlgIfSuccessfullyFinished==TRUE
+    BOOL DelayAfterCancel;    // TRUE = do not open another Solve Error dialog immediately after pressing Cancel in the previous Solve Error dialog
+    BOOL CloseDlgWhenOperFin; // FALSE = do not close the window after the operation finishes = the window may close if Config.CloseOperationDlgIfSuccessfullyFinished==TRUE
     DWORD ClearChkboxTime;
     HWND LastFocusedControl; // last focused control in the dialog
     DWORD LastActivityTime;  // GetTickCount() from the time of the user's last activity
@@ -1198,7 +1198,7 @@ protected:
     int ConnectionsActHeight;      // current height of the Connections listview
     int ConsAddActYOffset;         // current y-offset of the Add button below the Connections listview
     int ConnectionsActHeightLimit; // current height limit for the Connections listview
-    BOOL InListViewSplit;          // TRUE = the mouse is in the area where dragging changes the Connections listview height against the Operations listview
+    BOOL InListViewSplit;          // TRUE = the mouse is in the area where dragging changes the Connections listview height relative to the Operations listview height
     BOOL Captured;                 // TRUE = the mouse is captured by us
     int DragOriginY;               // Y coordinate of the left-button press (start of the drag)
     double ListviewSplitRatio;     // ratio between the Connections listview height and the total height for the listviews
@@ -1251,9 +1251,9 @@ protected:
     // updates is OPERDLG_UPDATEPERIOD milliseconds
     void ScheduleDelayedUpdate();
 
-    // draws (shows) new values of all changed data displayed in the dialog
+    // updates displayed values of all changed data in the dialog
     // (used for delayed data refresh); returns TRUE if
-    // something needed updating
+    // anything needed updating
     BOOL UpdateDataInDialog();
 
     // ensures setting the close button (Close/Cancel); 'flashTitle' is TRUE
@@ -1529,7 +1529,7 @@ protected:
 //
 
 // helper object for the Script edit control (custom context menu + does not
-// select-all when the control gets focus)
+// select all when the control gets focus)
 class CProxyScriptControlWindow : public CWindow
 {
 public:
