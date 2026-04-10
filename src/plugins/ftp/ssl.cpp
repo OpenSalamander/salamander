@@ -430,7 +430,7 @@ void WriteSSLErrorStackToLog(int logUID, const char* errSrc)
 {
     // log OpenSSL error stack
     int err2;
-    char buffer[256]; // they say: at least 120 bytes
+    char buffer[256]; // documentation says: at least 120 bytes
     while ((err2 = SSLLib.ERR_get_error()) != 0)
     {
         SSLLib.ERR_error_string(err2, buffer);
@@ -471,10 +471,10 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
 
         WSAAsyncSelect(Socket, hWnd, 0, 0);
         err = ioctlsocket(Socket, FIONBIO, &argp);
-        // On x64, SOCKET is a 64-bit value, but the OpenSSL folks assume it never exceeds 2^32
+        // On x64, SOCKET is a 64-bit value, but the OpenSSL developers assume it never exceeds 2^32
         // see http://comments.gmane.org/gmane.comp.encryption.openssl.devel/13621
         // http://msdn.microsoft.com/en-us/library/ms724485%28VS.85%29.aspx
-        // if that happens and this condition starts failing, maybe an x64 version of SSL will already exist
+        // if that happens and this condition starts failing, perhaps an x64 version of SSL will already exist
         if (Socket > 0x00000000ffffffff)
         {
             DWORD* crash = NULL;
@@ -606,7 +606,7 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
                     Logs.LogMessage(logUID, LoadStr(pCertificate->IsVerified() ? IDS_SSL_LOG_CERTVERIFIED : IDS_SSL_LOG_CERTACCEPTED), -1, TRUE);
                     certAcceptedOrVerified = TRUE;
                 }
-                else // Huh! The certificate has changed?????
+                else // The certificate has changed.
                 {
                     Logs.LogMessage(logUID, LoadStr(IDS_SSL_LOG_CERTCHANGED), -1, TRUE);
                     pCertificate->Release();
@@ -626,8 +626,8 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
             }
             if (!certAcceptedOrVerified)
             {
-                // The certificate was not verified nor previously accepted by user, so user should accept
-                // it before further using of this socket.
+                // The certificate was not verified and had not previously been accepted by the user, so the user should accept
+                // it before any further use of this socket.
                 if (unverifiedCert != NULL)
                     *unverifiedCert = new CCertificate(DERCert, DERCertLen, PKCS7Cert, PKCS7CertLen, false, HostAddress);
                 else
@@ -638,7 +638,7 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
                         free(PKCS7Cert);
                     free(DERCert);
                     if (sslErrorOccured != NULL)
-                        *sslErrorOccured = SSLCONERR_UNVERIFIEDCERT; // The certificate was not verified nor previously accepted by user.
+                        *sslErrorOccured = SSLCONERR_UNVERIFIEDCERT; // The certificate was not verified and was not previously accepted by the user.
                     return FALSE;
                 }
             }
@@ -648,7 +648,7 @@ BOOL CSocket::EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unv
             WSAAsyncSelect(Socket, hWnd, Msg, FD_READ | FD_CLOSE | FD_WRITE);
             SSLConn = Conn;
             if (sslErrorOccured != NULL)
-                *sslErrorOccured = SSLCONERR_NOERROR; // But the certificate must not be verified nor previously accepted by user.
+                *sslErrorOccured = SSLCONERR_NOERROR; // But the certificate must not have been verified or previously accepted by the user.
             return TRUE;
         }
         else
@@ -821,11 +821,11 @@ bool InitSSL(int logUID, int* errorID)
         {
             SSLLib.CRYPTO_set_locking_callback(/*(void (*)(int,int,const char *,int))*/ LockingCallback);
 
-            // NOTE: the pointer returned SSLv23_client_method is not to be freed
+            // NOTE: do not free the pointer returned by SSLv23_client_method()
             //
-            // SSLv23_client_method() is default method used in OpenSLL.exe and CURL.
-            // Unsafe SSL2 protocol is disabled using OPENSSL_NO_SSL2 define.
-            // SSLv3_client_method() didn't work with wedos server: https://forum.altap.cz/viewtopic.php?f=2&t=6667
+            // SSLv23_client_method() is the default method used in OpenSSL.exe and CURL.
+            // The unsafe SSL2 protocol is disabled by the OPENSSL_NO_SSL2 define.
+            // SSLv3_client_method() did not work with the wedos server: https://forum.altap.cz/viewtopic.php?f=2&t=6667
             //    SSLLib.Meth = SSLLib.SSLv3_client_method();
             SSLLib.Meth = SSLLib.SSLv23_client_method();
             if (SSLLib.Meth)
@@ -833,15 +833,15 @@ bool InitSSL(int logUID, int* errorID)
                 SSLLib.Ctx = SSLLib.SSL_CTX_new(SSLLib.Meth);
                 if (SSLLib.Ctx)
                 {
-                    /* also switch on all the interoperability and bug
-           * workarounds so that we will communicate with people
-           * that cannot read poorly written specs :-)
-           */
+                    /* also enable all the interoperability and bug
+                     * workarounds so that we can communicate with implementations
+                     * that cannot read poorly written specs
+                     */
                     SSLLib.SSL_CTX_ctrl(SSLLib.Ctx, SSL_CTRL_OPTIONS, SSL_OP_ALL, NULL);
                     bSSLInited = true;
                     return true;
                 }
-            } // if Meth <> NULL then
+            } // if Meth != NULL
         }
     }
     FreeSSL(loadStatus);
