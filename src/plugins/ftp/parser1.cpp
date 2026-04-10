@@ -205,7 +205,7 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
                                 int* errorResID, BOOL* lowMem, BOOL* colAssigned)
 {
     CALL_STACK_MESSAGE1("CFTPParser::CompileNewRule()");
-    rules++; // we know '*' arrived, skip it
+    rules++; // we know there is a '*', skip it
     CFTPParserRule* ruleObj = new CFTPParserRule;
     if (ruleObj == NULL)
     {
@@ -242,7 +242,7 @@ BOOL CFTPParser::CompileNewRule(const char*& rules, const char* rulesEnd,
                         return FALSE;
                     }
                     rules++;
-                    return TRUE; // with this, the rule is compiled
+                    return TRUE; // the rule is compiled at this point
                 }
                 else // a function has to start here
                 {
@@ -409,7 +409,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                                         int* errorResID, BOOL* lowMem, BOOL* colAssigned)
 {
     DEBUG_SLOW_CALL_STACK_MESSAGE2("CFTPParserRule::CompileNewFunction(%d)", (int)func);
-    rules++; // we know '(' arrived, skip it
+    rules++; // we know there is a '(', skip it
     CFTPParserFunction* funcObj = new CFTPParserFunction(func);
     if (funcObj == NULL)
     {
@@ -457,7 +457,7 @@ BOOL CFTPParserRule::CompileNewFunction(CFTPParserFunctionCode func, const char*
                     // also check the types and counts of parameters used by the compiled function
                     if (!funcObj->CheckParameters(columns, errorResID, colAssigned))
                         return FALSE;
-                    return TRUE; // with this, the function is compiled
+                    return TRUE; // the function is compiled at this point
                 }
                 else // a parameter has to start here
                 {
@@ -1500,7 +1500,7 @@ CFTPParserParameter::GetFuncParType(TIndirectArray<CSrvTypeColumn>* columns)
     }
     else
     {
-        if (Type == pptColumnID) // for a column, determine the type according to the column's value type
+        if (Type == pptColumnID) // for a column, determine the type according to the type of values in the column
         {
             if (ColumnIndex >= 0 && ColumnIndex < columns->Count)
             {
@@ -1754,12 +1754,12 @@ BOOL CFTPParserParameter::GetBoolean(CFileData* file, BOOL* isDir,
                                 case pboSubStrIsNotInString:
                                 {
                                     BOOL found = FALSE;
-                                    if (lBeg < lEnd) // non-empty sample to search for
+                                    if (lBeg < lEnd) // non-empty pattern to search for
                                     {
                                         const char* s = rBeg;
                                         while (s < rEnd)
                                         {
-                                            if (LowerCase[*lBeg] == LowerCase[*s]) // does the first letter of the pattern match
+                                            if (LowerCase[*lBeg] == LowerCase[*s]) // the first letter of the pattern matches
                                             {                                      // searching for 'lBeg' in 's' (using the simplest algorithm - O(m*n), but almost O(1) in real cases)
                                                 const char* m = lBeg + 1;
                                                 const char* t = s + 1;
