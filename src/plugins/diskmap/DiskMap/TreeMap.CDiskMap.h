@@ -551,7 +551,7 @@ public:
     BOOL ZoomOut()
     {
         if (this->_viewdir == NULL)
-            return FALSE; //if it is not null, the root should not be null either
+            return FALSE; //if _viewdir is not NULL, _rootdir should not be NULL either
         if (this->_viewdir != this->_rootdir)
         {
             this->_viewdir = this->_viewdir->GetParent();
@@ -585,7 +585,7 @@ public:
         this->_rootdir = NULL;
         this->_populateworker = NULL;
         wrk->SetSelfDelete(TRUE);
-        wrk->Abort(TRUE); //TODO: do I really want to wait?
+        wrk->Abort(TRUE); //TODO: should this really wait?
         return TRUE;
     }
 
