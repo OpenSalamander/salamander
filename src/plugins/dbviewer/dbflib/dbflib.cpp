@@ -82,7 +82,7 @@ cDBF::cDBF(const char* filename, BOOL readOnly) : fields(NULL), status(DBFE_OK),
         break; /* Visual dBase Version 7 */
     case 0x05:
         hdr.version = DBF_DBASE5;
-        break; /* Not tested. Does it exist? */
+        break; /* Not tested; existence unconfirmed. */
     case 0x83:
         hdr.version = DBF_DBASE3;
         break; /* III+ w/ memo */
@@ -226,8 +226,8 @@ cDBF::cDBF(const char* filename, BOOL readOnly) : fields(NULL), status(DBFE_OK),
             {
                 hdr.memoFieldsCnt++;
             }
-            /* FoxPro files can contain character fields having upto 32KB
-           Then the high byte is stored where count of decimals is usually stored */
+            /* FoxPro files can contain character fields up to 32 KB.
+               In that case, the high byte is stored where the decimal count is usually stored. */
             if ((fld.type == DBF_FTYPE_CHAR) && (hdr.version == DBF_FOXPRO))
             {
                 fields[i].len += (U32)fld.decimal << 8;
@@ -374,7 +374,7 @@ cDBF::cDBF(const char* filename, BOOL readOnly) : fields(NULL), status(DBFE_OK),
             {
                 if (!tmp || (tmp == 0xE5 /*???dBase IV sample from Delphi???*/))
                 { /* dBase IV or V */
-                    /* On offset 20 there seems to be a block length; similar info might be on ofs 4 */
+                    /* At offset 20, there seems to be a block length; similar information might be at offset 4. */
                     fseek(fmemo, 20, SEEK_SET);
                     if ((1 != fread(&memoBlockSize, 4, 1, fmemo)) || (memoBlockSize > 32768))
                     {
@@ -571,15 +571,15 @@ eDBFStatus cDBF::GetMemoField(U32 pos, char* buffer, U32 bufSize, U32* dataSize)
         break;
 
     case DBF_DBASE3:
-        /* This weird old format never stores the actual size of memo items/
-          We must read entire block and calculate the size.
-          The end of data is denoted b 1A 1A sequence */
+        /* This old format never stores the actual size of memo items.
+           We must read the entire block and calculate the size.
+           The end of data is denoted by a 1A 1A sequence. */
         {
             BOOL lookFor1a = FALSE; /* 1A 1A may be split into two blocks */
 
             if (!buffer)
             {
-                /* Faking bufSize when enquiring needed buf size makes things simpler */
+                /* Using a fake bufSize when querying the required buffer size simplifies things */
                 bufSize = 0x7FFFFFFF;
             }
             while (bufSize > 0)
