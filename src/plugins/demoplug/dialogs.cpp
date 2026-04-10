@@ -39,7 +39,7 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // ask DefDlgProc to handle focus
+        break; // let DefDlgProc handle focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -264,7 +264,7 @@ CPathDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       CDialog::DialogProc(uMsg, wParam, lParam);
       return FALSE;
 */
-        break; // ask DefDlgProc to handle focus
+        break; // let DefDlgProc handle focus
     }
     }
     return CCommonDialog::DialogProc(uMsg, wParam, lParam);
@@ -382,7 +382,7 @@ BOOL CCtrlExampleDialog::CreateChilds()
 
     CGUIHyperLinkAbstract* hl;
 
-    // A hyperlink can be reached in the dialog via the keyboard if the .RC assigns it the WS_TABSTOP style.
+    // A HyperLink can be reached in the dialog via the keyboard if the .RC assigns it the WS_TABSTOP style.
     hl = SalamanderGUI->AttachHyperLink(HWindow, IDC_CE_HLOPEN, STF_UNDERLINE | STF_HYPERLINK_COLOR);
     if (hl == NULL)
         return FALSE;
