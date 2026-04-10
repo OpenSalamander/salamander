@@ -26,7 +26,7 @@ bool IsUTF8Encoded(const char* s, int cnt);
 
 struct CFieldInfo
 {
-    char* Name;     // if NULL, the required length is stored into NameMax
+    char* Name;     // if Name is NULL, the required length is stored in NameMax
     int NameMax;    // if Name != NULL, specifies the buffer size (NameMax equals the number of characters plus the terminator)
     BOOL LeftAlign; // where the text should be aligned when displayed
     int TextMax;    // maximum number of characters shown in this column; -1 if unknown to the parser
