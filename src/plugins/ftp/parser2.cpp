@@ -190,7 +190,7 @@ void FillEmptyValues(BOOL& err, CFileData* file, BOOL isDir,
                             }
                         }
                     }
-                    else // the date is incomplete -> take the empty value
+                    else // the date is incomplete -> use an empty value
                     {
                         lastWriteDate.wYear = stVal.wYear;
                         lastWriteDate.wMonth = stVal.wMonth;
@@ -300,7 +300,7 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
 
     if (!err)
     {
-        // for each column the 'emptyCol' array contains TRUE until some value is assigned
+        // for each column, the 'emptyCol' array contains TRUE until a value is assigned to that column
         int i;
         for (i = 0; i < columns->Count; i++)
             emptyCol[i] = TRUE;
@@ -318,7 +318,7 @@ BOOL CFTPParser::GetNextItemFromListing(CFileData* file, BOOL* isDir,
                 BOOL brk = FALSE;
                 if (Rules[j]->UseRule(file, isDir, dataIface, columns, &s, listingEnd, this, &err, emptyCol))
                 {
-                    if (SkipThisLineItIsIncomlete || // an incomplete listing was detected - skip the processed trailing part of the listing
+                    if (SkipThisLineItIsIncomlete || // an incomplete listing was detected - skip the trailing part of the listing being processed
                         !emptyCol[0])
                         break;  // the rule succeeded - a file or directory was read - proceed to process the data
                     brk = TRUE; // the rule succeeded - skip the line - continue parsing the next line
@@ -682,7 +682,7 @@ BOOL AssignStringToColumn(int col, TIndirectArray<CSrvTypeColumn>* columns, cons
     }
 }
 
-// returns the number of the month whose name is encoded by three letters; if it is an unknown
+// returns the number of the month whose name is encoded as three letters; if it is an unknown
 // month code, returns -1
 int GetMonthFromThreeLetters(const char* month, const char* monthStr)
 {
@@ -769,8 +769,8 @@ int GetMonthFromThreeLettersAllLangs(const char* month, DWORD* allowedLanguagesM
     }
 }
 
-// returns the number of the month whose name is encoded by text; if it is an unknown
-// month code, returns -1
+// returns the number of the month whose name is encoded in the text; if the
+// month code is unknown, returns -1
 int GetMonthFromText(const char** month, const char* monthEnd, const char* monthStr)
 {
     const char* s = *month;
@@ -1327,7 +1327,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 {
                     while (s < listingEnd && *s != '\r' && *s != '\n')
                     {
-                        if (LowerCase[*str] == LowerCase[*s]) // the first letter of the searched pattern matches
+                        if (LowerCase[*str] == LowerCase[*s]) // the first letter of the pattern matches
                         {                                     // search for 'str' in 's' (using the simplest algorithm - O(m*n), but almost O(1) in real cases)
                             const char* m = str + 1;
                             const char* t = s + 1;
@@ -1363,7 +1363,7 @@ BOOL CFTPParserFunction::UseFunction(CFileData* file, BOOL* isDir,
                 }
             }
             else
-                ret = FALSE; // should never happen (NULL only on low-memory, which does not reach here)
+                ret = FALSE; // should never happen (NULL only under low-memory conditions, and that cannot happen here)
             if (needDealloc && str != NULL)
                 free((void*)str);
         }
