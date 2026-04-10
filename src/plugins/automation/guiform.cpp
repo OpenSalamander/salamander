@@ -109,7 +109,7 @@ CSalamanderGuiForm::~CSalamanderGuiForm()
 
     HMENU hSysMenu = GetSystemMenu(m_hWnd, FALSE);
 
-    // If the form does not have the Cancel button, disable also the
+    // If the form does not have a Cancel button, also disable the
     // close button in the title bar.
     if (m_nCloseCode == -1)
     {
@@ -138,8 +138,8 @@ CSalamanderGuiForm::~CSalamanderGuiForm()
             DeleteMenu(hSysMenu, SC_SIZE, MF_BYCOMMAND);
         }
 
-        // Remove separator between "Move" and "Close" if they
-        // remained the only items in the sys menu.
+        // Remove the separator between "Move" and "Close" if they
+        // are the only items left in the system menu.
 
         int iMove = -1;
         int iClose = -1;
@@ -558,8 +558,8 @@ void CSalamanderGuiForm::InternalAddComponent(
         }
 
         // If some attributes of the previous component (most notably
-        // the Text property) were changed, its dimension might
-        // change as well. Expand bounds of the form to hold resized
+        // the Text property) were changed, its dimensions might
+        // change as well. Expand bounds of the form to hold the resized
         // component.
         UnionBounds(prevBounds);
     }
@@ -669,10 +669,10 @@ void CSalamanderGuiForm::UnionBounds(const SALGUI_BOUNDS& bounds)
 
 void CSalamanderGuiForm::AlignButtons()
 {
-    // Contains pointers to standard buttons (have the DialogResult
-    // property set) added on the form. The array is indexed by
-    // the exit codes (IDOK, IDCANCEL...). Element zero is spare.
-    // Elements 16, 17 and 18 are specific buttons, see
+    // Contains pointers to standard buttons (with the DialogResult
+    // property set) added to the form. The array is indexed by
+    // exit codes (IDOK, IDCANCEL...). Element zero is unused.
+    // Elements 16, 17, and 18 are specific buttons; see the
     // ButtonToFriendlyNumber function.
     ISalamanderGuiComponentInternal* apButtons[MAX_EXIT_BUTTONS] = {
         0,
@@ -777,7 +777,7 @@ void CSalamanderGuiForm::AlignButtons()
     else if (apButtons[IDCANCEL])
     {
         // If there is a Cancel button on the form, make the close
-        // button return the Cancel as well.
+        // button return the Cancel code as well.
         m_nCloseCode = IDCANCEL;
     }
     else
@@ -833,8 +833,8 @@ void CSalamanderGuiForm::AlignButtonLine(
     int xshift;
     int cxClient, cxButtons;
 
-    // Center the buttons bounding rect in the form client rect,
-    // calculate x-shift offset and the shift all the buttons by
+    // Center the buttons' bounding rect in the form client rect,
+    // calculate the x-shift offset, and then shift all the buttons by
     // that offset.
     GetClientRect(m_hWnd, &rcClient);
     cxClient = rcClient.right;
