@@ -4,9 +4,9 @@
 
 #pragma once
 
-// skips the identifier name (function, state variable, or column name),
+// skips an identifier (function, state variable, or column name),
 // returns TRUE if at least one character was skipped (the identifier has at least one
-// character); otherwise returns the 'emptyErrID' error in 'errorResID'
+// character); otherwise stores the 'emptyErrID' error in 'errorResID'
 BOOL SkipIdentifier(const char*& s, const char* end, int* errorResID, int emptyErrID);
 
 //
@@ -43,7 +43,7 @@ enum CFTPParserBinaryOperators
 enum CFTPParserParameterType
 {
     pptNone,       // uninitialized
-    pptColumnID,   // column identifier (-3==is_link, -2==is_hidden, -1==is_dir, from 0 it is an index in the 'columns' array)
+    pptColumnID,   // column identifier (-3==is_link, -2==is_hidden, -1==is_dir, from 0 onward it is an index in the 'columns' array)
     pptBoolean,    // boolean (true==1, false==0)
     pptString,     // string
     pptNumber,     // signed int64 (unsigned int64 is unnecessary)
@@ -242,7 +242,7 @@ class CFTPParserFunction
 protected:
     CFTPParserFunctionCode Function;
 
-    TIndirectArray<CFTPParserParameter> Parameters; // list of all rule functions
+    TIndirectArray<CFTPParserParameter> Parameters; // list of all function parameters
 
 public:
     CFTPParserFunction(CFTPParserFunctionCode func) : Parameters(1, 1) { Function = func; }
@@ -323,8 +323,8 @@ public:
     BOOL IsGood() { return Functions.IsGood(); }
 
     // returns TRUE if the function in the rule was compiled successfully (up to the ')' symbol);
-    // on error returns FALSE and sets 'errorResID' (number of the string describing
-    // the error - stored in resources) or 'lowMem' (TRUE = low memory)
+    // on failure returns FALSE and sets 'errorResID' (resource ID of the string describing
+    // the error) or 'lowMem' (TRUE = low memory)
     BOOL CompileNewFunction(CFTPParserFunctionCode func, const char*& rules, const char* rulesEnd,
                             TIndirectArray<CSrvTypeColumn>* columns, int* errorResID,
                             BOOL* lowMem, BOOL* colAssigned);
@@ -352,12 +352,12 @@ public:
 //
 
 // bits for the date column index in 'emptyCol' (see CFTPParser::GetNextItemFromListing)
-#define DATE_MASK_DAY 0x02                  // the date has the day set (starting at 0x02 because TRUE = 0x01)
+#define DATE_MASK_DAY 0x02                  // day is set in the date (starting at 0x02 because TRUE = 0x01)
 #define DATE_MASK_MONTH 0x04                // the date has the month set
 #define DATE_MASK_YEAR 0x08                 // the date has the year set
 #define DATE_MASK_DATE 0x0E                 // the date is set completely
 #define DATE_MASK_YEARCORRECTIONNEEDED 0x10 // the year in the date still needs to be corrected (used with "year_or_time")
-#define DATE_MASK_TIME 0x100                // the time is set completely (it is a different column, it could be 0x02, but we use 0x10 for easier error detection)
+#define DATE_MASK_TIME 0x100                // the time is fully set (it is a different column, 0x02 could be used, but 0x10 is used for easier error detection)
 
 // constants for CFTPParser::AllowedLanguagesMask
 #define PARSER_LANG_ALL 0xFFFF
@@ -381,7 +381,7 @@ public:                             // helper variables used while parsing the l
     const char* LastNonEmptyEnd;    // end of the last non-empty line
     const char* ListingBeg;         // beginning of the listing
     BOOL ListingIncomplete;         // TRUE if the listing is incomplete
-    BOOL SkipThisLineItIsIncomlete; // TRUE only if the rule processing detected that the listing is incomplete - skip the trailing part of the listing processed by this rule
+    BOOL SkipThisLineItIsIncomlete; // TRUE only if rule processing detected that the listing is incomplete - the trailing part of the listing processed by this rule is skipped
     DWORD AllowedLanguagesMask;     // allowed languages for functions month_3 and month_txt (bit combination of PARSER_LANG_XXX constants) - purpose: to avoid mixing languages when detecting months
 
 public:
@@ -492,20 +492,20 @@ public:
 };
 
 // allocates the parser and creates its structure according to the 'rules' string (parsing rules);
-// 'columns' are defined columns; on error returns NULL; returns TRUE in 'lowMem' (if not NULL)
-// if the error was caused by lack of memory; returns the offset of a syntactic or semantic error
-// inside 'rules' in 'errorPos' (if not NULL) (-1=unknown error position), and at the same time
-// returns the number of the string describing the error in 'errorResID' (if not NULL)
+// 'columns' are the defined columns; on error returns NULL; returns TRUE in 'lowMem' (if not NULL)
+// if the error was caused by lack of memory; returns the offset of a syntax or semantic error
+// in 'rules' in 'errorPos' (if not NULL) (-1=unknown error position), and also returns
+// the ID of the string describing the error in 'errorResID' (if not NULL)
 // (stored in resources; -1=no error description)
 CFTPParser* CompileParsingRules(const char* rules, TIndirectArray<CSrvTypeColumn>* columns,
                                 int* errorPos, int* errorResID, BOOL* lowMem);
 
 // loads the autodetection condition from the 'cond' string and stores it in an allocated tree,
 // whose root it returns; on error returns NULL; returns TRUE in 'lowMem' (if not NULL) if the error
-// was caused by lack of memory; returns the offset of a syntactic error inside 'cond' (-1=unknown error position)
-// in 'errorPos' (if not NULL); simultaneously returns the number of the string describing the error in 'errorResID'
-// (if not NULL) (stored in resources; -1=no error description) and returns a textual error description in the
-// 'errBuf'+'errBufSize' buffer (has higher priority than 'errorResID')
+// was caused by lack of memory; returns the offset of a syntax error inside 'cond' (-1=unknown error position)
+// in 'errorPos' (if not NULL); also returns the ID of the string describing the error in 'errorResID'
+// (if not NULL) (stored in resources; -1=no error description) and returns a textual error description in
+// the buffer specified by 'errBuf' and 'errBufSize' (has higher priority than 'errorResID')
 CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int* errorResID,
                                            BOOL* lowMem, char* errBuf, int errBufSize);
 
