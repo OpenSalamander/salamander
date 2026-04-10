@@ -54,7 +54,7 @@ int ConfigVersion = 0;
 // 2: ?
 // 3: Igor changed the default values for LZMA compression (dictionary size, etc.). There are more changes,
 //    so Honza Patera and I agreed that when importing old configurations we will
-//    ignore compression settings and use the new defaults instead.
+//    ignore the compression settings and use these new defaults.
 #define CURRENT_CONFIG_VERSION 3
 const char* CONFIG_VERSION = "Version";
 
@@ -139,12 +139,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "7-Zip" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "7-Zip" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "7-Zip" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "7-Zip" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -444,7 +444,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load from registry
+    if (regKey != NULL) // load from the registry
     {
         if (!registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
             ConfigVersion = 0; // default configuration
@@ -457,7 +457,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     // set config defaults
     SetDefaultConfiguration();
 
-    if (regKey != NULL) // load from registry
+    if (regKey != NULL) // load from the registry
     {
         registry->GetValue(regKey, CONFIG_SHOW_EXTENDED_OPTIONS, REG_DWORD, &Config.ShowExtendedOptions, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_EXTENDED_LIST_INFO, REG_DWORD, &Config.ExtendedListInfo, sizeof(DWORD));
@@ -471,7 +471,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
 
         if (ConfigVersion >= 1)
         {
-            // compress params
+            // compression params
             registry->GetValue(regKey, CONFIG_SOLID_ARCHIVE, REG_DWORD, &Config.CompressParams.SolidArchive, sizeof(DWORD));
             if (registry->GetValue(regKey, CONFIG_COMPRESS_METHOD, REG_DWORD, &Config.CompressParams.Method, sizeof(DWORD)) &&
                 (Config.CompressParams.Method != CCompressParams::LZMA || ConfigVersion >= 3)) // for configuration version 3 we reset the defaults for LZMA because they differ
@@ -502,7 +502,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_COL_METHOD_WIDTH, REG_DWORD, &Config.ColumnMethodWidth, sizeof(DWORD));
 
     // config version == 2
-    // compress params
+    // compression params
     registry->SetValue(regKey, CONFIG_COMPRESS_LEVEL, REG_DWORD, &Config.CompressParams.CompressLevel, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_COMPRESS_METHOD, REG_DWORD, &Config.CompressParams.Method, sizeof(DWORD));
     registry->SetValue(regKey, CONFIG_DICT_SIZE, REG_DWORD, &Config.CompressParams.DictSize, sizeof(DWORD));
@@ -532,8 +532,8 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     // when adding more extensions we must raise CURRENT_CONFIG_VERSION
 
     // BASIC SECTION
-    // AddViewer and AddPanelArchiver will fall under the UPGRADE SECTION
-    //  salamander->AddViewer("*.7z", FALSE); // default (plugin install), otherwise Salamander ignores it
+    // AddViewer and AddPanelArchiver are handled by the UPGRADE SECTION
+    //  salamander->AddViewer("*.7z", FALSE); // default (plugin installation), otherwise Salamander ignores it
 
     salamander->AddPanelArchiver("7z", TRUE, FALSE);
 
@@ -969,7 +969,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     CALL_STACK_MESSAGE5("CPluginInterfaceForArchiver::PackToArchive(, %s, %s, %d, %s, ,)", fileName,
                         archiveRoot, move, sourcePath);
 
-    // test whether the archive exists (we need to distinguish between update and create new archive)
+    // test whether the archive exists (we need to distinguish between updating and creating a new archive)
     BOOL isNewArchive = FALSE;
     HANDLE hArchive = ::CreateFile(fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hArchive == INVALID_HANDLE_VALUE)
@@ -1059,7 +1059,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
 
     // count how many items we will compress
     // (we could use a growing array right away, but with a large number it would fragment memory, and iterating the list twice
-    // will not kill us)
+    // is acceptable)
     int itemCount = 0;
     while ((name = next(SalamanderGeneral->GetMsgBoxParent(), 3, &dosName, &isDir, &size,
                         &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
@@ -1111,7 +1111,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
     { // first lock the archive file so we cannot delete it ourselves (bug: https://forum.altap.cz/viewtopic.php?f=3&t=3859)
         while (1)
         {
-            hArchive = ::CreateFile(fileName, GENERIC_READ /* I tried 0, but the system then allowed deleting the file */,
+            hArchive = ::CreateFile(fileName, GENERIC_READ /* Using 0 was tested, but then the system allowed the file to be deleted */,
                                     FILE_SHARE_READ | FILE_SHARE_WRITE,
                                     NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -1180,7 +1180,7 @@ BOOL CPluginInterfaceForArchiver::PackToArchive(CSalamanderForOperationsAbstract
                 }
                 int endSourceSize = MAX_PATH - (int)(endSource - sourceName); // maximum number of characters for a name from the 'next' enumeration
 
-                // delete directories; if something remains inside they will not be removed and that's fine :)
+                // delete directories; if something remains inside, they will not be removed, which is correct
                 // because we iterate from leaves to the root, we can delete them this way
                 next(NULL, -1, NULL, NULL, NULL, NULL, NULL, nextParam, NULL);
                 while ((name = next(NULL /* we do not log errors the second time */, 3, &dosName, &isDir, &size,
@@ -1287,7 +1287,7 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
                       "0x%X, %d, %d, , , , %d, %d)", name, left, top, width, height,
                       showCmd, alwaysOnTop, returnLock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-  // we do not set 'lock' or 'lockOwner'; we only need the lifetime of the file 'name'
+  // we do not set 'lock' or 'lockOwner'; we only need the file 'name' to remain valid
   // within this method
 
   HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -1313,7 +1313,7 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
     int err;
     CSalamanderPluginInternalViewerData viewerData;
 
-    // create a temporary file and pour the module dump into it
+    // create a temporary file and write the module dump to it
     FILE *outStream = fopen(tempFileName, "w");
     if (!image->DumpInfo(outStream))
     {
@@ -1322,7 +1322,7 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
     fclose(outStream);
     delete image;
 
-    // hand the file over to Salamander - it moves it to cache and deletes it when it is done
+    // hand the file over to Salamander - it moves it to the cache and deletes it when it no longer uses it
     viewerData.Size = sizeof(viewerData);
     viewerData.FileName = tempFileName;
     viewerData.Mode = 0;  // text mode
