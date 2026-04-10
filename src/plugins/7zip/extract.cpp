@@ -39,8 +39,8 @@ CExtractCallbackImp::~CExtractCallbackImp()
     DeleteCriticalSection(&CSExtract);
 }
 
-// silent - if TRUE and a DataError occurs during extraction (usually an incorrect password), the file is deleted
-// automatically and the user is not asked anything (used when extracting a single file for preview - F3)
+// silent - if TRUE and a DataError occurs during extraction (usually because of an incorrect password), the file is deleted
+// automatically and the user is not prompted (used when extracting a single file for viewing - F3)
 BOOL CExtractCallbackImp::Init(IInArchive* archive, const char* outDir,
                                const FILETIME& utcLastWriteTimeDefault, DWORD attributesDefault, BOOL silentDelete /* = FALSE*/)
 {
@@ -158,20 +158,20 @@ STDMETHODIMP CExtractCallbackImp::GetStream(UINT32 index, ISequentialOutStream**
             const CArchiveItemInfo* aii = ItemsToExtract[index];
             if (!aii)
             {
-                // Already extracted??? Not to be extracted?
+                // Already extracted? Not selected for extraction?
                 throw S_OK;
             }
             ItemsToExtract.erase(index);
             const CFileData* fd = aii->FileData;
             // fd is certainly not NULL
 
-            // because we handed over a list of CArchiveItem with all information we need, we can extract directly.
-            // however, we need reverse mapping (a hash function) that tells us the index of the item to use
-            // because this function receives the index in the archive
+            // Because we passed a list of CArchiveItem objects with all the information we need, we can extract directly.
+            // However, we need reverse mapping (a hash function) to tell us which item index to use,
+            // because this function receives the index within the archive.
             //
-            // we could save memory and retrieve the properties we need via ArchiveHandler->GetProperty,
-            // but the problem is with names: GetProperty returns path+filename relative to the archive root and if we extract
-            // from a different root, we would have to strip the path
+            // We could save memory and retrieve the properties we need via ArchiveHandler->GetProperty,
+            // but names are a problem: GetProperty returns path+filename relative to the archive root, and if we extract
+            // from a different root, we would have to strip the path.
 
             ProcessedFileInfo.Attributes = fd->Attr;
             ProcessedFileInfo.AttributesAreDefined = true;
@@ -364,7 +364,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         }
     }
 
-    // release the OutStream so it can be deleted if needed
+    // release OutStream so the file can be deleted if needed
     if (OutFileStream != NULL)
         OutFileStreamSpec->SetMTime(&ProcessedFileInfo.LastWrite);
     OutFileStream.Release();
@@ -480,7 +480,7 @@ STDMETHODIMP CExtractCallbackImp::SetOperationResult(INT32 resultEOperationResul
     if (TargetDir && !ItemsToExtract.size())
     {
         // NULL TargetDir means testing the archive
-        // Doing partial extract & everything has been extracted. Looks like a solid archive
+        // A partial extraction was requested, and everything has been extracted. The archive appears to be solid.
         return E_STOPEXTRACTION;
     }
 
