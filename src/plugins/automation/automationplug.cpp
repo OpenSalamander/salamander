@@ -281,8 +281,8 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
         0,
         CAutomationMenuExtInterface::CmdRunFocusedScript,
         TRUE, // callGetState
-        0,    // or-mask (ignored id callGetState == TRUE)
-        0,    // and-mask (ignored id callGetState == TRUE)
+        0,    // or-mask (ignored if callGetState == TRUE)
+        0,    // and-mask (ignored if callGetState == TRUE)
         MENU_SKILLLEVEL_ALL);
 
     // open script menu
@@ -296,10 +296,10 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
         0,
         MENU_SKILLLEVEL_ALL);
 
-    // for our menu items we set callGetState to TRUE, so the
-    // GetMenuItemState will be always called for the items which
-    // forces our plugin to be loaded before first menu popup
-    // and the items get refreshed
+    // for our menu items we set callGetState to TRUE, so
+    // GetMenuItemState is always called for those items,
+    // which forces our plugin to load before the first menu popup
+    // and refreshes the items
 
     if (g_oScriptLookup.GetCount() > 0)
     {
@@ -319,8 +319,8 @@ MENU_TEMPLATE_ITEM PluginMenu[] =
         AddScriptContainerToMenu(pRootContainer, salamander, 0);
     }
 
-    // Salamander manages the icon list itself, so we must everytime
-    // create a copy of that list that we pass to menu builder.
+    // Salamander manages the icon list itself, so we must always
+    // create a copy of the list that we pass to the menu builder.
     CGUIIconListAbstract* pListCopy = SalamanderGUI->CreateIconList();
     if (pListCopy)
     {
