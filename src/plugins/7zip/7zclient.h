@@ -33,10 +33,10 @@
 #define S_ISLNK(m) (((m) & 0170000) == 0120000) /* symbolic link */
 #endif
 
-// three states for errors.
-// there are situations where TRUE/FALSE is not enough. we have an activity that can run into an error. sometimes we can
-// and want to continue the activity, other times we cannot. if we can continue we return OPER_CONTINUE,
-// if it cannot go on (out of memory, etc.) -> OPER_CANCEL. if everything is fine -> OPER_OK
+// three error states.
+// there are situations where TRUE/FALSE is not enough. we have an operation that can encounter an error. sometimes we can
+// and want to continue the operation, other times we cannot. if we can continue, we return OPER_CONTINUE,
+// if continuing is not possible (out of memory, etc.) -> OPER_CANCEL. if everything is OK -> OPER_OK
 #define OPER_OK 0
 #define OPER_CONTINUE 1
 #define OPER_CANCEL 2
