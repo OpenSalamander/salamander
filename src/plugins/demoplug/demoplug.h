@@ -330,7 +330,7 @@ public:
 
     DWORD Enablers[vweCount];
 
-    HWND HRebar; // holds the menu bar and toolbar
+    HWND HRebar; // holds MenuBar and ToolBar
     CGUIMenuPopupAbstract* MainMenu;
     CGUIMenuBarAbstract* MenuBar;
     CGUIToolBarAbstract* ToolBar;
@@ -420,7 +420,7 @@ public:
 
     void Set(const char* fileName, DWORD progress, BOOL dalayedPaint);
 
-    // empties the message queue (call often enough) and allows repainting, handling Cancel, ...
+    // empties the message queue (call often enough), allows repainting, and handles Cancel presses
     // returns TRUE if the user wants to interrupt the operation
     BOOL GetWantCancel();
 
