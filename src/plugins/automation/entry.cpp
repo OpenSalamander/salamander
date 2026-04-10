@@ -69,7 +69,7 @@ static void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 /// Returns the object representing the plugin.
 /// \param salamander Pointer to the CSalamanderPluginEntryAbstract interface.
-/// \return If the function succeeds, the return value is pointer to the
+/// \return If the function succeeds, the return value is a pointer to the
 ///         plugin object. If the function fails, the return value is NULL.
 CPluginInterfaceAbstract*
     WINAPI
@@ -131,9 +131,9 @@ CPluginInterfaceAbstract*
     return &g_oAutomationPlugin;
 }
 
-/// Returns version of Open Salamander required to run this plugin.
-/// \return The return value is required version of Open Salamander.
-///         For list of version values see \e spl_vers.h.
+/// Returns the version of Open Salamander required to run this plugin.
+/// \return The return value is the required version of Open Salamander.
+///         For a list of version values, see \e spl_vers.h.
 int WINAPI SalamanderPluginGetReqVer()
 {
     return LAST_VERSION_OF_SALAMANDER;
