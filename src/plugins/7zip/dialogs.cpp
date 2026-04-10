@@ -389,7 +389,7 @@ CCompressParamsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetComboCurSelData(GetDlgItem(HWindow, IDCfgDictSize), CompressParams->DictSize);
         SetComboCurSelData(GetDlgItem(HWindow, IDCfgWordSize), CompressParams->WordSize);
 
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc handle focus
     }
 
     case WM_COMMAND:
@@ -434,7 +434,7 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc handle focus
 
     case WM_COMMAND:
         break;
@@ -483,7 +483,7 @@ CConfigurationDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         EnableWindow(GetDlgItem(HWindow, IDC_CFG_LISTINFOMETHOD), Cfg.ExtendedListInfo);
 
         CompressParamsDlg.HWindow = HWindow;
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc handle focus
     }
 
     case WM_COMMAND:
@@ -580,7 +580,7 @@ CExtOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         CompressParamsDlg.HWindow = HWindow;
 
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc handle focus
     }
 
     case WM_COMMAND:
@@ -666,7 +666,7 @@ CEnterPasswordDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
     {
         /*
-      // preparation for skip and skip_all
+      // support for skip and skip_all
       switch (LOWORD(wParam))
       {
         case IDC_SKIP: return EndDialog(HWindow, DIALOG_SKIP);
