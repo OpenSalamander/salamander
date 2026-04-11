@@ -145,9 +145,9 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
                         while (++iterator < end && IsSpaceX(*iterator))
                             if (*iterator == '\n')
                                 line++, linebreaks++;
-                        // Whitespace containing one linebreak matches whitespace without
-                        // linebreaks. It is represented by ' ' in compare data.
-                        // Blank line matches any sequence of one or more blanklines. Blank
+                        // Whitespace containing one line break matches whitespace without
+                        // line breaks. It is represented by ' ' in compare data.
+                        // A blank line matches any sequence of one or more blank lines. A blank
                         // line can contain any whitespace. It is represented by '\n' in
                         // compare data.
                         Strict.CompareData[i].push_back(
@@ -203,13 +203,13 @@ void CFilecompCoWorkerBase<CChar>::ScrictCompare(
     if (d == -1)
         CFilecompWorker::CException::Raise(IDS_INTERNALERROR, 0);
 
-    // TODO once I implement strict mode this should be handled
+    // TODO once strict mode is implemented, this should be handled
     // if (d == 0)
 
     // shift-boundaries is called before RemoveSingleCharMatches
     ShiftBoundaries(Strict.EditScript, Strict.CompareData);
 
-    // remove sigle char matches
+    // remove single-char matches
     RemoveSingleCharMatches();
 
     // build line scripts
@@ -403,7 +403,7 @@ void CFilecompCoWorkerBase<CChar>::ShiftBoundaries(CEditScript& editScript, CCom
         for (CEditScript::iterator change = editScript.begin();
              change < editScript.end(); ++change)
         {
-            // ignore changes occured only in other file
+            // ignore changes that occurred only in the other file
             if (change->Length[f] == 0)
                 continue;
 
