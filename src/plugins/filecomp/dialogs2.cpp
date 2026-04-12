@@ -522,7 +522,7 @@ void CPreviewWindow::RePaint()
 void CPreviewWindow::SetFont(LOGFONT* font)
 {
     CALL_STACK_MESSAGE1("CPreviewWindow::SetFont()");
-    // load the font
+    // create the font
     if (HFont)
         DeleteObject(HFont);
     HDC hdc = GetDC(NULL);
