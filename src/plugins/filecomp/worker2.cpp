@@ -331,7 +331,7 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
                 }
             }
 
-            // compare data in chunks of the requested size
+            // compare data in blocks of the requested size
             DWORD size = (DWORD)__min(blokSize, remain);
 
             ptr0 = cf[0].ReadBuffer(offset, size, CancelFlag);
@@ -371,5 +371,5 @@ int CFilecompWorker::FindDifferencesBody(CCachedFile (&cf)[2], QWORD changeOffs,
         }
     }
 
-    return 0; // succes
+    return 0; // success
 }
