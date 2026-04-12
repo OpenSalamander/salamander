@@ -103,7 +103,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
         DLLInstance = hinstDLL;
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 //
@@ -157,7 +157,7 @@ void UpdateInternetFeatureControl()
 
     // MSDN mentions that FEATURE_96DPI_PIXEL is deprecated and replaced by DOCHOSTUIFLAG_DPI_AWARE
     // https://msdn.microsoft.com/en-us/library/aa753277%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-    // but it still works under W10/IE11, so I am ignoring it
+    // but it still works under W10/IE11, so it is left as is
 
     char exePath[MAX_PATH];
     if (!GetModuleFileName(NULL, exePath, MAX_PATH))
@@ -197,12 +197,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Internet Explorer Viewer" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Internet Explorer Viewer" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // let it load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Internet Explorer Viewer" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Internet Explorer Viewer" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -394,7 +394,7 @@ unsigned WINAPI ThreadIEMessageLoop(void* param)
     lstrcpyn(name, data->Name, MAX_PATH);
     IStream* contentStream = data->ContentStream;
     BOOL openFile = data->Success;
-    SetEvent(data->Continue); // let the main thread continue; data are invalid from this point (=NULL)
+    SetEvent(data->Continue); // allow the main thread to continue; the data are invalid from this point on (=NULL)
     data = NULL;
 
     // if everything succeeded, open the requested file in the window
@@ -421,10 +421,10 @@ unsigned WINAPI ThreadIEMessageLoop(void* param)
         }
     }
 
-    // probably a common bug in IE - the object was originally destroyed in response to WM_DESTROY
-    // but a message arrived before the message pump finished and hit the destroyed
+    // probably a common IE bug: the object was originally destroyed in response to WM_DESTROY
+    // but another message arrived before the message pump finished and accessed the destroyed
     // object
-    // therefore I moved the window destruction here - similar to ooStatic from WinLib
+    // therefore the window destruction was moved here, similar to ooStatic in WinLib
     CALL_STACK_MESSAGE1("ThreadIEMessageLoop::message_loop done");
     delete window;
 
@@ -1386,7 +1386,7 @@ CSite::CSite()
     //Object interfaces
     m_pIUnknown = NULL;
     m_pIWebBrowser = NULL;
-    m_pIWebBrowser2 = NULL; // !!! warning - for IE3.02 it can be NULL
+    m_pIWebBrowser2 = NULL; // Warning: may be NULL in IE 3.02
     m_pIOleObject = NULL;
     m_pIOleInPlaceObject = NULL;
     m_pIOleInPlaceActiveObject = NULL;
@@ -1533,7 +1533,7 @@ BOOL CSite::Create(HWND hParentWnd)
                                   CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER,
                                   IID_IUnknown, (void**)&m_pIUnknown);
 
-    if (hr == REGDB_E_CLASSNOTREG) // correct variant
+    if (hr == REGDB_E_CLASSNOTREG) // correct case
     {
         TRACE_E("A InternetExplorer class is not registered in the registration database");
         return FALSE;
