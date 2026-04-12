@@ -106,7 +106,7 @@ CParserOGG::GetFileInfo(COutputInterface* output)
             {"GENRE", IDS_OGG_GENRE, NULL},
             //A short text indication of music genre
             {"PERFORMER", IDS_OGG_PERFORMER, NULL},
-            //The artist(s) who performed the work. In classical music this would be the conductor, orchestra, soloists. In an audio book it would be the actor who did the reading. In popular music this is typically the same as the ARTIST and is ommitted.
+            // The artist(s) who performed the work. In classical music this would be the conductor, orchestra, or soloists. In an audio book it would be the actor who did the reading. In popular music this is typically the same as the ARTIST and is omitted.
             {"ORGANIZATION", IDS_OGG_ORGANIZATION, NULL},
             //Name of the organization producing the track (i.e. the 'record label')
             {"DESCRIPTION", IDS_OGG_DESCRIPTION, NULL},
@@ -120,7 +120,7 @@ CParserOGG::GetFileInfo(COutputInterface* output)
             {"ISRC", IDS_OGG_ISRC, NULL},
             //ISRC number for the track; see the ISRC intro page for more information on ISRC numbers.
             {"DISCID", IDS_OGG_DISCID, NULL},
-            //Table of contents hash from an associated disc, generally used to index the track in published music databases. See http://freedb.org/ for and example of such a hash.
+            // Table-of-contents hash from an associated disc, generally used to index the track in published music databases. See http://freedb.org/ for an example of such a hash.
             {"VERSION", IDS_OGG_VERSIONS, NULL},
             //The version field may be used to differentiate multiple versions of the same track title in a single collection. (e.g. remix info)
             {"COMMENT", IDS_OGG_COMMENTS, NULL},
@@ -153,7 +153,7 @@ CParserOGG::GetFileInfo(COutputInterface* output)
             {
                 char* tmp = SalGeneral->DupStr(*ptr);
                 _strupr(tmp);
-                // UTF8 is preserved on NT-class OS's
+                // UTF-8 is preserved on NT-class OSes
                 if (((f = FindComment(tmp, offset, comments)) != -1) && (f < countTags))
                     comments[f].str = SalGeneral->DupStr(*ptr + offset);
                 else
