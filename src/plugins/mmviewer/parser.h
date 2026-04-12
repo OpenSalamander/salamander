@@ -11,7 +11,7 @@ enum CParserResultEnum
     preOpenError,      // error while opening the file
     preReadError,      // error while reading from the file
     preWriteError,     // error while writing to the file
-    preSeekError,      // error while setting the position in the file
+    preSeekError,      // error while seeking in the file
     preCorruptedFile,  // corruped file
     preExtensionError, // unable to initialize Windows extensions e.g. WMA
     preCount           // another error
