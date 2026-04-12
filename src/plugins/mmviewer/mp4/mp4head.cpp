@@ -91,14 +91,14 @@ static int ReadADTSHeader(FILE* file, AACHEAD_DECODED* info)
             break;
         }
 
-        /* check syncword */
+        /* Check the syncword. */
         if (!((buffer[0] == 0xFF) && ((buffer[1] & 0xF6) == 0xF0)))
             break;
 
         if (!frames)
         {
-            /* fixed ADTS header is the same for every frame, so we read it only once */
-            /* Syncword found, proceed to read in the fixed ADTS header */
+            /* The fixed ADTS header is the same for every frame, so we read it only once. */
+            /* Syncword found; proceed to read the fixed ADTS header. */
             ID = buffer[1] & 0x08;
             info->object_type = (buffer[2] & 0xC0) >> 6;
             sr_idx = (buffer[2] & 0x3C) >> 2;
@@ -178,7 +178,7 @@ bool DecodeAACHeader(FILE* file, AACHEAD_DECODED* info)
     adxx_id[5 - 1] = 0;
     info->length = 0;
 
-    /* Determine the header type of the file, check the first two bytes */
+    /* Determine the file header type by checking the first two bytes. */
     if (StringComp((const char*)adxx_id, "AD", 2) == 0)
     {
         /* We think its an ADIF header, but check the rest just to make sure */
