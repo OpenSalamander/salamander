@@ -142,7 +142,7 @@ enum CViewerWindowEnablerEnum
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock; // 'lock' object or NULL (signaled only after we close the file)
+    HANDLE Lock; // 'lock' object or NULL (becomes signaled only after the file is closed)
     CRendererWindow Renderer;
 
     HWND HRebar; // holds the MenuBar and ToolBar
