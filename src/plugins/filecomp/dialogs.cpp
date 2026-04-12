@@ -133,7 +133,7 @@ LRESULT CCompareFilesDialog::DragDropEditProc(HWND hWnd, UINT uMsg, WPARAM wPara
     CCompareFilesDialog* pParent = (CCompareFilesDialog*)WindowsManager.GetWindowPtr(GetParent(hWnd));
 
     if (!pParent)
-        return NULL; // What's wrong?
+        return NULL; // Parent dialog not found
 
     if (WM_DROPFILES == uMsg)
     {
@@ -170,7 +170,7 @@ CCompareFilesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         SG->InstallWordBreakProc(hWnd1); // install WordBreakProc into the combo box
         SG->InstallWordBreakProc(hWnd2); // install WordBreakProc into the combo box
 
-        // I believe OldEditProc1 and OldEditProc2 are equal. But I am rather paranoic...
+        // OldEditProc1 and OldEditProc2 should be equal, but keep both separately to be safe.
         OldEditProc1 = (WNDPROC)GetWindowLongPtr(hWnd1, GWLP_WNDPROC);
         OldEditProc2 = (WNDPROC)GetWindowLongPtr(hWnd2, GWLP_WNDPROC);
         SetWindowLongPtr(hWnd1, GWLP_WNDPROC, (LONG_PTR)DragDropEditProc);
