@@ -207,7 +207,7 @@ bool CTextFileReader::IsValidUTF16(int endian)
         // U+FFFE and U+FFFF must not occur in normal UCS-4 data.
         // (see http://www.cl.cam.ac.uk/~mgk25/unicode.html)
         //
-        // Additionaly, we do not expect zero characters to appear in text files.
+        // Additionally, we do not expect zero characters to appear in text files.
         //
         if (c == 0 || c == 0xFFFE || c == 0xFFFF)
         {
@@ -256,7 +256,7 @@ bool CTextFileReader::IsUTF16Text()
     int histOdd[256];
     int histEven[256];
 
-    // model probability density of odd and even bytes by 256-bin histograms
+    // Model the probability density of odd and even bytes using 256-bin histograms
     fill_n(histOdd, 256, 0);
     fill_n(histEven, 256, 0);
     int i = 0;
@@ -292,8 +292,8 @@ bool CTextFileReader::IsUTF16Text()
     TRACE_I("Is valid UTF-16BE. " << isValidUTF16BE);
     if (isValidUTF16 && isValidUTF16BE)
     {
-        // determine endians by comparing entropy in odd and even bytes, the high
-        // order bytes should have lower entropy than low order bytes
+        // Determine endianness by comparing the entropy of odd and even bytes; the high-
+        // order bytes should have lower entropy than the low-order bytes
         double oe = 0, ee = 0;
         double p;
         // we normalize probabilities to have nonzero values by adding 1/256 to
@@ -331,8 +331,8 @@ bool CTextFileReader::IsUTF16Text()
 
 bool CTextFileReader::IsUTF8Text()
 {
-    // TODO Use file prefix stored in `Buffer' to test whether the data are UTF-8
-    // text file. `BufferedCharacters' tells ho many bytes is stored in `Buffer'.
+    // TODO Use the file prefix stored in `Buffer' to test whether the data are a UTF-8
+    // text file. `BufferedCharacters' tells how many bytes are stored in `Buffer'.
 
     // do we have enough data for reliable reasoning?
     // TODO adjust the threshold as needed
@@ -404,7 +404,7 @@ bool CTextFileReader::IsUTF8Text()
     }
 
     if (nUTF8 > 0)
-    { // At least one 2-or-more-bytes UTF8 sequence found and no invalid sequences found
+    { // At least one UTF-8 sequence of 2 bytes or more was found, and no invalid sequences were found
         Type = ftText;
         Encoding = encUTF8;
     }
@@ -435,9 +435,9 @@ void CTextFileReader::EstimateFileType()
         }
     }
 
-    // if the test above did not recognize Unicode text file or we already know
-    // the file is text with know encoding but unknown input-enc table, we use
-    // RecognizeFileType from SS API
+    // If the test above did not recognize a Unicode text file, or if we already know
+    // the file is text with a known encoding but an unknown input-encoding table, we use
+    // RecognizeFileType from the SS API
     if (Type == ftUnknown ||      // unknown type
         Encoding == encUnknown || // text file, but unknown encoding
         // text file, known encoding, but unknown input-enc table
@@ -526,7 +526,7 @@ void CTextFileReader::Get(char*& buffer, size_t& size, const int& cancel)
 
     if (Buffer == NULL || BufferSize < Size + 1)
     {
-        // reserve 1 char more at the end, for possible new-line insertion
+        // reserve one extra character at the end for possible newline insertion
         char* ret = (char*)realloc(Buffer, Size + 1);
         if (!ret)
             CFilecompWorker::CException::Raise(IDS_LOWMEM_TRY_BINARY, 0);
@@ -645,7 +645,7 @@ void CTextFileReader::Get(wchar_t*& buffer, size_t& size, const int& cancel)
 
     // TODO
     //
-    // In addition to the encoding alternatives, Unicode also specifies various
+    // In addition to encoding alternatives, Unicode also defines various
     // Normalization Forms, which provide reasonable subsets of Unicode,
     // especially to ***REMOVE ENCODING AMBIGUITIES*** caused by the presence of
     // precomposed and compatibility characters:
@@ -655,8 +655,8 @@ void CTextFileReader::Get(wchar_t*& buffer, size_t& size, const int& cancel)
     //
     // see the FoldString function in the Windows API
     //
-    // this has to be optional 'Ignore difference caused by unicode encoding
-    // ambiguilties', test for surrogates afterwards
+    // this has to be optional: 'Ignore differences caused by Unicode encoding
+    // ambiguities'; test for surrogates afterwards
 }
 
 template <class CChar>
@@ -739,7 +739,7 @@ void CTextFileReader::ReadASCII8(wchar_t*& buffer, size_t& size, const int& canc
     int ret = 0;
     if (Size > 0)
     {
-        // estimage length
+        // estimate length
         ret = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, Buffer, int(Size), NULL, 0);
         if (ret == 0)
             CFilecompWorker::CException::Raise(IDS_ERRORUNICODE, GetLastError(), Name);
@@ -749,7 +749,7 @@ void CTextFileReader::ReadASCII8(wchar_t*& buffer, size_t& size, const int& canc
     if (cancel)
         throw CFilecompWorker::CAbortByUserException();
 
-    // reserve 1 char more at the end, for possible new-line insertion
+    // reserve one extra character at the end for possible newline insertion
     size = ret;
     buffer = (wchar_t*)malloc((size + 1) * sizeof(wchar_t));
     if (!buffer)
@@ -777,7 +777,7 @@ void CTextFileReader::ReadUTF8(wchar_t*& buffer, size_t& size, const int& cancel
     BufferedCharacters = 0;
 
     size_t allocated = Size; // worst case estimate (each UTF-8 byte codes one UCS-4 char)
-    // reserve 1 char more at the end, for possible new-line insertion
+    // reserve one extra character at the end for possible newline insertion
     buffer = (wchar_t*)malloc((allocated + 1) * sizeof(wchar_t));
     if (!buffer)
         CFilecompWorker::CException::Raise(IDS_LOWMEM, 0);
@@ -811,11 +811,11 @@ void CTextFileReader::ReadUTF8(wchar_t*& buffer, size_t& size, const int& cancel
         // U-00200000 – U-03FFFFFF: 	111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
         // U-04000000 – U-7FFFFFFF: 	1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
 
-        // we do not control if the code is correct, if the input has incorrect
-        // code, the resulting mapping is undefined
+        // We do not verify whether the encoding is correct; if the input contains
+        // invalid byte sequences, the resulting mapping is undefined.
         //
-        // we use masking by 0x3f instead of subtracking 0x80 to protect from
-        // invalid values in input coding
+        // We use masking with 0x3f instead of subtracting 0x80 to protect against
+        // invalid values in the input encoding.
         if (z <= 0x7F)
             utf32 = z;
         elif (z <= 0xDF)
@@ -892,7 +892,7 @@ void CTextFileReader::ReadUTF8(wchar_t*& buffer, size_t& size, const int& cancel
         if (size + convertToSurrogates >= allocated)
         {
             allocated *= 2;
-            // reserve 1 char more at the end, for possible new-line insertion
+            // reserve one extra character at the end for possible newline insertion
             wchar_t* ret = (wchar_t*)realloc(buffer, (allocated + 1) * sizeof(wchar_t));
             if (!ret)
                 CFilecompWorker::CException::Raise(IDS_LOWMEM, 0);
@@ -943,7 +943,7 @@ void CTextFileReader::ReadUTF16(wchar_t*& buffer, size_t& size, const int& cance
     }
 
     buffer = (wchar_t*)Buffer;
-    size = Size / 2; // TODO warn if byte is missing
+    size = Size / 2; // TODO warn if a byte is missing
 
     Buffer = NULL; // the buffer was passed to the caller
     BufferedCharacters = 0;
@@ -967,7 +967,7 @@ void CTextFileReader::ReadUTF32(wchar_t*& buffer, size_t& size, const int& cance
     // needed)
     size_t allocated = Size / 4;
 
-    // reserve 1 char more at the end, for possible new-line insertion
+    // reserve one extra character at the end for possible newline insertion
     buffer = (wchar_t*)malloc((allocated + 1) * sizeof(wchar_t));
     if (!buffer)
         CFilecompWorker::CException::Raise(IDS_LOWMEM, 0);
@@ -1011,7 +1011,7 @@ void CTextFileReader::ReadUTF32(wchar_t*& buffer, size_t& size, const int& cance
         if (size + convertToSurrogates >= allocated)
         {
             allocated *= 2;
-            // reserve 1 char more at the end, for possible new-line insertion
+            // reserve one extra character at the end for possible newline insertion
             wchar_t* ret = (wchar_t*)realloc(buffer, (allocated + 1) * sizeof(wchar_t));
             if (!ret)
                 CFilecompWorker::CException::Raise(IDS_LOWMEM, 0);
