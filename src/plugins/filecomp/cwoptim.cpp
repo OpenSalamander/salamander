@@ -232,11 +232,11 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
             this->CancelFlag);
         if (d == -1)
             CFilecompWorker::CException::Raise(IDS_INTERNALERROR, 0);
-        /*  if (d == 0) We now let the file display
-    {
-      throw CFilecompWorker::CFilesDontDifferException();
-      }
-    }*/
+        /*  if (d == 0) We now let the file be displayed
+            {
+              throw CFilecompWorker::CFilesDontDifferException();
+              }
+            }*/
 
         // shift-boundaries, call before RemoveSingleCharMatches
         this->ShiftBoundaries(editScript, compareData);
