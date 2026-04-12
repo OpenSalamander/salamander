@@ -317,7 +317,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     }
 
     UpdateDefaultColors(Colors, Palette);
-    // Do not allow normalization if Normaliz.dll not present
+    // Do not allow normalization if Normaliz.dll is not present
     if (!PNormalizeString)
         DefCompareOptions.NormalizationForm = FALSE;
 }
@@ -689,7 +689,7 @@ CFilecompThread::Body()
         }
 
         if (!dialogBox || !succes)
-            break; // leave the message loop
+            break; // exit the message loop
 
     LLAUNCHFC:
 
