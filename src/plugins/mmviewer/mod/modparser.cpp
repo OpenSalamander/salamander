@@ -62,7 +62,7 @@ BOOL CParserMOD::ReadScreamTrackerModule()
         if (fread(&type, 1, 1, f) != 1)
             return FALSE;
 
-        if (type == 16) // this indicates an S3M module
+        if (type == 16) // S3M module
         {
             if (fseek(f, 0x2C, SEEK_SET) != 0)
                 return FALSE;
@@ -217,10 +217,10 @@ BOOL CParserMOD::ReadMultiTrackerModule()
 
 BOOL CParserMOD::ReadProTrackerModule()
 {
-    // with this stupid format it is hard to tell whether it really
-    // is a MOD file, so I'll try to catch at least the null terminator
-    // after the song name. If it is there, I assume it is a MOD.
-    // I also check that those 19 characters are normal characters
+    // With this format, it is difficult to determine reliably whether this is really
+    // a MOD file, so at least check for the null terminator after the song name.
+    // If it is present, treat it as a MOD.
+    // Also check that those 19 characters are normal characters.
 
     memset(modulename, '\0', sizeof(modulename));
 
