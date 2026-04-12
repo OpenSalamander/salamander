@@ -7,7 +7,7 @@
 
 #define SECTOR_SIZE 4096              // We seek at offsets being multiples of SECTOR_SIZE
 #define BUFFER_SIZE (2 * 1024 * 1024) // We read at most this amount from a file at a sequence of BLOCK_READ_SIZE reads
-#define BLOCK_READ_SIZE (32 * 1024)   // Atomic size of one ReadFile. BUFFER_SIZE must be a multiple of BLOCK_READ_SIZE
+#define BLOCK_READ_SIZE (32 * 1024)   // Size of a single ReadFile call. BUFFER_SIZE must be a multiple of BLOCK_READ_SIZE
 
 CCachedFile::CCachedFile(/*DWORD minViewSize*/)
 {
@@ -77,9 +77,9 @@ LPBYTE CCachedFile::ReadBuffer(QWORD offset, DWORD size, const int& CancelFlag)
         ;
         DWORD err;
 
-        // Space for optimization: Instead of dummy SetFilePointer and possibly partially rereading
-        // what we already have, we can do some memcpy. But then we might not read from sector boundary
-        BufferOffset = offset / SECTOR_SIZE * SECTOR_SIZE; // Align to "cluster" size
+        // Optimization opportunity: instead of calling SetFilePointer redundantly and possibly rereading
+        // data we already have, we could use memcpy. But then we might not read from a sector boundary
+        BufferOffset = offset / SECTOR_SIZE * SECTOR_SIZE; // Align to the sector size
         li.QuadPart = BufferOffset;
         DataInBufSize = 0;
         err = SetFilePointer(File, li.LowPart, &li.HighPart, FILE_BEGIN);
@@ -92,7 +92,7 @@ LPBYTE CCachedFile::ReadBuffer(QWORD offset, DWORD size, const int& CancelFlag)
         DWORD nTotalToRead = (DWORD)__max(size + (offset - BufferOffset), (DWORD)__min(BufferSize, FileSize - BufferOffset));
         DWORD initialTicks = GetTickCount();
 
-        // Reading 32KB chunks bases on code for File Compare in Salamand.exe
+        // Reading 32KB chunks is based on the code for File Compare in Salamand.exe
         // Reading 2MB in 32KB blocks is reportedly the fastest approach on W2K & WXP,
         // but slightly slower on Vista, when both files reside on the same HDD,
         // than reading 2MB at once.
