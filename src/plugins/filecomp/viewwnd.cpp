@@ -454,7 +454,7 @@ CFileViewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SendMessage(HWindow, WM_HSCROLL, charsToScroll < 0 ? SB_LINEUP : SB_LINEDOWN, 0);
             }
         }
-        return TRUE; // the event is handled; do not emulate scrollbar clicking (happens when FALSE is returned)
+        return TRUE; // the event is handled; do not emulate scrollbar clicks (that happens when FALSE is returned)
     }
 
     case WM_RBUTTONUP:
@@ -617,7 +617,7 @@ BOOL CTextFileViewWindowBase::RebuildScript(
                 line = Script[0][*change].GetLine();
 
             size_t context = Context;
-            if (line < size_t(Context)) // sometimes there is not enough lines
+            if (line < size_t(Context)) // sometimes there are not enough lines
             {
                 size_t sline;
                 if (((CTextFileViewWindowBase*)Siblink)->Script[0][*change].IsBlank())
@@ -999,7 +999,7 @@ void CTextFileViewWindowBase::UpdateSelection(int x, int y)
 {
     CALL_STACK_MESSAGE3("CTextFileViewWindowBase::UpdateSelection(%d, %d)", x, y);
     if (!DataValid || !Tracking)
-        return; // just to be safe
+        return; // defensive check
     if (x < LineNumWidth)
         x = LineNumWidth;
     if (y < 0)
