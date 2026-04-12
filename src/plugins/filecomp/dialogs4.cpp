@@ -218,7 +218,7 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // we should detach from the dialog (centering is done)
+        case WM_APP + 1000: // detach from the dialog after centering
         {
             DetachWindow();
             delete this; // a bit of a hack, but nothing will touch 'this' anymore so it's fine
