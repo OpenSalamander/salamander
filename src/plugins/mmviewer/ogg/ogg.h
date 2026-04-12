@@ -68,10 +68,8 @@ extern "C"
         unsigned char header[282]; /* working space for header encode */
         int header_fill;
 
-        int e_o_s; /* set when we have buffered the last packet in the
-                             logical bitstream */
-        int b_o_s; /* set after we've written the initial page
-                             of a logical bitstream */
+        int e_o_s; /* set when the last packet in the logical bitstream has been buffered */
+        int b_o_s; /* set after the initial page of a logical bitstream has been written */
         long serialno;
         long pageno;
         ogg_int64_t packetno; /* sequence number for decode; the framing
