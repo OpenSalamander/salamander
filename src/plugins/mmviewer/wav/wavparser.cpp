@@ -152,8 +152,8 @@ HRESULT CMMIO::ReadMMIO()
                      sizeof(pcmWaveFormat)) != sizeof(pcmWaveFormat))
             return E_FAIL;
 
-        // Allocate the waveformatex, but if its not pcm format, read the next
-        // word, and thats how many extra bytes to allocate.
+        // Allocate the WAVEFORMATEX structure. If the format is not PCM, read the next
+        // word to determine how many extra bytes to allocate.
         if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
         {
             m_pwfx = (WAVEFORMATEX*)malloc(sizeof(WAVEFORMATEX));
@@ -166,7 +166,7 @@ HRESULT CMMIO::ReadMMIO()
         }
         else
         {
-            // Read in length of extra bytes.
+            // Read the length of the extra bytes.
             WORD cbExtraBytes = 0L;
             if (mmioRead(m_hmmio, (CHAR*)&cbExtraBytes, sizeof(WORD)) != sizeof(WORD))
                 return E_FAIL;
