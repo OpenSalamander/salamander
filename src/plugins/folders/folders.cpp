@@ -76,12 +76,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "Folders" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "Folders" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Folders" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "Folders" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -91,7 +91,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     // obtain the interface providing customized Windows controls used in Salamander
     SalamanderGUI = salamander->GetSalamanderGUI();
 
-    if (!InitializeWinLib("Folders" /* neprekladat! */, DLLInstance))
+    if (!InitializeWinLib("Folders" /* do not translate */, DLLInstance))
         return NULL;
     SetWinLibStrings("Invalid number!", LoadStr(IDS_PLUGINNAME));
 
@@ -101,7 +101,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "FOLDERS" /* neprekladat! */, NULL, "fld");
+                                   "FOLDERS" /* do not translate */, NULL, "fld");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
