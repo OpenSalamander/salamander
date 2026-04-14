@@ -16,8 +16,7 @@
 // Use the _DEBUG or __ARRAY_DEBUG defines to enable various error state checking. Errors
 // are displayed using TRACE_E and TRACE_C macros.
 
-// We need to make this module independent on TRACE macros, so if they are not defined,
-// we define their fakes. Certainly error reporting will not work in such situation.
+// We need to make this module independent of the TRACE macros, so if they are not defined, we provide dummy definitions. Error reporting will of course not work in that case.
 #if !defined(TRACE_I) && !defined(TRACE_E) && !defined(TRACE_C)
 inline void __TraceEmptyFunction() {}
 #define TRACE_I(str) __TraceEmptyFunction()
@@ -97,7 +96,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // the compiler requires us to return an (invalid) item
         }
 #endif
     }
@@ -114,7 +113,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // the compiler requires us to return an (invalid) item
         }
 #endif
     }
@@ -183,7 +182,7 @@ protected:
 
     virtual void CallDestructor(DATA_TYPE& member) { member.~DATA_TYPE(); }
 
-private: // following methods will not be called (prevention)
+private: // prevents use of the following methods
     TDirectArray<DATA_TYPE>() {}
     TDirectArray<DATA_TYPE>(const TDirectArray<DATA_TYPE>&) {}
     TDirectArray<DATA_TYPE>& operator=(TDirectArray<DATA_TYPE>&) { return *this; }
