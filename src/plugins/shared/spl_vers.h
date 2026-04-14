@@ -25,7 +25,7 @@
 #define VERSINFO_SALAMANDER_MINORA 0
 #define VERSINFO_SALAMANDER_MINORB 0
 
-#if (VERSINFO_SALAMANDER_MINORB == 0) // nulu na setinach nepiseme 2.50 -> 2.5
+#if (VERSINFO_SALAMANDER_MINORB == 0) // omit the trailing zero in the hundredths place: 2.50 -> 2.5
 #define VERSINFO_SALAMANDER_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSION_TXT
 #define VERSINFO_SAL_SHORT_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSIONSHORT_TXT
 #else
@@ -34,7 +34,7 @@
 #endif
 
 #ifdef VERSINFO_MAJOR      // je definovane jen pokud se pouziva z pluginu
-#if (VERSINFO_MINORB == 0) // nulu na setinach nepiseme 2.50 -> 2.5
+#if (VERSINFO_MINORB == 0) // omit the trailing zero in the hundredths place: 2.50 -> 2.5
 #define VERSINFO_VERSION VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_BETAVERSION_TXT
 #define VERSINFO_VERSION_NO_PLATFORM VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_BETAVERSION_TXT_NO_PLATFORM
 #else
@@ -51,14 +51,9 @@
 
 // VERSINFO_BUILDNUMBER:
 //
-// Slouzi ke snadnemu odliseni verzi vsech modulu mezi jednotlivymi verzemi
-// Salamandera (jde o posledni komponentu cisla verze vsech pluginu a
-// Salamandera). Zvysovat s kazdou verzi (IB, DB, PB, beta, release nebo i
-// jen testovaci verze poslana jednomu uzivateli). Prehled ruznych typu verzi
-// je v souboru doc\versions.txt. Vzdy zavest komentar s popisem, ke ktere
-// verzi Salamandera patri nove pouzite cislo buildu.
+// Used to easily distinguish all module versions across Salamander releases (it is the last component of the version number of all plugins and Salamander). Increment it for every version (IB, DB, PB, beta, release, or even a test build sent to a single user). An overview of the different version types is in doc\versions.txt. Always add a comment describing which Salamander version a newly used build number belongs to.
 //
-// Prehled pouzitych hodnot VERSINFO_BUILDNUMBER:
+// Overview of used VERSINFO_BUILDNUMBER values:
 // 9 - 2.5 beta 9
 // 10 - 2.5 beta 10
 // 11 - 2.5 beta 11
@@ -103,19 +98,19 @@
 
 // VERSINFO_BETAVERSION_TXT:
 //
-// Meni se s kazdym buildem, v pripade release verze bude VERSINFO_BETAVERSION_TXT="".
-// Pokud vydavame specialni opravne beta verze typu 2.5 beta 9a, zvysime
-// VERSINFO_BUILDNUMBER o jedna a dame VERSINFO_BETAVERSION_TXT==" beta 9a".
+// Changes with every build; for a release version, VERSINFO_BETAVERSION_TXT will be "".
+// If we release a special beta fix build such as 2.5 beta 9a, increment
+// VERSINFO_BUILDNUMBER by one and set VERSINFO_BETAVERSION_TXT==" beta 9a".
 //
-// VERSINFO_BETAVERSIONSHORT_TXT slouzi pro pojmenovani bug reportu, jde o co nejkratsi zapis
+// VERSINFO_BETAVERSIONSHORT_TXT is used for bug report names; it should be as short as possible
 
-// priklady ("x86" je pro 32-bit verzi, "x64" pro 64-bit verzi, v nasledujicich prikladech jsou
-// x86/x64 zamenne): " (x86)" (pro release verze), " beta 2 (x64)", " beta 2 (SDK x86)",
+// examples ("x86" is for the 32-bit version, "x64" for the 64-bit version; in the following examples,
+// x86/x64 are interchangeable): " (x86)" (for release versions), " beta 2 (x64)", " beta 2 (SDK x86)",
 // " RC1 (x64)", " beta 2 (IB21 x86)", " beta 2 (DB21 x64)", " beta 2 (PB21 x86)"
 #define VERSINFO_BETAVERSION_TXT " (" SAL_VER_PLATFORM ")"
-#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM "" // kopie radku vyse + smazat SAL_VER_PLATFORM + je-li zavorka prazdna, smazat ji + smazat nadbytecne mezery
+#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM "" // copy the line above + remove SAL_VER_PLATFORM + if the parentheses are empty, remove them + remove extra spaces
 
-// priklady (x86/x64 viz predchozi odstavec): "x86" (pro release verze), "B2x64", "B2SDKx86",
+// examples (see the previous paragraph for x86/x64): "x86" (for release versions), "B2x64", "B2SDKx86",
 // "RC1x64", "B2IB21x86", "B2DB21x64", "B2PB21x86"
 #define VERSINFO_BETAVERSIONSHORT_TXT SAL_VER_PLATFORM
 
