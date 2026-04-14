@@ -14,19 +14,17 @@
 #error this file is not editable by Microsoft Visual C++
 #endif //APSTUDIO_INVOKED
 
+// VERSIONINFO template for plugins and their LANG files
+// Each module/plugin defines the VERSINFO_xxx variables in its own versinfo.rh
 //
-// sablona VERSIONINFO pro pluginy a jejich LANG soubory
-// kazdy modul/plugin definuje promenne VERSINFO_xxx zve svem versinfo.rh
+// This resource is included in SALAMAND.EXE, LANG.SPL,
+// in all plugins (SPL) and in their SLG files
+// When building SLG, the _LANG constant is defined in the project
 //
-// tento resource vkladame pomoci include jak do SALAMAND.EXE, LANG.SPL,
-// do vsech pluginu (SPL) a do jejich SLG
-// pri prekladu SLG je v projektu definovana konstanta _LANG
-//
-// VarFileInfo\[Translation, Author, Email, Web, Comment, HelpDir] umi nastavovat
-// Translator; originalni SLG je anglicke
-// VarFileInfo\Translation je zobrazovano ve vlastnostech souboru
-// na strance Version jako "Language"
-//
+// Translator can set VarFileInfo\[Translation, Author, Email, Web, Comment, HelpDir];
+// the original SLG is in English
+// VarFileInfo\Translation is shown in the file properties
+// on the Version tab as "Language"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSINFO_MAJOR,VERSINFO_MINORA,VERSINFO_MINORB,VERSINFO_BUILDNUMBER
