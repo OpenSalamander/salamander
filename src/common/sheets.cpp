@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -198,7 +199,7 @@ void CPropSheetPage::Init(const TCHAR* title, HINSTANCE modul, int resID,
     Flags = flags;
     Icon = icon;
 
-    ParentDialog = NULL;     // set from CPropertyDialog::Execute()
+    ParentDialog = NULL; // set from CPropertyDialog::Execute()
     ParentPage = NULL;
     HTreeItem = NULL;
     Expanded = NULL;
@@ -290,7 +291,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         TransferData(ttDataToWindow);
         if (ElasticLayout != NULL)
             ElasticLayout->LayoutCtrls();
-        return TRUE;         // let DefDlgProc set the focus
+        return TRUE; // let DefDlgProc set the focus
     }
 
     case WM_SIZE:
@@ -321,26 +322,26 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NOTIFY:
     {
-        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE)         // page deactivation
+        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE) // page deactivation
         {
             if (ValidateData())
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);
-            else             // do not allow the page to be deactivated
+            else // do not allow the page to be deactivated
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
             return TRUE;
         }
 
-        if (((NMHDR*)lParam)->code == PSN_SETACTIVE)         // page activation
+        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // page activation
         {
             if (ParentDialog != NULL && ParentDialog->LastPage != NULL)
-            {             // remember the last page
+            { // remember the last page
                 *ParentDialog->LastPage = ParentDialog->GetCurSel();
             }
             break;
         }
 
         if (((NMHDR*)lParam)->code == PSN_APPLY)
-        {         // ApplyNow or OK button pressed
+        { // ApplyNow or OK button pressed
             if (TransferData(ttDataFromWindow))
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, PSNRET_NOERROR);
             else
@@ -349,7 +350,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         if (((NMHDR*)lParam)->code == PSN_WIZFINISH)
-        {         // Finish button pressed
+        { // Finish button pressed
             // PSN_KILLACTIVE did not arrive, so run validation
             if (!ValidateData())
             {
@@ -385,7 +386,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     CPropSheetPage* dlg;
     switch (uMsg)
     {
-    case WM_INITDIALOG:     // first message - attach the object to the dialog
+    case WM_INITDIALOG: // first message - attach the object to the dialog
     {
         dlg = (CPropSheetPage*)((PROPSHEETPAGE*)lParam)->lParam;
         if (dlg == NULL)
@@ -398,20 +399,20 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
             dlg->HWindow = hwndDlg;
             dlg->Parent = ::GetParent(hwndDlg);
             //--- add the window identified by hwndDlg to the window list
-            if (!WindowsManager.AddWindow(hwndDlg, dlg))             // error
+            if (!WindowsManager.AddWindow(hwndDlg, dlg)) // error
             {
                 TRACE_ET(_T("Unable to create dialog."));
                 return TRUE;
             }
-            dlg->NotifDlgJustCreated();             // added as a place to adjust the dialog layout
+            dlg->NotifDlgJustCreated(); // added as a place to adjust the dialog layout
         }
         break;
     }
 
-    case WM_DESTROY:     // last message - detach the object from the dialog
+    case WM_DESTROY: // last message - detach the object from the dialog
     {
         dlg = (CPropSheetPage*)WindowsManager.GetWindowPtr(hwndDlg);
-        INT_PTR ret = FALSE;         // in case it does not handle the message
+        INT_PTR ret = FALSE; // in case it does not handle the message
         if (dlg != NULL && dlg->Is(otDialog))
         {
             // Petr: moved this below wnd->WindowProc() so messages still arrive during WM_DESTROY
@@ -424,7 +425,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
             if (dlg->IsAllocated())
                 delete dlg;
             else
-                dlg->HWindow = NULL;                 // detached state
+                dlg->HWindow = NULL; // detached state
         }
         return ret;
     }
@@ -445,7 +446,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE;         // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -568,7 +569,7 @@ CTPHCaptionWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(HWindow, &r);
 
         int devCaps = GetDeviceCaps(hdc, NUMCOLORS);
-        if (devCaps == -1)         // use the gradient only with more than 256 colors
+        if (devCaps == -1) // use the gradient only with more than 256 colors
         {
             HBRUSH hOldBrush = (HBRUSH)GetCurrentObject(hdc, OBJ_BRUSH);
 #define TPH_STEPS 100
@@ -668,7 +669,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     // call WM_INITDIALOG only once we know the window size
     if (TPD != NULL && uMsg != WM_INITDIALOG)
-        TPD->DialogProc(uMsg, wParam, lParam);         // forward messages
+        TPD->DialogProc(uMsg, wParam, lParam); // forward messages
     switch (uMsg)
     {
     case WM_INITDIALOG:
@@ -695,7 +696,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (appIsThemed)
         {
             RECT rect = {0, 0, 4, 8};
-            MapDialogRect(HWindow, &rect);             // get baseUnitX and baseUnitY for converting dialog units to pixels
+            MapDialogRect(HWindow, &rect); // get baseUnitX and baseUnitY for converting dialog units to pixels
             treeIndent = MulDiv(9 /* indent in dialog units */, rect.right /* baseUnitX */, 4);
             TreeView_SetIndent(HTreeView, treeIndent);
         }
@@ -736,7 +737,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // apply the user window size and lay out the controls
         int height = (int)*WindowHeight;
-        RECT clipR;         // do not exceed the screen height
+        RECT clipR; // do not exceed the screen height
         MultiMonGetClipRectByWindow(HWindow, &clipR, NULL);
         if (height > clipR.bottom - clipR.top)
             height = clipR.bottom - clipR.top;
@@ -748,7 +749,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         LayoutControls();
         TreeView_EnsureVisible(HTreeView, TPD->At(TPD->StartPage)->HTreeItem);
 
-        TPD->DialogProc(uMsg, wParam, lParam);         // forward messages
+        TPD->DialogProc(uMsg, wParam, lParam); // forward messages
 
         break;
     }
@@ -761,7 +762,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_CONTROL) & 0x8000) != 0,
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
         }
-        return TRUE;         // do not let F1 fall through to the parent even if we do not call WinLibHelp->OnHelp()
+        return TRUE; // do not let F1 fall through to the parent even if we do not call WinLibHelp->OnHelp()
     }
 
     case WM_COMMAND:
@@ -1252,9 +1253,9 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
             dlgStyle = *(DWORD*)(pageTemplate + 6); // style
             dlgCX = *(short*)(pageTemplate + 11);   // cx
             dlgCY = *(short*)(pageTemplate + 12);   // cy
-            WORD* t = pageTemplate + 13;                        // menu, skip to the dialog class, then to its title
+            WORD* t = pageTemplate + 13;            // menu, skip to the dialog class, then to its title
             if (*t == 0)
-                t++;                 // no menu
+                t++; // no menu
             else
             {
                 if (*t == 0xffff)
@@ -1263,13 +1264,13 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
                     t += wcslen((wchar_t*)t) + 1; // menu string
             }
             if (*t == 0)
-                t++;                 // no dialog class
+                t++; // no dialog class
             else
             {
                 if (*t == 0xffff)
-                    t += 2;                     // dialog class ID
+                    t += 2; // dialog class ID
                 else
-                    t += wcslen((wchar_t*)t) + 1;                     // dialog class string
+                    t += wcslen((wchar_t*)t) + 1; // dialog class string
             }
             dlgTitle = (WCHAR*)t;
 
@@ -1340,7 +1341,7 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
         *lpw++ = 0; // predefined dialog box class (by default)
         lpwsz = (LPWSTR)lpw;
         lpw += WinLibCopyText(lpwsz, Caption, 100); // title
-        *lpw++ = 8;                                         // font size
+        *lpw++ = 8;                                 // font size
         *lpw++ = FW_NORMAL;                         // font weight
         *(BYTE*)lpw = FALSE;                        // is font italic?
         *((BYTE*)lpw + 1) = ANSI_CHARSET;           // font charset
