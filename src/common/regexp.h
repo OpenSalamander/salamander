@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -74,18 +75,18 @@ const char* RegExpErrorText(CRegExpErrors err);
 class CRegularExpression
 {
 public:
-    static const char* LastError;     // Last error text.
+    static const char* LastError; // Last error text.
 
 protected:
     const char* LastErrorText;
     char* OriginalPattern;
-    regexp* Expression;     // Compiled regular expression.
+    regexp* Expression; // Compiled regular expression.
     WORD Flags;
 
-    char* Line;                    // Line buffer.
-    const char* OrigLineStart;     // Pointer to the start of the original text (passed to SetLine() as 'start').
-    int Allocated;                 // Number of allocated bytes.
-    int LineLength;                // Current line length.
+    char* Line;                // Line buffer.
+    const char* OrigLineStart; // Pointer to the start of the original text (passed to SetLine() as 'start').
+    int Allocated;             // Number of allocated bytes.
+    int LineLength;            // Current line length.
 
 public:
     CRegularExpression()
@@ -114,10 +115,10 @@ public:
     const char* GetPattern() const { return OriginalPattern; }
 
     const char* GetLastErrorText() const { return LastErrorText; }
-    BOOL Set(const char* pattern, WORD flags);     // Returns FALSE on error (call GetLastErrorText).
-    BOOL SetFlags(WORD flags);                     // Returns FALSE on error (call GetLastErrorText).
+    BOOL Set(const char* pattern, WORD flags); // Returns FALSE on error (call GetLastErrorText).
+    BOOL SetFlags(WORD flags);                 // Returns FALSE on error (call GetLastErrorText).
 
-    BOOL SetLine(const char* start, const char* end);     // Sets the line of text to search in; returns FALSE on error (call GetLastErrorText).
+    BOOL SetLine(const char* start, const char* end); // Sets the line of text to search in; returns FALSE on error (call GetLastErrorText).
 
     int SearchForward(int start, int& foundLen);
     int SearchBackward(int length, int& foundLen);
