@@ -7,7 +7,7 @@
 #include <crtdbg.h>
 #include <ostream>
 #include <limits.h>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // need LPCOLORMAP
 
 #if defined(_DEBUG) && defined(_MSC_VER) // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
 #define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
@@ -74,7 +74,7 @@ BOOL CSearchData::Initialize()
             Fail1[Pattern[i - 1]] = Length - i;
         Fail2[i - 1] = 2 * Length - i;
     }
-    Fail2[Length] = Length - 1; // doplneno, algoritmus na tuto hodnotu saha, dale neni treba
+    Fail2[Length] = Length - 1;     // filled in; the algorithm uses this value, nothing else is needed
 
     i = Length;
     int t = Length + 1;
@@ -162,7 +162,7 @@ void CSearchData::Set(const char* pattern, WORD flags)
     if (OriginalPattern != NULL)
     {
         memcpy(OriginalPattern, pattern, Length);
-        OriginalPattern[Length] = 0; // pro kompatibilitu s beznym stringem
+        OriginalPattern[Length] = 0;         // for compatibility with regular strings
     }
     if (Pattern != NULL)
     {
@@ -189,7 +189,7 @@ void CSearchData::Set(const char* pattern, const int length, WORD flags)
     if (OriginalPattern != NULL)
     {
         memcpy(OriginalPattern, pattern, Length);
-        OriginalPattern[Length] = 0; // pro kompatibilitu s beznym stringem
+        OriginalPattern[Length] = 0;         // for compatibility with regular strings
     }
     if (Pattern != NULL)
     {
