@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -85,7 +86,7 @@ BOOL CMessageCenter::SendMessage(CMessage* message, BOOL bufferTimeout)
             Buffer->WritePos += message->Size;
             // leave the critical section
             ReleaseMutex(DataMutex);
-            return TRUE;             // success
+            return TRUE; // success
         }
 
         // leave the critical section
@@ -130,7 +131,7 @@ BOOL CMessageCenter::RecieveMessages(CMessageListener* listener)
              pos += MESSAGE_AT_POS(pos)->Size)
         {
             if (MESSAGE_AT_POS(pos)->Size == 0)
-                break;                 // zero-size messages would cause an infinite loop and make no sense anyway
+                break; // zero-size messages would cause an infinite loop and make no sense anyway
             listener->RecieveMessage(MESSAGE_AT_POS(pos));
         }
     }
@@ -263,7 +264,7 @@ BOOL CMessageCenter::Init()
         // create the shared memory segment
         const char* mapname = Concatenate(
             Concatenate(Name, " - Buffer v"), Version);
-        FileMapping = Sender ? OpenFileMapping(FILE_MAP_WRITE, FALSE, mapname) : CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0,         // FIXME_X64: are we passing x86/x64-incompatible data?
+        FileMapping = Sender ? OpenFileMapping(FILE_MAP_WRITE, FALSE, mapname) : CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64: are we passing x86/x64-incompatible data?
                                                                                                    BufferSize, mapname);
         if (!FileMapping)
         {
