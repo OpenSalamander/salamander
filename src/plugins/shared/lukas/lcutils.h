@@ -35,13 +35,13 @@ private: \
 // utilbase.cpp
 //
 
-extern HINSTANCE DLLInstance;     // handle k SPL-ku - jazykove nezavisle resourcy
-extern HINSTANCE HLanguage;       // handle k SLG-cku - jazykove zavisle resourcy
-extern BOOL WindowsVistaAndLater; // Windows Vista nebo pozdejsi z rady NT (6.0+)
+extern HINSTANCE DLLInstance;     // SPL handle - language-independent resources
+extern HINSTANCE HLanguage;       // SLG handle - language-dependent resources
+extern BOOL WindowsVistaAndLater; // Windows Vista or later in the NT family (6.0+)
 extern BOOL WindowsXP64AndLater;  // Windows XP 64, Vista or later (5.2+)
 
-// rozhrani Open Salamandera - platna od volani InitUtils() az do
-// ukonceni pluginu
+// Open Salamander interface - valid from the InitUtils() call until
+// plugin shutdown
 extern CSalamanderGeneralAbstract* SG;
 extern CSalamanderGUIAbstract* SalGUI;
 
