@@ -77,7 +77,7 @@ try_again:
     if (!File)
         return FALSE;
 
-    // nacteme headery
+    // read the headers
     DWORD pesig;
     DWORD lastError = 0;
     if (!Read(&MZHead, sizeof(IMAGE_DOS_HEADER), &lastError) ||
@@ -87,7 +87,7 @@ try_again:
         !Read(&PEHead, sizeof(IMAGE_FILE_HEADER)) ||
         !Read(&OptHead, OPTHEAD_SIZE) ||
         !Read(OptHead.DataDirectory, OptHead.NumberOfRvaAndSizes * sizeof(IMAGE_DATA_DIRECTORY)) ||
-        OptHead.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_RESOURCE) //zkontrolujeme jestli mame ressource dir
+        OptHead.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_RESOURCE)         // check whether a resource directory is present
     {
         if (lastError == ERROR_INVALID_HANDLE && ++num_of_retries <= 10)
         {
@@ -99,8 +99,8 @@ try_again:
         goto error;
     }
 
-    // nactene section headery, allokujeme o jednu vice, kdyby mezi nima nebyla
-    // .rsrc section, tak abych ji mohli pridat bez reallokace
+    // section headers read; allocate one extra slot so a missing
+    // .rsrc section can be added without reallocating
     Sections = (IMAGE_SECTION_HEADER*)malloc(sizeof(IMAGE_SECTION_HEADER) * (PEHead.NumberOfSections + 1));
     if (!Sections)
     {
@@ -113,7 +113,7 @@ try_again:
         goto error;
     }
 
-    // najdeme resource section
+    // find the resource section
     DWORD i;
     RsrcSectIndex = -1;
     SizeOfInitializedData = 0;
@@ -138,7 +138,7 @@ try_again:
         TRACE_I(".rsrc section not found.");
     else
     {
-        // overime ze nalezena section obsahuje resource dir
+        // verify that the section we found contains the resource directory
         if (Sections[RsrcSectIndex].VirtualAddress > OptHead.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress ||
             Sections[RsrcSectIndex].VirtualAddress + Sections[RsrcSectIndex].SizeOfRawData <= OptHead.DataDirectory[IMAGE_DIRECTORY_ENTRY_RESOURCE].VirtualAddress)
         {
@@ -146,8 +146,8 @@ try_again:
             goto error;
         }
 
-        // overime .rsrc section neobsahuje jine data adresare (jako napr UPXnuty exac,
-        // ktery ma v .rsrc sekci ulozenou import tabulku)
+        // verify that the .rsrc section contains no other directory data (for
+        // example a UPX-packed executable that stores the import table in .rsrc)
         DWORD alignedSize = ((Sections[RsrcSectIndex].Misc.VirtualSize + OptHead.SectionAlignment - 1) / OptHead.SectionAlignment) * OptHead.SectionAlignment;
         for (i = 0; i < OptHead.NumberOfRvaAndSizes; i++)
         {
@@ -284,7 +284,7 @@ BOOL CResEdit::SaveResourceTree()
     CALL_STACK_MESSAGE1("CResEdit::SaveResourceTree()");
     if (ResDir->IsEmpty())
     {
-        //odstranime resource section
+        //remove the resource section
         if (RsrcSectIndex != -1)
         {
             PEHead.NumberOfSections--;
@@ -300,10 +300,10 @@ BOOL CResEdit::SaveResourceTree()
     }
     else
     {
-        //ulozime resourcy
+        //save the resources
         if (RsrcSectIndex == -1)
         {
-            //pridame resource section
+            //add the resource section
             RsrcSectIndex = PEHead.NumberOfSections;
             memcpy(Sections[RsrcSectIndex].Name, ".rsrc", 5);
             memset(Sections[RsrcSectIndex].Name + 5, 0, 3);
@@ -706,7 +706,7 @@ void SortDirEntries(int left, int right, TIndirectArray2<CDirEntry>& entries)
 DWORD CResDir::Save(CSaveRes* save)
 {
     CALL_STACK_MESSAGE1("CResDir::Save()");
-    //seradime polozky, nejprve abecedne ty se jmenem a pak ciselne ty s ID
+    //sort entries: named ones alphabetically first, then ID entries numerically
     SortDirEntries(0, DirEntries.Count - 1, DirEntries);
 
     IMAGE_RESOURCE_DIRECTORY rsdirh;
@@ -898,7 +898,7 @@ CResTreeLeaf::GetCopy()
 BOOL CResTreeLeaf::Load(int level, DWORD offset, COffsets* offsets)
 {
     CALL_STACK_MESSAGE3("CResTreeLeaf::Load(%d, 0x%p, )", level, offsets);
-    //nacteme language dir
+    //read the language directory
     if (!Seek(offsets->DirRootOffset + offset))
         return FALSE;
 
@@ -917,7 +917,7 @@ BOOL CResTreeLeaf::Load(int level, DWORD offset, COffsets* offsets)
     //NumberOfIdEntries = 1;
     LangID = (LANGID)rsdir.Name;
 
-    //nacteme resource data
+    //read the resource data
     if (!Seek(offsets->DirRootOffset + rsdir.OffsetToData & ~0x80000000))
         return FALSE;
 
