@@ -19,8 +19,8 @@
 // Funkce StrNICmp v C++ na Pentiu Pro beha rychleji nez v ASM varianta.
 //
 
-extern BYTE LowerCase[256]; // premapovani vsech znaku na male; generovano pomoci API CharLower
-extern BYTE UpperCase[256]; // premapovani vsech znaku na velke; generovano pomoci API CharUpper
+extern BYTE LowerCase[256]; // maps all characters to lowercase; generated using the CharLower API
+extern BYTE UpperCase[256]; // maps all characters to uppercase; generated using the CharUpper API
 
 //*****************************************************************************
 //
@@ -142,30 +142,30 @@ int StrNICmp(const char* s1, const char* s2, int n);
 //
 int MemICmp(const void* buf1, const void* buf2, int n);
 
-// rychlejsi strlen, jede po ctyrech znacich
-// do str se saha po ctyrech bytech -> nutny vetsi buffer
-// int StrLen(const char *str);    // pouze 2 x rychlejsi, zbytecne riziko pristupu do nezarovnane pameti
+// faster strlen; processes four characters at a time
+// the string is accessed four bytes at a time -> requires a larger buffer
+// int StrLen(const char *str);    // only 2x faster; unnecessary risk of unaligned memory access
 
-// nakopiruje text do nove naalokovaneho prostoru, NULL = malo pameti
+// copies the text into newly allocated memory; returns NULL on out-of-memory
 char* DupStr(const char* txt);
 
 // nakopiruje text do nove naalokovaneho prostoru, NULL = malo pameti,
 // navic pri nedostatku pameti nastavi 'err' na TRUE
 char* DupStrEx(const char* str, BOOL& err);
 
-// vraci prvni vyskyt 'pattern' v 'txt' nebo NULL, je case-insensitive
+// returns the first case-insensitive occurrence of 'pattern' in 'txt', or NULL
 const char* StrIStr(const char* txt, const char* pattern);
 
-// vraci prvni vyskyt 'pattern' v 'txt' nebo NULL, je case-insensitive
+// returns the first case-insensitive occurrence of 'pattern' in 'txt', or NULL
 const char* StrIStr(const char* txtStart, const char* txtEnd,
                     const char* patternStart, const char* patternEnd);
 
-// pripoji retezec 'src' za retezec 'dest', ale neprekroci delku 'dstSize'
-// retezec zakoncuje nulou, ktera spada do delky 'dstSize'
-// vraci 'dst'
+// appends 'src' to 'dst', but does not exceed 'dstSize'
+// null-terminates the string within 'dstSize'
+// returns 'dst'
 char* StrNCat(char* dst, const char* src, int dstSize);
 
-// tento historicky kod uz nikdo nepouziva
+// this legacy code is no longer used
 /*
 #define CONVERT_TAB_CHARS     44
 #define CONVERT_TAB_MAX_CHARS 256
