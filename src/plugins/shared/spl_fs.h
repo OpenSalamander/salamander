@@ -12,7 +12,7 @@
 #pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_fs) // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_fs) // so that the structures are independent of the current alignment setting
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -97,33 +97,31 @@ public:
 // sada metod pluginu, ktere potrebuje Salamander pro praci s file systemem
 
 // typ ikon v panelu pri listovani FS (pouziva se v CPluginFSInterfaceAbstract::ListCurrentPath())
-#define pitSimple 0       // jednoduche ikonky pro soubory a adresare - podle pripony (asociace)
-#define pitFromRegistry 1 // ikonky nacitane z registry podle pripony souboru/adresaru
-#define pitFromPlugin 2   // ikonky obstarava plugin (ikony ziskava pres CPluginDataInterfaceAbstract)
+#define pitSimple 0       // simple icons for files and directories - by extension (association)
+#define pitFromRegistry 1 // icons loaded from the registry according to the file/directory extension
+#define pitFromPlugin 2   // the plugin provides the icons (obtained via CPluginDataInterfaceAbstract)
 
-// kody udalosti (a vyznam parametru 'param') na FS, prijima metoda CPluginFSInterfaceAbstract::Event():
-// CPluginFSInterfaceAbstract::TryCloseOrDetach vratil TRUE, ale novou cestu se nepodarilo
-// otevrit, takze zustavame na soucasne ceste (FS, ktere prijme tuto zpravu);
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// FS event codes (and the meaning of parameter 'param'), received by CPluginFSInterfaceAbstract::Event():
+// CPluginFSInterfaceAbstract::TryCloseOrDetach returned TRUE, but the new path could not be opened, so we stay on the current path (the FS that receives this message);
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_CLOSEORDETACHCANCELED 0
 
-// uspesne pripojeni noveho FS do panelu (po zmene cesty a jejim vylistovani)
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// successful attachment of a new FS to the panel (after the path is changed and listed)
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_OPENED 1
 
-// uspesne pridani do seznamu odpojenych FS (konec rezimu "panel" FS, zacatek rezimu "detached" FS);
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// successful addition to the list of detached FSs (end of "panel" FS mode, start of "detached" FS mode);
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_DETACHED 2
 
-// uspesne pripojeni odpojeneho FS (konec rezimu "detached" FS, zacatek rezimu "panel" FS);
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// successful attachment of a detached FS (end of "detached" FS mode, start of "panel" FS mode);
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_ATTACHED 3
 
-// aktivace hlavniho okna Salamandera (pri minimalizovanem oknu se ceka na restore/maximize,
-// a pak se teprve zasle tato udalost, aby se pripadna chybova okna ukazovala nad Salamanderem),
-// chodi jen do FS, ktery je v panelu (neni odpojen), pokud se zmeny na FS nemonitoruji automaticky,
-// oznamuje tato udalost vhodny okamzik k refreshi;
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// activation of Salamander's main window (when the window is minimized, this event is sent only after restore/maximize so any error windows appear above Salamander),
+// it is delivered only to an FS that is in a panel (not detached); if changes on the FS are not monitored automatically,
+// this event indicates a suitable time to refresh;
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_ACTIVATEREFRESH 4
 
 // vyprsel timeout jednoho z timeru tohoto FS, 'param' je parametr tohoto timeru;
@@ -149,25 +147,19 @@ public:
 //
 // (FALSE, TRUE) pri zmene cesty mimo FS otevrene v panelu
 #define FSTRYCLOSE_CHANGEPATH 1
-// (FALSE->TRUE, FALSE) pro FS otevrene v panelu pri unloadu pluginu (user si preje unload +
-// zavirani Salamandera + pred odstranenim pluginu + unload na zadost pluginu)
+// (FALSE->TRUE, FALSE) for an FS open in a panel during plugin unload (user-requested unload + Salamander shutdown + before removing the plugin + unload requested by the plugin)
 #define FSTRYCLOSE_UNLOADCLOSEFS 2
-// (FALSE, TRUE) pri zmene cesty nebo refreshi (Ctrl+R) FS otevreneho v panelu se zjistilo,
-// ze jiz zadna cesta na FS neni pristupna - Salamander se snazi zmenit cestu v panelu
-// na fixed-drive (pokud mu to FS nedovoli, zustane FS v panelu bez souboru a adresaru)
+// (FALSE, TRUE) when changing the path or refreshing (Ctrl+R) an FS open in a panel, it was found that no accessible path on the FS remains - Salamander tries to change the panel path to a fixed drive (if the FS does not allow it, the FS remains in the panel with no files or directories)
 #define FSTRYCLOSE_CHANGEPATHFAILURE 3
-// (FALSE, FALSE) pri pripojovani odpojeneho FS zpet do panelu se zjistilo, ze jiz zadna cesta
-// na tomto FS neni pristupna - Salamander se snazi tento odpojeny FS zavrit (pokud FS odmitne,
-// zustane dale na seznamu odpojenych FS - napr. v Alt+F1/F2 menu)
+// (FALSE, FALSE) when reattaching a detached FS to a panel, it was found that no path on this FS is accessible any more - Salamander tries to close this detached FS (if the FS refuses, it remains in the list of detached FSs - e.g. in the Alt+F1/F2 menu)
 #define FSTRYCLOSE_ATTACHFAILURE 4
-// (FALSE->TRUE, FALSE) pro odpojeny FS pri unloadu pluginu (user si preje unload +
-// zavirani Salamandera + pred odstranenim pluginu + unload na zadost pluginu)
+// (FALSE->TRUE, FALSE) for a detached FS during plugin unload (user-requested unload + Salamander shutdown + before removing the plugin + unload requested by the plugin)
 #define FSTRYCLOSE_UNLOADCLOSEDETACHEDFS 5
-// (FALSE, FALSE) plugin zavolal CSalamanderGeneral::CloseDetachedFS() pro odpojeny FS
+// (FALSE, FALSE) the plugin called CSalamanderGeneral::CloseDetachedFS() for a detached FS
 #define FSTRYCLOSE_PLUGINCLOSEDETACHEDFS 6
 
-// flagy oznacujici, ktere sluzby file-systemu plugin poskytuje - jake metody
-// CPluginFSInterfaceAbstract jsou definovany):
+// flags indicating which file-system services the plugin provides - which methods of
+// CPluginFSInterfaceAbstract are defined:
 // copy from FS (F5 on FS)
 #define FS_SERVICE_COPYFROMFS 0x00000001
 // move from FS + rename on FS (F6 on FS)
@@ -221,32 +213,32 @@ public:
 // show security information (click on security icon in Directory Line, see CSalamanderGeneralAbstract::ShowSecurityIcon)
 #define FS_SERVICE_SHOWSECURITYINFO 0x02000000
 
-// chybi: Change Case, Convert, Properties, Make File List
+// Missing: Change Case, Convert, Properties, Make File List
 
-// typy kontextovych menu pro metodu CPluginFSInterfaceAbstract::ContextMenu()
-#define fscmItemsInPanel 0 // kontextove menu pro polozky v panelu (oznacene/fokusle soubory a adresare)
-#define fscmPathInPanel 1  // kontextove menu pro aktualni cestu v panelu
-#define fscmPanel 2        // kontextove menu pro panel
+// types of context menus for CPluginFSInterfaceAbstract::ContextMenu()
+#define fscmItemsInPanel 0 // context menu for items in the panel (selected/focused files and directories)
+#define fscmPathInPanel 1  // context menu for the current path in the panel
+#define fscmPanel 2        // context menu for the panel
 
-#define SALCMDLINE_MAXLEN 8192 // maximalni delka prikazu z prikazove radky Salamandera
+#define SALCMDLINE_MAXLEN 8192 // maximum command length from the Salamander command line
 
 class CPluginFSInterfaceAbstract
 {
 #ifdef INSIDE_SALAMANDER
-private: // ochrana proti nespravnemu primemu volani metod (viz CPluginFSInterfaceEncapsulation)
+private: // protection against incorrect direct calls to methods (see CPluginFSInterfaceEncapsulation)
     friend class CPluginFSInterfaceEncapsulation;
 #else  // INSIDE_SALAMANDER
 public:
 #endif // INSIDE_SALAMANDER
 
-    // vraci user-part aktualni cesty v tomto FS, 'userPart' je buffer o velikosti MAX_PATH
-    // pro cestu, vraci uspech
+    // returns the user-part of the current path in this FS; 'userPart' is a buffer of size MAX_PATH
+    // for the path; returns TRUE on success
     virtual BOOL WINAPI GetCurrentPath(char* userPart) = 0;
 
-    // vraci user-part plneho jmena souboru/adresare/up-diru 'file' ('isDir' je 0/1/2) na aktualni
-    // ceste v tomto FS; pro up-dir adresar (prvni v seznamu adresaru a zaroven pojmenovany ".."),
-    // je 'isDir'==2 a metoda by mela vracet aktualni cestu zkracenou o posledni komponentu; 'buf'
-    // je buffer o velikosti 'bufSize' pro vysledne plne jmeno, vraci uspech
+    // returns the user-part of the full name of file/directory/up-dir 'file' ('isDir' is 0/1/2) on the current
+    // path in this FS; for the up-dir entry (first in the directory list and also named ".."),
+    // 'isDir'==2 and the method should return the current path shortened by the last component; 'buf'
+    // is a buffer of size 'bufSize' for the resulting full name; returns TRUE on success
     virtual BOOL WINAPI GetFullName(CFileData& file, int isDir, char* buf, int bufSize) = 0;
 
     // vraci absolutni cestu (vcetne fs-name) odpovidajici relativni ceste 'path' na tomto FS;
@@ -260,13 +252,13 @@ public:
     virtual BOOL WINAPI GetFullFSPath(HWND parent, const char* fsName, char* path, int pathSize,
                                       BOOL& success) = 0;
 
-    // vraci user-part rootu aktualni cesty v tomto FS, 'userPart' je buffer o velikosti MAX_PATH
-    // pro cestu (pouziti ve funkci "goto root"), vraci uspech
+    // returns the user-part of the root of the current path in this FS; 'userPart' is a buffer of size MAX_PATH
+    // for the path (used by the "goto root" function); returns TRUE on success
     virtual BOOL WINAPI GetRootPath(char* userPart) = 0;
 
-    // porovna aktualni cestu v tomto FS a cestu zadanou pres 'fsNameIndex' a 'userPart'
-    // (jmeno FS v ceste je z tohoto pluginu a je dane indexem 'fsNameIndex'), vraci TRUE
-    // pokud jsou cesty shodne; 'currentFSNameIndex' je index aktualniho jmena FS
+    // compares the current path in this FS with the path specified by 'fsNameIndex' and 'userPart'
+    // (the FS name in the path belongs to this plugin and is identified by 'fsNameIndex'); returns TRUE
+    // if the paths are identical; 'currentFSNameIndex' is the index of the current FS name
     virtual BOOL WINAPI IsCurrentPath(int currentFSNameIndex, int fsNameIndex, const char* userPart) = 0;
 
     // vraci TRUE, pokud je cesta z tohoto FS (coz znamena, ze Salamander muze cestu pustit
@@ -341,19 +333,20 @@ public:
     // pokud lze zavrit/odpojit, jinak vraci FALSE
     virtual BOOL WINAPI TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL& detach, int reason) = 0;
 
-    // prijem udalosti na tomto FS, viz kody udalosti FSE_XXX; 'param' je parametr udalosti
+    // receives an event on this FS; see the FSE_XXX event codes; 'param' is the event parameter
     virtual void WINAPI Event(int event, DWORD param) = 0;
 
-    // uvolneni vsech prostredku FS krome dat listingu (behem volani teto metody se listing
-    // jeste muze zobrazovat v panelu); vola se tesne pred zrusenim listingu v panelu
-    // (listing se rusi jen u aktivnich FS, odpojene FS listing nemaji) a CloseFS pro tento FS;
-    // 'parent' je parent pripadnych messageboxu, probiha-li critical shutdown (vice viz
-    // CSalamanderGeneralAbstract::IsCriticalShutdown), zadna okna nezobrazovat
+    // releases all FS resources except the listing data (the listing
+    // may still be displayed in the panel while this method is running); called immediately before the listing in the panel
+    // is destroyed
+    // (the listing is destroyed only for active FSs; detached FSs have no listing) and before CloseFS is called for this FS;
+    // 'parent' is the parent for any message boxes; if critical shutdown is in progress (see
+    // CSalamanderGeneralAbstract::IsCriticalShutdown), do not show any windows
     virtual void WINAPI ReleaseObject(HWND parent) = 0;
 
-    // ziskani mnoziny podporovanych sluzeb FS (viz konstanty FS_SERVICE_XXX); vraci logicky
-    // soucet konstant; vola se po otevreni tohoto FS (viz CPluginInterfaceForFSAbstract::OpenFS),
-    // a pak po kazdem volani ChangePath a ListCurrentPath tohoto FS
+    // returns the set of supported FS services (see the FS_SERVICE_XXX constants); returns the bitwise
+    // OR of the constants; called after this FS is opened (see CPluginInterfaceForFSAbstract::OpenFS),
+    // and after each call to ChangePath and ListCurrentPath on this FS
     virtual DWORD WINAPI GetSupportedServices() = 0;
 
     // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETCHANGEDRIVEORDISCONNECTITEM:
@@ -387,15 +380,15 @@ public:
     // se distribuovat zpravy - prekresleni, atd.)
     virtual HICON WINAPI GetFSIcon(BOOL& destroyIcon) = 0;
 
-    // vraci pozadovany drop-effect pro drag&drop operaci z FS (muze byt i tento FS) do tohoto FS;
-    // 'srcFSPath' je zdrojova cesta; 'tgtFSPath' je cilova cesta (je z tohoto FS); 'allowedEffects'
-    // obsahuje povolene drop-effecty; 'keyState' je stav klaves (kombinace flagu MK_CONTROL,
-    // MK_SHIFT, MK_ALT, MK_BUTTON, MK_LBUTTON, MK_MBUTTON a MK_RBUTTON, viz IDropTarget::Drop);
-    // 'dropEffect' obsahuje doporucene drop-effecty (rovno 'allowedEffects' nebo omezeno na
-    // DROPEFFECT_COPY nebo DROPEFFECT_MOVE pokud uzivatel drzi klavesy Ctrl nebo Shift) a
-    // vraci se v nem zvoleny drop-effect (DROPEFFECT_COPY, DROPEFFECT_MOVE nebo DROPEFFECT_NONE);
-    // pokud metoda 'dropEffect' nezmeni a ten obsahuje vic efektu, provede se prednostni vyber
-    // Copy operace
+    // returns the requested drop effect for a drag&drop operation from an FS (possibly this FS) to this FS;
+    // 'srcFSPath' is the source path; 'tgtFSPath' is the target path (it belongs to this FS); 'allowedEffects'
+    // contains the allowed drop effects; 'keyState' is the key state (a combination of MK_CONTROL,
+    // MK_SHIFT, MK_ALT, MK_BUTTON, MK_LBUTTON, MK_MBUTTON, and MK_RBUTTON flags; see IDropTarget::Drop);
+    // 'dropEffect' contains the recommended drop effects (equal to 'allowedEffects' or limited to
+    // DROPEFFECT_COPY or DROPEFFECT_MOVE if the user holds Ctrl or Shift) and
+    // returns the selected drop effect (DROPEFFECT_COPY, DROPEFFECT_MOVE, or DROPEFFECT_NONE);
+    // if the method does not change 'dropEffect' and it contains more than one effect,
+    // Copy is preferred
     virtual void WINAPI GetDropEffect(const char* srcFSPath, const char* tgtFSPath,
                                       DWORD allowedEffects, DWORD keyState,
                                       DWORD* dropEffect) = 0;
@@ -414,11 +407,9 @@ public:
     // delici bod neexistuje (konec textu neni povazovan za delici bod)
     virtual BOOL WINAPI GetNextDirectoryLineHotPath(const char* text, int pathLen, int& offset) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETNEXTDIRLINEHOTPATH:
-    // uprava textu zkracene cesty, ktera se ma zobrazit v panelu (Directory Line - zkracovani
-    // cesty pomoci mysi - hot-tracking); pouziva se pokud hot-text z Directory Line neodpovida
-    // presne ceste (napr. mu chybi koncova zavorka - VMS cesty na FTP - "[DIR1.DIR2.DIR3]");
-    // 'path' je in/out buffer s cestou (velikost bufferu je 'pathBufSize')
+    // Only if GetSupportedServices() returns FS_SERVICE_GETNEXTDIRLINEHOTPATH:
+    // adjusts the shortened path text to be displayed in the panel (Directory Line - path shortening with the mouse, hot-tracking); used when the hot text from the Directory Line does not exactly match the path (for example, if it is missing the closing bracket - VMS paths on FTP - "[DIR1.DIR2.DIR3]");
+    // 'path' is an in/out buffer containing the path (the buffer size is 'pathBufSize')
     virtual void WINAPI CompleteDirectoryLineHotPath(char* path, int pathBufSize) = 0;
 
     // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETPATHFORMAINWNDTITLE:
@@ -437,9 +428,9 @@ public:
     //           zobrazovani titulku (i v "Directory Name Only" a "Shortened Path")
     virtual BOOL WINAPI GetPathForMainWindowTitle(const char* fsName, int mode, char* buf, int bufSize) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_SHOWINFO:
-    // zobrazi dialog s informacemi o FS (volne misto, kapacita, jmeno, moznosti, atd.);
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent zobrazovaneho dialogu
+    // Only if GetSupportedServices() returns FS_SERVICE_SHOWINFO:
+    // displays a dialog with information about the FS (free space, capacity, name, capabilities, etc.);
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of the displayed dialog
     virtual void WINAPI ShowInfoDialog(const char* fsName, HWND parent) = 0;
 
     // jen pokud GetSupportedServices() vraci i FS_SERVICE_COMMANDLINE:
@@ -509,11 +500,11 @@ public:
     virtual BOOL WINAPI CreateDir(const char* fsName, int mode, HWND parent,
                                   char* newName, BOOL& cancel) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_VIEWFILE:
-    // prohlizeni souboru (adresare nelze prohlizet pres funkci View) 'file' na aktualni ceste
-    // na FS; 'fsName' je aktualni jmeno FS; 'parent' je parent pripadnych messageboxu
-    // s chybami; 'salamander' je sada metod ze Salamandera potrebnych pro implementaci
-    // prohlizeni s cachovanim
+    // Only if GetSupportedServices() returns FS_SERVICE_VIEWFILE:
+    // views file 'file' (directories cannot be viewed with the View command) on the current path
+    // on the FS; 'fsName' is the current FS name; 'parent' is the parent of any message boxes
+    // for errors; 'salamander' is the set of Salamander methods required to implement
+    // viewing with caching
     virtual void WINAPI ViewFile(const char* fsName, HWND parent,
                                  CSalamanderForViewFileOnFSAbstract* salamander,
                                  CFileData& file) = 0;
@@ -658,34 +649,32 @@ public:
                                                void* nextParam, int sourceFiles, int sourceDirs,
                                                char* targetPath, BOOL* invalidPathOrCancel) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_CHANGEATTRS:
-    // zmena atributu souboru a adresaru oznacenych v panelu; dialog se zadanim zmen atributu
-    // ma kazdy plugin vlastni;
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent vlastniho dialogu; 'panel'
-    // identifikuje panel (PANEL_LEFT nebo PANEL_RIGHT), ve kterem je otevrene FS (z tohoto
-    // panelu se ziskavaji soubory/adresare, se kterymi se pracuje);
-    // 'selectedFiles' + 'selectedDirs' - pocet oznacenych souboru a adresaru,
-    // pokud jsou obe hodnoty nulove, pracuje se se souborem/adresarem pod kurzorem
-    // (fokus), pred volanim metody ChangeAttributes jsou bud oznacene soubory a adresare nebo
-    // je alespon fokus na souboru/adresari, takze je vzdy s cim pracovat (zadne dalsi testy
-    // nejsou treba); pokud vraci TRUE, operace probehla korektne a oznacene soubory/adresare
-    // se maji odznacit; pokud chce uzivatel prerusit operaci nebo nastane chyba, vraci metoda
-    // FALSE a nedojde k odznaceni souboru/adresaru
+    // Only if GetSupportedServices() returns FS_SERVICE_CHANGEATTRS:
+    // changes the attributes of the files and directories selected in the panel; each plugin provides its own attribute dialog;
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of the custom dialog; 'panel'
+    // identifies the panel (PANEL_LEFT or PANEL_RIGHT) in which the FS is open (this panel supplies the files/directories being operated on);
+    // 'selectedFiles' + 'selectedDirs' is the number of selected files and directories;
+    // if both values are zero, the file/directory under the cursor is used
+    // (focus); before ChangeAttributes is called, either files/directories are selected or there is at least
+    // focus on a file/directory, so there is always something to work with (no additional checks
+    // are needed); if it returns TRUE, the operation completed successfully and the selected files/directories
+    // should be deselected; if the user cancels the operation or an error occurs, the method returns
+    // FALSE and the files/directories are not deselected
     virtual BOOL WINAPI ChangeAttributes(const char* fsName, HWND parent, int panel,
                                          int selectedFiles, int selectedDirs) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_SHOWPROPERTIES:
-    // zobrazeni okna s vlastnostmi souboru a adresaru oznacenych v panelu; okno s vlastnostmi
-    // ma kazdy plugin vlastni;
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent vlastniho okna
-    // (Windowsove okno s vlastnostmi je nemodalni - pozor: nemodalni okno musi
-    // mit vlastni thread); 'panel' identifikuje panel (PANEL_LEFT nebo PANEL_RIGHT),
-    // ve kterem je otevrene FS (z tohoto panelu se ziskavaji soubory/adresare,
-    // se kterymi se pracuje); 'selectedFiles' + 'selectedDirs' - pocet oznacenych
-    // souboru a adresaru, pokud jsou obe hodnoty nulove, pracuje se se souborem/adresarem
-    // pod kurzorem (fokus), pred volanim metody ShowProperties jsou bud oznacene
-    // soubory a adresare nebo je alespon fokus na souboru/adresari, takze je vzdy
-    // s cim pracovat (zadne dalsi testy nejsou treba)
+    // Only if GetSupportedServices() returns FS_SERVICE_SHOWPROPERTIES:
+    // displays a properties window for the files and directories selected in the panel; each plugin
+    // provides its own properties window;
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of the custom window
+    // (a Windows properties window is modeless - note: a modeless window must
+    // have its own thread); 'panel' identifies the panel (PANEL_LEFT or PANEL_RIGHT)
+    // in which the FS is open (this panel supplies the files/directories
+    // being worked with); 'selectedFiles' + 'selectedDirs' is the number of selected
+    // files and directories; if both values are zero, the file/directory under the cursor is used
+    // (focus); before ShowProperties is called, either files/directories are selected
+    // or there is at least focus on a file/directory, so there is always
+    // something to work with (no additional checks are needed)
     virtual void WINAPI ShowProperties(const char* fsName, HWND parent, int panel,
                                        int selectedFiles, int selectedDirs) = 0;
 
@@ -710,11 +699,11 @@ public:
     virtual void WINAPI ContextMenu(const char* fsName, HWND parent, int menuX, int menuY, int type,
                                     int panel, int selectedFiles, int selectedDirs) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_CONTEXTMENU:
-    // pokud je v panelu otevreny FS a dorazi nektera ze zprav WM_INITPOPUP, WM_DRAWITEM,
-    // WM_MENUCHAR nebo WM_MEASUREITEM, zavola Salamander HandleMenuMsg, aby pluginu
-    // umoznil pracovat s IContextMenu2 a IContextMenu3
-    // plugin vraci TRUE v pripade, ze zpravu zpracoval a FALSE jindy
+    // Only if GetSupportedServices() returns FS_SERVICE_CONTEXTMENU:
+    // if an FS is open in the panel and one of the messages WM_INITPOPUP, WM_DRAWITEM,
+    // WM_MENUCHAR, or WM_MEASUREITEM arrives, Salamander calls HandleMenuMsg to allow the plugin
+    // to work with IContextMenu2 and IContextMenu3
+    // the plugin returns TRUE if it handled the message and FALSE otherwise
     virtual BOOL WINAPI HandleMenuMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* plResult) = 0;
 
     // jen pokud GetSupportedServices() vraci i FS_SERVICE_OPENFINDDLG:
@@ -724,9 +713,9 @@ public:
     // pokud vrati FALSE, Salamander otevre standardni Find Files and Directories dialog
     virtual BOOL WINAPI OpenFindDialog(const char* fsName, int panel) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_OPENACTIVEFOLDER:
-    // otevre okno Explorera pro aktualni cestu v panelu
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent zobrazovaneho dialogu
+    // Only if GetSupportedServices() returns FS_SERVICE_OPENACTIVEFOLDER:
+    // opens an Explorer window for the current path in the panel
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of the displayed dialog
     virtual void WINAPI OpenActiveFolder(const char* fsName, HWND parent) = 0;
 
     // jen pokud GetSupportedServices() vraci FS_SERVICE_MOVEFROMFS nebo FS_SERVICE_COPYFROMFS:
@@ -748,9 +737,9 @@ public:
     // teto hlasky
     virtual BOOL WINAPI GetNoItemsInPanelText(char* textBuf, int textBufSize) = 0;
 
-    // jen pokud GetSupportedServices() vraci FS_SERVICE_SHOWSECURITYINFO:
-    // uzivatel kliknul na ikone zabezpeceni (viz CSalamanderGeneralAbstract::ShowSecurityIcon;
-    // napr. FTPS zobrazi dialog s certifikatem serveru); 'parent' je navrzeny parent dialogu
+    // Only if GetSupportedServices() returns FS_SERVICE_SHOWSECURITYINFO:
+    // the user clicked the security icon (see CSalamanderGeneralAbstract::ShowSecurityIcon;
+    // for example, FTPS displays a dialog with the server certificate); 'parent' is the suggested parent of the dialog
     virtual void WINAPI ShowSecurityInfo(HWND parent) = 0;
 
     /* zbyva dokoncit:
@@ -771,7 +760,7 @@ public:
 class CPluginInterfaceForFSAbstract
 {
 #ifdef INSIDE_SALAMANDER
-private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForFSEncapsulation)
+private: // protection against incorrect direct calls to methods (see CPluginInterfaceForFSEncapsulation)
     friend class CPluginInterfaceForFSEncapsulation;
 #else  // INSIDE_SALAMANDER
 public:
@@ -870,24 +859,24 @@ public:
                                      CPluginFSInterfaceAbstract* pluginFS,
                                      const char* pluginFSName, int pluginFSNameIndex) = 0;
 
-    // prevadi user-part cesty v bufferu 'fsUserPart' (velikost MAX_PATH znaku) z externiho
-    // na interni format (napr. u FTP: interni format = cesty jak s nimi pracuje server,
-    // externi format = URL format = cesty obsahuji hex-escape-sekvence (napr. "%20" = " "))
+    // converts the user-part of the path in buffer 'fsUserPart' (size MAX_PATH characters) from external
+    // to internal format (for example, on FTP: internal format = paths as used by the server,
+    // external format = URL format = paths containing hex escape sequences (e.g. "%20" = " "))
     virtual void WINAPI ConvertPathToInternal(const char* fsName, int fsNameIndex,
                                               char* fsUserPart) = 0;
 
-    // prevadi user-part cesty v bufferu 'fsUserPart' (velikost MAX_PATH znaku) z interniho
-    // na externi format
+    // converts the user-part of the path in buffer 'fsUserPart' (size MAX_PATH characters) from internal
+    // to external format
     virtual void WINAPI ConvertPathToExternal(const char* fsName, int fsNameIndex,
                                               char* fsUserPart) = 0;
 
-    // tato metoda se vola jen u pluginu, ktery slouzi jako nahrada za Network polozku
-    // v Change Drive menu a v Drive barach (viz CSalamanderGeneralAbstract::SetPluginIsNethood()):
-    // Salamander volanim teto metody informuje plugin, ze uzivatel meni cestu z rootu UNC
-    // cesty "\\server\share" pres symbol up-diru ("..") do pluginoveho FS na cestu s
-    // user-part "\\server" v panelu 'panel' (PANEL_LEFT nebo PANEL_RIGHT); ucel teto metody:
-    // plugin by mel bez cekani vylistovat na teto ceste aspon tento jeden share, aby mohlo
-    // dojit k jeho fokusu v panelu (coz je bezne chovani pri zmene cesty pres up-dir)
+    // This method is called only for a plugin that serves as a replacement for the Network item
+    // in the Change Drive menu and in the Drive bars (see CSalamanderGeneralAbstract::SetPluginIsNethood()):
+    // by calling this method, Salamander informs the plugin that the user is changing the path from the root of the UNC
+    // path "\\server\share" via the up-dir entry ("..") to the plugin FS, to a path with
+    // user-part "\\server" in panel 'panel' (PANEL_LEFT or PANEL_RIGHT); purpose of this method:
+    // the plugin should immediately list at least this one share at that path so it can receive
+    // focus in the panel (which is the normal behavior when changing path via up-dir)
     virtual void WINAPI EnsureShareExistsOnServer(int panel, const char* server, const char* share) = 0;
 };
 
