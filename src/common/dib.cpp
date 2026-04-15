@@ -7,7 +7,7 @@
 #include <crtdbg.h>
 #include <ostream>
 #include <limits.h>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // Needed for LPCOLORMAP.
 
 #if defined(_DEBUG) && defined(_MSC_VER) // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
 #define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
@@ -21,8 +21,8 @@
 
 #include "dib.h"
 
-// opatreni proti runtime check failure v debug verzi: puvodni verze makra pretypovava rgb na WORD,
-// takze hlasi ztratu dat (RED slozky)
+// Workaround for a runtime check failure in the debug build: the original version of the macro casts rgb to WORD,
+//  so it reports data loss in the RED component.
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
