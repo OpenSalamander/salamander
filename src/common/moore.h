@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 // ****************************************************************************
 // Boyer-Mooruv algoritmus hledani podretezce
@@ -60,16 +61,16 @@ protected:
     int Minimum(int a, int b) { return (a < b) ? a : b; }
     int Maximum(int a, int b) { return (a > b) ? a : b; }
 
-    int* Fail1;                // fail array for the current character
-    int* Fail2;                // fail array for substring occurrence from the right
-    char* OriginalPattern;     // original search pattern
-    char* Pattern;             // search pattern in the corresponding flag-dependent form
-    int Length;                // pattern length
+    int* Fail1;            // fail array for the current character
+    int* Fail2;            // fail array for substring occurrence from the right
+    char* OriginalPattern; // original search pattern
+    char* Pattern;         // search pattern in the corresponding flag-dependent form
+    int Length;            // pattern length
 
 private:
-    BOOL Initialize();     // called only from SetFlags
+    BOOL Initialize(); // called only from SetFlags
 
-    WORD Flags;     // modify via SetFlags
+    WORD Flags; // modify via SetFlags
 };
 
 //
