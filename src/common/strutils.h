@@ -3,7 +3,7 @@
 
 #pragma once
 
-// makro SAFE_ALLOC odstranuje kod, ve kterem se testuje, jestli se povedla alokace pameti (viz allochan.*)
+// The SAFE_ALLOC macro removes the code that checks whether memory allocation succeeded (see allochan.*)
 
 // prevod Unicodoveho stringu (UTF-16) na ANSI multibytovy string; 'src' je Unicodovy string;
 // 'srcLen' je delka Unicodoveho stringu (bez zakoncujici nuly; pri zadani -1 se delka urci
@@ -26,13 +26,13 @@ int ConvertU2A(const WCHAR* src, int srcLen, char* buf, int bufSize,
 // ANSI string; pri chybe vraci NULL (detaily viz GetLastError())
 char* ConvertAllocU2A(const WCHAR* src, int srcLen, BOOL compositeCheck = FALSE, UINT codepage = CP_ACP);
 
-// prevod ANSI multibytoveho stringu na Unicodovy string (UTF-16); 'src' je ANSI string;
-// 'srcLen' je delka ANSI stringu (bez zakoncujici nuly; pri zadani -1 se delka urci
-// podle zakoncujici nuly); 'bufSize' (musi byt vetsi nez 0) je velikost ciloveho bufferu
-// 'buf' pro Unicodovy string; 'codepage' je kodova stranka ANSI stringu;
-// vraci pocet znaku zapsanych do 'buf' (vcetne zakoncujici nuly); pri chybe vraci nulu
-// (detaily viz GetLastError()); vzdy zajisti nulou zakonceny 'buf' (i pri chybe);
-// je-li 'buf' maly, vraci funkce nulu, ale v 'buf' je prevedena aspon cast stringu
+// Converts an ANSI multibyte string to a Unicode (UTF-16) string; 'src' is the ANSI string;
+// 'srcLen' is the length of the ANSI string (excluding the terminating null; if -1 is passed,
+// the length is determined from the terminating null); 'bufSize' (must be greater than 0) is the size of the destination buffer
+// 'buf' for the Unicode string; 'codepage' is the code page of the ANSI string;
+// returns the number of characters written to 'buf' (including the terminating null); on error returns 0
+// (see GetLastError()); always ensures 'buf' is null-terminated (even on error);
+// if 'buf' is too small, the function returns 0, but at least part of the string is converted into 'buf'
 int ConvertA2U(const char* src, int srcLen, WCHAR* buf, int bufSizeInChars,
                UINT codepage = CP_ACP);
 
@@ -47,8 +47,8 @@ WCHAR* ConvertAllocA2U(const char* src, int srcLen, UINT codepage = CP_ACP);
 // se nepouziva allochan.*) nebo 'txt'==NULL
 WCHAR* DupStr(const WCHAR* txt);
 
-// drzi ukazatel na alokovanou pamet, postara se o jeji uvolneni pri prepisu jinym ukazatelem na
-// alokovanou pamet a pri sve destrukci
+// Holds a pointer to allocated memory and frees it when overwritten by another pointer to allocated memory
+// and when destroyed
 template <class PTR_TYPE>
 class CAllocP
 {
@@ -79,6 +79,6 @@ public:
     }
 };
 
-// drzi alokovany string, postara se o uvolneni pri prepisu jinym stringem (tez alokovanym)
-// a pri sve destrukci
+// Holds an allocated string and frees it when overwritten by another allocated string
+// and when destroyed
 typedef CAllocP<WCHAR> CStrP;
