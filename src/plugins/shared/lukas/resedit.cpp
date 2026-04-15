@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -87,7 +88,7 @@ try_again:
         !Read(&PEHead, sizeof(IMAGE_FILE_HEADER)) ||
         !Read(&OptHead, OPTHEAD_SIZE) ||
         !Read(OptHead.DataDirectory, OptHead.NumberOfRvaAndSizes * sizeof(IMAGE_DATA_DIRECTORY)) ||
-        OptHead.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_RESOURCE)         // check whether a resource directory is present
+        OptHead.NumberOfRvaAndSizes <= IMAGE_DIRECTORY_ENTRY_RESOURCE) // check whether a resource directory is present
     {
         if (lastError == ERROR_INVALID_HANDLE && ++num_of_retries <= 10)
         {
