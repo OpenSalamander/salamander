@@ -32,23 +32,23 @@ int ConvertU2A(const WCHAR* src, int srcLen, char* buf, int bufSize, BOOL compos
     int res = WideCharToMultiByte(codepage, compositeCheck ? WC_COMPOSITECHECK : 0, src, srcLen, buf, bufSize, NULL, NULL);
     if (srcLen != -1 && res > 0)
         res++;
-    if (compositeCheck && res == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) // nektere codepage nepodporuji WC_COMPOSITECHECK
+    if (compositeCheck && res == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)     // some code pages do not support WC_COMPOSITECHECK
     {
         res = WideCharToMultiByte(codepage, 0, src, srcLen, buf, bufSize, NULL, NULL);
         if (srcLen != -1 && res > 0)
             res++;
     }
     if (res > 0 && res <= bufSize)
-        buf[res - 1] = 0; // uspech, zakoncime string nulou
+        buf[res - 1] = 0;         // success, null-terminate the string
     else
     {
         if (res > bufSize || res == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
         {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
-            buf[bufSize - 1] = 0; // maly buffer, vratime chybu, ale castecne prelozeny string nechame v bufferu
+            buf[bufSize - 1] = 0;             // buffer too small: return an error, but leave the partially converted string in the buffer
         }
         else
-            buf[0] = 0; // jina chyba, zajistime prazdny buffer
+            buf[0] = 0;             // other error: ensure the buffer is empty
         res = 0;
     }
     return res;
@@ -85,7 +85,7 @@ char* ConvertAllocU2A(const WCHAR* src, int srcLen, BOOL compositeCheck, UINT co
     int len = WideCharToMultiByte(codepage, flags = (compositeCheck ? WC_COMPOSITECHECK : 0), src, srcLen, NULL, 0, NULL, NULL);
     if (srcLen != -1 && len > 0)
         len++;
-    if (compositeCheck && len == 0) // nektere codepage nepodporuji WC_COMPOSITECHECK
+    if (compositeCheck && len == 0)     // some code pages do not support WC_COMPOSITECHECK
     {
         len = WideCharToMultiByte(codepage, flags = 0, src, srcLen, NULL, 0, NULL, NULL);
         if (srcLen != -1 && len > 0)
@@ -104,7 +104,7 @@ char* ConvertAllocU2A(const WCHAR* src, int srcLen, BOOL compositeCheck, UINT co
         if (srcLen != -1 && res > 0)
             res++;
         if (res > 0 && res <= len)
-            txt[res - 1] = 0; // uspech, zakoncime string nulou
+            txt[res - 1] = 0;             // success, null-terminate the string
         else
         {
             DWORD err = GetLastError();
@@ -142,16 +142,16 @@ int ConvertA2U(const char* src, int srcLen, WCHAR* buf, int bufSizeInChars, UINT
     if (srcLen != -1 && res > 0)
         res++;
     if (res > 0 && res <= bufSizeInChars)
-        buf[res - 1] = 0; // uspech, zakoncime string nulou
+        buf[res - 1] = 0;         // success, null-terminate the string
     else
     {
         if (res > bufSizeInChars || res == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
         {
             SetLastError(ERROR_INSUFFICIENT_BUFFER);
-            buf[bufSizeInChars - 1] = 0; // maly buffer, vratime chybu, ale castecne prelozeny string nechame v bufferu
+            buf[bufSizeInChars - 1] = 0;             // buffer too small: return an error, but leave the partially converted string in the buffer
         }
         else
-            buf[0] = 0; // jina chyba, zajistime prazdny buffer
+            buf[0] = 0;             // other error: ensure the buffer is empty
         res = 0;
     }
     return res;
@@ -200,7 +200,7 @@ WCHAR* ConvertAllocA2U(const char* src, int srcLen, UINT codepage)
         if (srcLen != -1 && res > 0)
             res++;
         if (res > 0 && res <= len)
-            txt[res - 1] = 0; // uspech, zakoncime string nulou
+            txt[res - 1] = 0;             // success, null-terminate the string
         else
         {
             DWORD err = GetLastError();
