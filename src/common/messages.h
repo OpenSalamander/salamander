@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -54,8 +55,8 @@ void SetMessagesParent(HWND parent);
 class C__Messages
 {
 protected:
-    C__StringStreamBuf MessagesStringBuf;     // String buffer holding the messages stream data
-    C__TraceStream MessagesStrStream;         // The messages stream itself
+    C__StringStreamBuf MessagesStringBuf; // String buffer holding the messages stream data
+    C__TraceStream MessagesStrStream;     // The messages stream itself
 
 public:
     C__Messages();
@@ -79,8 +80,8 @@ public:
 class C__MessagesW
 {
 protected:
-    C__StringStreamBufW MessagesStringBuf;     // String buffer holding the messages stream data
-    C__TraceStreamW MessagesStrStream;         // The messages stream itself
+    C__StringStreamBufW MessagesStringBuf; // String buffer holding the messages stream data
+    C__TraceStreamW MessagesStrStream;     // The messages stream itself
 
 public:
     C__MessagesW();
