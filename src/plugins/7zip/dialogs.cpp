@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -566,7 +567,7 @@ CExtOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!CreateChilds())
         {
             DestroyWindow(HWindow); // error -> do not open the dialog
-            return FALSE;           // stop processing
+            return FALSE;           // end processing
         }
 
         // set archive name
