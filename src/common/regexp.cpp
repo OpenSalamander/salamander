@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
@@ -159,7 +160,7 @@ BOOL CRegularExpression::SetFlags(WORD flags)
     Expression = regcomp(pattern, LastErrorText);
 
     if (Expression != NULL && (Flags & sfForward) == 0)
-    {     // Expression is syntactically correct; backward search.
+    { // Expression is syntactically correct; backward search.
         if (Expression != NULL)
             free(Expression);
         Expression = NULL;
@@ -263,16 +264,16 @@ BOOL CRegularExpression::ExpandVariables(char* pattern, char* buffer, int bufSiz
 {
     char* sour = pattern;
     char* dest = buffer;
-    bufSize--;     // Reserve space for the NULL terminator.
+    bufSize--; // Reserve space for the NULL terminator.
     while (*sour)
     {
         if (!bufSize)
-            return FALSE;             // Out of buffer space.
+            return FALSE; // Out of buffer space.
         if (*sour == '\\')
         {
             sour++;
             if (!*sour)
-                break;                 // An error should probably be reported here; this sequence is undefined.
+                break; // An error should probably be reported here; this sequence is undefined.
             if (*sour >= '1' && *sour <= '9')
             {
                 int n = *sour - '0';
@@ -351,8 +352,8 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
     while (s < srcExpEnd)
     {
         //--- find the end of the atom for '*', '+' and '?' repetition
-        char* ss;            // Points past the atom.
-        BOOL addPar;         // Should a matching parenthesis be added?
+        char* ss;    // Points past the atom.
+        BOOL addPar; // Should a matching parenthesis be added?
         switch (*s)
         {
         case '\\':
@@ -362,8 +363,8 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
         case '(':
         case '[':
         {
-            int parNum = (*s == '(') ? 1 : 0;             // Parenthesis count.
-            int braNum = (*s == '[') ? 1 : 0;             // Bracket count.
+            int parNum = (*s == '(') ? 1 : 0; // Parenthesis count.
+            int braNum = (*s == '[') ? 1 : 0; // Bracket count.
             char* lastBra = (*s == '[') ? s : NULL;
             ss = s + 1;
             while (*ss != 0 && (parNum != 0 || braNum != 0))
@@ -373,10 +374,10 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case '(':
                     if (braNum == 0)
                         parNum++;
-                    break;                     // [..(..] is allowed.
+                    break; // [..(..] is allowed.
                 case '[':
                 {
-                    if (braNum == 0)                     // [..[..] is allowed.
+                    if (braNum == 0) // [..[..] is allowed.
                     {
                         braNum++;
                         lastBra = ss - 1;
@@ -387,13 +388,13 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case ')':
                     if (braNum == 0 && parNum > 0)
                         parNum--;
-                    break;                     // [..)..] is allowed.
+                    break; // [..)..] is allowed.
                 case ']':
                 {
-                    if (braNum != 0)                     // ..].. is allowed.
+                    if (braNum != 0) // ..].. is allowed.
                     {
-                        if (ss - 2 != lastBra &&                                             // []..] is allowed.
-                            (ss - 3 != lastBra || *(ss - 2) != '^'))                             // [^]..] is also allowed.
+                        if (ss - 2 != lastBra &&                     // []..] is allowed.
+                            (ss - 3 != lastBra || *(ss - 2) != '^')) // [^]..] is also allowed.
                         {
                             braNum--;
                         }
@@ -405,7 +406,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 {
                     if (*ss != 0)
                         ss++;
-                    break;                     // The character after '\\' cannot be treated as a bracket.
+                    break; // The character after '\\' cannot be treated as a bracket.
                 }
                 }
             }
@@ -449,10 +450,10 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             if (oldSS - s >= 2) // pokud vyraz nekonci otevrenou zavorkou
             {
                 if (*s == '(')
-                {                 // Copy the reversed expression - parenthesized group.
+                { // Copy the reversed expression - parenthesized group.
                     ReverseRegExp(dstExpEnd, s + 1, oldSS - 1);
                 }
-                else                 // Simple copy of the contents - character set.
+                else // Simple copy of the contents - character set.
                 {
                     dstExpEnd -= (oldSS - 1) - (s + 1);
                     memcpy(dstExpEnd, s + 1, (oldSS - 1) - (s + 1));
@@ -745,7 +746,7 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         }
     }
 
-    lastErrorText = NULL;     // Successful return.
+    lastErrorText = NULL; // Successful return.
     __RegExpSection.Leave();
     return (r);
 }
