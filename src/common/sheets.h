@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -10,8 +11,8 @@ class CTreePropHolderDlg;
 
 struct CElasticLayoutCtrl
 {
-    HWND HCtrl;     // handle of the control to move
-    POINT Pos;      // control position relative to the bottom edge of the bounding box
+    HWND HCtrl; // handle of the control to move
+    POINT Pos;  // control position relative to the bottom edge of the bounding box
 };
 
 // helper class for laying out dialog controls based on the dialog size
@@ -45,9 +46,9 @@ protected:
 class CPropSheetPage : protected CDialog
 {
 public:
-    CDialog::SetObjectOrigin;     // expose selected base-class methods
+    CDialog::SetObjectOrigin; // expose selected base-class methods
     CDialog::Transfer;
-    CDialog::HWindow;     // HWindow also remains accessible
+    CDialog::HWindow; // HWindow also remains accessible
 
     CPropSheetPage(const TCHAR* title, HINSTANCE modul, int resID,
                    DWORD flags /* = PSP_USETITLE*/, HICON icon,
@@ -79,7 +80,7 @@ protected:
     DWORD Flags;
     HICON Icon;
 
-    CPropertyDialog* ParentDialog;     // owner of this page
+    CPropertyDialog* ParentDialog; // owner of this page
     // for TreeDialog
     CPropSheetPage* ParentPage;
     HTREEITEM HTreeItem;
@@ -176,17 +177,17 @@ protected:
     RECT ChildDialogRect;
     int CurrentPageIndex;
     CPropSheetPage* ChildDialog;
-    int ExitButton;     // ID of the button that closed the dialog
+    int ExitButton; // ID of the button that closed the dialog
 
     // dimensions in pixels
-    SIZE MinWindowSize;      // minimum dialog size (determined by the largest child dialog)
-    DWORD* WindowHeight;     // current dialog height
-    int TreeWidth;           // tree view width, calculated from the contents
-    int CaptionHeight;       // caption height
-    SIZE ButtonSize;         // size of the buttons along the bottom edge of the dialog
-    int ButtonMargin;        // spacing between buttons
-    SIZE GripSize;           // size of the resize grip in the dialog's bottom-right corner
-    SIZE MarginSize;         // horizontal and vertical margins
+    SIZE MinWindowSize;  // minimum dialog size (determined by the largest child dialog)
+    DWORD* WindowHeight; // current dialog height
+    int TreeWidth;       // tree view width, calculated from the contents
+    int CaptionHeight;   // caption height
+    SIZE ButtonSize;     // size of the buttons along the bottom edge of the dialog
+    int ButtonMargin;    // spacing between buttons
+    SIZE GripSize;       // size of the resize grip in the dialog's bottom-right corner
+    SIZE MarginSize;     // horizontal and vertical margins
 
 public:
     CTreePropHolderDlg(HWND hParent, DWORD* windowHeight);
