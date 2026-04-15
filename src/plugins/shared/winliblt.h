@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -18,7 +19,7 @@
 
 // sets custom WinLib strings
 void SetWinLibStrings(const char* invalidNumber, // "not a number" (for numeric transfer buffers)
-                      const char* error);                              // title "Error" (for numeric transfer buffers)
+                      const char* error);        // title "Error" (for numeric transfer buffers)
 
 // Must be called before using WinLib; 'pluginName' is the plugin name (e.g. "DEMOPLUG"),
 // used to distinguish the class names of WinLib universal windows (it must differ between plugins,
@@ -51,9 +52,9 @@ extern char CWINDOW_CLASSNAME2[100]; // universal window class name - no CS_VRED
 
 enum CObjectOrigin // used when destroying windows and dialogs
 {
-    ooAllocated,     // deallocated on WM_DESTROY
-    ooStatic,        // HWindow is set to NULL on WM_DESTROY
-    ooStandard       // for modal dialogs = ooStatic, for modeless dialogs = ooAllocated
+    ooAllocated, // deallocated on WM_DESTROY
+    ooStatic,    // HWindow is set to NULL on WM_DESTROY
+    ooStandard   // for modal dialogs = ooStatic, for modeless dialogs = ooAllocated
 };
 
 // ****************************************************************************
@@ -90,9 +91,9 @@ public:
         SetHelpID(helpID);
     }
 
-    virtual ~CWindowsObject() {}     // so derived-class destructors are called
+    virtual ~CWindowsObject() {} // so derived-class destructors are called
 
-    virtual BOOL Is(int) { return FALSE; }     // object type identifier
+    virtual BOOL Is(int) { return FALSE; } // object type identifier
     virtual int GetObjectType() { return otBase; }
 
     virtual BOOL IsAllocated() { return ObjectOrigin == ooAllocated; }
@@ -158,7 +159,7 @@ public:
                 HWND hwndParent,        // handle of parent or owner window
                 HMENU hmenu,            // handle of menu or child-window identifier
                 HINSTANCE hinst,        // handle of application instance
-                LPVOID lpvParam);                       // pointer to the object of the window being created
+                LPVOID lpvParam);       // pointer to the object of the window being created
 
     HWND CreateEx(DWORD dwExStyle,        // extended window style
                   LPCTSTR lpszClassName,  // address of registered class name
@@ -171,7 +172,7 @@ public:
                   HWND hwndParent,        // handle of parent or owner window
                   HMENU hmenu,            // handle of menu or child-window identifier
                   HINSTANCE hinst,        // handle of application instance
-                  LPVOID lpvParam);                         // pointer to the object of the window being created
+                  LPVOID lpvParam);       // pointer to the object of the window being created
 
     void AttachToWindow(HWND hWnd);
     void AttachToControl(HWND dlg, int ctrlID);
@@ -190,8 +191,8 @@ protected:
 
 enum CTransferType
 {
-    ttDataToWindow,      // data goes to the window
-    ttDataFromWindow     // data comes from the window
+    ttDataToWindow,  // data goes to the window
+    ttDataFromWindow // data comes from the window
 };
 
 // ****************************************************************************
@@ -199,7 +200,7 @@ enum CTransferType
 class CTransferInfo
 {
 public:
-    int FailCtrlID;     // INT_MAX - OK, otherwise the ID of the control with the error
+    int FailCtrlID; // INT_MAX - OK, otherwise the ID of the control with the error
     CTransferType Type;
 
     CTransferInfo(HWND hDialog, CTransferType type)
@@ -226,7 +227,7 @@ public:
     void EditLine(int ctrlID, int& value, BOOL select = TRUE);
 
 protected:
-    HWND HDialog;     // handle of the dialog for which the transfer is performed
+    HWND HDialog; // handle of the dialog for which the transfer is performed
 };
 
 // ****************************************************************************
@@ -235,8 +236,8 @@ class CDialog : public CWindowsObject
 {
 public:
 #ifdef ENABLE_PROPERTYDIALOG
-    CWindowsObject::HWindow;             // so CPropSheetPage compiles
-    CWindowsObject::SetObjectOrigin;     // so CPropSheetPage compiles
+    CWindowsObject::HWindow;         // so CPropSheetPage compiles
+    CWindowsObject::SetObjectOrigin; // so CPropSheetPage compiles
 #endif                               // ENABLE_PROPERTYDIALOG
 
     CDialog(HINSTANCE modul, int resID, HWND parent,
@@ -268,8 +269,8 @@ public:
                                         (!Modal && ObjectOrigin == ooStandard); }
 
     void SetParent(HWND parent) { Parent = parent; }
-    INT_PTR Execute();     // modal dialog
-    HWND Create();         // modeless dialog
+    INT_PTR Execute(); // modal dialog
+    HWND Create();     // modeless dialog
 
     static INT_PTR CALLBACK CDialogProc(HWND hwndDlg, UINT uMsg,
                                         WPARAM wParam, LPARAM lParam);
@@ -279,7 +280,7 @@ protected:
 
     virtual void NotifDlgJustCreated() {}
 
-    BOOL Modal;     // because dialogs are destroyed differently
+    BOOL Modal; // because dialogs are destroyed differently
     HINSTANCE Modul;
     int ResID;
     HWND Parent;
@@ -294,9 +295,9 @@ class CPropertyDialog;
 class CPropSheetPage : protected CDialog
 {
 public:
-    CDialog::HWindow;     // HWindow remains accessible
+    CDialog::HWindow; // HWindow remains accessible
 
-    CDialog::SetObjectOrigin;     // make permitted base-class methods accessible
+    CDialog::SetObjectOrigin; // make permitted base-class methods accessible
     CDialog::Transfer;
 
     // testovano s resourcem dialogu stranky se stylem:
@@ -332,7 +333,7 @@ protected:
     DWORD Flags;
     HICON Icon;
 
-    CPropertyDialog* ParentDialog;     // owner of this page
+    CPropertyDialog* ParentDialog; // owner of this page
 
     friend class CPropertyDialog;
 };
@@ -368,7 +369,7 @@ public:
     virtual int GetCurSel();
 
 protected:
-    HWND Parent;     // parameters for creating the dialog
+    HWND Parent; // parameters for creating the dialog
     HWND HWindow;
     HINSTANCE Modul;
     HICON Icon;
@@ -389,7 +390,7 @@ protected:
 class CWindowsManager
 {
 public:
-    int WindowsCount;     // number of windows currently managed by WinLib
+    int WindowsCount; // number of windows currently managed by WinLib
 
 public:
     CWindowsManager() { WindowsCount = 0; }
@@ -416,10 +417,10 @@ struct CWindowQueueItem
 class CWindowQueue
 {
 protected:
-    const char* QueueName;     // queue name (for debugging only)
+    const char* QueueName; // queue name (for debugging only)
     CWindowQueueItem* Head;
 
-    struct CCS     // access from multiple threads - synchronization required
+    struct CCS // access from multiple threads - synchronization required
     {
         CRITICAL_SECTION cs;
 
@@ -438,9 +439,9 @@ public:
     }
     ~CWindowQueue();
 
-    BOOL Add(CWindowQueueItem* item);     // adds an item to the queue; returns TRUE on success
-    void Remove(HWND hWindow);            // removes an item from the queue
-    BOOL Empty();                         // returns TRUE if the queue is empty
+    BOOL Add(CWindowQueueItem* item); // adds an item to the queue; returns TRUE on success
+    void Remove(HWND hWindow);        // removes an item from the queue
+    BOOL Empty();                     // returns TRUE if the queue is empty
 
     // sends a message to all windows (using PostMessage; the windows may be in different threads)
     void BroadcastMessage(DWORD uMsg, WPARAM wParam, LPARAM lParam);
