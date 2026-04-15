@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -178,14 +179,14 @@ int C__Messages::MessageBoxT(const char* lpCaption, UINT uType)
     data.Type = uType;
     data.Return = 0;
 
-    MessagesStrStream.flush();     // flush into the buffer (lpText)
+    MessagesStrStream.flush(); // flush into the buffer (lpText)
 
 #ifndef MULTITHREADED_MESSAGES_ENABLE
     data.Text = MessagesStringBuf.c_str();
-    MessagesStringBuf.erase();     // prepare for the next message
+    MessagesStringBuf.erase(); // prepare for the next message
 #else                          // MULTITHREADED_MESSAGES_ENABLE
     int len = (int)MessagesStringBuf.length() + 1;
-    HGLOBAL message = GlobalAlloc(GMEM_FIXED, len);     // backup copy of the text
+    HGLOBAL message = GlobalAlloc(GMEM_FIXED, len); // backup copy of the text
     if (message != NULL)
     {
         memcpy((char*)message, MessagesStringBuf.c_str(), len); // je to FIXED -> HANDLE==PTR
@@ -193,8 +194,8 @@ int C__Messages::MessageBoxT(const char* lpCaption, UINT uType)
     }
     else
         data.Text = __MessagesLowMemory;
-    MessagesStringBuf.erase();     // prepare for the next message
-    LeaveMessagesModul();          // other threads and message loops may resume now
+    MessagesStringBuf.erase(); // prepare for the next message
+    LeaveMessagesModul();      // other threads and message loops may resume now
 #endif                         // MULTITHREADED_MESSAGES_ENABLE
 
     // run the MessageBox in a new thread so it does not dispatch this thread's messages
@@ -202,7 +203,7 @@ int C__Messages::MessageBoxT(const char* lpCaption, UINT uType)
     HANDLE thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)__MessagesMessageBoxThreadF, &data, 0, &threadID);
     if (thread != NULL)
     {
-        WaitForSingleObject(thread, INFINITE);         // wait until the user dismisses it
+        WaitForSingleObject(thread, INFINITE); // wait until the user dismisses it
         CloseHandle(thread);
     }
     else
@@ -219,24 +220,24 @@ int C__Messages::MessageBoxT(const char* lpCaption, UINT uType)
 int C__Messages::MessageBox(HWND hWnd, const char* lpCaption, UINT uType)
 {
     int ret;
-    MessagesStrStream.flush();     // flush into the buffer (lpText)
+    MessagesStrStream.flush(); // flush into the buffer (lpText)
 
 #ifndef MULTITHREADED_MESSAGES_ENABLE
     if (!IsWindow(hWnd))
         hWnd = NULL;
     ret = ::MessageBoxA(hWnd, MessagesStringBuf.c_str(), lpCaption, uType);
-    MessagesStringBuf.erase();     // prepare for the next message
+    MessagesStringBuf.erase(); // prepare for the next message
 #else                          // MULTITHREADED_MESSAGES_ENABLE
     size_t len = MessagesStringBuf.length() + 1;
-    HGLOBAL message = GlobalAlloc(GMEM_FIXED, len);     // backup copy of the text
+    HGLOBAL message = GlobalAlloc(GMEM_FIXED, len); // backup copy of the text
     char* txt;
     txt = (char*)message; // je to FIXED -> HANDLE==PTR
     if (txt != NULL)
         memcpy(txt, MessagesStringBuf.c_str(), len);
     else
         txt = (char*)__MessagesLowMemory;
-    MessagesStringBuf.erase();     // prepare for the next message
-    LeaveMessagesModul();          // other threads and message loops may resume now
+    MessagesStringBuf.erase(); // prepare for the next message
+    LeaveMessagesModul();      // other threads and message loops may resume now
 
     if (!IsWindow(hWnd))
         hWnd = NULL;
@@ -288,14 +289,14 @@ int C__MessagesW::MessageBoxT(const WCHAR* lpCaption, UINT uType)
     data.Type = uType;
     data.Return = 0;
 
-    MessagesStrStream.flush();     // flush into the buffer (lpText)
+    MessagesStrStream.flush(); // flush into the buffer (lpText)
 
 #ifndef MULTITHREADED_MESSAGES_ENABLE
     data.Text = MessagesStringBuf.c_str();
-    MessagesStringBuf.erase();     // prepare for the next message
+    MessagesStringBuf.erase(); // prepare for the next message
 #else                          // MULTITHREADED_MESSAGES_ENABLE
     int len = (int)MessagesStringBuf.length() + 1;
-    HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len);     // backup copy of the text
+    HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len); // backup copy of the text
     if (message != NULL)
     {
         memcpy((WCHAR*)message, MessagesStringBuf.c_str(), sizeof(WCHAR) * len); // je to FIXED -> HANDLE==PTR
@@ -303,8 +304,8 @@ int C__MessagesW::MessageBoxT(const WCHAR* lpCaption, UINT uType)
     }
     else
         data.Text = __MessagesLowMemoryW;
-    MessagesStringBuf.erase();     // prepare for the next message
-    LeaveMessagesModul();          // other threads and message loops may resume now
+    MessagesStringBuf.erase(); // prepare for the next message
+    LeaveMessagesModul();      // other threads and message loops may resume now
 #endif                         // MULTITHREADED_MESSAGES_ENABLE
 
     // run the MessageBox in a new thread so it does not dispatch this thread's messages
@@ -312,7 +313,7 @@ int C__MessagesW::MessageBoxT(const WCHAR* lpCaption, UINT uType)
     HANDLE thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)__MessagesWMessageBoxThreadF, &data, 0, &threadID);
     if (thread != NULL)
     {
-        WaitForSingleObject(thread, INFINITE);         // wait until the user dismisses it
+        WaitForSingleObject(thread, INFINITE); // wait until the user dismisses it
         CloseHandle(thread);
     }
     else
@@ -329,24 +330,24 @@ int C__MessagesW::MessageBoxT(const WCHAR* lpCaption, UINT uType)
 int C__MessagesW::MessageBox(HWND hWnd, const WCHAR* lpCaption, UINT uType)
 {
     int ret;
-    MessagesStrStream.flush();     // flush into the buffer (lpText)
+    MessagesStrStream.flush(); // flush into the buffer (lpText)
 
 #ifndef MULTITHREADED_MESSAGES_ENABLE
     if (!IsWindow(hWnd))
         hWnd = NULL;
     ret = ::MessageBoxW(hWnd, MessagesStringBuf.c_str(), lpCaption, uType);
-    MessagesStringBuf.erase();     // prepare for the next message
+    MessagesStringBuf.erase(); // prepare for the next message
 #else                          // MULTITHREADED_MESSAGES_ENABLE
     size_t len = MessagesStringBuf.length() + 1;
-    HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len);     // backup copy of the text
+    HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len); // backup copy of the text
     WCHAR* txt;
     txt = (WCHAR*)message; // je to FIXED -> HANDLE==PTR
     if (txt != NULL)
         memcpy(txt, MessagesStringBuf.c_str(), sizeof(WCHAR) * len);
     else
         txt = (WCHAR*)__MessagesLowMemoryW;
-    MessagesStringBuf.erase();     // prepare for the next message
-    LeaveMessagesModul();          // other threads and message loops may resume now
+    MessagesStringBuf.erase(); // prepare for the next message
+    LeaveMessagesModul();      // other threads and message loops may resume now
 
     if (!IsWindow(hWnd))
         hWnd = NULL;
