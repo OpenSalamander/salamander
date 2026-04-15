@@ -52,7 +52,7 @@ struct CSalZLIB
     UINT avail_in;  /* number of bytes available at next_in */
     ULONG total_in; /* total number of input bytes read so far */
 
-    BYTE* next_out;  /* next output byte should be put there */
+    BYTE* next_out;  /* where to write the next output byte */
     UINT avail_out;  /* remaining free space at next_out */
     ULONG total_out; /* total number of bytes output so far */
 
