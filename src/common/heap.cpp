@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -111,7 +112,7 @@ public:
                 FreeLibrary(hUsedModules[i]);
 
             // Show the warning message box
-            MSG msg;             // Clear any buffered ESC key so the message box does not close immediately
+            MSG msg; // Clear any buffered ESC key so the message box does not close immediately
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
             MessageBoxA(NULL, "Detected memory leaks!", "Heap Message",
