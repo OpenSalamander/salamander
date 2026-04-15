@@ -41,7 +41,7 @@ void regerror(const char* error);
 //*****************************************************************************
 //*****************************************************************************
 
-// chyby, ktere mohou nastat pri compilaci a hledani reg. expr.
+// Errors that may occur during regexp compilation and search.
 enum CRegExpErrors
 {
     reeNoError,
@@ -59,7 +59,7 @@ enum CRegExpErrors
     reeInternalDisaster,
 };
 
-// funkce, ktera vraci text nastale chyby
+// Function that returns the error text.
 const char* RegExpErrorText(CRegExpErrors err);
 
 // search flags
@@ -74,18 +74,18 @@ const char* RegExpErrorText(CRegExpErrors err);
 class CRegularExpression
 {
 public:
-    static const char* LastError; // text posledni chyby
+    static const char* LastError;     // Last error text.
 
 protected:
     const char* LastErrorText;
     char* OriginalPattern;
-    regexp* Expression; // nakompilovany regularni vyraz
+    regexp* Expression;     // Compiled regular expression.
     WORD Flags;
 
-    char* Line;                // buffer pro radek
-    const char* OrigLineStart; // pointer na zacatek puvodniho textu (predaneho do SetLine() jako 'start')
-    int Allocated;             // kolik bytu je alokovano
-    int LineLength;            // aktualni delka radky
+    char* Line;                    // Line buffer.
+    const char* OrigLineStart;     // Pointer to the start of the original text (passed to SetLine() as 'start').
+    int Allocated;                 // Number of allocated bytes.
+    int LineLength;                // Current line length.
 
 public:
     CRegularExpression()
@@ -114,10 +114,10 @@ public:
     const char* GetPattern() const { return OriginalPattern; }
 
     const char* GetLastErrorText() const { return LastErrorText; }
-    BOOL Set(const char* pattern, WORD flags); // vraci FALSE pri chybe (volat metodu GetLastErrorText)
-    BOOL SetFlags(WORD flags);                 // vraci FALSE pri chybe (volat metodu GetLastErrorText)
+    BOOL Set(const char* pattern, WORD flags);     // Returns FALSE on error (call GetLastErrorText).
+    BOOL SetFlags(WORD flags);                     // Returns FALSE on error (call GetLastErrorText).
 
-    BOOL SetLine(const char* start, const char* end); // radek textu, ve kterem vyhledava, vraci FALSE pri chybe (volat metodu GetLastErrorText)
+    BOOL SetLine(const char* start, const char* end);     // Sets the line of text to search in; returns FALSE on error (call GetLastErrorText).
 
     int SearchForward(int start, int& foundLen);
     int SearchBackward(int length, int& foundLen);
@@ -130,11 +130,11 @@ public:
     BOOL ExpandVariables(char* pattern, char* buffer,
                          int bufSize, int* count);
 
-    // navratove hodnoty
+    // Return values
     //
-    // 0 hledany text nebyl nalezen, do 'buffer' se nic nekopirovalo
-    // 1 text byl uspesne nahrazen
-    // 2 'buffer' je prilis maly
+    // 0 the text was not found, nothing was copied to 'buffer'
+    // 1 the text was replaced successfully
+    // 2 'buffer' is too small
     int ReplaceForward(int start, char* pattern, BOOL global,
                        char* buffer, int bufSize);
 
