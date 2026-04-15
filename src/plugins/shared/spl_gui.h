@@ -37,8 +37,8 @@
                                              //   (pokud dojde mysi akci, je rovno TRUE (pouzit GetMessagePos); \
                                              //    pokud jde o klavesnicovou akci VK_APPS nebo Shift+F10, je rovno FALSE)] \
                                              // p.s. pokud vrati TRUE, dojde ke spusteni prikazu menu nebo otevreni submenu \
-                                             // Pokud chceme v Salamu pretypovat menuPopup na CMenuPopup, \
-                                             // pouzijeme (CMenuPopup*)(CGUIMenuPopupAbstract*)menuPopup.
+                                             // To cast menuPopup to CMenuPopup in Salamander, \
+                                             // use (CMenuPopup*)(CGUIMenuPopupAbstract*)menuPopup.
 
 // toolbar messages
 #define WM_USER_TBDROPDOWN WM_APP + 220    // [HWND hToolBar, int buttonIndex]
@@ -68,27 +68,27 @@
 class CGUIProgressBarAbstract
 {
 public:
-    // nastavuje progres, pripadne text uprostred
+    // Sets the progress and optionally the text in the center
     //
-    // existuje bezpecnejsi varianta SetProgress2(), podivejte se na ni nez pouzijete tuto metodu
+    // A safer variant, SetProgress2(), exists; check it before using this method.
     //
-    // progres dokaze pracovat ve dvou rezimech:
+    // The progress control can work in two modes:
     //   1) pro 'progress' >= 0 jde o klasicky teplomer 0% az 100%
-    //      v tomto rezimu lze pomoci promenne 'text' nastavit vlastni text zobrazeny uprostred
+    //      in this mode, the 'text' variable can be used to set custom text shown in the center
     //      pokud je 'text' == NULL, zobrazi se uprostred standardni procenta
     //   2) pro 'progress' == -1 jde o neurcity stav, kdy maly obdelnicek jezdi tam a zpet
-    //      pohyb se ridi pomoci metod SetSelfMoveTime(), SetSelfMoveSpeed() a Stop()
+    //      the movement is controlled by SetSelfMoveTime(), SetSelfMoveSpeed(), and Stop()
     //
-    // prekresleni se provadi okamzite; u vetsiny operaci je vhodne data ukladat v parent
-    // dialogu do cache a spustit si 100ms timer, na ktery teprve volat tuto metodu
+    // Redrawing happens immediately; for most operations it is better to cache the data in the parent
+    // dialog and start a 100 ms timer that calls this method.
     //
-    // mozne volat z libovolneho threadu, thread s controlem musi bezet, jinak dojde k zablokovani
-    // (pro doruceni hodnoty 'progress' controlu se pouziva SendMessage);
+    // Can be called from any thread, but the control's thread must be running or the call will block
+    // (SendMessage is used to deliver the 'progress' value to the control);
     virtual void WINAPI SetProgress(DWORD progress, const char* text) = 0;
 
-    // ma vyznam v kombinaci s volanim SetProgress(-1)
-    // urcuje kolik milisekund po zavolani SetProgress(-1) se jeste bude obdelnicek sam pohybovat
-    // pokud v tuto dobu dojde k zavolani dalsiho SetProgress(-1), cas se pocita zase od zacatku
+    // Used together with SetProgress(-1)
+    // specifies how many milliseconds after calling SetProgress(-1) the rectangle keeps moving on its own
+    // if another SetProgress(-1) is called during that time, the timer starts over
     // pokud je 'time'==0, posune se obdelnicek pouze jednou prave pri zavolani SetProgress(-1)
     // pro hodnotu 'time'==0xFFFFFFFF se bude obdelnicek posouvat do nekonecna (implicitni hodnota)
     virtual void WINAPI SetSelfMoveTime(DWORD time) = 0;
@@ -102,26 +102,26 @@ public:
     // pokud se obdelnicek prave pohybuje (diky SetSelfMoveTime), bude zastaven
     virtual void WINAPI Stop() = 0;
 
-    // nastavuje progres, pripadne text uprostred
+    // Sets the progress and optionally the text in the center
     //
     // proti SetProgress() ma vyhodu v tom, ze pokud je 'progressCurrent' >= 'progressTotal',
-    // nastavi progres primo: je-li 'progressTotal' 0 nastavi 0%, jinak 100% a neprovadi vypocet
-    // (je nesmyslny + rve na nem RTC kvuli pretypovani), tento "nepovoleny" stav nastava
-    // napr. pri zvetseni souboru behem operace nebo pri praci s linky na soubor - linky maji
-    // nulovou velikost, ale pak jsou na nich data o velikosti nalinkovaneho souboru,
-    // pokud si vypocet provedete sami, je nutne tento "nepovoleny" stav osetrit
+    // it sets the progress directly: 0% if 'progressTotal' is 0, otherwise 100%, and does not do the calculation
+    // (it is meaningless and triggers RTC because of type conversion). This "invalid" state occurs,
+    // for example, when a file grows during the operation or when working with file links - the links have
+    // zero size, but then contain data with the size of the linked file.
+    // If you calculate the value yourself, you must handle this "invalid" state.
     //
-    // progres dokaze pracovat ve dvou rezimech (viz SetProgress()), touto metodou lze
-    // nastavovat jen v rezimu 1):
-    //   1) jde o klasicky teplomer 0% az 100%
-    //      v tomto rezimu lze pomoci promenne 'text' nastavit vlastni text zobrazeny uprostred
+    // The progress control can work in two modes (see SetProgress()); this method can be used
+    // only in mode 1:
+    //   1) it is a standard thermometer from 0% to 100%
+    //      in this mode, the 'text' variable can be used to set custom text shown in the center
     //      pokud je 'text' == NULL, zobrazi se uprostred standardni procenta
     //
-    // prekresleni se provadi okamzite; u vetsiny operaci je vhodne data ukladat v parent
-    // dialogu do cache a spustit si 100ms timer, na ktery teprve volat tuto metodu
+    // Redrawing happens immediately; for most operations it is better to cache the data in the parent
+    // dialog and start a 100 ms timer that calls this method.
     //
-    // mozne volat z libovolneho threadu, thread s controlem musi bezet, jinak dojde k zablokovani
-    // (pro doruceni hodnoty 'progress' controlu se pouziva SendMessage);
+    // Can be called from any thread, but the control's thread must be running or the call will block
+    // (SendMessage is used to deliver the 'progress' value to the control);
     virtual void WINAPI SetProgress2(const CQuadWord& progressCurrent, const CQuadWord& progressTotal,
                                      const char* text) = 0;
 
@@ -182,7 +182,7 @@ public:
 #define STF_END_ELLIPSIS 0x0000000020    // pokud bude text prilis dlouhy, bude ukoncen vypustkou "..."
 #define STF_PATH_ELLIPSIS 0x0000000040   // pokud bude text prilis dlouhy, bude zkracen a bude do nej vlozena \
                                          // vypustka "..." tak, aby byl konec viditelny
-#define STF_HANDLEPREFIX 0x0000000080    // znaky za '&' budou podtrzene; nelze pouzit s STF_END_ELLIPSIS nebo s STF_PATH_ELLIPSIS
+#define STF_HANDLEPREFIX 0x0000000080    // Characters after '&' are underlined; cannot be used with STF_END_ELLIPSIS or STF_PATH_ELLIPSIS
 
 class CGUIStaticTextAbstract
 {
@@ -191,20 +191,20 @@ class CGUIStaticTextAbstract
     //
     // Control lze v dialogu navstivit z klavesnice, pokud mu priradime styl WS_TABSTOP.
 public:
-    // nastavi text controlu; volani teto metody je rychlejsi a mene vypocetne narocne
-    // nez nastavovani textu pomoci WM_SETTEXT; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the control text; calling this method is faster and less computationally expensive
+    // than setting the text with WM_SETTEXT; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetText(const char* text) = 0;
 
-    // vrati text controlu; mozne volat z libovolneho threadu;
-    // vrati NULL, pokud jeste nebylo volano SetText a static control byl bez textu
+    // Returns the control text; can be called from any thread.
+    // Returns NULL if SetText has not been called yet and the static control had no text
     virtual const char* WINAPI GetText() = 0;
 
     // nastavi znak pro oddeleni casti cesty; ma vyznam v pripade STF_PATH_ELLIPSIS;
     // implicitne je nastaveno na '\\';
     virtual void WINAPI SetPathSeparator(char separator) = 0;
 
-    // priradi text, ktery bude zobrazen jako tooltip
-    // vraci TRUE, pokud se podarilo naalokovat kopii textu, jinak vraci FALSE
+    // Sets the text to be shown as a tooltip
+    // returns TRUE if a copy of the text was allocated successfully, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
     // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
@@ -223,12 +223,12 @@ class CGUIHyperLinkAbstract
     //
     // Control lze v dialogu navstivit z klavesnice, pokud mu priradime styl WS_TABSTOP.
 public:
-    // nastavi text controlu; volani teto metody je rychlejsi a mene vypocetne narocne
-    // nez nastavovani textu pomoci WM_SETTEXT; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the control text; calling this method is faster and less computationally expensive
+    // than setting the text with WM_SETTEXT; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetText(const char* text) = 0;
 
-    // vrati text controlu; mozne volat z libovolneho threadu
-    // vrati NULL, pokud jeste nebylo volano SetText a static control byl bez textu
+    // Returns the control text; can be called from any thread.
+    // Returns NULL if SetText has not been called yet and the static control had no text
     virtual const char* WINAPI GetText() = 0;
 
     // priradi akci otevreni URL adresy (file="https://www.altap.cz") nebo
@@ -239,19 +239,19 @@ public:
     // priradi akci PostCommand(WM_COMMAND, command, 0) do parent okna
     virtual void WINAPI SetActionPostCommand(WORD command) = 0;
 
-    // priradi akci zobrazeni hintu a tooltipu 'text'
+    // Assigns the action that shows the hint and tooltip text 'text'
     // pokud je text NULL, je mozne tooltip priradit volanim metody
     // SetToolTipText nebo SetToolTip; metoda pak vraci vzdy TRUE
     // pokud je text ruzny od NULL, vraci metoda TRUE, pokud se podarilo
     // naalokovat kopii textu, jinak vraci FALSE
-    // tooltip je mozne zobrazit kavesou Space/Up/Down (pokud je focus
-    // na controlu) a kliknutim mysi; hint (tooltip) je pak zobrazen primo
-    // pod textem a nezavre se dokud uzivatel neklikne mimo nej mysi nebo
-    // nestiskne nejakou klavesu
+    // the tooltip can be shown with Space/Up/Down (if the control
+    // has focus) or by clicking the mouse; the hint (tooltip) is then shown directly
+    // below the text and stays open until the user clicks outside it with the mouse or
+    // presses a key
     virtual BOOL WINAPI SetActionShowHint(const char* text) = 0;
 
-    // priradi text, ktery bude zobrazen jako tooltip
-    // vraci TRUE, pokud se podarilo naalokovat kopii textu, jinak vraci FALSE
+    // Sets the text to be shown as a tooltip
+    // returns TRUE if a copy of the text was allocated successfully, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
     // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
@@ -268,7 +268,7 @@ class CGUIButtonAbstract
     // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
     // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
 public:
-    // priradi text, ktery bude zobrazen jako tooltip; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the text to be shown as a tooltip; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
     // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
@@ -409,66 +409,66 @@ Mask
   Members to retrieve or set. This member can be one or more of these values.
 
 Type
-  Typ polozky. Tato promenna muze nabivat jednu nebo vice hodnot:
+  Item type. This member can have one or more of these values:
 
-   MENU_TYPE_OWNERDRAW    Vykresleni polozek zajisti okno vlasntici menu.
-                          Pro kazdou polozku menu je zaslan dotaz WM_MEASUREITEM a
-                          WM_DRAWITEM. Promenna TypeData obsahuje 32-buitovou
-                          hodnotu definovanou aplikaci.
+   MENU_TYPE_OWNERDRAW    Item drawing is handled by the window that owns the menu.
+                          Each menu item receives WM_MEASUREITEM and
+                          WM_DRAWITEM messages. The TypeData variable contains a 32-bit
+                          application-defined value.
 
-   MENU_TYPE_RADIOCHECK   Checked polozky jsou zobrazovany s teckou misto s fajfkou,
+   MENU_TYPE_RADIOCHECK   Checked items are shown with a dot instead of a check mark,
                           je-li HBmpChecked rovno NULL.
 
-   MENU_TYPE_SEPARATOR    Horiznotalni oddelovaci cara. TypeData nema vyznam.
+   MENU_TYPE_SEPARATOR    Horizontal separator line. TypeData has no meaning.
 
-   MENU_TYPE_STRING       Polozka obsahuje textovy retezec. TypeData ukazuje na nulou
-                          zakonceny retzec.
+   MENU_TYPE_STRING       The item contains a text string. TypeData points to a null-
+                          terminated string.
 
-   MENU_TYPE_BITMAP       Polozka obsahuje bitmapu.
+   MENU_TYPE_BITMAP       The item contains a bitmap.
 
-  Hodnoty MENU_TYPE_BITMAP, MENU_TYPE_SEPARATOR a MENU_TYPE_STRING nemohou byt pouzity spolecne.
+  MENU_TYPE_BITMAP, MENU_TYPE_SEPARATOR, and MENU_TYPE_STRING cannot be used together.
 
 State
-  Stav polozky. Tato promenna muze nabivat jednu nebo vice hodnot:
+  Item state. This member can have one or more of these values:
 
-   MENU_STATE_CHECKED     Polozka je checked.
+   MENU_STATE_CHECKED     The item is checked.
 
-   MENU_STATE_DEFAULT     Menu muze obsahovat pouze jednu default polozku. Je
-                          vykreslna tucne.
+   MENU_STATE_DEFAULT     The menu can contain only one default item. It is
+                          drawn in bold.
 
-   MENU_STATE_GRAYED      Zakaze polozku - bude sediva a nepujde vybrat.
+   MENU_STATE_GRAYED      Disables the item - it is shown gray and cannot be selected.
 
 SkillLevel
-  Uzivatelska uroven polozky. Tato promena muze nabyvat jedne z hodnot:
+  User skill level of the item. This member can have one of these values:
 
-   MENU_LEVEL_BEGINNER       zacatecnik - bude se zobrazovat vzdy
-   MENU_LEVEL_INTERMEDIATE   stredni - bude se zobrazovat guru a strednim uzivatelum
-   MENU_LEVEL_ADVANCED       pokrocily - bude se zobrazovat pouze guru uzivatelum
+   MENU_LEVEL_BEGINNER       beginner - always shown
+   MENU_LEVEL_INTERMEDIATE   intermediate - shown to guru and intermediate users
+   MENU_LEVEL_ADVANCED       advanced - shown only to guru users
 
 ID
-  Aplikaci definovana 16-bitova hodnota, ktera identifikuje polozku menu.
+  Application-defined 16-bit value that identifies the menu item.
 
 SubMenu
-  Ukazatel na popup menu pripojeneho na tutu polozku. Pokud tato polozka
+  Pointer to the popup menu attached to this item. If this item
   neotevira submenu, je SubMenu rovno NULL.
 
 HBmpChecked
-  Handle bitmapy, ktera je zobrazena pred polozkou v pripade, ze je polozka
+  Handle of the bitmap shown before the item when the item is
   checked. Je-li tato promenna rovna NULL, pouzije
-  se implicitni bitmapa. Jel-li nastaven bit MENU_TYPE_RADIOCHECK, je implicitni
-  bitmapa tecka, jinak zatrznitko. Je-li ImageIndex ruzne od -1, nebude
-  se tato bitmapa pouzivat.
+  bitmap is used. If the MENU_TYPE_RADIOCHECK bit is set, the default
+  bitmap is a dot; otherwise it is a check mark. If ImageIndex is not -1,
+  this bitmap is not used.
 
 HBmpUnchecked
-  Handle bitmapy, ktera je zobrazena pred polozkou v pripade, ze neni polozka
+  Handle of the bitmap shown before the item when the item is not
   checked. Jeli tato promenna rovna NULL, nebude
-  zobrazena zadna bitmapa. Je-li ImageIndex ruzne od -1, nebude
-  se tato bitmapa pouzivat.
+  bitmap is shown. If ImageIndex is not -1,
+  this bitmap is not used.
 
 ImageIndex
   Index bitmapy v ImageListu CMenuPopup::HImageList. Bitmapa je vykreslena
-  pred polozkou. V zavislosti na MENU_STATE_CHECKED a MENU_STATE_GRAYED.
-  Je-li promenna rovna -1, nebude se vykreslovat.
+  before the item, depending on MENU_STATE_CHECKED and MENU_STATE_GRAYED.
+  If the variable is -1, nothing is drawn.
 
 Enabler
   Ukazatel na DWORD, ktery urcuje stav polozky: TRUE->enabled, FALSE->grayed.
@@ -1852,23 +1852,23 @@ public:
 class CGUIIconListAbstract
 {
 public:
-    // vytvori image list s rozmerem ikony 'imageWidth' x 'imageHeight' a poctem ikon
-    // 'imageCount'; pomoci volani metody ReplaceIcon() je potom potreba image list naplnit;
-    // vraci TRUE v pripade uspechu, jinak FALSE
+    // Creates an image list with icon size 'imageWidth' x 'imageHeight' and 'imageCount' icons.
+    // The image list must then be filled by calling ReplaceIcon().
+    // Returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI Create(int imageWidth, int imageHeight, int imageCount) = 0;
 
-    // vytvori se na zaklade dodaneho windows image listu ('hIL'); 'requiredImageSize' urcuje
+    // Creates the image list from the supplied Windows image list ('hIL'); 'requiredImageSize' specifies
     // rozmer ikony, pokud je -1, pouziji se rozmery z 'hIL'; v pripade uspechu vraci TRUE,
     // jinak FALSE
     virtual BOOL WINAPI CreateFromImageList(HIMAGELIST hIL, int requiredImageSize) = 0;
 
-    // vytvori se na zaklade dodaneho PNG resource; 'hInstance' a 'lpBitmapName' specifikuji resource,
-    // 'imageWidth' udava sirku jedne ikony v bodech; v pripade uspechu vraci TRUE, jinak FALSE
-    // poznamka: PNG musi byt pruh ikon jeden radek vysoky
-    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
+    // Creates the image list from the specified PNG resource; 'hInstance' and 'lpBitmapName' specify the resource,
+    // 'imageWidth' specifies the width of one icon in pixels; returns TRUE on success, otherwise FALSE
+    // Note: the PNG must be a one-row strip of icons.
+    // Note: it is recommended to compress the PNG with PNGSlim; see https://forum.altap.cz/viewtopic.php?f=15&t=3278
     virtual BOOL WINAPI CreateFromPNG(HINSTANCE hInstance, LPCTSTR lpBitmapName, int imageWidth) = 0;
 
-    // nahradi ikonu na danem indexu ikonou 'hIcon'; v pripade uspechu vraci TRUE, jinak FALSE
+    // Replaces the icon at the given index with 'hIcon'; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI ReplaceIcon(int index, HICON hIcon) = 0;
 
     // vytvori ikonu z daneho indexu a vrati jeji handle; volajici je zodpovedny za jeji destrukci
@@ -1886,8 +1886,8 @@ public:
     // provede se zaroven konverze na cernobilou verzi; v pripade uspechu vraci TRUE, jinak FALSE
     virtual BOOL WINAPI CreateAsCopy(const CGUIIconListAbstract* iconList, BOOL grayscale) = 0;
 
-    // vytvori HIMAGELIST, vraci jeho handle nebo NULL v pripade neuspechu
-    // vraceny imagelist je po pouziti treba destruovat pomoci API ImageList_Destroy()
+    // Creates an HIMAGELIST and returns its handle, or NULL on failure.
+    // The returned image list must be destroyed with the ImageList_Destroy() API after use
     virtual HIMAGELIST WINAPI GetImageList() = 0;
 };
 
@@ -1933,12 +1933,12 @@ public:
     // (sectenych) TLBHDRMASK_xxx hodnot
     virtual void WINAPI CheckToolbar(DWORD checkMask) = 0;
 
-    // zavolanim teto metody volajici specifikuje okno 'hWnd', kteremu budou doruceny
-    // WM_COMMAND od ToolbarHeader; LOWORD(wParam) bude obsahovat 'ctrlID' z volani
-    // AttachToolbarHeader() a LOWORD(wParam) je jedna z hodnot TLBHDR_xxx (dle tlacitka,
-    // na ktere uzivatel kliknul)
-    // poznamka: tuto metodu je treba volat pouze ve specialnich situacich, kdy se zpravy
-    // maji dorucovat do jineho nez parent okna, kam se zpravy dorucuji implicitne
+    // By calling this method, the caller specifies the 'hWnd' window that receives
+    // WM_COMMAND messages from ToolbarHeader; LOWORD(wParam) contains the 'ctrlID' from
+    // AttachToolbarHeader(), and LOWORD(wParam) is one of the TLBHDR_xxx values (depending on the button
+    // clicked by the user).
+    // Note: call this method only in special cases when the messages
+    // must be delivered to a window other than the parent window, which receives them by default
     virtual void WINAPI SetNotifyWindow(HWND hWnd) = 0;
 };
 
@@ -2015,56 +2015,56 @@ public:
     //
     // Button
     //
-    // Slouzi pro vytvoreni tlacitka s textem nebo ikonou. Tlacitko muze obsahovat sipku
-    // vpravo nebo drop-down sipku. Viz flagy BTF_xxx.
+    // Creates a button with text or an icon. The button can contain a right arrow
+    // or a drop-down arrow. See the BTF_xxx flags.
     //
-    // pripoji Salamanderovsky TextArrowButton na Windows control (tento control urcuje pozici,
-    // text nebo ikonu a generovany command); 'hParent' je handle parent okna (dialog nebo okno);
-    // ctrlID je ID Windows controlu;
-    // pri uspesnem pripojeni vraci rozhrani CGUIButtonAbstract, jinak vraci NULL; rozhrani je
-    // platne az do okamziku destrukce (doruceni WM_DESTROY) Windows controlu;
-    // Testovano na Windows controlu "BUTTON".
+    // Attaches a Salamander TextArrowButton to a Windows control (that control determines the position,
+    // text or icon, and the generated command); 'hParent' is the handle of the parent window (dialog or window);
+    // ctrlID is the ID of the Windows control;
+    // on successful attachment, returns the CGUIButtonAbstract interface, otherwise returns NULL; the interface is
+    // valid until the Windows control is destroyed (WM_DESTROY is delivered);
+    // Tested on the Windows "BUTTON" control.
     virtual CGUIButtonAbstract* WINAPI AttachButton(HWND hParent, int ctrlID, DWORD flags) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ColorArrowButton
     //
-    // Slouzi pro vytvoreni tlacitka s barevnym obdelnickem, ktery naselduje sipka smerujici vpravo.
+    // Creates a button with a colored rectangle followed by a right-pointing arrow.
     // (pokud je showArrow==TRUE)
-    // V obdelnicku je zobrazen text, ktery muze mit prirazenou jinou barvu nez barva pozadi obdelnicku.
-    // Pouziva se v konfiguracich barev, kde dokaze zobrazit jednu nebo dve barvy.
-    // Po stisku je vybaleno popup menu s moznosti zvolit, kterou barvu konfigurujeme..
+    // The rectangle shows text that can have a different color than the rectangle background.
+    // It is used in color configuration dialogs, where it can display one or two colors.
+    // Clicking it opens a popup menu with options for selecting which color is being configured.
     //
-    // pripoji Salamanderovsky ColorArrowButton na Windows control (tento control urcuje pozici,
-    // text a command ColorArrowButtonu); 'hParent' je handle parent okna (dialog nebo okno);
-    // ctrlID je ID Windows controlu;
+    // Attaches a Salamander ColorArrowButton to a Windows control (that control determines the position,
+    // text and command of the ColorArrowButton); 'hParent' is the handle of the parent window (dialog or window);
+    // ctrlID is the ID of the Windows control;
     // pri uspesnem pripojeni vraci rozhrani ColorArrowButtonu, jinak vraci NULL; rozhrani je
-    // platne az do okamziku destrukce (doruceni WM_DESTROY) Windows controlu;
-    // Testovano na Windows controlu "BUTTON".
+    // valid until the Windows control is destroyed (WM_DESTROY is delivered);
+    // Tested on the Windows "BUTTON" control.
     virtual CGUIColorArrowButtonAbstract* WINAPI AttachColorArrowButton(HWND hParent, int ctrlID, BOOL showArrow) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ChangeToArrowButton
     //
-    // Slouzi pro vytvoreni tlacitka s sipkou smerujici vpravo umistene uprostred
-    // tlacitka. Vklada se za vstupni pole a po stisku je vedle tlacitka vybaleno
-    // popup menu obsahujici polozky vlozitelne do vstupniho pole (forma napovedy).
+    // Creates a button with a right-pointing arrow centered on the button.
+    // It is placed after an edit box, and clicking it opens a popup menu next to the button
+    // with items that can be inserted into the edit box (a form of hint).
     //
-    // Meni styl tlacitka, aby mohlo drzet ikonku s sipkou a potom tuto ikonku
-    // prirazuje. Nepripojuje zadny Salamanderovsky objekt ke controlu, protoze
-    // vse zvladne operacni system. Vraci TRUE v pripade uspechul, jinak FALSE.
-    // Text tlacitka je ignorovan.
-    // Testovano na Windows controlu "BUTTON".
+    // Changes the button style so it can hold the arrow icon and then assigns the icon.
+    // It does not attach any Salamander object to the control because
+    // all handling is provided by the operating system. Returns TRUE on success, otherwise FALSE.
+    // The button text is ignored.
+    // Tested on the Windows "BUTTON" control.
     virtual BOOL WINAPI ChangeToArrowButton(HWND hParent, int ctrlID) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // MenuPopup
     //
-    // Slouzi pro vytvoreni prazdneho popup menu. Vraci ukazatel na iface nebo
-    // NULL pri chybe.
+    // Creates an empty popup menu. Returns an interface pointer or
+    // NULL on failure.
     virtual CGUIMenuPopupAbstract* WINAPI CreateMenuPopup() = 0;
     // Slouzi pro uvolneni alokovaneho menu.
     virtual BOOL WINAPI DestroyMenuPopup(CGUIMenuPopupAbstract* popup) = 0;
@@ -2073,10 +2073,10 @@ public:
     //
     // MenuBar
     //
-    // Slouzi pro vytvoreni menu bar; polozky 'menu' budou zobrazeny v menu bar,
-    // jejich childy budou submenu; 'hNotifyWindow' identifikuje okno, kteremu
-    // budou zasilany commandy a notifikace. Vraci ukazatel na iface nebo NULL
-    // pri chybe.
+    // Creates a menu bar; the items in 'menu' are shown in the menu bar,
+    // and their children become submenus; 'hNotifyWindow' identifies the window
+    // that receives commands and notifications. Returns an interface pointer or NULL
+    // on failure.
     virtual CGUIMenuBarAbstract* WINAPI CreateMenuBar(CGUIMenuPopupAbstract* menu, HWND hNotifyWindow) = 0;
     // Slouzi pro uvolneni alokovane menu bar. Zaroven destruuje okno.
     virtual BOOL WINAPI DestroyMenuBar(CGUIMenuBarAbstract* menuBar) = 0;
@@ -2146,26 +2146,26 @@ public:
     // ToolTip support
     //
     // Prohleda 'buf' na prvni vyskyt znaku '\t'. Pokud je 'stripHotKey' TRUE, ukonci
-    // se na tomto znaku retezec. Jinak se na jeho misto vlozi mezera a zbytek
+    // string is terminated at that character. Otherwise a space is inserted in its place and the rest
     // textu se ozavorkuje. Buffer 'buf' musi byt pri 'stripHotKey' FALSE dost velky
-    // na to, aby se text v bufferu mohl prodlouzit o dva znaky (uzavorkovani).
+    // for the text in the buffer to be extended by two characters (parentheses).
     virtual void WINAPI PrepareToolTipText(char* buf, BOOL stripHotKey) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // Subject with file/dir name truncated if needed
     //
-    // Nastavi text vznikly jako sprintf(, subjectFormatString, fileName) do staticu 'subjectWnd'.
-    // Formatovaci retezec 'subjectFormatString' musi obsahovat prave jedno '%s' (na miste vlozeni
-    // 'fileName'). Pokud by text presahl delku staticu, dojde k jeho zkraceni tim, ze se zkrati
-    // 'fileName'. Navic provede konverzi 'fileName' podle SALCFG_FILENAMEFORMAT (aby se shodoval
+    // Sets the text produced by sprintf(subjectFormatString, fileName) in the 'subjectWnd' static control.
+    // The format string 'subjectFormatString' must contain exactly one '%s' (where
+    // 'fileName' is inserted). If the text would exceed the static control length, it is truncated by shortening
+    // 'fileName'. It also converts 'fileName' according to SALCFG_FILENAMEFORMAT (so it matches
     // s tim, jak je 'fileName' zobrazeno v panelu) pomoci CSalamanderGeneralAbstract::AlterFileName.
     // Pokud jde o soubor, bude 'isDir' FALSE, jinak TRUE. Ma-li static 'subjectWnd' SS_NOPREFIX,
-    // bude 'duplicateAmpersands' FALSE, jinak TRUE (zdvoji druhy a dalsi ampersandy ('&'), prvni
-    // ampersand oznacuje hotkey v subjectu a musi ho obsahovat 'subjectFormatString' pred '%s').
-    // Priklad pouziti: SetSubjectTruncatedText(GetDlgItem(HWindow, IDS_SUBJECT), "&Rename %s to",
+    // 'duplicateAmpersands' is FALSE; otherwise TRUE (it doubles the second and subsequent ampersands ('&'); the first
+    // ampersand marks the hotkey in the subject and must be present in 'subjectFormatString' before '%s').
+    // Example: SetSubjectTruncatedText(GetDlgItem(HWindow, IDS_SUBJECT), "&Rename %s to",
     //                                          file->Name, fileIsDir, TRUE)
-    // lze volat z libovolneho threadu
+    // Can be called from any thread
     virtual void WINAPI SetSubjectTruncatedText(HWND subjectWnd, const char* subjectFormatString, const char* fileName,
                                                 BOOL isDir, BOOL duplicateAmpersands) = 0;
 
