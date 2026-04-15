@@ -8,8 +8,8 @@
 // Use the SAFE_ALLOC define to remove source code with testing if memory allocation
 // has not failed (see allochan.*).
 
-// We need to make this module independent on TRACE macros, so if they are not defined,
-// we define their fakes. Certainly error reporting will not work in such situation.
+// We need to make this module independent of the TRACE macros, so if they are not defined,
+// we define dummy replacements. Error reporting will not work in that case.
 #if !defined(TRACE_I) && !defined(TRACE_E) && !defined(TRACE_C)
 inline void __TraceEmptyFunction() {}
 #define TRACE_I(str) __TraceEmptyFunction()
@@ -182,14 +182,14 @@ protected:
 
     virtual void CallDestructor(DATA_TYPE& member) { member.~DATA_TYPE(); }
 
-private: // following methods will not be called (prevention)
+private: // prevent calls to the following methods
     TDirectArray<DATA_TYPE>() {}
     TDirectArray<DATA_TYPE>(const TDirectArray<DATA_TYPE>&) {}
     TDirectArray<DATA_TYPE>& operator=(TDirectArray<DATA_TYPE>&) { return *this; }
 
-    // compiler reports error on this line: we have just wanted to catch source code designed for
-    // older version of TDirectArray template: use CallDestructor instead of Destructor and please
-    // notice that in new version of TDirectArray copy-constructors and destructors are called
+    // the compiler reports an error on this line: we only want to catch source code written for
+    // an older version of the TDirectArray template; use CallDestructor instead of Destructor, and
+    // note that in the new version of TDirectArray copy constructors and destructors are called
     virtual int Destructor(int) { return 0; }
 };
 
@@ -302,7 +302,7 @@ public:
         FirstFreeIndex = 0;
     }
 
-protected: // prevence proti volani nefunkcniho kodu (posouva prvky,...)
+protected: // prevent calls to code that does not work (moves items, ...)
     void Move(CArrayDirection, int, int) {}
     void Insert(int, void*) {}
     void Insert(int, void**, int) {}
@@ -324,15 +324,15 @@ protected: // prevence proti volani nefunkcniho kodu (posouva prvky,...)
 //  -zmenseni za cenu generovani tridy podle sablony pro ruzne 'Base', 'Delta'
 //   a zmenseni rozsahu pole
 
-template <class DATA_TYPE, WORD Base, WORD Delta> // jen 65535 prvku
+template <class DATA_TYPE, WORD Base, WORD Delta> // only 65535 items
 class TSmallerDirectArray
 {
 public:
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    CErrorType State; // neni-li etNone stala se chyba
+    CErrorType State;     // if not etNone, an error has occurred
 #endif
     DATA_TYPE* Data; // ukazatel na pole, public nutne misto etDestructed
-    WORD Count;      // soucasny pocet polozek v kolekci
+    WORD Count;          // current item count in the collection
 
     TSmallerDirectArray<DATA_TYPE, Base, Delta>();
     ~TSmallerDirectArray() { Destroy(); }
@@ -355,12 +355,12 @@ public:
     }
 
     void Insert(int index, const DATA_TYPE& member);
-    inline WORD Add(const DATA_TYPE& member);      // prida prvek na konec Arraye,
-                                                   // vraci index prvku
-    WORD Add(const DATA_TYPE* members, int count); // pridani count prvku members
+    inline WORD Add(const DATA_TYPE& member);          // adds an item to the end of the array,
+                                                   // returns the item index
+    WORD Add(const DATA_TYPE* members, int count);     // adds 'count' items from 'members'
 
-    DATA_TYPE& At(int index) // vraci ukazatel na prvek na pozici
-    {                        // int pouzity jen kvuli warningum - rozsah do 65535
+    DATA_TYPE& At(int index)     // returns a reference to the item at 'index'
+    {                            // int is used only to avoid warnings; range up to 65535
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
 #endif
@@ -371,13 +371,13 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // kvuli kompileru vracim mozna neplatny prvek
+            return Data[0];             // because of the compiler, we return a possibly invalid item
         }
 #endif
     }
 
-    DATA_TYPE& operator[](int index) // vraci ukazatel na prvek na pozici
-    {                                // int pouzity jen kvuli warningum - rozsah do 65535
+    DATA_TYPE& operator[](int index)     // returns a reference to the item at 'index'
+    {                                    // int is used only to avoid warnings; range up to 65535
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
 #endif
@@ -388,7 +388,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // kvuli kompileru vracim mozna neplatny prvek
+            return Data[0];             // because of the compiler, we return a possibly invalid item
         }
 #endif
     }
@@ -404,15 +404,15 @@ public:
 
     DATA_TYPE* GetData() { return Data; }
 
-    void DestroyMembers();           // uvolni z pameti jen prvky, pole necha
-    void Destroy();                  // kompletni destrukce objektu
-    void Delete(int index);          // zrusi prvek na pozici a ostatni posune
-    void Reduce(WORD newCount);      // zrusi prvky od indexu newCount az do konce
-    void Delete(WORD from, WORD to); // zrusi prvky <from..to) a sesune ostatni
+    void DestroyMembers();               // releases only the items, keeps the array
+    void Destroy();                      // complete destruction of the object
+    void Delete(int index);              // deletes the item at 'index' and shifts the rest
+    void Reduce(WORD newCount);          // deletes items from newCount to the end
+    void Delete(WORD from, WORD to);     // deletes items in <from..to) and shifts the rest down
 
 protected:
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    virtual void Error(CErrorType err) // zpracovani chyby v kolekci
+    virtual void Error(CErrorType err)     // array error handling
     {
         if (State == etNone)
             State = err;
@@ -420,12 +420,12 @@ protected:
             TRACE_E("Incorrect call to Error method (State = " << State << ").");
     }
 #endif
-    void EnlargeArray(); // zvetsi nove pole
-    void ReduceArray();  // zmensi pole
+    void EnlargeArray();     // enlarges array
+    void ReduceArray();      // reduces array
 
     void Move(CArrayDirection direction, WORD first, WORD count);
-    // posune o 1
-private: // nasledujici metody se nebudou volat (prevence)
+    // shift by 1
+private: // prevent calls to the following methods
     TSmallerDirectArray<DATA_TYPE, Base, Delta>(const TSmallerDirectArray<DATA_TYPE, Base, Delta>&) {}
     TSmallerDirectArray<DATA_TYPE, Base, Delta>& operator=(TSmallerDirectArray<DATA_TYPE, Base, Delta>&)
     {
@@ -498,14 +498,14 @@ public:
 
     ~TClassArray() { Destroy(); }
 
-private: // prevence proti volani nefunkcniho kodu (posouva prvky ...)
+private: // prevent calls to code that does not work (moves items, ...)
     void Insert(int, const CLASS_TYPE&) {}
     void Insert(int, const CLASS_TYPE*, int) {}
     int Add(const CLASS_TYPE&) { return ULONG_MAX; }
     int Add(const CLASS_TYPE*, int) { return ULONG_MAX; }
     void Delete(int) {}
     void Move(CArrayDirection, int, int) {}
-    void DetachMembers() {} // to by nezavolalo destruktory
+    void DetachMembers() {}     // that would not call destructors
 };
 
 #define DEFINE_NEW(CLASS_TYPE) \
@@ -1190,7 +1190,7 @@ template <class DATA_TYPE, WORD Base, WORD Delta>
 void TSmallerDirectArray<DATA_TYPE, Base, Delta>::Destroy()
 {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    if (State == etNone) // muze prijit etDestructed
+    if (State == etNone)     // State can also be etDestructed
     {
 #endif
         if (Data != NULL)
@@ -1352,7 +1352,7 @@ void TSmallerDirectArray<DATA_TYPE, Base, Delta>::DestroyMembers()
 }
 
 template <class DATA_TYPE, WORD Base, WORD Delta>
-void // int pouzity jen kvuli warningum - rozsah do 65535
+void // int is used only to avoid warnings; range up to 65535
 TSmallerDirectArray<DATA_TYPE, Base, Delta>::Delete(int index)
 {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
