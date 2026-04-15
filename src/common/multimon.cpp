@@ -5,7 +5,7 @@
 
 #include <windows.h>
 #include <crtdbg.h>
-#include <commctrl.h> // potrebuju LPCOLORMAP
+#include <commctrl.h> // Need LPCOLORMAP.
 #include <tchar.h>
 #include <ostream>
 #include <streambuf>
@@ -24,7 +24,7 @@
 
 HWND GetTopVisibleParent(HWND hParent)
 {
-    // hledame parenta, ktery uz neni child window (jde o POPUP/OVERLAPPED window)
+    // Find the first parent that is not a child window (a POPUP/OVERLAPPED window).
     HWND hIterator = hParent;
     while ((GetWindowLongPtr(hIterator, GWL_STYLE) & WS_CHILD) &&
            (hIterator = ::GetParent(hIterator)) != NULL &&
@@ -46,14 +46,14 @@ void MultiMonGetClipRectByRect(const RECT* rect, RECT* workClipRect, RECT* monit
 
 void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorClipRect)
 {
-    HMONITOR hMonitor; // na tento monitor okno umistime
+    HMONITOR hMonitor;     // Place the window on this monitor.
     MONITORINFO mi;
     mi.cbSize = sizeof(mi);
 
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // pozor, tato podminka je take v MultiMonCenterWindow
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd))     // Note: the same condition is also used in MultiMonCenterWindow.
     {
         hMonitor = MonitorFromWindow(hByWnd, MONITOR_DEFAULTTONEAREST);
-        // vytahneme working area desktopu
+        // Get the desktop work area.
         GetMonitorInfo(hMonitor, &mi);
     }
     else
@@ -69,14 +69,14 @@ void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorC
         }
         else
         {
-            // jinak okno centrujeme k primarnimu desktopu
+            // Otherwise, center the window on the primary desktop.
             POINT pt;
-            pt.x = 0; // primarni monitor
+            pt.x = 0;             // Primary monitor.
             pt.y = 0;
             hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
         }
 
-        // vytahneme working area desktopu
+        // Get the desktop work area.
         GetMonitorInfo(hMonitor, &mi);
     }
     *workClipRect = mi.rcWork;
@@ -88,18 +88,18 @@ void MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow)
 {
     if (hWindow == NULL)
     {
-        // pri praci s NULL hwnd dochazi k nechtenemu blikani oken
+        // Using a NULL HWND causes unwanted window flicker.
         TRACE_E("MultiMonCenterWindow: hWindow == NULL");
         return;
     }
 
     if (IsZoomed(hWindow))
     {
-        // s maximalizovany oknem nebudeme hybat
+        // Do not move a maximized window.
         return;
     }
 
-    // mame dohledat top-level window
+    // Need to find the top-level window.
     if (findTopWindow)
     {
         if (hByWnd != NULL)
@@ -111,7 +111,7 @@ void MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow)
     RECT clipR;
     MultiMonGetClipRectByWindow(hByWnd, &clipR, NULL);
     RECT byR;
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // pozor, tato podminka je take v MultiMonGetClipRectByWindow
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd))     // Note: the same condition is also used in MultiMonGetClipRectByWindow.
         GetWindowRect(hByWnd, &byR);
     else
         byR = clipR;
@@ -123,14 +123,14 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
 {
     if (hWindow == NULL)
     {
-        // pri praci s NULL hwnd dochazi k nechtenemu blikani oken
+        // Using a NULL HWND causes unwanted window flicker.
         TRACE_E("MultiMonCenterWindowByRect: hWindow == NULL");
         return;
     }
 
     if (IsZoomed(hWindow))
     {
-        // s maximalizovany oknem nebudeme hybat
+        // Do not move a maximized window.
         return;
     }
 
@@ -139,13 +139,13 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     int wndWidth = wndRect.right - wndRect.left;
     int wndHeight = wndRect.bottom - wndRect.top;
 
-    // vycentrujeme
+    // Center it.
     wndRect.left = byR.left + (byR.right - byR.left - wndWidth) / 2;
     wndRect.top = byR.top + (byR.bottom - byR.top - wndHeight) / 2;
     wndRect.right = wndRect.left + wndWidth;
     wndRect.bottom = wndRect.top + wndHeight;
 
-    // ohlidame hranice
+    // Keep it within bounds.
     if (wndRect.left < clipR.left) // pokud je okno vetsi nez clipR, nechame zobrazit jeho levou cast
     {
         wndRect.left = clipR.left;
@@ -171,7 +171,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     {
         // pokud je okno vetsi nez clipR
         if (wndRect.left > clipR.left)
-            wndRect.left = clipR.left; // vyuzijeme maximalne prostor
+            wndRect.left = clipR.left;             // Use as much space as possible.
     }
 
     if (wndHeight <= clipR.bottom - clipR.top)
@@ -187,7 +187,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     {
         // pokud je okno vetsi nez clipR
         if (wndRect.top > clipR.top)
-            wndRect.top = clipR.top; // vyuzijeme maximalne prostor
+            wndRect.top = clipR.top;             // Use as much space as possible.
     }
 
     SetWindowPos(hWindow, NULL, wndRect.left, wndRect.top, 0, 0,
@@ -242,7 +242,7 @@ BOOL MultiMonGetDefaultWindowPos(HWND hByWnd, POINT* p)
                 // trik s dummy oknem funguje pekne pod MSVC, ale pri spusteni salamandera bez MSVC
                 // se okno otevira na primarnim monitoru (nezjistil jsem proc, kdyz ma parenta)
 
-                // pomuzeme si -- posuneme okno na nas monitor
+                // Work around it by moving the window to our monitor.
                 MONITORINFO tmpInfo;
                 tmpInfo.cbSize = sizeof(tmpInfo);
                 GetMonitorInfo(hTmpMonitor, &tmpInfo);
@@ -271,12 +271,12 @@ BOOL MultiMonEnsureRectVisible(RECT* rect, BOOL partialOK)
     RECT intersectRect;
     BOOL intersect = IntersectRect(&intersectRect, rect, &clipRect);
     if (EqualRect(&intersectRect, rect))
-        return FALSE; // lezime celou plochou na jednom z monitoru, neni co resit
+        return FALSE;         // The entire rectangle is on one monitor, so return FALSE.
 
     if (intersect && partialOK)
-        return FALSE; // jsme zcasti viditelni, neni co resit
+        return FALSE;         // The rectangle is already partially visible, so return FALSE.
 
-    // zajistim, aby obdelnik nepresahl pres monitor
+    // Make sure the rectangle does not extend past the monitor.
     if (rect->right - rect->left > clipRect.right - clipRect.left)
         rect->right = clipRect.right - clipRect.left + rect->left;
     if (rect->bottom - rect->top > clipRect.bottom - clipRect.top)
@@ -310,6 +310,6 @@ BOOL MultiMonEnsureRectVisible(RECT* rect, BOOL partialOK)
         rect->bottom += y;
     }
 
-    // zmenili jsme nekterou z hodnot, vratime TRUE
+    // We changed one of the values, so return TRUE.
     return TRUE;
 }
