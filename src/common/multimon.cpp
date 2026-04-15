@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -46,11 +47,11 @@ void MultiMonGetClipRectByRect(const RECT* rect, RECT* workClipRect, RECT* monit
 
 void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorClipRect)
 {
-    HMONITOR hMonitor;     // Place the window on this monitor.
+    HMONITOR hMonitor; // Place the window on this monitor.
     MONITORINFO mi;
     mi.cbSize = sizeof(mi);
 
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd))     // Note: the same condition is also used in MultiMonCenterWindow.
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // Note: the same condition is also used in MultiMonCenterWindow.
     {
         hMonitor = MonitorFromWindow(hByWnd, MONITOR_DEFAULTTONEAREST);
         // Get the desktop work area.
@@ -71,7 +72,7 @@ void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorC
         {
             // Otherwise, center the window on the primary desktop.
             POINT pt;
-            pt.x = 0;             // Primary monitor.
+            pt.x = 0; // Primary monitor.
             pt.y = 0;
             hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
         }
@@ -111,7 +112,7 @@ void MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow)
     RECT clipR;
     MultiMonGetClipRectByWindow(hByWnd, &clipR, NULL);
     RECT byR;
-    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd))     // Note: the same condition is also used in MultiMonGetClipRectByWindow.
+    if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // Note: the same condition is also used in MultiMonGetClipRectByWindow.
         GetWindowRect(hByWnd, &byR);
     else
         byR = clipR;
@@ -171,7 +172,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     {
         // pokud je okno vetsi nez clipR
         if (wndRect.left > clipR.left)
-            wndRect.left = clipR.left;             // Use as much space as possible.
+            wndRect.left = clipR.left; // Use as much space as possible.
     }
 
     if (wndHeight <= clipR.bottom - clipR.top)
@@ -187,7 +188,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     {
         // pokud je okno vetsi nez clipR
         if (wndRect.top > clipR.top)
-            wndRect.top = clipR.top;             // Use as much space as possible.
+            wndRect.top = clipR.top; // Use as much space as possible.
     }
 
     SetWindowPos(hWindow, NULL, wndRect.left, wndRect.top, 0, 0,
@@ -271,10 +272,10 @@ BOOL MultiMonEnsureRectVisible(RECT* rect, BOOL partialOK)
     RECT intersectRect;
     BOOL intersect = IntersectRect(&intersectRect, rect, &clipRect);
     if (EqualRect(&intersectRect, rect))
-        return FALSE;         // The entire rectangle is on one monitor, so return FALSE.
+        return FALSE; // The entire rectangle is on one monitor, so return FALSE.
 
     if (intersect && partialOK)
-        return FALSE;         // The rectangle is already partially visible, so return FALSE.
+        return FALSE; // The rectangle is already partially visible, so return FALSE.
 
     // Make sure the rectangle does not extend past the monitor.
     if (rect->right - rect->left > clipRect.right - clipRect.left)
