@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -125,7 +126,7 @@ int StrICpy(char* dest, const char* src)
     while (*src != 0)
         *dest++ = LowerCase[*src++];
     *dest = 0;
-    return (int)(src - s);     // return the number of copied characters
+    return (int)(src - s); // return the number of copied characters
 }
 
 //
