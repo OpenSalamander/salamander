@@ -3,9 +3,9 @@
 
 #pragma once
 
-// nacte z resourcu bitmapu hRsrc (ziskan z FindResource(...)),
-// premapuje mapCount barev: mapColor[i] -> toColor[i]
-// a vytvori bitmapu kompatibilni s desktopem
+// loads the bitmap resource hRsrc (obtained with FindResource(...)),
+// remaps mapCount colors: mapColor[i] -> toColor[i],
+// and creates a bitmap compatible with the desktop
 
 HBITMAP LoadBitmapAndMapColors(HINSTANCE hInst, HRSRC hRsrc, int mapCount,
                                COLORREF* mapColor, COLORREF* toColor);
