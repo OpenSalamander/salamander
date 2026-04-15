@@ -49,8 +49,8 @@ public:
                                  Fail1 != NULL && Fail2 != NULL; }
     void SetFlags(WORD flags);
     void Set(const char* pattern, WORD flags);
-    // pro patterny obsahujici '\0'
-    // buffer pattern musi mit delku (length + 1) znaku (kompatibilita se stringy)
+    // for patterns containing '\0'
+    // the pattern buffer must be (length + 1) characters long (for string compatibility)
     void Set(const char* pattern, const int length, WORD flags);
 
     inline int SearchForward(const char* text, int length, int start);
@@ -60,16 +60,16 @@ protected:
     int Minimum(int a, int b) { return (a < b) ? a : b; }
     int Maximum(int a, int b) { return (a > b) ? a : b; }
 
-    int* Fail1;            // fail pole pro akt. pismeno
-    int* Fail2;            // fail pole pro vyskyt substringu zprava
-    char* OriginalPattern; // puvodni vzorek ke hledani
-    char* Pattern;         // vzorek ke hledani v prislusnem tvaru (Flag)
-    int Length;            // delka vzorku
+    int* Fail1;                // fail array for the current character
+    int* Fail2;                // fail array for substring occurrence from the right
+    char* OriginalPattern;     // original search pattern
+    char* Pattern;             // search pattern in the corresponding flag-dependent form
+    int Length;                // pattern length
 
 private:
-    BOOL Initialize(); // vola se jen ze SetFlags
+    BOOL Initialize();     // called only from SetFlags
 
-    WORD Flags; // menit pres SetFlags
+    WORD Flags;     // modify via SetFlags
 };
 
 //
