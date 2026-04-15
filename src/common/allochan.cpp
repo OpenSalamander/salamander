@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -101,7 +102,7 @@ int C__AllocHandlerInit::AltapNewHandler(size_t size)
     int ret = 1;
     int ti = GetTickCount();
     EnterCriticalSection(&__AllocHandlerInit.CriticalSection);
-    if (GetTickCount() - ti <= 500)     // Show the message box only if another thread did not just make the user deal with the same problem.
+    if (GetTickCount() - ti <= 500) // Show the message box only if another thread did not just make the user deal with the same problem.
     {
         TCHAR buf[550];
         _sntprintf_s(buf, _countof(buf) - 1, __AllocHandlerMessage, size);
@@ -112,7 +113,7 @@ int C__AllocHandlerInit::AltapNewHandler(size_t size)
             if (res == 0)
             {
                 TRACE_ET(_T("AltapNewHandler: unable to open message-box!"));
-                Sleep(1000);                 // Give the system a moment, then try to show the message box again.
+                Sleep(1000); // Give the system a moment, then try to show the message box again.
             }
         } while (res == 0);
         if (res == IDABORT) // terminate
@@ -123,15 +124,15 @@ int C__AllocHandlerInit::AltapNewHandler(size_t size)
                 if (res == 0)
                 {
                     TRACE_ET(_T("AltapNewHandler: unable to open message-box with abort-warning!"));
-                    Sleep(1000);                     // Give the system a moment, then try to show the message box again.
+                    Sleep(1000); // Give the system a moment, then try to show the message box again.
                 }
             } while (res == 0);
             if (res == IDYES)
-                TerminateProcess(GetCurrentProcess(), 777);                 // Hard terminate the process (ExitProcess still runs additional code).
+                TerminateProcess(GetCurrentProcess(), 777); // Hard terminate the process (ExitProcess still runs additional code).
         }
         else
         {
-            if (res == IDIGNORE)             // Let the application handle the allocation failure (return NULL); call sites that allocate large blocks should check for this, or they will crash on NULL dereference.
+            if (res == IDIGNORE) // Let the application handle the allocation failure (return NULL); call sites that allocate large blocks should check for this, or they will crash on NULL dereference.
             {
                 do
                 {
@@ -139,16 +140,16 @@ int C__AllocHandlerInit::AltapNewHandler(size_t size)
                     if (res == 0)
                     {
                         TRACE_ET(_T("AltapNewHandler: unable to open message-box with ignore-warning!"));
-                        Sleep(1000);                         // Give the system a moment, then try to show the message box again.
+                        Sleep(1000); // Give the system a moment, then try to show the message box again.
                     }
                 } while (res == 0);
                 if (res == IDYES)
-                    ret = 0;                     // Return NULL to the application.
+                    ret = 0; // Return NULL to the application.
             }
         }
     }
     LeaveCriticalSection(&__AllocHandlerInit.CriticalSection);
-    return ret;     // Either retry or return NULL.
+    return ret; // Either retry or return NULL.
 }
 
 #endif // ALLOCHAN_DISABLE
