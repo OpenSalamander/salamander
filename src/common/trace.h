@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -386,14 +387,14 @@ struct C__ClientServerInitData
 // the variables have the following meanings:
 struct C__PipeDataHeader
 {
-    int Type;                    // message type (C__MessageType)
-    DWORD ThreadID;              // thread ID for additional identification
+    int Type;                // message type (C__MessageType)
+    DWORD ThreadID;          // thread ID for additional identification
     DWORD UniqueThreadID;    // unikatni cislo threadu (systemove ID se opakuji)
-    SYSTEMTIME Time;             // message creation time
-    DWORD MessageSize;           // length of the buffer needed to receive the text
-    DWORD MessageTextOffset;     // offset of the text in the buffer shared with the file name
-    DWORD Line;                  // line number
-    double Counter;              // high-resolution counter in ms
+    SYSTEMTIME Time;         // message creation time
+    DWORD MessageSize;       // length of the buffer needed to receive the text
+    DWORD MessageTextOffset; // offset of the text in the buffer shared with the file name
+    DWORD Line;              // line number
+    double Counter;          // high-resolution counter in ms
 };
 
 #define __SIZEOF_PIPEDATAHEADER 48
@@ -587,7 +588,7 @@ protected:
     int UniqueThreadID;
 
     DWORD CacheTID[__TRACE_CACHE_SIZE];
-    DWORD CacheUID[__TRACE_CACHE_SIZE];     // value -1 -> invalid record
+    DWORD CacheUID[__TRACE_CACHE_SIZE]; // value -1 -> invalid record
 
 public:
     C__TraceThreadCache();
@@ -613,29 +614,29 @@ public:
 #endif // MULTITHREADED_TRACE_ENABLE
 
 protected:
-    HANDLE HWritePipe;                      // write end of the pipe
-    HANDLE HPipeSemaphore;                  // used to allocate space in the pipe (1x wait = 1 kB)
-    DWORD BytesAllocatedForWriteToPipe;     // amount of write space currently allocated in the pipe
+    HANDLE HWritePipe;                  // write end of the pipe
+    HANDLE HPipeSemaphore;              // used to allocate space in the pipe (1x wait = 1 kB)
+    DWORD BytesAllocatedForWriteToPipe; // amount of write space currently allocated in the pipe
 
 #ifdef TRACE_TO_FILE
-    HANDLE HTraceFile;     // file opened for writing in TEMP; all messages are stored there
+    HANDLE HTraceFile; // file opened for writing in TEMP; all messages are stored there
 #ifdef __TRACESERVER
-    WCHAR TraceFileName[MAX_PATH];     // HTraceFile file name
+    WCHAR TraceFileName[MAX_PATH]; // HTraceFile file name
 #endif // __TRACESERVER
 #endif // TRACE_TO_FILE
 
-    LARGE_INTEGER StartPerformanceCounter;     // initial value of the high-resolution counter
-    LARGE_INTEGER PerformanceFrequency;        // high-resolution counter frequency
+    LARGE_INTEGER StartPerformanceCounter; // initial value of the high-resolution counter
+    LARGE_INTEGER PerformanceFrequency;    // high-resolution counter frequency
     BOOL SupportPerformanceFrequency;
 
-    const char* File;                        // helper variables for passing the file name (ANSI)
-    const WCHAR* FileW;                      // helper variables for passing the file name (Unicode)
-    int Line;                                // and the line number from which TRACE_X() is called
+    const char* File;                    // helper variables for passing the file name (ANSI)
+    const WCHAR* FileW;                  // helper variables for passing the file name (Unicode)
+    int Line;                            // and the line number from which TRACE_X() is called
     C__StringStreamBuf TraceStringBuf;   // string buffer drzici data trace streamu (ANSI)
     C__StringStreamBufW TraceStringBufW; // string buffer drzici data trace streamu (unicode)
     C__TraceStream TraceStrStream;       // vlastni trace stream (ANSI)
     C__TraceStreamW TraceStrStreamW;     // vlastni trace stream (unicode)
-    DWORD StoredLastError;                   // GetLastError() value before the TRACE_? macro
+    DWORD StoredLastError;               // GetLastError() value before the TRACE_? macro
 
 public:
     C__Trace();
