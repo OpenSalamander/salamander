@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -364,7 +365,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         }
     }
 
-    // release OutStream so the file can be deleted if needed
+    // release OutStream so the file can be deleted
     if (OutFileStream != NULL)
         OutFileStreamSpec->SetMTime(&ProcessedFileInfo.LastWrite);
     OutFileStream.Release();
@@ -376,7 +377,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         return FALSE;
 
     case Delete:
-        // if cancel, bail out
+        // if canceled, exit
         if (!SafeDeleteFile(GetAnsiString(ProcessedFileInfo.FileName), DataErrorDeleteSilent))
             return FALSE;
         break;
