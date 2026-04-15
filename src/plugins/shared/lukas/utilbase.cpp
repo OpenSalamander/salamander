@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -59,7 +60,7 @@ BOOL InitLCUtils(CSalamanderPluginEntryAbstract* salamander, const char* pluginN
 
     // Check that the current Salamander version is supported
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    {     // Error cannot be called here because it uses SG->SalMessageBox (SG is not initialized and the interface is incompatible)
+    { // Error cannot be called here because it uses SG->SalMessageBox (SG is not initialized and the interface is incompatible)
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    pluginName, MB_OK | MB_ICONERROR);
