@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -74,7 +75,7 @@ BOOL InitializeWinLib(const char* pluginName, HINSTANCE dllInstance)
     lstrcpyn(CWINDOW_CLASSNAME2, pluginName, 50);
     strcat(CWINDOW_CLASSNAME2, " - WinLib Universal Window2");
 
-    AtomObject = GlobalAddAtom("object handle");     // all plugins will use the same atom, so there is no collision
+    AtomObject = GlobalAddAtom("object handle"); // all plugins will use the same atom, so there is no collision
     if (AtomObject == 0)
     {
         TRACE_E("GlobalAddAtom has failed");
@@ -141,7 +142,7 @@ HWND CWindow::CreateEx(DWORD dwExStyle,        // extended window style
                        HWND hwndParent,        // handle of parent or owner window
                        HMENU hmenu,            // handle of menu or child-window identifier
                        HINSTANCE hinst,        // handle of application instance
-                       LPVOID lpvParam)                               // pointer to the object of the window being created
+                       LPVOID lpvParam)        // pointer to the object of the window being created
 {
     HWND hWnd = CreateWindowEx(dwExStyle,
                                lpszClassName,
@@ -157,8 +158,8 @@ HWND CWindow::CreateEx(DWORD dwExStyle,        // extended window style
                                lpvParam);
     if (hWnd != 0)
     {
-        if (WindowsManager.GetWindowPtr(hWnd) == NULL)         // if the window is not yet in WindowsManager
-            AttachToWindow(hWnd);                                  // then add it -> subclassing
+        if (WindowsManager.GetWindowPtr(hWnd) == NULL) // if the window is not yet in WindowsManager
+            AttachToWindow(hWnd);                      // then add it -> subclassing
     }
     return hWnd;
 }
@@ -173,7 +174,7 @@ HWND CWindow::Create(LPCTSTR lpszClassName,  // address of registered class name
                      HWND hwndParent,        // handle of parent or owner window
                      HMENU hmenu,            // handle of menu or child-window identifier
                      HINSTANCE hinst,        // handle of application instance
-                     LPVOID lpvParam)                             // pointer to the object of the window being created
+                     LPVOID lpvParam)        // pointer to the object of the window being created
 {
     return CreateEx(0,
                     lpszClassName,
@@ -207,7 +208,7 @@ void CWindow::AttachToWindow(HWND hWnd)
     HWindow = hWnd;
     SetWindowLongPtr(HWindow, GWLP_WNDPROC, (LONG_PTR)CWindowProc);
 
-    if (DefWndProc == CWindow::CWindowProc)     // that would recurse
+    if (DefWndProc == CWindow::CWindowProc) // that would recurse
     {
         TRACE_C("This should never happen.");
         DefWndProc = DefWindowProc;
@@ -253,7 +254,7 @@ CWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if (GetWindowLong(HWindow, GWL_STYLE) & WS_CHILD)
             break;   // pokud F1 nezpracujeme a pokud je to child okno, nechame F1 propadnout do parenta
-        return TRUE;         // if this is not a child window, stop processing F1
+        return TRUE; // if this is not a child window, stop processing F1
     }
     }
     return CallWindowProc((WNDPROC)DefWndProc, HWindow, uMsg, wParam, lParam);
@@ -265,7 +266,7 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     CWindow* wnd;
     switch (uMsg)
     {
-    case WM_CREATE:     // first message - attach the object to the window
+    case WM_CREATE: // first message - attach the object to the window
     {
         // handle MDI_CHILD_WINDOW
         if (((CREATESTRUCT*)lParam)->dwExStyle & WS_EX_MDICHILD)
@@ -281,7 +282,7 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             wnd->HWindow = hwnd;
             //--- add the window identified by hwnd to the window list
-            if (!WindowsManager.AddWindow(hwnd, wnd))             // error
+            if (!WindowsManager.AddWindow(hwnd, wnd)) // error
             {
                 TRACE_E("Error during creating of window.");
                 return FALSE;
@@ -290,7 +291,7 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    case WM_DESTROY:     // last message - detach the object from the window
+    case WM_DESTROY: // last message - detach the object from the window
     {
         wnd = (CWindow*)WindowsManager.GetWindowPtr(hwnd);
         if (wnd != NULL && wnd->Is(otWindow))
@@ -313,9 +314,9 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (wnd->IsAllocated())
                 delete wnd;
             else
-                wnd->HWindow = NULL;                 // no longer attached
+                wnd->HWindow = NULL; // no longer attached
             if (res == 0)
-                return 0;                 // handled by the application
+                return 0; // handled by the application
             wnd = NULL;
         }
         break;
@@ -443,7 +444,7 @@ CDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
     {
         TransferData(ttDataToWindow);
-        return TRUE;         // let DefDlgProc set the focus
+        return TRUE; // let DefDlgProc set the focus
     }
 
     case WM_HELP:
@@ -453,7 +454,7 @@ CDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             WinLibLTHelpCallback(HWindow, HelpID);
         }
-        return TRUE;         // do not let F1 fall through to the parent even if we do not call WinLibLTHelpCallback()
+        return TRUE; // do not let F1 fall through to the parent even if we do not call WinLibLTHelpCallback()
     }
 
     case WM_COMMAND:
@@ -497,7 +498,7 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     CDialog* dlg;
     switch (uMsg)
     {
-    case WM_INITDIALOG:     // first message - attach the object to the dialog
+    case WM_INITDIALOG: // first message - attach the object to the dialog
     {
         dlg = (CDialog*)lParam;
         if (dlg == NULL)
@@ -509,20 +510,20 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             dlg->HWindow = hwndDlg;
             //--- add the window identified by hwndDlg to the window list
-            if (!WindowsManager.AddWindow(hwndDlg, dlg))             // error
+            if (!WindowsManager.AddWindow(hwndDlg, dlg)) // error
             {
                 TRACE_E("Error during creating of dialog.");
                 return TRUE;
             }
-            dlg->NotifDlgJustCreated();             // added as a place to adjust the dialog layout
+            dlg->NotifDlgJustCreated(); // added as a place to adjust the dialog layout
         }
         break;
     }
 
-    case WM_DESTROY:     // last message - detach the object from the dialog
+    case WM_DESTROY: // last message - detach the object from the dialog
     {
         dlg = (CDialog*)WindowsManager.GetWindowPtr(hwndDlg);
-        INT_PTR ret = FALSE;         // in case the dialog does not handle the message
+        INT_PTR ret = FALSE; // in case the dialog does not handle the message
         if (dlg != NULL && dlg->Is(otDialog))
         {
             // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
@@ -535,7 +536,7 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (dlg->IsAllocated())
                 delete dlg;
             else
-                dlg->HWindow = NULL;                 // mark as detached
+                dlg->HWindow = NULL; // mark as detached
         }
         return ret;
     }
@@ -556,7 +557,7 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE;         // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -596,7 +597,7 @@ void CPropSheetPage::Init(char* title, HINSTANCE modul, int resID,
     Flags = flags;
     Icon = icon;
 
-    ParentDialog = NULL;     // set from CPropertyDialog::Execute()
+    ParentDialog = NULL; // set from CPropertyDialog::Execute()
 }
 
 CPropSheetPage::~CPropSheetPage()
@@ -664,7 +665,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         ParentDialog->HWindow = Parent;
         TransferData(ttDataToWindow);
-        return TRUE;         // let DefDlgProc set the focus
+        return TRUE; // let DefDlgProc set the focus
     }
 
     case WM_HELP:
@@ -675,38 +676,38 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             WinLibLTHelpCallback(HWindow, HelpID);
             return TRUE;
         }
-        break;         // let F1 fall through to the parent
+        break; // let F1 fall through to the parent
     }
 
     case WM_NOTIFY:
     {
-        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE)         // page deactivation
+        if (((NMHDR*)lParam)->code == PSN_KILLACTIVE) // page deactivation
         {
             if (ValidateData())
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, FALSE);
-            else             // do not allow the page to deactivate
+            else // do not allow the page to deactivate
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
             return TRUE;
         }
 
         if (((NMHDR*)lParam)->code == PSN_HELP)
-        {         // Help button pressed
+        { // Help button pressed
             if (WinLibLTHelpCallback != NULL && HelpID != -1)
                 WinLibLTHelpCallback(HWindow, HelpID);
             return TRUE;
         }
 
-        if (((NMHDR*)lParam)->code == PSN_SETACTIVE)         // page activation
+        if (((NMHDR*)lParam)->code == PSN_SETACTIVE) // page activation
         {
             if (ParentDialog != NULL && ParentDialog->LastPage != NULL)
-            {             // remember the last page
+            { // remember the last page
                 *ParentDialog->LastPage = ParentDialog->GetCurSel();
             }
             break;
         }
 
         if (((NMHDR*)lParam)->code == PSN_APPLY)
-        {         // ApplyNow or OK button pressed
+        { // ApplyNow or OK button pressed
             if (TransferData(ttDataFromWindow))
                 SetWindowLongPtr(HWindow, DWLP_MSGRESULT, PSNRET_NOERROR);
             else
@@ -715,7 +716,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         if (((NMHDR*)lParam)->code == PSN_WIZFINISH)
-        {         // Finish button pressed
+        { // Finish button pressed
             // PSN_KILLACTIVE did not arrive - perform validation
             if (!ValidateData())
             {
@@ -751,7 +752,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     CPropSheetPage* dlg;
     switch (uMsg)
     {
-    case WM_INITDIALOG:     // first message - attach the object to the dialog
+    case WM_INITDIALOG: // first message - attach the object to the dialog
     {
         dlg = (CPropSheetPage*)((PROPSHEETPAGE*)lParam)->lParam;
         if (dlg == NULL)
@@ -764,20 +765,20 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
             dlg->HWindow = hwndDlg;
             dlg->Parent = ::GetParent(hwndDlg);
             //--- add the window identified by hwndDlg to the window list
-            if (!WindowsManager.AddWindow(hwndDlg, dlg))             // error
+            if (!WindowsManager.AddWindow(hwndDlg, dlg)) // error
             {
                 TRACE_E("Error during creating of dialog.");
                 return TRUE;
             }
-            dlg->NotifDlgJustCreated();             // added as a place to adjust the dialog layout
+            dlg->NotifDlgJustCreated(); // added as a place to adjust the dialog layout
         }
         break;
     }
 
-    case WM_DESTROY:     // last message - detach the object from the dialog
+    case WM_DESTROY: // last message - detach the object from the dialog
     {
         dlg = (CPropSheetPage*)WindowsManager.GetWindowPtr(hwndDlg);
-        INT_PTR ret = FALSE;         // in case the dialog does not handle the message
+        INT_PTR ret = FALSE; // in case the dialog does not handle the message
         if (dlg != NULL && dlg->Is(otDialog))
         {
             // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
@@ -790,7 +791,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
             if (dlg->IsAllocated())
                 delete dlg;
             else
-                dlg->HWindow = NULL;                 // mark as detached
+                dlg->HWindow = NULL; // mark as detached
         }
         return ret;
     }
@@ -811,7 +812,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE;         // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -915,7 +916,7 @@ CWindowsManager::GetWindowPtr(HWND hWnd)
 CWindowQueue::~CWindowQueue()
 {
     if (!Empty())
-        TRACE_E("Some window is still opened in " << QueueName << " queue!");         // should not happen...
+        TRACE_E("Some window is still opened in " << QueueName << " queue!"); // should not happen...
     // multithreading is no longer an issue here (the plugin is shutting down, the threads are already terminated)
     // free at least some memory
     CWindowQueueItem* last;
@@ -949,7 +950,7 @@ void CWindowQueue::Remove(HWND hWindow)
     CWindowQueueItem* item = Head;
     while (item != NULL)
     {
-        if (item->HWindow == hWindow)         // found, remove it
+        if (item->HWindow == hWindow) // found, remove it
         {
             if (last != NULL)
                 last->Next = item->Next;
@@ -997,7 +998,7 @@ BOOL CWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWaitTime)
     while ((w == INFINITE || w > 0) && !Empty())
     {
         DWORD t = GetTickCount() - ti;
-        if (w == INFINITE || t < w)         // keep waiting?
+        if (w == INFINITE || t < w) // keep waiting?
         {
             if (w == INFINITE || 50 < w - t)
                 Sleep(50);
@@ -1021,7 +1022,7 @@ BOOL CWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWaitTime)
 BOOL CTransferInfo::GetControl(HWND& ctrlHWnd, int ctrlID, BOOL ignoreIsGood)
 {
     if (!ignoreIsGood && !IsGood())
-        return FALSE;         // no point processing any further
+        return FALSE; // no point processing any further
     ctrlHWnd = GetDlgItem(HDialog, ctrlID);
     if (ctrlHWnd == NULL)
     {
@@ -1041,8 +1042,8 @@ void CTransferInfo::EnsureControlIsFocused(int ctrlID)
         HWND wnd = GetFocus();
         while (wnd != NULL && wnd != ctrl)
             wnd = ::GetParent(wnd);
-        if (wnd == NULL)         // only set focus if ctrl is not an ancestor of GetFocus()
-        {                        // for example, the edit line in a combo box
+        if (wnd == NULL) // only set focus if ctrl is not an ancestor of GetFocus()
+        {                // for example, the edit line in a combo box
             SendMessage(HDialog, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
         }
     }
@@ -1100,8 +1101,8 @@ void CTransferInfo::EditLine(int ctrlID, double& value, char* format, BOOL selec
             BOOL decPoints = FALSE;
             BOOL expPart = FALSE;
             if (*s == '-' || *s == '+')
-                s++;                        // skip a digit
-            while (*s != 0)             // convert comma to dot
+                s++;        // skip a digit
+            while (*s != 0) // convert comma to dot
             {
                 if (!expPart && !decPoints && (*s == ',' || *s == '.'))
                 {
@@ -1114,7 +1115,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, char* format, BOOL selec
                     {
                         expPart = TRUE;
                         if (*(s + 1) == '+' || *(s + 1) == '-')
-                            s++;                             // skip +/- after E
+                            s++; // skip +/- after E
                     }
                     else
                     {
@@ -1132,7 +1133,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, char* format, BOOL selec
             if (*s == 0)
                 value = atof(buff); // jen pokud je cislo
             else
-                value = 0;                 // on error, use zero
+                value = 0; // on error, use zero
             break;
         }
         }
@@ -1162,8 +1163,8 @@ void CTransferInfo::EditLine(int ctrlID, int& value, BOOL select)
 
             char* s = buff;
             if (*s == '-' || *s == '+')
-                s++;                        // skip a digit
-            while (*s != 0)             // validate the number
+                s++;        // skip a digit
+            while (*s != 0) // validate the number
             {
                 if (*s < '0' || *s > '9')
                 {
