@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -243,12 +244,12 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
     CALL_STACK_MESSAGE3("SalGetFullName(%s, , %s)", name, curDir);
     int err = 0;
 
-    size_t rootOffset = 3;     // offset of the start of the directory part of the path (3 for "c:\path")
+    size_t rootOffset = 3; // offset of the start of the directory part of the path (3 for "c:\path")
     char* s = name;
     while (*s == ' ')
         s++;
     if (*s == '\\' && *(s + 1) == '\\') // UNC (\\server\share\...)
-    {                                       // trim leading spaces from the path
+    {                                   // trim leading spaces from the path
         if (s != name)
             memmove(name, s, strlen(s) + 1);
         s = name + 2;
@@ -257,7 +258,7 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
         else
         {
             while (*s != 0 && *s != '\\')
-                s++;                 // skip past the server name
+                s++; // skip past the server name
             if (*s == '\\')
                 s++;
             if (*s == 0 || *s == '\\')
@@ -265,20 +266,20 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
             else
             {
                 while (*s != 0 && *s != '\\')
-                    s++;                     // skip past the share name
+                    s++; // skip past the share name
                 if (*s == '\\')
                     s++;
             }
         }
     }
-    else     // drive-letter path (c:\...)
+    else // drive-letter path (c:\...)
     {
         if (*s != 0)
         {
             if (*(s + 1) == ':') // "c:..."
             {
                 if (*(s + 2) == '\\') // "c:\..."
-                {                                     // trim leading spaces from the path
+                {                     // trim leading spaces from the path
                     if (s != name)
                         memmove(name, s, strlen(s) + 1);
                 }
@@ -323,7 +324,7 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
                                 root++;
                             if (l1 + (root - curDir) >= MAX_PATH)
                                 err = GFN_TOOLONGPATH;
-                            else                             // build the path from the current drive root
+                            else // build the path from the current drive root
                             {
                                 memmove(name + (root - curDir), s, l1 + 1);
                                 memmove(name, curDir, root - curDir);
@@ -378,32 +379,32 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
         }
     }
 
-    if (err == 0)     // remove '.' and '..' from the path
+    if (err == 0) // remove '.' and '..' from the path
     {
         if (!SG->SalRemovePointsFromPath(s))
             err = GFN_PATHISINVALID;
     }
 
-    if (err == 0)     // remove any unwanted trailing backslash
+    if (err == 0) // remove any unwanted trailing backslash
     {
         size_t l = strlen(name);
-        if (l > 1 && name[1] == ':')         // drive-letter path ("c:\path")
+        if (l > 1 && name[1] == ':') // drive-letter path ("c:\path")
         {
-            if (l > 3)             // not a root path
+            if (l > 3) // not a root path
             {
                 if (name[l - 1] == '\\')
-                    name[l - 1] = 0;                     // trim trailing backslash
+                    name[l - 1] = 0; // trim trailing backslash
             }
             else
             {
-                name[2] = '\\';                 // root path, backslash required ("c:\")
+                name[2] = '\\'; // root path, backslash required ("c:\")
                 name[3] = 0;
             }
         }
-        else         // UNC path
+        else // UNC path
         {
             if (l > 0 && name[l - 1] == '\\')
-                name[l - 1] = 0;                 // trim trailing backslash
+                name[l - 1] = 0; // trim trailing backslash
         }
     }
 
