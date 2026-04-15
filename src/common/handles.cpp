@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -524,7 +525,7 @@ C__Handles::C__Handles()
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::InitializeCriticalSection(&CriticalSection);
 #else  // MULTITHREADED_HANDLES_ENABLE
-    __HandlesMainThreadID = ::GetCurrentThreadId();     // The only allowed thread.
+    __HandlesMainThreadID = ::GetCurrentThreadId(); // The only allowed thread.
 #endif // MULTITHREADED_HANDLES_ENABLE
 }
 
@@ -604,7 +605,7 @@ C__Handles::SetInfo(const char* file, int line, C__HandlesOutputType outputType)
     ::EnterCriticalSection(&CriticalSection);
     if (CriticalSection.RecursionCount > 1)
     {
-        DebugBreak();         // Recursive handles call: another hidden message loop, see the call stack.
+        DebugBreak(); // Recursive handles call: another hidden message loop, see the call stack.
     }
 #endif // MULTITHREADED_HANDLES_ENABLE
     OutputType = outputType;
@@ -706,7 +707,7 @@ BOOL C__Handles::DeleteHandle(C__HandlesType& type, HANDLE handle,
             {
                 C__HandlesOrigin org = Handles[i].Handle.Origin;
                 if (org != __hoLoadAccelerators && org != __hoLoadIcon &&
-                    org != __hoGetStockObject)                     // This is not a handle exempt from release (we prioritize handles that must be released).
+                    org != __hoGetStockObject) // This is not a handle exempt from release (we prioritize handles that must be released).
                 {
                     if (origin != NULL)
                         *origin = org;
@@ -721,7 +722,7 @@ BOOL C__Handles::DeleteHandle(C__HandlesType& type, HANDLE handle,
             }
         }
     }
-    if (foundTypeOK != -1)     // Found only a handle exempt from release.
+    if (foundTypeOK != -1) // Found only a handle exempt from release.
     {
         type = Handles[foundTypeOK].Handle.Type;
         if (origin != NULL)
@@ -729,7 +730,7 @@ BOOL C__Handles::DeleteHandle(C__HandlesType& type, HANDLE handle,
         Handles.Delete(foundTypeOK);
         return TRUE;
     }
-    if (found != -1)     // Found only a handle with the same numeric value.
+    if (found != -1) // Found only a handle with the same numeric value.
     {
 #if defined(_DEBUG) || defined(__HANDLES_DEBUG)
         C__HandlesData* data = &(Handles[found]);
@@ -944,13 +945,13 @@ C__Handles::CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess,
     HANDLE ret = ::CreateFileW(lpFileName, dwDesiredAccess, dwShareMode,
                                lpSecurityAttributes, dwCreationDisposition,
                                dwFlagsAndAttributes, hTemplateFile);
-    WCHAR paramsBuf[800 + 200];     // Limit file names to 800 characters; anything longer would not be printed anyway because of the MESSAGES limit.
+    WCHAR paramsBuf[800 + 200]; // Limit file names to 800 characters; anything longer would not be printed anyway because of the MESSAGES limit.
     const WCHAR* params = NULL;
     if (ret == INVALID_HANDLE_VALUE) // parameters to buffer only when error occurs (can be displayed)
     {
         DWORD err = GetLastError();
         _snwprintf_s(paramsBuf, _TRUNCATE,
-                     L"dwDesiredAccess=0x%X,\ndwShareMode=0x%X,\ndwCreationDisposition=0x%X,\ndwFlagsAndAttributes=0x%X,\nlpFileName=%s",                      // lpFileName is intentionally last; it can be up to 32K long and will be truncated.
+                     L"dwDesiredAccess=0x%X,\ndwShareMode=0x%X,\ndwCreationDisposition=0x%X,\ndwFlagsAndAttributes=0x%X,\nlpFileName=%s", // lpFileName is intentionally last; it can be up to 32K long and will be truncated.
                      dwDesiredAccess, dwShareMode, dwCreationDisposition, dwFlagsAndAttributes, lpFileName);
         params = paramsBuf;
         SetLastError(err);
@@ -1039,7 +1040,7 @@ HDC C__Handles::BeginPaint(HWND hwnd, LPPAINTSTRUCT lpPaint)
     ::LeaveCriticalSection(&CriticalSection);
 #endif // MULTITHREADED_HANDLES_ENABLE
 
-    HDC ret = ::BeginPaint(hwnd, lpPaint);     // Contains a message loop.
+    HDC ret = ::BeginPaint(hwnd, lpPaint); // Contains a message loop.
 
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::EnterCriticalSection(&CriticalSection);
@@ -2113,7 +2114,7 @@ BOOL C__Handles::FreeLibrary(HMODULE hLibModule)
     ::LeaveCriticalSection(&CriticalSection);
 #endif // MULTITHREADED_HANDLES_ENABLE
 
-    BOOL ret = ::FreeLibrary(hLibModule);     // Calls DLL global destructors; may contain a message loop.
+    BOOL ret = ::FreeLibrary(hLibModule); // Calls DLL global destructors; may contain a message loop.
 
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::EnterCriticalSection(&CriticalSection);
@@ -2133,7 +2134,7 @@ VOID C__Handles::FreeLibraryAndExitThread(HMODULE hLibModule, DWORD dwExitCode)
     ::LeaveCriticalSection(&CriticalSection);
 #endif // MULTITHREADED_HANDLES_ENABLE
 
-    ::FreeLibraryAndExitThread(hLibModule, dwExitCode);     // Calls DLL global destructors; may contain a message loop.
+    ::FreeLibraryAndExitThread(hLibModule, dwExitCode); // Calls DLL global destructors; may contain a message loop.
 
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::EnterCriticalSection(&CriticalSection);
@@ -2219,7 +2220,7 @@ BOOL C__Handles::FindCloseChangeNotification(HANDLE hChangeHandle)
     ::LeaveCriticalSection(&CriticalSection);
 #endif // MULTITHREADED_HANDLES_ENABLE
 
-    BOOL ret = ::FindCloseChangeNotification(hChangeHandle);     // Can hang for quite a long time.
+    BOOL ret = ::FindCloseChangeNotification(hChangeHandle); // Can hang for quite a long time.
 
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::EnterCriticalSection(&CriticalSection);
@@ -2346,7 +2347,7 @@ HFILE
 C__Handles::OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
 {
     HFILE ret = ::OpenFile(lpFileName, lpReOpenBuff, uStyle);
-    CheckCreate(ret != HFILE_ERROR, __htFile, __hoOpenFile, (HANDLE)(UINT_PTR)ret, GetLastError(), TRUE);     // lpFileName is only char even in the Unicode version, so this function is unusable (obsolete); I left it out of the parameter dump.
+    CheckCreate(ret != HFILE_ERROR, __htFile, __hoOpenFile, (HANDLE)(UINT_PTR)ret, GetLastError(), TRUE); // lpFileName is only char even in the Unicode version, so this function is unusable (obsolete); I left it out of the parameter dump.
     return ret;
 }
 
@@ -2378,7 +2379,7 @@ HDWP C__Handles::DeferWindowPos(HDWP hWinPosInfo, HWND hWnd, HWND hWndInsertAfte
 {
     HDWP ret = ::DeferWindowPos(hWinPosInfo, hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
 
-    if (ret != hWinPosInfo)     // The structure was reallocated, so we must update the tracked handle value.
+    if (ret != hWinPosInfo) // The structure was reallocated, so we must update the tracked handle value.
     {
         CheckClose(TRUE, (HANDLE)hWinPosInfo, __htDeferWindowPos, __GetHandlesOrigin(__hoDeferWindowPos), ERROR_SUCCESS, FALSE);
         CheckCreate(ret != NULL, __htDeferWindowPos, __hoDeferWindowPos, (HANDLE)ret, GetLastError());
@@ -2400,7 +2401,7 @@ BOOL C__Handles::EndDeferWindowPos(HDWP hWinPosInfo)
     ::LeaveCriticalSection(&CriticalSection);
 #endif // MULTITHREADED_HANDLES_ENABLE
 
-    BOOL ret = ::EndDeferWindowPos(hWinPosInfo);     // Contains a message loop.
+    BOOL ret = ::EndDeferWindowPos(hWinPosInfo); // Contains a message loop.
 
 #ifdef MULTITHREADED_HANDLES_ENABLE
     ::EnterCriticalSection(&CriticalSection);
