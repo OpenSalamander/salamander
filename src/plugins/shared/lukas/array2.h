@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -14,11 +15,11 @@ template <class DATA_TYPE>
 class TDirectArray2
 {
 protected:
-    DATA_TYPE** Blocks;     // pointer to the block array
-    int BlockSize;          // block size
+    DATA_TYPE** Blocks; // pointer to the block array
+    int BlockSize;      // block size
 
 public:
-    int Count;     // number of elements in the array
+    int Count; // number of elements in the array
 
     TDirectArray2<DATA_TYPE>(int blockSize)
     {
@@ -31,15 +32,15 @@ public:
 
     virtual void Destructor(int) {}
 
-    void Destroy();                        // clears the array
-    BOOL Add(const DATA_TYPE& member);     // adds an element at the end
-    BOOL Delete(int index);                // deletes the element at the given position;
+    void Destroy();                    // clears the array
+    BOOL Add(const DATA_TYPE& member); // adds an element at the end
+    BOOL Delete(int index);            // deletes the element at the given position;
                                        // moves the last element into its place and shrinks the array
                                        /*
                                         * this function is never called, but without it
                                         * MSVC does terrible things
                                         */
-    DATA_TYPE& operator[](int index)       // returns the element at the given index
+    DATA_TYPE& operator[](int index)   // returns the element at the given index
     {
         return Blocks[index / BlockSize][index % BlockSize];
     }
