@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -47,8 +48,8 @@ enum C__HandlesOutputType
 
 enum C__HandlesType
 {
-    __htHandle_comp_with_CloseHandle,      // handle compatible with CloseHandle() and DuplicateHandle()
-    __htHandle_comp_with_DeleteObject,     // handle compatible with DeleteObject() and GetStockObject()
+    __htHandle_comp_with_CloseHandle,  // handle compatible with CloseHandle() and DuplicateHandle()
+    __htHandle_comp_with_DeleteObject, // handle compatible with DeleteObject() and GetStockObject()
     __htKey,
     __htIcon,
     __htGlobal,
@@ -213,7 +214,7 @@ struct C__HandlesHandle
 {
     C__HandlesType Type;
     C__HandlesOrigin Origin;
-    HANDLE Handle;     // generic, for all handle types
+    HANDLE Handle; // generic, for all handle types
 
     C__HandlesHandle() {}
 
@@ -257,11 +258,11 @@ protected:
 class C__Handles
 {
 protected:
-    C_HandlesDataArray Handles;          // all monitored handles
-    C__HandlesData TemporaryHandle;      // set from SetInfo() during insertion
-    C__HandlesOutputType OutputType;     // message output type
+    C_HandlesDataArray Handles;      // all monitored handles
+    C__HandlesData TemporaryHandle;  // set from SetInfo() during insertion
+    C__HandlesOutputType OutputType; // message output type
 #ifdef MULTITHREADED_HANDLES_ENABLE
-    CRITICAL_SECTION CriticalSection;     // for multithreaded synchronization
+    CRITICAL_SECTION CriticalSection; // for multithreaded synchronization
 #endif // MULTITHREADED_HANDLES_ENABLE
 
 public:
@@ -655,7 +656,7 @@ public:
     BOOL OpenProcessToken(HANDLE ProcessHandle, DWORD DesiredAccess, PHANDLE TokenHandle);
 
 protected:
-    void AddHandle(C__HandlesHandle handle);     // adds TemporaryHandle
+    void AddHandle(C__HandlesHandle handle); // adds TemporaryHandle
 
     // removes the handle; returns TRUE on success
     BOOL DeleteHandle(C__HandlesType& type, HANDLE handle,
