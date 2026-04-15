@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -329,10 +330,10 @@ class TSmallerDirectArray
 {
 public:
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    CErrorType State;     // if not etNone, an error has occurred
+    CErrorType State; // if not etNone, an error has occurred
 #endif
     DATA_TYPE* Data; // ukazatel na pole, public nutne misto etDestructed
-    WORD Count;          // current item count in the collection
+    WORD Count;      // current item count in the collection
 
     TSmallerDirectArray<DATA_TYPE, Base, Delta>();
     ~TSmallerDirectArray() { Destroy(); }
@@ -355,12 +356,12 @@ public:
     }
 
     void Insert(int index, const DATA_TYPE& member);
-    inline WORD Add(const DATA_TYPE& member);          // adds an item to the end of the array,
+    inline WORD Add(const DATA_TYPE& member);      // adds an item to the end of the array,
                                                    // returns the item index
-    WORD Add(const DATA_TYPE* members, int count);     // adds 'count' items from 'members'
+    WORD Add(const DATA_TYPE* members, int count); // adds 'count' items from 'members'
 
-    DATA_TYPE& At(int index)     // returns a reference to the item at 'index'
-    {                            // int is used only to avoid warnings; range up to 65535
+    DATA_TYPE& At(int index) // returns a reference to the item at 'index'
+    {                        // int is used only to avoid warnings; range up to 65535
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
 #endif
@@ -371,13 +372,13 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0];             // because of the compiler, we return a possibly invalid item
+            return Data[0]; // because of the compiler, we return a possibly invalid item
         }
 #endif
     }
 
-    DATA_TYPE& operator[](int index)     // returns a reference to the item at 'index'
-    {                                    // int is used only to avoid warnings; range up to 65535
+    DATA_TYPE& operator[](int index) // returns a reference to the item at 'index'
+    {                                // int is used only to avoid warnings; range up to 65535
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
 #endif
@@ -388,7 +389,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0];             // because of the compiler, we return a possibly invalid item
+            return Data[0]; // because of the compiler, we return a possibly invalid item
         }
 #endif
     }
@@ -404,15 +405,15 @@ public:
 
     DATA_TYPE* GetData() { return Data; }
 
-    void DestroyMembers();               // releases only the items, keeps the array
-    void Destroy();                      // complete destruction of the object
-    void Delete(int index);              // deletes the item at 'index' and shifts the rest
-    void Reduce(WORD newCount);          // deletes items from newCount to the end
-    void Delete(WORD from, WORD to);     // deletes items in <from..to) and shifts the rest down
+    void DestroyMembers();           // releases only the items, keeps the array
+    void Destroy();                  // complete destruction of the object
+    void Delete(int index);          // deletes the item at 'index' and shifts the rest
+    void Reduce(WORD newCount);      // deletes items from newCount to the end
+    void Delete(WORD from, WORD to); // deletes items in <from..to) and shifts the rest down
 
 protected:
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    virtual void Error(CErrorType err)     // array error handling
+    virtual void Error(CErrorType err) // array error handling
     {
         if (State == etNone)
             State = err;
@@ -420,8 +421,8 @@ protected:
             TRACE_E("Incorrect call to Error method (State = " << State << ").");
     }
 #endif
-    void EnlargeArray();     // enlarges array
-    void ReduceArray();      // reduces array
+    void EnlargeArray(); // enlarges array
+    void ReduceArray();  // reduces array
 
     void Move(CArrayDirection direction, WORD first, WORD count);
     // shift by 1
@@ -505,7 +506,7 @@ private: // prevent calls to code that does not work (moves items, ...)
     int Add(const CLASS_TYPE*, int) { return ULONG_MAX; }
     void Delete(int) {}
     void Move(CArrayDirection, int, int) {}
-    void DetachMembers() {}     // that would not call destructors
+    void DetachMembers() {} // that would not call destructors
 };
 
 #define DEFINE_NEW(CLASS_TYPE) \
@@ -1190,7 +1191,7 @@ template <class DATA_TYPE, WORD Base, WORD Delta>
 void TSmallerDirectArray<DATA_TYPE, Base, Delta>::Destroy()
 {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
-    if (State == etNone)     // State can also be etDestructed
+    if (State == etNone) // State can also be etDestructed
     {
 #endif
         if (Data != NULL)
