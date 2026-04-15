@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -36,7 +37,7 @@ BOOL CALLBACK SubClassedProgressDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
             return S_OK;
 
         case WM_7ZIP_ADDTEXT:
-            Salamander->ProgressDialogAddText((char*)lParam, TRUE); // delayed paint, to avoid slow down by frequent refresh
+            Salamander->ProgressDialogAddText((char*)lParam, TRUE); // Delayed paint to avoid slowdown from frequent refreshes
             return S_OK;
 
         case WM_7ZIP_CREATEFILE:
