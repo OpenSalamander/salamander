@@ -53,7 +53,7 @@ void HistoryComboBox(CTransferInfo& ti, int id, char* text, int textMax,
 
         int toMove = historySize - 1;
 
-        // podivame jestli uz stejna polozka neni v historii
+        // Check whether the same item is already in the history.
         int i;
         for (i = 0; i < historySize; i++)
         {
@@ -65,17 +65,17 @@ void HistoryComboBox(CTransferInfo& ti, int id, char* text, int textMax,
                 break;
             }
         }
-        // alokujeme si pamet pro novou polozku
+        // Allocate memory for the new item.
         char* ptr = new char[strlen(text) + 1];
         if (ptr)
         {
-            // uvolnime pamet vymazavane polozky
+            // Free the removed item's memory.
             if (history[toMove])
                 delete[] history[toMove];
-            // vytvorime misto pro cestu kterou budeme ukladat
+            // Make room for the path we are about to store.
             for (i = toMove; i > 0; i--)
                 history[i] = history[i - 1];
-            // ulozime cestu
+            // Store the path.
             strcpy(ptr, text);
             history[0] = ptr;
         }
