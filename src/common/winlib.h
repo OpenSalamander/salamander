@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -16,7 +17,7 @@ enum CWLS
 
 // set custom WinLib strings
 void SetWinLibStrings(const TCHAR* invalidNumber, // "not a number" (for numeric transfer buffers)
-                      const TCHAR* error);                              // title "error" (for numeric transfer buffers)
+                      const TCHAR* error);        // title "error" (for numeric transfer buffers)
 
 extern HINSTANCE HInstance;
 extern const TCHAR* CWINDOW_CLASSNAME;  // universal window class name
@@ -48,9 +49,9 @@ public:
 
 enum CObjectOrigin // used when destroying windows and dialogs
 {
-    ooAllocated,     // deallocated on WM_DESTROY
-    ooStatic,        // HWindow is set to NULL on WM_DESTROY
-    ooStandard       // for modal dialogs = ooStatic, for modeless dialogs = ooAllocated
+    ooAllocated, // deallocated on WM_DESTROY
+    ooStatic,    // HWindow is set to NULL on WM_DESTROY
+    ooStandard   // for modal dialogs = ooStatic, for modeless dialogs = ooAllocated
 };
 
 // ****************************************************************************
@@ -102,9 +103,9 @@ public:
         SetHelpID(helpID);
     }
 
-    virtual ~CWindowsObject() {}     // so derived destructors are called
+    virtual ~CWindowsObject() {} // so derived destructors are called
 
-    virtual BOOL Is(int) { return FALSE; }     // object type identification
+    virtual BOOL Is(int) { return FALSE; } // object type identification
     virtual int GetObjectType() { return otBase; }
 
     virtual BOOL IsAllocated() { return ObjectOrigin == ooAllocated; }
@@ -201,7 +202,7 @@ public:
                 HWND hwndParent,        // handle of parent or owner window
                 HMENU hmenu,            // handle of menu or child-window identifier
                 HINSTANCE hinst,        // handle of application instance
-                LPVOID lpvParam);                       // pointer to the window object being created
+                LPVOID lpvParam);       // pointer to the window object being created
 
     HWND CreateEx(DWORD dwExStyle,        // extended window style
                   LPCTSTR lpszClassName,  // address of registered class name
@@ -214,7 +215,7 @@ public:
                   HWND hwndParent,        // handle of parent or owner window
                   HMENU hmenu,            // handle of menu or child-window identifier
                   HINSTANCE hinst,        // handle of application instance
-                  LPVOID lpvParam);                         // pointer to the window object being created
+                  LPVOID lpvParam);       // pointer to the window object being created
 
 #ifndef _UNICODE
     HWND CreateW(LPCWSTR lpszClassName,  // address of registered class name
@@ -227,7 +228,7 @@ public:
                  HWND hwndParent,        // handle of parent or owner window
                  HMENU hmenu,            // handle of menu or child-window identifier
                  HINSTANCE hinst,        // handle of application instance
-                 LPVOID lpvParam);                        // pointer to the window object being created
+                 LPVOID lpvParam);       // pointer to the window object being created
 
     HWND CreateExW(DWORD dwExStyle,        // extended window style
                    LPCWSTR lpszClassName,  // address of registered class name
@@ -240,7 +241,7 @@ public:
                    HWND hwndParent,        // handle of parent or owner window
                    HMENU hmenu,            // handle of menu or child-window identifier
                    HINSTANCE hinst,        // handle of application instance
-                   LPVOID lpvParam);                          // pointer to the window object being created
+                   LPVOID lpvParam);       // pointer to the window object being created
 #endif                                     // _UNICODE
 
     void AttachToWindow(HWND hWnd);
@@ -277,8 +278,8 @@ protected:
 
 enum CTransferType
 {
-    ttDataToWindow,      // data to the window
-    ttDataFromWindow     // data from the window
+    ttDataToWindow,  // data to the window
+    ttDataFromWindow // data from the window
 };
 
 // ****************************************************************************
@@ -286,7 +287,7 @@ enum CTransferType
 class CTransferInfo
 {
 public:
-    int FailCtrlID;     // INT_MAX = no error, otherwise the ID of the failing control
+    int FailCtrlID; // INT_MAX = no error, otherwise the ID of the failing control
     CTransferType Type;
 
     CTransferInfo(HWND hDialog, CTransferType type)
@@ -315,7 +316,7 @@ public:
 #endif // _UNICODE
 
 protected:
-    HWND HDialog;     // handle of the dialog for which the transfer is performed
+    HWND HDialog; // handle of the dialog for which the transfer is performed
 };
 
 // ****************************************************************************
@@ -323,8 +324,8 @@ protected:
 class CDialog : public CWindowsObject
 {
 public:
-    CWindowsObject::SetObjectOrigin;     // needed so CPropSheetPage compiles
-    CWindowsObject::HWindow;             // needed so CPropSheetPage compiles
+    CWindowsObject::SetObjectOrigin; // needed so CPropSheetPage compiles
+    CWindowsObject::HWindow;         // needed so CPropSheetPage compiles
 
 #ifdef _UNICODE
     CDialog(HINSTANCE modul, int resID, HWND parent, CObjectOrigin origin = ooStandard) : CWindowsObject(origin)
@@ -366,8 +367,8 @@ public:
 
     void SetParent(HWND parent) { Parent = parent; }
     HWND GetParent() { return Parent; }
-    INT_PTR Execute();     // modal dialog
-    HWND Create();         // modeless dialog
+    INT_PTR Execute(); // modal dialog
+    HWND Create();     // modeless dialog
 
     static INT_PTR CALLBACK CDialogProc(HWND hwndDlg, UINT uMsg,
                                         WPARAM wParam, LPARAM lParam);
@@ -377,7 +378,7 @@ protected:
 
     virtual void NotifDlgJustCreated() {}
 
-    BOOL Modal;     // because of the way the dialog is destroyed
+    BOOL Modal; // because of the way the dialog is destroyed
     HINSTANCE Modul;
     int ResID;
     HWND Parent;
@@ -420,7 +421,7 @@ public:
     int search, cache, maxWndCount;
 #endif
 
-    CWinLibCS CS;     // public so Windows Manager changes can be prevented locally
+    CWinLibCS CS; // public so Windows Manager changes can be prevented locally
 
 public:
     CWindowsManager();
@@ -431,7 +432,7 @@ public:
     int GetCount();
 
 private:
-    HWND LastHWnd[WNDMGR_CACHE_SIZE];     // last-request cache
+    HWND LastHWnd[WNDMGR_CACHE_SIZE]; // last-request cache
     CWindowsObject* LastWnd[WNDMGR_CACHE_SIZE];
 
     inline BOOL GetIndex(HWND hWnd, int& index);
@@ -456,7 +457,7 @@ BOOL CWindowsManager::GetIndex(HWND hWnd, int& index)
     {
         m = (l + r) / 2;
         HWND hw = At(m).HWnd;
-        if (hw == hWnd)         // found
+        if (hw == hWnd) // found
         {
             index = m;
             CS.Leave();
@@ -464,9 +465,9 @@ BOOL CWindowsManager::GetIndex(HWND hWnd, int& index)
         }
         else if (hw > hWnd)
         {
-            if (l == r || l > m - 1)             // not found
+            if (l == r || l > m - 1) // not found
             {
-                index = m;                 // should be at this position
+                index = m; // should be at this position
                 CS.Leave();
                 return FALSE;
             }
@@ -474,9 +475,9 @@ BOOL CWindowsManager::GetIndex(HWND hWnd, int& index)
         }
         else
         {
-            if (l == r)             // not found
+            if (l == r) // not found
             {
-                index = m + 1;                 // should be after this position
+                index = m + 1; // should be after this position
                 CS.Leave();
                 return FALSE;
             }
@@ -502,10 +503,10 @@ struct CWindowQueueItem
 class CWindowQueue
 {
 protected:
-    const TCHAR* QueueName;     // queue name (for debugging only)
+    const TCHAR* QueueName; // queue name (for debugging only)
     CWindowQueueItem* Head;
     int Count;
-    CWinLibCS CS;     // access from multiple threads -> synchronization required
+    CWinLibCS CS; // access from multiple threads -> synchronization required
 
 public:
     CWindowQueue(const TCHAR* queueName /* e.g. "Find Dialogs" */)
@@ -516,10 +517,10 @@ public:
     }
     ~CWindowQueue();
 
-    BOOL Add(CWindowQueueItem* item);     // adds an item to the queue, returns success status
-    void Remove(HWND hWindow);            // removes an item from the queue
-    BOOL Empty();                         // returns TRUE if the queue is empty
-    int GetWindowCount();                 // returns the number of windows in the queue
+    BOOL Add(CWindowQueueItem* item); // adds an item to the queue, returns success status
+    void Remove(HWND hWindow);        // removes an item from the queue
+    BOOL Empty();                     // returns TRUE if the queue is empty
+    int GetWindowCount();             // returns the number of windows in the queue
 
     // posts the message to all windows (PostMessage - windows may be in different threads)
     void BroadcastMessage(DWORD uMsg, WPARAM wParam, LPARAM lParam);
