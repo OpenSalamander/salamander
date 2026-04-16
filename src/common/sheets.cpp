@@ -45,7 +45,7 @@ void CElasticLayout::AddResizeCtrl(int resID)
         RECT r;
         GetWindowRect(hChild, &r);
 
-        // pokud je spodni hrana prvku vetsi nez SplitY, posuneme SplitY hranici
+        // if the control's bottom edge is below SplitY, move the SplitY boundary
         POINT p = {r.right, r.bottom};
         ScreenToClient(HWindow, &p);
         if (p.y > SplitY)
@@ -68,7 +68,7 @@ CElasticLayout::FindMoveControls(HWND hChild, LPARAM lParam)
 {
     CElasticLayout* el = (CElasticLayout*)lParam;
 
-    // pokud prvek lezi pod SplitY, pridame ho do seznamu prvku, ktere budou posouvat
+    // if the control is below SplitY, add it to the list of controls to move
     RECT r;
     GetWindowRect(hChild, &r);
     POINT p = {r.left, r.top};
@@ -310,7 +310,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
             return TRUE;
         }
-        break; // F1 nechame propadnout do parenta
+        break; // let F1 fall through to the parent
     }
 
     case WM_CONTEXTMENU:
@@ -358,7 +358,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return TRUE;
             }
 
-            // obehnu vsechny stranky pro transfer
+            // iterate over all pages for transfer
             for (int i = 0; i < ParentDialog->Count; i++)
             {
                 if (ParentDialog->At(i)->HWindow != NULL)
@@ -792,7 +792,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (!ChildDialog->ValidateData())
                 return TRUE;
 
-            // obehnu vsechny stranky pro transfer
+            // iterate over all pages for transfer
             for (int i = 0; i < TPD->Count; i++)
                 if (TPD->At(i)->HWindow != NULL)
                     if (!TPD->At(i)->TransferData(ttDataFromWindow))
@@ -1047,8 +1047,8 @@ int CTreePropHolderDlg::BuildAndMeasureTree()
         tvis.item.pszText = TPD->At(i)->Title;
         tvis.item.cchTextMax = (int)_tcslen(TPD->At(i)->Title);
         tvis.item.state = 0;
-        // POZOR: expandovatelne polozky zde musime expandovat, jinak nasledne TreeView_GetItemRect() vrati FALSE
-        // a nahodna data v obdelniku RECT r
+        // WARNING: expandable items must be expanded here, otherwise TreeView_GetItemRect() returns FALSE
+        // and RECT r contains random data
         if (TPD->At(i)->Expanded != NULL)
             tvis.item.state |= TVIS_EXPANDED;
         tvis.item.stateMask = tvis.item.state;
