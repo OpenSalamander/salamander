@@ -3,7 +3,7 @@
 // CommentsTranslationProject: TRANSLATED
 
 // ****************************************************************************
-// Boyer-Mooruv algoritmus hledani podretezce
+// Boyer-Moore substring search algorithm
 // ****************************************************************************
 
 #pragma once
@@ -73,14 +73,12 @@ private:
     WORD Flags; // modify via SetFlags
 };
 
-//
 // ****************************************************************************
 // SearchForward
-// vraci pozici Patternu nebo -1
-// text - v cem ma hledat
-// length - delka stringu text
-// start - prvni znak cislovano od 0
-//
+// returns the index of Pattern or -1
+// text - text to search in
+// length - length of the text string
+// start - index of the first character, starting at 0
 
 int CSearchData::SearchForward(const char* text, int length, int start)
 {
@@ -119,13 +117,11 @@ int CSearchData::SearchForward(const char* text, int length, int start)
     return -1;
 }
 
-//
 // ****************************************************************************
 // SearchBackward
-// vraci pozici Patternu nebo -1
-// text - v cem ma hledat
-// length - delka stringu text
-//
+// returns the index of Pattern or -1
+// text - text to search in
+// length - length of the text string
 
 int CSearchData::SearchBackward(const char* text, int length)
 {
