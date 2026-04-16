@@ -73,10 +73,10 @@ void HistoryComboBox(CTransferInfo& ti, int id, char* text, int textMax,
             // Free the removed item's memory.
             if (history[toMove])
                 delete[] history[toMove];
-            // Make room for the path we are about to store.
+            // Make room in the history for the new path.
             for (i = toMove; i > 0; i--)
                 history[i] = history[i - 1];
-            // Store the path.
+            // Store the path in the history.
             strcpy(ptr, text);
             history[0] = ptr;
         }
