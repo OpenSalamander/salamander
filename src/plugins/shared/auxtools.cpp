@@ -222,8 +222,8 @@ BOOL CThreadQueue::KillAll(BOOL force, int waitTime, int forceWaitTime, DWORD ex
                 TRACE_E("Thread has not ended itself, we must terminate it (" << QueueName << " queue).");
                 TerminateThread(item->Thread, exitCode);
                 WaitForSingleObject(item->Thread, INFINITE); // wait until the thread actually exits; sometimes this takes quite a while
-                // pokud nejaky thread ceka na ukonceni prave zabiteho threadu, pustime pro nej na chvilku
-                // frontu, jinak zustane zasekly v UnlockItem()
+                // if any thread is waiting for the just-killed thread to exit, briefly release the
+                // queue so it can proceed; otherwise it will stay stuck in UnlockItem()
                 leaveCS = item->Locks > 0;
             }
             else // without force, just report that something is still running
@@ -311,11 +311,11 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
     data.Param = param;
     data.Continue = Continue;
 
-    // spustime thread, nepouzivame _beginthreadex(), protoze ten ma od VC2015 side-effect v podobe
-    // dalsiho loadu tohoto modulu (pluginu), ktery sice pri beznem ukonceni zase uvolni,
-    // ale kdyz pouzijeme TerminateThread(), zustane modul naloadeny az do ukonceni procesu
-    // Salamandera, pak se teprve spusti destruktory globalnich objektu a to muze vest
-    // k necekanym padum, protoze uz jsou vsechny pluginove rozhrani uvolnene (napr.
+    // start the thread; we do not use _beginthreadex() because since VC2015 it causes
+    // another load of this module (plugin), which is released again on normal exit,
+    // but if we use TerminateThread(), the module stays loaded until the Salamander process exits;
+    // only then do the global object destructors run, which can lead
+    // to unexpected crashes because all plugin interfaces have already been released (e.g.
     // SalamanderDebug)
     DWORD tid;
     HANDLE thread = CreateThread(NULL, stack_size, CThreadQueue::ThreadBase, &data, CREATE_SUSPENDED, &tid);
@@ -389,6 +389,6 @@ CThread::UniversalBody(void* param)
 HANDLE
 CThread::Create(CThreadQueue& queue, unsigned stack_size, DWORD* threadID)
 {
-    // POZOR: po volani StartThread() muze byt 'this' neplatny (proto je zapis do 'Thread' uvnitr)
+    // WARNING: after StartThread() returns, 'this' may already be invalid (so 'Thread' is set inside)
     return queue.StartThread(UniversalBody, this, stack_size, &Thread, threadID);
 }
