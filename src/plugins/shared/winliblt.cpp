@@ -108,7 +108,7 @@ void ReleaseWinLib(HINSTANCE dllInstance)
         // problem: after the plugin is unloaded, the app can crash because a window procedure may be called
         // in the unloaded DLL (if these are windows destroyed as part of terminated threads, that is OK)
         TRACE_E("Unable to release WinLibLT - some window or dialog (count = " << WindowsManager.WindowsCount << ") is still attached to WinLibLT!");
-        // if it was a window from a terminated thread, WinLibLT can still be released; otherwise the unregister function will return an error
+        // return;  // if this was a window from a terminated thread, WinLibLT can still be released; otherwise, the unregister function will return an error
     }
 
     // unregister the classes so they can be registered again on the next plugin load
@@ -252,7 +252,7 @@ CWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
         if (GetWindowLong(HWindow, GWL_STYLE) & WS_CHILD)
-            break;   // if F1 is not handled and this is a child window, let F1 fall through to the parent
+            break;   // if F1 is not handled and this is a child window, let F1 propagate to the parent
         return TRUE; // if this is not a child window, stop processing F1
     }
     }
@@ -295,13 +295,13 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         wnd = (CWindow*)WindowsManager.GetWindowPtr(hwnd);
         if (wnd != NULL && wnd->Is(otWindow))
         {
-            // Petr: moved this below wnd->WindowProc() so messages are still delivered during WM_DESTROY
-            //       (Lukas needed this)
+            // Moved below wnd->WindowProc() so messages are still delivered during WM_DESTROY
+            // (needed by Lukas)
             // WindowsManager.DetachWindow(hwnd);
 
             LRESULT res = wnd->WindowProc(uMsg, wParam, lParam);
 
-            // now call the old procedure again (because of subclassing)
+            // now call the old procedure again due to subclassing
             WindowsManager.DetachWindow(hwnd);
 
             // if the current WndProc is not ours, do not change it,
@@ -453,7 +453,7 @@ CDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             WinLibLTHelpCallback(HWindow, HelpID);
         }
-        return TRUE; // do not let F1 fall through to the parent even if we do not call WinLibLTHelpCallback()
+        return TRUE; // do not let F1 propagate to the parent even if we do not call WinLibLTHelpCallback()
     }
 
     case WM_COMMAND:
@@ -556,7 +556,7 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // Error, or the message was not received between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -675,7 +675,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             WinLibLTHelpCallback(HWindow, HelpID);
             return TRUE;
         }
-        break; // let F1 fall through to the parent
+        break; // allow F1 to propagate to the parent
     }
 
     case WM_NOTIFY:
@@ -807,11 +807,11 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 #endif
     }
     }
-    //--- call DialogProc(...) of the corresponding dialog object
+    //--- call DialogProc(...) on the corresponding dialog object
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // error, or the message was not received between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -997,7 +997,7 @@ BOOL CWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWaitTime)
     while ((w == INFINITE || w > 0) && !Empty())
     {
         DWORD t = GetTickCount() - ti;
-        if (w == INFINITE || t < w) // keep waiting?
+        if (w == INFINITE || t < w) // still waiting?
         {
             if (w == INFINITE || 50 < w - t)
                 Sleep(50);
@@ -1021,7 +1021,7 @@ BOOL CWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWaitTime)
 BOOL CTransferInfo::GetControl(HWND& ctrlHWnd, int ctrlID, BOOL ignoreIsGood)
 {
     if (!ignoreIsGood && !IsGood())
-        return FALSE; // no point processing any further
+        return FALSE; // No point in processing further
     ctrlHWnd = GetDlgItem(HDialog, ctrlID);
     if (ctrlHWnd == NULL)
     {
@@ -1101,7 +1101,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, char* format, BOOL selec
             BOOL expPart = FALSE;
             if (*s == '-' || *s == '+')
                 s++;        // skip a digit
-            while (*s != 0) // convert comma to dot
+            while (*s != 0) // convert comma to period
             {
                 if (!expPart && !decPoints && (*s == ',' || *s == '.'))
                 {
