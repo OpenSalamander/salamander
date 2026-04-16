@@ -243,7 +243,7 @@ DWORD
 C__TraceThreadCache::GetUniqueThreadId(DWORD tid)
 {
     if (CacheUID[__TraceCacheGetIndex(tid)] != -1 && // je-li platny zaznam
-        CacheTID[__TraceCacheGetIndex(tid)] == tid)  // a je-li shodny s tid
+        CacheTID[__TraceCacheGetIndex(tid)] == tid)  // and the TID matches
     {
         return CacheUID[__TraceCacheGetIndex(tid)]; // UID is in the cache
     }
@@ -488,7 +488,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
 
     BOOL ret = FALSE;
     if (HWritePipe != NULL)
-        ret = TRUE; // pokud je jiz spojeni navazano
+        ret = TRUE; // if the connection is already established
     else
     {
         // try to open the mutex for access to the shared memory
