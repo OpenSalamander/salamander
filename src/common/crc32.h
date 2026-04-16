@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -15,7 +16,7 @@
 extern const DWORD StaticCrcTab[256];
 #endif
 
-//fill up crc table
+//populate the CRC table
 void MakeCrcTable(DWORD* crcTab);
 
 //run a set of bytes through the crc shift register, if buffer is a NULL
