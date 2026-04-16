@@ -35,27 +35,27 @@ class CPluginDataInterfaceAbstract;
 class CSalamanderForViewFileOnFSAbstract
 {
 public:
-    // Finds an existing copy of the file in the disk cache or, if the copy is not yet
-    // in the disk cache, reserves a name for it (a target file, for example for an FTP download);
+    // Finds an existing copy of the file in the disk cache or, if no copy exists yet,
+    // reserves a name for it (the target file, for example for an FTP download);
     // 'uniqueFileName' is the unique name of the original file (the disk cache is searched
-    // by this name; the full file name in Salamander form should be sufficient -
-    // fs-name:fs-user-part; WARNING: the name is compared case-sensitively, so if the
-    // plugin requires case-insensitive matching, it must convert all names, for example,
+    // by this name; the full file name in Salamander format should be sufficient -
+    // "fs-name:fs-user-part"; WARNING: the name is compared case-sensitively, so if the
+    // plugin requires case-insensitive comparison, it must convert all names, for example,
     // to lowercase - see CSalamanderGeneralAbstract::ToLowerCase); 'nameInCache' is the name
     // of the file copy stored in the disk cache (the last component of the original file name
     // is expected here so that it later reminds the user of the original file in the viewer caption);
     // if 'rootTmpPath' is NULL, the disk cache is in the Windows TEMP
-    // directory; otherwise 'rootTmpPath' contains the path to the disk cache; on system error it returns
-    // NULL (nemelo by vubec nastat), jinak vraci plne jmeno kopie souboru v disk-cache
+    // directory; otherwise, 'rootTmpPath' contains the path to the disk cache; on a system error it returns
+    // NULL (this should not happen at all), otherwise it returns the full name of the file copy in the disk cache
     // and returns TRUE in 'fileExists' if the file already exists in the disk cache (for example,
-    // the FTP download has already been performed), or FALSE if the file still has to be prepared
+    // the FTP download has already been performed), or FALSE if the file still needs to be prepared
     // (for example by downloading it); 'parent' is the parent of error message boxes (for example, an overly long
     // file name)
-    // POZOR: pokud nevratila NULL (nenastala systemova chyba), je nutne pozdeji zavolat
-    //        FreeFileNameInCache (pro stejne 'uniqueFileName')
+    // WARNING: if it did not return NULL (no system error occurred), it is necessary to later call
+    //          FreeFileNameInCache (for the same 'uniqueFileName')
     // NOTE: if the FS uses the disk cache, it should at least call
-    //        CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:"), jinak budou
-    //        its file copies needlessly clutter the disk cache
+    //       CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:") when the plugin is unloaded, otherwise
+    //       its file copies will needlessly clutter the disk cache
     virtual const char* WINAPI AllocFileNameInCache(HWND parent, const char* uniqueFileName, const char* nameInCache,
                                                     const char* rootTmpPath, BOOL& fileExists) = 0;
 
@@ -72,7 +72,7 @@ public:
 // ****************************************************************************
 // CPluginFSInterfaceAbstract
 //
-// set of plugin methods that Salamander needs to work with a file system
+// Set of plugin methods that Salamander needs to work with the file system
 
 // typ ikon v panelu pri listovani FS (pouziva se v CPluginFSInterfaceAbstract::ListCurrentPath())
 #define pitSimple 0       // simple icons for files and directories - by extension (association)
@@ -538,21 +538,21 @@ public:
     // Executes a context-menu command for an FS item or for an active/detached FS in the Change Drive menu after the Change Drive menu is closed, or executes a context-menu command for an FS item in the Drive bars (only for compatibility with the Change Drive menu). It is called in response to return values 'closeMenu' (TRUE), 'postCmd', and 'postCmdParam' from ChangeDriveMenuItemContextMenu after the Change Drive menu is closed (for Drive bars, immediately). 'panel' identifies the panel we should work with - for a context menu in the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu can be opened only for the active panel); for a context menu in the Drive bars, 'panel' may be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we may work with the inactive panel).
     virtual void WINAPI ExecuteChangeDrivePostCommand(int panel, int postCmd, void* postCmdParam) = 0;
 
-    // Executes an item in a panel with an open FS (for example, in response to the Enter key in the panel;
-    // for subdirectories/up-dir (it is an up-dir if its name is .. and it is also the first directory)
-    // a path change is assumed; for files, a copy of the file on disk is opened and any
-    // changes are then loaded back to the FS); the execution cannot be performed in an FS-interface method because
-    // methods that change the path cannot be called there (they may close the FS);
-    // 'panel' specifies the panel in which the execution takes place (PANEL_LEFT or PANEL_RIGHT);
-    // 'pluginFS' is the interface of the FS opened in the panel; 'pluginFSName' is the FS name opened
-    // in the panel; 'pluginFSNameIndex' is the index of the FS name opened in the panel (to make it easier to detect
-    // which FS name it is); 'file' is the file/directory/up-dir being executed ('isDir' is 0/1/2);
-    // POZOR: volani metody pro zmenu cesty v panelu muze zneplatnit 'pluginFS' (po zavreni FS)
-    //        and 'file'+'isDir' may also become invalid (a changed panel listing destroys the items of the original listing)
-    // POZNAMKA: pokud se spousti soubor nebo se s nim jinak pracuje (napr. downloadi se),
-    //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath must be called for panel
-    //           'panel', otherwise the path in this panel will not be added to the list of working
-    //           directories - List of Working Directories (Alt+F12)
+    // Executes an item in a panel with an open FS (for example, in response to pressing Enter in the panel;
+    // for a subdirectory/up-dir (it is an up-dir if its name is ".." and it is also the first directory),
+    // a path change is assumed; for a file, a copy of the file on disk is opened, and any
+    // changes are then loaded back to the FS); execution cannot be performed in an FS interface method because
+    // methods for changing the path cannot be called there (they may even close the FS);
+    // 'panel' specifies the panel in which execution takes place (PANEL_LEFT or PANEL_RIGHT);
+    // 'pluginFS' is the interface of the FS opened in the panel; 'pluginFSName' is the name of the FS opened
+    // in the panel; 'pluginFSNameIndex' is the index of the name of the FS opened in the panel (for easier detection
+    // of which FS name it is); 'file' is the file/directory/up-dir being executed ('isDir' is 0/1/2);
+    // WARNING: calling a method to change the path in the panel may invalidate 'pluginFS' (after the FS is closed)
+    //          and 'file'+'isDir' (a change in the panel listing destroys the items of the original listing)
+    // NOTE: if a file is executed or otherwise used (for example, downloaded),
+    //       CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath must be called for panel
+    //       'panel', otherwise the path in this panel will not be added to the list of working
+    //       directories - List of Working Directories (Alt+F12)
     virtual void WINAPI ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                                     const char* pluginFSName, int pluginFSNameIndex,
                                     CFileData& file, int isDir) = 0;
@@ -591,20 +591,20 @@ public:
 #endif // __BORLANDC__
 
 /*
- * Preliminary version of the help for the plugin interface
+ * Preliminary version of the plugin interface documentation
  *
  *   Opening, changing, listing, and refreshing a path:
- *     - ChangePath is called to open a path in a new FS (the first call to ChangePath is always for opening a path)
- *     - ChangePath is called to change a path (the second and all subsequent ChangePath calls are path changes)
+ *     - ChangePath is called to open a path in a new FS (the first call to ChangePath always opens a path)
+ *     - ChangePath is called to change a path (the second and all subsequent calls to ChangePath are path changes)
  *     - on a fatal error, ChangePath returns FALSE (the FS path is not opened in the panel; if this was a path change, ChangePath is then called for the original path, and if that also fails, Salamander switches to a fixed-drive path)
  *     - if ChangePath returns TRUE (success) and the path was not shortened back to the original path (whose listing is currently loaded), ListCurrentPath is called to obtain the new listing
  *     - after a successful listing, ListCurrentPath returns TRUE
- *     - on a fatal error, ListCurrentPath returns FALSE and the following call to ChangePath must also return FALSE
- *     - if the current path cannot be listed, ListCurrentPath returns FALSE and the following ChangePath call must change the path and return TRUE (ListCurrentPath is then called again); if the path can no longer be changed (root, etc.), ChangePath also returns FALSE (the FS path is not opened in the panel; if this was a path change, ChangePath is then called for the original path, and if that also fails, Salamander switches to a fixed-drive path)
- *     - a path refresh (Ctrl+R) behaves the same as changing to the current path (the path may remain unchanged, be shortened, or, on a fatal error, change to a fixed drive); during a path refresh, parameter 'forceRefresh' is TRUE for all ChangePath and ListCurrentPath calls (the FS must not use any cache to change the path or load the listing - the user does not want cached data)
+ *     - on a fatal error, ListCurrentPath returns FALSE, and the subsequent call to ChangePath must also return FALSE
+ *     - if the current path cannot be listed, ListCurrentPath returns FALSE and the subsequent call to ChangePath must change the path and return TRUE (ListCurrentPath is then called again); if the path can no longer be changed (root, etc.), ChangePath also returns FALSE (the FS path is not opened in the panel; if this was a path change, ChangePath is then called for the original path, and if that also fails, Salamander switches to a fixed-drive path)
+ *     - refreshing a path (Ctrl+R) behaves the same as changing to the current path (the path may remain unchanged, be shortened, or, in case of a fatal error, change to a fixed drive); during path refresh, the parameter 'forceRefresh' is TRUE for all calls to ChangePath and ListCurrentPath (the FS must not use any cache to change the path or load the listing; the user does not want cached data)
  *
- *   When traversing history (back/forward), the FS interface in which the FS path ('fsName':'fsUserPart') is listed is obtained by the first possible method from the following:
- *     - the FS interface in which the path was last opened has not yet been closed and is either detached or active in a panel (not active in the other panel)
+ *   When traversing history (back/forward), the FS interface in which the FS path ('fsName':'fsUserPart') will be listed is chosen by the first applicable method from the following:
+ *     - the FS interface in which the path was last opened has not yet been closed and is either detached or active in a panel (and is not active in the other panel)
  *     - the active FS interface in the panel ('currentFSName') belongs to the same plugin as 'fsName' and IsOurPath('currentFSName', 'fsName', 'fsUserPart') returns TRUE
  *     - the first detached FS interface ('currentFSName') that belongs to the same plugin as 'fsName' and for which IsOurPath('currentFSName', 'fsName', 'fsUserPart') returns TRUE
  *     - a new FS interface
