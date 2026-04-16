@@ -14,8 +14,8 @@
 
 #pragma once
 
-// Use the _DEBUG or __ARRAY_DEBUG defines to enable various error state checking. Errors
-// are displayed using TRACE_E and TRACE_C macros.
+// Use the _DEBUG or __ARRAY_DEBUG defines to enable various error-state checks. Errors
+// are displayed using the TRACE_E and TRACE_C macros.
 
 // We need to make this module independent of the TRACE macros, so if they are not defined, we provide dummy definitions. Error reporting will of course not work in that case.
 #if !defined(TRACE_I) && !defined(TRACE_E) && !defined(TRACE_C)
@@ -40,8 +40,8 @@ enum CDeleteType
 enum CErrorType
 {
     etNone,         // OK
-    etLowMemory,    // new - NULL
-    etUnknownIndex, // index is out of array range
+    etLowMemory,    // new returned NULL
+    etUnknownIndex, // index is out of range for the array
     etBadInsert,    // index of inserted item is out of array range
     etDestructed,   // array was already destructed using Destroy() method
 };
@@ -80,10 +80,10 @@ public:
     }
 
     void Insert(int index, const DATA_TYPE& member);
-    int Add(const DATA_TYPE& member); // adds item to the end of array, returns item index
+    int Add(const DATA_TYPE& member); // adds an item to the end of the array; returns its index
 
-    void Insert(int index, const DATA_TYPE* members, int count); // insert 'count' of 'members' items
-    int Add(const DATA_TYPE* members, int count);                // add 'count' of 'members' items
+    void Insert(int index, const DATA_TYPE* members, int count); // insert 'count' items from 'members'
+    int Add(const DATA_TYPE* members, int count);                // adds 'count' items from 'members'
 
     DATA_TYPE& At(int index) // returns pointer to item at 'index' possition
     {
@@ -131,12 +131,12 @@ public:
     void DestroyMembers();             // release items from memory (calling destructors), keep array
     void DetachMembers();              // detach all items (destructors are NOT called), keep array
     void Destroy();                    // complete array destruction (calling destructors)
-    void Delete(int index);            // delete item at 'index' possition (calling destructor), move remaining items
-    void Delete(int index, int count); // delete 'count' of items at 'index' possition (calling destructors), move remaining items
-    void Detach(int index);            // detach item at 'index' possition (destructor is NOT called), move remaining items
-    void Detach(int index, int count); // detach 'count' of items at 'index' possition (destructors are NOT called), move remaining items
+    void Delete(int index);            // delete the item at 'index' (calling the destructor), move remaining items
+    void Delete(int index, int count); // delete 'count' items at 'index' position (calling destructors), move remaining items
+    void Detach(int index);            // detach item at 'index' position (destructor is NOT called), move remaining items
+    void Detach(int index, int count); // detach 'count' items at 'index' position (destructors are NOT called), move remaining items
 
-    int SetDelta(int delta); // change 'Delta', return real used value; NOTE: can be used only for empty array
+    int SetDelta(int delta); // change 'Delta', return the actual value used; NOTE: can be used only for an empty array
 
 protected:
     DATA_TYPE* Data; // pointer to array
@@ -154,7 +154,7 @@ protected:
     void EnlargeArray(); // enlarges array
     void ReduceArray();  // reduces array
 
-    void Move(CArrayDirection direction, int first, int count); // move selected items to next/previous index
+    void Move(CArrayDirection direction, int first, int count); // move selected items to the next/previous index
 
     void CallCopyConstructor(DATA_TYPE* placement, const DATA_TYPE& member)
     {
