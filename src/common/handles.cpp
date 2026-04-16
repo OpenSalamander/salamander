@@ -544,12 +544,7 @@ C__Handles::~C__Handles()
     // Check and list the remaining handles.
     if (Handles.Count != 0)
     {
-        // I had to replace the code below that uses MESSAGE_E, because when this
-        // destructor is called the stream facets in ALTAPDB have already been destroyed, and sending an int
-        // or handle to the stream simply crashes (this happens only in VC2010 and VC2012; in VC2008
-        // it still works). It does not happen in Salamander, probably because the RTL is in the DLL
-        // (ALTAPDB uses a static one); I did not investigate further. A better solution would be to destroy the
-        // facets only after this module, but unfortunately I cannot do that (only at the "lib" level).
+        // The code below that uses MESSAGE_E had to be replaced because when this destructor runs, the stream facets in ALTAPDB have already been destroyed, and sending an int or handle to the stream simply crashes (only in VC2010 and VC2012; it still works in VC2008). It does not happen in Salamander, probably because the RTL is in the DLL (ALTAPDB uses a static one), but that was not investigated further. A better solution would be to destroy the facets only after this module, but that cannot be done here (only at the "lib" level).
         char msgBuf[1000];
         sprintf_s(msgBuf,
 #ifdef MESSAGES_DEBUG
@@ -1891,8 +1886,8 @@ BOOL C__Handles::DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHand
                     "current process.");
         }
 
-        // GetCurrentProcess vraci jakysi pseudohandle, takze tahle konstrukce
-        // neni spravna, meli by se porovnat ID procesu a ne jejich handly ...
+        // GetCurrentProcess returns a pseudo-handle, so this is not correct;
+        // process IDs should be compared instead of process handles ...
 
         if ((dwOptions & DUPLICATE_CLOSE_SOURCE) &&
             hSourceProcessHandle == GetCurrentProcess())
