@@ -185,9 +185,9 @@ struct CQuadWord
 
     // conversion to double (beware of precision loss for large numbers - double has only 15 significant digits)
     double GetDouble() const
-    { // MSVC cannot convert unsigned __int64 to double, so we have to help it
+    { // MSVC cannot convert unsigned __int64 to double, so this must be handled explicitly
         if (Value < CQuadWord(0, 0x80000000).Value)
-            return (double)(__int64)Value; // positive number
+            return (double)(__int64)Value; // non-negative number
         else
             return 9223372036854775808.0 + (double)(__int64)(Value - CQuadWord(0, 0x80000000).Value);
     }
@@ -360,24 +360,24 @@ public:
 #define SALENUM_ERROR 1   // an error occurred and the user chose to continue the operation (only the faulty files/directories were skipped)
 #define SALENUM_CANCEL 2  // an error occurred and the user wants to cancel the operation
 
-// enumerator, returns file names and ends by returning NULL;
-// 'enumFiles' == -1 -> reset enumeration (after this call, enumeration starts again from the beginning), all
-//                      other parameters (except 'param') are ignored, it has no return values (everything is
+// Enumerator: returns file names and ends by returning NULL;
+// 'enumFiles' == -1 -> reset enumeration (after this call, enumeration starts again from the beginning); all
+//                      other parameters (except 'param') are ignored; it has no return values (everything is
 //                      set to zero)
 // 'enumFiles' == 0 -> enumerate files and subdirectories from the root only
 // 'enumFiles' == 1 -> enumerate all files and subdirectories
 // 'enumFiles' == 2 -> enumerate all subdirectories, files from the root only;
 // an error can occur only for 'enumFiles' == 1 or 'enumFiles' == 2 ('enumFiles' == 0 does not build
 // names and paths); 'parent' is the parent of any error message boxes (NULL means do not show
-// errors); 'isDir' (if not NULL) returns TRUE if it is a directory; 'size' (if not NULL) returns
-// the file size (for directories, a size is returned only for 'enumFiles' == 0 - otherwise it is zero);
+// errors); 'isDir' (if not NULL) returns TRUE if the item is a directory; 'size' (if not NULL) returns
+// the file size (for directories, a size is returned only for 'enumFiles' == 0; otherwise it is zero);
 // if 'fileData' is not NULL, it receives a pointer to the CFileData structure of the returned
 // file/directory (if the enumerator returns NULL, 'fileData' also receives NULL);
 // 'param' is the 'nextParam' parameter passed together with the pointer to a function of this
 // type; 'errorOccured' (if not NULL) receives SALENUM_ERROR if a too-long name is encountered while building the returned
-// names and the user chooses to skip only the faulty files/directories,
-// POZOR: chyba se netyka prave vraceneho jmena, to je OK; v 'errorOccured' (neni-li NULL) se vraci
-// SALENUM_CANCEL pokud se pri chybe uzivatel rozhodl pro zruseni operace (cancel), zaroven
+// names and the user chooses to skip only the invalid files/directories,
+// NOTE: the error does not apply to the name just returned; that one is OK; 'errorOccured' (if not NULL) receives
+// SALENUM_CANCEL if, after an error, the user chooses to cancel the operation; at the same time, the
 // enumerator returns NULL (ends); 'errorOccured' (if not NULL) receives SALENUM_SUCCESS if
 // no error occurred
 typedef const char*(WINAPI* SalEnumSelection)(HWND parent, int enumFiles, BOOL* isDir, CQuadWord* size,
@@ -385,14 +385,14 @@ typedef const char*(WINAPI* SalEnumSelection)(HWND parent, int enumFiles, BOOL* 
 
 // enumerator, returns file names and ends by returning NULL;
 // 'enumFiles' == -1 -> reset enumeration (after this call, enumeration starts again from the beginning), all
-//                      other parameters (except 'param') are ignored, it has no return values (everything is
-//                      set to zero)
+//                      other parameters (except 'param') are ignored, and no output values are returned (all
+//                      outputs are set to zero)
 // 'enumFiles' == 0 -> enumerate files and subdirectories from the root only
 // 'enumFiles' == 1 -> enumerate all files and subdirectories
 // 'enumFiles' == 2 -> enumerate all subdirectories, files from the root only;
 // 'enumFiles' == 3 -> enumerate all files and subdirectories + symbolic links to files have the
-//                     size of the target file (for 'enumFiles' == 1 they have the size of the link itself, which is probably
-//                     always zero); WARNING: 'enumFiles' must remain 3 for all calls to the enumerator;
+//                     size of the target file (for 'enumFiles' == 1 they have the size of the link itself, which is
+//                     probably always zero); WARNING: 'enumFiles' must remain 3 for all calls to the enumerator;
 // an error can occur only for 'enumFiles' == 1, 2, or 3 ('enumFiles' == 0 does not access the disk at all
 // and does not build names and paths); 'parent' is the parent of any error message boxes
 // (NULL means do not show errors); 'dosName' (if not NULL) returns the DOS name
@@ -402,9 +402,9 @@ typedef const char*(WINAPI* SalEnumSelection)(HWND parent, int enumFiles, BOOL* 
 // of the file/directory; 'param' is the 'nextParam' parameter passed together with the pointer to a function
 // of this type; 'errorOccured' (if not NULL) receives SALENUM_ERROR if an error occurs while reading
 // data from disk or if a too-long name is encountered while building the returned names
-// and the user chooses to skip only the faulty files/directories; WARNING: the error does not concern the
-// just-returned name, that one is OK; 'errorOccured' (if not NULL) receives SALENUM_CANCEL if
-// on error the user chooses to cancel the operation, and the enumerator simultaneously returns NULL (ends);
+// and the user chooses to skip only the problematic files/directories; WARNING: the error does not concern the
+// name just returned, which is OK; 'errorOccured' (if not NULL) receives SALENUM_CANCEL if
+// on error the user chooses to cancel the operation, and the enumerator returns NULL (ends);
 // 'errorOccured' (if not NULL) receives SALENUM_SUCCESS if no error occurred
 typedef const char*(WINAPI* SalEnumSelection2)(HWND parent, int enumFiles, const char** dosName,
                                                BOOL* isDir, CQuadWord* size, DWORD* attr,
@@ -652,8 +652,8 @@ private: // protection against incorrect direct method calls (see CPluginDataInt
 public:
 #endif // INSIDE_SALAMANDER
 
-    // returns TRUE if ReleasePluginData should be called for all files bound
-    // to this interface, otherwise returns FALSE
+    // returns TRUE if ReleasePluginData should be called for all files associated
+    // with this interface; otherwise returns FALSE
     virtual BOOL WINAPI CallReleaseForFiles() = 0;
 
     // returns TRUE if ReleasePluginData should be called for all directories bound
@@ -830,24 +830,24 @@ public:
 class CSalamanderForOperationsAbstract
 {
 public:
-    // PROGRESS DIALOG: dialog obsahuje jeden/dva ('twoProgressBars' FALSE/TRUE) progress-metry
+    // PROGRESS DIALOG: the dialog contains one or two progress bars ('twoProgressBars' FALSE/TRUE)
     // opens a progress dialog titled 'title'; 'parent' is the parent window of the progress dialog (if
-    // NULL, pouzije se hlavni okno); pokud obsahuje jen jeden progress-metr, muze byt popsan
+    // NULL, the main window is used); if it contains only one progress bar, it can be labeled
     // as "File" ('fileProgress' is TRUE) or "Total" ('fileProgress' is FALSE)
     //
-    // the dialog does not run in its own thread; for it to work (Cancel button + internal timer)
-    // the message queue must be flushed occasionally; this is handled by ProgressDialogAddText,
-    // ProgressAddSize and ProgressSetSize
+    // the dialog does not run in its own thread; for it to work properly (Cancel button + internal timer),
+    // the message queue must be flushed occasionally; this is handled by the ProgressDialogAddText,
+    // ProgressAddSize, and ProgressSetSize methods
     //
-    // because real-time display of text and progress-bar changes slows things down considerably,
-    // ProgressDialogAddText, ProgressAddSize, and ProgressSetSize take the
-    // 'delayedPaint' parameter; it should be TRUE for all rapidly changing text and values;
-    // the methods then store the text and display it only after the dialog's internal timer fires;
-    // 'delayedPaint' nastavime na FALSE pro inicializacni/koncove texty typu "preparing data..."
-    // or "canceling operation...", after showing which we do not give the dialog a chance to dispatch
-    // messages (timer events); if such an operation is likely to take a long time, we should
-    // keep the dialog alive during that time by calling ProgressAddSize(CQuadWord(0, 0), TRUE)
-    // and use its return value to end the action early if needed
+    // because real-time display of text and progress-bar changes slows things down considerably, the
+    // ProgressDialogAddText, ProgressAddSize, and ProgressSetSize methods have a 'delayedPaint'
+    // parameter; it should be TRUE for all rapidly changing text and values; the methods then store
+    // the texts and display them only after the dialog's internal timer fires; set 'delayedPaint' to
+    // FALSE for initial/final texts such as "preparing data..." or "canceling operation...", after
+    // displaying which we do not give the dialog a chance to dispatch messages (timer events); if such
+    // an operation is likely to take a long time, we should keep the dialog responsive during that time
+    // by calling ProgressAddSize(CQuadWord(0, 0), TRUE) and possibly terminate the action early
+    // according to its return value
     virtual void WINAPI OpenProgressDialog(const char* title, BOOL twoProgressBars,
                                            HWND parent, BOOL fileProgress) = 0;
     // writes text 'txt' (even multiple lines - it is split into lines) to the progress dialog
