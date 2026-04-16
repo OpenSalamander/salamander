@@ -216,7 +216,7 @@ BOOL CMessageCenter::Init()
         str = Concatenate(Name, " - Startup Mutex");
         if (Sender)
         {
-            // odesilatel se muze aktivovat, jedine pokud bezi prijemce
+            // the sender can be started only if the receiver is running
             StartupMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, str);
             if (!StartupMutex)
             {
