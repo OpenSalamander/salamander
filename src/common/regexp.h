@@ -7,7 +7,7 @@
 //*****************************************************************************
 //*****************************************************************************
 //
-// puvodni regexp.h
+// original regexp.h
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -37,7 +37,7 @@ void regerror(const char* error);
 //*****************************************************************************
 //*****************************************************************************
 //
-// moje cast regexp.h
+// my section of regexp.h
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -123,11 +123,11 @@ public:
     int SearchForward(int start, int& foundLen);
     int SearchBackward(int length, int& foundLen);
 
-    // nahradi promnene \1 ... \9 textem zachycenym odpovidajicima zavorkama
-    // 'pattern' je vzor kterym se nahrazuje nalezeny match, 'buffer' buffer
-    // pro vystup, 'bufSize' maximalni velikost textu vcetne ukoncovaciho NULL
-    // znaku, v promnene 'count' vraci pocet znaku zkopirovanych do bufferu
-    // vraci TRUE pokud se vyraz vesel cely do bufferu
+    // Replaces variables \1 ... \9 with the text captured by the corresponding groups.
+    // 'pattern' is the replacement pattern for the matched text, 'buffer' is the output
+    // buffer, 'bufSize' is the maximum buffer size including the terminating NULL
+    // character, and 'count' receives the number of characters copied to 'buffer'
+    // Returns TRUE if the entire expanded text fit in 'buffer'
     BOOL ExpandVariables(char* pattern, char* buffer,
                          int bufSize, int* count);
 
@@ -140,8 +140,8 @@ public:
                        char* buffer, int bufSize);
 
 protected:
-    // Obraci regularni vyraz - pro hledani od zadu
-    // VYRAZ MUSI BYT SYNTAKTICKY SPRAVNY ! JINAK NEFUNGUJE SPRAVNE !
-    // napr. "a)b(d)(" -> "((d)b)a" coz je chybne
+    // Reverses the regular expression for backward search.
+    // THE EXPRESSION MUST BE SYNTACTICALLY CORRECT, OR IT WILL NOT WORK PROPERLY!
+    // e.g. "a)b(d)(" -> "((d)b)a", which is incorrect
     void ReverseRegExp(char*& dstExpEnd, char* srcExp, char* srcExpEnd);
 };
