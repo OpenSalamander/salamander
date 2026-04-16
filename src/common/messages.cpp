@@ -189,7 +189,7 @@ int C__Messages::MessageBoxT(const char* lpCaption, UINT uType)
     HGLOBAL message = GlobalAlloc(GMEM_FIXED, len); // backup copy of the text
     if (message != NULL)
     {
-        memcpy((char*)message, MessagesStringBuf.c_str(), len); // je to FIXED -> HANDLE==PTR
+        memcpy((char*)message, MessagesStringBuf.c_str(), len); // it is FIXED, so HANDLE == PTR
         data.Text = (char*)message;
     }
     else
@@ -231,7 +231,7 @@ int C__Messages::MessageBox(HWND hWnd, const char* lpCaption, UINT uType)
     size_t len = MessagesStringBuf.length() + 1;
     HGLOBAL message = GlobalAlloc(GMEM_FIXED, len); // backup copy of the text
     char* txt;
-    txt = (char*)message; // je to FIXED -> HANDLE==PTR
+    txt = (char*)message; // it is FIXED, so HANDLE == PTR
     if (txt != NULL)
         memcpy(txt, MessagesStringBuf.c_str(), len);
     else
@@ -264,7 +264,7 @@ C__MessagesW::C__MessagesW() : MessagesStrStream(&MessagesStringBuf)
     // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more in the future and the debug heap starts reporting leaks again, we will have to add more input/output here.
     std::wstringstream s;
     s << 1;
-#endif // _DEBUG
+#endif // MULTITHREADED_MESSAGES_ENABLE
 }
 
 struct C__MessageBoxDataW
@@ -299,7 +299,7 @@ int C__MessagesW::MessageBoxT(const WCHAR* lpCaption, UINT uType)
     HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len); // backup copy of the text
     if (message != NULL)
     {
-        memcpy((WCHAR*)message, MessagesStringBuf.c_str(), sizeof(WCHAR) * len); // je to FIXED -> HANDLE==PTR
+        memcpy((WCHAR*)message, MessagesStringBuf.c_str(), sizeof(WCHAR) * len); // it is FIXED, so HANDLE == PTR
         data.Text = (WCHAR*)message;
     }
     else
@@ -341,7 +341,7 @@ int C__MessagesW::MessageBox(HWND hWnd, const WCHAR* lpCaption, UINT uType)
     size_t len = MessagesStringBuf.length() + 1;
     HGLOBAL message = GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * len); // backup copy of the text
     WCHAR* txt;
-    txt = (WCHAR*)message; // je to FIXED -> HANDLE==PTR
+    txt = (WCHAR*)message; // it is FIXED, so HANDLE == PTR
     if (txt != NULL)
         memcpy(txt, MessagesStringBuf.c_str(), sizeof(WCHAR) * len);
     else
