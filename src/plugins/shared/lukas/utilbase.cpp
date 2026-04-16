@@ -8,7 +8,7 @@
 
 HINSTANCE DLLInstance = NULL; // Handle to the SPL - language-independent resources
 HINSTANCE HLanguage = NULL;   // Handle to the SLG - language-dependent resources
-BOOL WindowsVistaAndLater;    // Windows Vista nebo pozdejsi z rady NT (6.0+)
+BOOL WindowsVistaAndLater;    // Windows Vista or later from the NT family (6.0+)
 BOOL WindowsXP64AndLater;     // Windows XP 64, Vista or later (5.2+)
 
 // Open Salamander interface - valid from the InitUtils() call until
