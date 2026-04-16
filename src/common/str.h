@@ -7,18 +7,18 @@
 //*****************************************************************************
 //
 // 20.1.2003
-// Poznamka k optimalizacim prevodem do ASM: optimalizace se projevi predevsim
-// u porovnani shodnych retezcu, tedy da-li se funkcim prilezitost k prohledavat
-// retezce cele. Navic je optimalizace znatelnejsi na starsich procesorech, kde
-// ASM varianty dokazou pracovat 8x rychleji (stara pentia).
 //
-// Moderni procesory (AMD Athlon, Pentium Pro) dokazou optimalizovanou C++
-// variantu vykonat temer stejne rychle jako jeji ASM variantu. Protoze ale
-// zatim nejsou optimalizovane C++ varianty rychlejsi a ASM je mnohem rychlejsi
-// nez debug C++ varianta, pouzivame ASM varianty.
+// Note on optimizations by converting to ASM: the benefit shows up mainly
+// when comparing identical strings, that is, when the functions get a chance to scan
+// entire strings. The optimization is also more noticeable on older processors,
+//where the ASM variants can run up to 8x faster (old Pentiums).
 //
-// Funkce StrNICmp v C++ na Pentiu Pro beha rychleji nez v ASM varianta.
+// Modern processors (AMD Athlon, Pentium Pro) can execute the optimized C++
+// variant almost as fast as its ASM variant. Because the optimized C++ variants
+// are not faster yet, and ASM is much faster than the debug C++ variant, we use
+//the ASM variants.
 //
+//The C++ version of StrNICmp runs faster on Pentium Pro than the ASM variant.
 
 extern BYTE LowerCase[256]; // maps all characters to lowercase; generated using the CharLower API
 extern BYTE UpperCase[256]; // maps all characters to uppercase; generated using the CharUpper API
@@ -150,8 +150,8 @@ int MemICmp(const void* buf1, const void* buf2, int n);
 // copies the text into newly allocated memory; returns NULL on out-of-memory
 char* DupStr(const char* txt);
 
-// nakopiruje text do nove naalokovaneho prostoru, NULL = malo pameti,
-// navic pri nedostatku pameti nastavi 'err' na TRUE
+// copies the text into newly allocated memory; returns NULL on out-of-memory,
+// and also sets 'err' to TRUE on out-of-memory
 char* DupStrEx(const char* str, BOOL& err);
 
 // returns the first case-insensitive occurrence of 'pattern' in 'txt', or NULL
@@ -184,11 +184,12 @@ class CConvertTab
 extern CConvertTab ConvertTab;
 */
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // SWPrintFToEnd_s
 //
-// jedina odlisnost od swprintf_s je, ze zapisuje az za text umisteny v bufferu
+// The only difference from swprintf_s is that it writes after the text already
+// stored in the buffer
 
 template <size_t _Size>
 inline int SWPrintFToEnd_s(WCHAR (&_Dst)[_Size], const WCHAR* _Format, ...)
@@ -207,11 +208,12 @@ inline int SWPrintFToEnd_s(WCHAR* _Dst, size_t _SizeInWords, const WCHAR* _Forma
     return vswprintf_s(_Dst + len, _SizeInWords - len, _Format, _ArgList);
 }
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // SPrintFToEnd_s
 //
-// jedina odlisnost od swprintf_s je, ze zapisuje az za text umisteny v bufferu
+// The only difference from sprintf_s is that it writes after the text already
+// stored in the buffer
 
 template <size_t _Size>
 inline int SPrintFToEnd_s(char (&_Dst)[_Size], const char* _Format, ...)
