@@ -120,7 +120,7 @@ public:
     virtual int GetCurSel();
 
 protected:
-    HWND Parent; // parametry pro vytvareni dialogu
+    HWND Parent; // dialog creation parameters
     HWND HWindow;
     HINSTANCE Modul;
     HICON Icon;
@@ -129,7 +129,7 @@ protected:
     DWORD Flags;
     PFNPROPSHEETCALLBACK Callback;
 
-    DWORD* LastPage; // posledni zvolena stranka (muze byt NULL, pokud nezajima)
+    DWORD* LastPage; // last selected page (may be NULL if not needed)
 
     friend class CPropSheetPage;
 };
