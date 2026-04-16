@@ -67,18 +67,18 @@ public:
                                       const char* archiveRoot, SalEnumSelection next,
                                       void* nextParam) = 0;
 
-    // Function for 'panel archiver view'; called when one file is requested for unpacking for view/edit
+    // Function for the panel archiver view; called when one file is requested for unpacking for view/edit
     // from archive 'fileName' to directory 'targetDir'; the file name inside the archive is 'nameInArchive';
     // 'pluginData' is an interface for working with file information specific to the plugin
-    // (for example data from added columns; it is the same interface returned by ListArchive
-    // v parametru 'pluginData' - takze muze byt i NULL); 'fileData' je ukazatel na strukturu CFileData
-    // for the unpacked file (the structure was built by the plugin when listing the archive); 'newFileName' (if not
-    // NULL) je nove jmeno pro rozbalovany soubor (pouziva se pokud puvodni jmeno z archivu neni mozne
-    // be unpacked to disk (for example 'aux', 'prn', etc.)); write TRUE to 'renamingNotSupported' (only if 'newFileName' is not
-    // NULL) zapsat TRUE pokud plugin nepodporuje prejmenovani pri vybalovani (standardni chybova hlaska
-    // the standard 'renaming not supported' error message is shown by Salamander); returns TRUE if the file is unpacked successfully
-    // (the file is at the requested path and neither Cancel nor Skip was used); 'salamander' is a set of useful methods
-    // exported by Salamander
+    // (for example, data from added columns; it is the same interface returned by ListArchive
+    // in the 'pluginData' parameter, so it may also be NULL); 'fileData' is a pointer to the CFileData
+    // structure of the file being unpacked (the structure was built by the plugin when listing the archive);
+    // 'newFileName' (if not NULL) is the new name for the unpacked file (used if the original name from the
+    // archive cannot be unpacked to disk, for example, 'aux', 'prn', etc.); write TRUE to
+    // 'renamingNotSupported' (only if 'newFileName' is not NULL) if the plugin does not support renaming
+    // during unpacking (the standard 'renaming not supported' error message is shown by Salamander);
+    // returns TRUE if the file is unpacked successfully (the file is at the requested path and neither
+    // Cancel nor Skip was used); 'salamander' is a set of useful methods exported by Salamander
     virtual BOOL WINAPI UnpackOneFile(CSalamanderForOperationsAbstract* salamander, const char* fileName,
                                       CPluginDataInterfaceAbstract* pluginData, const char* nameInArchive,
                                       const CFileData* fileData, const char* targetDir,
