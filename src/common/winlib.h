@@ -389,9 +389,9 @@ protected:
 
 struct CWindowData
 {
-    // pokud jsou objekty oken (Wnd) umistene na stacku (typicky modalni dialogy, napr. SalMessageBox())
-    // a dojde k terminovani threadu, stack se zneplatni a tim jiz objekty oken nejsou pristupne,
-    // resime tak, ze na objekty (Wnd) sahame jen dokud jsou platne handly oken (HWnd)
+    // if window objects (Wnd) are allocated on the stack (typically modal dialogs, e.g. SalMessageBox())
+    // and the thread terminates, the stack becomes invalid and the window objects are no longer accessible,
+    // so we only access the objects (Wnd) while the window handles (HWnd) are still valid
     HWND HWnd;
     CWindowsObject* Wnd;
 };
