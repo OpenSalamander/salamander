@@ -1,14 +1,14 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "gdi.h"
 
 // ****************************************************************************
 //
-// CBackbufferedDC -- DC s back bufferem, pro hladke kresleni slozitejsich
-// grafickych celku
-//
+// CBackbufferedDC -- DC with a back buffer for smooth drawing of more
+// complex graphic elements
 
 CBackbufferedDC::CBackbufferedDC()
 {
