@@ -1938,8 +1938,8 @@ BOOL C__Handles::DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHand
                        MB_OK);
         }
 
-        // GetCurrentProcess vraci jakysi pseudohandle, takze tahle konstrukce
-        // neni spravna, meli by se porovnat ID procesu a ne jejich handly ...
+        // GetCurrentProcess returns a pseudo-handle, so this construct is not correct;
+        // process IDs should be compared rather than their handles ...
 
         if ((dwOptions & DUPLICATE_CLOSE_SOURCE) &&
             hSourceProcessHandle == GetCurrentProcess())
