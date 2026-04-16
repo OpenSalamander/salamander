@@ -20,14 +20,14 @@
 // TRACE is enabled by defining TRACE_ENABLE
 // CALL-STACK is disabled by defining CALLSTK_DISABLE
 
-// POZOR: TRACE_C se nesmi pouzivat v DllMain knihoven, ani v zadnem kodu, ktery
-//        se z DllMainu vola, jinak dojde k deadlocku, vice viz implementace
-//        C__Trace::SendMessageToServer
+// WARNING: TRACE_C must not be used in DllMain, or in any code
+//        called from DllMain, otherwise a deadlock will occur; see
+//        C__Trace::SendMessageToServer for details
 
-// makro CALLSTK_MEASURETIMES - zapne mereni casu straveneho pri priprave call-stack hlaseni (meri se pomer proti
-//                              celkovemu casu behu funkci)
-//                              POZOR: nutne zapnout tez pro kazdy plugin zvlast
-// makro CALLSTK_DISABLEMEASURETIMES - potlaci mereni casu straveneho pri priprave call-stack hlaseni v DEBUG verzi
+// macro CALLSTK_MEASURETIMES - enables measurement of time spent preparing
+//                              call-stack reports (measured as a ratio to the
+//                              total function run time); it must also be enabled separately for each plugin
+// macro CALLSTK_DISABLEMEASURETIMES - suppresses measurement of time spent preparing call-stack reports in DEBUG builds
 
 // overview of macro types: (all are non-empty only if CALLSTK_DISABLE is not defined)
 // CALL_STACK_MESSAGE - regular call-stack macro
@@ -530,8 +530,8 @@ protected:
 
 public:
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-    // 'doNotMeasureTimes'==TRUE = nemerit Push tohoto call-stack makra (zrejme dost zpomaluje, ale
-    // nechceme ho vyhodit, je prilis dulezite pro debugovani)
+    // 'doNotMeasureTimes'==TRUE = do not measure Push for this call-stack macro (it probably slows things down, but
+    // it is too important for debugging to remove)
 #ifdef __BORLANDC__
     CCallStackMessage(BOOL doNotMeasureTimes, const char* format, ...)
 #else  // __BORLANDC__
@@ -821,8 +821,8 @@ extern BOOL __CallStk_T; // always TRUE - just to check format string and type o
 // TraceAttachCurrentThread + SetThreadNameInVCAndTrace
 //
 
-// nepouzivat pokud uz se SalamanderDebug->TraceAttachThread pro tento thread volalo (primo
-// nebo napr. pri startu threadu pres CThreadQueue::StartThread)
+// do not use if SalamanderDebug->TraceAttachThread has already been called for this thread (directly
+// or, for example, when the thread was started via CThreadQueue::StartThread)
 inline void TraceAttachCurrentThread() { SalamanderDebug->TraceAttachThread(GetCurrentThread(), GetCurrentThreadId()); }
 
 inline void SetThreadNameInVCAndTrace(const char* name) { SalamanderDebug->SetThreadNameInVCAndTrace(name); }
