@@ -9,10 +9,10 @@
 // Converts a Unicode (UTF-16) string to an ANSI multibyte string; 'src' is the Unicode string;
 // 'srcLen' is the length of the Unicode string (excluding the terminating null; if -1 is passed,
 // the length is determined from the terminating null); 'bufSize' (must be greater than 0) is the size of the destination buffer
-// 'buf' pro ANSI string; je-li 'compositeCheck' TRUE, pouziva flag WC_COMPOSITECHECK
+// 'buf' for the ANSI string; if 'compositeCheck' is TRUE, the WC_COMPOSITECHECK flag is used
 // (see MSDN); it must not be used for file names (NTFS distinguishes between names written as
 // precomposed and composite, i.e. it does not normalize names); 'codepage' is the code page of the
-// ANSI stringu; vraci pocet znaku zapsanych do 'buf' (vcetne zakoncujici nuly); pri chybe
+// ANSI string; returns the number of characters written to 'buf' (including the terminating null); on error
 // returns 0 (see GetLastError()); always ensures 'buf' is null-terminated (even on error);
 // if 'buf' is too small, the function returns 0, but at least part of the string is converted into 'buf'
 int ConvertU2A(const WCHAR* src, int srcLen, char* buf, int bufSize,
