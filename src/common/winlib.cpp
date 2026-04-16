@@ -111,12 +111,11 @@ BOOL WinLibIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WOR
     return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
 
-//
 // ****************************************************************************
 // CWindow
 //
-// lpvParam - v pripade, ze se pri CreateWindow zavola CWindow::CWindowProc
-//            (je v tride okna), musi obsahovat adresu objektu vytvareneho okna
+// lpvParam - if CWindow::CWindowProc is called during CreateWindow
+//            (it is in the window class), it must contain the address of the window object being created
 
 HWND CWindow::CreateEx(DWORD dwExStyle,        // extended window style
                        LPCTSTR lpszClassName,  // address of registered class name
@@ -329,7 +328,7 @@ CWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
         if (GetWindowLongPtr(HWindow, GWL_STYLE) & WS_CHILD)
-            break;   // pokud F1 nezpracujeme a pokud je to child okno, nechame F1 propadnout do parenta
+            break;   // if we do not handle F1 and this is a child window, let F1 fall through to the parent
         return TRUE; // if it is not a child, stop processing F1
     }
     }
