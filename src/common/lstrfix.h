@@ -7,7 +7,8 @@
 // The following functions do not crash when passed invalid pointers (including NULL):
 // lstrcpy, lstrcpyn, lstrlen, and lstrcat (these are defined with the A or W suffix, so
 // we do not redefine them directly). For easier debugging, we need them to crash,
-// because otherwise the bug is detected later, where its cause may no longer be clear
+// because otherwise the error is only discovered later, when it may no longer be clear
+// what caused it
 #define lstrcpyA _sal_lstrcpyA
 #define lstrcpyW _sal_lstrcpyW
 #define lstrcpynA _sal_lstrcpynA
