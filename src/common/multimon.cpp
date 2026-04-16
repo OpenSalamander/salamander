@@ -59,8 +59,8 @@ void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorC
     }
     else
     {
-        // pokud nalezneme foreground okno patrici nasi aplikaci,
-        // centrujeme okno na stejny desktop
+        // If the foreground window belongs to our application,
+        // center the window on the same desktop.
         HWND hForegroundWnd = GetForegroundWindow();
         DWORD processID;
         GetWindowThreadProcessId(hForegroundWnd, &processID);
@@ -147,13 +147,13 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     wndRect.bottom = wndRect.top + wndHeight;
 
     // Keep it within bounds.
-    if (wndRect.left < clipR.left) // pokud je okno vetsi nez clipR, nechame zobrazit jeho levou cast
+    if (wndRect.left < clipR.left) // If the window is larger than clipR, leave its left part visible.
     {
         wndRect.left = clipR.left;
         wndRect.right = wndRect.left + wndWidth;
     }
 
-    if (wndRect.top < clipR.top) // pokud je okno vetsi nez clipR, nechame zobrazit jeho hotni cast
+    if (wndRect.top < clipR.top) // If the window is larger than clipR, leave its top part visible.
     {
         wndRect.top = clipR.top;
         wndRect.bottom = wndRect.top + wndHeight;
@@ -161,7 +161,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
 
     if (wndWidth <= clipR.right - clipR.left)
     {
-        // pokud je okno mensi nez clipR, osetrime aby nelezlo vpravo za hranici clipR
+        // If the window is smaller than clipR, make sure it does not extend past the right edge of clipR.
         if (wndRect.right >= clipR.right)
         {
             wndRect.left = clipR.right - wndWidth;
@@ -170,14 +170,14 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     }
     else
     {
-        // pokud je okno vetsi nez clipR
+        // If the window is larger than clipR.
         if (wndRect.left > clipR.left)
             wndRect.left = clipR.left; // Use as much space as possible.
     }
 
     if (wndHeight <= clipR.bottom - clipR.top)
     {
-        // pokud je okno mensi nez clipR, osetrime aby nelezlo dole za hranici clipR
+        // If the window is smaller than clipR, make sure it does not extend past the bottom edge of clipR.
         if (wndRect.bottom >= clipR.bottom)
         {
             wndRect.top = clipR.bottom - wndHeight;
@@ -186,7 +186,7 @@ void MultiMonCenterWindowByRect(HWND hWindow, const RECT& clipR, const RECT& byR
     }
     else
     {
-        // pokud je okno vetsi nez clipR
+        // If the window is larger than clipR.
         if (wndRect.top > clipR.top)
             wndRect.top = clipR.top; // Use as much space as possible.
     }
@@ -240,8 +240,8 @@ BOOL MultiMonGetDefaultWindowPos(HWND hByWnd, POINT* p)
             HMONITOR hTmpMonitor = MonitorFromWindow(wnd.HWindow, MONITOR_DEFAULTTONEAREST);
             if (hTmpMonitor != hMonitor)
             {
-                // trik s dummy oknem funguje pekne pod MSVC, ale pri spusteni salamandera bez MSVC
-                // se okno otevira na primarnim monitoru (nezjistil jsem proc, kdyz ma parenta)
+                // The dummy-window trick works fine under MSVC, but when Salamander runs without MSVC
+                // the window opens on the primary monitor (I do not know why, even though it has a parent).
 
                 // Work around it by moving the window to our monitor.
                 MONITORINFO tmpInfo;
