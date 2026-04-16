@@ -72,7 +72,7 @@ enum CObjectType // for identifying the object type
 
 // ****************************************************************************
 
-class CWindowsObject // base class for all MS-Windows objects
+class CWindowsObject // base class for all Windows objects
 {
 public:
     HWND HWindow;
