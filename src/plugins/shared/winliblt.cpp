@@ -17,7 +17,7 @@
 #endif // _MSC_VER
 #include <limits.h>
 #include <stdio.h>
-//#include <commctrl.h>  // potrebuju HIMAGELIST
+//needed for HIMAGELIST
 #include <ostream>
 #ifdef __BORLANDC__
 #include <stdlib.h>
@@ -124,12 +124,11 @@ void ReleaseWinLib(HINSTANCE dllInstance)
         GlobalDeleteAtom(AtomObject);
 }
 
-//
 // ****************************************************************************
 // CWindow
 //
-// lpvParam - v pripade, ze se pri CreateWindow zavola CWindow::CWindowProc
-//            (je v tride okna), musi obsahovat adresu objektu vytvareneho okna
+// lpvParam - if CWindow::CWindowProc is called during CreateWindow
+//            (it is the window class procedure), it must contain a pointer to the window object being created
 
 HWND CWindow::CreateEx(DWORD dwExStyle,        // extended window style
                        LPCTSTR lpszClassName,  // address of registered class name
@@ -253,7 +252,7 @@ CWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
         if (GetWindowLong(HWindow, GWL_STYLE) & WS_CHILD)
-            break;   // pokud F1 nezpracujeme a pokud je to child okno, nechame F1 propadnout do parenta
+            break;   // if F1 is not handled and this is a child window, let F1 fall through to the parent
         return TRUE; // if this is not a child window, stop processing F1
     }
     }
@@ -296,8 +295,8 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         wnd = (CWindow*)WindowsManager.GetWindowPtr(hwnd);
         if (wnd != NULL && wnd->Is(otWindow))
         {
-            // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
-            //       jeste dochazely zpravy (potreboval Lukas)
+            // Petr: moved this below wnd->WindowProc() so messages are still delivered during WM_DESTROY
+            //       (Lukas needed this)
             // WindowsManager.DetachWindow(hwnd);
 
             LRESULT res = wnd->WindowProc(uMsg, wParam, lParam);
@@ -305,8 +304,8 @@ CWindow::CWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             // now call the old procedure again (because of subclassing)
             WindowsManager.DetachWindow(hwnd);
 
-            // pokud aktualni WndProc je jina nez nase, nebudeme ji menit,
-            // protoze nekdo v rade subclasseni uz vratil puvodni WndProc
+            // if the current WndProc is not ours, do not change it,
+            // because someone in the subclass chain has already restored the original WndProc
             WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(wnd->HWindow, GWLP_WNDPROC);
             if (currentWndProc == CWindow::CWindowProc)
                 SetWindowLongPtr(wnd->HWindow, GWLP_WNDPROC, (LONG_PTR)wnd->DefWndProc);
@@ -526,8 +525,8 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         INT_PTR ret = FALSE; // in case the dialog does not handle the message
         if (dlg != NULL && dlg->Is(otDialog))
         {
-            // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
-            //       jeste dochazely zpravy (potreboval Lukas)
+            // Petr: moved this below wnd->WindowProc() so messages are still delivered during WM_DESTROY
+            //       (Lukas needed this)
             // WindowsManager.DetachWindow(hwndDlg);
 
             ret = dlg->DialogProc(uMsg, wParam, lParam);
@@ -781,8 +780,8 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
         INT_PTR ret = FALSE; // in case the dialog does not handle the message
         if (dlg != NULL && dlg->Is(otDialog))
         {
-            // Petr: posunul jsem dolu pod wnd->WindowProc(), aby behem WM_DESTROY
-            //       jeste dochazely zpravy (potreboval Lukas)
+            // Petr: moved this below wnd->WindowProc() so messages are still delivered during WM_DESTROY
+            //       (Lukas needed this)
             // WindowsManager.DetachWindow(hwndDlg);
 
             ret = dlg->DialogProc(uMsg, wParam, lParam);
@@ -1131,7 +1130,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, char* format, BOOL selec
                 s++;
             }
             if (*s == 0)
-                value = atof(buff); // jen pokud je cislo
+                value = atof(buff); // only if it is a number
             else
                 value = 0; // on error, use zero
             break;
@@ -1177,7 +1176,7 @@ void CTransferInfo::EditLine(int ctrlID, int& value, BOOL select)
             }
 
             char* endptr;
-            value = strtoul(buff, &endptr, 10); // nahrada za atoi / _ttoi, ktere misto 4000000000 vraci 2147483647 (protoze je to SIGNED INT)
+            value = strtoul(buff, &endptr, 10); // replacement for atoi / _ttoi, which return 2147483647 instead of 4000000000 (because they use SIGNED INT)
             break;
         }
         }
