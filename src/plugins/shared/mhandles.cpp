@@ -77,15 +77,15 @@ const char* err(DWORD error);
                      __MessagesTitle, (buttons))
 
 /*
- * shows a message box with the specified text and error icon, not in a new
- *     thread, dispatches the calling thread's messages
+ * Shows a message box with the specified text and error icon. It does not run in a new
+ * thread and dispatches messages for the calling thread.
  */
 #define MESSAGE_E(parent, str, buttons) \
     MESSAGE(parent, str, MB_ICONEXCLAMATION | (buttons))
 
 /*
- * shows a message box with the specified text and information icon, in a new thread,
- *     does not dispatch the calling thread's messages
+ * Shows a message box with the specified text and information icon. It runs in a new
+ * thread and does not dispatch messages for the calling thread.
  */
 #define MESSAGE_TI(str, buttons) \
     MESSAGE_T(str, MB_ICONINFORMATION | (buttons))
@@ -138,7 +138,7 @@ struct C__MessageBoxData
 };
 
 int CALLBACK __MessagesMessageBoxThreadF(C__MessageBoxData* data)
-{ // must not wait for the calling thread's response, because it will not respond
+{ // must not wait for a response from the calling thread, because it will not respond
     // therefore parent==NULL -> no window disabling, etc.
     data->Return = MessageBox(NULL, data->Text, data->Caption, data->Type | MB_SETFOREGROUND);
     return 0;
@@ -695,7 +695,7 @@ C__Handles::~C__Handles()
         else if (Handles[i].Handle.Origin == __hoGetStockObject)
             Handles.Delete(i);
     }
-    // check and list remaining handles
+    // check and list remaining open handles
     if (Handles.Count != 0)
     {
         if (MESSAGE_E(NULL, "Some monitored handles remained opened.\n"
@@ -860,7 +860,7 @@ BOOL C__Handles::DeleteHandle(C__HandlesType& type, HANDLE handle,
             }
         }
     }
-    if (foundTypeOK != -1) // found only a handle exempt from release
+    if (foundTypeOK != -1) // found only a handle that does not need to be released
     {
         type = Handles[foundTypeOK].Handle.Type;
         if (origin != NULL)
@@ -2393,7 +2393,7 @@ HDWP C__Handles::DeferWindowPos(HDWP hWinPosInfo, HWND hWnd, HWND hWndInsertAfte
 {
     HDWP ret = ::DeferWindowPos(hWinPosInfo, hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
 
-    if (ret != hWinPosInfo) // the structure was reallocated - we must update the monitored handle value
+    if (ret != hWinPosInfo) // the structure was reallocated; we must update the tracked handle value
     {
         CheckClose(TRUE, (HANDLE)hWinPosInfo, __htDeferWindowPos, __GetHandlesOrigin(__hoDeferWindowPos), ERROR_SUCCESS, FALSE);
         CheckCreate(ret != NULL, __htDeferWindowPos, __hoDeferWindowPos, (HANDLE)ret, GetLastError());
