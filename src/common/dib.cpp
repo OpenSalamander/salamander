@@ -308,13 +308,14 @@ HBITMAP DIBToBitmap(HANDLE hDIB, HPALETTE hPal)
     return hBitmap;
 }
 
-//---------------------------------------------------------------------
+// ---------------------------------------------------------------------
 //
 // Function:   MapColor(RGB fromColor, RGB toColor)
 //
-//             vsechny barvy fromColor premapuje na barvu toColor
+//             Remaps every occurrence of fromColor in the DIB to
+//             toColor.
 //
-//---------------------------------------------------------------------
+// ---------------------------------------------------------------------
 
 int MapColor(HANDLE hDIB, COLORREF fromColor, COLORREF toColor)
 {
