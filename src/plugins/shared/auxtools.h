@@ -57,17 +57,17 @@ public:
 
     // starts the function 'body' with parameter 'param' in a newly created thread with a stack
     // of size 'stack_size' (0 = default); returns the thread handle or NULL on error,
-    // also writes the result to 'threadHandle' before the thread is resumed
-    // (if not NULL); use the returned thread handle only for NULL checks and for calling
-    // CThreadQueue methods WaitForExit() and KillThread(); the thread handle is closed by
-    // this queue object
-    // POZOR: -thread se muze spustit se zpozdenim az po navratu ze StartThread()
-    //         (if 'param' points to a structure stored on the stack, the handoff of data from
-    //          'param' must be synchronized - the main thread must wait
-    //          until the new thread takes ownership of the data)
-    //        -the returned thread handle may already be closed if the thread finishes before
-    //         StartThread() returns and another thread calls StartThread() or
-    //         KillAll()
+    // and also stores the result in 'threadHandle' before the thread is resumed
+    // (if it is not NULL); use the returned thread handle only for NULL checks and for calling
+    // the CThreadQueue methods WaitForExit() and KillThread(); this queue object
+    // closes the thread handle
+    // WARNING: -the thread may start with a delay, only after StartThread() returns
+    //           (if 'param' is a pointer to a structure stored on the stack, the data handoff
+    //            from 'param' must be synchronized - the main thread must wait
+    //            until the new thread takes over the data)
+    //          -the returned thread handle may already be closed if the thread finishes before
+    //           StartThread() returns and StartThread() or KillAll() is called from another
+    //           thread
     // can be called from any thread
     HANDLE StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned stack_size = 0,
                        HANDLE* threadHandle = NULL, DWORD* threadID = NULL);
@@ -127,10 +127,10 @@ public:
     // new thread in bytes (0 = default); returns a handle to the new thread or NULL on error;
     // the 'queue' object closes the handle; if the thread is created successfully, this object is
     // deallocated when the thread exits; if thread startup fails, the caller deallocates the object
-    // POZOR: bez pridani synchronizace muze thread dobehnout jeste pred navratem z Create() ->
-    //        therefore, after a successful call to Create(), the "this" pointer must be considered invalid,
-    //        the same applies to the returned thread handle (use it only for NULL checks and for calling
-    //        CThreadQueue methods WaitForExit() and KillThread())
+    // WARNING: without added synchronization, the thread may finish before Create() returns ->
+    //          therefore, after a successful call to Create(), the "this" pointer must be considered invalid,
+    //          and the same applies to the returned thread handle (use it only for NULL checks and for calling
+    //          CThreadQueue methods WaitForExit() and KillThread())
     // can be called from any thread
     HANDLE Create(CThreadQueue& queue, unsigned stack_size = 0, DWORD* threadID = NULL);
 
