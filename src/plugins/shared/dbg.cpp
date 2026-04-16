@@ -288,19 +288,20 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
                 SalamanderDebug->TraceE(File, Line, TraceStringBuf.c_str());
         }
     }
-    // jen je-li crash==TRUE:
-    // vyrobime kopii dat, start threadu pro msgbox totiz muze vyvolat dalsi TRACE
-    // hlasky (napr. v DllMain reakce na DLL_THREAD_ATTACH), pokud bysme neopustili
-    // CriticalSection, nastal by deadlock;
-    // v DllMain se nesmi pouzivat TRACE_C, jinak dojde k deadlocku:
-    //   - pokud se da do DLL_THREAD_ATTACH: chce si otevrit novy thread pro msgbox
-    //     a to je z DllMainu blokovane
-    //   - pokud se da do DLL_THREAD_DETACH: pri cekani na zavreni threadu s msgboxem
-    //     predesleho TRACE_C zachytime TRACE_C z DLL_THREAD_DETACH a nechame ho
-    //     cekat v nekonecnem cyklu, viz nize
-    // navic zavadime obranu proti mnozeni msgboxu pri vice TRACE_C zaroven, pusobilo
-    // by to jen zmatky, ted se otevre msgbox jen pro prvni a ten po uzavreni vyvola
-    // padacku, ostatni TRACE_C zustanou chyceny v nekonecne cekaci smycce, viz nize
+    // only if crash==TRUE:
+    // make a copy of the data; starting the message box thread can trigger more TRACE
+    // messages (e.g. DllMain reacting to DLL_THREAD_ATTACH), and if we did not leave the
+    // CriticalSection it would deadlock;
+    // TRACE_C must not be used in DllMain, or it will deadlock:
+    //   - in DLL_THREAD_ATTACH it tries to open a new thread for the message box,
+    //     which is blocked from DllMain
+    //   - in DLL_THREAD_DETACH, while waiting for the previous TRACE_C message box
+    //     thread to close, we catch TRACE_C from DLL_THREAD_DETACH and leave it
+    //     waiting in an infinite loop, see below
+    // we also guard against multiple message boxes when several TRACE_C occur at once;
+    // that would only cause confusion, so only the first opens a message box and after it
+    // closes triggers the crash; the other TRACE_C remain stuck in the infinite wait loop,
+    // see below
     static BOOL msgBoxOpened = FALSE;
     C__TraceMsgBoxThreadData threadData;
     C__TraceMsgBoxThreadDataW threadDataW;
