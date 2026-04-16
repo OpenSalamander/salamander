@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -2054,184 +2055,187 @@ public:
     //          synchronizaci)
     virtual BOOL WINAPI GetConfigParameter(int paramID, void* buffer, int bufferSize, int* type) = 0;
 
-    // meni velikost pismen ve jmene souboru (jmeno je bez cesty); 'tgtName' je buffer pro vysledek
-    // (velikost je min. pro ulozeni retezce 'srcName'); 'srcName' je jmeno souboru (zapisuje se do nej,
-    // ale pred navratem z metody je vzdy obnoveno); 'format' je format vysledku (1 - velka pocatecni
-    // pismena slov, 2 - komplet mala pismena, 3 - komplet velka pismena, 4 - beze zmen, 5 - pokud
-    // je DOS jmeno (8.3) -> velka pocatecni pismena slov, 6 - soubor malymi, adresar velkymi pismeny,
-    // 7 - velka pocatecni pismena ve jmene a mala pismena v pripone);
-    // 'changedParts' urcuje jake casti jmena se maji menit (0 - meni jmeno i priponu, 1 - meni jen
-    // jmeno (mozne jen s format == 1, 2, 3, 4), 2 - meni jen priponu (mozne jen s
-    // format == 1, 2, 3, 4)); 'isDir' je TRUE pokud jde o jmeno adresare
-    // mozne volat z libovolneho threadu
+    // Changes letter case in a file name (the name does not include a path); 'tgtName' is the output
+    // buffer (its size must be at least enough to store string 'srcName'); 'srcName' is the file name
+    // (it is written to, but is always restored before the method returns); 'format' is the output format
+    // (1 - capitalize words, 2 - all lowercase, 3 - all uppercase, 4 - unchanged, 5 - if it is a DOS
+    // name (8.3) -> capitalize words, 6 - file lowercase, directory uppercase,
+    // 7 - capitalize the name and lowercase the extension);
+    // 'changedParts' specifies which parts of the name are changed (0 - change both name and extension,
+    // 1 - change only the name (possible only with format == 1, 2, 3, 4), 2 - change only the extension
+    // (possible only with format == 1, 2, 3, 4)); 'isDir' is TRUE if this is a directory name
+    // Can be called from any thread
     virtual void WINAPI AlterFileName(char* tgtName, char* srcName, int format, int changedParts,
                                       BOOL isDir) = 0;
 
-    // zobrazi/schova zpravu v okenku ve vlastnim threadu (neodcerpa message-queue); zobrazi
-    // najednou jen jednu zpravu, opakovane volani ohlasi chybu do TRACE (neni fatalni);
-    // POZN.: pouziva se v SalCheckPath a dalsich rutinach, muze tedy dojit ke kolizi mezi
-    //        pozadavky na otevreni okenek (neni fatalni, jen se nezobrazi)
-    // vse je mozne volat z libovolneho threadu (ale okenko se musi obsluhovat jen
-    // z jednoho threadu - nelze jej ukazat z jednoho threadu a schovat z druheho)
+    // Shows/hides a message in a window running in its own thread (it does not drain the
+    // message queue); only one message is shown at a time, repeated calls report an error
+    // to TRACE (not fatal);
+    // NOTE: this is used in SalCheckPath and other routines, so requests to open the window
+    //       can collide (not fatal, the window is simply not shown)
+    // All functions can be called from any thread (but the window itself must be handled
+    // from only one thread - it cannot be shown from one thread and hidden from another)
     //
-    // otevreni okenka s textem 'message' se zpodenim 'delay' (v ms), jen pokud je 'hForegroundWnd' NULL
-    // nebo identifikuje okno na popredi (foreground)
-    // 'message' muze byt vicerakova; jednotlive radky se oddeluji znakem '\n'
-    // 'caption' muze byt NULL: pouzije se pak "Open Salamander"
-    // 'showCloseButton' udava, zda bude okenko obsahovat tlacitko Close; ekvivalent ke klavese Escape
+    // Opens a window with text 'message' after delay 'delay' (in ms), only if 'hForegroundWnd' is NULL
+    // or identifies the foreground window
+    // 'message' may be multiline; individual lines are separated by '\n'
+    // 'caption' may be NULL: 'Open Salamander' is then used
+    // 'showCloseButton' specifies whether the window contains a Close button; equivalent to the Escape key
     virtual void WINAPI CreateSafeWaitWindow(const char* message, const char* caption,
                                              int delay, BOOL showCloseButton, HWND hForegroundWnd) = 0;
     // zavreni okenka
     virtual void WINAPI DestroySafeWaitWindow() = 0;
-    // schovani/zobrazeni okenka (je-li otevrene); volat jako reakci na WM_ACTIVATE z okna hForegroundWnd:
+    // Hide/show the window (if it is open); call in response to WM_ACTIVATE from hForegroundWnd:
     //    case WM_ACTIVATE:
     //    {
     //      ShowSafeWaitWindow(LOWORD(wParam) != WA_INACTIVE);
     //      break;
     //    }
-    // Pokud je thread (ze ktereho bylo okenko vytvoreno) zamestnan, nedochazi
-    // k distribuci zprav, takze nedojde ani k doruceni WM_ACTIVATE pri kliknuti
-    // na jinou aplikaci. Zpravy se doruci az ve chvili zobrazeni messageboxu,
-    // coz presne potrebujeme: docasne se nechame schovat a pozdeji (po zavreni
-    // messageboxu a aktivaci okna hForegroundWnd) zase zobrazit.
+    // If the thread in which the window was created is busy, messages are not dispatched,
+    // so WM_ACTIVATE is not delivered when the user clicks another application. The messages
+    // are delivered only when a message box is shown, which is exactly what we need:
+    // hide the window temporarily and show it again later (after the message box is closed
+    // and the hForegroundWnd window is activated).
     virtual void WINAPI ShowSafeWaitWindow(BOOL show) = 0;
-    // po zavolani CreateSafeWaitWindow nebo ShowSafeWaitWindow vraci funkce FALSE az do doby,
-    // kdy user kliknul mysi na Close tlacitko (pokud je zobrazeno); pak vraci TRUE
+    // After CreateSafeWaitWindow or ShowSafeWaitWindow is called, the function returns FALSE until
+    // the user clicks the Close button with the mouse (if it is shown); it then returns TRUE
     virtual BOOL WINAPI GetSafeWaitWindowClosePressed() = 0;
-    // slouzi pro dodatecnou zmenu textu v okenku
-    // POZOR: nedochazi k novemu layoutovani okna a pokud dojde k vetsimu natazeni
-    // textu, bude orezan; pouzivat napriklad pro countdown: 60s, 55s, 50s, ...
+    // Used to change the text in the window later.
+    // WARNING: the window layout is not recalculated, so if the text becomes much longer,
+    // it will be clipped; use for example for countdowns: 60s, 55s, 50s, ...
     virtual void WINAPI SetSafeWaitWindowText(const char* message) = 0;
 
-    // najde v disk-cache existujici kopii souboru a zamkne ji (zakaze jeji zruseni); 'uniqueFileName'
-    // je unikatni nazev originalniho souboru (podle tohoto nazvu se prohledava disk-cache; melo by
-    // stacit plne jmeno souboru v salamanderovske forme - "fs-name:fs-user-part"; POZOR: nazev se
-    // porovnava "case-sensitive", pokud plugin vyzaduje "case-insensitive", musi vsechny nazvy
-    // prevadet napr. na mala pismena - viz CSalamanderGeneralAbstract::ToLowerCase); v 'tmpName'
-    // se vraci ukazatel (platny az do zruseni kopie souboru v disk-cache) na plne jmeno kopie souboru,
-    // ktera je umistena v docasnem adresari; 'fileLock' je zamek kopie souboru, jde o systemovy event
-    // ve stavu nonsignaled, ktery po zpracovani kopie souboru prejde do stavu signaled (je nutne
-    // pouzit metodu UnlockFileInCache; plugin dava signal, ze kopii v disk-cache jiz lze zrusit);
-    // pokud nebyla kopie nalezena vraci FALSE a 'tmpName' NULL (jinak vraci TRUE)
-    // mozne volat z libovolneho threadu
+    // Finds an existing file copy in the disk cache and locks it (prevents its deletion); 'uniqueFileName'
+    // is the unique name of the original file (the disk cache is searched by this name; the full
+    // file name in Salamander format - 'fs-name:fs-user-part' - should be sufficient; WARNING: the
+    // name is compared case-sensitively; if the plugin requires case-insensitive matching, it must
+    // convert all names, for example to lower case - see CSalamanderGeneralAbstract::ToLowerCase);
+    ///tmpName' receives a pointer (valid until the file copy in the disk cache is removed) to the
+    // full name of the file copy located in a temporary directory; 'fileLock' is the lock for the
+    // file copy and must be a system event in the nonsignaled state that transitions to the signaled
+    // state after the file copy has been processed (you must use UnlockFileInCache; the plugin thus
+    // signals that the disk-cache copy may be removed); if the copy was not found, returns FALSE and
+    ///tmpName' is NULL (otherwise returns TRUE)
+    // Can be called from any thread
     virtual BOOL WINAPI GetFileFromCache(const char* uniqueFileName, const char*& tmpName, HANDLE fileLock) = 0;
 
-    // odemkne zamek kopie souboru v disk-cache (nastavi 'fileLock' do stavu signaled, vyzve
-    // disk-cache k provedeni kontroly zamku, a pak nastavi 'fileLock' zpet do stavu nonsignaled);
-    // pokud slo o posledni zamek, muze dojit ke zruseni kopie, kdy dojde ke zruseni kopie zalezi
-    // na velikosti disk-cache na disku; zamek muze byt pouzity i pro vice kopii souboru (zamek
-    // musi byt typu "manual reset", jinak se po odemknuti prvni kopie zamek nastavi do stavu
-    // nonsignaled a odemykani skonci), v tomto pripade probehne odemknuti u vsech kopii
-    // mozne volat z libovolneho threadu
+    // Unlocks the lock for a file copy in the disk cache (sets 'fileLock' to the signaled state, asks
+    // the disk cache to check the locks, and then sets 'fileLock' back to the nonsignaled state);
+    // if this was the last lock, the copy may be removed; when it is removed depends
+    // on the size of the disk cache on disk; one lock can also be used for multiple file copies (the lock
+    // must be of type 'manual reset', otherwise after the first copy is unlocked the lock is set back to
+    // nonsignaled and unlocking stops); in that case all copies are unlocked
+    // Can be called from any thread
     virtual void WINAPI UnlockFileInCache(HANDLE fileLock) = 0;
 
-    // vlozi (presune) kopii souboru do disk-cache (vkladana kopie neni zamcena, takze kdykoliv muze dojit
-    // k jejimu zruseni); 'uniqueFileName' je unikatni nazev originalniho souboru (podle tohoto
-    // nazvu se prohledava disk-cache; melo by stacit plne jmeno souboru v salamanderovske
-    // forme - "fs-name:fs-user-part"; POZOR: nazev se porovnava "case-sensitive", pokud plugin
-    // vyzaduje "case-insensitive", musi vsechny nazvy prevadet napr. na mala pismena - viz
+    // Inserts (moves) a file copy into the disk cache (the inserted copy is not locked, so it may
+    // be removed at any time); 'uniqueFileName' is the unique name of the original file (the
+    // disk cache is searched by this name; the full file name in Salamander format -
+    // "fs-name:fs-user-part" - should be sufficient; WARNING: the name is compared
+    // case-sensitively; if the plugin requires "case-insensitive" matching, it must convert all names,
     // CSalamanderGeneralAbstract::ToLowerCase); 'nameInCache' je jmeno kopie souboru, ktera bude umistena
-    // v docasnem adresari (ocekava se zde posledni cast jmena originalniho souboru, aby pozdeji
-    // uzivateli pripominala originalni soubor); 'newFileName' je plne jmeno ukladane kopie souboru,
-    // ktera bude presunuta do disk-cache pod jmenem 'nameInCache', musi byt umistena na stejnem disku
-    // jako diskova cache (je-li 'rootTmpPath' NULL, je diskova cache ve Windows TEMP adresari, jinak
-    // je cesta do disk-cache v 'rootTmpPath'; pro prejmenovani do disk cache pres Win32 API funkci
-    // MoveFile); 'newFileName' je idealni ziskat volanim SalGetTempFileName s parametrem 'path' rovnym
-    // 'rootTmpPath'); v 'newFileSize' je velikost ukladane kopie souboru; vraci TRUE pri uspechu
-    // (soubor byl presunut do disk-cache - zmizel z puvodniho mista na disku), vraci FALSE pri
-    // interni chybe nebo pokud soubor jiz je v disk-cache (neni-li 'alreadyExists' NULL, vraci
-    // se v nem TRUE pokud soubor jiz je v disk-cache)
-    // POZN.: pokud plugin vyuziva disk-cache, mel by alespon pri unloadu pluginu zavolat
+    // in a temporary directory (the last part of the original file name is expected here so it
+    // still resembles the original file to the user); 'newFileName' is the full name of the stored
+    // file copy that will be moved into the disk cache under the name 'nameInCache'; it must be
+    // located on the same disk as the disk cache (if 'rootTmpPath' is NULL, the disk cache is in
+    // the Windows TEMP directory, otherwise the path to the disk cache is in 'rootTmpPath'; the
+    // file is renamed into the disk cache by the Win32 API function MoveFile); 'newFileName' is
+    // best obtained by calling SalGetTempFileName with parameter 'path' equal to 'rootTmpPath');
+    // 'newFileSize' is the size of the stored file copy; returns TRUE on success (the file was
+    // moved into the disk cache and disappeared from its original location), returns FALSE on an
+    // internal error or if the file is already in the disk cache ('alreadyExists' receives TRUE if it is not NULL)
+    // NOTE: if the plugin uses the disk cache, it should at least call
     //        CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:"), jinak budou
-    //        jeho kopie souboru zbytecne prekazet v disk-cache
-    // mozne volat z libovolneho threadu
+    // otherwise its file copies will remain in the disk cache unnecessarily
+    // Can be called from any thread
     virtual BOOL WINAPI MoveFileToCache(const char* uniqueFileName, const char* nameInCache,
                                         const char* rootTmpPath, const char* newFileName,
                                         const CQuadWord& newFileSize, BOOL* alreadyExists) = 0;
 
-    // odstrani z disk-cache kopii souboru, jejiz unikatni nazev je 'uniqueFileName' (POZOR: nazev
-    // se porovnava "case-sensitive", pokud plugin vyzaduje "case-insensitive", musi vsechny nazvy
-    // prevadet napr. na mala pismena - viz CSalamanderGeneralAbstract::ToLowerCase); pokud se kopie
-    // souboru jeste pouziva, odstrani se az to bude mozne (az se zavrou viewery), kazdopadne uz ji
-    // disk-cache nikomu neposkytne jako platnou kopii souboru (je oznacena jako out-of-date)
-    // mozne volat z libovolneho threadu
+    // Removes from the disk cache the file copy whose unique name is 'uniqueFileName' (WARNING: the name
+    // is compared case-sensitively; if the plugin requires case-insensitive matching, it must convert all names,
+    // for example to lower case - see CSalamanderGeneralAbstract::ToLowerCase); if the file copy is still
+    // in use, it is removed when possible (after viewers are closed); in any case, the disk cache will no longer
+    // provide it as a valid file copy (it is marked out-of-date)
+    // Can be called from any thread
     virtual void WINAPI RemoveOneFileFromCache(const char* uniqueFileName) = 0;
 
-    // odstrani z disk-cache vsechny kopie souboru, jejichz unikatni nazvy zacinaji na 'fileNamesRoot'
-    // (pouziva se pri uzavreni file-systemu, kdyz uz je dale nezadouci cachovat downloadene kopie
-    // souboru; POZOR: nazvy se porovnavaji "case-sensitive", pokud plugin vyzaduje "case-insensitive",
-    // musi vsechny nazvy prevadet napr. na mala pismena - viz CSalamanderGeneralAbstract::ToLowerCase);
-    // pokud se kopie souboru jeste pouzivaji, odstrani se az to bude mozne (az se odemknou
-    // napr. po zavreni vieweru), kazdopadne uz je disk-cache nikomu neposkytne jako platne kopie
-    // souboru (jsou oznacene jako out-of-date)
-    // mozne volat z libovolneho threadu
+    // Removes from the disk cache all file copies whose unique names start with 'fileNamesRoot'
+    // (used when a file system is being closed and downloaded file copies should no longer be cached;
+    // WARNING: names are compared case-sensitively; if the plugin requires case-insensitive matching,
+    // it must convert all names, for example to lower case - see CSalamanderGeneralAbstract::ToLowerCase);
+    // if file copies are still in use, they are removed when possible (after they are unlocked,
+    // for example after a viewer is closed); in any case, the disk cache will no longer provide them as valid
+    // file copies (they are marked out-of-date)
+    // Can be called from any thread
     virtual void WINAPI RemoveFilesFromCache(const char* fileNamesRoot) = 0;
 
-    // vraci postupne konverzni tabulky (nactene ze souboru convert\XXX\convert.cfg
-    // v instalaci Salamandera - XXX je prave pouzivany adresar konverznich tabulek);
+    // Returns conversion tables one by one (loaded from convert\XXX\convert.cfg
+    // in the Salamander installation - XXX is the currently used conversion-table directory);
     // 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno);
-    // 'index' je vstupne/vystupni promenna, ukazuje na int, ve kterem je pri prvnim volani 0,
-    // hodnotu pro dalsi volani si funkce ulozi pri navratu (pouziti: na zacatku vynulovat, pak
-    // nemenit); vraci FALSE, pokud jiz neexistuje zadna dalsi tabulka; pokud vraci TRUE, obsahuje
-    // 'name' (neni-li NULL) odkaz na jmeno konverze (muze obsahovat '&' - podtrzeny znak v menu) nebo NULL
-    // jde-li o separator a 'table' (neni-li NULL) odkaz na 256-bytovou konverzni tabulku nebo NULL
-    // jde-li o separator; odkazy 'name' a 'table' jsou platne po celou dobu behu Salamandera (neni
-    // nutne kopirovat obsah)
+    // 'index' is an input/output variable pointing to an int that is 0 on the first call;
+    // the function stores the value for the next call on return (usage: initialize it to 0, then
+    // do not modify it); returns FALSE if there is no next table; if it returns TRUE,
+    // 'name' (if not NULL) contains a pointer to the conversion name (it may contain '&' - the
+    // underlined character in the menu) or NULL if it is a separator, and 'table' (if not NULL)
+    // contains a pointer to a 256-byte conversion table or NULL if it is a separator; the 'name'
+    // and 'table' pointers remain valid for the entire Salamander run (you do not need to copy them)
     // POZOR: ukazatel 'table' pouzivat timto zpusobem (nutne pretypovani na "unsigned"):
     //        *s = table[(unsigned char)*s]
-    // mozne volat z libovolneho threadu
+    // Can be called from any thread
     virtual BOOL WINAPI EnumConversionTables(HWND parent, int* index, const char** name, const char** table) = 0;
 
-    // vraci konverzni tabulku 'table' (buffer min. 256 znaku) pro konverzi 'conversion' (jmeno
-    // konverze viz soubor convert\XXX\convert.cfg v instalaci Salamandera, napr. "ISO-8859-2 - CP1250";
-    // znaky <= ' ' a '-' a '&' ve jmene pri hledani nehraji roli; hleda se bez ohledu na velka a mala
-    // pismena); 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno); vraci TRUE
-    // pokud byla konverze nalezena (jinak neni obsah 'table' platny);
-    // POZOR: pouzivat timto zpusobem (nutne pretypovani na "unsigned"): *s = table[(unsigned char)*s]
-    // mozne volat z libovolneho threadu
+    // Returns conversion table 'table' (a buffer of at least 256 characters) for conversion 'conversion' (the
+    // conversion name is defined in file convert\XXX\convert.cfg in the Salamander installation, e.g.
+    // 'ISO-8859-2 - CP1250'; characters <= ' ', '-', and '&' in the name are ignored during the search;
+    // the search is case-insensitive); 'parent' is the parent window of the message box (if NULL, the main
+    // window is the parent); returns TRUE if the conversion was found
+    // (otherwise the contents of 'table' are invalid);
+    // WARNING: use it this way (cast to 'unsigned' is required): *s = table[(unsigned char)*s]
+    // Can be called from any thread
     virtual BOOL WINAPI GetConversionTable(HWND parent, char* table, const char* conversion) = 0;
 
-    // vraci jmeno kodove stranky pouzivane ve Windows v tomto regionu (cerpa v convert\XXX\convert.cfg
-    // v instalaci Salamandera); jde o normalne zobrazitelne kodovani, proto se pouziva v pripade,
-    // ze je potreba zobrazit text, ktery byl vytvoren v jine kodove strance (zde se zada jako
-    // "cilove" kodovani pri hledani konverzni tabulky, viz metoda GetConversionTable);
-    // 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno); 'codePage' je buffer
-    // (min. 101 znaku) pro jmeno kodove stranky (pokud neni v souboru convert\XXX\convert.cfg toto jmeno
-    // definovane, vraci se v bufferu prazdny retezec)
-    // mozne volat z libovolneho threadu
+    // Returns the name of the code page used by Windows in this region (read from convert\XXX\convert.cfg
+    // in the Salamander installation); this is a normally displayable encoding, so it is used when
+    // text created in a different code page needs to be displayed (it is passed as the target
+    // encoding when looking up the conversion table; see GetConversionTable);
+    // 'parent' is the parent window of the message box (if NULL, the main window is the parent); 'codePage' is a buffer
+    // (at least 101 characters) for the code-page name (if this name is not defined in file convert\XXX\convert.cfg,
+    // an empty string is returned in the buffer)
+    // Can be called from any thread
     virtual void WINAPI GetWindowsCodePage(HWND parent, char* codePage) = 0;
 
-    // zjisti z bufferu 'pattern' o delce 'patternLen' (napr. prvnich 10000 znaku) jestli jde
-    // o text (existuje kodova stranka, ve ktere obsahuje jen povolene znaky - zobrazitelne
-    // a ridici) a pokud jde o text, zjisti take jeho kodovou stranku (nejpravdepodobnejsi);
+    // Determines from buffer 'pattern' of length 'patternLen' (e.g. the first 10000 characters) whether it is
+    // text (there is a code page in which it contains only permitted characters - printable
+    // and control) and, if it is text, also determines its most likely code page;
     // 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno); je-li 'forceText'
     // TRUE, neprovadi se kontrola na nepovolene znaky (pouziva se, pokud 'pattern' obsahuje
-    // text); neni-li 'isText' NULL, vraci se v nem TRUE pokud jde o text; neni-li 'codePage'
+    // text); if 'isText' is not NULL, TRUE is returned in it if the buffer is text; if 'codePage'
     // NULL, jde o buffer (min. 101 znaku) pro jmeno kodove stranky (nejpravdepodobnejsi)
-    // mozne volat z libovolneho threadu
+    // Can be called from any thread
     virtual void WINAPI RecognizeFileType(HWND parent, const char* pattern, int patternLen, BOOL forceText,
                                           BOOL* isText, char* codePage) = 0;
 
-    // zjisti z bufferu 'text' o delce 'textLen' jestli jde o ANSI text (obsahuje (v ANSI
-    // znakove sade) jen povolene znaky - zobrazitelne a ridici); rozhoduje bez kontextu
-    // (nezalezi na poctu znaku ani jak jdou po sobe - testovany text je mozne rozdelit
-    // na libovolne casti a testovat je postupne); vraci TRUE pokud jde o ANSI text (jinak
-    // je obsah bufferu 'text' binarni)
-    // mozne volat z libovolneho threadu
+    // Determines from buffer 'text' of length 'textLen' whether it is ANSI text (it contains only
+    // permitted characters in the ANSI character set - printable and control characters); it decides without context
+    // (it does not depend on the number of characters or their order - the tested text can be split
+    // into arbitrary parts and tested gradually); returns TRUE if it is ANSI text (otherwise
+    // the contents of buffer 'text' are binary data)
+    // Can be called from any thread
     virtual BOOL WINAPI IsANSIText(const char* text, int textLen) = 0;
 
-    // zavola funkci 'callback' s parametry 'param' a funkci pro ziskavani oznacenych
-    // souboru/adresaru (viz definice typu SalPluginOperationFromDisk) z panelu 'panel'
-    // (v panelu musi byt otevrena windowsova cesta); 'panel' je jeden z PANEL_XXX
-    // omezeni: hlavni thread
+    // Calls function 'callback' with parameters 'param' and a function for retrieving selected
+    // files/directories (see the SalPluginOperationFromDisk type definition) from panel 'panel'
+    // (a Windows path must be open in the panel); 'panel' is one of PANEL_XXX
+    // Restriction: main thread
     virtual void WINAPI CallPluginOperationFromDisk(int panel, SalPluginOperationFromDisk callback,
                                                     void* param) = 0;
 
-    // vraci standardni charset, ktery ma uzivatel nastaveny (soucast regionalniho
-    // nastaveni); fonty je nutne konstruovat s timto charsetem, jinak nemusi byt
-    // texty citelne (je-li text ve standardni kodove strance, viz Win32 API funkce
+    // Returns the default charset configured by the user (part of the regional
+    // settings); fonts must be created with this charset, otherwise the
+    // texts may not be readable (if the text uses the default code page, see the Win32 API function
     // GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IDEFAULTANSICODEPAGE, ...))
-    // mozne volat z libovolneho threadu
+    // Can be called from any thread
     virtual BYTE WINAPI GetUserDefaultCharset() = 0;
 
     // alokuje novy objekt Boyer-Moorova vyhledavaciho algoritmu
@@ -2251,54 +2255,54 @@ public:
     // mozne volat z libovolneho threadu
     virtual void WINAPI FreeSalamanderREGEXPSearchData(CSalamanderREGEXPSearchData* data) = 0;
 
-    // vraci postupne prikazy Salamandera (postupuje v poradi definice konstant SALCMD_XXX);
-    // 'index' je vstupne/vystupni promenna, ukazuje na int, ve kterem je pri prvnim volani 0,
-    // hodnotu pro dalsi volani si funkce ulozi pri navratu (pouziti: na zacatku vynulovat, pak
-    // nemenit); vraci FALSE, pokud jiz neexistuje zadny dalsi prikaz; pokud vraci TRUE, obsahuje
-    // 'salCmd' (neni-li NULL) cislo prikazu Salamandera (viz konstanty SALCMD_XXX; cisla maji
-    // rezervovany interval 0 az 499, pokud tedy maji v menu byt prikazy Salamandera spolecne s
-    // jinymi prikazy, neni problem vytvorit vzajemne se neprekryvajici mnoziny hodnot prikazu
-    // napr. posunutim vsech hodnot o zvolene cislo - priklad viz DEMOPLUGin -
-    // CPluginFSInterface::ContextMenu), 'nameBuf' (buffer o velikosti 'nameBufSize' bytu)
-    // obsahuje jmeno prikazu (jmeno je pripraveno pro pouziti v menu - ma zdvojene ampersandy,
-    // podtrzene znaky oznacene ampersandy a za '\t' ma popisy klavesovych zkratek), 'enabled'
-    // (neni-li NULL) obsahuje stav prikazu (TRUE/FALSE pokud je enabled/disabled), 'type'
-    // (neni-li NULL) obsahuje typ prikazu (viz popis konstant sctyXXX)
-    // mozne volat z libovolneho threadu
+    // Returns Salamander commands one by one (in the definition order of SALCMD_XXX constants);
+    // 'index' is an input/output variable pointing to an int that is 0 on the first call;
+    // the function stores the value for the next call on return (usage: initialize it to 0, then
+    // do not modify it); returns FALSE if there is no next command; if it returns TRUE,
+    // 'salCmd' (if not NULL) receives the Salamander command number (see SALCMD_XXX constants;
+    // numbers 0 through 499 are reserved, so if Salamander commands need to appear in a menu together
+    // with other commands, it is easy to create non-overlapping command-value sets, for example by
+    // offsetting all values by a chosen number - see DEMOPLUGin -
+    // CPluginFSInterface::ContextMenu), 'nameBuf' (a buffer of size 'nameBufSize' bytes)
+    // contains the command name (prepared for use in a menu - ampersands are doubled,
+    // underlined characters are marked by ampersands, and shortcut descriptions follow '\t'), 'enabled'
+    // (if not NULL) contains the command state (TRUE/FALSE for enabled/disabled), and 'type'
+    // (if not NULL) contains the command type (see the sctyXXX constants)
+    // Can be called from any thread
     virtual BOOL WINAPI EnumSalamanderCommands(int* index, int* salCmd, char* nameBuf, int nameBufSize,
                                                BOOL* enabled, int* type) = 0;
 
-    // vraci prikaz Salamandera s cislem 'salCmd' (viz konstanty SALCMD_XXX);
-    // vraci FALSE, pokud takovy prikaz neexistuje; pokud vraci TRUE, obsahuje
-    // 'nameBuf' (buffer o velikosti 'nameBufSize' bytu) jmeno prikazu (jmeno je pripraveno pro
-    // pouziti v menu - ma zdvojene ampersandy, podtrzene znaky oznacene ampersandy a za '\t' ma
-    // popisy klavesovych zkratek), 'enabled' (neni-li NULL) obsahuje stav prikazu (TRUE/FALSE
-    // pokud je enabled/disabled), 'type' (neni-li NULL) obsahuje typ prikazu (viz popis konstant
-    // sctyXXX)
-    // mozne volat z libovolneho threadu
+    // Returns the Salamander command with number 'salCmd' (see SALCMD_XXX constants);
+    // returns FALSE if no such command exists; if it returns TRUE,
+    // 'nameBuf' (a buffer of size 'nameBufSize' bytes) contains the command name (prepared for
+    // use in a menu - ampersands are doubled, underlined characters are marked by ampersands,
+    // and shortcut descriptions follow '\t'), 'enabled' (if not NULL) contains the command state (TRUE/FALSE
+    // for enabled/disabled), and 'type' (if not NULL) contains the command type (see the
+    // sctyXXX constants)
+    // Can be called from any thread
     virtual BOOL WINAPI GetSalamanderCommand(int salCmd, char* nameBuf, int nameBufSize, BOOL* enabled,
                                              int* type) = 0;
 
-    // nastavi volajicimu pluginu priznak, ze se ma pri nejblizsi mozne prilezitosti spustit
-    // prikaz Salamandera s cislem 'salCmd' (jakmile nebudou v message-queue hl. threadu zadne
-    // message a Salamander nebude "busy" (nebude otevreny zadny modalni dialog a nebude se
-    // zpracovavat zadna zprava));
-    // POZOR: pokud se vola z jineho nez hlavniho threadu, muze dojit ke spusteni prikazu Salamandera
-    // (probiha v hlavnim threadu) dokonce drive nez skonci PostSalamanderCommand
-    // mozne volat z libovolneho threadu
+    // Sets a flag for the calling plugin so that the Salamander command with number 'salCmd' is run at the
+    // next possible opportunity (as soon as there are no messages in the main-thread message queue and
+    // Salamander is not 'busy' (no modal dialog is open and no message is being
+    // processed));
+    // WARNING: if this is called from a thread other than the main thread, the Salamander command
+    // (which runs in the main thread) may be executed even before PostSalamanderCommand returns
+    // Can be called from any thread
     virtual void WINAPI PostSalamanderCommand(int salCmd) = 0;
 
-    // nastavi priznak "uzivatel pracoval s aktualni cestou" v panelu 'panel' (tento priznak
-    // se vyuziva pri plneni seznamu pracovnich adresaru - List Of Working Directories (Alt+F12));
-    // 'panel' je jeden z PANEL_XXX
-    // omezeni: hlavni thread
+    // Sets the 'user worked with the current path' flag in panel 'panel' (this flag
+    // is used when filling the List Of Working Directories (Alt+F12));
+    // 'panel' is one of PANEL_XXX
+    // Restriction: main thread
     virtual void WINAPI SetUserWorkedOnPanelPath(int panel) = 0;
 
-    // v panelu 'panel' (jedna z konstant PANEL_XXX) ulozi vybrana (Selected) jmena
-    // do zvlastniho pole, ze ktereho muze uzivatel vyber obnovit prikazem Edit/Restore Selection
-    // vyuziva se pro prikazy, ktere zrusi aktualni vyber, aby mel uzivatel moznost
-    // se k nemu vratit a provest jeste dalsi operaci
-    // omezeni: hlavni thread
+    // In panel 'panel' (one of the PANEL_XXX constants), stores the selected names
+    // in a special array from which the user can restore the selection with Edit/Restore Selection;
+    // it is used for commands that clear the current selection so the user can
+    // return to it and perform another operation
+    // Restriction: main thread
     virtual void WINAPI StoreSelectionOnPanelPath(int panel) = 0;
 
     //
@@ -2331,21 +2335,21 @@ public:
     // mozne volat z libovolneho threadu
     virtual void WINAPI FreeSalamanderMD5(CSalamanderMD5* md5) = 0;
 
-    // V textu nalezne pary '<' '>', vyradi je z bufferu a prida odkazy na
-    // jejich obsah do 'varPlacements'. 'varPlacements' je pole DWORDu o '*varPlacementsCount'
-    // polozkach, DWORDy jsou slozene vzdy z pozice odkazu ve vystupnim bufferu (spodni WORD)
-    // a poctu znaku odkazu (horni WORD). Retezce "\<", "\>", "\\" jsou chapany
-    // jako escape sekvence a budou nahrazeny znaky '<', '>' a '\\'.
-    // Vraci TRUE v pripade uspechu, jinak FALSE; vzdy nastavi 'varPlacementsCount' na
-    // pocet zpracovanych promennych.
-    // mozne volat z libovolneho threadu
+    // Finds '<' and '>' pairs in the text, removes them from the buffer, and adds references to
+    // their contents to 'varPlacements'. 'varPlacements' is an array of DWORD values with
+    // '*varPlacementsCount' items; each DWORD is composed of the position of the reference in the output buffer (low WORD)
+    // and the length of the referenced text (high WORD). Strings '\<', '\>', and '\\' are treated
+    // as escape sequences and replaced with '<', '>', and '\\'.
+    // Returns TRUE on success, otherwise FALSE; 'varPlacementsCount' is always set to
+    // the number of processed variables.
+    // Can be called from any thread
     virtual BOOL WINAPI LookForSubTexts(char* text, DWORD* varPlacements, int* varPlacementsCount) = 0;
 
-    // cekani (maximalne 0.2 sekundy) na pusteni klavesy ESC; pouziva se pokud plugin obsahuje
-    // akce, ktere se prerusuji klavesou ESC (monitorovani klavesy ESC pres
-    // GetAsyncKeyState(VK_ESCAPE)) - zabranuje tomu, aby se po stisknuti ESC v dialogu/messageboxu
-    // hned prerusila i nasledujici akce monitorujici klavesu ESC
-    // mozne volat z libovolneho threadu
+    // Waits (at most 0.2 seconds) for the ESC key to be released; used if the plugin contains
+    // actions that are interrupted by the ESC key (monitoring the ESC key via
+    // GetAsyncKeyState(VK_ESCAPE)) - this prevents pressing ESC in a dialog/message box from
+    // immediately interrupting the next action that monitors the ESC key
+    // Can be called from any thread
     virtual void WINAPI WaitForESCRelease() = 0;
 
     //
@@ -2461,32 +2465,31 @@ public:
     //
     virtual void WINAPI MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorClipRect) = 0;
 
-    //
     // MultiMonCenterWindow
-    //   Centers the window against a specified window or monitor.
+    //   Centers the window relative to a specified window or monitor.
     //
     // Parameters
     //   'hWindow'
-    //      [in] Handle to the window whose parent window handle is to be retrieved.
+    //      [in] Handle to the window to center.
     //
     //   'hByWnd'
-    //      [in] Handle to the window against which to center. If this parameter is NULL,
-    //      or window is not visible or is iconic, the method will center 'hWindow' against
-    //      the working area of the monitor. Monitor with the currently active window
-    //      from the same application will be used. Otherwise primary monitor will be used.
+    //      [in] Handle to the window relative to which 'hWindow' is centered. If this
+    //      parameter is NULL, or if the window is not visible or is iconic, the method
+    //      centers 'hWindow' relative to the monitor work area. The monitor with the
+    //      currently active window from the same application is used; otherwise the
+    //      primary monitor is used.
     //
     //   'findTopWindow'
-    //      [in] If this parameter is TRUE, non child visible window will be used by walking
-    //      the chain of parent windows of 'hByWnd' as the window against which to center.
+    //      [in] If this parameter is TRUE, the top visible non-child window found by
+    //      walking the chain of parent windows of 'hByWnd' is used as the reference window.
     //
-    //      If this parameter is FALSE, 'hByWnd' will be to the window against which to center.
+    //      If this parameter is FALSE, 'hByWnd' itself is used as the reference window.
     //
     // Remarks
-    //   If centered window gets over working area of the monitor, the method positions
-    //   the window to be whole visible.
+    //   If the centered window extends beyond the work area of the monitor, the method
+    //   positions it so that it is fully visible.
     //
     //   Method can be called from any thread.
-    //
     virtual void WINAPI MultiMonCenterWindow(HWND hWindow, HWND hByWnd, BOOL findTopWindow) = 0;
 
     //
@@ -2514,152 +2517,148 @@ public:
     //
     virtual BOOL WINAPI MultiMonEnsureRectVisible(RECT* rect, BOOL partialOK) = 0;
 
-    //
     // InstallWordBreakProc
-    //   Installs special word break procedure to the specified window. This procedure
-    //   is inteded for easier cursor movevement in the single line edit controls.
-    //   Delimiters '\\', '/', ' ', ';', ',', and '.' are used as cursor stops when user
-    //   navigates using Ctrl+Left or Ctrl+Right keys.
-    //   You can use Ctrl+Backspace to delete one word.
+    //   Installs a special word-break procedure for the specified window. This procedure
+    //   is intended to make cursor movement easier in single-line edit controls.
+    //   Delimiters '\\', '/', ' ', ';', ',', and '.' are used as cursor stops when the user
+    //   navigates with Ctrl+Left or Ctrl+Right.
+    //   Ctrl+Backspace can be used to delete one word.
     //
     // Parameters
     //   'hWindow'
-    //      [in] Handle to the window or control where word break proc is to be isntalled.
-    //      Window may be either edit or combo box with edit control.
+    //      [in] Handle to the window or control where the word-break proc is to be installed.
+    //      The window may be either an edit control or a combo box with an edit control.
     //
     // Return Values
-    //   The return value is TRUE if the word break proc is installed. It is FALSE if the
-    //   window is neither edit nor combo box with edit control, some error occured, or
-    //   this special word break proc is not supported on your OS.
+    //   The return value is TRUE if the word-break proc is installed. It is FALSE if the
+    //   window is neither an edit control nor a combo box with an edit control, if an
+    //   error occurred, or if this special word-break proc is not supported on the current OS.
     //
     // Remarks
-    //   You needn't uninstall word break procedure before window is destroyed.
+    //   You need not uninstall the word-break procedure before the window is destroyed.
     //
     //   Method can be called from any thread.
-    //
     virtual BOOL WINAPI InstallWordBreakProc(HWND hWindow) = 0;
 
-    // Salamander 3 nebo novejsi: vraci TRUE, pokud byla tato instance Altap
-    // Salamandera prvni spustena (v dobe startu instance se hledaji dalsi bezici
-    // instance verze 3 nebo novejsi);
+    // Salamander 3 or later: returns TRUE if this Altap Salamander instance was the
+    // first one started (when the instance starts, other running instances of version 3 or later
+    // are searched for);
     //
-    // Poznamky k ruznym SID / Session / Integrity Level (netyka se Salamandera 2.5 a 2.51):
-    // funkce vrati TRUE i v pripade, ze jiz bezi instance Salamandera spustena
-    // pod jinym SID; na session a integrity level nezalezi, takze pokud jiz bezi
-    // instance Salamandera na jine session, pripadne s jinym integrity level, ale
-    // se shodnym SID, vrati nove spustena instance FALSE
+    // Notes on different SID / Session / Integrity Level combinations (does not apply to Salamander 2.5 and 2.51):
+    // the function returns TRUE even if a Salamander instance already running
+    // under a different SID exists; session and integrity level do not matter, so if a
+    // Salamander instance is already running in another session or with a different integrity level, but
+    // with the same SID, the newly started instance returns FALSE
     //
-    // mozne volat z libovolneho threadu
+    // Can be called from any thread
     virtual BOOL WINAPI IsFirstInstance3OrLater() = 0;
 
-    // support for parameter dependent strings (dealing with singles/plurals);
-    // 'format' is format string for resulting string - its description follows;
-    // resulting string is copied to 'buffer' buffer which size is 'bufferSize' bytes;
-    // 'parametersArray' is array of parameters; 'parametersCount' is count of
-    // these parameters; returns length of the resulting string
+    // Support for parameter-dependent strings (handling singular/plural forms);
+    // 'format' is the format string for the resulting string - see the description below;
+    // the resulting string is copied to buffer 'buffer', whose size is 'bufferSize' bytes;
+    // 'parametersArray' is an array of parameters; 'parametersCount' is the number of
+    // these parameters; returns the length of the resulting string
     //
     // format string description:
-    //   - each format string starts with signature "{!}"
-    //   - format string can contain following escape sequences (it allows to use special
-    //     character without its special meaning): "\\" = "\", "\{" = "{", "\}" = "}",
-    //     "\:" = ":", and "\|" = "|" (do not forget to double backslashes when writing C++
-    //     strings, this applies only to format strings placed directly in C++ source code)
-    //   - text which is not placed in curly brackets goes directly to resulting string
-    //     (only escape sequences are handled)
-    //   - parameter dependent text is placed in curly brackets
-    //   - each parameter dependent text uses one parameter from 'parametersArray'
-    //     (it is 64-bit unsigned int)
-    //   - parameter dependent text contains more variants of resulting text, which variant
-    //     is used depends on parameter value, more precisely to which defined interval the
-    //     value belongs
-    //   - variants of resulting text and interval bounds are separated by "|" character
-    //   - first interval is from 0 to first interval bound
-    //   - last interval is from last interval bound plus one to infinity (2^64-1)
-    //   - parameter dependent text "{}" is used to skip one parameter from 'parametersArray'
-    //     (nothing goes to resulting string)
-    //   - you can also specify index of parameter to use for parameter dependent text,
-    //     just place its index (from one to number of parameters) to the beginning of
-    //     parameter dependent text and follow it by ':' character
-    //   - if you don't specify index of parameter to use, it is assigned automatically
-    //     (starting from one to number of parameters)
-    //   - if you specify index of parameter to use, the next index which is assigned
-    //     automatically is not affected,
-    //     e.g. in "{!}%d file{2:s|0||1|s} and %d director{y|1|ies}" the first parameter
-    //     dependent text uses parameter with index 2 and second uses parameter with index 1
-    //   - you can use any number of parameter dependent texts with specified index
-    //     of parameter to use
+    //   - every format string starts with signature '{!}'
+    //   - the format string can contain the following escape sequences (to use a special
+    //     character without its special meaning): '\\' = '\', '\{' = '{', '\}' = '}',
+    //     '\:' = ':', and '\|' = '|' (do not forget to double backslashes when writing C++
+    //     strings; this applies only to format strings placed directly in C++ source code)
+    //   - text outside curly brackets is copied directly to the resulting string
+    //     (only escape sequences are processed)
+    //   - parameter-dependent text is placed in curly brackets
+    //   - each parameter-dependent text uses one parameter from 'parametersArray'
+    //     (a 64-bit unsigned int)
+    //   - parameter-dependent text contains several resulting-text variants; the selected
+    //     variant depends on the parameter value, specifically on the interval it falls into
+    //   - resulting-text variants and interval bounds are separated by the '|' character
+    //   - the first interval is from 0 to the first interval bound
+    //   - the last interval is from the last interval bound plus one to infinity (2^64-1)
+    //   - parameter-dependent text '{}' skips one parameter from 'parametersArray'
+    //     (nothing is added to the resulting string)
+    //   - you can also specify the index of the parameter to use for parameter-dependent text;
+    //     just place its index (from one to the number of parameters) at the beginning of
+    //     the parameter-dependent text and follow it with a ':' character
+    //   - if you do not specify the index of the parameter to use, it is assigned automatically
+    //     (from one to the number of parameters)
+    //   - if you do specify the index of the parameter to use, the next automatically assigned
+    //     index is not affected,
+    //     e.g. in '{!}%d file{2:s|0||1|s} and %d director{y|1|ies}' the first parameter-
+    //     dependent text uses parameter 2 and the second uses parameter 1
+    //   - you can use any number of parameter-dependent texts with an explicitly specified
+    //     parameter index
     //
     // examples of format strings:
-    //   - "{!}director{y|1|ies}": for parameter values from 0 to 1 resulting string will be
-    //     "directory" and for parameter values from 2 to infinity (2^64-1) resulting string
-    //     will be "directories"
-    //   - "{!}%d soubor{u|0||1|y|4|u} a %d adresar{u|0||1|e|4|u}": it needs two parameters
-    //     because there are two dependent texts in curly brackets, resulting string for
-    //     choosen pairs of parameters (I believe it is not needed to show all possible variants):
-    //       0, 0: "%d souboru a %d adresaru"
-    //       1, 12: "%d soubor a %d adresaru"
-    //       3, 4: "%d soubory a %d adresare"
-    //       13, 1: "%d souboru a %d adresar"
+    //   - '{!}director{y|1|ies}': for parameter values from 0 to 1 the resulting string is
+    //     'directory', and for parameter values from 2 to infinity (2^64-1) it is
+    //     'directories'
+    //   - '{!}%d file{|1|s} and %d director{y|1|ies}': it needs two parameters because there
+    //     are two dependent texts in curly brackets; for selected parameter pairs, for example:
+    //       0, 0: '%d file and %d directory'
+    //       1, 12: '%d file and %d directories'
+    //       3, 4: '%d files and %d directories'
+    //       13, 1: '%d files and %d directory'
     //
-    // method can be called from any thread
+    // Method can be called from any thread.
     virtual int WINAPI ExpandPluralString(char* buffer, int bufferSize, const char* format,
                                           int parametersCount, const CQuadWord* parametersArray) = 0;
 
-    // v aktualni jazykove verzi Salamandera pripravi retezec "XXX (selected/hidden)
-    // files and YYY (selected/hidden) directories"; je-li XXX (hodnota parametru 'files')
-    // nebo YYY (hodnota parametru 'dirs') nula, prislusna cast retezce se vypousti (oba
-    // parametry zaroven nulove se neuvazuji); pouziti "selected" a "hidden" zavisi
-    // na rezimu 'mode' - viz popis konstant epfdmXXX; vysledny text
-    // se vraci v bufferu 'buffer' o velikosti 'bufferSize' bytu; vraci delku vysledneho
-    // textu; 'forDlgCaption' je TRUE/FALSE pokud je/neni text urceny pro titulek dialogu
-    // (v anglictine nutna velka pocatecni pismena)
-    // mozne volat z libovolneho threadu
+    // In the current Salamander language version, prepares the string 'XXX (selected/hidden)
+    // files and YYY (selected/hidden) directories'; if XXX (the value of parameter 'files')
+    // or YYY (the value of parameter 'dirs') is zero, the corresponding part of the string is omitted (both
+    // parameters being zero at the same time is not considered); the use of 'selected' and 'hidden' depends
+    // on mode 'mode' - see the epfdmXXX constants; the resulting text is returned in buffer 'buffer'
+    // of size 'bufferSize' bytes; returns the length of the resulting text;
+    // 'forDlgCaption' is TRUE/FALSE depending on whether the text is/is not intended for a dialog caption
+    // (English requires initial capitals)
+    // Can be called from any thread
     virtual int WINAPI ExpandPluralFilesDirs(char* buffer, int bufferSize, int files, int dirs,
                                              int mode, BOOL forDlgCaption) = 0;
 
-    // v aktualni jazykove verzi Salamandera pripravi retezec "BBB bytes in XXX selected
-    // files and YYY selected directories"; BBB je hodnota parametru 'selectedBytes';
-    // je-li XXX (hodnota parametru 'files') nebo YYY (hodnota parametru 'dirs') nula,
-    // prislusna cast retezce se vypousti (oba parametry zaroven nulove se neuvazuji);
-    // je-li 'useSubTexts' TRUE, uzavorkuje se BBB do '<' a '>', aby se s BBB dalo
-    // dale pracovat na info-line (viz metoda CSalamanderGeneralAbstract::LookForSubTexts a
-    // CPluginDataInterfaceAbstract::GetInfoLineContent); vysledny text se vraci v bufferu
-    // 'buffer' o velikosti 'bufferSize' bytu; vraci delku vysledneho textu
-    // mozne volat z libovolneho threadu
+    // In the current Salamander language version, prepares the string 'BBB bytes in XXX selected
+    // files and YYY selected directories'; BBB is the value of parameter 'selectedBytes';
+    // if XXX (the value of parameter 'files') or YYY (the value of parameter 'dirs') is zero,
+    // the corresponding part of the string is omitted (both parameters being zero at the same
+    // time is not considered); if 'useSubTexts' is TRUE, BBB is enclosed in '<' and '>' so it can be
+    // processed further on the info line (see CSalamanderGeneralAbstract::LookForSubTexts and
+    // CPluginDataInterfaceAbstract::GetInfoLineContent); the resulting text is returned in buffer
+    // 'buffer' of size 'bufferSize' bytes; returns the length of the resulting text
+    // Can be called from any thread
     virtual int WINAPI ExpandPluralBytesFilesDirs(char* buffer, int bufferSize,
                                                   const CQuadWord& selectedBytes, int files, int dirs,
                                                   BOOL useSubTexts) = 0;
 
-    // vraci retezec popisujici s cim se pracuje (napr. "file "test.txt"" nebo "directory "test""
-    // nebo "3 files and 1 directory"); 'sourceDescr' je buffer pro vysledek o velikosti
-    // minimalne 'sourceDescrSize'; 'panel' popisuje zdrojovy panel operace (jedna z PANEL_XXX nebo -1
-    // pokud operace nema zdrojovy panel (napr. CPluginFSInterfaceAbstract::CopyOrMoveFromDiskToFS));
-    // 'selectedFiles'+'selectedDirs' - pokud ma operace zdrojovy panel, je zde pocet oznacenych
-    // souboru a adresaru ve zdrojovem panelu, pokud jsou obe hodnoty nulove, pracuje se se
-    // souborem/adresarem pod kurzorem (fokusem); 'selectedFiles'+'selectedDirs' - pokud operace nema
-    // zdrojovy panel, je zde pocet souboru/adresaru, se kterymi operace pracuje;
-    // 'fileOrDirName'+'isDir' - pouziva se jen pokud operace nema zdrojovy panel a pokud
-    // 'selectedFiles + selectedDirs == 1', je zde jmeno souboru/adresare a jestli jde o soubor
-    // nebo adresar ('isDir' je FALSE nebo TRUE); 'forDlgCaption' je TRUE/FALSE pokud je/neni
-    // text urceny pro titulek dialogu (v anglictine nutna velka pocatecni pismena)
-    // omezeni: hlavni thread (muze pracovat s panelem)
+    // Returns a string describing what the operation works with (e.g. 'file "test.txt"', 'directory "test"',
+    // or '3 files and 1 directory'); 'sourceDescr' is the output buffer and must be at least
+    // 'sourceDescrSize' bytes long; 'panel' describes the source panel of the operation (one of PANEL_XXX or -1
+    // if the operation has no source panel, e.g. CPluginFSInterfaceAbstract::CopyOrMoveFromDiskToFS);
+    // 'selectedFiles'+'selectedDirs' - if the operation has a source panel, this is the number of selected
+    // files and directories in the source panel; if both values are zero, the operation works with the
+    // file/directory under the cursor (focus); 'selectedFiles'+'selectedDirs' - if the operation has no
+    // source panel, this is the number of files/directories the operation works with;
+    // 'fileOrDirName'+'isDir' - used only if the operation has no source panel and if
+    // 'selectedFiles + selectedDirs == 1'; they specify the file/directory name and whether it is a file
+    // or a directory ('isDir' is FALSE or TRUE); 'forDlgCaption' is TRUE/FALSE depending on whether the
+    // text is/is not intended for a dialog caption (English requires initial capitals)
+    // Restriction: main thread (it can access the panel)
     virtual void WINAPI GetCommonFSOperSourceDescr(char* sourceDescr, int sourceDescrSize,
                                                    int panel, int selectedFiles, int selectedDirs,
                                                    const char* fileOrDirName, BOOL isDir,
                                                    BOOL forDlgCaption) = 0;
 
-    // nakopiruje retezec 'srcStr' za retezec 'dstStr' (za jeho koncovou nulu);
-    // 'dstStr' je buffer o velikosti 'dstBufSize' (musi byt nejmene rovno 2);
-    // pokud se do bufferu oba retezce nevejdou, jsou zkraceny (vzdy tak, aby se
-    // veslo co nejvice znaku z obou retezu)
-    // mozne volat z libovolneho threadu
+    // Copies string 'srcStr' after string 'dstStr' (after its terminating null);
+    // 'dstStr' is a buffer of size 'dstBufSize' (it must be at least 2);
+    // if both strings do not fit into the buffer, they are truncated (always so that
+    // as many characters as possible from both strings fit)
+    // Can be called from any thread
     virtual void WINAPI AddStrToStr(char* dstStr, int dstBufSize, const char* srcStr) = 0;
 
-    // zjisti jestli je mozne retezec 'fileNameComponent' pouzit jako komponentu
-    // jmena na Windows filesystemu (resi retezce delsi nez MAX_PATH-4 (4 = "C:\"
-    // + null-terminator), prazdny retezec, retezce znaku '.', retezce white-spaces,
-    // znaky "*?\\/<>|\":" a jednoducha jmena typu "prn" a "prn  .txt")
-    // mozne volat z libovolneho threadu
+    // Determines whether string 'fileNameComponent' can be used as a name component
+    // on a Windows filesystem (handles strings longer than MAX_PATH-4 (4 = 'C:\' +
+    // null terminator), empty strings, strings of '.' characters, strings of white-space characters,
+    // and the characters '*', '?', '\\', '/', '<', '>', '|', '"', ':' as well as simple names such as 'prn' and 'prn  .txt')
+    // Can be called from any thread
     virtual BOOL WINAPI SalIsValidFileNameComponent(const char* fileNameComponent) = 0;
 
     // pretvori retezec 'fileNameComponent' tak, aby mohl byt pouzity jako komponenta
