@@ -57,8 +57,8 @@ public:
     C__AllocHandlerInit()
     {
         InitializeCriticalSection(&CriticalSection);
-        OldNewHandler = _set_new_handler(AltapNewHandler); // operator new ma volat pri nedostatku pameti nas new-handler
-        OldNewMode = _set_new_mode(1);                     // malloc ma volat pri nedostatku pameti nas new-handler
+        OldNewHandler = _set_new_handler(AltapNewHandler); // Have operator new call our new-handler on out-of-memory.
+        OldNewMode = _set_new_mode(1);                     // Have malloc call our new-handler on out-of-memory.
     }
     ~C__AllocHandlerInit()
     {
