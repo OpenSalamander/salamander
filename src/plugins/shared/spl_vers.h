@@ -100,10 +100,10 @@
 // VERSINFO_BETAVERSION_TXT:
 //
 // Changes with every build; for a release version, VERSINFO_BETAVERSION_TXT will be "".
-// If we release a special beta fix build such as 2.5 beta 9a, increment
+// If a special beta fix build such as 2.5 beta 9a is released, increment
 // VERSINFO_BUILDNUMBER by one and set VERSINFO_BETAVERSION_TXT==" beta 9a".
 //
-// VERSINFO_BETAVERSIONSHORT_TXT is used for bug report names; it should be as short as possible
+// VERSINFO_BETAVERSIONSHORT_TXT is used to name bug reports; it should be as short as possible
 
 // examples ("x86" is for the 32-bit version, "x64" for the 64-bit version; in the following examples,
 // x86/x64 are interchangeable): " (x86)" (for release versions), " beta 2 (x64)", " beta 2 (SDK x86)",
