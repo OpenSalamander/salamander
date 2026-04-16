@@ -251,28 +251,28 @@ public:
     // adds the plugin to the list for "custom archiver pack",
     // 'title' is the user-visible name of the custom packer, 'defaultExtension' is the default extension
     // for new archives; if this is not an upgrade of "custom pack" (or the addition of the whole plugin) and
-    // 'update' je FALSE, je volani ignorovano; je-li 'update' TRUE, prepise se nastaveni na
-    // nove hodnoty 'title' a 'defaultExtension' - nutna prevence proti opakovanemu 'update'==TRUE
-    // (to avoid continually overwriting the settings)
+    // 'update' is FALSE, the call is ignored; if 'update' is TRUE, the settings are overwritten with the
+    // new values of 'title' and 'defaultExtension' - it is necessary to prevent repeated 'update'==TRUE
+    // (constant overwriting of the settings)
     virtual void WINAPI AddCustomPacker(const char* title, const char* defaultExtension, BOOL update) = 0;
 
     // adds the plugin to the list for "custom archiver unpack",
-    // 'title' is the user-visible name of the custom unpacker, 'masks' are archive-file masks (used to determine
-    // which unpacker should unpack a given archive; the separator is ';' (the escape sequence for ';' is
-    // ";;") and the usual '*' and '?' wildcards are used, plus '#' for '0'..'9'); if this is not an upgrade
-    // "custom unpack" (nebo pridani celeho pluginu) a 'update' je FALSE je volani ignorovano;
-    // if 'update' is TRUE, the settings are overwritten with the new 'title' and 'masks' values - repeated
-    // proti opakovanemu 'update'==TRUE (neustalemu prepisovani nastaveni)
+    // 'title' is the user-visible name of the custom unpacker, 'masks' are archive file masks (used to determine
+    // which unpacker should be used to unpack a given archive; the separator is ';' (the escape sequence for ';' is
+    // ";;") and the usual '*' and '?' wildcards are used, plus '#' for '0'..'9'); if this is not an upgrade of
+    // "custom unpack" (or the addition of the whole plugin) and 'update' is FALSE, the call is ignored;
+    // if 'update' is TRUE, the settings are overwritten with the new 'title' and 'masks' values; it is necessary to prevent
+    // repeated 'update'==TRUE calls (continuous overwriting of the settings)
     virtual void WINAPI AddCustomUnpacker(const char* title, const char* masks, BOOL update) = 0;
 
-    // adds the plugin to the list for "panel archiver view/edit",
+    // adds the plugin to the list for "panel archiver view/edit";
     // 'extensions' are the archive extensions handled by this plugin
-    // (the separator is ';' (';' has no escape sequence here) and the wildcard '#' is used for
-    // '0'..'9'), pokud je 'edit' TRUE, resi tento plugin "panel archiver view/edit", jinak jen
+    // (the separator is ';' (';' has no escape sequence here), and the wildcard '#' is used for
+    // '0'..'9'); if 'edit' is TRUE, this plugin handles "panel archiver view/edit", otherwise only
     // "panel archiver view"; if this is not an upgrade of "panel archiver view/edit" (or the addition
-    // celeho pluginu) a 'updateExts' je FALSE je volani ignorovano; je-li 'updateExts' TRUE,
-    // new archive extensions are added (ensuring that all extensions from 'extensions' are present) - repeated
-    // prevence proti opakovanemu 'updateExts'==TRUE (neustalemu ozivovani pripon z 'extensions')
+    // of the entire plugin) and 'updateExts' is FALSE, the call is ignored; if 'updateExts' is TRUE,
+    // new archive extensions are added (ensuring that all extensions from 'extensions' are present) -
+    // repeated 'updateExts'==TRUE must be prevented (to avoid constantly reviving extensions from 'extensions')
     virtual void WINAPI AddPanelArchiver(const char* extensions, BOOL edit, BOOL updateExts) = 0;
 
     // removes an extension from the list for "panel archiver view/edit" (only from items belonging to
