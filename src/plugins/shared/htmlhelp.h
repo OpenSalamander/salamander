@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /****************************************************************************
 *                                                                           *
@@ -224,7 +225,7 @@ extern "C"
         int iType;               // the type of the information type ie. Inclusive, Exclusive, or Hidden
         LPCSTR pszCatName;       // Set to the name of the Category to enumerate the info types in a category; else NULL
         LPCSTR pszITName;        // volitile pointer to the name of the infotype. Allocated by call. Caller responsible for freeing
-        LPCSTR pszITDescription; // volitile pointer to the description of the infotype.
+        LPCSTR pszITDescription; // Pointer to the info type description.
     } HH_ENUM_IT, *PHH_ENUM_IT;
 
     typedef struct tagHH_ENUM_CAT
@@ -274,7 +275,7 @@ extern "C"
 
     typedef struct tagHH_FTS_QUERY
     {
-        int cbStruct;           // Sizeof structure in bytes.
+        int cbStruct;           // Size of the structure in bytes.
         BOOL fUniCodeStrings;   // TRUE if all strings are unicode.
         LPCTSTR pszSearchQuery; // String containing the search query.
         LONG iProximity;        // Word proximity.
@@ -301,7 +302,7 @@ extern "C"
         int nShowState;     // IN: show state (e.g., SW_SHOW)
 
         HWND hwndHelp;   // OUT: window handle
-        HWND hwndCaller; // OUT: who called this window
+        HWND hwndCaller; // OUT: caller window handle
 
         HH_INFOTYPE* paInfoTypes; // IN: Pointer to an array of Information Types
 
