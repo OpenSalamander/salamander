@@ -35,67 +35,44 @@ class CPluginDataInterfaceAbstract;
 class CSalamanderForViewFileOnFSAbstract
 {
 public:
-    // najde v disk-cache existujici kopii souboru nebo pokud jeste kopie souboru neni
-    // v disk-cache, rezervuje pro ni jmeno (cilovy soubor napr. pro download z FTP);
-    // 'uniqueFileName' je unikatni nazev originalniho souboru (podle tohoto nazvu
-    // se prohledava disk-cache; melo by stacit plne jmeno souboru v salamanderovske
-    // forme - "fs-name:fs-user-part"; POZOR: nazev se porovnava "case-sensitive", pokud
-    // plugin vyzaduje "case-insensitive", musi vsechny nazvy prevadet napr. na mala
-    // pismena - viz CSalamanderGeneralAbstract::ToLowerCase); 'nameInCache' je jmeno
-    // kopie souboru, ktera je umistena v disk-cache (ocekava se zde posledni
-    // cast jmena originalniho souboru, aby pozdeji v titulku viewru uzivateli pripominala
-    // originalni soubor); je-li 'rootTmpPath' NULL, je diskova cache ve Windows TEMP
-    // adresari, jinak je cesta do disk-cache v 'rootTmpPath'; pri systemove chybe vraci
+    // Finds an existing copy of the file in the disk cache or, if the copy is not yet
+    // in the disk cache, reserves a name for it (a target file, for example for an FTP download);
+    // 'uniqueFileName' is the unique name of the original file (the disk cache is searched
+    // by this name; the full file name in Salamander form should be sufficient -
+    // fs-name:fs-user-part; WARNING: the name is compared case-sensitively, so if the
+    // plugin requires case-insensitive matching, it must convert all names, for example,
+    // to lowercase - see CSalamanderGeneralAbstract::ToLowerCase); 'nameInCache' is the name
+    // of the file copy stored in the disk cache (the last component of the original file name
+    // is expected here so that it later reminds the user of the original file in the viewer caption);
+    // if 'rootTmpPath' is NULL, the disk cache is in the Windows TEMP
+    // directory; otherwise 'rootTmpPath' contains the path to the disk cache; on system error it returns
     // NULL (nemelo by vubec nastat), jinak vraci plne jmeno kopie souboru v disk-cache
-    // a ve 'fileExists' vraci TRUE pokud soubor v disk-cache existuje (napr. uz probehl
-    // download z FTP) nebo FALSE pokud je soubor teprve potreba pripravit (napr. provest
-    // jeho download); 'parent' je parent messageboxu s chybami (napriklad prilis dlouhy
-    // nazev souboru)
+    // and returns TRUE in 'fileExists' if the file already exists in the disk cache (for example,
+    // the FTP download has already been performed), or FALSE if the file still has to be prepared
+    // (for example by downloading it); 'parent' is the parent of error message boxes (for example, an overly long
+    // file name)
     // POZOR: pokud nevratila NULL (nenastala systemova chyba), je nutne pozdeji zavolat
     //        FreeFileNameInCache (pro stejne 'uniqueFileName')
-    // POZN.: pokud FS vyuziva disk-cache, mel by alespon pri unloadu pluginu zavolat
+    // NOTE: if the FS uses the disk cache, it should at least call
     //        CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:"), jinak budou
-    //        jeho kopie souboru zbytecne prekazet v disk-cache
+    //        its file copies needlessly clutter the disk cache
     virtual const char* WINAPI AllocFileNameInCache(HWND parent, const char* uniqueFileName, const char* nameInCache,
                                                     const char* rootTmpPath, BOOL& fileExists) = 0;
 
-    // otevre soubor 'fileName' z windowsove cesty v uzivatelem pozadovanem prohlizeci (bud
-    // pomoci asociace viewru nebo pres prikaz View With); 'parent' je parent messageboxu
-    // s chybami; neni-li 'fileLock' a 'fileLockOwner' NULL, vraci se v nich vazba na
-    // otevreny viewer (pouzije se jako parametr metody FreeFileNameInCache); vraci TRUE
-    // pokud byl viewer otevren
+    // Opens file 'fileName' from a Windows path in the viewer requested by the user (either via viewer association or via the View With command). 'parent' is the parent of error message boxes. If 'fileLock' and 'fileLockOwner' are not NULL, they return the link to the open viewer (used as a parameter of FreeFileNameInCache). Returns TRUE if the viewer was opened.
     virtual BOOL WINAPI OpenViewer(HWND parent, const char* fileName, HANDLE* fileLock,
                                    BOOL* fileLockOwner) = 0;
 
-    // musi parovat s AllocFileNameInCache, vola se az po otevreni vieweru (nebo po chybe pri
-    // priprave kopie souboru nebo otevirani vieweru); 'uniqueFileName' je unikatni nazev
-    // originalniho souboru (pouzivat stejny retezec jako pri volani AllocFileNameInCache);
-    // 'fileExists' je FALSE pokud kopie souboru v disk-cache neexistovala a TRUE pokud
-    // jiz existovala (shodna hodnota s vystupnim parametrem 'fileExists' metody AllocFileNameInCache);
-    // je-li 'fileExists' TRUE, 'newFileOK' a 'newFileSize' se ignoruji, jinak 'newFileOK' je
-    // TRUE pokud byla kopie souboru uspesne pripravena (napr. download probehl uspesne) a
-    // v 'newFileSize' je velikost pripravene kopie souboru; je-li 'newFileOK' FALSE, je
-    // 'newFileSize' ignorovana; 'fileLock' a 'fileLockOwner' provazuji otevreny viewer
-    // s kopiemi souboru v disk-cache (po zavreni vieweru disk-cache dovoli zrusit kopii
-    // souboru - kdy dojde ke zruseni kopie zalezi na velikosti disk-cache na disku), oba
-    // tyto parametry lze ziskat pri volani metody OpenViewer; pokud se viewer
-    // nepodarilo otevrit (nebo se nepodarilo pripravit kopii souboru do disk-cache nebo viewer
-    // nema vazbu s disk-cache), nastavi se 'fileLock' na NULL a 'fileLockOwner' na FALSE;
-    // je-li 'fileExists' TRUE (kopie souboru existovala), hodnota 'removeAsSoonAsPossible'
-    // se ignoruje, jinak: je-li 'removeAsSoonAsPossible' TRUE, kopie souboru se v disk-cache
-    // nebude skladovat dele nez je nutne (po zavreni vieweru dojde hned k vymazu; pokud se
-    // viewer vubec neotevrel ('fileLock' je NULL), nedojde ke vlozeni souboru do disk-cache,
-    // ale k vymazu)
+    // Must be paired with AllocFileNameInCache; it is called only after the viewer has been opened (or after an error while preparing the file copy or opening the viewer). 'uniqueFileName' is the unique name of the original file (use the same string as in AllocFileNameInCache). 'fileExists' is FALSE if the file copy did not exist in the disk cache and TRUE if it already existed (the same value as output parameter 'fileExists' of AllocFileNameInCache). If 'fileExists' is TRUE, 'newFileOK' and 'newFileSize' are ignored; otherwise 'newFileOK' is TRUE if the file copy was prepared successfully (for example the download succeeded), and 'newFileSize' contains the size of the prepared file copy. If 'newFileOK' is FALSE, 'newFileSize' is ignored. 'fileLock' and 'fileLockOwner' tie the open viewer to file copies in the disk cache (after the viewer is closed, the disk cache is allowed to delete the file copy - when it is deleted depends on the size of the disk cache on disk); both values can be obtained when calling OpenViewer. If the viewer could not be opened (or the file copy could not be prepared in the disk cache, or the viewer is not tied to the disk cache), set 'fileLock' to NULL and 'fileLockOwner' to FALSE. If 'fileExists' is TRUE (the file copy already existed), 'removeAsSoonAsPossible' is ignored; otherwise, if 'removeAsSoonAsPossible' is TRUE, the file copy is not kept in the disk cache longer than necessary (after the viewer is closed it is deleted immediately; if the viewer was not opened at all ('fileLock' is NULL), the file is not inserted into the disk cache and is deleted instead).
     virtual void WINAPI FreeFileNameInCache(const char* uniqueFileName, BOOL fileExists, BOOL newFileOK,
                                             const CQuadWord& newFileSize, HANDLE fileLock,
                                             BOOL fileLockOwner, BOOL removeAsSoonAsPossible) = 0;
 };
 
-//
 // ****************************************************************************
 // CPluginFSInterfaceAbstract
 //
-// sada metod pluginu, ktere potrebuje Salamander pro praci s file systemem
+// set of plugin methods that Salamander needs to work with a file system
 
 // typ ikon v panelu pri listovani FS (pouziva se v CPluginFSInterfaceAbstract::ListCurrentPath())
 #define pitSimple 0       // simple icons for files and directories - by extension (association)
@@ -125,28 +102,24 @@ public:
 // 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT)
 #define FSE_ACTIVATEREFRESH 4
 
-// vyprsel timeout jednoho z timeru tohoto FS, 'param' je parametr tohoto timeru;
+// A timer of this FS has expired; 'param' is the parameter of that timer;
 // POZOR: metoda CPluginFSInterfaceAbstract::Event() s kodem FSE_TIMER se vola
-// z hlavniho threadu po doruceni zpravy WM_TIMER hlavnimu oknu (tedy napr. muze
-// byt zrovna otevreny libovolny modalni dialog), takze reakce na timer by mela
-// probehnout v tichosti (neotevirat zadna okna, atd.); k volani metody
+// from the main thread after the WM_TIMER message is delivered to the main window (so, for example,
+// any modal dialog may currently be open), so the timer reaction should
+// happen quietly (do not open windows, etc.); a call to
 // CPluginFSInterfaceAbstract::Event() s kodem FSE_TIMER muze dojit hned po
-// volani metody CPluginInterfaceForFS::OpenFS (pokud se v ni prida timer pro
-// nove vytvoreny objekt FS)
+// the call to CPluginInterfaceForFS::OpenFS (if it adds a timer for
+// a newly created FS object)
 #define FSE_TIMER 5
 
-// prave probehla zmena cesty (nebo refresh) v tomto FS v panelu nebo pripojeni
-// tohoto odpojeneho FS do panelu (tato udalost se posila po zmene cesty a jejim
-// vylistovani); FSE_PATHCHANGED chodi po kazdem uspesnem volani ListCurrentPath
-// POZNAMKA: FSE_PATHCHANGED tesne nasleduje za vsemi FSE_OPENED a FSE_ATTACHED
-// 'param' je panel obsahujici tento FS (PANEL_LEFT nebo PANEL_RIGHT)
+// A path change (or refresh) has just been completed in this FS in a panel, or this detached FS has just been attached to a panel (this event is sent after the path change and its listing). FSE_PATHCHANGED is sent after every successful call to ListCurrentPath.
+// NOTE: FSE_PATHCHANGED follows every FSE_OPENED and FSE_ATTACHED immediately.
+// 'param' is the panel containing this FS (PANEL_LEFT or PANEL_RIGHT).
 #define FSE_PATHCHANGED 6
 
-// konstanty oznacujici duvod volani CPluginFSInterfaceAbstract::TryCloseOrDetach();
-// v zavorce jsou vzdy uvedeny mozne hodnoty forceClose ("FALSE->TRUE" znamena "nejdriv
-// to zkusi bez force, kdyz FS odmitne, zepta se usera a pripadne to da s force") a canDetach:
+// Constants identifying the reason for calling CPluginFSInterfaceAbstract::TryCloseOrDetach(); the possible values of forceClose and canDetach are always given in parentheses (FALSE->TRUE means: first it tries without force; if the FS refuses, the user is asked and it is then retried with force):
 //
-// (FALSE, TRUE) pri zmene cesty mimo FS otevrene v panelu
+// (FALSE, TRUE) when changing to a path outside the FS open in the panel
 #define FSTRYCLOSE_CHANGEPATH 1
 // (FALSE->TRUE, FALSE) for an FS open in a panel during plugin unload (user-requested unload + Salamander shutdown + before removing the plugin + unload requested by the plugin)
 #define FSTRYCLOSE_UNLOADCLOSEFS 2
@@ -242,14 +215,7 @@ public:
     // is a buffer of size 'bufSize' for the resulting full name; returns TRUE on success
     virtual BOOL WINAPI GetFullName(CFileData& file, int isDir, char* buf, int bufSize) = 0;
 
-    // vraci absolutni cestu (vcetne fs-name) odpovidajici relativni ceste 'path' na tomto FS;
-    // vraci FALSE pokud tato metoda neni implementovana (dalsi navratove hodnoty se pak ignoruji);
-    // 'parent' je parent pripadnych messageboxu; 'fsName' je aktualni jmeno FS; 'path' je buffer
-    // o velikosti 'pathSize' znaku, na vstupu je v nem relativni cesta na FS, na vystupu je v nem
-    // odpovidajici absolutni cesta na FS; v 'success' vraci TRUE, pokud byla cesta uspesne prelozena
-    // (ma se pouzit retezec v 'path' - jinak se ignoruje) - nasleduje zmena cesty (jde-li
-    // o cestu na toto FS, vola se ChangePath()); pokud vrati v 'success' FALSE, predpoklada
-    // se, ze uzivatel jiz videl chybove hlaseni
+    // Returns the absolute path (including fs-name) corresponding to relative path 'path' on this FS. Returns FALSE if this method is not implemented (the other return values are then ignored). 'parent' is the parent of any error message boxes; 'fsName' is the current FS name; 'path' is a buffer of size 'pathSize': on input it contains a relative path on the FS, on output it contains the corresponding absolute path on the FS. 'success' returns TRUE if the path was translated successfully (the string in 'path' should then be used; otherwise it is ignored) - a path change follows (if it is a path on this FS, ChangePath() is called). If 'success' is FALSE, the user is assumed to have already seen an error message.
     virtual BOOL WINAPI GetFullFSPath(HWND parent, const char* fsName, char* path, int pathSize,
                                       BOOL& success) = 0;
 
@@ -262,76 +228,24 @@ public:
     // if the paths are identical; 'currentFSNameIndex' is the index of the current FS name
     virtual BOOL WINAPI IsCurrentPath(int currentFSNameIndex, int fsNameIndex, const char* userPart) = 0;
 
-    // vraci TRUE, pokud je cesta z tohoto FS (coz znamena, ze Salamander muze cestu pustit
-    // do ChangePath tohoto FS); cesta je vzdy na jeden z FS tohoto pluginu (napr. windows
-    // cesty a cesty do archivu sem vubec neprijdou); 'fsNameIndex' je index jmena FS
-    // v ceste (index je nula pro fs-name zadane v CSalamanderPluginEntryAbstract::SetBasicPluginData,
-    // u ostatnich fs-name index vraci CSalamanderPluginEntryAbstract::AddFSName); user-part
-    // cesty je 'userPart'; 'currentFSNameIndex' je index aktualniho jmena FS
+    // Returns TRUE if the path belongs to this FS (which means Salamander may pass the path to ChangePath of this FS). The path always belongs to one of this plugin's FSs (for example, Windows paths and archive paths are never passed here). 'fsNameIndex' is the index of the FS name in the path (the index is zero for the fs-name specified in CSalamanderPluginEntryAbstract::SetBasicPluginData; for other fs-names the index is returned by CSalamanderPluginEntryAbstract::AddFSName). The user-part of the path is 'userPart'; 'currentFSNameIndex' is the index of the current FS name.
     virtual BOOL WINAPI IsOurPath(int currentFSNameIndex, int fsNameIndex, const char* userPart) = 0;
 
-    // zmeni aktualni cestu v tomto FS na cestu zadanou pres 'fsName' a 'userPart' (presne
-    // nebo na nejblizsi pristupnou podcestu 'userPart' - viz hodnota 'mode'); v pripade, ze
-    // se cesta zkracuje z duvodu, ze jde o cestu k souboru (staci domenka, ze by mohlo jit
-    // o cestu k souboru - po vylistovani cesty se overuje jestli soubor existuje, pripadne
-    // se zobrazi uzivateli chyba) a 'cutFileName' neni NULL (mozne jen v 'mode' 3), vraci
-    // v bufferu 'cutFileName' (o velikosti MAX_PATH znaku) jmeno tohoto souboru (bez cesty),
-    // jinak v bufferu 'cutFileName' vraci prazdny retezec; 'currentFSNameIndex' je index
-    // aktualniho jmena FS; 'fsName' je buffer o velikosti MAX_PATH, na vstupu je v nem jmeno
-    // FS v ceste, ktere je z tohoto pluginu (ale nemusi se shodovat s aktualnim jmenem FS
-    // v tomto objektu, staci kdyz pro nej IsOurPath() vraci TRUE), na vystupu je v 'fsName'
-    // aktualni jmeno FS v tomto objektu (musi byt z tohoto pluginu); 'fsNameIndex' je index
-    // jmena FS 'fsName' v pluginu (pro snazsi detekci o jake jmeno FS jde); neni-li
-    // 'pathWasCut' NULL, vraci se v nem TRUE pokud doslo ke zkraceni cesty; Salamander
-    // pouziva 'cutFileName' a 'pathWasCut' u prikazu Change Directory (Shift+F7) pri zadani
-    // jmena souboru - dochazi k fokusu tohoto souboru; je-li 'forceRefresh' TRUE, jde o
-    // tvrdy refresh (Ctrl+R) a plugin by mel menit cestu bez pouziti informaci z cache
-    // (je nutne overit jestli nova cesta existuje); 'mode' je rezim zmeny cesty:
-    //   1 (refresh path) - zkracuje cestu, je-li treba; nehlasit neexistenci cesty (bez hlaseni
-    //                      zkratit), hlasit soubor misto cesty, nepristupnost cesty a dalsi chyby
-    //   2 (volani ChangePanelPathToPluginFS, back/forward in history, etc.) - zkracuje cestu,
-    //                      je-li treba; hlasit vsechny chyby cesty (soubor
-    //                      misto cesty, neexistenci, nepristupnost a dalsi)
-    //   3 (change-dir command) - zkracuje cestu jen jde-li o soubor nebo cestu nelze listovat
-    //                      (ListCurrentPath pro ni vraci FALSE); nehlasit soubor misto cesty
-    //                      (bez hlaseni zkratit a vratit jmeno souboru), hlasit vsechny ostatni
-    //                      chyby cesty (neexistenci, nepristupnost a dalsi)
-    // je-li 'mode' 1 nebo 2, vraci FALSE jen pokud na tomto FS zadna cesta neni pristupna
-    // (napr. pri vypadku spojeni); je-li 'mode' 3, vraci FALSE pokud neni pristupna
-    // pozadovana cesta nebo soubor (ke zkracovani cesty dojde jen v pripade, ze jde o soubor);
-    // v pripade, ze je otevreni FS casove narocne (napr. pripojeni na FTP server) a 'mode'
-    // je 3, je mozne upravit chovani jako u archivu - zkracovat cestu, je-li treba a vracet FALSE
-    // jen pokud na FS neni zadna cesta pristupna, hlaseni chyb se nemeni
+    // Changes the current path in this FS to the path specified by 'fsName' and 'userPart' (exactly, or to the nearest accessible subpath of 'userPart' - see 'mode'). If the path is shortened because it points to a file (it is enough to suspect that it might be a file path - after listing the path, it is verified whether the file exists and an error is shown if needed) and 'cutFileName' is not NULL (possible only in 'mode' 3), the method returns the name of that file (without the path) in the 'cutFileName' buffer (MAX_PATH characters); otherwise it returns an empty string in 'cutFileName'. 'currentFSNameIndex' is the index of the current FS name; 'fsName' is a MAX_PATH buffer: on input it contains the FS name from the path, which belongs to this plugin (it does not have to match the current FS name in this object, it is enough if IsOurPath() returns TRUE for it), and on output 'fsName' contains the current FS name in this object (it must belong to this plugin). 'fsNameIndex' is the index of FS name 'fsName' in the plugin (to make it easier to detect which FS name it is). If 'pathWasCut' is not NULL, TRUE is returned in it if the path was shortened; Salamander uses 'cutFileName' and 'pathWasCut' for the Change Directory command (Shift+F7) when a file name is entered, so that file gets focused. If 'forceRefresh' is TRUE, this is a hard refresh (Ctrl+R) and the plugin should change the path without using cached information (the new path must be verified to exist). 'mode' is the path-change mode:
+    //   1 (refresh path) - shorten the path if needed; do not report a missing path (shorten it without a message); report a file where a path is expected, an inaccessible path, and other errors
+    //   2 (ChangePanelPathToPluginFS call, back/forward in history, etc.) - shorten the path if needed; report all path errors (file where a path is expected, missing path, inaccessible path, and other errors)
+    //   3 (change-dir command) - shorten the path only if it is a file or the path cannot be listed (ListCurrentPath returns FALSE for it); do not report a file where a path is expected (shorten it without a message and return the file name), but report all other path errors (missing path, inaccessible path, and others)
+    // If 'mode' is 1 or 2, it returns FALSE only if no path on this FS is accessible (for example after a connection failure); if 'mode' is 3, it returns FALSE if the requested path or file is not accessible (path shortening occurs only if it is a file). If opening the FS is time-consuming (for example connecting to an FTP server) and 'mode' is 3, the behavior may be adjusted as for archives: shorten the path if needed and return FALSE only if no path on the FS is accessible; error reporting does not change.
     virtual BOOL WINAPI ChangePath(int currentFSNameIndex, char* fsName, int fsNameIndex,
                                    const char* userPart, char* cutFileName, BOOL* pathWasCut,
                                    BOOL forceRefresh, int mode) = 0;
 
-    // nacita soubory a adresare z aktualni cesty, uklada je do objektu 'dir' (na cestu NULL nebo
-    // "", soubory a adresare na jinych cestach jsou ignorovany; je-li pridan adresar se jmenem
-    // "..", vykresluje se jako "up-dir" symbol; jmena souboru a adresaru jsou plne
-    // zavisla na pluginu, Salamander je jen zobrazuje); Salamander zjisti obsah
-    // pluginem pridanych sloupcu pomoci interfacu 'pluginData' (pokud plugin sloupce nepridava
-    // a nema vlastni ikony, vraci 'pluginData'==NULL); v 'iconsType' vraci pozadovany zpusob
-    // ziskavani ikon souboru a adresaru do panelu, pitFromPlugin degraduje na pitSimple pokud
-    // je 'pluginData' NULL (bez 'pluginData' nelze zajistit pitFromPlugin); je-li 'forceRefresh'
-    // TRUE, jde o tvrdy refresh (Ctrl+R) a plugin by mel nacitat soubory a adresare bez pouziti
-    // cache; vraci TRUE pri uspesnem nacteni, pokud vrati FALSE jde o chybu a bude se volat
-    // ChangePath na aktualni cestu, ocekava se, ze ChangePath vybere pristupnou podcestu
-    // nebo vrati FALSE, po uspesnem volani ChangePath se bude opakovat volani ListCurrentPath;
-    // pokud vrati FALSE, navratova hodnota 'pluginData' se ignoruje (data v 'dir' je potreba
-    // uvolnit pomoci 'dir.Clear(pluginData)', jinak se uvolni jen Salamanderovska cast dat);
+    // Loads files and directories from the current path and stores them in object 'dir' (for path NULL or empty string, files and directories on other paths are ignored; if a directory named .. is added, it is rendered as the up-dir symbol; file and directory names are fully plugin-defined, Salamander only displays them). Salamander obtains the contents of plugin-added columns through interface 'pluginData' (if the plugin does not add columns and has no custom icons, it returns 'pluginData'==NULL). 'iconsType' returns the requested way of obtaining file and directory icons for the panel; pitFromPlugin degrades to pitSimple if 'pluginData' is NULL (without 'pluginData', pitFromPlugin cannot be provided). If 'forceRefresh' is TRUE, this is a hard refresh (Ctrl+R) and the plugin should load files and directories without using a cache. Returns TRUE on successful load; if it returns FALSE, that is an error and ChangePath will be called for the current path, where ChangePath is expected to select an accessible subpath or return FALSE; after a successful ChangePath call, ListCurrentPath will be called again. If it returns FALSE, the returned value of 'pluginData' is ignored (the data in 'dir' must be released with 'dir.Clear(pluginData)', otherwise only the Salamander part of the data is released).
     virtual BOOL WINAPI ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                                         CPluginDataInterfaceAbstract*& pluginData,
                                         int& iconsType, BOOL forceRefresh) = 0;
 
-    // priprava FS na zavreni/odpojeni od panelu nebo zavreni odpojeneho FS; je-li 'forceClose'
-    // TRUE, dojde k zavreni FS bez ohledu na navratove hodnoty, akci vynutil user nebo probiha
-    // critical shutdown (vice viz CSalamanderGeneralAbstract::IsCriticalShutdown), kazdopadne
-    // nema smysl se usera na cokoliv ptat, FS se ma proste hned zavrit (uz neotvirat zadna okna);
-    // je-li 'forceClose' FALSE, muze se FS zavrit nebo odpojit ('canDetach' TRUE) a nebo jen
-    // zavrit ('canDetach' FALSE); v 'detach' vraci TRUE pokud se chce jen odpojit, FALSE znamena
-    // zavrit; 'reason' obsahuje duvod volani teto metody (jedna z FSTRYCLOSE_XXX); vraci TRUE
-    // pokud lze zavrit/odpojit, jinak vraci FALSE
+    // Prepares the FS to be closed/detached from the panel or closes a detached FS. If 'forceClose' is TRUE, the FS is closed regardless of return values - the action was forced by the user or a critical shutdown is in progress (see CSalamanderGeneralAbstract::IsCriticalShutdown); in any case, there is no point in asking the user anything, the FS should simply be closed immediately (do not open any windows anymore). If 'forceClose' is FALSE, the FS may either be closed or detached ('canDetach' TRUE) or only closed ('canDetach' FALSE). 'detach' returns TRUE if the FS wants only to detach; FALSE means close it. 'reason' contains the reason for calling this method (one of FSTRYCLOSE_XXX). Returns TRUE if the FS can be closed/detached; otherwise returns FALSE.
     virtual BOOL WINAPI TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL& detach, int reason) = 0;
 
     // receives an event on this FS; see the FSE_XXX event codes; 'param' is the event parameter
@@ -350,35 +264,27 @@ public:
     // and after each call to ChangePath and ListCurrentPath on this FS
     virtual DWORD WINAPI GetSupportedServices() = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETCHANGEDRIVEORDISCONNECTITEM:
-    // ziskani polozky pro tento FS (aktivni nebo odpojeny) do Change Drive menu (Alt+F1/F2)
-    // nebo Disconnect dialogu (hotkey: F12; pripadny disconnect tohoto FS zajisti metoda
+    // Only if GetSupportedServices() returns FS_SERVICE_GETCHANGEDRIVEORDISCONNECTITEM:
+    // gets the item for this FS (active or detached) for the Change Drive menu (Alt+F1/F2)
+    // or the Disconnect dialog (hotkey: F12; disconnecting this FS, if needed, is handled by method
     // CPluginInterfaceForFSAbstract::DisconnectFS; pokud GetChangeDriveOrDisconnectItem vrati
     // FALSE a FS je v panelu, prida se polozka s ikonou ziskanou pres GetFSIcon a root cestou);
-    // je-li navratova hodnota TRUE, prida se polozka s ikonou 'icon' a textem 'title';
-    // 'fsName' je aktualni jmeno FS; je-li 'icon' NULL, nema polozka ikonu; je-li
-    // 'destroyIcon' TRUE a 'icon' neni NULL, uvolni se 'icon' po pouziti pres Win32 API
-    // funkci DestroyIcon; 'title' je text alokovany na heapu Salamandera a muze obsahovat
-    // az tri sloupce vzajemne oddelene '\t' (viz Alt+F1/F2 menu), v Disconnect dialogu se
-    // pouziva jen druhy sloupec; je-li navratova hodnota FALSE, jsou navratove hodnoty
-    // 'title', 'icon' a 'destroyIcon' ignorovany (neprida se polozka)
+    // if the return value is TRUE, an item with icon 'icon' and text 'title' is added;
+    // 'fsName' is the current FS name; if 'icon' is NULL, the item has no icon; if
+    // 'destroyIcon' is TRUE and 'icon' is not NULL, 'icon' is released after use via the Win32 API
+    // function DestroyIcon; 'title' is text allocated on Salamander's heap and may contain
+    // up to three columns separated by '\t' (see the Alt+F1/F2 menu); only the second column is used in the Disconnect dialog;
+    // if the return value is FALSE, the output values
+    // 'title', 'icon', and 'destroyIcon' are ignored (no item is added)
     virtual BOOL WINAPI GetChangeDriveOrDisconnectItem(const char* fsName, char*& title,
                                                        HICON& icon, BOOL& destroyIcon) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETFSICON:
-    // ziskani ikony FS pro directory-line toolbaru nebo pripadne pro Disconnect dialog (F12);
-    // ikona pro Disconnect dialog se zde ziskava jen pokud pro tento FS metoda
-    // GetChangeDriveOrDisconnectItem nevraci polozku (napr. RegEdit a WMobile);
-    // vraci ikonu nebo NULL pokud se ma pouzit standardni ikona; je-li 'destroyIcon' TRUE
-    // a vraci ikonu (ne NULL), uvolni se vracena ikona po pouziti pres Win32 API
-    // funkci DestroyIcon
-    // Pozor: pokud je resource ikonky nacitane pomoci LoadIcon v rozmerech 16x16, vrati LoadIcon
-    //        ikonku 32x32. Pri jejim naslednem kresleni do 16x16 vzniknou kolem ikonky barevne
-    //        kontury. Konverzi 16->32->16 lze predejit pouzitim LoadImage:
+    // Only if GetSupportedServices() returns FS_SERVICE_GETFSICON:
+    // gets the FS icon for the Directory Line toolbar or, if needed, for the Disconnect dialog (F12). The icon for the Disconnect dialog is obtained here only if GetChangeDriveOrDisconnectItem does not return an item for this FS (for example RegEdit and WMobile). Returns an icon, or NULL if the standard icon should be used. If 'destroyIcon' is TRUE and it returns an icon (not NULL), the returned icon is released after use by the Win32 API function DestroyIcon.
+    // WARNING: if the icon resource is loaded by LoadIcon at 16x16, LoadIcon returns a 32x32 icon. When it is then drawn at 16x16, colored fringes appear around the icon. The 16->32->16 conversion can be avoided by using LoadImage:
     //        (HICON)LoadImage(DLLInstance, MAKEINTRESOURCE(id), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
     //
-    // v teto metode se nesmi zobrazovat zadna okna (obsah panelu neni konzistentni, nesmi
-    // se distribuovat zpravy - prekresleni, atd.)
+    // No windows may be shown in this method (the panel contents are not consistent, messages such as repaint must not be dispatched, etc.).
     virtual HICON WINAPI GetFSIcon(BOOL& destroyIcon) = 0;
 
     // returns the requested drop effect for a drag&drop operation from an FS (possibly this FS) to this FS;
@@ -394,18 +300,12 @@ public:
                                       DWORD allowedEffects, DWORD keyState,
                                       DWORD* dropEffect) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETFREESPACE:
-    // vraci v 'retValue' (nesmi byt NULL) velikost volneho mista na FS (zobrazuje se
-    // vpravo na directory-line); pokud volne misto nelze zjistit, vraci
-    // CQuadWord(-1, -1) (udaj se nezobrazuje)
+    // Only if GetSupportedServices() returns FS_SERVICE_GETFREESPACE:
+    // returns the amount of free space on the FS in 'retValue' (it must not be NULL) (displayed on the right in the Directory Line). If the free space cannot be determined, it returns CQuadWord(-1, -1) (the value is not displayed).
     virtual void WINAPI GetFSFreeSpace(CQuadWord* retValue) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETNEXTDIRLINEHOTPATH:
-    // nalezeni delicich bodu v textu Directory Line (pro zkracovani cesty pomoci mysi - hot-tracking);
-    // 'text' je text v Directory Line (cesta + pripadne filter); 'pathLen' je delka cesty v 'text'
-    // (zbytek je filtr); 'offset' je offset znaku, od ktereho se ma hledat delici bod; vraci TRUE
-    // pokud dalsi delici bod existuje, jeho pozici vraci v 'offset'; vraci FALSE pokud zadny dalsi
-    // delici bod neexistuje (konec textu neni povazovan za delici bod)
+    // Only if GetSupportedServices() returns FS_SERVICE_GETNEXTDIRLINEHOTPATH:
+    // finds separator positions in the Directory Line text (for mouse-based path shortening - hot tracking). 'text' is the Directory Line text (path plus optional filter); 'pathLen' is the length of the path in 'text' (the rest is the filter); 'offset' is the character offset from which the next separator should be searched. Returns TRUE if another separator exists and returns its position in 'offset'; returns FALSE if no further separator exists (the end of the text is not considered a separator).
     virtual BOOL WINAPI GetNextDirectoryLineHotPath(const char* text, int pathLen, int& offset) = 0;
 
     // Only if GetSupportedServices() returns FS_SERVICE_GETNEXTDIRLINEHOTPATH:
@@ -413,20 +313,20 @@ public:
     // 'path' is an in/out buffer containing the path (the buffer size is 'pathBufSize')
     virtual void WINAPI CompleteDirectoryLineHotPath(char* path, int pathBufSize) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_GETPATHFORMAINWNDTITLE:
-    // ziskani textu, ktery se zobrazi v titulku hlavniho okna pokud je zapnute zobrazovani
-    // aktualni cesty v titulku hlavniho okna (viz Configuration/Appearance/Display current
-    // path...); 'fsName' je aktualni jmeno FS; je-li 'mode' 1, jde o rezim
-    // "Directory Name Only" (ma se zobrazit jen jmeno aktualniho adresare - posledni
-    // komponenty cesty); je-li 'mode' 2, jde o rezim "Shortened Path" (ma se zobrazit
-    // zkracena forma cesty - root (vc. oddelovace cesty) + "..." + oddelovac
-    // cesty + posledni komponenta cesty); 'buf' je buffer o velikosti 'bufSize' pro
-    // vysledny text; vraci TRUE pokud vraci pozadovany text; vraci FALSE pokud se
-    // ma text vytvorit na zaklade udaju o delicich bodech ziskanych pres metodu
+    // Only if GetSupportedServices() returns FS_SERVICE_GETPATHFORMAINWNDTITLE:
+    // obtains the text to display in the main window title when showing the current
+    // path in the main window title is enabled (see Configuration/Appearance/Display current
+    // path...); 'fsName' is the current FS name; if 'mode' is 1, this is
+    // Directory Name Only mode (only the current directory name - the last
+    // path component - should be displayed); if 'mode' is 2, this is
+    // Shortened Path mode (the shortened form of the path should be displayed -
+    // root (including the path separator) + ... + path separator
+    // + the last path component); 'buf' is a buffer of size 'bufSize' for the
+    // resulting text; returns TRUE if it returns the requested text; returns FALSE if the
     // GetNextDirectoryLineHotPath()
     // POZNAMKA: pokud GetSupportedServices() nevraci i FS_SERVICE_GETPATHFORMAINWNDTITLE,
-    //           zobrazuje se v titulku hlavniho okna plna cesta na FS ve vsech rezimech
-    //           zobrazovani titulku (i v "Directory Name Only" a "Shortened Path")
+    // text should be generated from separator positions obtained by the method
+    // GetNextDirectoryLineHotPath()
     virtual BOOL WINAPI GetPathForMainWindowTitle(const char* fsName, int mode, char* buf, int bufSize) = 0;
 
     // Only if GetSupportedServices() returns FS_SERVICE_SHOWINFO:
@@ -434,70 +334,29 @@ public:
     // 'fsName' is the current FS name; 'parent' is the suggested parent of the displayed dialog
     virtual void WINAPI ShowInfoDialog(const char* fsName, HWND parent) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_COMMANDLINE:
-    // spusti prikaz pro FS v aktivnim panelu z prikazove radky pod panely; vraci FALSE pri chybe
-    // (prikaz se nevklada do historie prikazove radky a ostatni navratove hodnoty se ignoruji);
-    // vraci TRUE pri uspesnem spusteni prikazu (pozor: na vysledcich prikazu nezalezi - dulezite
-    // je jen jestli byl spusteny (napr. u FTP jde o to, jestli se ho podarilo dorucit serveru));
-    // 'parent' je navrzeny parent pripadnych zobrazovanych dialogu; 'command' je buffer
-    // velikosti SALCMDLINE_MAXLEN+1, ktery na vstupu obsahuje spousteny prikaz (skutecna
-    // maximalni delka prikazu zavisi na verzi Windows a obsahu promenne prostredi COMSPEC)
-    // a na vystupu novy obsah prikazove radky (obvykle se jen vycisti na prazdny retezec);
-    // 'selFrom' a 'selTo' vraci pozici oznaceni v novem obsahu prikazove radky (pokud se shoduji,
-    // jen se umisti kurzor; je-li vystupem prazdna radka, jsou tyto hodnoty ignorovany)
-    // POZOR: tato metoda by nemela primo menit cestu v panelu - hrozi uzavreni FS pri chybe cesty
-    //        (metode by prestal existovat ukazatel this)
+    // Only if GetSupportedServices() returns FS_SERVICE_COMMANDLINE:
+    // executes a command for the FS in the active panel from the command line below the panels; returns FALSE on error (the command is not added to the command-line history and the other return values are ignored). Returns TRUE if the command was started successfully (note: the command result does not matter - only whether it was started, for example for FTP whether it was delivered to the server). 'parent' is the suggested parent of any displayed dialogs; 'command' is a buffer of size SALCMDLINE_MAXLEN+1 that contains the command to execute on input (the actual maximum command length depends on the Windows version and the contents of the COMSPEC environment variable) and the new contents of the command line on output (usually it is just cleared to an empty string). 'selFrom' and 'selTo' return the selection position in the new command-line contents (if they are equal, only the caret is positioned; if the output line is empty, these values are ignored).
+    // WARNING: this method should not change the panel path directly - an invalid path may close the FS (the method's this pointer would cease to exist).
     virtual BOOL WINAPI ExecuteCommandLine(HWND parent, char* command, int& selFrom, int& selTo) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_QUICKRENAME:
-    // rychle prejmenovani souboru nebo adresare ('isDir' je FALSE/TRUE) 'file' na FS;
-    // umozni otevrit vlastni dialog pro rychle prejmenovani (parametr 'mode' je 1)
-    // nebo pouzit standardni dialog (pri 'mode'==1 vrati FALSE a 'cancel' take FALSE,
-    // pak Salamander otevre standardni dialog a ziskane nove jmeno preda v 'newName' pri
-    // dalsim volani QuickRename s 'mode'==2); 'fsName' je aktualni jmeno FS; 'parent' je
-    // navrzeny parent pripadnych zobrazovanych dialogu; 'newName' je nove jmeno pokud
-    // 'mode'==2; pokud vraci TRUE, v 'newName' se vraci nove jmeno (max. MAX_PATH znaku;
-    // ne plne jmeno, jen jmeno polozky v panelu) - Salamander se ho pokusi vyfokusit po
-    // refreshi (o refresh se stara sam FS, napriklad pomoci metody
-    // CSalamanderGeneralAbstract::PostRefreshPanelFS); pokud vraci FALSE a 'mode'==2,
-    // vraci se v 'newName' chybne nove jmeno (pripadne nejakym zpusobem upravene - napr.
-    // uz muze byt aplikovana operacni maska) pokud chce uzivatel prerusit operaci, vraci
-    // 'cancel' TRUE; vraci-li 'cancel' FALSE, vraci metoda TRUE pri uspesnem dokonceni
-    // operace, pokud vrati FALSE pri 'mode'==1, ma se otevrit standardni dialog pro
-    // rychle prejmenovani, pokud vrati FALSE pri 'mode'==2, jde o chybu operace (chybne
-    // nove jmeno se vraci v 'newName' - znovu se otevre standardni dialog a uzivatel zde
-    // muze chybne jmeno opravit)
+    // Only if GetSupportedServices() returns FS_SERVICE_QUICKRENAME:
+    // quickly renames file 'file' or a directory ('isDir' is FALSE/TRUE) on the FS. It may open its own quick-rename dialog ('mode' is 1) or use the standard dialog (when 'mode'==1 it returns FALSE and 'cancel' FALSE; Salamander then opens the standard dialog and passes the entered new name in 'newName' on the next call to QuickRename with 'mode'==2). 'fsName' is the current FS name; 'parent' is the suggested parent of any displayed dialogs; 'newName' is the new name when 'mode'==2. If it returns TRUE, 'newName' returns the new name (max. MAX_PATH characters; not the full name, only the name of the item in the panel) - Salamander will try to focus it after refresh (the refresh is handled by the FS itself, for example via CSalamanderGeneralAbstract::PostRefreshPanelFS). If it returns FALSE and 'mode'==2, 'newName' returns the invalid new name (possibly modified in some way - for example an operation mask may already have been applied). If the user wants to cancel the operation, 'cancel' returns TRUE. When 'cancel' is FALSE, the method returns TRUE on successful completion of the operation; if it returns FALSE with 'mode'==1, the standard quick-rename dialog should be opened; if it returns FALSE with 'mode'==2, it is an operation error (the invalid new name is returned in 'newName' - the standard dialog is reopened and the user can correct the invalid name there).
     virtual BOOL WINAPI QuickRename(const char* fsName, int mode, HWND parent, CFileData& file,
                                     BOOL isDir, char* newName, BOOL& cancel) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_ACCEPTSCHANGENOTIF:
-    // prijem informace o zmene na ceste 'path' (je-li 'includingSubdirs' TRUE, tak
-    // zahrnuje i zmenu v podadresarich cesty 'path'); tato metoda by mela rozhodnout
-    // jestli je treba provest refresh tohoto FS (napriklad pomoci metody
+    // Only if GetSupportedServices() returns FS_SERVICE_ACCEPTSCHANGENOTIF:
+    // receives information about a change on path 'path' (if 'includingSubdirs' is TRUE, it
+    // also includes changes in subdirectories of path 'path'); this method should decide
+    // whether this FS needs to be refreshed (for example via method
     // CSalamanderGeneralAbstract::PostRefreshPanelFS); tyka se jak aktivnich FS, tak
-    // odpojenych FS; 'fsName' je aktualni jmeno FS
-    // POZNAMKA: pro plugin jako celek existuje metoda
+    // detached FSs; 'fsName' is the current FS name
+    // NOTE: for the plugin as a whole, there is also the method
     //           CPluginInterfaceAbstract::AcceptChangeOnPathNotification()
     virtual void WINAPI AcceptChangeOnPathNotification(const char* fsName, const char* path,
                                                        BOOL includingSubdirs) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_CREATEDIR:
-    // vytvoreni noveho adresare na FS; umozni otevrit vlastni dialog pro vytvoreni
-    // adresare (parametr 'mode' je 1) nebo pouzit standardni dialog (pri 'mode'==1 vrati
-    // FALSE a 'cancel' take FALSE, pak Salamander otevre standardni dialog a ziskane jmeno
-    // adresare preda v 'newName' pri dalsim volani CreateDir s 'mode'==2);
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent pripadnych zobrazovanych
-    // dialogu; 'newName' je jmeno noveho adresare pokud 'mode'==2; pokud vraci TRUE,
-    // v 'newName' se vraci jmeno noveho adresare (max. 2 * MAX_PATH znaku; ne plne jmeno,
-    // jen jmeno polozky v panelu) - Salamander se ho pokusi vyfokusit po refreshi (o refresh
-    // se stara sam FS, napriklad pomoci metody CSalamanderGeneralAbstract::PostRefreshPanelFS);
-    // pokud vraci FALSE a 'mode'==2, vraci se v 'newName' chybne jmeno adresare (max. 2 * MAX_PATH
-    // znaku, pripadne upravene na absolutni tvar); pokud chce uzivatel prerusit operaci,
-    // vraci 'cancel' TRUE; vraci-li 'cancel' FALSE, vraci metoda TRUE pri uspesnem dokonceni
-    // operace, pokud vrati FALSE pri 'mode'==1, ma se otevrit standardni dialog pro vytvoreni
-    // adresare, pokud vrati FALSE pri 'mode'==2, jde o chybu operace (chybne jmeno
-    // adresare se vraci v 'newName' - znovu se otevre standardni dialog a uzivatel
-    // zde muze chybne jmeno opravit)
+    // Only if GetSupportedServices() returns FS_SERVICE_CREATEDIR:
+    // creates a new directory on the FS. It may open its own create-directory dialog ('mode' is 1) or use the standard dialog (when 'mode'==1 it returns FALSE and 'cancel' FALSE; Salamander then opens the standard dialog and passes the directory name it obtains in 'newName' on the next call to CreateDir with 'mode'==2). 'fsName' is the current FS name; 'parent' is the suggested parent of any displayed dialogs; 'newName' is the new directory name if 'mode'==2. If it returns TRUE, 'newName' returns the new directory name (max. 2 * MAX_PATH characters; not the full name, only the item name in the panel) - Salamander will try to focus it after refresh (the refresh is handled by the FS itself, for example via CSalamanderGeneralAbstract::PostRefreshPanelFS). If it returns FALSE and 'mode'==2, 'newName' returns the invalid directory name (max. 2 * MAX_PATH characters, possibly adjusted to an absolute form). If the user wants to cancel the operation, 'cancel' returns TRUE. When 'cancel' is FALSE, the method returns TRUE on successful completion of the operation; if it returns FALSE with 'mode'==1, the standard create-directory dialog should be opened; if it returns FALSE with 'mode'==2, it is an operation error (the invalid directory name is returned in 'newName' - the standard dialog is reopened and the user can correct the invalid name there).
     virtual BOOL WINAPI CreateDir(const char* fsName, int mode, HWND parent,
                                   char* newName, BOOL& cancel) = 0;
 
@@ -510,141 +369,41 @@ public:
                                  CSalamanderForViewFileOnFSAbstract* salamander,
                                  CFileData& file) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_DELETE:
-    // mazani souboru a adresaru oznacenych v panelu; umozni otevrit vlastni dialog s dotazem
-    // na mazani (parametr 'mode' je 1; jestli se ma nebo nema zobrazit dotaz zavisi na hodnote
-    // SALCFG_CNFRMFILEDIRDEL - TRUE znamena, ze uzivatel chce potvrzovat mazani)
-    // nebo pouzit standardni dotaz (pri 'mode'==1 vrati FALSE a 'cancelOrError' take FALSE,
-    // pak Salamander otevre standardni dotaz (pokud je SALCFG_CNFRMFILEDIRDEL TRUE)
-    // a v pripade kladne odpovedi znovu zavola Delete s 'mode'==2); 'fsName' je aktualni jmeno FS;
-    // 'parent' je navrzeny parent pripadnych zobrazovanych dialogu; 'panel' identifikuje panel
-    // (PANEL_LEFT nebo PANEL_RIGHT), ve kterem je otevrene FS (z tohoto panelu se ziskavaji
-    // soubory/adresare, ktere se maji mazat); 'selectedFiles' + 'selectedDirs' - pocet oznacenych
-    // souboru a adresaru, pokud jsou obe hodnoty nulove, maze se soubor/adresar pod kurzorem
-    // (fokus), pred volanim metody Delete jsou bud oznacene soubory a adresare nebo je alespon
-    // fokus na souboru/adresari, takze je vzdy s cim pracovat (zadne dalsi testy nejsou treba);
-    // pokud vraci TRUE a 'cancelOrError' je FALSE, operace probehla korektne a oznacene
-    // soubory/adresare se maji odznacit (pokud prezily mazani); pokud chce uzivatel prerusit
-    // operaci nebo nastane chyba vraci se 'cancelOrError' TRUE a nedojde k odznaceni
-    // souboru/adresaru; pokud vraci FALSE pri 'mode'==1 a 'cancelOrError' je FALSE, ma se
-    // otevrit standardni dotaz na mazani
+    // Only if GetSupportedServices() returns FS_SERVICE_DELETE:
+    // deletes the files and directories selected in the panel; it may open its own delete confirmation dialog ('mode' is 1; whether the confirmation should be shown depends on SALCFG_CNFRMFILEDIRDEL - TRUE means the user wants delete confirmations) or use the standard dialog (when 'mode'==1 it returns FALSE and 'cancelOrError' FALSE; Salamander then opens the standard dialog (if SALCFG_CNFRMFILEDIRDEL is TRUE) and, if the user confirms, calls Delete again with 'mode'==2). 'fsName' is the current FS name; 'parent' is the suggested parent of any displayed dialogs; 'panel' identifies the panel (PANEL_LEFT or PANEL_RIGHT) in which the FS is open (the files/directories to delete are taken from this panel); 'selectedFiles' + 'selectedDirs' is the number of selected files and directories. If both values are zero, the file/directory under the cursor (focus) is deleted. Before Delete is called, either files/directories are selected or there is at least focus on a file/directory, so there is always something to work with (no additional checks are needed). If it returns TRUE and 'cancelOrError' is FALSE, the operation completed correctly and the selected files/directories should be deselected (if they survived the delete). If the user cancels the operation or an error occurs, 'cancelOrError' is TRUE and the files/directories are not deselected. If it returns FALSE with 'mode'==1 and 'cancelOrError' is FALSE, the standard delete confirmation dialog should be opened.
     virtual BOOL WINAPI Delete(const char* fsName, int mode, HWND parent, int panel,
                                int selectedFiles, int selectedDirs, BOOL& cancelOrError) = 0;
 
-    // kopirovani/presun z FS (parametr 'copy' je TRUE/FALSE), v dalsim textu se mluvi jen o
-    // kopirovani, ale vse plati shodne i pro presun; 'copy' muze byt TRUE (kopirovani) jen
-    // pokud GetSupportedServices() vraci i FS_SERVICE_COPYFROMFS; 'copy' muze byt FALSE
-    // (presun nebo prejmenovani) jen pokud GetSupportedServices() vraci i FS_SERVICE_MOVEFROMFS;
+    // Copy/move from the FS ('copy' is TRUE/FALSE); the rest of this text speaks only about copying, but everything applies equally to moving. 'copy' may be TRUE (copy) only if GetSupportedServices() returns FS_SERVICE_COPYFROMFS; 'copy' may be FALSE (move or rename) only if GetSupportedServices() returns FS_SERVICE_MOVEFROMFS.
     //
-    // kopirovani souboru a adresaru (z FS) oznacenych v panelu; umozni otevrit vlastni dialog pro
-    // zadani cile kopirovani (parametr 'mode' je 1) nebo pouzit standardni dialog (vrati FALSE
-    // a 'cancelOrHandlePath' take FALSE, pak Salamander otevre standardni dialog a ziskanou cilovou
-    // cestu preda v 'targetPath' pri dalsim volani CopyOrMoveFromFS s 'mode'==2); pri 'mode'==2
-    // je 'targetPath' presne retezec zadany uzivatelem (CopyOrMoveFromFS si ho muze rozanalyzovat
-    // po svem); pokud CopyOrMoveFromFS podporuje jen windowsove cilove cesty (nebo nedokaze
-    // zpracovat uzivatelem zadanou cestu - napr. vede na jiny FS nebo do archivu), muze vyuzit
-    // standardni zpusob zpracovani cesty v Salamanderovi (zatim umi zpracovat jen windowsove cesty,
-    // casem mozna zpracuje i FS a archivove cesty pres TEMP adresar pomoci sledu nekolika zakladnich
-    // operaci) - vrati FALSE, 'cancelOrHandlePath' TRUE a 'operationMask' TRUE/FALSE
-    // (podporuje/nepodporuje operacni masky - pokud nepodporuje a v ceste je maska, zobrazi se
-    // chybova hlaska), pak Salamander zpracuje cestu vracenou v 'targetPath' (zatim jen rozdeleni
-    // windowsove cesty na existujici cast, neexistujici cast a pripadne masku; umozni take vytvorit
-    // podadresare z neexistujici casti) a je-li cesta v poradku, zavola znovu CopyOrMoveFromFS
-    // s 'mode'==3 a v 'targetPath' s cilovou cestou a pripadne i s operacni maskou (dva retezce
-    // vzajemne oddelene nulou; zadna maska -> dve nuly na konci retezce), pokud je v ceste nejaka
-    // chyba, zavola znovu CopyOrMoveFromFS s 'mode'==4 v 'targetPath' s upravenou chybnou cilovou
-    // cestou (chyba uz byla uzivateli ohlasena; uzivatel by mel dostat moznost cestu opravit;
-    // v ceste mohly byt odstraneny "." a "..", atp.);
+    // Copies files and directories (from the FS) selected in the panel; it may open its own dialog for entering the copy target ('mode' is 1) or use the standard dialog (it returns FALSE and 'cancelOrHandlePath' FALSE, then Salamander opens the standard dialog and passes the target path entered there in 'targetPath' on the next call to CopyOrMoveFromFS with 'mode'==2). For 'mode'==2, 'targetPath' is exactly the string entered by the user (CopyOrMoveFromFS may parse it in its own way). If CopyOrMoveFromFS supports only Windows target paths (or cannot process the user-entered path - for example it leads to another FS or an archive), it may use Salamander's standard path processing (currently it handles only Windows paths; in the future it may also handle FS and archive paths via the TEMP directory using a sequence of several basic operations) - it returns FALSE, 'cancelOrHandlePath' TRUE, and 'operationMask' TRUE/FALSE (supports/does not support operation masks - if it does not support them and the path contains a mask, an error message is shown). Salamander then processes the path returned in 'targetPath' (currently only splitting a Windows path into existing part, non-existing part, and optional mask; it can also create subdirectories from the non-existing part) and, if the path is valid, calls CopyOrMoveFromFS again with 'mode'==3 and 'targetPath' containing the target path and optionally an operation mask (two strings separated by a null; no mask -> two nulls at the end of the string). If there is an error in the path, Salamander calls CopyOrMoveFromFS again with 'mode'==4 and 'targetPath' containing the corrected invalid target path (the error has already been reported to the user; the user should be allowed to correct the path; . and .. etc. may have been removed from it).
     //
-    // pokud uzivatel zada operaci drag&dropem (dropne soubory/adresare z FS do stejneho panelu
-    // nebo do jineho drop-targetu), je 'mode'==5 a v 'targetPath' je cilova cesta operace (muze
-    // byt windowsova cesta, FS cesta a do budoucna se da pocitat i s cestami do archivu),
-    // 'targetPath' je ukoncena dvema nulami (pro kompatibilitu s 'mode'==3); 'dropTarget' je
-    // v tomto pripade okno drop-targetu (vyuziva se pro reaktivaci drop-targetu po otevreni
-    // progress-okna operace, viz CSalamanderGeneralAbstract::ActivateDropTarget); pri 'mode'==5 ma
-    // smysl jen navratova hodnota TRUE;
+    // If the user initiates the operation by drag&drop (drops files/directories from the FS into the same panel or another drop target), 'mode'==5 and 'targetPath' is the operation target path (it may be a Windows path, an FS path, and in the future possibly an archive path); 'targetPath' is terminated by two nulls (for compatibility with 'mode'==3). In this case, 'dropTarget' is the drop-target window (used to reactivate the drop target after the operation progress window is opened; see CSalamanderGeneralAbstract::ActivateDropTarget). For 'mode'==5, only the TRUE return value is meaningful.
     //
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent pripadnych zobrazovanych dialogu;
-    // 'panel' identifikuje panel (PANEL_LEFT nebo PANEL_RIGHT), ve kterem je otevreny FS (z tohoto
-    // panelu se ziskavaji soubory/adresare, ktere se maji kopirovat);
-    // 'selectedFiles' + 'selectedDirs' - pocet oznacenych souboru a adresaru, pokud jsou
-    // obe hodnoty nulove, kopiruje se soubor/adresar pod kurzorem (fokus), pred volanim
-    // metody CopyOrMoveFromFS jsou bud oznacene soubory a adresare nebo je alespon fokus
-    // na souboru/adresari, takze je vzdy s cim pracovat (zadne dalsi testy
-    // nejsou treba); na vstupu 'targetPath' pri 'mode'==1 obsahuje navrzenou cilovou cestu
-    // (jen windowsove cesty bez masky nebo prazdny retezec), pri 'mode'==2 obsahuje retezec
-    // cilove cesty zadany uzivatelem ve standardnim dialogu, pri 'mode'==3 obsahuje cilovou
-    // cestu a masku (oddelene nulou), pri 'mode'==4 obsahuje chybnou cilovou cestu, pri 'mode'==5
-    // obsahuje cilovou cestu (windowsovou, FS nebo do archivu) ukoncenou dvema nulami; pokud
-    // metoda vraci FALSE, obsahuje 'targetPath' na vystupu (buffer 2 * MAX_PATH znaku) pri
-    // 'cancelOrHandlePath'==FALSE navrzenou cilovou cestu pro standardni dialog a pri
-    // 'cancelOrHandlePath'==TRUE retezec cilove cesty ke zpracovani; pokud metoda vraci TRUE a
-    // 'cancelOrHandlePath' FALSE, obsahuje 'targetPath' jmeno polozky, na kterou ma prejit fokus
-    // ve zdrojovem panelu (buffer 2 * MAX_PATH znaku; ne plne jmeno, jen jmeno polozky v panelu;
-    // je-li prazdny retezec, fokus zustava beze zmeny); 'dropTarget' neni NULL jen v pripade
-    // zadani cesty operace pomoci drag&dropu (viz popis vyse)
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of any displayed dialogs; 'panel' identifies the panel (PANEL_LEFT or PANEL_RIGHT) in which the FS is open (the files/directories to copy are taken from this panel). 'selectedFiles' + 'selectedDirs' is the number of selected files and directories; if both values are zero, the file/directory under the cursor (focus) is copied. Before CopyOrMoveFromFS is called, either files/directories are selected or there is at least focus on a file/directory, so there is always something to work with (no additional checks are needed). On input, 'targetPath' contains: for 'mode'==1, the suggested target path (Windows paths without a mask only, or an empty string); for 'mode'==2, the target path string entered by the user in the standard dialog; for 'mode'==3, the target path and mask (separated by a null); for 'mode'==4, the invalid target path; for 'mode'==5, the target path (Windows, FS, or archive) terminated by two nulls. If the method returns FALSE, 'targetPath' on output (a buffer of 2 * MAX_PATH characters) contains the suggested target path for the standard dialog when 'cancelOrHandlePath'==FALSE, and the target path string to be processed when 'cancelOrHandlePath'==TRUE. If the method returns TRUE and 'cancelOrHandlePath' is FALSE, 'targetPath' contains the name of the item that should receive focus in the source panel (a 2 * MAX_PATH character buffer; not the full name, only the item name as shown in the panel; if it is an empty string, the focus remains unchanged). 'dropTarget' is not NULL only when the operation path was entered by drag&drop (see above).
     //
-    // pokud vraci TRUE a 'cancelOrHandlePath' je FALSE, operace probehla korektne a oznacene
-    // soubory/adresare se maji odznacit; pokud chce uzivatel prerusit operaci nebo nastala
-    // chyba, vraci metoda TRUE a 'cancelOrHandlePath' TRUE, v obou pripadech nedojde k odznaceni
-    // souboru/adresaru; pokud vraci FALSE, ma se otevrit standardni dialog ('cancelOrHandlePath'
-    // je FALSE) nebo se ma standardnim zpusobem zpracovat cesta ('cancelOrHandlePath' je TRUE)
+    // If it returns TRUE and 'cancelOrHandlePath' is FALSE, the operation completed correctly and the selected files/directories should be deselected. If the user cancels the operation or an error occurs, the method returns TRUE and 'cancelOrHandlePath' TRUE; in both cases the files/directories are not deselected. If it returns FALSE, the standard dialog should be opened ('cancelOrHandlePath' is FALSE) or the path should be processed in the standard way ('cancelOrHandlePath' is TRUE).
     //
-    // POZNAMKA: pokud je nabizena moznost kopirovat/presouvat na cestu do ciloveho panelu,
-    //           je treba volat CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath pro cilovy
-    //           panel, jinak nebude cesta v tomto panelu vlozena do seznamu pracovnich
-    //           adresaru - List of Working Directories (Alt+F12)
+    // NOTE: if the user is offered copying/moving to a path in the target panel, CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath must be called for the target panel, otherwise the path in that panel will not be added to the List of Working Directories (Alt+F12).
     virtual BOOL WINAPI CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HWND parent,
                                          int panel, int selectedFiles, int selectedDirs,
                                          char* targetPath, BOOL& operationMask,
                                          BOOL& cancelOrHandlePath, HWND dropTarget) = 0;
 
-    // kopirovani/presun z windowsove cesty na FS (parametr 'copy' je TRUE/FALSE), v dalsim textu
-    // se mluvi jen o kopirovani, ale vse plati shodne i pro presun; 'copy' muze byt TRUE (kopirovani)
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_COPYFROMDISKTOFS; 'copy' muze byt FALSE
-    // (presun nebo prejmenovani) jen pokud GetSupportedServices() vraci i FS_SERVICE_MOVEFROMDISKTOFS;
+    // Copy/move from a Windows path to the FS ('copy' is TRUE/FALSE); the rest of this text speaks only about copying, but everything applies equally to moving. 'copy' may be TRUE (copy) only if GetSupportedServices() returns FS_SERVICE_COPYFROMDISKTOFS; 'copy' may be FALSE (move or rename) only if GetSupportedServices() returns FS_SERVICE_MOVEFROMDISKTOFS.
     //
-    // kopirovani vybranych (v panelu nebo jinde) souboru a adresaru na FS; pri 'mode'==1 umoznuje
-    // pripravit text cilove cesty pro uzivatele do standardniho dialogu pro kopirovani, jde o situaci,
-    // kdy je ve zdrojovem panelu (panel, kde dojde ke spusteni prikazu Copy (klavesa F5)) windowsova
-    // cesta a v cilovem panelu tento FS; pri 'mode'==2 a 'mode'==3 muze plugin provest operaci kopirovani nebo
-    // ohlasit jednu ze dvou chyb: "chyba v ceste" (napr. obsahuje nepripustne znaky nebo neexistuje)
-    // a "v tomto FS nelze provest pozadovanou operaci" (napr. jde sice o FTP, ale otevrena cesta
-    // v tomto FS je rozdilna od cilove cesty (napr. u FTP jiny FTP server) - je potreba otevrit
-    // jiny/novy FS; tuto chybu nemuze ohlasit nove otevreny FS);
-    // POZOR: tato metoda se muze zavolat pro jakoukoliv cilovou FS cestu tohoto pluginu (muze tedy
-    //        jit i o cestu s jinym jmenem FS tohoto pluginu)
+    // Copies selected files and directories (from a panel or elsewhere) to the FS. With 'mode'==1 it allows the plugin to prepare the target-path text for the user in the standard copy dialog; this is used when the source panel (the panel from which the Copy command, F5, is started) contains a Windows path and the target panel contains this FS. With 'mode'==2 and 'mode'==3, the plugin may perform the copy operation or report one of two errors: invalid path (for example it contains invalid characters or does not exist) and the requested operation cannot be performed in this FS (for example it is FTP, but the currently open path in this FS differs from the target path, e.g. a different FTP server - another/new FS must be opened; a newly opened FS cannot report this error).
+    // WARNING: this method may be called for any target FS path of this plugin (so it may also be a path with a different FS name of this plugin).
     //
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent pripadnych zobrazovanych
-    // dialogu; 'sourcePath' je zdrojova windowsova cesta (vsechny vybrane soubory a adresare
-    // jsou adresovany relativne k ni), pri 'mode'==1 je NULL; vybrane soubory a adresare
-    // jsou zadany enumeracni funkci 'next' jejimz parametrem je 'nextParam', pri 'mode'==1
-    // jsou NULL; 'sourceFiles' + 'sourceDirs' - pocet vybranych souboru a adresaru (soucet
-    // je vzdy nenulovy); 'targetPath' je in/out buffer min. 2 * MAX_PATH znaku pro cilovou
-    // cestu; pri 'mode'==1 je 'targetPath' na vstupu aktualni cesta na tomto FS a na vystupu cilova
-    // cesta pro standardni dialog kopirovani; pri 'mode'==2 je 'targetPath' na vstupu uzivatelem
-    // zadana cilova cesta (bez uprav, vcetne masky, atd.) a na vystupu se ignoruje az na pripad, kdy
-    // metoda vraci FALSE (chyba) a 'invalidPathOrCancel' TRUE (chyba v ceste), v tomto pripade je na
-    // vystupu upravena cilova cesta (napr. odstranene "." a ".."), kterou bude uzivatel opravovat
-    // ve standardnim dialogu kopirovani; pri 'mode'==3 je 'targetPath' na vstupu drag&dropem
-    // zadana cilova cesta a na vystupu se ignoruje; neni-li 'invalidPathOrCancel' NULL (jen 'mode'==2
-    // a 'mode'==3), vraci se v nem TRUE, pokud je cesta spatne zadana (obsahuje nepripustne znaky nebo
-    // neexistuje, atd.) nebo doslo k preruseni operace (cancel) - chybove/cancel hlaseni se zobrazuje
-    // pred ukoncenim teto metody
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of any displayed dialogs; 'sourcePath' is the source Windows path (all selected files and directories are addressed relative to it), and is NULL for 'mode'==1. The selected files and directories are provided by enumeration function 'next' with parameter 'nextParam'; for 'mode'==1 they are NULL. 'sourceFiles' + 'sourceDirs' is the number of selected files and directories (their sum is always nonzero). 'targetPath' is an in/out buffer of at least 2 * MAX_PATH characters for the target path. For 'mode'==1, 'targetPath' contains the current path on this FS on input and the target path for the standard copy dialog on output. For 'mode'==2, 'targetPath' contains the user-entered target path on input (unchanged, including mask, etc.) and the output is ignored except when the method returns FALSE (error) and 'invalidPathOrCancel' TRUE (invalid path); in that case the output contains the corrected target path (for example with . and .. removed) that the user will edit in the standard copy dialog. For 'mode'==3, 'targetPath' contains the drag&drop target path on input and the output is ignored. If 'invalidPathOrCancel' is not NULL (only for 'mode'==2 and 'mode'==3), TRUE is returned in it if the path is invalid (contains invalid characters, does not exist, etc.) or the operation was cancelled - error/cancel messages are shown before this method returns.
     //
-    // pri 'mode'==1 vraci metoda TRUE pri uspechu, pokud vraci FALSE, pouzije se jako cilova cesta
-    // pro standardni dialog kopirovani prazdny retezec; pokud vraci metoda FALSE pri 'mode'==2 a 'mode'==3,
-    // ma se pro zpracovani operace hledat jiny FS (je-li 'invalidPathOrCancel' FALSE) nebo ma
-    // uzivatel opravit cilovou cestu (je-li 'invalidPathOrCancel' TRUE); pokud vraci metoda TRUE
-    // pri 'mode'==2 nebo 'mode'==3, operace probehla a ma dojit k odznaceni vybranych souboru a adresaru
-    // (je-li 'invalidPathOrCancel' FALSE) nebo doslo k chybe/preruseni operace a nema dojit
-    // k odznaceni vybranych souboru a adresaru (je-li 'invalidPathOrCancel' TRUE)
+    // For 'mode'==1 the method returns TRUE on success; if it returns FALSE, an empty string is used as the target path for the standard copy dialog. If the method returns FALSE for 'mode'==2 and 'mode'==3, another FS should be searched for to handle the operation (if 'invalidPathOrCancel' is FALSE) or the user should correct the target path (if 'invalidPathOrCancel' is TRUE). If the method returns TRUE for 'mode'==2 or 'mode'==3, the operation has completed and the selected files/directories should be deselected (if 'invalidPathOrCancel' is FALSE), or an error/cancellation occurred and the selected files/directories must not be deselected (if 'invalidPathOrCancel' is TRUE).
     //
-    // POZOR: Metoda CopyOrMoveFromDiskToFS se muze volat ve trech situacich:
-    //        - tento FS je aktivni v panelu
-    //        - tento FS je odpojeny
-    //        - tento FS prave vzniknul (volanim OpenFS) a po ukonceni metody zase ihned zanikne
-    //          (volanim CloseFS) - nebyla od nej volana zadna jina metoda (ani ChangePath)
+    // WARNING: CopyOrMoveFromDiskToFS may be called in three situations:
+    //        - this FS is active in a panel
+    //        - this FS is detached
+    //        - this FS has just been created (by OpenFS) and is destroyed again immediately after the method returns
+    //          (by CloseFS) - no other method has been called on it yet (not even ChangePath).
     virtual BOOL WINAPI CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsName, HWND parent,
                                                const char* sourcePath, SalEnumSelection2 next,
                                                void* nextParam, int sourceFiles, int sourceDirs,
@@ -679,24 +438,10 @@ public:
     virtual void WINAPI ShowProperties(const char* fsName, HWND parent, int panel,
                                        int selectedFiles, int selectedDirs) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_CONTEXTMENU:
-    // zobrazeni kontextoveho menu pro soubory a adresare oznacene v panelu (kliknuti pravym
-    // tlacitkem mysi na polozkach v panelu) nebo pro aktualni cestu v panelu (kliknuti pravym
-    // tlacitkem mysi na change-drive tlacitku v panelove toolbare) nebo pro panel (kliknuti
-    // pravym tlacitkem mysi za polozkami v panelu); kontextove menu ma kazdy plugin vlastni;
+    // Only if GetSupportedServices() returns FS_SERVICE_CONTEXTMENU:
+    // displays a context menu for files and directories selected in the panel (right-click on items in the panel), for the current path in the panel (right-click on the change-drive button in the panel toolbar), or for the panel itself (right-click behind the items in the panel); each plugin provides its own context menu.
     //
-    // 'fsName' je aktualni jmeno FS; 'parent' je navrzeny parent kontextoveho menu;
-    // 'menuX' + 'menuY' jsou navrzene souradnice leveho horniho rohu kontextoveho menu;
-    // 'type' je typ kontextoveho menu (viz popisy konstant fscmXXX); 'panel'
-    // identifikuje panel (PANEL_LEFT nebo PANEL_RIGHT), pro ktery se ma kontextove
-    // menu otevrit (z tohoto panelu se ziskavaji soubory/adresare/cesta, se kterymi
-    // se pracuje); pri 'type'==fscmItemsInPanel je 'selectedFiles' + 'selectedDirs'
-    // pocet oznacenych souboru a adresaru, pokud jsou obe hodnoty nulove, pracuje se se
-    // souborem/adresarem pod kurzorem (focusem), pred volanim metody ContextMenu jsou bud
-    // oznacene soubory a adresare (a bylo na nich kliknuto) nebo je alespon fokus na
-    // souboru/adresari (neni na updiru), takze je vzdy s cim pracovat (zadne dalsi testy
-    // nejsou treba); pokud 'type'!=fscmItemsInPanel, 'selectedFiles' + 'selectedDirs'
-    // jsou vzdy nastaveny na nulu (ignoruji se)
+    // 'fsName' is the current FS name; 'parent' is the suggested parent of the context menu; 'menuX' + 'menuY' are the suggested coordinates of the top-left corner of the context menu; 'type' is the context-menu type (see the fscmXXX constants); 'panel' identifies the panel (PANEL_LEFT or PANEL_RIGHT) for which the context menu should be opened (the files/directories/path to work with are taken from this panel). If 'type'==fscmItemsInPanel, 'selectedFiles' + 'selectedDirs' is the number of selected files and directories; if both values are zero, the file/directory under the cursor (focus) is used. Before ContextMenu is called, either files/directories are selected (and were clicked) or there is at least focus on a file/directory (not on the up-dir), so there is always something to work with (no additional checks are needed). If 'type'!=fscmItemsInPanel, 'selectedFiles' + 'selectedDirs' are always zero (ignored).
     virtual void WINAPI ContextMenu(const char* fsName, HWND parent, int menuX, int menuY, int type,
                                     int panel, int selectedFiles, int selectedDirs) = 0;
 
@@ -707,11 +452,8 @@ public:
     // the plugin returns TRUE if it handled the message and FALSE otherwise
     virtual BOOL WINAPI HandleMenuMsg(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* plResult) = 0;
 
-    // jen pokud GetSupportedServices() vraci i FS_SERVICE_OPENFINDDLG:
-    // otevreni Find dialogu pro FS v panelu; 'fsName' je aktualni jmeno FS; 'panel' identifikuje
-    // panel (PANEL_LEFT nebo PANEL_RIGHT), pro ktery se ma otevrit Find dialog (z tohoto panelu
-    // se ziskava obvykle cesta pro hledani); vraci TRUE pri uspesnem otevreni Find dialogu;
-    // pokud vrati FALSE, Salamander otevre standardni Find Files and Directories dialog
+    // Only if GetSupportedServices() returns FS_SERVICE_OPENFINDDLG:
+    // opens the Find dialog for the FS in a panel. 'fsName' is the current FS name; 'panel' identifies the panel (PANEL_LEFT or PANEL_RIGHT) for which the Find dialog should be opened (the search path is usually taken from this panel). Returns TRUE if the Find dialog is opened successfully; if it returns FALSE, Salamander opens the standard Find Files and Directories dialog.
     virtual BOOL WINAPI OpenFindDialog(const char* fsName, int panel) = 0;
 
     // Only if GetSupportedServices() returns FS_SERVICE_OPENACTIVEFOLDER:
@@ -719,23 +461,11 @@ public:
     // 'fsName' is the current FS name; 'parent' is the suggested parent of the displayed dialog
     virtual void WINAPI OpenActiveFolder(const char* fsName, HWND parent) = 0;
 
-    // jen pokud GetSupportedServices() vraci FS_SERVICE_MOVEFROMFS nebo FS_SERVICE_COPYFROMFS:
-    // dovoluje ovlivnit povolene drop-effecty pri drag&dropu z tohoto FS; neni-li 'allowedEffects'
-    // NULL, obsahuje na vstupu dosud povolene drop-effecty (kombinace DROPEFFECT_MOVE a DROPEFFECT_COPY),
-    // na vystupu obsahuje drop-effecty povolene timto FS (effecty by se mely jen ubirat);
-    // 'mode' je 0 pri volani, ktere tesne predchazi zahajeni drag&drop operace, effecty vracene
-    // v 'allowedEffects' se pouziji pro volani DoDragDrop (tyka se cele drag&drop operace);
-    // 'mode' je 1 behem tazeni mysi nad FS z tohoto procesu (muze byt toto FS nebo FS z druheho
-    // panelu); pri 'mode' 1 je v 'tgtFSPath' cilova cesta, ktera se pouzije pokud dojde k dropu,
-    // jinak je 'tgtFSPath' NULL; 'mode' je 2 pri volani, ktere tesne nasleduje po dokonceni
-    // drag&drop operace (uspesnemu i neuspesnemu)
+    // Only if GetSupportedServices() returns FS_SERVICE_MOVEFROMFS or FS_SERVICE_COPYFROMFS:
+    // allows the plugin to influence the allowed drop effects for drag&drop from this FS. If 'allowedEffects' is not NULL, on input it contains the drop effects allowed so far (a combination of DROPEFFECT_MOVE and DROPEFFECT_COPY); on output it contains the drop effects allowed by this FS (effects should only be removed). 'mode' is 0 for the call that immediately precedes the start of the drag&drop operation; the effects returned in 'allowedEffects' are used for the DoDragDrop call (they apply to the whole drag&drop operation). 'mode' is 1 while dragging the mouse over an FS in this process (this FS or an FS in the other panel). For 'mode' 1, 'tgtFSPath' is the target path that will be used if a drop occurs; otherwise 'tgtFSPath' is NULL. 'mode' is 2 for the call that immediately follows completion of the drag&drop operation (successful or unsuccessful).
     virtual void WINAPI GetAllowedDropEffects(int mode, const char* tgtFSPath, DWORD* allowedEffects) = 0;
 
-    // umoznuje pluginu zmenit standardni hlaseni "There are no items in this panel." zobrazovane
-    // v situaci, kdy v panelu neni zadna polozka (soubor/adresar/up-dir); vraci FALSE pokud
-    // se ma pouzit standardni hlaseni (navratova hodnota 'textBuf' se pak ignoruje); vraci TRUE
-    // pokud plugin v 'textBuf' (buffer o velikosti 'textBufSize' znaku) vraci svou alternativu
-    // teto hlasky
+    // Allows the plugin to change the standard message There are no items in this panel. displayed when there is no item in the panel (file/directory/up-dir). Returns FALSE if the standard message should be used (the value in 'textBuf' is then ignored). Returns TRUE if the plugin returns its own alternative message in 'textBuf' (a buffer of size 'textBufSize' characters).
     virtual BOOL WINAPI GetNoItemsInPanelText(char* textBuf, int textBufSize) = 0;
 
     // Only if GetSupportedServices() returns FS_SERVICE_SHOWSECURITYINFO:
@@ -767,95 +497,67 @@ private: // protection against incorrect direct calls to methods (see CPluginInt
 public:
 #endif // INSIDE_SALAMANDER
 
-    // funkce pro "file system"; vola se pro otevreni FS; 'fsName' je jmeno FS,
-    // ktery se ma otevrit; 'fsNameIndex' je index jmena FS, ktery se ma otevrit
-    // (index je nula pro fs-name zadane v CSalamanderPluginEntryAbstract::SetBasicPluginData,
-    // u ostatnich fs-name index vraci CSalamanderPluginEntryAbstract::AddFSName);
-    // vraci ukazatel na interface otevreneho FS CPluginFSInterfaceAbstract nebo
-    // NULL pri chybe
+    // File-system entry point; called to open an FS. 'fsName' is the name of the FS to open; 'fsNameIndex' is the index of the FS name to open (the index is zero for the fs-name specified in CSalamanderPluginEntryAbstract::SetBasicPluginData; for other fs-names the index is returned by CSalamanderPluginEntryAbstract::AddFSName). Returns a pointer to the interface of the opened FS, CPluginFSInterfaceAbstract, or NULL on error.
     virtual CPluginFSInterfaceAbstract* WINAPI OpenFS(const char* fsName, int fsNameIndex) = 0;
 
-    // funkce pro "file system", vola se pro uzavreni FS, 'fs' je ukazatel na
-    // interface otevreneho FS, po tomto volani uz je v Salamanderu interface 'fs'
-    // povazovan za neplatny a nebude dale pouzivan (funkce paruje s OpenFS)
-    // POZOR: v teto metode nesmi dojit k otevreni zadneho okna ani dialogu
-    //        (okna lze otevirat v metode CPluginFSInterfaceAbstract::ReleaseObject)
+    // File-system entry point; called to close an FS. 'fs' is a pointer to the interface of the opened FS. After this call, the 'fs' interface is considered invalid in Salamander and will no longer be used (this function pairs with OpenFS).
+    // WARNING: this method must not open any window or dialog
+    //        (windows may be opened in CPluginFSInterfaceAbstract::ReleaseObject).
     virtual void WINAPI CloseFS(CPluginFSInterfaceAbstract* fs) = 0;
 
-    // provedeni prikazu na polozce pro FS v Change Drive menu nebo v Drive barach
-    // (jeji pridani viz CSalamanderConnectAbstract::SetChangeDriveMenuItem);
-    // 'panel' identifikuje panel, se kterym mame pracovat - pro prikaz z Change Drive
-    // menu je 'panel' vzdy PANEL_SOURCE (toto menu muze byt vybaleno jen u aktivniho
-    // panelu), pro prikaz z Drive bary muze byt PANEL_LEFT nebo PANEL_RIGHT (pokud
-    // jsou zapnute dve Drive bary, muzeme pracovat i s neaktivnim panelem)
+    // Executes the command on an FS item in the Change Drive menu or in the Drive bars (for adding it, see CSalamanderConnectAbstract::SetChangeDriveMenuItem). 'panel' identifies the panel we should work with - for a command from the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu can be opened only for the active panel); for a command from the Drive bars, 'panel' may be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we may work with the inactive panel).
     virtual void WINAPI ExecuteChangeDriveMenuItem(int panel) = 0;
 
-    // otevreni kontextoveho menu na polozce pro FS v Change Drive menu nebo v Drive
-    // barach nebo pro aktivni/odpojeny FS v Change Drive menu; 'parent' je parent
-    // kontextoveho menu; 'x' a 'y' jsou souradnice pro vybaleni kontextoveho menu
-    // (misto kliknuti praveho tlacitka mysi nebo navrzene souradnice pri Shift+F10);
+    // Opens a context menu on the FS item in the Change Drive menu or in the Drive
+    // bars, or for an active/detached FS in the Change Drive menu; 'parent' is the parent
+    // of the context menu; 'x' and 'y' are the coordinates for opening the context menu
+    // (the right-mouse-button click position or the suggested coordinates for Shift+F10);
     // je-li 'pluginFS' NULL jde o polozku pro FS, jinak je 'pluginFS' interface
-    // aktivniho/odpojeneho FS ('isDetachedFS' je FALSE/TRUE); neni-li 'pluginFS'
+    // of the active/detached FS ('isDetachedFS' is FALSE/TRUE); if 'pluginFS' is not
     // NULL, je v 'pluginFSName' jmeno FS otevreneho v 'pluginFS' (jinak je v
-    // 'pluginFSName' NULL) a v 'pluginFSNameIndex' index jmena FS otevreneho
-    // v 'pluginFS' (pro snazsi detekci o jake jmeno FS jde; jinak je v
-    // 'pluginFSNameIndex' -1); pokud vrati FALSE, jsou ostatni navratove hodnoty
-    // ignorovany, jinak maji tento vyznam: v 'refreshMenu' vraci TRUE pokud se ma
-    // provest obnova Change Drive menu (pro Drive bary se ignoruje, protoze se na
-    // nich neukazuji aktivni/odpojene FS); v 'closeMenu' vraci TRUE pokud se ma
-    // zavrit Change Drive menu (pro Drive bary neni co zavirat); vraci-li 'closeMenu'
+    // 'pluginFSName' NULL) and 'pluginFSNameIndex' contains the index of the FS name opened
+    // in 'pluginFS' (to make it easier to detect which FS name it is; otherwise
+    // 'pluginFSNameIndex' is -1); if it returns FALSE, the other return values are
+    // ignored; otherwise they have this meaning: 'refreshMenu' returns TRUE if the
+    // Change Drive menu should be refreshed (ignored for Drive bars, because active/detached FSs are not shown there); 'closeMenu' returns TRUE if the
+    // Change Drive menu should be closed (there is nothing to close for Drive bars); if 'closeMenu'
+    // is TRUE and 'postCmd' is not zero, after the Change Drive menu is closed (for Drive bars
     // TRUE a 'postCmd' neni nula, je po zavreni Change Drive menu (pro Drive bary
-    // ihned) jeste zavolano ExecuteChangeDrivePostCommand s parametry 'postCmd'
-    // a 'postCmdParam'; 'panel' identifikuje panel, se kterym mame pracovat - pro
-    // kontextove menu v Change Drive menu je 'panel' vzdy PANEL_SOURCE (toto menu
-    // muze byt vybaleno jen u aktivniho panelu), pro kontextove menu v Drive barach
-    // muze byt PANEL_LEFT nebo PANEL_RIGHT (pokud jsou zapnute dve Drive bary, muzeme
-    // pracovat i s neaktivnim panelem)
+    // immediately) ExecuteChangeDrivePostCommand is also called with parameters 'postCmd'
+    // and 'postCmdParam'; 'panel' identifies the panel we should work with - for a
+    // context menu in the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu
+    // can be opened only for the active panel); for a context menu in the Drive bars
+    // 'panel' can be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we can
+    // work with the inactive panel as well)
     virtual BOOL WINAPI ChangeDriveMenuItemContextMenu(HWND parent, int panel, int x, int y,
                                                        CPluginFSInterfaceAbstract* pluginFS,
                                                        const char* pluginFSName, int pluginFSNameIndex,
                                                        BOOL isDetachedFS, BOOL& refreshMenu,
                                                        BOOL& closeMenu, int& postCmd, void*& postCmdParam) = 0;
 
-    // provedeni prikazu z kontextoveho menu na polozce pro FS nebo pro aktivni/odpojeny FS v
-    // Change Drive menu az po zavreni Change Drive menu nebo provedeni prikazu z kontextoveho
-    // menu na polozce pro FS v Drive barach (jen pro kompatibilitu s Change Drive menu); vola
-    // se jako reakce na navratove hodnoty 'closeMenu' (TRUE), 'postCmd' a 'postCmdParam'
-    // ChangeDriveMenuItemContextMenu po zavreni Change Drive menu (pro Drive bary ihned);
-    // 'panel' identifikuje panel, se kterym mame pracovat - pro kontextove menu v Change Drive
-    // menu je 'panel' vzdy PANEL_SOURCE (toto menu muze byt vybaleno jen u aktivniho panelu),
-    // pro kontextove menu v Drive barach muze byt PANEL_LEFT nebo PANEL_RIGHT (pokud jsou
-    // zapnute dve Drive bary, muzeme pracovat i s neaktivnim panelem)
+    // Executes a context-menu command for an FS item or for an active/detached FS in the Change Drive menu after the Change Drive menu is closed, or executes a context-menu command for an FS item in the Drive bars (only for compatibility with the Change Drive menu). It is called in response to return values 'closeMenu' (TRUE), 'postCmd', and 'postCmdParam' from ChangeDriveMenuItemContextMenu after the Change Drive menu is closed (for Drive bars, immediately). 'panel' identifies the panel we should work with - for a context menu in the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu can be opened only for the active panel); for a context menu in the Drive bars, 'panel' may be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we may work with the inactive panel).
     virtual void WINAPI ExecuteChangeDrivePostCommand(int panel, int postCmd, void* postCmdParam) = 0;
 
-    // provede spusteni polozky v panelu s otevrenym FS (napr. reakce na klavesu Enter v panelu;
-    // u podadresaru/up-diru (o up-dir jde pokud je jmeno ".." a zaroven jde o prvni adresar)
-    // se predpoklada zmena cesty, u souboru otevreni kopie souboru na disku s tim, ze se pripadne
-    // zmeny nactou zpet na FS); spousteni neni mozne provest v metode FS interfacu, protoze tam
-    // nelze volat metody pro zmenu cesty (muze v nich totiz dojit i k zavreni FS);
-    // 'panel' urcuje panel, ve kterem probiha spousteni (PANEL_LEFT nebo PANEL_RIGHT);
-    // 'pluginFS' je interface FS otevreneho v panelu; 'pluginFSName' je jmeno FS otevreneho
-    // v panelu; 'pluginFSNameIndex' je index jmena FS otevreneho v panelu (pro snazsi detekci
-    // o jake jmeno FS jde); 'file' je spousteny soubor/adresar/up-dir ('isDir' je 0/1/2);
+    // Executes an item in a panel with an open FS (for example, in response to the Enter key in the panel;
+    // for subdirectories/up-dir (it is an up-dir if its name is .. and it is also the first directory)
+    // a path change is assumed; for files, a copy of the file on disk is opened and any
+    // changes are then loaded back to the FS); the execution cannot be performed in an FS-interface method because
+    // methods that change the path cannot be called there (they may close the FS);
+    // 'panel' specifies the panel in which the execution takes place (PANEL_LEFT or PANEL_RIGHT);
+    // 'pluginFS' is the interface of the FS opened in the panel; 'pluginFSName' is the FS name opened
+    // in the panel; 'pluginFSNameIndex' is the index of the FS name opened in the panel (to make it easier to detect
+    // which FS name it is); 'file' is the file/directory/up-dir being executed ('isDir' is 0/1/2);
     // POZOR: volani metody pro zmenu cesty v panelu muze zneplatnit 'pluginFS' (po zavreni FS)
-    //        a 'file'+'isDir' (zmena listingu v panelu -> zruseni polozek puvodniho listingu)
+    //        and 'file'+'isDir' may also become invalid (a changed panel listing destroys the items of the original listing)
     // POZNAMKA: pokud se spousti soubor nebo se s nim jinak pracuje (napr. downloadi se),
-    //           je treba volat CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath pro panel
-    //           'panel', jinak nebude cesta v tomto panelu vlozena do seznamu pracovnich
-    //           adresaru - List of Working Directories (Alt+F12)
+    //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath must be called for panel
+    //           'panel', otherwise the path in this panel will not be added to the list of working
+    //           directories - List of Working Directories (Alt+F12)
     virtual void WINAPI ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                                     const char* pluginFSName, int pluginFSNameIndex,
                                     CFileData& file, int isDir) = 0;
 
-    // provede disconnect FS, o ktery zadazal uzivatel v Disconnect dialogu; 'parent' je
-    // parent pripadnych messageboxu (jde o stale jeste otevreny Disconnect dialog);
-    // disconnect neni mozne provest v metode FS interfacu, protoze FS ma zaniknout;
-    // 'isInPanel' je TRUE pokud je FS v panelu, pak 'panel' urcuje ve kterem panelu
-    // (PANEL_LEFT nebo PANEL_RIGHT); 'isInPanel' je FALSE pokud je FS odpojeny, pak je
-    // 'panel' 0; 'pluginFS' je interface FS; 'pluginFSName' je jmeno FS; 'pluginFSNameIndex'
-    // je index jmena FS (pro snazsi detekci o jake jmeno FS jde); metoda vraci FALSE,
-    // pokud se disconnect nepodaril a Disconnect dialog ma zustat otevreny (jeho obsah
-    // se obnovi, aby se projevily predchozi uspesne disconnecty)
+    // Disconnects the FS requested by the user in the Disconnect dialog; 'parent' is the parent of any message boxes (the Disconnect dialog is still open at that time). The disconnect cannot be performed in an FS-interface method because the FS is supposed to cease to exist. 'isInPanel' is TRUE if the FS is in a panel; then 'panel' specifies which panel (PANEL_LEFT or PANEL_RIGHT). 'isInPanel' is FALSE if the FS is detached; then 'panel' is 0. 'pluginFS' is the FS interface; 'pluginFSName' is the FS name; 'pluginFSNameIndex' is the index of the FS name (to make it easier to detect which FS name it is). The method returns FALSE if the disconnect fails and the Disconnect dialog should remain open (its contents are refreshed so previous successful disconnects are reflected).
     virtual BOOL WINAPI DisconnectFS(HWND parent, BOOL isInPanel, int panel,
                                      CPluginFSInterfaceAbstract* pluginFS,
                                      const char* pluginFSName, int pluginFSNameIndex) = 0;
@@ -888,38 +590,22 @@ public:
 #pragma option -a
 #endif // __BORLANDC__
 
-/*   Predbezna verze helpu k pluginovemu interfacu
-
-  Otevreni, zmena, listovani a refresh cesty:
-    - pro otevreni cesty v novem FS se vola ChangePath (prvni volani ChangePath je vzdy pro otevreni cesty)
-    - pro zmenu cesty se vola ChangePath (druhe a vsechny dalsi volani ChangePath jsou zmeny cesty)
-    - pri fatalni chybe ChangePath vraci FALSE (FS cesta se v panelu neotevre, pokud slo
-      o zmenu cesty, zkusi se nasledne volat ChangePath pro puvodni cestu, pokud ani to nevyjde,
-      dojde k prechodu na fixed-drive cestu)
-    - pokud ChangePath vrati TRUE (uspech) a nedoslo ke zkraceni cesty na puvodni (jejiz
-      listing je prave nacteny), vola se ListCurrentPath pro ziskani noveho listingu
-    - po uspesnem vylistovani vraci ListCurrentPath TRUE
-    - pri fatalni chybe vraci ListCurrentPath FALSE a nasledne volani ChangePath
-      musi take vratit FALSE
-    - pokud aktualni cesta nejde vylistovat, vraci ListCurrentPath FALSE a nasledne volani
-      ChangePath musi cestu zmenit a vratit TRUE (zavola se znovu ListCurrentPath), pokud jiz
-      cestu nejde zmenit (root, atp.), vrati ChangePath take FALSE (FS cesta se v panelu neotevre,
-      pokud slo o zmenu cesty, zkusi se nasledne volat ChangePath pro puvodni cestu, pokud ani to
-      nevyjde, dojde k prechodu na fixed-drive cestu)
-    - refresh cesty (Ctrl+R) se chova stejne jako zmena cesty na aktualni cestu (cesta
-      se vubec nemusi zmenit nebo se muze zkratit nebo v pripade fatalni chyby zmenit na
-      fixed-drive); pri refreshi cesty je parametr 'forceRefresh' TRUE pro vsechna volani metod
-      ChangePath a ListCurrentPath (FS nesmi pouzit pro zmenu cesty ani nacteni listingu zadne
-      cache - user nechce pouzivat cache);
-
-  Pri pruchodu historii (back/forward) se FS interface, ve kterem probehne vylistovani
-  FS cesty ('fsName':'fsUserPart'), ziska prvnim moznym zpusobem z nasledujicich:
-    - FS interface, ve kterem byla cesta naposledy otevrena jeste nebyl zavren
-      a je mezi odpojenymi nebo je aktivni v panelu (neni aktivni v druhem panelu)
-    - aktivni FS interface v panelu ('currentFSName') je ze stejneho pluginu jako
-      'fsName' a vrati na IsOurPath('currentFSName', 'fsName', 'fsUserPart') TRUE
-    - prvni z odpojenych FS interfacu ('currentFSName'), ktery je ze stejneho
-      pluginu jako 'fsName' a vrati na IsOurPath('currentFSName', 'fsName',
-      'fsUserPart') TRUE
-    - novy FS interface
-*/
+/*
+ * Preliminary version of the help for the plugin interface
+ *
+ *   Opening, changing, listing, and refreshing a path:
+ *     - ChangePath is called to open a path in a new FS (the first call to ChangePath is always for opening a path)
+ *     - ChangePath is called to change a path (the second and all subsequent ChangePath calls are path changes)
+ *     - on a fatal error, ChangePath returns FALSE (the FS path is not opened in the panel; if this was a path change, ChangePath is then called for the original path, and if that also fails, Salamander switches to a fixed-drive path)
+ *     - if ChangePath returns TRUE (success) and the path was not shortened back to the original path (whose listing is currently loaded), ListCurrentPath is called to obtain the new listing
+ *     - after a successful listing, ListCurrentPath returns TRUE
+ *     - on a fatal error, ListCurrentPath returns FALSE and the following call to ChangePath must also return FALSE
+ *     - if the current path cannot be listed, ListCurrentPath returns FALSE and the following ChangePath call must change the path and return TRUE (ListCurrentPath is then called again); if the path can no longer be changed (root, etc.), ChangePath also returns FALSE (the FS path is not opened in the panel; if this was a path change, ChangePath is then called for the original path, and if that also fails, Salamander switches to a fixed-drive path)
+ *     - a path refresh (Ctrl+R) behaves the same as changing to the current path (the path may remain unchanged, be shortened, or, on a fatal error, change to a fixed drive); during a path refresh, parameter 'forceRefresh' is TRUE for all ChangePath and ListCurrentPath calls (the FS must not use any cache to change the path or load the listing - the user does not want cached data)
+ *
+ *   When traversing history (back/forward), the FS interface in which the FS path ('fsName':'fsUserPart') is listed is obtained by the first possible method from the following:
+ *     - the FS interface in which the path was last opened has not yet been closed and is either detached or active in a panel (not active in the other panel)
+ *     - the active FS interface in the panel ('currentFSName') belongs to the same plugin as 'fsName' and IsOurPath('currentFSName', 'fsName', 'fsUserPart') returns TRUE
+ *     - the first detached FS interface ('currentFSName') that belongs to the same plugin as 'fsName' and for which IsOurPath('currentFSName', 'fsName', 'fsUserPart') returns TRUE
+ *     - a new FS interface
+ */
