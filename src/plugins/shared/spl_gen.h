@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -417,9 +418,9 @@ struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 #define SALCFGTYPE_STRING 3   // null-terminated multibyte string
 #define SALCFGTYPE_LOGFONT 4  // Win32 LOGFONT structure
 
-// konstanty parametru konfigurace Salamandera (viz CSalamanderGeneralAbstract::GetConfigParameter);
-// v komentari je uveden typ parametru (BOOL, INT, STRING), za STRING je v zavorce potrebna
-// velikost bufferu pro retezec
+// constants for Salamander configuration parameters (see CSalamanderGeneralAbstract::GetConfigParameter);
+// the parameter type is given in the comment (BOOL, INT, STRING); for STRING, the required
+// buffer size is given in parentheses
 //
 // general parameters
 #define SALCFG_SELOPINCLUDEDIRS 1        // BOOL, select/deselect operations (num *, num +, num -) work also with directories
@@ -480,146 +481,146 @@ struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 #define SALCFG_VIEWERSAVEPOSITION 125     // BOOL, TRUE = save position of viewer window, FALSE = always use position of main window
 #define SALCFG_VIEWERFONT 126             // LOGFONT, viewer font
 #define SALCFG_VIEWERWRAPTEXT 127         // BOOL, wrap text (divide long text line to more lines)
-#define SALCFG_AUTOCOPYSELTOCLIPBOARD 128 // BOOL, TRUE = when user selects some text, this text is instantly copied to the cliboard
+#define SALCFG_AUTOCOPYSELTOCLIPBOARD 128 // BOOL, TRUE = selected text is copied to the clipboard immediately
 // archivers
 #define SALCFG_ARCOTHERPANELFORPACK 140    // BOOL, should it pack to other panel path?
 #define SALCFG_ARCOTHERPANELFORUNPACK 141  // BOOL, should it unpack to other panel path?
 #define SALCFG_ARCSUBDIRBYARCFORUNPACK 142 // BOOL, should it unpack to subdirectory named by archive?
 #define SALCFG_ARCUSESIMPLEICONS 143       // BOOL, should it use simple icons in archives?
 
-// typ callbacku pouzivany v metode CSalamanderGeneral::SalSplitGeneralPath
+// callback type used by CSalamanderGeneral::SalSplitGeneralPath
 typedef BOOL(WINAPI* SGP_IsTheSamePathF)(const char* path1, const char* path2);
 
-// typ callbacku pouzivany v metode CSalamanderGeneralAbstract::CallPluginOperationFromDisk
-// 'sourcePath' je zdrojova cesta na disku (ostatni cesty jsou od ni vztazeny relativne);
-// oznacene soubory/adresare jsou zadany enumeracni funkci 'next' jejimz parametrem je
-// 'nextParam'; 'param' je parametr predavany do CallPluginOperationFromDisk jako 'param'
+// callback type used by CSalamanderGeneralAbstract::CallPluginOperationFromDisk
+// 'sourcePath' is the source path on disk (all other paths are relative to it);
+// selected files/directories are provided by the enumeration function 'next', whose parameter is
+// 'nextParam'; 'param' is passed to CallPluginOperationFromDisk as 'param'
 typedef void(WINAPI* SalPluginOperationFromDisk)(const char* sourcePath, SalEnumSelection2 next,
                                                  void* nextParam, void* param);
 
-// flagy pro textove vyhledavaci algoritmy (CSalamanderBMSearchData a CSalamanderREGEXPSearchData);
-// flagy se daji logicky scitat
-#define SASF_CASESENSITIVE 0x01 // velikost pismen je dulezita (pokud neni nastaven, hleda se bez ohledu na vel. pismen)
-#define SASF_FORWARD 0x02       // hledani smerem dopredu (pokud neni nastaven, hleda se smerem zpet)
+// flags for text search algorithms (CSalamanderBMSearchData and CSalamanderREGEXPSearchData);
+// flags can be combined with bitwise OR
+#define SASF_CASESENSITIVE 0x01 // case-sensitive search (if not set, the search is case-insensitive)
+#define SASF_FORWARD 0x02       // forward search (if not set, the search runs backward)
 
-// ikony pro GetSalamanderIcon
+// icons for GetSalamanderIcon
 #define SALICON_EXECUTABLE 1    // exe/bat/pif/com
 #define SALICON_DIRECTORY 2     // dir
-#define SALICON_NONASSOCIATED 3 // neasociovany soubor
-#define SALICON_ASSOCIATED 4    // asociovany soubor
+#define SALICON_NONASSOCIATED 3 // non-associated file
+#define SALICON_ASSOCIATED 4    // associated file
 #define SALICON_UPDIR 5         // up-dir ".."
-#define SALICON_ARCHIVE 6       // archiv
+#define SALICON_ARCHIVE 6       // archive
 
-// velikosti ikon pro GetSalamanderIcon
+// icon sizes for GetSalamanderIcon
 #define SALICONSIZE_16 1 // 16x16
 #define SALICONSIZE_32 2 // 32x32
 #define SALICONSIZE_48 3 // 48x48
 
-// interface objektu Boyer-Moorova algoritmu pro vyhledavani v textu
-// POZOR: kazdy alokovany objekt je mozne pouzivat jen v ramci jednoho threadu
-// (nemusi jit o hlavni thread, nemusi jit u vsech objektu o jeden thread)
+// interface of the Boyer-Moore text-search object
+// WARNING: each allocated object may be used only from a single thread
+// (it does not have to be the main thread, and different objects may use different threads)
 class CSalamanderBMSearchData
 {
 public:
-    // nastaveni vzorku; 'pattern' je null-terminated text vzorku; 'flags' jsou priznaky
-    // algoritmu (viz konstanty SASF_XXX)
+    // sets the pattern; 'pattern' is a null-terminated pattern string; 'flags' are algorithm flags
+    // (see the SASF_XXX constants)
     virtual void WINAPI Set(const char* pattern, WORD flags) = 0;
 
-    // nastaveni vzorku; 'pattern' je binarni vzorek o delce 'length' (buffer 'pattern' musi
-    // mit delku alespon ('length' + 1) znaku - jen pro kompatibilitu s textovymi vzorky);
-    // 'flags' jsou priznaky algoritmu (viz konstanty SASF_XXX)
+    // sets the pattern; 'pattern' is a binary pattern of length 'length' (the 'pattern' buffer must
+    // be at least ('length' + 1) bytes long; this is only for compatibility with text patterns);
+    // 'flags' are algorithm flags (see the SASF_XXX constants)
     virtual void WINAPI Set(const char* pattern, const int length, WORD flags) = 0;
 
     // nastaveni priznaku algoritmu; 'flags' jsou priznaky algoritmu (viz konstanty SASF_XXX)
     virtual void WINAPI SetFlags(WORD flags) = 0;
 
-    // vraci delku vzorku (pouzitelne az po uspesnem volani metody Set)
+    // returns the pattern length (usable only after a successful call to Set)
     virtual int WINAPI GetLength() const = 0;
 
-    // vraci vzorek (pouzitelne az po uspesnem volani metody Set)
+    // returns the pattern (usable only after a successful call to Set)
     virtual const char* WINAPI GetPattern() const = 0;
 
-    // vraci TRUE pokud je mozne zacit vyhledavat (vzorek i priznaky byly uspesne nastaveny,
-    // neuspech hrozi jen pri prazdnem vzorku)
+    // returns TRUE if searching can start (the pattern and flags were set successfully;
+    // only an empty pattern can still cause failure)
     virtual BOOL WINAPI IsGood() const = 0;
 
-    // hledani vzorku v textu 'text' o delce 'length' od offsetu 'start' smerem dopredu;
-    // vraci offset nalezeneho vzorku nebo -1 pokud vzorek nebyl nalezen;
-    // POZOR: algoritmus musi mit nastaveny priznak SASF_FORWARD
+    // searches for the pattern in 'text' of length 'length' from offset 'start' forward;
+    // returns the offset of the found pattern, or -1 if the pattern was not found;
+    // WARNING: the algorithm must have the SASF_FORWARD flag set
     virtual int WINAPI SearchForward(const char* text, int length, int start) = 0;
 
-    // hledani vzorku v textu 'text' o delce 'length' smerem zpet (zacina hledat na konci textu);
-    // vraci offset nalezeneho vzorku nebo -1 pokud vzorek nebyl nalezen;
-    // POZOR: algoritmus nesmi mit nastaveny priznak SASF_FORWARD
+    // searches for the pattern in 'text' of length 'length' backward (starts searching at the end of the text);
+    // returns the offset of the found pattern, or -1 if the pattern was not found;
+    // WARNING: the algorithm must not have the SASF_FORWARD flag set
     virtual int WINAPI SearchBackward(const char* text, int length) = 0;
 };
 
-// interface objektu algoritmu pro vyhledavani pomoci regularnich vyrazu v textu
-// POZOR: kazdy alokovany objekt je mozne pouzivat jen v ramci jednoho threadu
-// (nemusi jit o hlavni thread, nemusi jit u vsech objektu o jeden thread)
+// interface of the regular-expression search object
+// WARNING: each allocated object may be used only from a single thread
+// (it does not have to be the main thread, and different objects may use different threads)
 class CSalamanderREGEXPSearchData
 {
 public:
-    // nastaveni regularniho vyrazu; 'pattern' je null-terminated text regularniho vyrazu; 'flags'
-    // jsou priznaky algoritmu (viz konstanty SASF_XXX); pri chybe vraci FALSE a popis chyby
-    // je mozne ziskat volanim metody GetLastErrorText
+    // sets the regular expression; 'pattern' is a null-terminated regular-expression string; 'flags'
+    // are algorithm flags (see the SASF_XXX constants); returns FALSE on error, and the error text
+    // can be obtained by calling GetLastErrorText
     virtual BOOL WINAPI Set(const char* pattern, WORD flags) = 0;
 
-    // nastaveni priznaku algoritmu; 'flags' jsou priznaky algoritmu (viz konstanty SASF_XXX);
-    // pri chybe vraci FALSE a popis chyby je mozne ziskat volanim metody GetLastErrorText
+    // sets the algorithm flags; 'flags' are algorithm flags (see the SASF_XXX constants);
+    // returns FALSE on error, and the error text can be obtained by calling GetLastErrorText
     virtual BOOL WINAPI SetFlags(WORD flags) = 0;
 
-    // vraci text chyby, ktera nastala v poslednim volani Set nebo SetFlags (muze byt i NULL)
+    // returns the error text from the last call to Set or SetFlags (may be NULL)
     virtual const char* WINAPI GetLastErrorText() const = 0;
 
-    // vraci text regularniho vyrazu (pouzitelne az po uspesnem volani metody Set)
+    // returns the regular-expression text (usable only after a successful call to Set)
     virtual const char* WINAPI GetPattern() const = 0;
 
-    // nastaveni radky textu (radka je od 'start' do 'end', 'end' ukazuje za posledni znak radky),
-    // ve kterem se vyhledava; vraci vzdy TRUE
+    // sets the line to search (the line is from 'start' to 'end', and 'end' points past the last character);
+    // always returns TRUE
     virtual BOOL WINAPI SetLine(const char* start, const char* end) = 0;
 
-    // hledani podretezce odpovidajiciho regularnimu vyrazu v radce nastavene metodou SetLine;
-    // hleda od offsetu 'start' smerem dopredu; vraci offset nalezeneho podretezce a jeho delku
-    // (ve 'foundLen') nebo -1 pokud podretezec nebyl nalezen;
-    // POZOR: algoritmus musi mit nastaveny priznak SASF_FORWARD
+    // searches the line set by SetLine for a substring matching the regular expression;
+    // searches forward from offset 'start'; returns the offset of the found substring and its length
+    // (in 'foundLen'), or -1 if no substring was found;
+    // WARNING: the algorithm must have the SASF_FORWARD flag set
     virtual int WINAPI SearchForward(int start, int& foundLen) = 0;
 
-    // hledani podretezce odpovidajiciho regularnimu vyrazu v radce nastavene metodou SetLine;
-    // hleda smerem zpet (zacina hledat na konci textu o delce 'length' od zacatku radky);
-    // vraci offset nalezeneho podretezce a jeho delku (ve 'foundLen') nebo -1 pokud podretezec
-    // nebyl nalezen;
-    // POZOR: algoritmus nesmi mit nastaveny priznak SASF_FORWARD
+    // searches the line set by SetLine for a substring matching the regular expression;
+    // searches backward (starting at the end of the text segment of length 'length' from the start of the line);
+    // returns the offset of the found substring and its length (in 'foundLen'), or -1 if no substring
+    // was found;
+    // WARNING: the algorithm must not have the SASF_FORWARD flag set
     virtual int WINAPI SearchBackward(int length, int& foundLen) = 0;
 };
 
-// typy prikazu Salamandera pouzite v metode CSalamanderGeneralAbstract::EnumSalamanderCommands
+// types of Salamander commands used in CSalamanderGeneralAbstract::EnumSalamanderCommands
 #define sctyUnknown 0
-#define sctyForFocusedFile 1                 // jen pro focusly soubor (napr. View)
-#define sctyForFocusedFileOrDirectory 2      // pro focusly soubor nebo adresar (napr. Open)
-#define sctyForSelectedFilesAndDirectories 3 // pro oznacene/fokusle soubory a adresare (napr. Copy)
-#define sctyForCurrentPath 4                 // pro aktualni cestu v panelu (napr. Create Directory)
-#define sctyForConnectedDrivesAndFS 5        // pro pripojene svazky a FS (napr. Disconnect)
+#define sctyForFocusedFile 1                 // for the focused file only (e.g. View)
+#define sctyForFocusedFileOrDirectory 2      // for the focused file or directory (e.g. Open)
+#define sctyForSelectedFilesAndDirectories 3 // for selected or focused files and directories (e.g. Copy)
+#define sctyForCurrentPath 4                 // for the current path in the panel (e.g. Create Directory)
+#define sctyForConnectedDrivesAndFS 5        // for connected drives and FS (e.g. Disconnect)
 
-// prikazy Salamandera pouzite v metodach CSalamanderGeneralAbstract::EnumSalamanderCommands
-// a CSalamanderGeneralAbstract::PostSalamanderCommand
-// (POZOR: pro cisla prikazu je rezerovan jen interval <0, 499>)
-#define SALCMD_VIEW 0     // view (klavesa F3 v panelu)
-#define SALCMD_ALTVIEW 1  // alternate view (klavesa Alt+F3 v panelu)
+// Salamander commands used in CSalamanderGeneralAbstract::EnumSalamanderCommands
+// and CSalamanderGeneralAbstract::PostSalamanderCommand
+// (WARNING: only the range <0, 499> is reserved for command numbers)
+#define SALCMD_VIEW 0     // view (F3 in the panel)
+#define SALCMD_ALTVIEW 1  // alternate view (Alt+F3 in the panel)
 #define SALCMD_VIEWWITH 2 // view with (klavesa Ctrl+Shift+F3 v panelu)
-#define SALCMD_EDIT 3     // edit (klavesa F4 v panelu)
+#define SALCMD_EDIT 3     // edit (F4 in the panel)
 #define SALCMD_EDITWITH 4 // edit with (klavesa Ctrl+Shift+F4 v panelu)
 
-#define SALCMD_OPEN 20        // open (klavesa Enter v panelu)
-#define SALCMD_QUICKRENAME 21 // quick rename (klavesa F2 v panelu)
+#define SALCMD_OPEN 20        // open (Enter key in the panel)
+#define SALCMD_QUICKRENAME 21 // quick rename (F2 in the panel)
 
-#define SALCMD_COPY 40          // copy (klavesa F5 v panelu)
-#define SALCMD_MOVE 41          // move/rename (klavesa F6 v panelu)
-#define SALCMD_EMAIL 42         // email (klavesa Ctrl+E v panelu)
-#define SALCMD_DELETE 43        // delete (klavesa Delete v panelu)
-#define SALCMD_PROPERTIES 44    // show properties (klavesa Alt+Enter v panelu)
-#define SALCMD_CHANGECASE 45    // change case (klavesa Ctrl+F7 v panelu)
-#define SALCMD_CHANGEATTRS 46   // change attributes (klavesa Ctrl+F2 v panelu)
+#define SALCMD_COPY 40          // copy (F5 in the panel)
+#define SALCMD_MOVE 41          // move/rename (F6 in the panel)
+#define SALCMD_EMAIL 42         // email (Ctrl+E in the panel)
+#define SALCMD_DELETE 43        // delete (Delete key in the panel)
+#define SALCMD_PROPERTIES 44    // show properties (Alt+Enter in the panel)
+#define SALCMD_CHANGECASE 45    // change case (Ctrl+F7 in the panel)
+#define SALCMD_CHANGEATTRS 46   // change attributes (Ctrl+F2 in the panel)
 #define SALCMD_OCCUPIEDSPACE 47 // calculate occupied space (klavesa Alt+F10 v panelu)
 
 #define SALCMD_EDITNEWFILE 70     // edit new file (klavesa Shift+F4 v panelu)
