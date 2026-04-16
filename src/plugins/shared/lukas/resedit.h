@@ -1,20 +1,19 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-//******************************************************************************
+// ******************************************************************************
 //
-// metody tridy CResEdit nahrazuji API funkce BeginUpdateResource, UpdateResource, EndUpdateResource
+// CResEdit class methods replace the BeginUpdateResource, UpdateResource, and EndUpdateResource API functions.
 //
-// co neni jeste vychytany:
-// - .rsrc section musi v exaci existovat
-// - .rsrc section muze byt pouze na konci PE souboru, neni-li (napr. u debug verse exace)
-//  dojde k prepsani zbytku exace
-// -nejde smazat resource z exace (v API to lze predanim hodnoty NULL parametru 'lpData' do
-//  funkce UpdateResource)
-// -nelze blize urcit chybu, vsechny tri metody nenastavuji last error a v pripade chyby
-//  vraceji pouze FALSE
+// Current limitations:
+// - the .rsrc section must exist in the executable
+// - the .rsrc section must be at the end of the PE file; otherwise (for example, in a debug build)
+//   the rest of the executable is overwritten
+// - deleting a resource from the executable is not supported (the API allows this by passing NULL as the 'lpData' parameter to UpdateResource)
+// - the exact error cannot be determined; none of the three methods sets last error, and they return only FALSE on failure
 
 class CResEditRoot
 {
