@@ -365,7 +365,7 @@ extern const TCHAR* __CONNECT_DATA_ACCEPTED_EVENT_NAME;
 //
 // CClientServerInitData
 //
-// tato struktura se pri zahajeni komunikace predava od clienta do serveru
+// This structure is passed from the client to the server when communication starts.
 
 struct C__ClientServerInitData
 {
