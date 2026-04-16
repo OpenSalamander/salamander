@@ -647,8 +647,8 @@ public:
 
     // returns the archiver interface; the plugin must return this interface if it has
     // at least one of the following functions (see SetBasicPluginData): FUNCTION_PANELARCHIVERVIEW,
-    // FUNCTION_PANELARCHIVEREDIT, FUNCTION_CUSTOMARCHIVERPACK a/nebo FUNCTION_CUSTOMARCHIVERUNPACK;
-    // pokud plugin archivator neobsahuje, vraci NULL
+    // FUNCTION_PANELARCHIVEREDIT, FUNCTION_CUSTOMARCHIVERPACK, and/or FUNCTION_CUSTOMARCHIVERUNPACK;
+    // if the plugin does not contain an archiver, it returns NULL
     virtual CPluginInterfaceForArchiverAbstract* WINAPI GetInterfaceForArchiver() = 0;
 
     // returns the viewer interface; the plugin must return this interface if it has the function
@@ -656,22 +656,22 @@ public:
     virtual CPluginInterfaceForViewerAbstract* WINAPI GetInterfaceForViewer() = 0;
 
     // returns the menu-extension interface; the plugin must return this interface if it adds
-    // polozky do menu (viz CSalamanderConnectAbstract::AddMenuItem) nebo pokud ma
-    // funkci (viz SetBasicPluginData) FUNCTION_DYNAMICMENUEXT; v opacnem pripade vraci NULL
+    // menu items (see CSalamanderConnectAbstract::AddMenuItem) or if it has the
+    // FUNCTION_DYNAMICMENUEXT function (see SetBasicPluginData); otherwise it returns NULL
     virtual CPluginInterfaceForMenuExtAbstract* WINAPI GetInterfaceForMenuExt() = 0;
 
     // returns the file-system interface; the plugin must return this interface if it has the function
     // (see SetBasicPluginData) FUNCTION_FILESYSTEM; if the plugin does not contain a file system, it returns NULL
     virtual CPluginInterfaceForFSAbstract* WINAPI GetInterfaceForFS() = 0;
 
-    // returns the thumbnail-loader interface; the plugin must return this interface if it informed
-    // Salamandera, ze umi nacitat thumbnaily (viz CSalamanderConnectAbstract::SetThumbnailLoader);
-    // pokud plugin neumi nacitat thumbnaily, vraci NULL
+    // returns the thumbnail-loader interface; the plugin must return this interface if it notified
+    // Salamander that it can load thumbnails (see CSalamanderConnectAbstract::SetThumbnailLoader);
+    // if the plugin cannot load thumbnails, it returns NULL
     virtual CPluginInterfaceForThumbLoaderAbstract* WINAPI GetInterfaceForThumbLoader() = 0;
 
-    // prijem ruznych udalosti, viz kody udalosti PLUGINEVENT_XXX; vola se jen pokud je plugin
-    // nacteny; 'param' je parametr udalosti
-    // POZOR: muze se zavolat kdykoliv po dokonceni entry-pointu pluginu (SalamanderPluginEntry)
+    // receives various events; see the PLUGINEVENT_XXX event codes; called only when the plugin is
+    // loaded; 'param' is the event parameter
+    // WARNING: it may be called at any time after the plugin entry point (SalamanderPluginEntry) completes
     virtual void WINAPI Event(int event, DWORD param) = 0;
 
     // user requested that all histories be cleared (by running Clear History from the configuration
@@ -683,10 +683,10 @@ public:
     // clear the histories there as well
     virtual void WINAPI ClearHistory(HWND parent) = 0;
 
-    // prijem informace o zmene na ceste 'path' (je-li 'includingSubdirs' TRUE, tak
-    // zahrnuje i zmenu v podadresarich cesty 'path'); teto metody je mozne vyuzit napr.
-    // k invalidovani/cisteni cache souboru/adresaru; POZNAMKA: pro pluginove file-systemy (FS)
-    // existuje metoda CPluginFSInterfaceAbstract::AcceptChangeOnPathNotification()
+    // receives notification of a change on the path 'path' (if 'includingSubdirs' is TRUE, it also
+    // includes changes in subdirectories of 'path'); this method can be used, for example,
+    // to invalidate or clear file/directory caches; NOTE: plugin file systems (FS) have the
+    // CPluginFSInterfaceAbstract::AcceptChangeOnPathNotification() method
     virtual void WINAPI AcceptChangeOnPathNotification(const char* path, BOOL includingSubdirs) = 0;
 
     // this method is called only for a plugin that uses Password Manager (see
@@ -696,11 +696,10 @@ public:
     virtual void WINAPI PasswordManagerEvent(HWND parent, int event) = 0;
 };
 
-//
 // ****************************************************************************
 // CSalamanderPluginEntryAbstract
 //
-// sada metod ze Salamandera, ktere se pouzivaji v SalamanderPluginEntry
+// set of Salamander methods used in SalamanderPluginEntry
 
 // flags indicating the reason for plugin load (see CSalamanderPluginEntryAbstract::GetLoadInformation)
 #define LOADINFO_INSTALL 0x0001          // first plugin load (installation into Salamander)
