@@ -40,14 +40,14 @@
 
 #pragma warning(3 : 4706) // warning C4706: assignment within conditional expression
 
-//#include "trace.h" aby to slo pripojit i k pluginum, stejne tu zatim zadny TRACE neni
+//needed so this can also be built for plugins; there is no TRACE here yet
 #include "str.h"
 #include "regexp.h"
 
 //*****************************************************************************
 //*****************************************************************************
 //
-// moje cast regexp.cpp
+// my section of regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -447,7 +447,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             else
                 *--dstExpEnd = (*s == '(') ? ')' : ']';
 
-            if (oldSS - s >= 2) // pokud vyraz nekonci otevrenou zavorkou
+            if (oldSS - s >= 2) // if the expression does not end with an opening parenthesis
             {
                 if (*s == '(')
                 { // Copy the reversed expression - parenthesized group.
@@ -485,7 +485,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 //*****************************************************************************
 //*****************************************************************************
 //
-// puvodni regexp.cpp
+// original regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
