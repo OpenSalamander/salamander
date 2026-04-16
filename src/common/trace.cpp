@@ -1069,19 +1069,19 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
             CloseWritePipeAndSemaphore();
         }
     }
-    // jen je-li crash==TRUE:
-    // vyrobime kopii dat, start threadu pro msgbox totiz muze vyvolat dalsi TRACE
-    // hlasky (napr. v DllMain reakce na DLL_THREAD_ATTACH), pokud bysme neopustili
-    // CriticalSection, nastal by deadlock;
-    // v DllMain se nesmi pouzivat TRACE_C, jinak dojde k deadlocku:
-    //   - pokud se da do DLL_THREAD_ATTACH: chce si otevrit novy thread pro msgbox
-    //     a to je z DllMainu blokovane
-    //   - pokud se da do DLL_THREAD_DETACH: pri cekani na zavreni threadu s msgboxem
-    //     predesleho TRACE_C zachytime TRACE_C z DLL_THREAD_DETACH a nechame ho
-    //     cekat v nekonecnem cyklu, viz nize
-    // navic zavadime obranu proti mnozeni msgboxu pri vice TRACE_C zaroven, pusobilo
-    // by to jen zmatky, ted se otevre msgbox jen pro prvni a ten po uzavreni vyvola
-    // padacku, ostatni TRACE_C zustanou chyceny v nekonecne cekaji smycce, viz nize
+    // only if crash==TRUE:
+    // make a copy of the data, because starting the msgbox thread can trigger more TRACE
+    // messages (for example, DllMain reacting to DLL_THREAD_ATTACH); if we did not leave
+    // the CriticalSection, a deadlock would occur;
+    // TRACE_C must not be used in DllMain, otherwise a deadlock occurs:
+    //   - if TRACE_C is used in DLL_THREAD_ATTACH: it tries to open a new thread for the msgbox
+    //     and DllMain blocks that
+    //   - if TRACE_C is used in DLL_THREAD_DETACH: while waiting for the msgbox thread of the
+    //     previous TRACE_C to close, we catch TRACE_C from DLL_THREAD_DETACH and leave it
+    //     waiting in an infinite loop, see below
+    // in addition, we guard against multiple msgboxes when several TRACE_C occur at once;
+    // that would only cause confusion, so now a msgbox is opened only for the first one and it
+    // triggers a crash after it closes; the other TRACE_C remain stuck in an infinite waiting loop, see below
     static BOOL msgBoxOpened = FALSE;
     C__TraceMsgBoxThreadData threadData;
     C__TraceMsgBoxThreadDataW threadDataW;
@@ -1136,7 +1136,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
                                                unicode ? (void*)&threadDataW : (void*)&threadData, 0, &id);
             if (msgBoxThread != NULL)
             {
-                WaitForSingleObject(msgBoxThread, INFINITE); // pokud se da TRACE_C do DllMain do DLL_THREAD_ATTACH, dojde k deadlocku - silne nepravdepodobne, neresime
+                WaitForSingleObject(msgBoxThread, INFINITE); // if TRACE_C is used in DllMain during DLL_THREAD_ATTACH, a deadlock occurs - very unlikely, we do not handle it
                 CloseHandle(msgBoxThread);
             }
             msgBoxOpened = FALSE;
@@ -1146,7 +1146,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
             // after this method finishes
         }
         else // block other threads with TRACE_C until the msgbox opened for
-        {    // the first TRACE_C is closed; it will crash there too, to keep things tidy
+        {    // the first TRACE_C closes; then the first TRACE_C crashes there too, to avoid confusion
             if (msgBoxOpened)
             {
                 while (1)
