@@ -12,13 +12,13 @@
 
 #pragma once
 
-// definitions of the TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW, and CALL_STACK_MESSAGEXXX macros for plugins,
-// in a plugin you must define the SalamanderDebug variable (type shown below) and
+// Definitions of the TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW, and CALL_STACK_MESSAGEXXX macros for plugins.
+// In a plugin, you must define the SalamanderDebug variable (type shown below) and
 // initialize it in SalamanderPluginEntry:
 // SalamanderDebug = salamander->GetSalamanderDebug();
 //
-// TRACE is enabled by defining TRACE_ENABLE
-// CALL-STACK is disabled by defining CALLSTK_DISABLE
+// TRACE is enabled by defining the TRACE_ENABLE macro.
+// CALL-STACK is disabled by defining the CALLSTK_DISABLE macro.
 
 // WARNING: TRACE_C must not be used in DllMain, or in any code
 //        called from DllMain, otherwise a deadlock will occur; see
@@ -82,7 +82,7 @@ public:
     // return pointer to the beginning of the data, terminated by null
     const char* c_str()
     {
-        // add trailing null
+        // add a trailing null terminator
         sputc('\0');
 
         // decrement the pointer back, trailing null is not part of the data
