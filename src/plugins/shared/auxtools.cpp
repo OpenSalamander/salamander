@@ -107,7 +107,7 @@ BOOL CThreadQueue::FindAndLockItem(HANDLE thread)
 
     CS.Leave();
 
-    return act != NULL; // NULL = not found
+    return act != NULL; // NULL means not found
 }
 
 void CThreadQueue::UnlockItem(HANDLE thread, BOOL deleteIfUnlocked)
@@ -152,7 +152,7 @@ BOOL CThreadQueue::WaitForExit(HANDLE thread, int milliseconds)
     BOOL ret = TRUE;
     if (thread != NULL)
     {
-        if (FindAndLockItem(thread)) // thread handle found and locked; we can wait for it, then remove it
+        if (FindAndLockItem(thread)) // thread handle found and locked; we can wait for it, then unlock it
         {
             ret = WaitForSingleObject(thread, milliseconds) != WAIT_TIMEOUT;
 
@@ -312,9 +312,9 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
     data.Continue = Continue;
 
     // start the thread; we do not use _beginthreadex() because since VC2015 it causes
-    // another load of this module (plugin), which is released again on normal exit,
-    // but if we use TerminateThread(), the module stays loaded until the Salamander process exits;
-    // only then do the global object destructors run, which can lead
+    // this module (plugin) to be loaded again; on normal exit it is released,
+    // but if we use TerminateThread(), the module stays loaded until the Salamander process exits
+    // and only then are the global object destructors run, which can lead
     // to unexpected crashes because all plugin interfaces have already been released (e.g.
     // SalamanderDebug)
     DWORD tid;
@@ -342,7 +342,7 @@ CThreadQueue::StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned s
             return NULL;
         }
 
-        // store the handle before the thread starts running (guarantees it has not finished and its object has not been deallocated)
+        // write the output values before the thread starts running (this guarantees that it has not already finished and that its object has not been deallocated)
         if (threadHandle != NULL)
             *threadHandle = thread;
         if (threadID != NULL)
