@@ -14,9 +14,9 @@
 
 // TRACE module is ready for multi-threaded applications
 
-// POZOR: TRACE_C se nesmi pouzivat v DllMain knihoven, ani v zadnem kodu, ktery
-//        se z DllMainu vola, jinak dojde k deadlocku, vice viz implementace
-//        C__Trace::SendMessageToServer
+// WARNING: TRACE_C must not be used in a library's DllMain, or in any code that
+//        is called from DllMain, otherwise a deadlock will occur; see the
+//        implementation of C__Trace::SendMessageToServer
 
 #if defined(__TRACESERVER) || defined(TRACE_ENABLE)
 
@@ -381,7 +381,7 @@ struct C__ClientServerInitData
 //
 // CPipeDataHeader
 //
-// pomoci teto struktury komunikuje client se serverem pres pipu
+// This structure is used by the client and server to communicate through the pipe
 
 // For Type == __mtInformation || Type == __mtError
 // the variables have the following meanings:
@@ -389,7 +389,7 @@ struct C__PipeDataHeader
 {
     int Type;                // message type (C__MessageType)
     DWORD ThreadID;          // thread ID for additional identification
-    DWORD UniqueThreadID;    // unikatni cislo threadu (systemove ID se opakuji)
+    DWORD UniqueThreadID;    // unique thread number (system IDs are reused)
     SYSTEMTIME Time;         // message creation time
     DWORD MessageSize;       // length of the buffer needed to receive the text
     DWORD MessageTextOffset; // offset of the text in the buffer shared with the file name
@@ -432,14 +432,14 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_MEW(file, line, str) __TraceEmptyFunction()
 #define TRACE_E(str) __TraceEmptyFunction()
 #define TRACE_EW(str) __TraceEmptyFunction()
-// pri crashi softu pres DebugBreak() nejde vystopovat, kde lezi volani
-// TRACE_C/TRACE_MC, protoze adresa exceptiony je kdesi v ntdll.dll
-// a sekce Stack Back Trace bug reportu muze obsahovat nesmysly, pokud
-// funkce volajici TRACE_C/TRACE_MC nepouziva stary jednoduchy model
-// ukladani a prace s EBP/ESP, ovsem i v tom pripade je zde jen adresa
-// odkud byla tato funkce volana (ne primo adresa TRACE_C/TRACE_MC),
-// proto aspon prozatim pouzivame stary primitivni zpusob crashe
-// zapisem na NULL
+// when the program crashes through DebugBreak(), it is impossible to trace where
+// TRACE_C/TRACE_MC was called, because the exception address ends up somewhere in ntdll.dll,
+// and the Stack Back Trace section of the bug report may contain nonsense if
+// the function calling TRACE_C/TRACE_MC does not use the old simple model for
+// saving and using EBP/ESP; even then, only the address from which
+// that function was called is available (not the TRACE_C/TRACE_MC address itself),
+// so at least for now we use the old primitive way of crashing
+// by writing to NULL
 //#define TRACE_MC(file, line, str) DebugBreak()
 //#define TRACE_MCW(file, line, str) DebugBreak()
 //#define TRACE_C(str) DebugBreak()
@@ -522,14 +522,14 @@ uintptr_t __TRACE_beginthreadex(void* security, unsigned stack_size,
 #define TRACE_E(str) TRACE_ME(__FILE__, __LINE__, str)
 #define TRACE_EW(str) TRACE_MEW(__WFILE__, __LINE__, str)
 
-// fatal-error-trace (CRASHING TRACE), manually specified file position;
-// stop the program in the debugger to simplify debugging of the problem that just occurred;
-// the release build crashes and the problem will hopefully be clear from the call stack in the bug report;
-// we do not use DebugBreak(), because when the program crashes it is impossible to trace where
-// DebugBreak() was called: the exception address ends up somewhere in ntdll.dll,
+// fatal-error-trace (CRASHING TRACE), manually specified file location;
+// stop the program in the debugger to make the problem that just occurred easier to debug;
+// the release build crashes, and the problem will hopefully be clear from the call stack in the bug report;
+// we do not use DebugBreak(), because when the program crashes through DebugBreak(), it is impossible to trace where
+// TRACE_C/MC was called: the exception address ends up somewhere in ntdll.dll,
 // and the Stack Back Trace section of the bug report may contain nonsense if
-// the function from which TRACE_C/MC is called does not use the old simple model for
-// saving and using EBP/ESP (depending on the compiler and enabled optimizations), so
+// the function that calls TRACE_C/MC does not use the old simple model for
+// saving and using EBP/ESP (this depends on the compiler and enabled optimizations), so
 // at least for now we use the old primitive way of crashing by writing to NULL
 #define TRACE_MC(file, line, str) \
     ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.StoreLastError(), \
@@ -622,7 +622,7 @@ protected:
     HANDLE HTraceFile; // file opened for writing in TEMP; all messages are stored there
 #ifdef __TRACESERVER
     WCHAR TraceFileName[MAX_PATH]; // HTraceFile file name
-#endif // __TRACESERVER
+#endif // TRACE_TO_FILE
 #endif // TRACE_TO_FILE
 
     LARGE_INTEGER StartPerformanceCounter; // initial value of the high-resolution counter
