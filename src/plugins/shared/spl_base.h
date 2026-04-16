@@ -480,7 +480,7 @@ public:
 
     // called before the plugin is unloaded (naturally only if SalamanderPluginEntry returned
     // this object and not NULL); returns TRUE if the unload may proceed,
-    // 'parent' je parent messageboxu, 'force' je TRUE pokud se nebere ohled na navratovou
+    // 'parent' is the parent window for message boxes, 'force' is TRUE if the return
     // value is ignored; if it returns TRUE, this object and all other objects obtained from it
     // will no longer be used and the plugin will be unloaded; if a critical shutdown is in progress (see
     // CSalamanderGeneralAbstract::IsCriticalShutdown), nema smysl se usera na cokoliv ptat
@@ -490,19 +490,19 @@ public:
     // have nothing left to execute => usually neither a bug report nor Windows exception info is generated)
     virtual BOOL WINAPI Release(HWND parent, BOOL force) = 0;
 
-    // funkce pro load defaultni konfigurace a pro "load/save configuration" (load ze soukromeho klice
-    // pluginu v registry), 'parent' je parent messageboxu, je-li 'regKey' == NULL, jde o
-    // defaultni konfiguraci, 'registry' je objekt pro praci s registry, tato metoda se vola vzdy
-    // po SalamanderPluginEntry a pred ostatnimi volanimi (vola se load ze soukromeho klice, je-li
-    // tato funkce pluginem poskytovana a klic v registry existuje, jinak vola jen load defaultni
-    // konfigurace)
+    // method for loading the default configuration and for "load/save configuration" (loading from the plugin's private
+    // registry key), 'parent' is the parent window for message boxes; if 'regKey' == NULL, the default
+    // configuration is being loaded; 'registry' is the object used to work with the registry; this method is always called
+    // after SalamanderPluginEntry and before other calls (loading from the private key is performed if
+    // this function is provided by the plugin and the registry key exists; otherwise only the default
+    // configuration is loaded)
     virtual void WINAPI LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry) = 0;
 
-    // funkce pro "load/save configuration", vola se pro ulozeni konfigurace pluginu do jeho soukromeho
-    // klice v registry, 'parent' je parent messageboxu, 'registry' je objekt pro praci s registry,
-    // uklada-li Salamander konfiguraci, vola take tuto metodu (je-li pluginem poskytovana); Salamander
-    // tez nabizi ukladani konfigurace pluginu pri jeho unloadu (napr. rucne z Plugins Manageru),
-    // v tomto pripade se ulozeni provede jen pokud v registry existuje klic Salamandera
+    // method for "load/save configuration"; called to save the plugin configuration to its private
+    // registry key, 'parent' is the parent window for message boxes, 'registry' is the object used to work with the registry;
+    // when Salamander saves its configuration, it also calls this method (if the plugin provides it); Salamander
+    // also supports saving the plugin configuration when the plugin is unloaded (for example, manually from Plugins Manager);
+    // in that case, saving is performed only if Salamander's registry key exists
     virtual void WINAPI SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRegistryAbstract* registry) = 0;
 
     // called in response to the Configuration button in the Plugins window
@@ -641,7 +641,7 @@ public:
     // releases the 'pluginData' interface that Salamander obtained from the plugin by calling
     // CPluginInterfaceForArchiverAbstract::ListArchive nebo
     // CPluginFSInterfaceAbstract::ListCurrentPath; pred timto volanim jeste
-    // file and directory data (CFileData::PluginData) are also released by the methods of
+    // file and directory data (CFileData::PluginData) are released using methods of
     // CPluginDataInterfaceAbstract
     virtual void WINAPI ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData) = 0;
 
