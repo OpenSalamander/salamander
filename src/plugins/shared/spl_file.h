@@ -20,57 +20,55 @@
 #pragma option -a4
 #endif // __BORLANDC__
 
-//****************************************************************************
+// ****************************************************************************
 //
 // CSalamanderSafeFileAbstract
 //
-// Rodina metod SafeFile slouzi pro osetrenou praci se soubory. Metody kontroluji
-// chybove stavy API volani a zobrazuji odpovidajici chybove hlasky. Chybove hlasky
-// mohou obsahovat ruzne kombinace tlacitek. Od OK, pres Retry/Cancel, az po
-// Retry/Skip/Skip all/Cancel. Kombinaci tlacitek urcuje volajici funkce jednim
-// z parametru.
+// The SafeFile family provides file operations with built-in error handling. The methods check API call
+// failures and display the corresponding error messages. Error messages may
+// contain various button combinations, from OK through Retry/Cancel to
+// Retry/Skip/Skip all/Cancel. The calling function determines the button
+// combination with one of the parameters.
 //
-// Metody behem reseni problemovych stavu potrebuji znat nazev souboru, aby mohly
-// zobrazit solidni chybovou hlasku. Zaroven potrebuji znat parametry oteviraneho
-// souboru (jako je dwDesiredAccess, dwShareMode, atd), aby v pripade chyby mohly
-// zavrit handle a znovu jej otevrit. Pokud napriklad dojde k preruseni na urovni
-// sitove vrstvy behem operace ReadFile nebo WriteFile a uzivatel odstrani pricinu
-// problemy a stiskne Retry, nelze znovu pouzit stary handle souboru. Je treba
-// stary handle zavrit, soubor znovu otevrit, nastavit ukazovatko a operaci opakovat.
-// Proto POZOR: metody SafeFileRead a SafeFileWrite pri reseni chybovych stavu mohou
-// zmenit hodnotu SAFE_FILE::HFile.
+// While handling error states, the methods need to know the file name so they can
+// display a proper error message. They also need to know the parameters of the
+// file being opened (such as dwDesiredAccess, dwShareMode, etc.) so that on error
+// they can close the handle and reopen it. For example, if a network-layer
+// interruption occurs during ReadFile or WriteFile and the user removes the cause
+// of the problem and presses Retry, the old file handle cannot be reused. The old
+// handle must be closed, the file reopened, the file pointer set, and the
+// operation retried. Therefore, note that SafeFileRead and SafeFileWrite may
+// change SAFE_FILE::HFile while handling errors.
 //
-// Z popsanych duvodu tedy nestacil klasicky HANDLE pro drzeni kontextu a nahrazuje
-// jej struktura SAFE_FILE. V pripade metody SafeFileOpen je to nezbytny parametr,
-// zatimco pro metody SafeFileCreate je tento parametr pouze [optional]. To je dano
-// potrebou zachovat kompatibilni chovani metody SafeFileCreate pro sarsi pluginy.
+// For these reasons, a plain HANDLE was not sufficient to hold the context and is
+// replaced by the SAFE_FILE structure. For SafeFileOpen, this parameter is
+// mandatory, while for SafeFileCreate it is only [optional]. This is necessary to
+// preserve the compatible behavior of SafeFileCreate for older plugins.
 //
-// Metody podporujici tlacitka Skip all/Overwrite all maji parametr 'silentMask'.
-// Jedna se o ukazatel na bitove pole slozene SILENT_SKIP_xxx a SILENT_OVERWRITE_xxx.
-// Pokud je ukazatel ruzny od NULL, plni bitove pole dve funkce:
-// (1) vstupni: pokud je nastaven odpovidajici bit, metoda v pripade chyby nezobrazi
-//              chybove hlaseni a tise si odpovi bez interakce s uzivatelem.
-// (2) vystupni: Pokud uzivatel odpovi na dotaz v pripade chyby tlacitkem Skip all
-//               nebo Overwrite all, metoda nastavi prislusny bit v bitovem poli.
-// Toto bitové pole slouží jako kontext předávaný do jednotlivých metod. Pro jednu
-// logickou skupinu operací (například vybalování více souborů z archivu) předává
-// volající stejné bitové pole, které na začátku inicializuje na hodnotu 0.
-// Pripadne muze nektere bity v bitovem poli explicitne nastavit, aby potlacil
-// prislusne dotazy.
-// Salamander rezervuje cast bitoveho pole pro vnitrni stavy pluginu.
-// Jedna se o jednickove bity v SILENT_RESERVED_FOR_PLUGINS.
+// Methods that support the Skip all/Overwrite all buttons have the 'silentMask'
+// parameter. It is a pointer to a bitmask composed of SILENT_SKIP_xxx and
+// SILENT_OVERWRITE_xxx. If the pointer is not NULL, the bitmask has two functions:
+// (1) input: if the corresponding bit is set, the method does not display an
+//            error message when an error occurs and answers silently without user interaction.
+// (2) output: if the user answers an error prompt with Skip all or Overwrite all,
+//             the method sets the corresponding bit in the bitmask.
+// This bitmask serves as context passed to the individual methods. For one logical
+// group of operations (for example, unpacking multiple files from an archive), the
+// caller passes the same bitmask, initialized to 0 at the beginning.
+// The caller may also set some bits in the bitmask explicitly to suppress the
+// corresponding prompts.
+// Salamander reserves part of the bitmask for internal plugin state.
+// These are the 1-bits in SILENT_RESERVED_FOR_PLUGINS.
 //
-// Pokud neni u ukazatelu predavanych do metody rozhrani specifikovano jinak,
-// nesmeji mit hodnotu NULL.
-//
+// Unless otherwise specified, pointers passed to interface methods must not be NULL.
 
 struct SAFE_FILE
 {
     HANDLE HFile;                // handle of the open file (note: it is managed under Salamander core HANDLES)
     char* FileName;              // full path of the open file
     HWND HParentWnd;             // hParent window handle from the SafeFileOpen/SafeFileCreate call; it is used
-                                 // pokud je hParent v nasledujich volani nastaven na HWND_STORED
-    DWORD dwDesiredAccess;       // > zaloha parametru pro API CreateFile
+                                 // if hParent is set to HWND_STORED in subsequent calls
+    DWORD dwDesiredAccess;       // > backup of the CreateFile API parameters
     DWORD dwShareMode;           // > for possible retries
     DWORD dwCreationDisposition; // > in case of read or write errors
     DWORD dwFlagsAndAttributes;  // >
@@ -107,64 +105,62 @@ struct SAFE_FILE
 class CSalamanderSafeFileAbstract
 {
 public:
-    //
     // SafeFileOpen
-    //   Otevre existujici soubor.
+    //   Opens an existing file.
     //
     // Parameters
     //   'file'
-    //      [out] Ukazatel na strukturu 'SAFE_FILE' ktera obdrzi informace o otevrenem
-    //      souboru. Tato struktura slouzi jako kontext pro ostatni metody z rodiny
-    //      SafeFile. Hodnoty struktury maji vyznam pouze v pripade, ze SafeFileOpen
-    //      vratila TRUE. Pro zavreni souboru je treba zavolat metodu SafeFileClose.
+    //      [out] Pointer to a 'SAFE_FILE' structure that receives information about the
+    //      opened file. This structure serves as context for the other methods in the
+    //      SafeFile family. The structure values are meaningful only if SafeFileOpen
+    //      returned TRUE. To close the file, call SafeFileClose.
     //
     //   'fileName'
-    //      [in] Ukazatel na retezec zakonceny nulou, ktery obsahuje nazev oteviraneho
-    //      souboru.
+    //      [in] Pointer to a null-terminated string that specifies the name of the
+    //      file to open.
     //
     //   'dwDesiredAccess'
     //   'dwShareMode'
     //   'dwCreationDisposition'
     //   'dwFlagsAndAttributes'
-    //      [in] viz API CreateFile.
+    //      [in] See the CreateFile API.
     //
     //   'hParent'
-    //      [in] Handle okna, ke kteremu budou modalne zobrazovany chybove hlasky.
+    //      [in] Handle of the window to which error messages are shown modally.
     //
     //   'flags'
-    //      [in] Jedna z hodnot BUTTONS_xxx, urcuje tlacitka zobrazena v chybovych hlaskach.
+    //      [in] One of the BUTTONS_xxx values; specifies the buttons shown in error messages.
     //
     //   'pressedButton'
-    //      [out] Ukazatel na promennou, ktera obdrzi stisknute tlacitko behem chybove
-    //      hlasky. Promenna ma vyznam pouze v pripade, ze metoda SafeFileOpen vrati FALSE,
-    //      jinak jeji hodnota neni definovana. Vraci jednu z hodnot DIALOG_xxx.
-    //      V pripade chyb vraci hodnotu DIALOG_CANCEL.
-    //      Pokud je diky 'silentMask' ignorovana nektera chybova hlaska, vraci hodnotu
-    //      odpovidajiciho tlacitka (napriklad DIALOG_SKIP nebo DIALOG_YES).
+    //      [out] Pointer to a variable that receives the button pressed in the error
+    //      message. The variable is meaningful only if SafeFileOpen returns FALSE;
+    //      otherwise its value is undefined. It returns one of the DIALOG_xxx values.
+    //      On error it returns DIALOG_CANCEL.
+    //      If an error message is suppressed because of 'silentMask', it returns the
+    //      value of the corresponding button instead (for example DIALOG_SKIP or DIALOG_YES).
     //
-    //      'pressedButton' muze byt NULL (napriklad pro BUTTONS_OK nebo BUTTONS_RETRYCANCEL
-    //      nema vyznam testovat stisknute tlacitko).
+    //      'pressedButton' may be NULL (for example, for BUTTONS_OK or BUTTONS_RETRYCANCEL
+    //      there is no point in testing which button was pressed).
     //
     //   'silentMask'
-    //      [in/out] Ukazatel na promennou obsahujici bitove pole hodnot SILENT_xxx.
-    //      Pro metodu SafeFileOpen ma vyznam pouze hodnota SILENT_SKIP_FILE_OPEN.
+    //      [in/out] Pointer to a variable containing a bitmask of SILENT_xxx values.
+    //      For SafeFileOpen, only SILENT_SKIP_FILE_OPEN is meaningful.
     //
-    //      Pokud je v bitovem poli nastaven bit SILENT_SKIP_FILE_OPEN, zaroven by
-    //      zobrazena hlaska mela tlacitko Skip (rizeno parametrem 'flags') a zaroven
-    //      dojde k chybe behem otevirani souboru, bude chybova hlaska potlacena.
-    //      SafeFileOpen pak vrati FALSE a pokud je 'pressedButton' ruzne od NULL,
-    //      nastavi do nej hodnotu DIALOG_SKIP.
+    //      If the SILENT_SKIP_FILE_OPEN bit is set in the bitmask, the message would
+    //      contain a Skip button (controlled by the 'flags' parameter), and an error
+    //      occurs while opening the file, the error message is suppressed.
+    //      SafeFileOpen then returns FALSE and, if 'pressedButton' is not NULL, sets
+    //      it to DIALOG_SKIP.
     //
     // Return Values
-    //   Vraci TRUE v pripade uspesneho otevreni souboru. Struktura 'file' je inicializovana
-    //   a pro zavreni souboru je treba zavolat SafeFileClose.
+    //   Returns TRUE if the file is opened successfully. The 'file' structure is initialized
+    //   and SafeFileClose must be called to close the file.
     //
-    //   V pripade chyby vraci FALSE a nastavi hodnoty promennych 'pressedButton'
-    //   a 'silentMask', jsou-li ruzne od NULL.
+    //   On failure returns FALSE and sets 'pressedButton'
+    //   and 'silentMask' if they are not NULL.
     //
     // Remarks
-    //   Metodu lze volat z libovolneho threadu.
-    //
+    //   This method can be called from any thread.
     virtual BOOL WINAPI SafeFileOpen(SAFE_FILE* file,
                                      const char* fileName,
                                      DWORD dwDesiredAccess,
@@ -178,53 +174,53 @@ public:
 
     //
     // SafeFileCreate
-    //   Vytvori novy soubor vcetne cesty, pokud jiz neexistuje. Pokud jiz soubor existuje,
-    //   nabidne jeho prepsani. Metoda je primarne urcena pro vytvareni souboru a adresaru
-    //   vybalovanych z archivu.
+    //   Creates a new file, including its path, if it does not already exist. If the file already exists,
+    //   it offers to overwrite it. The method is primarily intended for creating files and directories
+    //   extracted from an archive.
     //
     // Parameters
     //   'fileName'
-    //      [in] Ukazatel na retezec zakonceny nulou, ktery specifikuje nazev
-    //      vytvareneho souboru.
+    //      [in] Pointer to a null-terminated string that specifies the name of the
+    //      file to create.
     //
     //   'dwDesiredAccess'
     //   'dwShareMode'
     //   'dwFlagsAndAttributes'
-    //      [in] viz API CreateFile.
+    //      [in] See the CreateFile API.
     //
     //   'isDir'
-    //      [in] Urcuje, zda posledni slozka cesty 'fileName' ma byt adresar (TRUE)
-    //      nebo soubor (FALSE). Pokud je 'isDir' TRUE, budou ignorovany promenne
+    //      [in] Specifies whether the last path component of 'fileName' is to be a directory (TRUE)
+    //      or a file (FALSE). If 'isDir' is TRUE, the variables
     //      'dwDesiredAccess', 'dwShareMode', 'dwFlagsAndAttributes', 'srcFileName',
-    //      'srcFileInfo' a 'file'.
+    //      'srcFileInfo' and 'file' are ignored.
     //
     //   'hParent'
-    //      [in] Handle okna, ke kteremu budou modalne zobrazovany chybove hlasky.
+    //      [in] Handle of the window to which error messages are shown modally.
     //
     //   'srcFileName'
-    //      [in] Ukazatel na retezec zakonceny nulou, ktery specifikuje nazev
-    //      zdrojoveho souboru. Tento nazev bude zobrazen spolecne s velikosti
-    //      a casem ('srcFileInfo') v dotazu na prepsani existujiciho souboru,
-    //      pokud jiz soubor 'fileName' existuje.
+    //      [in] Pointer to a null-terminated string that specifies the name of the
+    //      source file. This name is displayed together with the size
+    //      and time ('srcFileInfo') in the prompt to overwrite an existing file,
+    //      if the 'fileName' file already exists.
     //      'srcFileName' muze byt NULL, potom je 'srcFileInfo' ignorovano.
-    //      V tomto pripade zobrazi pripadny dotaz na prepsani obsahovat na miste
-    //      zdrojoveho souboru text "a newly created file".
+    //      In that case, the overwrite prompt will display the text
+    //      "a newly created file" instead of the source file.
     //
     //   'srcFileInfo'
-    //      [in] Ukazatel na retezec zakonceny nulou, ktery obsahuje velikost, datum
-    //      a cas zdrojoveho souboru. Tyto informace budou zobrazeny spolecne s nazvem
-    //      zdrojoveho souboru 'srcFileName' v dotazu na prepsani existujiciho souboru.
-    //      Format: "velikost, datum, cas".
+    //      [in] Pointer to a null-terminated string containing the size, date
+    //      and time of the source file. This information is displayed together with the name
+    //      of the source file 'srcFileName' in the prompt to overwrite an existing file.
+    //      Format: "size, date, time".
     //      Velikost ziskame pomoci CSalamanderGeneralAbstract::NumberToStr,
-    //      datum pomoci GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, ...
-    //      a cas pomoci GetTimeFormat(LOCALE_USER_DEFAULT, 0, ...
-    //      Viz implementace metody GetFileInfo v pluginu UnFAT.
-    //      'srcFileInfo' muze byt NULL, pokud je take 'srcFileName' NULL.
+    //      date by calling GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, ...
+    //      and time by calling GetTimeFormat(LOCALE_USER_DEFAULT, 0, ...
+    //      See the implementation of the GetFileInfo method in the UnFAT plugin.
+    //      'srcFileInfo' may be NULL if 'srcFileName' is also NULL.
     //
     //    'silentMask'
-    //      [in/out] Ukazatel na bitove pole slozene ze SILENT_SKIP_xxx a SILENT_OVERWRITE_xxx,
-    //      viz uvod na zacatku tohoto souboru. Pokud je 'silentMask' NULL, bude ignorovano.
-    //      Metoda SafeFileCreate testuje a nastavuje tyto konstanty:
+    //      [in/out] Pointer to a bitmask composed of SILENT_SKIP_xxx and SILENT_OVERWRITE_xxx,
+    //      see the introduction at the beginning of this file. If 'silentMask' is NULL, it is ignored.
+    //      SafeFileCreate checks and sets these constants:
     //        SILENT_SKIP_FILE_NAMEUSED
     //        SILENT_SKIP_DIR_NAMEUSED
     //        SILENT_OVERWRITE_FILE_EXIST
@@ -234,81 +230,81 @@ public:
     //        SILENT_SKIP_DIR_CREATE
     //        SILENT_SKIP_FILE_CREATE
     //
-    //      Pokud je 'srcFileName' ruzne od NULL, tedy jedna se o COPY/MOVE operaci, plati:
-    //        Je-li v konfiguraci Salamandera (stranka Confirmations) vypnuta volba
-    //        "Confirm on file overwrite", chova se metoda jako-by 'silentMask' obsahovalo
+    //      If 'srcFileName' is not NULL, meaning this is a COPY/MOVE operation, the following applies:
+    //        If the "Confirm on file overwrite" option is disabled in Salamander's
+    //        Confirmations configuration page, the method behaves as if 'silentMask' contained
     //        SILENT_OVERWRITE_FILE_EXIST.
-    //        Je-li vypnuto "Confirm on system or hidden file overwrite", chova se metoda
-    //        jako-by 'silentMask' obsahovalo SILENT_OVERWRITE_FILE_SYSHID.
+    //        If "Confirm on system or hidden file overwrite" is disabled, the method behaves
+    //        as if 'silentMask' contained SILENT_OVERWRITE_FILE_SYSHID.
     //
     //    'allowSkip'
-    //      [in] Specifikuje, zda dotazy a chybove hlasky budou obsahovat take tlacitka "Skip"
-    //      a "Skip all"
+    //      [in] Specifies whether prompts and error messages will also contain the "Skip"
+    //      and "Skip all" buttons.
     //
     //    'skipped'
-    //      [out] Vraci TRUE v pripade, ze uzivatel v dotazu nebo chybove hlasce kliknul na
-    //      tlacitko "Skip" nebo "Skip all". Jinak vraci FALSE. Promenna 'skipped' muze byt NULL.
-    //      Promenna ma vyznam pouze v pripade, ze SafeFileCreate vrati INVALID_HANDLE_VALUE.
+    //      [out] Returns TRUE if the user clicked the "Skip" or "Skip all" button in a prompt
+    //      or error message. Otherwise it returns FALSE. The 'skipped' variable may be NULL.
+    //      The variable is meaningful only if SafeFileCreate returns INVALID_HANDLE_VALUE.
     //
     //    'skipPath'
-    //      [out] Ukazatel na buffer, ktery obdrzi cestu, kterou si uzivatel v nekterem z
-    //      dotazu pral preskocit tlacitkem "Skip" nebo "Skip all". Velikost bufferu je
-    //      dana promennou skipPathMax, ktera nebude prekrocena. Cesta bude zakoncena nulou.
-    //      Na zacatku metody SafeFileCreate je do bufferu nastaven prazdny retezec.
+    //      [out] Pointer to a buffer that receives the path the user chose to skip in one of the
+    //      prompts by clicking the "Skip" or "Skip all" button. The buffer size is
+    //      given by the skipPathMax variable and will not be exceeded. The path is null-terminated.
+    //      At the beginning of SafeFileCreate, the buffer is set to an empty string.
     //      'skipPath' muze byt NULL, 'skipPathMax' je potom ignorovano.
     //
     //    'skipPathMax'
-    //      [in] Velikost bufferu 'skipPath' ve znacich. Musi byt nastavena je-li 'skipPath'
+    //      [in] Size of the 'skipPath' buffer in characters. It must be set if 'skipPath'
     //      ruzna od NULL.
     //
     //    'allocateWholeFile'
-    //      [in/out] Ukazatel na CQuadWord udavajici velikost, na kterou by se mel soubor
-    //      predalokovat pomoci funkce SetEndOfFile. Pokud je ukazatel NULL, bude ignorovan
-    //      a SafeFileCreate se o predalokaci nebude pokouset. Pokud je ukazatel ruzny od
-    //      NULL, pokusi se funkce o predalokovani. Pozadovana velikost musi byt vetsi nez
+    //      [in/out] Pointer to a CQuadWord specifying the size to which the file should be
+    //      preallocated using SetEndOfFile. If the pointer is NULL, it is ignored
+    //      and SafeFileCreate does not attempt preallocation. If the pointer is not
+    //      NULL, the function attempts preallocation. The requested size must be greater than
     //      CQuadWord(2, 0) a mensi nez CQuadWord(0, 0x80000000) (8EB).
     //
-    //      Pokud ma SafeFileCreate zaroven provest test (mechanismu predalokace nemusi byt
-    //      vzdy funkcni), musi byt nastaven nejvyssi bit velikosti, tedy k hodnote pricteno
+    //      If SafeFileCreate is also to perform a test (the preallocation mechanism may not always be
+    //      functional), the highest bit of the size must be set, that is, add
     //      CQuadWord(0, 0x80000000).
     //
-    //      Pokud se soubor podari vytvorit (funkce SafeFileCreate vrati handle ruzny od
-    //      INVALID_HANDLE_VALUE), bude promenna 'allocateWholeFile' nastavena na jednu z
-    //      z nasledujicich hodnot:
+    //      If the file is created successfully (SafeFileCreate returns a handle other than
+    //      INVALID_HANDLE_VALUE), the 'allocateWholeFile' variable is set to one of
+    //      the following values:
     //       CQuadWord(0, 0x80000000): soubor se nepodarilo predalokovat a behem pristiho
-    //                                 volani SafeFileCreate pro soubory do stejne destinace
+    //                                 call to SafeFileCreate for files in the same destination
     //                                 by mela byt 'allocateWholeFile' NULL
     //       CQuadWord(0, 0):          soubor se nepodarilo predalokovat, ale neni to nic
-    //                                 fatalniho a pri dalsim volanim SafeFileCreate pro
-    //                                 soubory s touto destinaci muzete zadat jejich predalokovani
-    //       jina:                     predalokovani probehlo korektne
-    //                                 V tomto pripade je nastavena SAFE_FILE::WholeFileAllocated
-    //                                 na TRUE a behem SafeFileClose se zavola SetEndOfFile pro
-    //                                 zkraceni souboru a zamezeni ukladani zbytecnych dat.
+    //                                 fatal, and on the next call to SafeFileCreate for
+    //                                 files with this destination you may request preallocation
+    //       other:                    preallocation completed successfully
+    //                                 In this case SAFE_FILE::WholeFileAllocated is set
+    //                                 to TRUE and SetEndOfFile is called during SafeFileClose to
+    //                                 truncate the file and avoid storing unnecessary data.
     //
     //    'file'
-    //      [out] Ukazatel na strukturu 'SAFE_FILE' ktera obdrzi informace o otevrenem
-    //      souboru. Tato struktura slouzi jako kontext pro ostatni metody z rodiny
-    //      SafeFile. Hodnoty struktury maji vyznam pouze v pripade, ze SafeFileCreate
-    //      vratila hodnotu ruznou od INVALID_HANDLE_VALUE. Pro zavreni souboru je treba
-    //      zavolat metodu SafeFileClose. Pokud je 'file' ruzne od NULL, zaradi
-    //      SafeFileCreate vytvoreny handle do HANDLES Salamandera. Pokud je 'file' NULL,
-    //      handle nebude do HANDLES zarazen. Pokud je 'isDir' TRUE, je promenna 'file'
-    //      ignorovana.
+    //      [out] Pointer to a 'SAFE_FILE' structure that receives information about the opened
+    //      file. This structure serves as context for the other methods in the
+    //      SafeFile family. The structure values are meaningful only if SafeFileCreate
+    //      returned a value other than INVALID_HANDLE_VALUE. To close the file,
+    //      call the SafeFileClose method. If 'file' is not NULL,
+    //      SafeFileCreate places the created handle into Salamander HANDLES. If 'file' is NULL,
+    //      the handle is not placed into HANDLES. If 'isDir' is TRUE, the 'file' variable is
+    //      ignored.
     //
     // Return Values
-    //   Pokud je 'isDir' TRUE, vraci v pripade uspechu hodnotu ruznou od INVALID_HANDLE_VALUE.
-    //   Pozor, nejedna se o platny handle vytvoreneho adresare. V pripade neuspechu vraci
-    //   INVALID_HANDLE_VALUE a nastavuje promenne 'silentMask', 'skipped' a 'skipPath'.
+    //   If 'isDir' is TRUE, returns a value other than INVALID_HANDLE_VALUE on success.
+    //   Note that this is not a valid handle of the created directory. On failure it returns
+    //   INVALID_HANDLE_VALUE and sets the 'silentMask', 'skipped', and 'skipPath' variables.
     //
-    //   Pokud je 'isDir' FALSE, vraci v pripade uspechu handle vytvoreneho souboru a pokud
+    //   If 'isDir' is FALSE, returns the handle of the created file on success and, if
     //   je 'file' ruzne od NULL, plni strukturu SAFE_FILE.
-    //   V pripade neuspechu vraci INVALID_HANDLE_VALUE a nastavuje promenne 'silentMask',
-    //   'skipped' a 'skipPath'.
+    //   On failure it returns INVALID_HANDLE_VALUE and sets the 'silentMask',
+    //   'skipped' and 'skipPath' variables.
     //
     // Remarks
-    //   Metodu lze volat pouze z hlavniho threadu. (muze volat API FlashWindow(MainWindow),
-    //   ktere musi byt zavolano z threadu okna, jinak zpusobi deadlock)
+    //   This method may be called only from the main thread. (It may call API FlashWindow(MainWindow),
+    //   which must be called from the window thread or it will cause a deadlock.)
     //
     virtual HANDLE WINAPI SafeFileCreate(const char* fileName,
                                          DWORD dwDesiredAccess,
@@ -338,108 +334,106 @@ public:
     //   This method can be called from any thread.
     virtual void WINAPI SafeFileClose(SAFE_FILE* file) = 0;
 
+    //SafeFileSeek
+    //   Sets the file pointer in an open file.
     //
-    // SafeFileSeek
-    //   Nastavi ukazovatko v otevrenem souboru.
-    //
-    // Parameters
+    //Parameters
     //   'file'
-    //      [in] Ukazatel na strukturu 'SAFE_FILE', ktera byla inicializovana
-    //      volanim metody SafeFileOpen nebo SafeFileCreate.
+    //      [in] Pointer to a 'SAFE_FILE' structure initialized by a call to
+    //      SafeFileOpen or SafeFileCreate.
     //
-    //   'distance'
-    //      [in/out] Pocet bajtu, o kolik se ma posunou ukazovatko v souboru.
-    //      V pripade uspechu obdrzi hodnotu nove pozice ukazovatka.
+    //  'distance'
+    //      [in/out] Number of bytes by which to move the file pointer.
+    //      On success, it receives the new file pointer position.
     //
-    //      Hodnota CQuadWord::Value se interpretuje jako signed a to pro
-    //      vsechny tri hodnoty 'moveMethod' (pozor na chybu v MSDN u SetFilePointerEx,
-    //      kde tvrdi, ze hodnota je pro FILE_BEGIN unsigned). Pokud tedy chceme
-    //      couvat od akualniho mista (FILE_CURRENT) nebo od konce (FILE_END) souboru,
-    //      nastavime CQuadWord::Value na zaporne cislo. Do promenne CQuadWord::Value
-    //      lze primo priradit napriklad __int64.
+    //     CQuadWord::Value is interpreted as signed for all three 'moveMethod'
+    //      values (note the MSDN bug in SetFilePointerEx, which claims the value
+    //      is unsigned for FILE_BEGIN). Therefore, if you want to move backward
+    //      from the current position (FILE_CURRENT) or from the end of the file
+    //      (FILE_END), set CQuadWord::Value to a negative number. You can assign
+    //      __int64 directly to CQuadWord::Value.
     //
-    //      Vracena hodnota je absolutni pozice od zacatku souboru a jeji hodnoty budou
-    //      od 0 do 2^63. Soubory nad 2^63 zadne ze soucasnych Windows nepodporuji.
+    //     The returned value is the absolute position from the beginning of the file
+    //      and ranges from 0 to 2^63. No current Windows version supports files
+    //      larger than 2^63.
     //
     //   'moveMethod'
-    //      [in] Vychozi pozice pro ukazovatko. Muze byt jedna z hodnot:
-    //           FILE_BEGIN, FILE_CURRENT nebo FILE_END.
+    //      [in] Starting position for the file pointer. It can be one of:
+    //           FILE_BEGIN, FILE_CURRENT or FILE_END.
     //
     //   'error'
-    //      [out] Ukazatel na promennou DWORD, ktera v pripade chyby bude obsahovat
-    //      hodnotu vracenou z GetLastError(). 'error' muze byt NULL.
+    //      [out] Pointer to a DWORD variable that receives the value returned
+    //      by GetLastError() on failure. 'error' may be NULL.
     //
     // Return Values
-    //   V pripade uspechu vraci TRUE a hodnota promenne 'distance' je nastavena
-    //   na novou pozici ukazovatka v souboru.
+    //   On success returns TRUE and sets 'distance' to the new file
+    //   pointer position.
     //
-    //   V pripade chyby vraci FALSE a nastavi hodnotu 'error' na GetLastError,
-    //   je-li 'error' ruzna od NULL. Chybu nezobrazuje, k tomu slouzi SafeFileSeekMsg.
+    //   On failure returns FALSE and sets 'error' to GetLastError(),
+    //   if 'error' is not NULL. It does not display the error; use SafeFileSeekMsg for that.
     //
     // Remarks
-    //   Metoda vola API SetFilePointer, takze pro ni plati omezeni teto funkce.
+    //   This method calls the SetFilePointer API, so its limitations apply.
     //
-    //   Neni chybou nastavit ukazovatko za konec souboru. Velikost souboru se
-    //   nezvetsi dokud nezavolate SetEndOfFile nebo SafeFileWrite. Viz API SetFilePointer.
+    //   Setting the file pointer beyond the end of the file is not an error. The file
+    //   size does not increase until you call SetEndOfFile or SafeFileWrite. See the
+    //  SetFilePointer API.
     //
-    //   Metodu lze pouzit pro ziskani velikosti souboru, pokud nastavime hodnotu
-    //   'distance' na 0 a 'moveMethod' na FILE_END. Vracena hodnota 'distance' bude
-    //   velikost souboru.
+    //   This method can be used to get the file size by setting 'distance'
+    //   to 0 and 'moveMethod' to FILE_END. The returned 'distance' value will be
+    //  the file size.
     //
-    //   Metodu lze volat z libovolneho threadu.
-    //
+    //  This method can be called from any thread.
     virtual BOOL WINAPI SafeFileSeek(SAFE_FILE* file,
                                      CQuadWord* distance,
                                      DWORD moveMethod,
                                      DWORD* error) = 0;
 
-    //
     // SafeFileSeekMsg
-    //   Nastavi ukazovatko v otevrenem souboru. Pokud dojde k chybe, zobrazi ji.
+    //   Sets the file pointer in an open file. Displays an error if one occurs.
     //
     // Parameters
     //   'file'
     //   'distance'
     //   'moveMethod'
-    //      Viz komentar u SafeFileSeek.
+    //      See the SafeFileSeek comment.
     //
     //   'hParent'
-    //      [in] Handle okna, ke kteremu budou modalne zobrazovany chybove hlasky.
-    //      Pokud je rovno HWND_STORED, pouzije se 'hParent' z volani SafeFileOpen/SafeFileCreate.
+    //      [in] Handle of the window to which error messages are shown modally.
+    //      If it is HWND_STORED, the 'hParent' from the SafeFileOpen/SafeFileCreate call is used.
     //
     //   'flags'
-    //      [in] Jedna z hodnot BUTTONS_xxx, urcuje tlacitka zobrazena v chybovem hlaseni.
+    //      [in] One of the BUTTONS_xxx values; determines the buttons shown in the error message.
     //
     //   'pressedButton'
-    //      [out] Ukazatel na promennou, ktera obdrzi stisknute tlacitko behem chybove
-    //      hlasky. Promenna ma vyznam pouze v pripade, ze metoda SafeFileSeekMsg vrati FALSE.
-    //      'pressedButton' muze byt NULL (napriklad pro BUTTONS_OK nema vyznam testovat
-    //      stisknute tlacitko)
+    //      [out] Pointer to a variable that receives the button pressed in the error
+    //      message. The variable is meaningful only if SafeFileSeekMsg returns FALSE.
+    //      'pressedButton' may be NULL (for example, for BUTTONS_OK there is no point in testing
+    //      which button was pressed)
     //
     //   'silentMask'
-    //      [in/out] Ukazatel na promennou obsahujici bitove pole hodnot SILENT_SKIP_xxx.
-    //      Podrobnosti viz komentar u SafeFileOpen.
-    //      SafeFileSeekMsg testuje a nastavuje bit SILENT_SKIP_FILE_READ je-li
-    //      'seekForRead' TRUE nebo SILENT_SKIP_FILE_WRITE, je-li 'seekForRead' FALSE;
+    //      [in/out] Pointer to a variable containing a bitmask of SILENT_SKIP_xxx values.
+    //      See the SafeFileOpen comment for details.
+    //      SafeFileSeekMsg checks and sets the SILENT_SKIP_FILE_READ bit if
+    //      'seekForRead' is TRUE, or SILENT_SKIP_FILE_WRITE if 'seekForRead' is FALSE;
     //
     //   'seekForRead'
-    //      [in] Rika metode, za jakym ucelem jsme provadeli seek v souboru. Metoda pouzije
-    //      tuto promennou pouze v pripade chyby. Urcuje, ktery z bitu se pouzije pro
-    //      'silentMask' a jaky bude titulek chybove hlasky: "Error Reading File" nebo
+    //      [in] Tells the method whether the seek was performed for reading or writing. The method uses
+    //      this variable only on error. It determines which bit is used for
+    //      'silentMask' and what the error message title will be: "Error Reading File" or
     //      "Error Writing File".
     //
     // Return Values
-    //   V pripade uspechu vraci TRUE a hodnota promenne 'distance' je nastavena
-    //   na novou pozici ukazovatka v souboru.
+    //   On success returns TRUE and sets 'distance' to the new file
+    //   pointer position.
     //
-    //   V pripade chyby vraci FALSE a nastavi hodnoty promennych 'pressedButton'
-    //   a silentMask, jsou-li ruzne od NULL.
+    //   On failure returns FALSE and sets 'pressedButton'
+    //   and 'silentMask', if they are not NULL.
     //
     // Remarks
-    //   Viz metoda SafeFileSeek.
+    //   See SafeFileSeek.
     //
-    //   Metodu lze volat z libovolneho threadu.
-    //
+    //   This method can be called from any thread.
     virtual BOOL WINAPI SafeFileSeekMsg(SAFE_FILE* file,
                                         CQuadWord* distance,
                                         DWORD moveMethod,
