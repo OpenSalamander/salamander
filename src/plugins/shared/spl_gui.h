@@ -128,36 +128,36 @@ public:
 
     // Usage examples:
     //
-    // 1. We want to move the rectangle manually; it does not move on its own
+    // 1. We want to move the indicator manually; it does not move on its own
     //
     //   SetSelfMoveTime(0)           // disable automatic movement
     //   SetProgress(-1, NULL)        // move it by one step
     //   ...
     //   SetProgress(-1, NULL)        // move it by one step
     //
-    // 2. The rectangle should move on its own until Stop is called
+    // 2. The indicator should move on its own until Stop is called
     //
     //   SetSelfMoveTime(0xFFFFFFFF)  // infinite movement
     //   SetSelfMoveSpeed(50)         // 20 moves per second
-    //   SetProgress(-1, NULL)        // start the rectangle
+    //   SetProgress(-1, NULL)        // start the indicator
     //   ...                          // do some work
-    //   Stop()                       // stop the rectangle
+    //   Stop()                       // stop the indicator
     //
-    // 3. The rectangle should move for a limited time and then stop
-    //   if we "nudge" it during that time, the timeout is refreshed
+    // 3. The indicator should move for a limited time and then stop
+    //   if we "nudge" it during that time, the timeout is reset
     //
     //   SetSelfMoveTime(1000)        // moves on its own for one second, then stops
     //   SetSelfMoveSpeed(50)         // 20 moves per second
-    //   SetProgress(-1, NULL)        // start the rectangle for one second
+    //   SetProgress(-1, NULL)        // start the indicator for one second
     //   ...
-    //   SetProgress(-1, NULL)        // keep the rectangle alive for another second
+    //   SetProgress(-1, NULL)        // restart the indicator for another second
     //
-    // 4. The operation was paused and we want to show it in the progress bar
+    // 4. The operation was paused and we want to show it on the progress bar
     //
     //   SetProgress(0, NULL)         // 0%
     //   SetProgress(100, NULL)       // 10%
     //   SetProgress(200, NULL)       // 20%
-    //   SetProgress(300, "(paused)") // 30% -- instead of "30 %" the text "(paused)" is shown
+    //   SetProgress(300, "(paused)") // 30% -- "(paused)" is shown instead of "30 %"
     //   ... (waiting for resume)
     //   SetProgress(300, NULL)       // 30% -- turn off the paused text and continue
     //   SetProgress(400, NULL)       // 40%
@@ -312,7 +312,7 @@ public:
 #define MNTT_PE 3 // popup end
 #define MNTT_SP 4 // separator
 
-#define MNTS_B 0x01 // skill level beginned
+#define MNTS_B 0x01 // skill level beginner
 #define MNTS_I 0x02 // skill level intermediate
 #define MNTS_A 0x04 // skill level advanced
 
@@ -1264,51 +1264,51 @@ struct TLBI_ITEM_INFO2
 };
 
 /*
-Mask
-  TLBI_MASK_*
-
-Style
-  TLBI_STYLE_*
-
-State
-  TLBI_STATE_*
-
-ID
-  Command identifier associated with the button.
-  This identifier is used in a WM_COMMAND message when the button is chosen.
-
-Text
-  Text string displayed in the toolbar item.
-
-TextLen
-  Length of the toolbar item text, when information is received.
-
-Width
-  Width of the toolbar item text.
-
-ImageIndex
-  Zero-based index of the button image in the image list.
-
-HIcon
-  Handle to the icon to display instead of image list image.
-  Icon will not be destroyet.
-
-CustomData
-  Application-defined value associated with the toolbar item.
-
-Enabler
-  Pointer to the item enabler. Used in the UpdateItemsState.
-  0 -> item is TLBI_STATE_GRAYED; else item is enabled
-
-Index
-  For enumeration items in customize dialog.
-
-Name
-  Name in customize dialog.
-
-NameLen
-  Name len in customize dialog.
-*/
+ * Mask
+ *   TLBI_MASK_*
+ *
+ * Style
+ *   TLBI_STYLE_*
+ *
+ * State
+ *   TLBI_STATE_*
+ *
+ * ID
+ *   Command identifier associated with the button.
+ *   This identifier is used in a WM_COMMAND message when the button is selected.
+ *
+ * Text
+ *   Text string displayed in the toolbar item.
+ *
+ * TextLen
+ *   Length of the toolbar item text when information is retrieved.
+ *
+ * Width
+ *   Width of the toolbar item text.
+ *
+ * ImageIndex
+ *   Zero-based index of the button image in the image list.
+ *
+ * HIcon
+ *   Handle to the icon to display instead of an image-list image.
+ *   The icon is not destroyed.
+ *
+ * CustomData
+ *   Application-defined value associated with the toolbar item.
+ *
+ * Enabler
+ *   Pointer to the item enabler. Used in UpdateItemsState.
+ *   0 -> item is TLBI_STATE_GRAYED; otherwise the item is enabled
+ *
+ * Index
+ *   Used for enumeration items in the Customize dialog.
+ *
+ * Name
+ *   Name in the Customize dialog.
+ *
+ * NameLen
+ *   Length of the name in the Customize dialog.
+ */
 
 struct TOOLBAR_PADDING // The padding values are used to create a blank area
 {
