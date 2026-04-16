@@ -136,8 +136,8 @@ public:
     // registers WinLib universal classes; called automatically (unregistration is also automatic)
     static BOOL RegisterUniversalClass(HINSTANCE dllInstance);
 
-    // registrace vlastni univerzalni tridy; POZOR: pri unloadu pluginu je nutne zrusit registraci tridy,
-    // jinak pri opakovanem loadu pluginu dojde k chybe pri registraci (konflikt se starou tridou)
+    // registers a custom universal class; WARNING: when unloading the plugin, the class must be unregistered,
+    // otherwise reloading the plugin will fail during registration (conflict with the old class)
     static BOOL RegisterUniversalClass(UINT style,
                                        int cbClsExtra,
                                        int cbWndExtra,
@@ -300,9 +300,9 @@ public:
     CDialog::SetObjectOrigin; // make permitted base-class methods accessible
     CDialog::Transfer;
 
-    // testovano s resourcem dialogu stranky se stylem:
+    // tested with a page dialog resource using the style:
     // DS_CONTROL | DS_3DLOOK | WS_CHILD | WS_CAPTION;
-    // pokud chceme pouzit primo titulek z resourcu, staci dat 'title'==NULL a
+    // to use the title directly from the resource, just set 'title'==NULL and
     // 'flags'==0
     CPropSheetPage(char* title, HINSTANCE modul, int resID,
                    DWORD flags /* = PSP_USETITLE*/, HICON icon,
@@ -378,7 +378,7 @@ protected:
     DWORD Flags;
     PFNPROPSHEETCALLBACK Callback;
 
-    DWORD* LastPage; // posledni zvolena stranka (muze byt NULL, pokud nezajima)
+    DWORD* LastPage; // last selected page (may be NULL if not needed)
 
     friend class CPropSheetPage;
 };
@@ -446,10 +446,10 @@ public:
     // sends a message to all windows (using PostMessage; the windows may be in different threads)
     void BroadcastMessage(DWORD uMsg, WPARAM wParam, LPARAM lParam);
 
-    // broadcastne WM_CLOSE, pak ceka na prazdnou frontu (max. cas dle 'force' bud 'forceWaitTime'
-    // nebo 'waitTime'); vraci TRUE pokud je fronta prazdna (vsechna okna se zavrela)
-    // nebo je 'force' TRUE; cas INFINITE = neomezene dlouhe cekani
-    // Poznamka: pri 'force' TRUE vraci vzdy TRUE, nema smysl na nic cekat, proto forceWaitTime = 0
+    // broadcasts WM_CLOSE, then waits for the queue to become empty (the maximum wait time is 'forceWaitTime'
+    // or 'waitTime' depending on 'force'); returns TRUE if the queue is empty (all windows were closed)
+    // or if 'force' is TRUE; INFINITE means an unlimited wait
+    // Note: when 'force' is TRUE, it always returns TRUE; there is no point in waiting, so forceWaitTime = 0
     BOOL CloseAllWindows(BOOL force, int waitTime = 1000, int forceWaitTime = 0);
 };
 
