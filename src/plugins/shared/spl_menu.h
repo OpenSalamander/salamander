@@ -63,7 +63,7 @@ public:
 // menu item state flags (for menu extension plugins)
 #define MENU_ITEM_STATE_ENABLED 0x01 // enabled; without this flag the item is disabled
 #define MENU_ITEM_STATE_CHECKED 0x02 // a "check" or "radio" mark is shown before the item
-#define MENU_ITEM_STATE_RADIO 0x04   // bez MENU_ITEM_STATE_CHECKED se ignoruje, \
+#define MENU_ITEM_STATE_RADIO 0x04   // ignored without MENU_ITEM_STATE_CHECKED, \
                                      // "radio" mark; without this flag a "check" mark
 #define MENU_ITEM_STATE_HIDDEN 0x08  // the item should not appear in the menu at all
 
@@ -80,20 +80,20 @@ public:
     // of flags (see MENU_ITEM_STATE_XXX); for 'eventMask' see CSalamanderConnectAbstract::AddMenuItem
     virtual DWORD WINAPI GetMenuItemState(int id, DWORD eventMask) = 0;
 
-    // spousti prikaz menu s identifikacnim cislem 'id', 'eventMask' viz
-    // CSalamanderConnectAbstract::AddMenuItem, 'salamander' je sada pouzitelnych metod
-    // Salamandera pro provadeni operaci (POZOR: muze byt NULL, viz popis metody
+    // executes the menu command with identifier 'id'; for 'eventMask' see
+    // CSalamanderConnectAbstract::AddMenuItem, 'salamander' is the set of available
+    // Salamander methods for performing operations (WARNING: it may be NULL, see the description of the method
     // CSalamanderGeneralAbstract::PostMenuExtCommand), 'parent' je parent messageboxu,
-    // vraci TRUE pokud ma byt v panelu zruseno oznaceni (nebyl pouzit Cancel, mohl byt
-    // pouzit Skip), jinak vraci FALSE (neprovede se odznaceni);
+    // returns TRUE if the selection in the panel should be cleared (Cancel was not used; Skip may have
+    // been used), otherwise returns FALSE (no deselection is performed);
     // POZOR: Pokud prikaz zpusobi zmeny na nejake ceste (diskove/FS), mel by pouzit
     //        CSalamanderGeneralAbstract::PostChangeOnPathNotification pro informovani
-    //        panelu bez automatickeho refreshe a otevrene FS (aktivni i odpojene)
-    // POZNAMKA: pokud prikaz pracuje se soubory/adresari z cesty v aktualnim panelu nebo
-    //           i primo s touto cestou, je treba volat
+    //        the panel without an automatic refresh and any open FSs (active and disconnected)
+    // NOTE: if the command works with files/directories from the path in the current panel or
+    //           even directly with this path, it is necessary to call
     //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath pro aktualni panel,
-    //           jinak nebude cesta v tomto panelu vlozena do seznamu pracovnich
-    //           adresaru - List of Working Directories (Alt+F12)
+    //           otherwise the path in this panel will not be added to the list of working
+    //           directories - List of Working Directories (Alt+F12)
     virtual BOOL WINAPI ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
                                         int id, DWORD eventMask) = 0;
 
