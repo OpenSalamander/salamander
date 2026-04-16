@@ -23,11 +23,9 @@
 #include "str.h"
 #include "moore.h"
 
-//
 // ****************************************************************************
 // Initialize
-// vypocet poli Fail1 a Fail2
-//
+// Calculation of the Fail1 and Fail2 arrays
 
 BOOL CSearchData::Initialize()
 {
