@@ -122,8 +122,8 @@ public:
 protected:
     CObjectOrigin ObjectOrigin;
 #ifndef _UNICODE
-    // okna: create: TRUE = okno je unicodove, jinak je ANSI; attach: TRUE = nase window procedura
-    // je unicodova, jinak je ANSI; dialogy: TRUE = dialog je unicodovy, jinak je ANSI
+    // windows: create: TRUE = the window is Unicode, otherwise ANSI; attach: TRUE = our window procedure
+    // is Unicode, otherwise ANSI; dialogs: TRUE = the dialog is Unicode, otherwise ANSI
     BOOL UnicodeWnd;
 #endif // _UNICODE
 };
