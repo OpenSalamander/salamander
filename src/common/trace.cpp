@@ -596,7 +596,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                                                         *(DWORD*)&mapAddress[4] /* ClientOrServerProcessId (here it is the server PID) */);
                                                     // get the pipe and semaphore handles
                                                     if (hServerProcess != NULL &&
-                                                        DuplicateHandle(hServerProcess, (HANDLE)(DWORD_PTR)(*(DWORD*)&mapAddress[8]) /* HReadOrWritePipe (here it is HWritePipe) */, // server
+                                                        DuplicateHandle(hServerProcess, (HANDLE)(DWORD_PTR)(*(DWORD*)&mapAddress[8]) /* HReadOrWritePipe (here it is HWritePipe) */, // client
                                                                         GetCurrentProcess(), &hWritePipeFromSrv,                                                                     // client
                                                                         GENERIC_WRITE, FALSE, 0) &&
                                                         DuplicateHandle(hServerProcess, (HANDLE)(DWORD_PTR)(*(DWORD*)&mapAddress[12]) /* HPipeSemaphore */, // server
@@ -604,11 +604,11 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                                         0, FALSE, DUPLICATE_SAME_ACCESS))
                                                     {
                                                         *((int*)mapAddress) = 3;                         // write result -> 3 = success, we have the handles
-                                                        *(DWORD*)&mapAddress[4] = GetCurrentProcessId(); // ClientOrServerProcessId (tady jde o PID klienta)
+                                                        *(DWORD*)&mapAddress[4] = GetCurrentProcessId(); // ClientOrServerProcessId (client PID here)
                                                     }
                                                     else
                                                     {
-                                                        *((BOOL*)mapAddress) = FALSE; // write result -> failed
+                                                        *((BOOL*)mapAddress) = FALSE; // write result -> failure
                                                     }
                                                     if (hServerProcess != NULL)
                                                         CloseHandle(hServerProcess);
@@ -627,7 +627,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                         CloseHandle(HWritePipe);
                                                         HWritePipe = hWritePipeFromSrv; // use the pipe from the server (close the client one)
 
-                                                        if (expectedServerVer == TRACE_CLIENT_VERSION) // hura, povedlo se pripojit na novy Trace Server!
+                                                        if (expectedServerVer == TRACE_CLIENT_VERSION) // successfully connected to the new Trace Server!
                                                         {
 #ifdef TRACE_IGNORE_AUTOCLEAR
                                                             ret = SendIgnoreAutoClear(TRUE); // ignore; disconnect on error
