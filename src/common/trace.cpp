@@ -242,7 +242,7 @@ BOOL C__TraceThreadCache::Add(HANDLE handle, DWORD tid)
 DWORD
 C__TraceThreadCache::GetUniqueThreadId(DWORD tid)
 {
-    if (CacheUID[__TraceCacheGetIndex(tid)] != -1 && // je-li platny zaznam
+    if (CacheUID[__TraceCacheGetIndex(tid)] != -1 && // valid entry
         CacheTID[__TraceCacheGetIndex(tid)] == tid)  // and the TID matches
     {
         return CacheUID[__TraceCacheGetIndex(tid)]; // UID is in the cache
