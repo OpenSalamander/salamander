@@ -71,7 +71,7 @@ struct SAFE_FILE
     DWORD dwDesiredAccess;       // > backup of the CreateFile API parameters
     DWORD dwShareMode;           // > for possible retries
     DWORD dwCreationDisposition; // > in case of read or write errors
-    DWORD dwFlagsAndAttributes;  // >
+    DWORD dwFlagsAndAttributes;  // saved CreateFile flags and attributes for retrying the call if a read or write error occurs
     BOOL WholeFileAllocated;     // TRUE if SafeFileCreate preallocated the whole file
 };
 
