@@ -6,10 +6,10 @@
 
 // ****************************************************************************
 // TDirectArray2:
-//  -pole, ktere dynamicky roste/zmensuje se po blocich (neni nutne realokovat
-//   jiz obsazenou pamnet, pouze se prida dalsi blok)
-//  -pri mazani prvku z pole se vola metoda Destructor(index_prvku),
-//   ktera v zakladnim objektu nic neprovadi
+//  -array that grows/shrinks dynamically in blocks (occupied memory does not need
+//   to be reallocated; only another block is added)
+//  -when an element is deleted from the array, Destructor(element_index) is called,
+//   which does nothing in the base class
 
 template <class DATA_TYPE>
 class TDirectArray2
@@ -116,7 +116,7 @@ void TDirectArray2<DATA_TYPE>::Destroy()
         for (int i = 0; i < Count; i++)
             Destructor(i);
 
-        //if Count == BlockSize, it caused problems,
+        //Count == BlockSize caused problems,
         //so Count - 1 is used here
         for (DATA_TYPE** block = Blocks; block <= Blocks + (Count - 1) / BlockSize; block++)
         {
