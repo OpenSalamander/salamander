@@ -1169,7 +1169,7 @@ char** regstartp; /* Pointer to startp array. */
 char** regendp;   /* Ditto for endp. */
 
 /*
- * Forwards.
+ * Forward declarations.
  */
 int regtry(regexp* prog, char* string);
 int regmatch(char* prog);
