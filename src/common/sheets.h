@@ -35,7 +35,7 @@ protected:
     // divider line from which controls start moving (lies on the bottom edge of ResizeCtrls)
     // client coordinates, in pixels
     int SplitY;
-    // prvky ktere s velikosti natahujeme (typicky listview)
+    // controls that resize with the dialog (typically list views)
     TDirectArray<CElasticLayoutCtrl> ResizeCtrls;
     // temporary array populated by FindMoveCtrls; ideally this would be a local variable, but
     // for easier calls to the FindMoveControls callback (which needs it passed in)
