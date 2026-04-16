@@ -417,8 +417,8 @@ Type
                           WM_DRAWITEM messages. TypeData contains a 32-bit
                           application-defined value.
 
-   MENU_TYPE_RADIOCHECK   Checked items are shown with a dot instead of a check mark,
-                          je-li HBmpChecked rovno NULL.
+   MENU_TYPE_RADIOCHECK   Checked items are shown with a dot instead of a check mark
+                          if HBmpChecked is NULL.
 
    MENU_TYPE_SEPARATOR    Horizontal separator line. TypeData is unused.
 
@@ -451,7 +451,7 @@ ID
 
 SubMenu
   Pointer to the popup menu attached to this item. If this item
-  neotevira submenu, je SubMenu rovno NULL.
+  does not open a submenu, SubMenu is NULL.
 
 HBmpChecked
   Handle of the bitmap shown before the item when the item is
@@ -467,7 +467,7 @@ HBmpUnchecked
   this bitmap is not used.
 
 ImageIndex
-  Index bitmapy v ImageListu CMenuPopup::HImageList. Bitmapa je vykreslena
+  Bitmap index in the CMenuPopup::HImageList image list. The bitmap is drawn
   before the item, depending on MENU_STATE_CHECKED and MENU_STATE_GRAYED.
   If the member is -1, nothing is drawn.
 
@@ -483,7 +483,7 @@ class CGUIMenuPopupAbstract
 public:
     //
     // LoadFromTemplate
-    //   Builds menu contents based on 'menuTemplate',
+    //   Builds the menu contents from 'menuTemplate'.
     //
     // Parameters
     //   'hInstance'
@@ -493,28 +493,27 @@ public:
     //      [in] Pointer to a menu template.
     //
     //      A menu template consists of two or more MENU_TEMPLATE_ITEM structures.
-    //      'MENU_TEMPLATE_ITEM::RowType' of first structure must be MNTT_PB (popup begin).
-    //      'MENU_TEMPLATE_ITEM::RowType' of last structure must be MNTT_PE (popup end).
+    //      The 'MENU_TEMPLATE_ITEM::RowType' of the first structure must be MNTT_PB (popup begin).
+    //      The 'MENU_TEMPLATE_ITEM::RowType' of the last structure must be MNTT_PE (popup end).
     //
     //   'enablersOffset'
-    //      [in] Pointer to array of enablers.
+    //      [in] Pointer to an array of enablers.
     //
-    //      If this parameter is NULL, 'MENU_ITEM_INFO::Enabler' value is pointer to enabler
-    //      variable. Otherwise 'MENU_ITEM_INFO::Enabler' is index to the enablers array.
-    //      Zero index is reserved for "always enabled" item.
+    //      If this parameter is NULL, 'MENU_ITEM_INFO::Enabler' is a pointer to an enabler
+    //      variable. Otherwise, 'MENU_ITEM_INFO::Enabler' is an index into the enablers array.
+    //      Index zero is reserved for the "always enabled" item.
     //
     //   'hImageList'
-    //      [in] Handle of image list that the menu will use to display menu items images
-    //      that are in their default state.
+    //      [in] Handle to the image list that the menu will use to display menu item images
+    //      in their default state.
     //
     //      If this parameter is NULL, no images will be displayed in the menu items.
     //
     //   'hHotImageList'
-    //      [in] Handle of image list that the menu will use to display menu items images
-    //      that are in their selected or checked state.
+    //      [in] Handle to the image list that the menu will use to display menu item images
+    //      in their selected or checked state.
     //
     //      If this parameter is NULL, normal images will be displayed instead of hot images.
-    //
     //
     // Return Values
     //   Returns TRUE if successful, or FALSE otherwise.
