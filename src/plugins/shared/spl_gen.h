@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -22,13 +23,12 @@
 struct CFileData;
 class CPluginDataInterfaceAbstract;
 
-//
 // ****************************************************************************
 // CSalamanderGeneralAbstract
 //
-// obecne pouzitelne metody Salamandera (pro vsechny typy pluginu)
+// General-purpose Salamander methods (for all plugin types)
 
-// typy message-boxu
+// Message box types
 #define MSGBOX_INFO 0
 #define MSGBOX_ERROR 1
 #define MSGBOX_EX_ERROR 2
@@ -37,7 +37,7 @@ class CPluginDataInterfaceAbstract;
 #define MSGBOX_WARNING 5
 #define MSGBOX_EX_WARNING 6
 
-// konstanty pro CSalamanderGeneralAbstract::SalMessageBoxEx
+// Constants for CSalamanderGeneralAbstract::SalMessageBoxEx
 #define MSGBOXEX_OK 0x00000000                // MB_OK
 #define MSGBOXEX_OKCANCEL 0x00000001          // MB_OKCANCEL
 #define MSGBOXEX_ABORTRETRYIGNORE 0x00000002  // MB_ABORTRETRYIGNORE
@@ -63,12 +63,12 @@ class CPluginDataInterfaceAbstract;
 #define MSGBOXEX_SETFOREGROUND 0x00010000 // MB_SETFOREGROUND (bit mask)
 
 // altap specific
-#define MSGBOXEX_SILENT 0x10000000 // messagebox nevyda pri otevreni zadny zvuk (bit mask)
-// v pripade MB_YESNO messageboxu povoli Escape (generuje IDNO); v MB_ABORTRETRYIGNORE messageboxu
-// povoli Escape (generuje IDCANCEL) (bit mask)
+#define MSGBOXEX_SILENT 0x10000000 // The message box does not play any sound when opened (bit mask)
+// For an MB_YESNO message box, Escape is allowed (generates IDNO); for an MB_ABORTRETRYIGNORE message box,
+// Escape is allowed (generates IDCANCEL) (bit mask)
 #define MSGBOXEX_ESCAPEENABLED 0x20000000
-#define MSGBOXEX_HINT 0x40000000 // pokud se pouziva CheckBoxText, bude v nem vyhledan oddelovac \t a zobrazen jako hint
-// Vista: defaultni tlacitko bude mit stav "pozaduje elevaci" (zobrazi se elevated icon)
+#define MSGBOXEX_HINT 0x40000000 // If CheckBoxText is used, a \t separator is searched for in it and displayed as a hint
+// Vista: the default button will require elevation (an elevated icon is displayed)
 #define MSGBOXEX_SHIELDONDEFBTN 0x80000000
 
 #define MSGBOXEX_TYPEMASK 0x0000000F // MB_TYPEMASK
@@ -78,9 +78,9 @@ class CPluginDataInterfaceAbstract;
 #define MSGBOXEX_MISCMASK 0x0000C000 // MB_MISCMASK
 #define MSGBOXEX_EXMASK 0xF0000000
 
-// navratove hodnoty message boxu
-#define DIALOG_FAIL 0x00000000 // dialog se nepodarilo otevrit
-// jednotliva tlacitka
+// Message box return values
+#define DIALOG_FAIL 0x00000000 // The dialog could not be opened
+// Individual buttons
 #define DIALOG_OK 0x00000001       // IDOK
 #define DIALOG_CANCEL 0x00000002   // IDCANCEL
 #define DIALOG_ABORT 0x00000003    // IDABORT
@@ -242,19 +242,19 @@ URLText
 
 */
 
-// identifikace panelu
-#define PANEL_SOURCE 1 // zdrojovy panel (aktivni panel)
-#define PANEL_TARGET 2 // cilovy panel (neaktivni panel)
-#define PANEL_LEFT 3   // levy panel
-#define PANEL_RIGHT 4  // pravy panel
+// Panel identifiers
+#define PANEL_SOURCE 1 // Source panel (active panel)
+#define PANEL_TARGET 2 // Target panel (inactive panel)
+#define PANEL_LEFT 3   // Left panel
+#define PANEL_RIGHT 4  // Right panel
 
-// typy cest
-#define PATH_TYPE_WINDOWS 1 // windowsova cesta ("c:\path" nebo UNC cesta)
-#define PATH_TYPE_ARCHIVE 2 // cesta do archivu (archiv lezi na windowsove ceste)
-#define PATH_TYPE_FS 3      // cesta na pluginovy file-system
+// Path types
+#define PATH_TYPE_WINDOWS 1 // Windows path ("c:\path" or UNC path)
+#define PATH_TYPE_ARCHIVE 2 // Path inside an archive (the archive lies on a Windows path)
+#define PATH_TYPE_FS 3      // Path on a plugin file system
 
-// Z nasledujici skupiny flagu lze vybrat pouze jeden.
-// Definuji sadu zobrazenych tlacitek v ruznych chybovych hlasenich.
+// Only one flag from the following group can be selected.
+// They define the set of buttons displayed in various error messages.
 #define BUTTONS_OK 0x00000000               // OK
 #define BUTTONS_RETRYCANCEL 0x00000001      // Retry / Cancel
 #define BUTTONS_SKIPCANCEL 0x00000002       // Skip / Skip all / Cancel
@@ -262,7 +262,7 @@ URLText
 #define BUTTONS_YESALLSKIPCANCEL 0x00000004 // Yes / All / Skip / Skip all / Cancel
 #define BUTTONS_YESNOCANCEL 0x00000005      // Yes / No / Cancel
 #define BUTTONS_YESALLCANCEL 0x00000006     // Yes / All / Cancel
-#define BUTTONS_MASK 0x000000FF             // interni maska, nepouzivat
+#define BUTTONS_MASK 0x000000FF             // Internal mask, do not use
 // detekci zda kombinace ma tlacitko SKIP nebo YES nechavam zde ve forme inline, aby
 // v pripade zavadeni novych kombinaci byla dobre na ocich a nezapomeli jsme ji doplnit
 inline BOOL ButtonsContainsSkip(DWORD btn)
@@ -278,125 +278,125 @@ inline BOOL ButtonsContainsYes(DWORD btn)
            (btn & BUTTONS_MASK) == BUTTONS_YESALLCANCEL;
 }
 
-// chybove konstanty pro CSalamanderGeneralAbstract::SalGetFullName
-#define GFN_SERVERNAMEMISSING 1   // v UNC ceste chybi server name
-#define GFN_SHARENAMEMISSING 2    // v UNC ceste chybi share name
-#define GFN_TOOLONGPATH 3         // operaci by vznikla prilis dlouha cesta
-#define GFN_INVALIDDRIVE 4        // u normalni cesty (c:\) neni pismenko A-Z (ani a-z)
-#define GFN_INCOMLETEFILENAME 5   // relativni cesta bez zadaneho 'curDir' -> neresitelne
-#define GFN_EMPTYNAMENOTALLOWED 6 // prazdny retezec 'name'
-#define GFN_PATHISINVALID 7       // nelze vyloucit "..", napr. "c:\.."
+// Error constants for CSalamanderGeneralAbstract::SalGetFullName
+#define GFN_SERVERNAMEMISSING 1   // UNC path is missing the server name
+#define GFN_SHARENAMEMISSING 2    // UNC path is missing the share name
+#define GFN_TOOLONGPATH 3         // The operation would produce a path that is too long
+#define GFN_INVALIDDRIVE 4        // In a normal path (c:\), the drive letter is not A-Z (or a-z)
+#define GFN_INCOMLETEFILENAME 5   // Relative path without a specified 'curDir' -> cannot be resolved
+#define GFN_EMPTYNAMENOTALLOWED 6 // Empty 'name' string
+#define GFN_PATHISINVALID 7       // Cannot rule out "..", e.g. "c:\.."
 
-// chybovy kod pro stav, kdy uzivatel prerusi CSalamanderGeneralAbstract::SalCheckPath klavesou ESC
+// Error code for the case when the user aborts CSalamanderGeneralAbstract::SalCheckPath with the ESC key
 #define ERROR_USER_TERMINATED -100
 
-#define PATH_MAX_PATH 248 // limit pro max. delku cesty (plne jmeno adresare), pozor: v limitu uz je zapocteny null-terminator (max. delka retezce je 247 znaku)
+#define PATH_MAX_PATH 248 // Limit for the maximum path length (full directory name); note: the limit already includes the null terminator (the maximum string length is 247 characters)
 
-// chybove konstanty pro CSalamanderGeneralAbstract::SalParsePath:
-// vstupem byla prazdna cesta a 'curPath' bylo NULL (prazdna cesta se nahrazuje aktualni cestou,
-// ale ta tu neni znama)
+// Error constants for CSalamanderGeneralAbstract::SalParsePath:
+// The input path was empty and 'curPath' was NULL (an empty path is replaced with the current path,
+// but it is not known here)
 #define SPP_EMPTYPATHNOTALLOWED 1
-// windowsova cesta (normal + UNC) neexistuje, neni pristupna nebo uzivatel prerusil test
-// na pristupnost cesty (soucasti je i pokus o obnoveni sit. spojeni)
+// The Windows path (normal + UNC) does not exist, is not accessible, or the user aborted the path
+// accessibility test (this also includes an attempt to restore the network connection)
 #define SPP_WINDOWSPATHERROR 2
-// windowsova cesta zacina jmenem souboru, ktery ale neni archiv (jinak by slo o cestu do archivu)
+// Windows path starts with a file name that is not an archive (otherwise it would be a path inside an archive)
 #define SPP_NOTARCHIVEFILE 3
-// FS cesta - jmeno pluginoveho FS (fs-name - pred ':' v ceste) neni zname (zadnemu pluginu
-// nebylo toto jmeno zaregistrovano)
+// FS path - the plugin FS name (fs-name - before ':' in the path) is unknown (no plugin
+// has registered this name)
 #define SPP_NOTPLUGINFS 4
-// jde o relativni cestu, ale aktualni cesta neni znama nebo jde o FS (tam nelze poznat root
-// a vubec nezname strukturu fs-user-part cesty, takze nelze provest prevod na absolutni cestu)
-// je-li aktualni cesta FS ('curPathIsDiskOrArchive' je FALSE), nedojde v tomto pripade ke hlaseni
-// chyby uzivateli (predpoklada se dalsi zpracovani na strane FS, ktere metodu SalParsePath volalo)
+// The path is relative, but the current path is unknown, or it is an FS path (there the root cannot be determined
+// and the structure of the fs-user-part path is unknown, so it cannot be converted to an absolute path)
+// If the current path is an FS path ('curPathIsDiskOrArchive' is FALSE), no error is reported
+// to the user in this case (further processing is expected on the FS side that called SalParsePath)
 #define SPP_INCOMLETEPATH 5
 
-// konstanty vnitrnich barev Salamandera
-#define SALCOL_FOCUS_ACTIVE_NORMAL 0 // barvy pera pro ramecek kolem polozky
+// Internal Salamander color constants
+#define SALCOL_FOCUS_ACTIVE_NORMAL 0 // Pen colors for the border around the item
 #define SALCOL_FOCUS_ACTIVE_SELECTED 1
 #define SALCOL_FOCUS_FG_INACTIVE_NORMAL 2
 #define SALCOL_FOCUS_FG_INACTIVE_SELECTED 3
 #define SALCOL_FOCUS_BK_INACTIVE_NORMAL 4
 #define SALCOL_FOCUS_BK_INACTIVE_SELECTED 5
-#define SALCOL_ITEM_FG_NORMAL 6 // barvy textu polozek v panelu
+#define SALCOL_ITEM_FG_NORMAL 6 // Text colors of items in the panel
 #define SALCOL_ITEM_FG_SELECTED 7
 #define SALCOL_ITEM_FG_FOCUSED 8
 #define SALCOL_ITEM_FG_FOCSEL 9
 #define SALCOL_ITEM_FG_HIGHLIGHT 10
-#define SALCOL_ITEM_BK_NORMAL 11 // barvy pozadi polozek v panelu
+#define SALCOL_ITEM_BK_NORMAL 11 // Background colors of items in the panel
 #define SALCOL_ITEM_BK_SELECTED 12
 #define SALCOL_ITEM_BK_FOCUSED 13
 #define SALCOL_ITEM_BK_FOCSEL 14
 #define SALCOL_ITEM_BK_HIGHLIGHT 15
-#define SALCOL_ICON_BLEND_SELECTED 16 // barvy pro blend ikonek
+#define SALCOL_ICON_BLEND_SELECTED 16 // Icon blend colors
 #define SALCOL_ICON_BLEND_FOCUSED 17
 #define SALCOL_ICON_BLEND_FOCSEL 18
-#define SALCOL_PROGRESS_FG_NORMAL 19 // barvy progress bary
+#define SALCOL_PROGRESS_FG_NORMAL 19 // Progress bar colors
 #define SALCOL_PROGRESS_FG_SELECTED 20
 #define SALCOL_PROGRESS_BK_NORMAL 21
 #define SALCOL_PROGRESS_BK_SELECTED 22
-#define SALCOL_HOT_PANEL 23           // barva hot polozky v panelu
-#define SALCOL_HOT_ACTIVE 24          //                   v aktivnim window caption
-#define SALCOL_HOT_INACTIVE 25        //                   v neaktivni caption, statusbar,...
-#define SALCOL_ACTIVE_CAPTION_FG 26   // barva textu v aktivnim titulku panelu
-#define SALCOL_ACTIVE_CAPTION_BK 27   // barva pozadi v aktivnim titulku panelu
-#define SALCOL_INACTIVE_CAPTION_FG 28 // barva textu v neaktivnim titulku panelu
-#define SALCOL_INACTIVE_CAPTION_BK 29 // barva pozadi v neaktivnim titulku panelu
-#define SALCOL_VIEWER_FG_NORMAL 30    // barva textu v internim text/hex vieweru
-#define SALCOL_VIEWER_BK_NORMAL 31    // barva pozadi v internim text/hex vieweru
-#define SALCOL_VIEWER_FG_SELECTED 32  // barva oznaceneho textu v internim text/hex vieweru
-#define SALCOL_VIEWER_BK_SELECTED 33  // barva oznaceneho pozadi v internim text/hex vieweru
-#define SALCOL_THUMBNAIL_NORMAL 34    // barvy pera pro ramecek kolem thumbnail
+#define SALCOL_HOT_PANEL 23           // Hot item color in the panel
+#define SALCOL_HOT_ACTIVE 24          // In the active window caption
+#define SALCOL_HOT_INACTIVE 25        // In the inactive caption, status bar, ...
+#define SALCOL_ACTIVE_CAPTION_FG 26   // Text color in the active panel title
+#define SALCOL_ACTIVE_CAPTION_BK 27   // Background color in the active panel title
+#define SALCOL_INACTIVE_CAPTION_FG 28 // Text color in the inactive panel title
+#define SALCOL_INACTIVE_CAPTION_BK 29 // Background color in the inactive panel title
+#define SALCOL_VIEWER_FG_NORMAL 30    // Text color in the internal text/hex viewer
+#define SALCOL_VIEWER_BK_NORMAL 31    // Background color in the internal text/hex viewer
+#define SALCOL_VIEWER_FG_SELECTED 32  // Selected text color in the internal text/hex viewer
+#define SALCOL_VIEWER_BK_SELECTED 33  // Selected background color in the internal text/hex viewer
+#define SALCOL_THUMBNAIL_NORMAL 34    // Pen colors for the border around the thumbnail
 #define SALCOL_THUMBNAIL_SELECTED 35
 #define SALCOL_THUMBNAIL_FOCUSED 36
 #define SALCOL_THUMBNAIL_FOCSEL 37
 
-// konstanty duvodu, proc metody CSalamanderGeneralAbstract::ChangePanelPathToXXX vratily neuspech:
-#define CHPPFR_SUCCESS 0 // v panelu je nova cesta, uspech (navratova hodnota je TRUE)
-// novou cestu (nebo jmeno archivu) nelze prevest z relativni na absolutni nebo
-// nova cesta (nebo jmeno archivu) neni pristupna nebo
-// cestu na FS nelze otevrit (neni plugin, odmita svuj load, odmita otevreni FS, fatalni chyba ChangePath)
+// Constants for the reasons why CSalamanderGeneralAbstract::ChangePanelPathToXXX methods returned failure:
+#define CHPPFR_SUCCESS 0 // The panel contains the new path; success (return value is TRUE)
+// The new path (or archive name) cannot be converted from relative to absolute, or
+// the new path (or archive name) is not accessible, or
+// the FS path cannot be opened (no plugin, the plugin refuses to load, it refuses to open the FS, or a fatal ChangePath error occurred)
 #define CHPPFR_INVALIDPATH 1
-#define CHPPFR_INVALIDARCHIVE 2  // soubor neni archiv nebo se jako archiv neda vylistovat
-#define CHPPFR_CANNOTCLOSEPATH 4 // aktualni cestu nelze uzavrit
-// v panelu je zkracena nova cesta,
-// upresneni pro FS: v panelu je bud zkracena nova cesta nebo puvodni cesta nebo zkracena
-// puvodni cesta - puvodni cesta se do panelu zkousi vratit jen pokud se nova cesta otevirala
-// v aktualnim FS (metoda IsOurPath pro ni vratila TRUE) a pokud nova cesta neni pristupna
-// (ani zadna jeji podcesta)
+#define CHPPFR_INVALIDARCHIVE 2  // The file is not an archive or cannot be listed as an archive
+#define CHPPFR_CANNOTCLOSEPATH 4 // The current path cannot be closed
+// The panel contains a shortened new path,
+// for FS specifically: the panel contains either the shortened new path, the original path, or the shortened
+// original path - the original path is restored in the panel only if the new path was opened
+// in the current FS (the IsOurPath method returned TRUE for it) and the new path is not accessible
+// (and neither is any of its subpaths)
 #define CHPPFR_SHORTERPATH 5
-// v panelu je zkracena nova cesta; duvodem zkraceni bylo to, ze pozadovana cesta byla jmeno
-// souboru - v panelu je cesta k souboru a soubor bude vyfokusen
+// The panel contains a shortened new path; it was shortened because the requested path was a file
+// name - the panel contains the path to the file and the file will be focused
 #define CHPPFR_FILENAMEFOCUSED 6
 
-// typy pro CSalamanderGeneralAbstract::ValidateVarString() a CSalamanderGeneralAbstract::ExpandVarString()
+// Types for CSalamanderGeneralAbstract::ValidateVarString() and CSalamanderGeneralAbstract::ExpandVarString()
 typedef const char*(WINAPI* FSalamanderVarStrGetValue)(HWND msgParent, void* param);
 struct CSalamanderVarStrEntry
 {
-    const char* Name;                  // jmeno promenne v retezci (napr. u retezce "$(name)" je to "name")
-    FSalamanderVarStrGetValue Execute; // funkce, ktera vraci text reprezentujici promennou
+    const char* Name;                  // Name of the variable in the string (e.g. in the string "$(name)" it is "name")
+    FSalamanderVarStrGetValue Execute; // Function that returns the text representing the variable
 };
 
 class CSalamanderRegistryAbstract;
 
-// typ call-backu pouzivany pri load/save konfigurace pomoci
+// callback type used for configuration load/save via
 // CSalamanderGeneral::CallLoadOrSaveConfiguration; 'regKey' je NULL pokud jde o load
 // defaultni konfigurace (save se pri 'regKey' == NULL nevola); 'registry' je objekt pro
-// praci s registry; 'param' je uzivatelsky parametr funkce (viz
+// working with the registry; 'param' is the user-defined function parameter (see
 // CSalamanderGeneral::CallLoadOrSaveConfiguration)
 typedef void(WINAPI* FSalLoadOrSaveConfiguration)(BOOL load, HKEY regKey,
                                                   CSalamanderRegistryAbstract* registry, void* param);
 
 // zaklad struktury pro CSalamanderGeneralAbstract::ViewFileInPluginViewer (kazdy plugin
-// viewer muze mit tuto strukturu rozsirenou o sve parametry - struktura se predava do
+// viewer can extend this structure with its own parameters - the structure is passed to
 // CPluginInterfaceForViewerAbstract::ViewFile - parametry muzou byt napr. titulek okna,
-// mod vieweru, offset od zacatku souboru, pozice oznaceni, atp.); POZOR !!! na pakovani
+// viewer mode, offset from the start of the file, selection position, etc.); WARNING: structure packing
 // struktur (pozadovane je 4 byty - viz "#pragma pack(4)")
 struct CSalamanderPluginViewerData
 {
-    // kolik bytu od zacatku struktury je platnych (pro rozliseni verzi struktury)
+    // Number of bytes from the start of the structure that are valid (to distinguish structure versions)
     int Size;
-    // jmeno souboru, ktery se ma otevrit ve viewru (nepouzivat v metode
-    // CPluginInterfaceForViewerAbstract::ViewFile - jmeno souboru je dano parametrem 'name')
+    // Name of the file to open in the viewer (do not use in the method
+    // CPluginInterfaceForViewerAbstract::ViewFile - the file name is given by the 'name' parameter)
     const char* FileName;
 };
 
@@ -404,13 +404,13 @@ struct CSalamanderPluginViewerData
 struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 {
     int Mode;            // 0 - textovy mod, 1 - hexa mod
-    const char* Caption; // NULL -> obsahuje caption okna FileName, jinak Caption
-    BOOL WholeCaption;   // ma vyznam pokud je Caption != NULL. TRUE -> v titulku
-                         // vieweru bude zobrazen pouze retezec Caption; FALSE -> za
-                         // Caption se pripoji standardni " - Viewer".
+    const char* Caption; // NULL -> the window caption contains FileName, otherwise Caption
+    BOOL WholeCaption;   // Meaningful only if Caption != NULL. TRUE ->
+                         // only the Caption string is shown in the viewer title; FALSE ->
+                         // Caption is followed by the standard " - Viewer".
 };
 
-// konstanty typu parametru konfigurace Salamandera (viz CSalamanderGeneralAbstract::GetConfigParameter)
+// Salamander configuration parameter type constants (see CSalamanderGeneralAbstract::GetConfigParameter)
 #define SALCFGTYPE_NOTFOUND 0 // parameter not found
 #define SALCFGTYPE_BOOL 1     // TRUE/FALSE
 #define SALCFGTYPE_INT 2      // 32-bit integer
