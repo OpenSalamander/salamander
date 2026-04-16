@@ -188,9 +188,9 @@ private: // prevents use of the following methods
     TDirectArray<DATA_TYPE>(const TDirectArray<DATA_TYPE>&) {}
     TDirectArray<DATA_TYPE>& operator=(TDirectArray<DATA_TYPE>&) { return *this; }
 
-    // compiler reports error on this line: we have just wanted to catch source code designed for
-    // older version of TDirectArray template: use CallDestructor instead of Destructor and please
-    // notice that in new version of TDirectArray copy-constructors and destructors are called
+    // The compiler reports an error on this line on purpose: we only want to catch source code written for
+    // an older version of the TDirectArray template. Use CallDestructor instead of Destructor, and note
+    // that in the new version of TDirectArray copy constructors and destructors are called.
     virtual int Destructor(int) { return 0; }
 };
 
