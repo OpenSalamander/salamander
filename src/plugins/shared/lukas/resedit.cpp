@@ -697,7 +697,7 @@ void SortDirEntries(int left, int right, TIndirectArray2<CDirEntry>& entries)
             i++;
             j--;
         }
-    } while (i <= j); //musej bejt shodny?
+    } while (i <= j); // must they be the same?
     if (left < j)
         SortDirEntries(left, j, entries);
     if (i < right)
