@@ -18,7 +18,7 @@
 #endif // _MSC_VER
 
 // suppress warning C4996: This function or variable may be unsafe. Consider using strcat_s instead.
-// reason: lstrcat and other Windows routines are not safe anyway, so addressing it here is pointless
+// reason: lstrcat and other Windows routines simply are not safe, so addressing it here is pointless
 #pragma warning(push)
 #pragma warning(disable : 4996)
 
@@ -369,7 +369,7 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
             // the bug report shows exactly where the macros are; the crash therefore follows
             // after this method completes
         }
-        else // block other TRACE_C threads until the message box opened for the
+        else // block other TRACE_C threads until the message box opened for the first TRACE_C is closed
         {    // first TRACE_C closes; they crash there too to keep things consistent
             if (msgBoxOpened)
             {
