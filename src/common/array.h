@@ -97,7 +97,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // compiler workaround: return a possibly invalid item
         }
 #endif
     }
@@ -114,7 +114,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // compiler workaround: return a possibly invalid item
         }
 #endif
     }
@@ -268,10 +268,10 @@ protected:
 
 // ****************************************************************************
 // TIndirectClassArray:
-//  -vhodne pro ulozeni ukazatelu na objekty, neumoznuje zmenu indexu prvku
-//  -nad polem se neprovadi zadne operace sesunu prvku - prvek zustava
-//   stale na stejnem indexu
-//  -pri pridavani prvku se vyplnuji mezery vznikle predchozim uvolnovanim prvku
+//  -suitable for storing pointers to objects; element indexes do not change
+//  -no element-shifting operations are performed on the array, so an element
+//   always stays at the same index
+//  -when adding elements, gaps created by earlier removals are filled
 
 template <class CLASS_TYPE>
 class TIndirectClassArray : public TIndirectArray<CLASS_TYPE>
@@ -316,14 +316,14 @@ protected: // prevent calls to code that does not work (moves items, ...)
 
 // ****************************************************************************
 // TSmallerDirectArray:
-//  -popis viz TDirectArray, ale neni vhodne pro ulozeni objektu (nevola
-//   konstruktory ani destruktory), specializace: setri pamet potrebnou
-//   na spravu pole tim, ze umoznuje celkovy pocet prvku pole jen 65535 - misto
-//   int WORD a nema virtualni metodu CallDestructor
-//  -vhodne jako promenna (atribut) tridy, od ktere existuje mhoho objektu
-//  -pametove naroky: 6 B (jen +2 B oproti klas. poli), (TDirectArray ma 25 B)
-//  -zmenseni za cenu generovani tridy podle sablony pro ruzne 'Base', 'Delta'
-//   a zmenseni rozsahu pole
+//  -see TDirectArray for a description, but it is not suitable for storing objects (it does not call
+//   constructors or destructors); the specialization saves memory needed to
+//   manage the array by allowing only 65535 elements, using WORD instead of
+//   int, and by not having a virtual CallDestructor method
+//  -suitable as a member variable of a class with many instances
+//  -memory requirements: 6 B (only 2 B more than the classic array); TDirectArray has 25 B
+//  -smaller at the cost of generating the class from the template for different 'Base', 'Delta'
+//   values and reducing the array range
 
 template <class DATA_TYPE, WORD Base, WORD Delta> // only 65535 items
 class TSmallerDirectArray
@@ -436,19 +436,19 @@ private: // prevent calls to the following methods
 
 // ****************************************************************************
 // TClassArray:
-//  -vhodne pro ulozeni mnoha malych objektu, neumoznuje zmenu indexu prvku
-//  -alokuje objekty CLASS_TYPE primo do pole,
-//   provadi se volani konstruktoru i destruktoru techto objektu
-//  -nad polem se neprovadi zadne operace sesunu prvku - prvek zustava
-//   stale na stejnem indexu
-//  -platny prvek pole: (index_prvku < Count && !At(index_prvku).IsEmpty())
+//  -suitable for storing many small objects; element indexes do not change
+//  -allocates CLASS_TYPE objects directly in the array,
+//   calling the constructors and destructors of those objects
+//  -no element-shifting operations are performed on the array, so an element
+//   always stays at the same index
+//  -valid array element: (index_prvku < Count && !At(index_prvku).IsEmpty())
 //
-// naroky na CLASS_TYPE:
-//  1) existence metody IsEmpty(), ktera vraci jestli uz se volal
-//     destruktor objektu
-//  2) nadefinovani operatoru 'new' pomoci makra DEFINE_NEW(CLASS_TYPE)
+// requirements for CLASS_TYPE:
+//  1) an IsEmpty() method that returns whether the object's
+//     destructor has already been called
+//  2) operator 'new' defined using the DEFINE_NEW(CLASS_TYPE) macro
 //
-// priklad:
+// example:
 //  class CSimpleObject
 //  {
 //    public:
@@ -464,10 +464,10 @@ private: // prevent calls to the following methods
 //
 //  TClassArray<CSimpleObject> Simples(10, 5);
 //
-// pridani prvku do pole:
+// adding an element to the array:
 //  int index_prvku = Simples.FirstFreeIndex;  // prvni volny index v poli
-//  new (&Simples)CSimpleObject();   // vraci adresu objektu, pri chybe NULL,
-//                                   // prvek byl pridan a ma index index_prvku
+//  new (&Simples)CSimpleObject();   // returns the address of the object, NULL on error,
+//                                   // the element was added and has index index_prvku
 
 template <class CLASS_TYPE>
 class TClassArray : public TDirectArray<CLASS_TYPE>
