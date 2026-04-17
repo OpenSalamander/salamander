@@ -54,7 +54,7 @@ void MultiMonGetClipRectByWindow(HWND hByWnd, RECT* workClipRect, RECT* monitorC
     if (hByWnd != NULL && IsWindowVisible(hByWnd) && !IsIconic(hByWnd)) // Note: the same condition is also used in MultiMonCenterWindow.
     {
         hMonitor = MonitorFromWindow(hByWnd, MONITOR_DEFAULTTONEAREST);
-        // Get the desktop work area.
+        // Get the monitor work area.
         GetMonitorInfo(hMonitor, &mi);
     }
     else
@@ -277,7 +277,7 @@ BOOL MultiMonEnsureRectVisible(RECT* rect, BOOL partialOK)
     if (intersect && partialOK)
         return FALSE; // The rectangle is already partially visible, so return FALSE.
 
-    // Make sure the rectangle does not extend past the monitor.
+    // Ensure the rectangle does not extend beyond the monitor work area.
     if (rect->right - rect->left > clipRect.right - clipRect.left)
         rect->right = clipRect.right - clipRect.left + rect->left;
     if (rect->bottom - rect->top > clipRect.bottom - clipRect.top)
