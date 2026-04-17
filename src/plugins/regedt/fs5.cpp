@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -1099,7 +1100,7 @@ void CPluginFSInterface::OpenActiveFolder(const char* fsName, HWND parent)
     // regedit has no parameter to set which Registry path should be displayed
     // but we can set HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Applets\Regedit\LastKey
     // in the form (e.g.) "Computer\HKEY_CURRENT_USER\AppEvents\Schemes\Apps"
-    // NOTE: the word "Computer" is localized as "Počítač" on Czech Win7, fortunately regedit.exe
+    // NOTE: on localized Win7, the word "Computer" may be translated, but regedit.exe
     // does not require the word and the path may start directly at the HKEY_* root
 
     // store the current panel path into the LastKey value for RegEdit
