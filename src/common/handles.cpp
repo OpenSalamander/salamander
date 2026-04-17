@@ -541,7 +541,7 @@ C__Handles::~C__Handles()
         else if (Handles[i].Handle.Origin == __hoGetStockObject)
             Handles.Delete(i);
     }
-    // Check and list the remaining handles.
+    // Check and list remaining open handles.
     if (Handles.Count != 0)
     {
         // The code below that uses MESSAGE_E had to be replaced because when this destructor runs, the stream facets in ALTAPDB have already been destroyed, and sending an int or handle to the stream simply crashes (only in VC2010 and VC2012; it still works in VC2008). It does not happen in Salamander, probably because the RTL is in the DLL (ALTAPDB uses a static one), but that was not investigated further. A better solution would be to destroy the facets only after this module, but that cannot be done here (only at the "lib" level).
@@ -572,7 +572,7 @@ C__Handles::~C__Handles()
             TRACE_I("List of opened handles:");
             for (int i = 0; i < Handles.Count; i++)
             {
-                // msgBuf workaround because of crashes in ALTAPDB; see the comment above for details.
+                // Workaround using msgBuf because of crashes in ALTAPDB; see the comment above for details.
                 sprintf_s(msgBuf, "%p", Handles[i].Handle.Handle);
                 TRACE_MI(Handles[i].File, Handles[i].Line,
                          __GetHandlesTypeName(Handles[i].Handle.Type) << " - " << __GetHandlesOrigin(Handles[i].Handle.Origin) << " - " << msgBuf);
@@ -581,7 +581,7 @@ C__Handles::~C__Handles()
         else
         {
             ConnectToTraceServer();
-            // msgBuf workaround because of crashes in ALTAPDB; see the comment above for details.
+            // Workaround using msgBuf because of crashes in ALTAPDB; see the comment above for details.
             sprintf_s(msgBuf, "%d", Handles.Count);
             TRACE_I(__HandlesMessageNumberOpened << msgBuf);
         }
@@ -717,7 +717,7 @@ BOOL C__Handles::DeleteHandle(C__HandlesType& type, HANDLE handle,
             }
         }
     }
-    if (foundTypeOK != -1) // Found only a handle exempt from release.
+    if (foundTypeOK != -1) // Found only a handle that does not need to be released.
     {
         type = Handles[foundTypeOK].Handle.Type;
         if (origin != NULL)
@@ -917,7 +917,7 @@ C__Handles::CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess,
                                dwFlagsAndAttributes, hTemplateFile);
     char paramsBuf[MAX_PATH + 200];
     const char* params = NULL;
-    if (ret == INVALID_HANDLE_VALUE) // parameters to buffer only when error occurs (can be displayed)
+    if (ret == INVALID_HANDLE_VALUE) // Buffer the parameters only when an error occurs (so they can be displayed)
     {
         DWORD err = GetLastError();
         _snprintf_s(paramsBuf, _TRUNCATE,
@@ -942,7 +942,7 @@ C__Handles::CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess,
                                dwFlagsAndAttributes, hTemplateFile);
     WCHAR paramsBuf[800 + 200]; // Limit file names to 800 characters; anything longer would not be printed anyway because of the MESSAGES limit.
     const WCHAR* params = NULL;
-    if (ret == INVALID_HANDLE_VALUE) // parameters to buffer only when error occurs (can be displayed)
+    if (ret == INVALID_HANDLE_VALUE) // Store the parameters in the buffer only when an error occurs (so they can be displayed)
     {
         DWORD err = GetLastError();
         _snwprintf_s(paramsBuf, _TRUNCATE,
@@ -2342,7 +2342,7 @@ HFILE
 C__Handles::OpenFile(LPCSTR lpFileName, LPOFSTRUCT lpReOpenBuff, UINT uStyle)
 {
     HFILE ret = ::OpenFile(lpFileName, lpReOpenBuff, uStyle);
-    CheckCreate(ret != HFILE_ERROR, __htFile, __hoOpenFile, (HANDLE)(UINT_PTR)ret, GetLastError(), TRUE); // lpFileName is only char even in the Unicode version, so this function is unusable (obsolete); I left it out of the parameter dump.
+    CheckCreate(ret != HFILE_ERROR, __htFile, __hoOpenFile, (HANDLE)(UINT_PTR)ret, GetLastError(), TRUE); // lpFileName is char-only even in the Unicode version, so this function is unusable (obsolete) and is omitted from the parameter dump.
     return ret;
 }
 
