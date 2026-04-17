@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -25,7 +26,7 @@ typedef struct
     char* str;
 } OGG_COMMENT;
 
-int FindComment(const char* in_string, int& offset, OGG_COMMENT comments[]) //s=string za '='
+int FindComment(const char* in_string, int& offset, OGG_COMMENT comments[]) // s=string after '='
 {
     const char* in_string_orig = in_string;
     int i = 0;
@@ -90,8 +91,8 @@ CParserOGG::GetFileInfo(COutputInterface* output)
 {
     if (f)
     {
-        // tags will be printed in this order. reorder them as you like
-        // musi byt upcase
+        // Tags will be printed in this order. Reorder them as you like.
+        // Tag names must be uppercase.
         OGG_COMMENT comments[] = {
             {"TRACKNUMBER", IDS_OGG_TRACK, NULL},
             //The track number of this piece if part of a specific larger collection or album
