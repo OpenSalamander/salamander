@@ -494,7 +494,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
         // try to open the mutex for access to the shared memory
         HANDLE hOpenConnectionMutex;
         hOpenConnectionMutex = OpenMutex(/*MUTEX_ALL_ACCESS*/ SYNCHRONIZE, FALSE, __OPEN_CONNECTION_MUTEX);
-        if (hOpenConnectionMutex != NULL) // server found
+        if (hOpenConnectionMutex != NULL) // server available
         {
             // acquire ConnectionMutex
             DWORD waitRet;
@@ -577,7 +577,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                 else
                                                     TRACE_E(oldTraceServerA);
                                             }
-                                            else // failed: try to create the pipe on the server side
+                                            else // failed; try creating the pipe on the server side
                                             {
                                                 // write the new version to shared memory to ask the server to send the pipe write handle
                                                 *(int*)&mapAddress[0] = expectedServerVer; // Version
@@ -627,7 +627,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                         CloseHandle(HWritePipe);
                                                         HWritePipe = hWritePipeFromSrv; // use the pipe from the server (close the client one)
 
-                                                        if (expectedServerVer == TRACE_CLIENT_VERSION) // successfully connected to the new Trace Server!
+                                                        if (expectedServerVer == TRACE_CLIENT_VERSION) // success, connected to the new Trace Server
                                                         {
 #ifdef TRACE_IGNORE_AUTOCLEAR
                                                             ret = SendIgnoreAutoClear(TRUE); // ignore; disconnect on error
@@ -646,7 +646,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
                                                             CloseHandle(hPipeSemaphoreFromSrv);
                                                     }
                                                 }
-                                                else // connect se nepovedl ani jednim zpusobem (asi stary Trace Server)
+                                                else // connect failed both ways (probably an old Trace Server)
                                                 {
                                                     if (expectedServerVer == TRACE_CLIENT_VERSION) // we tried the new server version
                                                     {
@@ -1022,7 +1022,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
         FlushFileBuffers(HTraceFile); // flush the data to disk
 
 #ifdef __TRACESERVER
-        // for Trace Server debugging: TRACE messages go only to the file; when TRACE_E arrives, show a msgbox
+        // for Trace Server debugging: TRACE messages go only to the file; when TRACE_E arrives, notify with a message box
         if (!crash && (type == __mtError || type == __mtErrorW))
         {
             swprintf_s(bufW, L"Error message from Trace Server has been written to file with traces:\n%s", TraceFileName);
@@ -1145,7 +1145,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
             // it is clear in the bug report exactly where the macros are; the crash therefore follows
             // after this method finishes
         }
-        else // block other threads with TRACE_C until the msgbox opened for
+        else // block other threads with TRACE_C until the message box opened by the first TRACE_C closes
         {    // the first TRACE_C closes; then the first TRACE_C crashes there too, to avoid confusion
             if (msgBoxOpened)
             {
