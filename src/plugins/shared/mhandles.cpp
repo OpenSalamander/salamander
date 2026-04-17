@@ -38,7 +38,7 @@ C__Handles __Handles;
 
 //*****************************************************************************
 //
-// vlozeny modul MESSAGES (zobrazovani messageboxu v aktualnim nebo vlastnim threadu)
+// embedded MESSAGES module (displaying message boxes in the current or a separate thread)
 //
 //*****************************************************************************
 
@@ -54,7 +54,7 @@ HWND __MessagesParent = NULL;
 
 // Ensures the current thread has access to the module's functions and data.
 void EnterMessagesModul();
-// Call when the current thread no longer needs access to the module's functions and data.
+// Call only after the current thread no longer needs access to the module's functions and data.
 void LeaveMessagesModul();
 
 // Returns a pointer to a global buffer containing the sprintf result.
@@ -239,7 +239,7 @@ const char* err(DWORD error)
 
 //*****************************************************************************
 //
-// konec vlozeneho modulu MESSAGES
+// end of embedded MESSAGES module
 //
 //*****************************************************************************
 
@@ -1016,7 +1016,7 @@ C__Handles::CreateFile(LPCTSTR lpFileName, DWORD dwDesiredAccess,
                               dwFlagsAndAttributes, hTemplateFile);
     char paramsBuf[MAX_PATH + 200];
     const char* params = NULL;
-    if (ret == INVALID_HANDLE_VALUE) // format parameters into the buffer only on error (for display)
+    if (ret == INVALID_HANDLE_VALUE) // format parameters into the buffer only when an error occurs (so they can be displayed)
     {
 #ifdef __BORLANDC__
         _snprintf(paramsBuf, MAX_PATH + 200,
