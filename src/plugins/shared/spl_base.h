@@ -478,16 +478,16 @@ public:
     // called in response to the About button in the Plugins window or the Help/About Plugins menu command
     virtual void WINAPI About(HWND parent) = 0;
 
-    // called before the plugin is unloaded (naturally only if SalamanderPluginEntry returned
+    // called before the plugin is unloaded (only if SalamanderPluginEntry returned
     // this object and not NULL); returns TRUE if the unload may proceed,
-    // 'parent' is the parent window for message boxes, 'force' is TRUE if the return
+    // 'parent' is the parent window for message boxes; 'force' is TRUE if the return
     // value is ignored; if it returns TRUE, this object and all other objects obtained from it
     // will no longer be used and the plugin will be unloaded; if a critical shutdown is in progress (see
     // CSalamanderGeneralAbstract::IsCriticalShutdown), nema smysl se usera na cokoliv ptat
-    // (do not open any more windows)
+    // (do not open any windows)
     // POZOR!!! Je nutne ukoncit vsechny thready pluginu (pokud Release vrati TRUE, vola se
-    // FreeLibrary is called on the plugin .SPL => the plugin code is unmapped from memory => the threads then
-    // have nothing left to execute => usually neither a bug report nor Windows exception info is generated)
+    // FreeLibrary is called on the plugin .SPL, so the plugin code is unmapped from memory and the threads
+    // have nothing left to run; usually neither a bug report nor Windows exception info is generated)
     virtual BOOL WINAPI Release(HWND parent, BOOL force) = 0;
 
     // method for loading the default configuration and for "load/save configuration" (loading from the plugin's private
@@ -639,8 +639,8 @@ public:
     virtual void WINAPI Connect(HWND parent, CSalamanderConnectAbstract* salamander) = 0;
 
     // releases the 'pluginData' interface that Salamander obtained from the plugin by calling
-    // CPluginInterfaceForArchiverAbstract::ListArchive nebo
-    // CPluginFSInterfaceAbstract::ListCurrentPath; pred timto volanim jeste
+    // CPluginInterfaceForArchiverAbstract::ListArchive or
+    // CPluginFSInterfaceAbstract::ListCurrentPath; before this call,
     // file and directory data (CFileData::PluginData) are released using methods of
     // CPluginDataInterfaceAbstract
     virtual void WINAPI ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData) = 0;
@@ -757,14 +757,14 @@ public:
     virtual DWORD WINAPI GetLoadInformation() = 0;
 
     // loads the module with language-dependent resources (the SLG module); it always first tries to load the module
-    // for the same language Salamander is currently running in; if it cannot find such a module (or
-    // the version does not match), it lets the user choose an alternative module (if there is more than one
-    // alternative and the user's choice from the previous plugin load is not already stored);
-    // pluginu); pokud nenajde zadny modul, vraci NULL -> plugin by se mel ukoncit;
-    // 'parent' is the parent of the error message boxes and of the dialog for selecting an alternative
+    // for the same language Salamander is currently running in; if no such module is found (or
+    // the version does not match), it lets the user choose an alternative module (if more
+    // than one alternative exists and the user's choice from the previous plugin load is not already stored);
+    // if no module is found, it returns NULL and the plugin should terminate;
+    // 'parent' is the parent window for error message boxes and the dialog for selecting an alternative
     // language module; 'pluginName' is the plugin name (so the user knows which plugin
     // the error message or the alternative language module selection refers to)
-    // POZOR: tuto metodu je mozne volat jen jednou; ziskany handle jazykoveho modulu
+    // WARNING: this method may be called only once; the returned handle to the language module
     //        is released automatically when the plugin is unloaded
     virtual HINSTANCE WINAPI LoadLanguageModule(HWND parent, const char* pluginName) = 0;
 
@@ -790,51 +790,48 @@ public:
 
     // adds another file-system name; without FUNCTION_FILESYSTEM in the 'functions'
     // parameter passed to SetBasicPluginData, this method always fails;
-    // 'fsName' is the proposed name (the assigned file-system name can be obtained with
-    // CSalamanderGeneralAbstract::GetPluginFSName) file systemu (povolene znaky jsou
-    // 'a-zA-Z0-9_+-', min. delka 2 znaky); v 'newFSNameIndex' (nesmi byt NULL) se
-    // vraci index nove pridaneho jmena file systemu; vraci TRUE v pripade uspechu;
-    // vraci FALSE pri fatalni chybe - v tomto pripade se 'newFSNameIndex' ignoruje
+    // 'fsName' is the proposed file-system name (the assigned name can be obtained with
+    // CSalamanderGeneralAbstract::GetPluginFSName); allowed characters are
+    // 'a-zA-Z0-9_+-'; the minimum length is 2 characters; 'newFSNameIndex' (must not be NULL)
+    // receives the index of the newly added file-system name; returns TRUE on success;
+    // returns FALSE on a fatal error - in that case 'newFSNameIndex' is ignored
     // limitation: must not be called before SetBasicPluginData
     virtual BOOL WINAPI AddFSName(const char* fsName, int* newFSNameIndex) = 0;
 };
 
-//
 // ****************************************************************************
 // FSalamanderPluginEntry
 //
 // Open Salamander 1.6 or Later Plugin Entry Point Function Type,
-// tuto funkci plugin vyvazi jako "SalamanderPluginEntry" a Salamander ji vola
-// pro pripojeni pluginu v okamziku loadu pluginu
-// vraci interface pluginu v pripade uspesneho pripojeni, jinak NULL,
-// interface pluginu se uvolnuje volanim jeho metody Release pred unloadem pluginu
+// the plugin exports this function as "SalamanderPluginEntry", and Salamander calls it
+// when the plugin is loaded to connect it;
+// returns the plugin interface if the connection succeeds, otherwise NULL;
+// the plugin interface is released by calling its Release method before the plugin is unloaded
 
 typedef CPluginInterfaceAbstract*(WINAPI* FSalamanderPluginEntry)(CSalamanderPluginEntryAbstract* salamander);
 
-//
 // ****************************************************************************
 // FSalamanderPluginGetReqVer
 //
 // Open Salamander 2.5 Beta 2 or Later Plugin Get Required Version of Salamander Function Type,
-// tuto funkci plugin vyvazi jako "SalamanderPluginGetReqVer" a Salamander ji vola
-// jako prvni funkci pluginu (pred "SalamanderPluginGetSDKVer" a "SalamanderPluginEntry")
-// v okamziku loadu pluginu;
-// vraci verzi Salamandera, pro kterou je plugin staven (nejstarsi verze, do ktere lze plugin nacist)
+// the plugin exports this function as "SalamanderPluginGetReqVer", and Salamander calls it
+// as the first plugin function (before "SalamanderPluginGetSDKVer" and "SalamanderPluginEntry")
+// when the plugin is loaded;
+// returns the Salamander version the plugin was built for (the oldest version into which the plugin can be loaded)
 
 typedef int(WINAPI* FSalamanderPluginGetReqVer)();
 
-//
 // ****************************************************************************
 // FSalamanderPluginGetSDKVer
 //
 // Open Salamander 2.52 beta 2 (PB 22) or Later Plugin Get SDK Version Function Type,
-// tuto funkci plugin volitelne vyvazi jako "SalamanderPluginGetSDKVer" a Salamander
-// ji zkousi volat jako druhou funkci pluginu (pred "SalamanderPluginEntry")
-// v okamziku loadu pluginu;
-// vraci verzi SDK, pouziteho pro stavbu pluginu (informuje Salamandera, ktere metody
-// plugin poskytuje); exportovat "SalamanderPluginGetSDKVer" ma smysl jen pokud vraci
-// "SalamanderPluginGetReqVer" mensi cislo nez LAST_VERSION_OF_SALAMANDER; je vhodne
-// vracet primo LAST_VERSION_OF_SALAMANDER
+// the plugin may optionally export this function as "SalamanderPluginGetSDKVer", and Salamander
+// tries to call it as the second plugin function (before "SalamanderPluginEntry")
+// when the plugin is loaded;
+// returns the SDK version used to build the plugin (it tells Salamander which methods
+// the plugin provides); exporting "SalamanderPluginGetSDKVer" only makes sense if
+// "SalamanderPluginGetReqVer" returns a number smaller than LAST_VERSION_OF_SALAMANDER; it is best
+// to return LAST_VERSION_OF_SALAMANDER directly
 
 typedef int(WINAPI* FSalamanderPluginGetSDKVer)();
 
