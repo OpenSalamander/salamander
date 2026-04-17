@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /*****************************************************************************************\
 **                                                                                       **
@@ -446,7 +447,7 @@ int LHAGetHeader(FILE* fp, LHA_HEADER* lpHeader)
         name_length += dir_length;
     }
 
-    OemToChar(lpHeader->name, lpHeader->name); // češtiňka ... :-)
+    OemToChar(lpHeader->name, lpHeader->name); // convert Czech characters
 
     for (i = 0;; i++)
         if (lha_methods[i] == NULL)
@@ -1845,7 +1846,7 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
         /* found "-l??-" keyword (as METHOD type string) */
         if (p[0] == '-' && p[1] == 'l' && p[4] == '-')
         {
-            /* size and checksum validate check */
+            /* header size and checksum are valid */
             if ((p[I_HEADER_LEVEL - 2] == 0 || p[I_HEADER_LEVEL - 2] == 0) && p[I_HEADER_SIZE - 2] > 20 && p[I_HEADER_CHECKSUM - 2] == calc_sum((char*)p, p[-2]))
             {
                 fseek(f, (long)((p - 2) - buffer2) - n, SEEK_CUR);
@@ -1868,9 +1869,9 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
     return FALSE; // archive is neither LHZ nor SFX LHZ
 }
 
-// TestLHAOpenArchive - verifies LHAOpenArchive by running it on every
-// file on the "path" (recursively walks subdirectories). If it does not crash,
-// everything is fine :-)
+// TestLHAOpenArchive - tests LHAOpenArchive by running it on every
+// file under "path" (including subdirectories). If it does not crash,
+// everything is OK :-)
 //
 // Call it like this:
 // char path[MAX_PATH] = "c:";
