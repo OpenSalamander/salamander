@@ -187,7 +187,7 @@ struct CQuadWord
     double GetDouble() const
     { // MSVC cannot convert unsigned __int64 to double, so this must be handled explicitly
         if (Value < CQuadWord(0, 0x80000000).Value)
-            return (double)(__int64)Value; // non-negative number
+            return (double)(__int64)Value;             // positive number
         else
             return 9223372036854775808.0 + (double)(__int64)(Value - CQuadWord(0, 0x80000000).Value);
     }
@@ -214,7 +214,7 @@ struct CFileData // no destructor may be added here!
                                    // allocated on Salamander's heap (see CSalamanderGeneralAbstract::Alloc/Realloc/Free)
     DWORD_PTR PluginData;          // used by the plugin through CPluginDataInterfaceAbstract; Salamander ignores it
     unsigned NameLen : 9;          // length of Name (strlen(Name)) - WARNING: the maximum name length is (MAX_PATH - 5)
-    unsigned Hidden : 1;           // je hidden? (je-li 1, ikonka je pruhlednejsi o 50% - ghosted)
+    unsigned Hidden : 1;               // is it hidden? (if 1, the icon is 50% more transparent - ghosted)
     unsigned IsLink : 1;           // is it a link? (if 1, the icon gets the link overlay) - standard filling: see CSalamanderGeneralAbstract::IsFileLink(CFileData::Ext); when displayed, it takes precedence over IsOffline, but IconOverlayIndex takes precedence
     unsigned IsOffline : 1;        // is it offline? (if 1, the icon gets the offline overlay - black clock); when displayed, IsLink and IconOverlayIndex take precedence
     unsigned IconOverlayIndex : 4; // icon overlay index (if the icon has no overlay, this is ICONOVERLAYINDEX_NOTUSED); when displayed, it takes precedence over IsLink and IsOffline
@@ -226,7 +226,7 @@ struct CFileData // no destructor may be added here!
     unsigned Archive : 1;         // is this an archive? used to display the archive icon in the panel
     unsigned SizeValid : 1;       // has the directory size already been computed?
     unsigned Dirty : 1;           // does this item need to be redrawn? (temporary only; the message queue must not be pumped between setting the bit and redrawing the panel, otherwise the icon may be redrawn by the icon reader and the bit reset; as a result the item will not be redrawn)
-    unsigned CutToClip : 1;       // je CUT-nutej na clipboardu? (je-li 1, ikonka je pruhlednejsi o 50% - ghosted)
+    unsigned CutToClip : 1;           // is it cut to the clipboard? (if 1, the icon is 50% more transparent - ghosted)
     unsigned IconOverlayDone : 1; // for icon-reader-thread use only: are we retrieving or have we already retrieved the icon overlay? (0 - no, 1 - yes)
 };
 
@@ -350,10 +350,8 @@ public:
     virtual void WINAPI SetApproximateCount(int files, int dirs) = 0;
 };
 
-//
 // ****************************************************************************
-// SalEnumSelection a SalEnumSelection2
-//
+// SalEnumSelection and SalEnumSelection2
 
 // constants returned by SalEnumSelection and SalEnumSelection2 in the 'errorOccured' parameter
 #define SALENUM_SUCCESS 0 // no error occurred
@@ -410,11 +408,10 @@ typedef const char*(WINAPI* SalEnumSelection2)(HWND parent, int enumFiles, const
                                                BOOL* isDir, CQuadWord* size, DWORD* attr,
                                                FILETIME* lastWrite, void* param, int* errorOccured);
 
-//
 // ****************************************************************************
 // CSalamanderViewAbstract
 //
-// sada metod Salamandera pro praci se sloupci v panelu (vypinani/zapinani/pridavani/nastavovani)
+// set of Salamander methods for working with panel columns (hiding/showing/adding/configuring)
 
 // panel view modes
 #define VIEW_MODE_TREE 1
@@ -467,29 +464,29 @@ typedef int(WINAPI* FGetPluginIconIndex)();
 struct CColumn
 {
     char Name[COLUMN_NAME_MAX]; // "Name", "Ext", "Size", ... column name under
-                                // which the column appears in the view and menu
+                                // which the column appears in the view and menu.
                                 // It must not contain an empty string.
-                                // POZOR: Muze obsahovat (za prvnim null-terminatorem)
-                                // also the name of the "Ext" column - this happens if there is no
+                                // WARNING: After the first null terminator, it may also contain
+                                // the name of the "Ext" column - this happens when there is no
                                 // separate "Ext" column and panel data (see
-                                // CSalamanderDirectoryAbstract::SetValidData()) se
-                                // contains VALID_DATA_EXTENSION.
-                                // retezcu poslouzi CSalamanderGeneralAbstract::AddStrToStr().
+                                // CSalamanderDirectoryAbstract::SetValidData()) has
+                                // VALID_DATA_EXTENSION set. Use CSalamanderGeneralAbstract::AddStrToStr() to join the two
+                                // strings.
 
-    char Description[COLUMN_DESCRIPTION_MAX]; // Tooltip v header line
+    char Description[COLUMN_DESCRIPTION_MAX];     // Tooltip in the header line
                                               // It must not contain an empty string.
-                                              // POZOR: Muze obsahovat (za prvnim null-terminatorem)
-                                              // also the description of the "Ext" column - this happens if there is no
+                                              // WARNING: After the first null terminator, it may also contain
+                                              // the description of the "Ext" column - this happens when there is no
                                               // separate "Ext" column and panel data (see
-                                              // CSalamanderDirectoryAbstract::SetValidData()) se
-                                              // contains VALID_DATA_EXTENSION.
-                                              // retezcu poslouzi CSalamanderGeneralAbstract::AddStrToStr().
+                                              // CSalamanderDirectoryAbstract::SetValidData()) has
+                                              // VALID_DATA_EXTENSION set. Use CSalamanderGeneralAbstract::AddStrToStr() to join the two
+                                              // strings.
 
     FColumnGetText GetText; // callback used to obtain text (see the FColumnGetText declaration)
 
     // FIXME_X64 - too small for a pointer, is it ever needed?
     DWORD CustomData; // Not used by Salamander; the plugin can
-                      // use it to distinguish the columns added by the plugin.
+                      // FIXME_X64 - too small for a pointer; is it ever needed?
 
     unsigned SupportSorting : 1; // can the column be sorted?
 
@@ -543,7 +540,7 @@ public:
     virtual DWORD WINAPI GetViewMode() = 0;
 
     // Sets the panel mode to 'viewMode'. If it is one of the detailed modes, it may
-    // remove some standard columns (see 'validData'). It is therefore best to call this
+    // remove some standard columns (see 'validData'). It is therefore advisable to call this
     // function first - before the other functions of this interface that modify
     // columns.
     //
@@ -551,34 +548,34 @@ public:
     // The panel mode cannot be changed to Types or to one of the three optional detailed modes
     // (all of them are represented by the VIEW_MODE_DETAILED constant used for the Detailed panel mode).
     // However, if one of these four modes is currently selected in the panel and 'viewMode' is
-    // VIEW_MODE_DETAILED, zustane tento rezim zvoleny (aneb neprepne se na Detailed rezim).
+    // VIEW_MODE_DETAILED, that mode remains selected (it does not switch to the Detailed mode).
     // Changing the panel mode is permanent (it remains even after leaving the plugin path).
     //
     // 'validData' tells which data the plugin wants to display in detailed mode; the value
-    // se ANDuje s maskou platnych dat zadanou pomoci CSalamanderDirectoryAbstract::SetValidData
-    // (there is no point in showing columns with "zeroed" values).
+    // is ANDed with the mask of valid data specified by CSalamanderDirectoryAbstract::SetValidData
+    // (there is no point in showing columns whose values are zeroed).
     virtual void WINAPI SetViewMode(DWORD viewMode, DWORD validData) = 0;
 
-    // Retrieves from Salamander the locations of the variables that replace the parameters of
-    // CColumn::GetText. Na strane Salamandera se jedna o globalni promenne. Plugin si
-    // stores pointers to them in its own global variables.
+    // Retrieves from Salamander the addresses of the variables that replace the parameters of
+    // CColumn::GetText. On Salamander's side these are global variables. The plugin stores
+    // pointers to them in its own global variables.
     //
     // variables:
-    //   transferFileData        [IN]     data on the basis of which the item is drawn
-    //   transferIsDir           [IN]     equal to 0 for a file (it is in Files),
-    //                                    equal to 1 for a directory (it is in Dirs),
-    //                                    equal to 2 for the up-dir symbol
+    //   transferFileData        [IN]     data used to draw the item
+    //   transferIsDir           [IN]     0 for a file (it is in Files),
+    //                                    1 for a directory (it is in Dirs),
+    //                                    2 for the up-dir symbol
     //   transferBuffer          [OUT]    output is written here, up to TRANSFER_BUFFER_MAX characters
     //                                    it does not need to be null-terminated
-    //   transferLen             [OUT]    before returning from the callback, this variable is set to
-    //                                    the number of filled characters without a terminator (the terminator does not
+    //   transferLen             [OUT]    before the callback returns, this variable is set to
+    //                                    the number of written characters without the terminator (the terminator does not
     //                                    need to be written to the buffer)
     //   transferRowData         [IN/OUT] points to a DWORD that is always cleared before columns are drawn
     //                                    for each row; it can be used for optimizations
     //                                    Salamander reserves bits 0x00000001 to 0x00000008.
-    //                                    The other bits are available to the plugin.
+    //                                    The remaining bits are available to the plugin.
     //   transferPluginDataIface [IN]     plugin-data interface of the panel in which the item is
-    //                                    vykresluje (patri k (*transferFileData)->PluginData)
+    //                                    drawn (it belongs to (*transferFileData)->PluginData)
     //   transferActCustomData   [IN]     CustomData of the column for which text is being obtained (for which
     //                                    the callback is called)
     virtual void WINAPI GetTransferVariables(const CFileData**& transferFileData,
@@ -619,12 +616,12 @@ public:
 
     // Sets the column name and description (they must not be empty strings or NULL). Their lengths
     // are limited to COLUMN_NAME_MAX and COLUMN_DESCRIPTION_MAX. Returns success.
-    // POZOR: Jmeno a popis sloupce "Name" muzou obsahovat (vzdy za prvnim
-    // null-terminator) also the name and description of the "Ext" column - this happens if there is no
+    // WARNING: The name and description of the "Name" column may also contain (always after the first
+    // null terminator) the name and description of the "Ext" column - this happens if there is no
     // separate "Ext" column and panel data (see
-    // CSalamanderDirectoryAbstract::SetValidData()) se nastavi VALID_DATA_EXTENSION.
-    // In this case, double strings must be set (with two
-    // null-terminatory) - viz CSalamanderGeneralAbstract::AddStrToStr().
+    // CSalamanderDirectoryAbstract::SetValidData()) has VALID_DATA_EXTENSION set.
+    // In that case, double strings must be supplied (with two
+    // null terminators) - see CSalamanderGeneralAbstract::AddStrToStr().
     virtual BOOL WINAPI SetColumnName(int index, const char* name, const char* description) = 0;
 
     // Removes the column at position 'index'. Both plugin-added columns
@@ -738,31 +735,31 @@ public:
     // of CSalamanderGeneralAbstract that can be called from any thread may be used
     virtual int WINAPI CompareFilesFromFS(const CFileData* file1, const CFileData* file2) = 0;
 
-    // used to set view parameters; this method is always called before displaying new
+    // Used to set view parameters; this method is always called before displaying new
     // panel contents (when the path changes) and when the current view changes (including manual
     // column width changes); 'leftPanel' is TRUE for the left panel (FALSE for the right panel);
     // 'view' is the interface for modifying the view (setting the mode, working with
     // columns); for archive data, 'archivePath' contains the current path in the archive,
-    // pro data FS je 'archivePath' NULL; jde-li o data archivu, je 'upperDir' ukazatel na
-    // the parent directory (if the current path is the archive root, 'upperDir' is NULL), for
-    // FS je vzdy NULL;
-    // POZOR: behem volani teto metody nesmi dojit k prekresleni panelu (muze se zde zmenit
-    //        icon size, etc.), so no message loops (no dialogs, etc.)!
-    // restriction: from CSalamanderGeneralAbstract, only methods that can be
-    //          called from any thread may be used (methods independent of panel state)
+    // for FS data, 'archivePath' is NULL; for archive data, 'upperDir' points to the
+    // parent directory (if the current path is the archive root, 'upperDir' is NULL); for
+    // FS it is always NULL;
+    // WARNING: During this method call, the panel must not be redrawn (its state may change
+    // here), so no message loops (no dialogs, etc.)!
+    // Restriction: from CSalamanderGeneralAbstract, only methods that can be
+    // called from any thread may be used (methods independent of panel state)
     virtual void WINAPI SetupView(BOOL leftPanel, CSalamanderViewAbstract* view,
                                   const char* archivePath, const CFileData* upperDir) = 0;
 
     // setting a new value of "column->FixedWidth" - the user used the context menu
     // on a plugin-added column in the header line > "Automatic Column Width"; the plugin
-    // should store the new value of column->FixedWidth stored in 'newFixedWidth'
-    // (it is always the negation of column->FixedWidth), so that in subsequent calls to SetupView() it can
+    // should store the new value of column->FixedWidth from 'newFixedWidth'
+    // (it is always the negation of column->FixedWidth), so that on subsequent calls to SetupView() it can
     // add the column with FixedWidth already set correctly; at the same time, if fixed
-    // column width is being enabled, the plugin should set the current value of "column->Width" (so that
-    // enabling fixed width this way does not change the column width) - ideally call
-    // "ColumnWidthWasChanged(leftPanel, column, column->Width)"; 'column' identifikuje
-    // the column that is to be changed; 'leftPanel' is TRUE for a column in the left
-    // panelu (FALSE pokud jde o sloupec z praveho panelu)
+    // column width is being enabled, the plugin should store the current value of "column->Width" (so
+    // this change to fixed width does not change the column width) - ideally by calling
+    // "ColumnWidthWasChanged(leftPanel, column, column->Width)"; 'column' identifies the
+    // column to be changed; 'leftPanel' is TRUE for a column in the left
+    // panel (FALSE for a column in the right panel)
     virtual void WINAPI ColumnFixedWidthShouldChange(BOOL leftPanel, const CColumn* column,
                                                      int newFixedWidth) = 0;
 
@@ -777,17 +774,17 @@ public:
     // gets the Information Line contents for the 'file' file/directory ('isDir' TRUE/FALSE)
     // or for the selected files and directories ('file' is NULL and the counts of selected files/directories
     // are in 'selectedFiles'/'selectedDirs') in the panel ('panel' is one of PANEL_XXX);
-    // vola se i pri prazdnem listingu (tyka se jen FS, u archivu nemuze nastat, 'file' je NULL,
+    // it is also called for an empty listing (FS only; this cannot happen for archives: 'file' is NULL,
     // 'selectedFiles' and 'selectedDirs' are 0); if 'displaySize' is TRUE, the size of
     // all selected directories is known (see CFileData::SizeValid; if nothing is selected, it is
-    // TRUE); v 'selectedSize' je soucet cisel CFileData::Size oznacenych souboru a adresaru
+    // TRUE); 'selectedSize' is the sum of CFileData::Size values for the selected files and directories
     // (if nothing is selected, it is zero); 'buffer' is the buffer for the returned text (size
-    // 1000 bytes); 'hotTexts' is an array (size 100 DWORDs) that returns information about the position of
-    // hot-texts; the low WORD always contains the position of the hot-text in 'buffer', the high WORD contains
-    // the length of the hot-text; 'hotTextsCount' contains the size of the 'hotTexts' array (100) and returns the count
-    // of written hot-texts in 'hotTexts'; returns TRUE if 'buffer' + 'hotTexts' +
+    // 1000 bytes); 'hotTexts' is an array (size 100 DWORDs) that returns the positions of
+    // hot texts: the low WORD always contains the hot-text position in 'buffer', the high WORD contains
+    // its length; 'hotTextsCount' contains the size of the 'hotTexts' array (100) on input and returns the number
+    // of written hot texts in 'hotTexts'; returns TRUE if 'buffer', 'hotTexts', and
     // 'hotTextsCount' are set, returns FALSE if the Information Line should be filled in the standard
-    // zpusobem (jako na disku)
+    // way (as on disk)
     virtual BOOL WINAPI GetInfoLineContent(int panel, const CFileData* file, BOOL isDir, int selectedFiles,
                                            int selectedDirs, BOOL displaySize, const CQuadWord& selectedSize,
                                            char* buffer, DWORD* hotTexts, int& hotTextsCount) = 0;
@@ -819,13 +816,13 @@ public:
     virtual BOOL WINAPI GetLastWriteTime(const CFileData* file, BOOL isDir, SYSTEMTIME* time) = 0;
 };
 
-//
-// ****************************************************************************
+//****************************************************************************
 // CSalamanderForOperationsAbstract
 //
-// sada metod ze Salamandera pro podporu provadeni operaci, platnost interfacu je
-// omezena na metodu, ktere je interface predan jako parametr; tedy lze volat pouze
-// z tohoto threadu a v teto metode (objekt je na stacku, takze po navratu zanika)
+//set of Salamander methods that support operations; the interface is valid only
+// for the method to which it is passed as a parameter, so it may be called only
+// from that thread and in that method (the object is on the stack, so it ceases to
+// exist after the method returns)
 
 class CSalamanderForOperationsAbstract
 {
@@ -833,20 +830,20 @@ public:
     // PROGRESS DIALOG: the dialog contains one or two progress bars ('twoProgressBars' FALSE/TRUE)
     // opens a progress dialog titled 'title'; 'parent' is the parent window of the progress dialog (if
     // NULL, the main window is used); if it contains only one progress bar, it can be labeled
-    // as "File" ('fileProgress' is TRUE) or "Total" ('fileProgress' is FALSE)
+    // "File" ('fileProgress' is TRUE) or "Total" ('fileProgress' is FALSE)
     //
-    // the dialog does not run in its own thread; for it to work properly (Cancel button + internal timer),
-    // the message queue must be flushed occasionally; this is handled by the ProgressDialogAddText,
+    // the dialog does not run in its own thread; to keep it working (Cancel button + internal timer),
+    // the message queue must be pumped occasionally; this is done by the ProgressDialogAddText,
     // ProgressAddSize, and ProgressSetSize methods
     //
-    // because real-time display of text and progress-bar changes slows things down considerably, the
+    // because real-time updates of text and progress bars slow things down considerably, the
     // ProgressDialogAddText, ProgressAddSize, and ProgressSetSize methods have a 'delayedPaint'
     // parameter; it should be TRUE for all rapidly changing text and values; the methods then store
-    // the texts and display them only after the dialog's internal timer fires; set 'delayedPaint' to
+    // the text and display it only after the dialog's internal timer fires; set 'delayedPaint' to
     // FALSE for initial/final texts such as "preparing data..." or "canceling operation...", after
-    // displaying which we do not give the dialog a chance to dispatch messages (timer events); if such
-    // an operation is likely to take a long time, we should keep the dialog responsive during that time
-    // by calling ProgressAddSize(CQuadWord(0, 0), TRUE) and possibly terminate the action early
+    // which the dialog is not given a chance to dispatch messages (timer events); if such
+    // an operation is likely to take a long time, the dialog should be refreshed during that time
+    // by calling ProgressAddSize(CQuadWord(0, 0), TRUE), and the action may be terminated early
     // according to its return value
     virtual void WINAPI OpenProgressDialog(const char* title, BOOL twoProgressBars,
                                            HWND parent, BOOL fileProgress) = 0;
