@@ -26,8 +26,8 @@
 
 #include "winlib.h"
 
-// workaround for a runtime check failure in the debug build: the original macro casts rgb to WORD,
-// so it reports data loss (the RED component)
+// precaution against a runtime check failure in the debug build: the original macro casts rgb to WORD,
+// so it reports data loss in the RED component
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
@@ -329,7 +329,7 @@ CWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if (GetWindowLongPtr(HWindow, GWL_STYLE) & WS_CHILD)
             break;   // if we do not handle F1 and this is a child window, let F1 fall through to the parent
-        return TRUE; // if it is not a child, stop processing F1
+        return TRUE; // if this is not a child window, stop processing F1
     }
     }
 #ifndef _UNICODE
@@ -436,7 +436,7 @@ CWindow::CWindowProcInt(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
             else
                 wnd->HWindow = NULL; // no longer attached
             if (res == 0)
-                return 0; // the application handled the message
+                return 0; // the application processed the message
             wnd = NULL;
         }
         break;
@@ -462,7 +462,7 @@ CWindow::CWindowProcInt(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
     LRESULT lResult;
     if (wnd != NULL)
         lResult = wnd->WindowProc(uMsg, wParam, lParam);
-    else // error or the message arrived before WM_CREATE
+    else // an error occurred, or the message was received before WM_CREATE
     {
 #ifndef _UNICODE
         lResult = unicode ? DefWindowProcW(hwnd, uMsg, wParam, lParam) : DefWindowProcA(hwnd, uMsg, wParam, lParam);
@@ -717,7 +717,7 @@ CDialog::CDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
         else
         {
             dlg->HWindow = hwndDlg;
-            //--- insert the dialog into the window list by hwndDlg
+            //--- register the window in the window list under hwndDlg
             if (!WindowsManager.AddWindow(hwndDlg, dlg)) // error
             {
                 TRACE_ET(_T("Unable to create dialog."));
@@ -1021,8 +1021,8 @@ void CTransferInfo::EnsureControlIsFocused(int ctrlID)
         HWND wnd = GetFocus();
         while (wnd != NULL && wnd != ctrl)
             wnd = ::GetParent(wnd);
-        if (wnd == NULL) // set focus only if ctrl is not an ancestor of GetFocus()
-        {                // for example, the edit box in a combo box
+        if (wnd == NULL) // Set focus only if ctrl is not an ancestor of the focused window.
+        {                // This occurs, for example, with the edit box in a combo box.
             SendMessage(HDialog, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
         }
     }
@@ -1108,7 +1108,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, TCHAR* format, BOOL sele
             BOOL expPart = FALSE;
             if (*s == _T('-') || *s == _T('+'))
                 s++;        // skip the digit
-            while (*s != 0) // convert comma to dot
+            while (*s != 0) // convert comma to period
             {
                 if (!expPart && !decPoints && (*s == _T(',') || *s == _T('.')))
                 {
@@ -1187,7 +1187,7 @@ void CTransferInfo::EditLine(int ctrlID, int& value, BOOL select)
             }
 
             TCHAR* endptr;
-            value = _tcstoul(buff, &endptr, 10); // replacement for atoi / _ttoi, which returns 2147483647 instead of 4000000000 (because it is SIGNED INT)
+            value = _tcstoul(buff, &endptr, 10); // replacement for atoi / _ttoi, which returns 2147483647 instead of 4000000000 because it uses signed int
             break;
         }
         }
