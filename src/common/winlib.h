@@ -67,7 +67,7 @@ enum CObjectType // for object type identification
 
 // ****************************************************************************
 
-class CWindowsObject // base class of all MS-Windows objects
+class CWindowsObject // base class for all Windows objects
 {
 public:
     HWND HWindow;
@@ -122,8 +122,8 @@ public:
 protected:
     CObjectOrigin ObjectOrigin;
 #ifndef _UNICODE
-    // windows: create: TRUE = the window is Unicode, otherwise ANSI; attach: TRUE = our window procedure
-    // is Unicode, otherwise ANSI; dialogs: TRUE = the dialog is Unicode, otherwise ANSI
+    // for windows: on create, TRUE = the window is Unicode, otherwise ANSI; on attach, TRUE = our window procedure
+    // is Unicode, otherwise ANSI; for dialogs: TRUE = the dialog is Unicode, otherwise ANSI
     BOOL UnicodeWnd;
 #endif // _UNICODE
 };
@@ -303,7 +303,7 @@ public:
     void EnsureControlIsFocused(int ctrlID);
 
     void EditLine(int ctrlID, TCHAR* buffer, DWORD bufferSizeInChars, BOOL select = TRUE);
-    void EditLine(int ctrlID, double& value, TCHAR* format, BOOL select = TRUE); // format napr. _T("%.2lf")
+    void EditLine(int ctrlID, double& value, TCHAR* format, BOOL select = TRUE); // format, e.g. _T("%.2lf")
     void EditLine(int ctrlID, int& value, BOOL select = TRUE);
     void EditLine(int ctrlID, __int64& value, BOOL select = TRUE, BOOL unsignedNum = FALSE /* signed number */,
                   BOOL hexMode = FALSE /* decimal mode */, BOOL ignoreOverflow = FALSE, BOOL quiet = FALSE);
