@@ -143,7 +143,7 @@ int StrICmp(const char* s1, const char* s2)
     {
         res = (unsigned)LowerCase[*s1] - (unsigned)LowerCase[*s2++];
         if (res != 0)
-            return (res < 0) ? -1 : 1; // < a >
+            return (res < 0) ? -1 : 1; // < or >
         if (*s1++ == 0)
             return 0; // ==
     }
@@ -160,14 +160,14 @@ int StrICmp(const char* s1, const char* s2)
     mov     edi,[s1] // edi = s1
     mov     edx,table // edx = LowerCase
 
-    mov     eax,255 // fall into loop
+    mov     eax,255 // enter the loop
     xor     ebx,ebx
 
     align   4
 
         // compare
 chk_null:
-    or      al,al // not that if al == 0, then eax == 0!
+    or      al,al // note that if al == 0, then eax == 0
     jz      short done
 
     mov     al,[esi] // al = *s2
@@ -259,14 +259,14 @@ int StrNICmp(const char* s1, const char* s2, int n)
 lupe:                      
     mov     al,[esi] // al = *s1
                            
-    or      eax,eax // see if *s1 is null
+    or      eax,eax // check whether *s1 is null
                            
     mov     bl,[edi] // bl = *s2
                            
     jz      short eject // jump if *s1 is null
 
     or      ebx,ebx // see if *s2 is null
-    jz      short eject // jump if so
+    jz      short eject // jump if *s2 is null
 
     inc     esi
     inc     edi
@@ -388,16 +388,16 @@ int StrICmpEx(const char* s1, int l1, const char* s2, int l2)
     {
         res = (unsigned)LowerCase[*s1++] - (unsigned)LowerCase[*s2++];
         if (res != 0)
-            return (res < 0) ? -1 : 1; // < a >
+            return (res < 0) ? -1 : 1; // < or >
     }
     if (l1 != l2)
-        return (l1 < l2) ? -1 : 1; // < a >
+        return (l1 < l2) ? -1 : 1; // < or >
     else
         return 0;
 }
 
 /*
-// princip asm funkce
+// logic of the assembly function
 int StrICmpEx(const char *s1, int l1, const char *s2, int l2)
 {
   int l = (l1 < l2) ? l1 : l2;
@@ -426,7 +426,7 @@ int StrICmpEx(const char* s1, int l1, const char* s2, int l2)
             // load up arguments
       mov     ecx,[l] // ecx = byte count
       or      ecx,ecx        
-      jz      toend // if count = 0, we are done
+      jz      toend // if the byte count is 0, we are done
                            
       mov     esi,s1 // esi = buf1
       mov     edi,s2 // edi = buf2
@@ -485,7 +485,7 @@ int StrICmpEx(const char* s1, int l1, const char* s2, int l2)
 //*****************************************************************************
 
 /*
-// puvodni funkce
+// original function
 int StrCmpEx(const char *s1, int l1, const char *s2, int l2)
 {
   int res, l = (l1 < l2) ? l1 : l2;
@@ -586,7 +586,7 @@ int StrLen(const char *str)
 /*
 //*****************************************************************************
 //
-// Tabulky pro prevod kodu Kamenickych do MS Windows
+// Tables for converting Kamenicky encoding to MS Windows
 //
 
 BYTE KodKamenickych[CONVERT_TAB_CHARS] =
