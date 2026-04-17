@@ -92,13 +92,13 @@ public:
     // the dimensions of the requested thumbnail; 'thumbMaker' is the interface of the
     // thumbnail-generation algorithm (it can accept a finished thumbnail or create it by scaling the
     // image down); returns TRUE if the format of 'filename' is recognized; if it returns
-    // FALSE, Salamander zkusi nacist thumbnail pomoci jineho pluginu; chybu pri
-    // errors while obtaining the thumbnail (for example, a file read error) are reported through
-    // rozhrani 'thumbMaker' - viz metoda SetError; 'fastThumbnail' je TRUE v prvnim
-    // thumbnail-loading pass, the goal is to return the thumbnail as quickly as possible (even
+    // FALSE, Salamander will try to load the thumbnail using another plugin; errors while
+    // obtaining the thumbnail (for example, a file read error) are reported through
+    // the 'thumbMaker' interface - see the SetError method; 'fastThumbnail' is TRUE in the first
+    // thumbnail-loading pass, where the goal is to return the thumbnail as quickly as possible (even
     // at lower quality or smaller than required); in the second thumbnail-loading pass
     // (only if the SSTHUMB_ONLY_PREVIEW flag is set in the first pass),
-    // 'fastThumbnail' FALSE - cilem je vratit kvalitni thumbnail
+    // 'fastThumbnail' is FALSE - the goal is to return a high-quality thumbnail
     // limitation: because this is called from the icon-loading thread (not the main thread), only
     // methods of CSalamanderGeneralAbstract that are safe to call from any thread may be used
     //
@@ -106,13 +106,13 @@ public:
     //   - try to open the image
     //   - if that fails, return FALSE
     //   - extract the image dimensions
-    //   - predat je do Salamandera pres thumbMaker->SetParameters
+    //   - pass them to Salamander through thumbMaker->SetParameters
     //   - if it returns FALSE, clean up and exit (buffer allocation failed)
-    //   - SMYCKA
+    //   - LOOP
     //     - load part of the image data
-    //     - poslat je do Salamandera pres thumbMaker->ProcessBuffer
+    //     - pass it to Salamander through thumbMaker->ProcessBuffer
     //     - if it returns FALSE, clean up and exit (interrupted due to a panel path change)
-    //     - continue in SMYCCE until the entire image has been passed
+    //     - continue the LOOP until the entire image has been passed
     //   - clean up and exit
     virtual BOOL WINAPI LoadThumbnail(const char* filename, int thumbWidth, int thumbHeight,
                                       CSalamanderThumbnailMakerAbstract* thumbMaker,
@@ -121,7 +121,7 @@ public:
 
 #ifdef _MSC_VER
 #pragma pack(pop, enter_include_spl_thum)
-#endif // _MSC_VER
+#endif // INSIDE_SALAMANDER
 #ifdef __BORLANDC__
 #pragma option -a
-#endif // __BORLANDC__
+#endif // _MSC_VER
