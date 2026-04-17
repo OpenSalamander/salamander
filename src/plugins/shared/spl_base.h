@@ -506,97 +506,97 @@ public:
     // called to connect the plugin to Salamander; called only after LoadConfiguration,
     // 'parent' is the parent of the message boxes; 'salamander' is the set of methods used to connect the plugin
 
-    /*  PRAVIDLA PRO IMPLEMENTACI METODY CONNECT
-        (pluginy musi mit ulozenou verzi konfigurace - viz DEMOPLUGin,
-         promenna ConfigVersion a konstanta CURRENT_CONFIG_VERSION; nize je
-         nazorny PRIKLAD pridani pripony "dmp2" do DEMOPLUGinu):
+/*  RULES FOR IMPLEMENTING THE CONNECT METHOD
+        (plugins must store the configuration version - see DEMOPLUGin,
+         variable ConfigVersion and constant CURRENT_CONFIG_VERSION; below is
+         an illustrative EXAMPLE of adding the "dmp2" extension to DEMOPLUGin):
 
-      -s kazdou zmenou je potreba zvysit cislo verze konfigurace - CURRENT_CONFIG_VERSION
-       (v prvni verzi metody Connect je CURRENT_CONFIG_VERSION=1)
-      -do zakladni casti (pred podminky "if (ConfigVersion < YYY)"):
-        -se napise kod pro instalaci pluginu (uplne prvni load pluginu):
-         viz metody CSalamanderConnectAbstract
-        -pri upgradech je nutne aktualizovat seznamy pripon pro instalaci pro "custom archiver
+      -with every change, increase the configuration version number - CURRENT_CONFIG_VERSION
+       (in the first version of the Connect method, CURRENT_CONFIG_VERSION=1)
+      -in the basic section (before the condition "if (ConfigVersion < YYY)"):
+        -write code for plugin installation (the very first plugin load):
+         see methods of CSalamanderConnectAbstract
+        -during upgrades, update the extension lists used for installation for "custom archiver
          unpack" (AddCustomUnpacker), "panel archiver view/edit" (AddPanelArchiver),
-         "file viewer" (AddViewer), polozky menu (AddMenuItem), atd.
-        -u volani AddPanelArchiver a AddViewer nechame 'updateExts' a 'force' FALSE
-         (jinak bysme uzivateli nutili nejen nove, ale i stare pripony, ktere uz treba
-         rucne smazal)
-        -u volani AddCustomPacker/AddCustomUnpacker dame do parametru 'update' podminku
-         "ConfigVersion < XXX", kde XXX je cislo posledni verze, kde se menily
-         pripony pro custom packery/unpackery (obe volani je potreba posuzovat zvlast;
-         zde pro jednoduchost vnutime uzivateli vsechny pripony, pokud si nejake promazal
-         nebo pridal, ma smulu, bude to muset udelat rucne znovu)
-        -AddMenuItem, SetChangeDriveMenuItem a SetThumbnailLoader funguje pri kazdem loadu
-         pluginu stejne (instalace/upgrady se nelisi - vzdy se zacina na zelene louce)
-      -jen pri upgradech: do casti pro upgrady (za zakladni casti):
-        -pridame podminku "if (ConfigVersion < XXX)", kde XXX je nova hodnota
-         konstanty CURRENT_CONFIG_VERSION + pridame komentar od teto verze;
-         v tele teto podminky zavolame:
-          -pokud pribyly pripony pro "panel archiver", zavolame
-           "AddPanelArchiver(PPP, EEE, TRUE)", kde PPP jsou jen nove pripony oddelene
-           strednikem a EEE je TRUE/FALSE ("panel view+edit"/"jen panel view")
-          -pokud pribyly pripony pro "viewer", zavolame "AddViewer(PPP, TRUE)",
-           kde PPP jsou jen nove pripony oddelene strednikem
-          -pokud se maji smazat nejake stare pripony pro "viewer", zavolame
-           pro kazdou takovou priponu PPP "ForceRemoveViewer(PPP)"
-          -pokud se maji smazat nejake stare pripony pro "panel archiver", zavolame
-           pro kazdou takovou priponu PPP "ForceRemovePanelArchiver(PPP)"
+         "file viewer" (AddViewer), menu items (AddMenuItem), etc.
+        -for AddPanelArchiver and AddViewer, keep 'updateExts' and 'force' FALSE
+         (otherwise we would force not only new but also old extensions on the user, even if
+         they had removed them manually)
+        -for AddCustomPacker/AddCustomUnpacker, pass an 'update' condition
+         "ConfigVersion < XXX", where XXX is the last version number in which the
+         custom packer/unpacker extensions changed (the two calls must be evaluated separately;
+         for simplicity here we force all extensions back onto the user, so if they removed
+         or added some, they will have to fix it manually again)
+        -AddMenuItem, SetChangeDriveMenuItem and SetThumbnailLoader work the same on every plugin load
+         (installation/upgrades do not differ - everything always starts from a clean slate)
+      -only during upgrades: in the upgrade section (after the basic section):
+        -add a condition "if (ConfigVersion < XXX)", where XXX is the new value
+         of constant CURRENT_CONFIG_VERSION + add a comment for that version;
+         in the body of that condition call:
+          -if new extensions were added for "panel archiver", call
+           "AddPanelArchiver(PPP, EEE, TRUE)", where PPP are only the new extensions separated
+           by semicolons and EEE is TRUE/FALSE ("panel view+edit"/"panel view only")
+          -if new extensions were added for "viewer", call "AddViewer(PPP, TRUE)",
+           where PPP are only the new extensions separated by semicolons
+          -if some old extensions for "viewer" must be removed, call
+           "ForceRemoveViewer(PPP)" for each such extension PPP
+          -if some old extensions for "panel archiver" must be removed, call
+           "ForceRemovePanelArchiver(PPP)" for each such extension PPP
 
-      KONTROLA: po techto upravach doporucuji vyzkouset, jestli to funguje, jak ma,
-                staci nakompilovat plugin a zkusit ho naloadit do Salama, melo by
-                dojit k automatickemu upgradu z predesle verze (bez potreby
-                vyhozeni a pridani pluginu):
-                -viz menu Options/Configuration:
-                  -Viewery jsou na strance Viewers: najdete pridane pripony,
-                   zkontrolujte, ze odebrane pripony jiz neexistuji
-                  -Panel Archivers jsou na strance Archives Associations in Panels:
-                   najdete pridane pripony
-                  -Custom Unpackers jsou na strance Unackers in Unpack Dialog Box:
-                   najdete vas plugin a zkontrolujte, jestli je seznam masek OK
-                -zkontrolovat novou podobu submenu pluginu (v menu Plugins)
-                -zkontrolovat novou podobu Change Drive menu (Alt+F1/F2)
-                -zkontrolovat v Plugins Manageru (v menu Plugins) masky thumbnaileru:
-                 fokusnout vas plugin, pak zkontrolovat editbox "Thumbnails"
-              +nakonec muzete jeste taky zkusit vyhodit a pridat plugin, jestli
-               funguje "instalace" pluginu: kontrola viz vsechny predesle body
+      CHECK: after these changes, I recommend testing that everything works as expected.
+             It is enough to compile the plugin and try loading it into Salamander; there should
+             be an automatic upgrade from the previous version (without needing
+             to remove and add the plugin again):
+             -see menu Options/Configuration:
+               -Viewers are on the Viewers page: find the added extensions,
+                check that the removed extensions no longer exist
+               -Panel Archivers are on the Archives Associations in Panels page:
+                find the added extensions
+               -Custom Unpackers are on the Unpackers in Unpack Dialog Box page:
+                find your plugin and check that the mask list is correct
+             -check the new form of the plugin submenu (in the Plugins menu)
+             -check the new form of the Change Drive menu (Alt+F1/F2)
+             -check thumbnailer masks in Plugins Manager (in the Plugins menu):
+              focus your plugin, then check the "Thumbnails" edit box
+           +finally, you can also try removing and adding the plugin again to check whether
+            plugin "installation" works: use all the checks listed above
 
-      POZNAMKA: pri pridani pripon pro "panel archiver" je tez potreba doplnit
-                seznam pripon v parametru 'extensions' metody SetBasicPluginData
+      NOTE: when adding extensions for a "panel archiver", it is also necessary to update
+            the extension list in the 'extensions' parameter of SetBasicPluginData
 
-      PRIKLAD PRIDANI PRIPONY "dmp2" VIEWERU A ARCHIVERU:
-        (radky zacinajici na "-" byly odstraneny, radky zacinajici na "+" pridany,
-         symbol "=====" na zacatku radky znaci preruseni souvisleho useku kodu)
-        Prehled zmen:
-          -zvysila se verze konfigurace z 2 na 3:
-            -pridany komentar k verzi 3
-            -zvyseni CURRENT_CONFIG_VERSION na 3
-          -pridani pripony "dmp2" do parametru 'extensions' SetBasicPluginData
-           (protoze pridavame priponu "dmp2" pro "panel archiver")
-          -pridani masky "*.dmp2" do AddCustomUnpacker + zvyseni verze z 1 na 3
-           v podmince (protoze pridavame priponu "dmp2" pro "custom unpacker")
-          -pridani pripony "dmp2" do AddPanelArchiver (protoze pridavame priponu
-           "dmp2" pro "panel archiver")
-          -pridani masky "*.dmp2" do AddViewer (protoze pridavame priponu "dmp2"
-           pro "viewer")
-          -pridani podminky pro upgrade na verzi 3 + komentar tohoto upgradu,
-           telo podminky:
-            -volani AddPanelArchiver pro priponu "dmp2" s 'updateExts' TRUE
-             (protoze pridavame priponu "dmp2" pro "panel archiver")
-            -volani AddViewer pro masku "*.dmp2" s 'force' TRUE (protoze
-             pridavame priponu "dmp2" pro "viewer")
+      EXAMPLE OF ADDING THE "dmp2" EXTENSION TO THE VIEWER AND ARCHIVER:
+        (lines starting with "-" were removed, lines starting with "+" were added,
+         the "=====" symbol at the start of a line means the continuous code section was truncated)
+        Summary of changes:
+          -the configuration version was increased from 2 to 3:
+            -comment added for version 3
+            -CURRENT_CONFIG_VERSION increased to 3
+          -extension "dmp2" added to the 'extensions' parameter of SetBasicPluginData
+           (because we are adding the "dmp2" extension for the "panel archiver")
+          -mask "*.dmp2" added to AddCustomUnpacker + version in the condition increased from 1 to 3
+           (because we are adding the "dmp2" extension for the "custom unpacker")
+          -extension "dmp2" added to AddPanelArchiver (because we are adding extension
+           "dmp2" for the "panel archiver")
+          -mask "*.dmp2" added to AddViewer (because we are adding extension "dmp2"
+           for the "viewer")
+          -condition for upgrade to version 3 added + comment for this upgrade,
+           body of the condition:
+            -call AddPanelArchiver for extension "dmp2" with 'updateExts' TRUE
+             (because we are adding extension "dmp2" for the "panel archiver")
+            -call AddViewer for mask "*.dmp2" with 'force' TRUE (because
+             we are adding extension "dmp2" for the "viewer")
 =====
-  // ConfigVersion: 0 - zadna konfigurace se z Registry nenacetla (jde o instalaci pluginu),
-  //                1 - prvni verze konfigurace
-  //                2 - druha verze konfigurace (pridane nejake hodnoty do konfigurace)
-+ //                3 - treti verze konfigurace (pridani pripony "dmp2")
+  // ConfigVersion: 0 - no configuration was loaded from the Registry (plugin installation),
+  //                1 - first configuration version
+  //                2 - second configuration version (some values added to the configuration)
++ //                3 - third configuration version (the "dmp2" extension added)
 
   int ConfigVersion = 0;
 - #define CURRENT_CONFIG_VERSION 2
 + #define CURRENT_CONFIG_VERSION 3
   const char *CONFIG_VERSION = "Version";
 =====
-  // nastavime zakladni informace o pluginu
+  // set basic plugin information
   salamander->SetBasicPluginData("Salamander Demo Plugin",
                                  FUNCTION_PANELARCHIVERVIEW | FUNCTION_PANELARCHIVEREDIT |
                                  FUNCTION_CUSTOMARCHIVERPACK | FUNCTION_CUSTOMARCHIVERUNPACK |
@@ -613,7 +613,7 @@ public:
   {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    // zakladni cast:
+    // basic section:
     salamander->AddCustomPacker("DEMOPLUG (Plugin)", "dmp", FALSE);
 -   salamander->AddCustomUnpacker("DEMOPLUG (Plugin)", "*.dmp", ConfigVersion < 1);
 +   salamander->AddCustomUnpacker("DEMOPLUG (Plugin)", "*.dmp;*.dmp2", ConfigVersion < 3);
@@ -621,9 +621,9 @@ public:
 +   salamander->AddPanelArchiver("dmp;dmp2", TRUE, FALSE);
 -   salamander->AddViewer("*.dmp", FALSE);
 +   salamander->AddViewer("*.dmp;*.dmp2", FALSE);
-===== (vynechal jsem pridavani polozek do menu, nastavovani ikon a masek thumbnailu)
-    // cast pro upgrady:
-+   if (ConfigVersion < 3)   // verze 3: pridani pripony "dmp2"
+===== (I omitted adding menu items, setting icons and thumbnail masks)
+    // upgrade section:
++   if (ConfigVersion < 3)   // version 3: the "dmp2" extension was added
 +   {
 +     salamander->AddPanelArchiver("dmp2", TRUE, TRUE);
 +     salamander->AddViewer("*.dmp2", TRUE);
@@ -720,22 +720,23 @@ public:
     // "SalamanderPluginEntry" function) and is only a reference, so it is not released
     virtual CSalamanderDebugAbstract* WINAPI GetSalamanderDebug() = 0;
 
-    // nastaveni zakladnich dat o pluginu (data, ktera si o pluginu spolu se jmenem DLL souboru
-    // Salamander pamatuje), nutne volat, jinak nemuze byt plugin pripojen;
-    // 'pluginName' je jmeno pluginu; 'functions' obsahuje naORovane vsechny funkce, ktere plugin
-    // podporuje (viz konstanty FUNCTION_XXX); 'version'+'copyright'+'description' jsou data pro
-    // uzivatele zobrazovana v okne Plugins; 'regKeyName' je navrhovany nazev soukromeho klice
-    // pro ulozeni konfigurace v registry (bez FUNCTION_LOADSAVECONFIGURATION je ignorovan);
-    // 'extensions' jsou zakladni pripony (napr. jen "ARJ"; "A01", atd. uz ne) zpracovavanych
-    // archivu oddelene ';' (zde nema ';' zadnou escape sekvenci) - Salamander tyto pripony pouziva
-    // jen pri hledani nahrady za odstranene panelove archivatory (nastava pri odstraneni pluginu;
-    // resi se problem "co se ted postara o priponu XXX, kdyz byl puvodni asociovany archivator
-    // odstranen v ramci pluginu PPP?") (bez FUNCTION_PANELARCHIVERVIEW a bez FUNCTION_PANELARCHIVEREDIT
-    // je ignorovan); 'fsName' je navrhovane jmeno (ziskani prideleneho jmena se provede pomoci
-    // CSalamanderGeneralAbstract::GetPluginFSName) file systemu (bez FUNCTION_FILESYSTEM je
-    // ignorovan, povolene znaky jsou 'a-zA-Z0-9_+-', min. delka 2 znaky), pokud plugin potrebuje
-    // vic jmen file systemu, muze pouzit metodu CSalamanderPluginEntryAbstract::AddFSName;
-    // vraci TRUE pri uspesnem prijeti dat
+    // sets the basic plugin data (data Salamander remembers about the plugin together with the DLL file name);
+    // this call is required, otherwise the plugin cannot be connected;
+    // 'pluginName' is the plugin name; 'functions' contains all functions supported by the plugin ORed
+    // together (see FUNCTION_XXX constants); 'version'+'copyright'+'description' are values shown to the
+    // user in the Plugins window; 'regKeyName' is the proposed name of the private key
+    // for storing configuration in the registry (ignored without FUNCTION_LOADSAVECONFIGURATION);
+    // 'extensions' are the basic extensions of handled archives (e.g. just "ARJ"; not "A01", etc.)
+    // separated by ';' (here ';' has no escape meaning) - Salamander uses these extensions
+    // only when searching for a replacement for removed panel archivers (this happens when the plugin is removed;
+    // it solves the problem "which associated archiver should handle extension XXX now
+    // that the original archiver from plugin PPP has been removed?") (ignored without
+    // FUNCTION_PANELARCHIVERVIEW and FUNCTION_PANELARCHIVEREDIT); 'fsName' is the proposed name
+    // (the actually assigned name is obtained by calling
+    // CSalamanderGeneralAbstract::GetPluginFSName) of the file system (ignored without FUNCTION_FILESYSTEM;
+    // allowed characters are 'a-zA-Z0-9_+-', minimum length 2 characters). If the plugin needs
+    // more file-system names, it can use CSalamanderPluginEntryAbstract::AddFSName;
+    // returns TRUE if the data was accepted successfully
     virtual BOOL WINAPI SetBasicPluginData(const char* pluginName, DWORD functions,
                                            const char* version, const char* copyright,
                                            const char* description, const char* regKeyName = NULL,
