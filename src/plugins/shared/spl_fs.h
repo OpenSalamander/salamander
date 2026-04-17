@@ -25,12 +25,11 @@ class CPluginFSInterfaceAbstract;
 class CSalamanderDirectoryAbstract;
 class CPluginDataInterfaceAbstract;
 
-//
 // ****************************************************************************
 // CSalamanderForViewFileOnFSAbstract
 //
-// sada metod ze Salamandera pro podporu provedeni ViewFile v CPluginFSInterfaceAbstract,
-// platnost interfacu je omezena na metodu, ktere je interface predan jako parametr
+// set of methods from Salamander for supporting ViewFile in CPluginFSInterfaceAbstract,
+// the interface is valid only within the method to which it is passed as a parameter
 
 class CSalamanderForViewFileOnFSAbstract
 {
@@ -74,7 +73,7 @@ public:
 //
 // Set of plugin methods that Salamander needs to work with the file system
 
-// typ ikon v panelu pri listovani FS (pouziva se v CPluginFSInterfaceAbstract::ListCurrentPath())
+// icon type in the panel when listing the FS (used in CPluginFSInterfaceAbstract::ListCurrentPath())
 #define pitSimple 0       // simple icons for files and directories - by extension (association)
 #define pitFromRegistry 1 // icons loaded from the registry according to the file/directory extension
 #define pitFromPlugin 2   // the plugin provides the icons (obtained via CPluginDataInterfaceAbstract)
@@ -103,11 +102,11 @@ public:
 #define FSE_ACTIVATEREFRESH 4
 
 // A timer of this FS has expired; 'param' is the parameter of that timer;
-// POZOR: metoda CPluginFSInterfaceAbstract::Event() s kodem FSE_TIMER se vola
+// WARNING: the CPluginFSInterfaceAbstract::Event() method with code FSE_TIMER is called
 // from the main thread after the WM_TIMER message is delivered to the main window (so, for example,
 // any modal dialog may currently be open), so the timer reaction should
-// happen quietly (do not open windows, etc.); a call to
-// CPluginFSInterfaceAbstract::Event() s kodem FSE_TIMER muze dojit hned po
+// happen quietly (do not open any windows, etc.); a call to
+// the CPluginFSInterfaceAbstract::Event() method with code FSE_TIMER may occur immediately after
 // the call to CPluginInterfaceForFS::OpenFS (if it adds a timer for
 // a newly created FS object)
 #define FSE_TIMER 5
@@ -266,15 +265,15 @@ public:
 
     // Only if GetSupportedServices() returns FS_SERVICE_GETCHANGEDRIVEORDISCONNECTITEM:
     // gets the item for this FS (active or detached) for the Change Drive menu (Alt+F1/F2)
-    // or the Disconnect dialog (hotkey: F12; disconnecting this FS, if needed, is handled by method
-    // CPluginInterfaceForFSAbstract::DisconnectFS; pokud GetChangeDriveOrDisconnectItem vrati
-    // FALSE a FS je v panelu, prida se polozka s ikonou ziskanou pres GetFSIcon a root cestou);
+    // or the Disconnect dialog (hotkey: F12; any disconnect of this FS is handled by the
+    // CPluginInterfaceForFSAbstract::DisconnectFS method; if GetChangeDriveOrDisconnectItem returns
+    // FALSE and the FS is in a panel, an item with the icon obtained via GetFSIcon and the root path is added);
     // if the return value is TRUE, an item with icon 'icon' and text 'title' is added;
     // 'fsName' is the current FS name; if 'icon' is NULL, the item has no icon; if
     // 'destroyIcon' is TRUE and 'icon' is not NULL, 'icon' is released after use via the Win32 API
     // function DestroyIcon; 'title' is text allocated on Salamander's heap and may contain
-    // up to three columns separated by '\t' (see the Alt+F1/F2 menu); only the second column is used in the Disconnect dialog;
-    // if the return value is FALSE, the output values
+    // up to three columns separated by '\t' (see the Alt+F1/F2 menu); only the second column is used
+    // in the Disconnect dialog; if the return value is FALSE, the output values
     // 'title', 'icon', and 'destroyIcon' are ignored (no item is added)
     virtual BOOL WINAPI GetChangeDriveOrDisconnectItem(const char* fsName, char*& title,
                                                        HICON& icon, BOOL& destroyIcon) = 0;
@@ -313,20 +312,20 @@ public:
     // 'path' is an in/out buffer containing the path (the buffer size is 'pathBufSize')
     virtual void WINAPI CompleteDirectoryLineHotPath(char* path, int pathBufSize) = 0;
 
-    // Only if GetSupportedServices() returns FS_SERVICE_GETPATHFORMAINWNDTITLE:
-    // obtains the text to display in the main window title when showing the current
-    // path in the main window title is enabled (see Configuration/Appearance/Display current
-    // path...); 'fsName' is the current FS name; if 'mode' is 1, this is
-    // Directory Name Only mode (only the current directory name - the last
-    // path component - should be displayed); if 'mode' is 2, this is
-    // Shortened Path mode (the shortened form of the path should be displayed -
-    // root (including the path separator) + ... + path separator
-    // + the last path component); 'buf' is a buffer of size 'bufSize' for the
-    // resulting text; returns TRUE if it returns the requested text; returns FALSE if the
-    // GetNextDirectoryLineHotPath()
-    // POZNAMKA: pokud GetSupportedServices() nevraci i FS_SERVICE_GETPATHFORMAINWNDTITLE,
-    // text should be generated from separator positions obtained by the method
-    // GetNextDirectoryLineHotPath()
+    // loads files and directories from the current path and stores them in the 'dir' object (for path NULL or
+    // "", files and directories on other paths are ignored; if a directory named
+    // ".." is added, it is drawn as the "up-dir" symbol; file and directory names are fully
+    // determined by the plugin, Salamander only displays them); Salamander obtains the contents of
+    // plugin-added columns through the 'pluginData' interface (if the plugin does not add columns
+    // and has no custom icons, it returns 'pluginData'==NULL); in 'iconsType' it returns the requested method
+    // of obtaining file and directory icons for the panel; pitFromPlugin degrades to pitSimple if
+    // 'pluginData' is NULL (without 'pluginData', pitFromPlugin cannot be provided); if 'forceRefresh' is
+    // TRUE, this is a hard refresh (Ctrl+R) and the plugin should load files and directories without using
+    // the cache; returns TRUE if loading succeeds; if it returns FALSE, an error occurred and ChangePath
+    // will be called on the current path; ChangePath is expected to select an accessible subpath
+    // or return FALSE; after a successful call to ChangePath, ListCurrentPath will be called again;
+    // if it returns FALSE, the return value 'pluginData' is ignored (the data in 'dir' must be
+    // released using 'dir.Clear(pluginData)', otherwise only the Salamander part of the data is released);
     virtual BOOL WINAPI GetPathForMainWindowTitle(const char* fsName, int mode, char* buf, int bufSize) = 0;
 
     // Only if GetSupportedServices() returns FS_SERVICE_SHOWINFO:
@@ -508,27 +507,26 @@ public:
     // Executes the command on an FS item in the Change Drive menu or in the Drive bars (for adding it, see CSalamanderConnectAbstract::SetChangeDriveMenuItem). 'panel' identifies the panel we should work with - for a command from the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu can be opened only for the active panel); for a command from the Drive bars, 'panel' may be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we may work with the inactive panel).
     virtual void WINAPI ExecuteChangeDriveMenuItem(int panel) = 0;
 
-    // Opens a context menu on the FS item in the Change Drive menu or in the Drive
+    // opens a context menu on the FS item in the Change Drive menu or in the Drive
     // bars, or for an active/detached FS in the Change Drive menu; 'parent' is the parent
     // of the context menu; 'x' and 'y' are the coordinates for opening the context menu
     // (the right-mouse-button click position or the suggested coordinates for Shift+F10);
-    // je-li 'pluginFS' NULL jde o polozku pro FS, jinak je 'pluginFS' interface
+    // if 'pluginFS' is NULL, this is the item for the FS; otherwise 'pluginFS' is the interface
     // of the active/detached FS ('isDetachedFS' is FALSE/TRUE); if 'pluginFS' is not
-    // NULL, je v 'pluginFSName' jmeno FS otevreneho v 'pluginFS' (jinak je v
-    // 'pluginFSName' NULL) and 'pluginFSNameIndex' contains the index of the FS name opened
+    // NULL, 'pluginFSName' contains the name of the FS opened in 'pluginFS' (otherwise
+    // 'pluginFSName' is NULL) and 'pluginFSNameIndex' contains the index of the FS name opened
     // in 'pluginFS' (to make it easier to detect which FS name it is; otherwise
     // 'pluginFSNameIndex' is -1); if it returns FALSE, the other return values are
     // ignored; otherwise they have this meaning: 'refreshMenu' returns TRUE if the
     // Change Drive menu should be refreshed (ignored for Drive bars, because active/detached FSs are not shown there); 'closeMenu' returns TRUE if the
     // Change Drive menu should be closed (there is nothing to close for Drive bars); if 'closeMenu'
-    // is TRUE and 'postCmd' is not zero, after the Change Drive menu is closed (for Drive bars
-    // TRUE a 'postCmd' neni nula, je po zavreni Change Drive menu (pro Drive bary
-    // immediately) ExecuteChangeDrivePostCommand is also called with parameters 'postCmd'
-    // and 'postCmdParam'; 'panel' identifies the panel we should work with - for a
+    // is TRUE and 'postCmd' is not zero, after the Change Drive menu is closed (for Drive bars,
+    // immediately), ExecuteChangeDrivePostCommand is also called with parameters 'postCmd'
+    // and 'postCmdParam'; 'panel' identifies the panel to work with - for a
     // context menu in the Change Drive menu, 'panel' is always PANEL_SOURCE (this menu
-    // can be opened only for the active panel); for a context menu in the Drive bars
-    // 'panel' can be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, we can
-    // work with the inactive panel as well)
+    // can be opened only for the active panel); for a context menu in the Drive bars,
+    // 'panel' can be PANEL_LEFT or PANEL_RIGHT (if two Drive bars are enabled, work can also
+    // continue with the inactive panel)
     virtual BOOL WINAPI ChangeDriveMenuItemContextMenu(HWND parent, int panel, int x, int y,
                                                        CPluginFSInterfaceAbstract* pluginFS,
                                                        const char* pluginFSName, int pluginFSNameIndex,
