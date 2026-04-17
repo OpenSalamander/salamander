@@ -83,7 +83,7 @@ HBITMAP LoadBitmapAndMapColors(HINSTANCE hInst, HRSRC hRsrc, int mapCount,
         TRACE_E("Unable to create bitmap.");
     HANDLES(ReleaseDC(NULL, hDCScreen));
 
-    // free copy of bitmap info struct and resource itself
+    // free the copy of the bitmap info struct and the resource itself
     free(lpBitmapInfo);
     FreeResource(hglb);
 
