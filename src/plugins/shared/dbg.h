@@ -495,8 +495,8 @@ protected:
     int Line;                            // and the line number from which TRACE_X() is called
     C__StringStreamBuf TraceStringBuf;   // string buffer drzici data trace streamu (ANSI)
     C__StringStreamBufW TraceStringBufW; // string buffer drzici data trace streamu (unicode)
-    C__TraceStream TraceStrStream;       // vlastni trace stream (ANSI)
-    C__TraceStreamW TraceStrStreamW;     // vlastni trace stream (unicode)
+    C__TraceStream TraceStrStream;           // trace stream object (ANSI)
+    C__TraceStreamW TraceStrStreamW;         // trace stream object (Unicode)
 
 public:
     C__Trace();
