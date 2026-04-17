@@ -310,7 +310,7 @@ CPropSheetPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
             return TRUE;
         }
-        break; // let F1 fall through to the parent
+        break; // Let F1 propagate to the parent
     }
 
     case WM_CONTEXTMENU:
@@ -446,7 +446,7 @@ CPropSheetPage::CPropSheetPageProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
     if (dlg != NULL)
         return dlg->DialogProc(uMsg, wParam, lParam);
     else
-        return FALSE; // error, or the message did not arrive between WM_INITDIALOG and WM_DESTROY
+        return FALSE; // Error, or the message was not received between WM_INITDIALOG and WM_DESTROY
 }
 
 //
@@ -569,7 +569,7 @@ CTPHCaptionWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(HWindow, &r);
 
         int devCaps = GetDeviceCaps(hdc, NUMCOLORS);
-        if (devCaps == -1) // use the gradient only with more than 256 colors
+        if (devCaps == -1) // use the gradient only when more than 256 colors are available
         {
             HBRUSH hOldBrush = (HBRUSH)GetCurrentObject(hdc, OBJ_BRUSH);
 #define TPH_STEPS 100
@@ -762,7 +762,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                (GetKeyState(VK_CONTROL) & 0x8000) != 0,
                                (GetKeyState(VK_SHIFT) & 0x8000) != 0);
         }
-        return TRUE; // do not let F1 fall through to the parent even if we do not call WinLibHelp->OnHelp()
+        return TRUE; // do not let F1 propagate to the parent even if we do not call WinLibHelp->OnHelp()
     }
 
     case WM_COMMAND:
@@ -806,7 +806,7 @@ CTreePropHolderDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         }
 
-        // forward the message so Enter reaches the default buttons
+        // forward the message so Enter is routed to the default buttons
         if (ChildDialog != NULL && HIWORD(wParam) == BN_CLICKED)
             ::SendMessage(ChildDialog->HWindow, uMsg, wParam, lParam);
 
