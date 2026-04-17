@@ -6,9 +6,8 @@
 
 // ****************************************************************************
 //
-// CBackbufferedDC -- DC s back bufferem, pro hladke kresleni slozitejsich
-// grafickych celku
-//
+// CBackbufferedDC -- DC with a back buffer for smooth drawing of more
+// complex graphics
 
 class CBackbufferedDC
 {
