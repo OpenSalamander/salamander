@@ -166,8 +166,8 @@ struct C__MessageBoxData
 };
 
 int CALLBACK __MessagesMessageBoxThreadF(C__MessageBoxData* data)
-{ // must not wait for the calling thread to respond, because it will not respond
-    // therefore parent == NULL -> no window disabling, etc.
+{ // must not wait for a response from the calling thread, because it will not respond
+    // therefore parent == NULL -> no disabling of windows, etc.
     data->Return = MessageBoxA(NULL, data->Text, data->Caption, data->Type | MB_SETFOREGROUND);
     return 0;
 }
