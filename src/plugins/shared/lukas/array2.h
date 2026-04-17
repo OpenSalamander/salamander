@@ -48,8 +48,8 @@ public:
 
 // ****************************************************************************
 // CArray2:
-//  -predek vsech indirect poli
-//  -drzi typ (void *) v DWORD poli (kvuli uspore mista v .exe)
+//  -base class for all indirect arrays
+//  -stores (void *) values in a DWORD array (to save space in the .exe)
 
 class CArray2 : public TDirectArray2<DWORD_PTR>
 {
@@ -74,8 +74,8 @@ protected:
 
 // ****************************************************************************
 // TIndirectArray2:
-//  -vhodne pro ulozeni ukazatelu na objekty
-//  -ostatni vlastnosti viz CArray
+//  -suitable for storing pointers to objects
+//  -for other properties, see CArray
 
 template <class DATA_TYPE>
 class TIndirectArray2 : public CArray2
