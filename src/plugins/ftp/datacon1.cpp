@@ -845,7 +845,7 @@ void CDataConnectionSocket::JustConnected()
     ReceivedConnected = TRUE; // if FD_READ arrives before FD_CONNECT (either way it must be connected)
     TransferSpeedMeter.JustConnected();
     // Since we are already in CSocketsThread::CritSect, this call
-        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+    // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectedToServer);
     // since we are already in the CSocketsThread::CritSect section, this call
     // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
@@ -1044,8 +1044,8 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                     sendFDCloseAgain = TRUE;
 
                                                 // if no timer for flushing data with the DATACON_FLUSHTIMEOUT timeout has been created yet,
-                                                                                                // and the need to flush the buffer has not yet been recorded (NeedFlushReadBuf == 0),
-                                                                                                // create a timer for flushing the data
+                                                // and the need to flush the buffer has not yet been recorded (NeedFlushReadBuf == 0),
+                                                // create a timer for flushing the data
                                                 if (!FlushTimerAdded && NeedFlushReadBuf == 0)
                                                 {
                                                     // since we are already in CSocketsThread::CritSect, this call
@@ -1110,7 +1110,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                         else // all data are stored in the ReadBytes buffer
                         {
                             if (!lowMem &&
-                                ReadBytesAllocatedSize - ValidBytesInReadBytesBuf < DATACON_BYTESTOREADONSOCKET) // maly buffer 'ReadBytes'
+                                ReadBytesAllocatedSize - ValidBytesInReadBytesBuf < DATACON_BYTESTOREADONSOCKET) // 'ReadBytes' buffer too small
                             {
                                 int newSize = ValidBytesInReadBytesBuf + DATACON_BYTESTOREADONSOCKET +
                                               DATACON_BYTESTOREADONSOCKETPREALLOC;
@@ -1287,11 +1287,11 @@ void CDataConnectionSocket::SocketWasClosed(DWORD error)
         NetEventLastError = error;
 
     // Since we are already in CSocketsThread::CritSect, this call
-        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+    // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectionClosed);
 
     // Since we are already in CSocketsThread::CritSect, this call
-        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
+    // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     SocketsThread->DeleteTimer(UID, DATACON_TESTNODATATRTIMERID);
 
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1382,7 +1382,7 @@ void CDataConnectionSocket::CloseTgtFile()
             if (FTPDiskThread->CancelWork(&DiskWork, &workIsInProgress))
             {
                 if (workIsInProgress)
-                    DiskWork.FlushDataBuffer = NULL; // the work is in progress; we cannot free the buffer with the data being written/tested, leave it to the disk-work thread (see the cancellation part) - DiskWork can be written because after Cancel the disk thread must no longer access it (it may no longer exist)
+                    DiskWork.FlushDataBuffer = NULL; // the work is already underway, so we cannot free the buffer with the data being written/tested; leave it to the disk-work thread (see the cancellation part) - we can still write to DiskWork because after Cancel the disk thread must no longer access it (it may not even exist anymore)
                 else
                 { // the work was cancelled before the disk thread started processing it - deallocate the flush buffer
                     if (DiskWork.FlushDataBuffer != NULL)
