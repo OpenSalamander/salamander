@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /****************************************************************************************\
 **                                                                                      **
@@ -641,7 +642,7 @@ static void DestroyIllegalChars(LPSTR pszPath)
     }
 }
 
-////// JMENA DEKODOVANYCH SOUBORU //////////////////////////////////////////////
+////// NAMES OF DECODED FILES //////////////////////////////////////////////
 
 static void SetDefaultFileName(BOOL bAppendCharset)
 {
@@ -721,7 +722,7 @@ static void MakeNamesUnique(CParserOutput* pOutput)
     }
     // sort the index
     qsort(index, numblocks, sizeof(char*), compare_file_names);
-    // identical names now lie next to each other and we can easily catch them
+    // identical names are now adjacent, so we can detect them easily
     int k, l;
     for (k = 1, l = 0; k < numblocks; k++)
     {
@@ -871,7 +872,7 @@ static void EndCalcSize(CParserOutput* pOutput)
     }
 }
 
-////// FUNKCE PRO ULOZENI/OBNOVENI STAVU PARSERU ///////////////////////////////
+//FUNCTIONS FOR SAVING/RESTORING PARSER STATE ///////////////////////////////
 
 static void SaveState()
 {
@@ -1039,7 +1040,7 @@ static BOOL TestUUBlock(CParserOutput* pOutput, BOOL& bEnd)
 
 static BOOL TestYEncBlock(CParserOutput* pOutput, BOOL& bEnd)
 {
-    // are we on a header?
+    // is this the header?
     if (memcmp(cLine, "=ybegin", 7))
         return FALSE;
 
