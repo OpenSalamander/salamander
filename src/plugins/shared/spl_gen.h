@@ -13,7 +13,7 @@
 #pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_gen) // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_gen) // to keep structures independent of the current packing/alignment setting
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -400,7 +400,7 @@ struct CSalamanderPluginViewerData
     const char* FileName;
 };
 
-// rozsireni struktury CSalamanderPluginViewerData pro interni text/hex viewer
+// extension of the CSalamanderPluginViewerData structure for the internal text/hex viewer
 struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 {
     int Mode;            // 0 - textovy mod, 1 - hexa mod
@@ -530,7 +530,7 @@ public:
     // 'flags' are algorithm flags (see the SASF_XXX constants)
     virtual void WINAPI Set(const char* pattern, const int length, WORD flags) = 0;
 
-    // nastaveni priznaku algoritmu; 'flags' jsou priznaky algoritmu (viz konstanty SASF_XXX)
+    // sets algorithm flags; 'flags' are algorithm flags (see SASF_XXX constants)
     virtual void WINAPI SetFlags(WORD flags) = 0;
 
     // returns the pattern length (usable only after a successful call to Set)
@@ -650,18 +650,18 @@ public:
 //        AgreeMasks)
 //
 // Object lifetime:
-//   1) Alokujeme metodou CSalamanderGeneralAbstract::AllocSalamanderMaskGroup
+//   1) Allocate it with CSalamanderGeneralAbstract::AllocSalamanderMaskGroup
 //   2) Pass the mask group to SetMasksString.
 //   3) Call PrepareMasks to build the internal data; if it fails,
 //      show the error position and, after correcting the mask, return to step (3)
 //   4) Call AgreeMasks as needed to determine whether a name matches the mask group.
 //   5) After calling SetMasksString again, continue from step (3)
-//   6) Destrukce objektu metodou CSalamanderGeneralAbstract::FreeSalamanderMaskGroup
+//   6) Destroy the object with CSalamanderGeneralAbstract::FreeSalamanderMaskGroup
 //
 // Mask:
 //   '?' - any character
 //   '*' - any string, including an empty one
-//   '#' - libovolna cislice (pouze je-li 'extendedMode'==TRUE)
+//   '#' - any digit (only if 'extendedMode'==TRUE)
 //
 //   Examples:
 //     *     - all names
@@ -723,8 +723,8 @@ public:
     // this method is published so the allocated object can be reused multiple times
     virtual void WINAPI Init() = 0;
 
-    // aktualizuje vnitrni stav objektu na zaklade bloku dat urceneho promennou 'input',
-    // 'input_length' udava velikost bufferu v bajtech
+    // updates the internal object state from the data block specified by 'input',
+    // 'input_length' specifies the buffer size in bytes
     virtual void WINAPI Update(const void* input, DWORD input_length) = 0;
 
     // Prepares the MD5 for retrieval by GetDigest
@@ -736,7 +736,7 @@ public:
     virtual void WINAPI GetDigest(void* dest) = 0;
 };
 
-#define SALPNG_GETALPHA 0x00000002    // pri vytvareni DIB se nastavi take alpha kanal (jinak bude roven 0)
+#define SALPNG_GETALPHA 0x00000002    // when creating the DIB, the alpha channel is also initialized (otherwise it would be 0)
 #define SALPNG_PREMULTIPLE 0x00000004 // Meaningful only when SALPNG_GETALPHA is set; premultiplies the RGB components so AlphaBlend() can be called on the bitmap with BLENDFUNCTION::AlphaFormat == AC_SRC_ALPHA
 
 class CSalamanderPNGAbstract
@@ -812,7 +812,7 @@ enum CHtmlHelpCommand
     HHCDisplayContext, // viz HH_HELP_CONTEXT: dwData = numeric ID of the topic to display
 };
 
-// slouzi jako parametr OpenHtmlHelpForSalamander pri command==HHCDisplayContext
+// used as a parameter of OpenHtmlHelpForSalamander when command==HHCDisplayContext
 #define HTMLHELP_SALID_PWDMANAGER 1 // displays help for Password Manager
 
 class CPluginFSInterfaceAbstract;
@@ -848,19 +848,19 @@ public:
     // FlashWindow(mainwnd, FALSE) is called after it is closed; mainwnd is the parent of 'hParent'
     // that no longer has a parent (typically the Salamander main window).
     //
-    // SalMessageBox naplni strukturu MSGBOXEX_PARAMS (hParent->HParent, lpText->Text,
-    // lpCaption->Caption and uType->Flags; all other structure members are zeroed and
-    // SalMessageBoxEx is then called, so only SalMessageBoxEx is described below.
+    // SalMessageBox fills the MSGBOXEX_PARAMS structure (hParent->HParent, lpText->Text,
+    // lpCaption->Caption and uType->Flags; all other structure members are zeroed) and
+    // then calls SalMessageBoxEx, so only SalMessageBoxEx is described below.
     //
     // SalMessageBoxEx tries to behave as much as possible like the Windows API functions
     // MessageBox and MessageBoxIndirect. The differences are:
     //   - the message box is centered on hParent (if it is a child window, the non-child parent is used)
     //   - for MB_YESNO/MB_ABORTRETRYIGNORE message boxes, it is possible to enable
     //     closing the window with Escape or by clicking the title-bar close box (flag
-    //     MSGBOXEX_ESCAPEENABLED); navratova hodnota pak bude IDNO/IDCANCEL
+    //     MSGBOXEX_ESCAPEENABLED); the return value will then be IDNO/IDCANCEL
     //   - the beep can be suppressed (flag MSGBOXEX_SILENT)
     //
-    // Komentar k uType viz komentar k MSGBOXEX_PARAMS::Flags
+    // Comment for uType: see comment for MSGBOXEX_PARAMS::Flags
     //
     // Return Values
     //    DIALOG_FAIL       (0)            The function fails.
@@ -1100,9 +1100,9 @@ public:
     // can be called from any thread
     virtual void WINAPI GetLowerAndUpperCase(unsigned char** lowerCase, unsigned char** upperCase) = 0;
 
-    // prevod retezce 'str' na mala/velka pismena; narozdil od ANSI C tolower/toupper pracuje
-    // rovnou s retezcem a podporuje nejen znaky 'A' az 'Z' (prevod na mala pismena provadi pres
-    // pole inicializovane Win32 API funkci CharLower)
+    // converts string 'str' to lowercase/uppercase; unlike ANSI C tolower/toupper it works
+    // directly on the string and supports more than just characters 'A' to 'Z' (conversion to lowercase is performed via
+    // an array initialized by the Win32 API function CharLower)
     virtual void WINAPI ToLowerCase(char* str) = 0;
     virtual void WINAPI ToUpperCase(char* str) = 0;
 
@@ -1233,16 +1233,16 @@ public:
     virtual int WINAPI MemICmp(const void* buf1, const void* buf2, int n) = 0;
 
     // Case-insensitive comparison of strings 's1' and 's2';
-    // je-li SALCFG_SORTUSESLOCALE TRUE, pouziva razeni podle regionalniho nastaveni Windows,
-    // otherwise it compares them the same way as CSalamanderGeneral::StrICmp; if SALCFG_SORTDETECTNUMBERS
-    // TRUE, pouziva ciselne razeni pro cisla obsazene v retezcich
+    // if SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
+    // otherwise they are compared the same way as CSalamanderGeneral::StrICmp; if SALCFG_SORTDETECTNUMBERS is
+    // TRUE, numeric sorting is used for numbers contained in the strings
     // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
     virtual int WINAPI RegSetStrICmp(const char* s1, const char* s2) = 0;
 
     // Compares strings 's1' and 's2' (with lengths 'l1' and 'l2') case-insensitively.
-    // pismen (ignore-case), je-li SALCFG_SORTUSESLOCALE TRUE, pouziva razeni podle
-    // Windows regional settings; otherwise it compares them the same way as CSalamanderGeneral::StrICmp,
-    // je-li SALCFG_SORTDETECTNUMBERS TRUE, pouziva ciselne razeni pro cisla obsazene
+    // If SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
+    // otherwise it compares them the same way as CSalamanderGeneral::StrICmp;
+    // if SALCFG_SORTDETECTNUMBERS is TRUE, numeric sorting is used for numbers contained
     // in the strings; if 'numericalyEqual' is not NULL, it returns TRUE if the strings are
     // numerically equal (for example, "a01" and "a1"); it is automatically TRUE if the strings are equal
     // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
@@ -1257,9 +1257,9 @@ public:
     virtual int WINAPI RegSetStrCmp(const char* s1, const char* s2) = 0;
 
     // Case-sensitive comparison of strings 's1' and 's2' (with lengths 'l1' and 'l2'); if
-    // SALCFG_SORTUSESLOCALE TRUE, pouziva razeni podle regionalniho nastaveni Windows,
+    // SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
     // otherwise it compares them the same way as the standard C library function strcmp; if
-    // SALCFG_SORTDETECTNUMBERS TRUE, pouziva ciselne razeni pro cisla obsazene v retezcich;
+    // SALCFG_SORTDETECTNUMBERS is TRUE, numeric sorting is used for numbers contained in the strings;
     // in 'numericalyEqual' (if not NULL), it returns TRUE if the strings are numerically equal
     // (e.g. "a01" and "a1"); it is automatically TRUE if the strings are equal
     // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
@@ -1622,8 +1622,8 @@ public:
     // Duplicates '&'; useful for paths displayed in menus ('&&' is displayed as '&'). 'buffer' is an input/output string, and 'bufferSize' is the size of 'buffer' in bytes. Returns TRUE if duplicating '&' did not truncate characters from the end of the string, that is, the buffer was large enough. Callable from any thread.
     virtual BOOL WINAPI DuplicateAmpersands(char* buffer, int bufferSize) = 0;
 
-    // odstrani '&' z textu; najde-li dvojici "&&", nahradi ji jednim znakem '&'
-    // mozne volat z libovolneho threadu
+    // removes '&' from the text; if it finds the pair "&&", it replaces it with a single '&'
+    // can be called from any thread
     virtual void WINAPI RemoveAmpersands(char* text) = 0;
 
     // ValidateVarString and ExpandVarString:
@@ -1798,7 +1798,7 @@ public:
     // 'showCloseButton' specifies whether the window contains a Close button; equivalent to the Escape key
     virtual void WINAPI CreateSafeWaitWindow(const char* message, const char* caption,
                                              int delay, BOOL showCloseButton, HWND hForegroundWnd) = 0;
-    // zavreni okenka
+    // closing the window
     virtual void WINAPI DestroySafeWaitWindow() = 0;
     // Hide/show the window (if it is open); call in response to WM_ACTIVATE from hForegroundWnd:
     //    case WM_ACTIVATE:
@@ -1888,7 +1888,7 @@ public:
 
     // Returns conversion tables one by one (loaded from convert\XXX\convert.cfg
     // in the Salamander installation - XXX is the currently used conversion-table directory);
-    // 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno);
+    // 'parent' is the parent of the message box (if NULL, the main window is the parent);
     // 'index' is an input/output variable pointing to an int that is 0 on the first call;
     // the function stores the value for the next call on return (usage: initialize it to 0, then
     // do not modify it); returns FALSE if there is no next table; if it returns TRUE,
@@ -1896,7 +1896,7 @@ public:
     // underlined character in the menu) or NULL if it is a separator, and 'table' (if not NULL)
     // contains a pointer to a 256-byte conversion table or NULL if it is a separator; the 'name'
     // and 'table' pointers remain valid for the entire Salamander run (you do not need to copy them)
-    // POZOR: ukazatel 'table' pouzivat timto zpusobem (nutne pretypovani na "unsigned"):
+    // WARNING: use pointer 'table' this way (cast to "unsigned" is required):
     //        *s = table[(unsigned char)*s]
     // Can be called from any thread
     virtual BOOL WINAPI EnumConversionTables(HWND parent, int* index, const char** name, const char** table) = 0;
@@ -1924,10 +1924,10 @@ public:
     // Determines from buffer 'pattern' of length 'patternLen' (e.g. the first 10000 characters) whether it is
     // text (there is a code page in which it contains only permitted characters - printable
     // and control) and, if it is text, also determines its most likely code page;
-    // 'parent' je parent messageboxu (je-li NULL, je parent hlavni okno); je-li 'forceText'
-    // TRUE, neprovadi se kontrola na nepovolene znaky (pouziva se, pokud 'pattern' obsahuje
+    // 'parent' is the parent of the message box (if NULL, the main window is the parent); if 'forceText'
+    // is TRUE, the check for disallowed characters is skipped (used when 'pattern' contains
     // text); if 'isText' is not NULL, TRUE is returned in it if the buffer is text; if 'codePage'
-    // NULL, jde o buffer (min. 101 znaku) pro jmeno kodove stranky (nejpravdepodobnejsi)
+    // is not NULL, it is a buffer (min. 101 characters) for the code-page name (the most likely one)
     // Can be called from any thread
     virtual void WINAPI RecognizeFileType(HWND parent, const char* pattern, int patternLen, BOOL forceText,
                                           BOOL* isText, char* codePage) = 0;
@@ -2868,14 +2868,14 @@ public:
     // Shows a security icon in panel 'panel' (a locked or unlocked padlock, for example FTPS uses it to inform
     // the user that the connection to the server is secured with SSL and that the server identity is either
     // verified (locked padlock) or not verified (unlocked padlock)); 'panel' is one of PANEL_XXX;
-    // je-li 'showIcon' TRUE, ikona se ukaze, jinak se schova; 'isLocked' urcuje, jestli jde
-    // whether the padlock is locked (TRUE) or unlocked (FALSE); if 'tooltip' is not NULL, it is the text shown
+    // if 'showIcon' is TRUE, the icon is shown, otherwise it is hidden; 'isLocked' determines whether
+    // the padlock is locked (TRUE) or unlocked (FALSE); if 'tooltip' is not NULL, it is the text shown
     // when the mouse hovers over the icon (if it is NULL, no text is shown); if clicking the security icon should
     // perform an action (for example, FTPS displays a server certificate dialog), it must be added to the
-    // serveru), je nutne ji pridat do metody CPluginFSInterfaceAbstract::ShowSecurityInfo file-systemu
-    // displayed in the panel;
+    // file-system's CPluginFSInterfaceAbstract::ShowSecurityInfo method
+    // shown for the file system displayed in the panel;
     // NOTE: a suitable place to show the security icon for an FS is when handling
-    // FSE_PATHCHANGED, to uz je FS v panelu (jestli se ma nebo nema ikona zobrazit se muze urcit
+    // FSE_PATHCHANGED, once the FS is already in the panel (whether the icon should be shown or hidden can be determined
     // in ChangePath or ListCurrentPath)
     // NOTE: the security icon is automatically hidden immediately before the panel path changes or
     // before a refresh (for an FS, this means immediately after a successful ListCurrentPath call; for archives,
