@@ -10,7 +10,7 @@
 struct CMessage
 {
     int Size;
-    int SenderID; // doplni message center pri odeslani
+    int SenderID; // filled in by the message center when sending
 };
 
 #pragma pack(pop)
