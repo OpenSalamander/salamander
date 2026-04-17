@@ -14,8 +14,8 @@
 
 #pragma once
 
-// makra pro potlaceni nepotrebnych casti WinLibLT (snazsi kompilace):
-// ENABLE_PROPERTYDIALOG - je-li definovano, je mozne pouzivat property sheet dialog (CPropertyDialog)
+// macros for omitting unneeded parts of WinLibLT (easier compilation):
+// ENABLE_PROPERTYDIALOG - if defined, the property sheet dialog (CPropertyDialog) can be used
 
 // sets custom WinLib strings
 void SetWinLibStrings(const char* invalidNumber, // "not a number" (for numeric transfer buffers)
