@@ -76,15 +76,15 @@ void MakeCrcTable(DWORD* crcTab)
     const DWORD poly = 0xedb88320L; //polynomial exclusive-or pattern
 
     /*
-  //generate crc polonomial, using precomputed poly should be faster
-  // terms of polynomial defining this crc (except x^32):
-  static const Byte p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
+      // Generate the CRC polynomial; using a precomputed poly should be faster
+      // Terms of the polynomial defining this CRC (except x^32):
+      static const Byte p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
 
-  // make exclusive-or pattern from polynomial (0xedb88320L)
-  poly = 0L;
-  for (n = 0; n < sizeof(p)/sizeof(Byte); n++)
-    poly |= 1L << (31 - p[n]);
-*/
+      // Make the exclusive-or pattern from the polynomial (0xedb88320L)
+      poly = 0L;
+      for (n = 0; n < sizeof(p)/sizeof(Byte); n++)
+        poly |= 1L << (31 - p[n]);
+    */
     for (n = 0; n < 256; n++)
     {
         c = (DWORD)n;
