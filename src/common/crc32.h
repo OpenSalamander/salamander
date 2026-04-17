@@ -6,7 +6,7 @@
 
 //#define STATIC_CRC_TAB
 
-//size of crc tab in the memory
+// size of the CRC table in memory
 #define CRC_TAB_SIZE 256 * sizeof(DWORD)
 //initial value of crc shift register
 #define INIT_CRC 0L
