@@ -202,7 +202,7 @@ public:
     //      source file. This name is displayed together with the size
     //      and time ('srcFileInfo') in the prompt to overwrite an existing file,
     //      if the 'fileName' file already exists.
-    //      'srcFileName' muze byt NULL, potom je 'srcFileInfo' ignorovano.
+    //      'srcFileName' may be NULL; 'srcFileInfo' is then ignored.
     //      In that case, the overwrite prompt will display the text
     //      "a newly created file" instead of the source file.
     //
@@ -211,7 +211,7 @@ public:
     //      and time of the source file. This information is displayed together with the name
     //      of the source file 'srcFileName' in the prompt to overwrite an existing file.
     //      Format: "size, date, time".
-    //      Velikost ziskame pomoci CSalamanderGeneralAbstract::NumberToStr,
+    //      Size is obtained using CSalamanderGeneralAbstract::NumberToStr,
     //      date by calling GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, ...
     //      and time by calling GetTimeFormat(LOCALE_USER_DEFAULT, 0, ...
     //      See the implementation of the GetFileInfo method in the UnFAT plugin.
@@ -251,18 +251,18 @@ public:
     //      prompts by clicking the "Skip" or "Skip all" button. The buffer size is
     //      given by the skipPathMax variable and will not be exceeded. The path is null-terminated.
     //      At the beginning of SafeFileCreate, the buffer is set to an empty string.
-    //      'skipPath' muze byt NULL, 'skipPathMax' je potom ignorovano.
+    //      'skipPath' may be NULL; 'skipPathMax' is then ignored.
     //
     //    'skipPathMax'
     //      [in] Size of the 'skipPath' buffer in characters. It must be set if 'skipPath'
-    //      ruzna od NULL.
+    //      is not NULL.
     //
     //    'allocateWholeFile'
     //      [in/out] Pointer to a CQuadWord specifying the size to which the file should be
     //      preallocated using SetEndOfFile. If the pointer is NULL, it is ignored
     //      and SafeFileCreate does not attempt preallocation. If the pointer is not
     //      NULL, the function attempts preallocation. The requested size must be greater than
-    //      CQuadWord(2, 0) a mensi nez CQuadWord(0, 0x80000000) (8EB).
+    //      CQuadWord(2, 0) and less than CQuadWord(0, 0x80000000) (8EB).
     //
     //      If SafeFileCreate is also to perform a test (the preallocation mechanism may not always be
     //      functional), the highest bit of the size must be set, that is, add
@@ -271,10 +271,10 @@ public:
     //      If the file is created successfully (SafeFileCreate returns a handle other than
     //      INVALID_HANDLE_VALUE), the 'allocateWholeFile' variable is set to one of
     //      the following values:
-    //       CQuadWord(0, 0x80000000): soubor se nepodarilo predalokovat a behem pristiho
+    //       CQuadWord(0, 0x80000000): the file could not be preallocated, and on the next
     //                                 call to SafeFileCreate for files in the same destination
-    //                                 by mela byt 'allocateWholeFile' NULL
-    //       CQuadWord(0, 0):          soubor se nepodarilo predalokovat, ale neni to nic
+    //                                 'allocateWholeFile' should be NULL
+    //       CQuadWord(0, 0):          the file could not be preallocated, but this is not
     //                                 fatal, and on the next call to SafeFileCreate for
     //                                 files with this destination you may request preallocation
     //       other:                    preallocation completed successfully
@@ -298,7 +298,7 @@ public:
     //   INVALID_HANDLE_VALUE and sets the 'silentMask', 'skipped', and 'skipPath' variables.
     //
     //   If 'isDir' is FALSE, returns the handle of the created file on success and, if
-    //   je 'file' ruzne od NULL, plni strukturu SAFE_FILE.
+    //   if 'file' is not NULL, the SAFE_FILE structure is filled.
     //   On failure it returns INVALID_HANDLE_VALUE and sets the 'silentMask',
     //   'skipped' and 'skipPath' variables.
     //
