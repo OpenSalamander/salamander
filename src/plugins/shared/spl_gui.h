@@ -1895,11 +1895,11 @@ public:
 // ****************************************************************************
 // CGUIToolbarHeaderAbstract
 //
-// Pomocna lista umistena nad seznamem (napr. konfigurace HotPaths, UserMenu),
-// ktera muze vpravo obsahovat toolbar s tlacitky pro ovladadni seznamu.
+// Helper bar placed above a list (e.g. HotPaths or UserMenu configuration),
+// which may contain a toolbar with buttons for controlling the list on the right.
 //
-// Vsechny metody je mozne volat pouze z threadu okna, ve kterem
-// byl objekt pripojen na windows control.
+// All methods may be called only from the thread of the window in which
+// the object was attached to a Windows control.
 //
 
 // bit masks for EnableToolbar() and CheckToolbar()
