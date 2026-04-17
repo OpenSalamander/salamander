@@ -121,7 +121,7 @@ public:
 
 #ifdef _MSC_VER
 #pragma pack(pop, enter_include_spl_thum)
-#endif // INSIDE_SALAMANDER
+#endif // _MSC_VER
 #ifdef __BORLANDC__
 #pragma option -a
-#endif // _MSC_VER
+#endif // __BORLANDC__
