@@ -63,7 +63,7 @@ extern "C"
 }
 #endif
 
-// the original SDK that shipped with VC6 had this value defined as 0x00000040 (year 1998, when the attribute was not yet used; it only arrived with W2K)
+// the original SDK that shipped with VC6 defined this value as 0x00000040 (in 1998 the attribute did not yet exist; it was introduced with W2K)
 #if (FILE_ATTRIBUTE_ENCRYPTED != 0x00004000)
 #pragma message(__FILE__ " ERROR: FILE_ATTRIBUTE_ENCRYPTED != 0x00004000. You have to install latest version of Microsoft SDK. This value has changed!")
 #endif
@@ -79,16 +79,15 @@ class CSalamanderGUIAbstract;
 class CSalamanderSafeFileAbstract;
 class CGUIIconListAbstract;
 
-//
 // ****************************************************************************
 // CSalamanderDebugAbstract
 //
-// sada metod ze Salamandera, ktere se pouzivaji pro hledani chyb v debug i release verzi
+// set of Salamander methods used for debugging in both debug and release builds
 
-// makro CALLSTK_MEASURETIMES - zapne mereni casu straveneho pri priprave call-stack hlaseni (meri se pomer proti
-//                              celkovemu casu behu funkci)
-//                              POZOR: nutne zapnout tez pro kazdy plugin zvlast
-// makro CALLSTK_DISABLEMEASURETIMES - potlaci mereni casu straveneho pri priprave call-stack hlaseni v DEBUG/SDK/PB verzi
+// CALLSTK_MEASURETIMES macro - enables measurement of time spent preparing call-stack reports (measured as a ratio to
+// the total function runtime)
+// WARNING: must also be enabled separately for each plugin
+// CALLSTK_DISABLEMEASURETIMES macro - suppresses measurement of time spent preparing call-stack reports in DEBUG/SDK/PB builds
 
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 struct CCallStackMsgContext
@@ -118,8 +117,8 @@ public:
     // _beginthreadex and CreateThread; optional (UID is then -1)
     virtual void WINAPI TraceAttachThread(HANDLE thread, unsigned tid) = 0;
 
-    // nastavi jmeno aktivniho threadu pro TRACE, nepovine (thread je oznacen jako "unknown")
-    // POZOR: vyzaduje registraci threadu u TRACE (viz TraceAttachThread), jinak nic nedela
+    // sets the active thread name for TRACE; optional (the thread is then marked as "unknown")
+    // WARNING: requires the thread to be registered with TRACE (see TraceAttachThread), otherwise it does nothing
     virtual void WINAPI TraceSetThreadName(const char* name) = 0;
     virtual void WINAPI TraceSetThreadNameW(const WCHAR* name) = 0;
 
@@ -129,12 +128,12 @@ public:
     // it runs 'threadBody' with the 'param' parameter and returns the result of 'threadBody'
     virtual unsigned WINAPI CallWithCallStack(unsigned(WINAPI* threadBody)(void*), void* param) = 0;
 
-    // uklada na CALL-STACK zpravu ('format'+'args' viz vsprintf), pri padu aplikace je
-    // obsah CALL-STACKU vypsan do okna Bug Report ohlasujiciho pad aplikace
+    // stores a message on the CALL-STACK ('format'+'args', see vsprintf); if the application crashes,
+    // the CALL-STACK contents are written to the Bug Report window reporting the crash
     virtual void WINAPI Push(const char* format, va_list args, CCallStackMsgContext* callStackMsgContext,
                              BOOL doNotMeasureTimes) = 0;
 
-    // odstranuje z CALL-STACKU posledni zpravu, volani musi parovat s Push
+    // removes the last message from the CALL-STACK; the call must be paired with Push
     virtual void WINAPI Pop(CCallStackMsgContext* callStackMsgContext) = 0;
 
     // sets the active thread name for the VC debugger
@@ -157,13 +156,12 @@ public:
     virtual void WINAPI AddModuleWithPossibleMemoryLeaks(const char* fileName) = 0;
 };
 
-//
 // ****************************************************************************
 // CSalamanderRegistryAbstract
 //
-// sada metod Salamandera pro praci se systemovym registry,
-// pouziva se v CPluginInterfaceAbstract::LoadConfiguration
-// a CPluginInterfaceAbstract::SaveConfiguration
+// set of Salamander methods for working with the system registry,
+// used in CPluginInterfaceAbstract::LoadConfiguration
+// and CPluginInterfaceAbstract::SaveConfiguration
 
 class CSalamanderRegistryAbstract
 {
@@ -200,12 +198,11 @@ public:
     virtual BOOL WINAPI GetSize(HKEY key, const char* name, DWORD type, DWORD& bufferSize) = 0;
 };
 
-//
 // ****************************************************************************
 // CSalamanderConnectAbstract
 //
-// sada metod Salamandera pro navazani pluginu do Salamandera
-// (custom pack/unpack + panel archiver view/edit + file viewer + menu-items)
+// set of Salamander methods for connecting a plugin to Salamander
+// (custom pack/unpack + panel archiver view/edit + file viewer + menu items)
 
 // constants for CSalamanderConnectAbstract::AddMenuItem
 #define MENU_EVENT_TRUE 0x0001                    // always occurs
@@ -238,11 +235,11 @@ public:
 // #define SALHOTKEY(vk,mods,cst) ((DWORD)(((BYTE)(vk)|((WORD)((BYTE)(mods))<<8))|(((DWORD)(BYTE)(cst))<<16)))
 #define SALHOTKEY(vk, mods) ((DWORD)(((BYTE)(vk) | ((WORD)((BYTE)(mods)) << 8))))
 
-// makro pro pripravu 'hotKey' pro AddMenuItem()
-// rika Salamanderu, ze polozky menu bude obsahovat horkou klavesu (oddelenou znakem '\t')
-// Salamander nebude v tomto pripade kricet pomoci TRACE_E a horkou klavesu zobrazi v menu Plugins
-// POZOR: nejedna se o horkou klavesu, kterou by Salamander dorucil pluginu, jde skutecne pouze o napis
-// pokud uzivatel priradi v Plugin Manageru tomuto commandu vlastni horkou klavesu, bude hint potlacen
+// macro for preparing 'hotKey' for AddMenuItem()
+// tells Salamander that the menu item text contains a hot-key hint (separated by '\t')
+// in this case Salamander will not complain via TRACE_E and will display the hot key in the Plugins menu
+// WARNING: this is not a hot key that Salamander delivers to the plugin; it is really only a label
+// if the user assigns this command a custom hot key in Plugin Manager, the hint is suppressed
 #define SALHOTKEY_HINT ((DWORD)0x00020000)
 
 class CSalamanderConnectAbstract
@@ -281,12 +278,12 @@ public:
     virtual void WINAPI ForceRemovePanelArchiver(const char* extension) = 0;
 
     // adds the plugin to the list for "file viewer",
-    // 'masks' are the viewer masks handled by this plugin
+    // 'masks' are the viewer masks that this plugin should handle
     // (the separator is ';' (the escape sequence for ';' is ";;") and the '*' and '?' wildcards are used;
     // if possible, avoid spaces, and the '|' character is forbidden (inverse masks are not allowed)),
     // if this is not an upgrade of "file viewer" (or the addition of the whole plugin) and 'force' is FALSE,
-    // je volani ignorovano; je-li 'force' TRUE, prida 'masks' vzdy (pokud jiz nejsou na
-    // seznamu) - nutna prevence proti opakovanemu 'force'==TRUE (neustalemu pridavani 'masks')
+    // the call is ignored; if 'force' is TRUE, 'masks' are always added (if they are not already on the
+    // list) - repeated 'force'==TRUE must be prevented (to avoid constantly adding 'masks')
     virtual void WINAPI AddViewer(const char* masks, BOOL force) = 0;
 
     // removes a mask from the list for "file viewer" (only from items belonging to this plugin);
@@ -297,32 +294,32 @@ public:
     // adds items to the Plugins/"plugin name" menu in Salamander, 'iconIndex' is the
     // item icon index (-1=no icon; for assigning a bitmap with icons see
     // CSalamanderConnectAbstract::SetBitmapWithIcons; u separatoru se ignoruje), 'name' je
-    // jmeno polozky (max. MAX_PATH - 1 znaku) nebo NULL jde-li o separator (parametry
-    // 'state_or'+'state_and' parameters have no meaning in that case); 'hotKey' is the hot key
-    // for the item, obtained with the SALHOTKEY macro; 'name' may contain a hot-key hint,
+    // the item name (max. MAX_PATH - 1 characters), or NULL for a separator (the
+    // 'state_or'+'state_and' parameters have no meaning in that case); 'hotKey' is the item's hot key
+    // obtained with the SALHOTKEY macro; 'name' may contain a hot-key hint,
     // separated by '\t'; in that case the 'hotKey' variable must be assigned the
     // SALHOTKEY_HINT, vice viz komentar k SALHOTKEY_HINT; 'id' je unikatni identifikacni
-    // cislo polozky v ramci pluginu (u separatoru ma vyznam jen je-li 'callGetState' TRUE),
-    // pokud je 'callGetState' TRUE, vola se pro zjisteni stavu polozky metoda
+    // item's unique identifier within the plugin (for a separator it matters only if 'callGetState' is TRUE),
+    // if 'callGetState' is TRUE, the item state is obtained by calling
     // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (u separatoru ma vyznam jen stav
     // MENU_ITEM_STATE_HIDDEN, ostatni se ignoruji), jinak se k vypoctu stavu polozky (enabled/disabled)
     // is computed from 'state_or'+'state_and' - the item state is calculated by first building the mask
     // ('eventMask') as the logical OR of all events that occurred (see
-    // MENU_EVENT_XXX), polozka bude "enable" pokud bude nasl. vyraz TRUE:
+    // MENU_EVENT_XXX); the item is enabled if the following expression is TRUE:
     //   ('eventMask' & 'state_or') != 0 && ('eventMask' & 'state_and') == 'state_and',
     // the 'skillLevel' parameter specifies for which user levels the item (or separator)
     // is displayed; the value contains one or more MENU_SKILLLEVEL_XXX constants ORed together;
     // menu items are updated on every plugin load (the items may change with configuration)
-    // POZOR: pro "dynamic menu extension" se pouziva CSalamanderBuildMenuAbstract::AddMenuItem
+    // WARNING: use CSalamanderBuildMenuAbstract::AddMenuItem for a "dynamic menu extension"
     virtual void WINAPI AddMenuItem(int iconIndex, const char* name, DWORD hotKey, int id, BOOL callGetState,
                                     DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
     // adds a submenu to the Plugins/"plugin name" menu in Salamander, 'iconIndex'
     // is the submenu icon index (-1=no icon; for assigning a bitmap with icons
-    // viz CSalamanderConnectAbstract::SetBitmapWithIcons), 'name' je jmeno
+    // see CSalamanderConnectAbstract::SetBitmapWithIcons), 'name' is the submenu
     // name (max. MAX_PATH - 1 characters), 'id' is the unique menu-item identifier
-    // menu v ramci pluginu (u submenu ma vyznam jen je-li 'callGetState' TRUE),
-    // pokud je 'callGetState' TRUE, vola se pro zjisteni stavu submenu metoda
+    // within the plugin menu (for a submenu it matters only if 'callGetState' is TRUE),
+    // if 'callGetState' is TRUE, the submenu state is obtained by calling
     // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (vyznam maji jen stavy
     // MENU_ITEM_STATE_ENABLED and MENU_ITEM_STATE_HIDDEN states matter; the others are ignored), otherwise
     // the item state (enabled/disabled) is computed from 'state_or'+'state_and' - for the state calculation
@@ -331,21 +328,21 @@ public:
     // MENU_SKILLLEVEL_XXX constants ORed together; the submenu is closed by calling
     // CSalamanderConnectAbstract::AddSubmenuEnd();
     // menu items are updated on every plugin load (the items may change with configuration)
-    // POZOR: pro "dynamic menu extension" se pouziva CSalamanderBuildMenuAbstract::AddSubmenuStart
+    // WARNING: use CSalamanderBuildMenuAbstract::AddSubmenuStart for a "dynamic menu extension"
     virtual void WINAPI AddSubmenuStart(int iconIndex, const char* name, int id, BOOL callGetState,
                                         DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
-    // ukonci submenu v menu Plugins/"jmeno pluginu" v Salamanderu, dalsi polozky budou
-    // pridavany do vyssi (rodicovske) urovne menu;
-    // polozky v menu se updatuji pri kazdem loadu pluginu (mozna zmena polozek dle konfigurace)
-    // POZOR: pro "dynamic menu extension" se pouziva CSalamanderBuildMenuAbstract::AddSubmenuEnd
+    // ends the submenu in the Plugins/"plugin name" menu in Salamander; subsequent items are added
+    // to the higher-level (parent) menu;
+    // menu items are updated on every plugin load (the items may change with configuration)
+    // WARNING: use CSalamanderBuildMenuAbstract::AddSubmenuEnd for a "dynamic menu extension"
     virtual void WINAPI AddSubmenuEnd() = 0;
 
-    // nastavuje polozku pro FS v Change Drive menu a v Drive barach; 'title' je jeji text,
-    // 'iconIndex' je index jeji ikony (-1=zadna ikona; zadani bitmapy s ikonami viz
+    // sets the item for FS in the Change Drive menu and in drive bars; 'title' is its text,
+    // 'iconIndex' is the icon index (-1=no icon; for assigning a bitmap with icons see
     // CSalamanderConnectAbstract::SetBitmapWithIcons), 'title' muze obsahovat az tri sloupce
-    // vzajemne oddelene '\t' (viz Alt+F1/F2 menu); viditelnost polozky je mozne nastavit
-    // z Plugins Manageru nebo primo z pluginu pomoci metody
+    // separated by '\t' (see the Alt+F1/F2 menu); item visibility can be set
+    // from Plugins Manager or directly from the plugin by calling
     // CSalamanderGeneralAbstract::SetChangeDriveMenuItemVisibility
     virtual void WINAPI SetChangeDriveMenuItem(const char* title, int iconIndex) = 0;
 
@@ -355,21 +352,21 @@ public:
     // CPluginInterfaceForThumbLoaderAbstract::LoadThumbnail
     virtual void WINAPI SetThumbnailLoader(const char* masks) = 0;
 
-    // nastavi bitmapu s ikonami pluginu; Salamander si obsah bitmapy kopiruje do internich
-    // struktur, plugin je zodpovedny za destrukci bitmapy (ze strany Salamanadera se
-    // bitmapa pouzije pouze behem teto funkce); pocet ikon se odvozuje ze
-    // sirky bitmapy, ikony jsou vzdy 16x16 bodu; transparentni cast ikon tvori fialova
-    // barva (RGB(255,0,255)), barevna hloubka bitmapy muze byt 4 nebo 8 bitu (16 nebo 256
-    // barev), idealni je mit pripravene obe barevne varianty a vybirat z nich podle
+    // sets the bitmap with plugin icons; Salamander copies the bitmap contents into its internal
+    // structures, and the plugin is responsible for destroying the bitmap (on Salamander's side the
+    // bitmap is used only during this function); the number of icons is derived from the
+    // bitmap width, and the icons are always 16x16 pixels; the transparent part of the icons is
+    // purple (RGB(255,0,255)); the bitmap color depth may be 4 or 8 bits (16 or 256
+    // colors); ideally, prepare both color variants and choose between them according to the
     // vysledku metody CSalamanderGeneralAbstract::CanUse256ColorsBitmap()
-    // POZOR: tato metoda je zastarala, nepodporuje alpha transparenci, pouzijte misto ni
+    // WARNING: this method is obsolete, does not support alpha transparency; use
     //        SetIconListForGUI()
     virtual void WINAPI SetBitmapWithIcons(HBITMAP bitmap) = 0;
 
     // sets the plugin icon index used for the plugin in the Plugins/Plugins Manager window,
     // in the Help/About Plugin menu, and optionally also for the plugin submenu in the Plugins menu (for details
-    // viz CSalamanderConnectAbstract::SetPluginMenuAndToolbarIcon()); pokud plugin tuto
-    // method, the standard Salamander plugin icon is used; 'iconIndex'
+    // see CSalamanderConnectAbstract::SetPluginMenuAndToolbarIcon()); if the plugin does not call this
+    // method, the standard Salamander icon for the plugin is used; 'iconIndex'
     // is the icon index to set (for assigning a bitmap with icons see
     // CSalamanderConnectAbstract::SetBitmapWithIcons)
     virtual void WINAPI SetPluginIcon(int iconIndex) = 0;
@@ -377,11 +374,11 @@ public:
     // sets the icon index for the plugin submenu, used for the plugin submenu
     // in the Plugins menu and optionally also in the top toolbar for the drop-down button used
     // to display the plugin submenu; if the plugin does not call this method, the
-    // plugin icon is used for the plugin submenu in the Plugins menu (configured by
-    // CSalamanderConnectAbstract::SetPluginIcon) and no toolbar button is shown
-    // for the plugin; 'iconIndex' is the icon index to set (-1=use the plugin icon
-    // pluginu, viz CSalamanderConnectAbstract::SetPluginIcon(); zadani bitmapy
-    // s ikonami viz CSalamanderConnectAbstract::SetBitmapWithIcons);
+    // plugin icon is used for the plugin submenu in the Plugins menu (see
+    // CSalamanderConnectAbstract::SetPluginIcon) and no button appears in the top toolbar
+    // for the plugin; 'iconIndex' is the icon index to set (-1=use the plugin icon,
+    // see CSalamanderConnectAbstract::SetPluginIcon(); for assigning a bitmap with icons see
+    // CSalamanderConnectAbstract::SetBitmapWithIcons);
     virtual void WINAPI SetPluginMenuAndToolbarIcon(int iconIndex) = 0;
 
     // sets the icon list with plugin icons; the icon list must be allocated by calling
@@ -394,11 +391,10 @@ public:
     virtual void WINAPI SetIconListForGUI(CGUIIconListAbstract* iconList) = 0;
 };
 
-//
 // ****************************************************************************
 // CDynamicString
 //
-// dynamicky string: realokuje se podle potreby
+// dynamic string: reallocates as needed
 
 class CDynamicString
 {
@@ -409,19 +405,18 @@ public:
     virtual BOOL WINAPI Add(const char* str, int len = -1) = 0;
 };
 
-//
 // ****************************************************************************
 // CPluginInterfaceAbstract
 //
-// sada metod pluginu, ktere potrebuje Salamander pro praci s pluginem
+// set of plugin methods that Salamander needs to work with the plugin
 //
-// Pro vetsi prehlednost jsou oddelene casti pro:
-// archivatory - viz CPluginInterfaceForArchiverAbstract,
-// viewry - viz CPluginInterfaceForViewerAbstract,
-// rozsireni menu - viz CPluginInterfaceForMenuExtAbstract,
-// file-systemy - viz CPluginInterfaceForFSAbstract,
-// nacitace thumbnailu - viz CPluginInterfaceForThumbLoaderAbstract.
-// Casti jsou pripojeny k CPluginInterfaceAbstract pres CPluginInterfaceAbstract::GetInterfaceForXXX
+// For better clarity, separate parts are provided for:
+// archivers - see CPluginInterfaceForArchiverAbstract,
+// viewers - see CPluginInterfaceForViewerAbstract,
+// menu extensions - see CPluginInterfaceForMenuExtAbstract,
+// file systems - see CPluginInterfaceForFSAbstract,
+// thumbnail loaders - see CPluginInterfaceForThumbLoaderAbstract.
+// These parts are attached to CPluginInterfaceAbstract through CPluginInterfaceAbstract::GetInterfaceForXXX
 
 // flags indicating which functions the plugin provides (which methods of the
 // CPluginInterfaceAbstract descendant are actually implemented in the plugin):
