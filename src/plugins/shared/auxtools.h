@@ -21,7 +21,7 @@ struct CThreadQueueItem
 {
     HANDLE Thread;
     DWORD ThreadID; // debugging only (to find the thread in the debugger thread list)
-    int Locks;      // pocet zamku, je-li > 0 nesmime zavrit 'Thread'
+    int Locks;          // lock count; if > 0, 'Thread' must not be closed
     CThreadQueueItem* Next;
 
     CThreadQueueItem(HANDLE thread, DWORD tid)
@@ -104,8 +104,8 @@ protected:                                                 // internal unsynchro
 // ****************************************************************************
 // CThread
 //
-// POZOR: musi se alokovat (neni mozne mit CThread jen na stacku); dealokuje se sam
-//        jen v pripade uspesneho vytvoreni threadu metodou Create()
+// WARNING: it must be heap-allocated (it cannot exist only on the stack); it deallocates itself
+//          only if the thread is created successfully by the Create() method
 
 class CThread
 {
