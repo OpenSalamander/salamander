@@ -22,14 +22,13 @@
 
 class CSalamanderForOperationsAbstract;
 
-//
 // ****************************************************************************
 // CSalamanderBuildMenuAbstract
 //
-// sada metod Salamandera pro stavbu menu pluginu
+// set of Salamander methods for building a plugin menu
 //
-// jde o podmnozinu metod CSalamanderConnectAbstract, metody se stejne chovaji,
-// pouzivaji se stejne konstanty, popis viz CSalamanderConnectAbstract
+// this is a subset of the CSalamanderConnectAbstract methods; the methods behave the same,
+// use the same constants; see CSalamanderConnectAbstract for details
 
 class CSalamanderBuildMenuAbstract
 {
@@ -81,17 +80,17 @@ public:
     virtual DWORD WINAPI GetMenuItemState(int id, DWORD eventMask) = 0;
 
     // executes the menu command with identifier 'id'; for 'eventMask' see
-    // CSalamanderConnectAbstract::AddMenuItem, 'salamander' is the set of available
-    // Salamander methods for performing operations (WARNING: it may be NULL, see the description of the method
-    // CSalamanderGeneralAbstract::PostMenuExtCommand), 'parent' je parent messageboxu,
+    // CSalamanderConnectAbstract::AddMenuItem; 'salamander' is the set of Salamander methods
+    // available for performing operations (WARNING: it may be NULL; see the description of
+    // CSalamanderGeneralAbstract::PostMenuExtCommand); 'parent' is the parent window for message boxes,
     // returns TRUE if the selection in the panel should be cleared (Cancel was not used; Skip may have
-    // been used), otherwise returns FALSE (no deselection is performed);
-    // POZOR: Pokud prikaz zpusobi zmeny na nejake ceste (diskove/FS), mel by pouzit
-    //        CSalamanderGeneralAbstract::PostChangeOnPathNotification pro informovani
+    // been used); otherwise returns FALSE (the selection is left unchanged);
+    // WARNING: if the command causes changes on some path (disk/FS), it should use
+    //        CSalamanderGeneralAbstract::PostChangeOnPathNotification to notify
     //        the panel without an automatic refresh and any open FSs (active and disconnected)
     // NOTE: if the command works with files/directories from the path in the current panel or
-    //           even directly with this path, it is necessary to call
-    //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath pro aktualni panel,
+    //           directly with that path itself, it is necessary to call
+    //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath for the current panel,
     //           otherwise the path in this panel will not be added to the list of working
     //           directories - List of Working Directories (Alt+F12)
     virtual BOOL WINAPI ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
