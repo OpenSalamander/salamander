@@ -141,7 +141,7 @@ public:
 class CTopIndexMem
 {
 protected:
-    // path for last stored top-index
+    // path for the last stored top-index
     char Path[MAX_PATH];
     int TopIndexes[TOP_INDEX_MEM_SIZE]; // stored top-index list
     int TopIndexesCount;                // count of stored top-index
@@ -154,7 +154,7 @@ public:
         TopIndexesCount = 0;
     } // clear memory
     void Push(const char* path, int topIndex);        // store top-index for given path
-    BOOL FindAndPop(const char* path, int& topIndex); // search top-index for given path, FALSE->not found
+    BOOL FindAndPop(const char* path, int& topIndex); // find the top index for the given path; FALSE if not found
 };
 
 class CPluginInterfaceForFS : public CPluginInterfaceForFSAbstract
