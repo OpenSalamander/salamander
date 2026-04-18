@@ -59,7 +59,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         break;
     }
     }
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 char* LoadStr(int resID)
@@ -154,7 +154,7 @@ BOOL Error(int resID, BOOL quiet, ...)
 BOOL Error(char* msg, DWORD err, BOOL quiet)
 {
     if (!quiet)
-        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // this is an error
+        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // actual error
         {
             char buf[1024];
             sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
