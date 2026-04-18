@@ -269,7 +269,7 @@ readCDTX(CFile& file, NRGHeader* header, CISOImage* iso)
     dst = data;
     int i;
     for (i = header->Size; i > 0; i -= 12 + 6)
-    { // Remove some unknown data (there are blocks of 12 bytes of labels followed by unkown 6 bytes)
+    { // Remove some unknown data (there are blocks of 12 bytes of labels followed by unknown 6 bytes)
         memmove(dst, src, min(12, i));
         dst += 12;
         src += 12 + 6;
