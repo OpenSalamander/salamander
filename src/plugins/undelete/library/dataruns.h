@@ -299,7 +299,7 @@ public:
                 // switch to next data pointers
                 CurrentPtrs = CurrentPtrs->DPNext;
                 CurrentRun = CurrentPtrs->Runs;
-                CurrentLCN = 0; // each data pointers starting first offset from 0
+                CurrentLCN = 0; // each data pointer starts with its first offset from 0
                 newPtrs = TRUE;
             }
         } while (runHeader == 0); // skip all 0x00 headers
@@ -357,5 +357,5 @@ public:
     const DATA_POINTERS* StreamPtrs;  // stream data pointers
     const DATA_POINTERS* CurrentPtrs; // iterator pointing to current data pointers
     const BYTE* CurrentRun;           // iterator pointing to current data run
-    QWORD CurrentLCN;                 // logic cluster iterator
+    QWORD CurrentLCN;                 // logical cluster iterator
 };
