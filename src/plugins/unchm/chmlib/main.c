@@ -19,5 +19,5 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         break;
     }
     }
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
