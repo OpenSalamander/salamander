@@ -53,7 +53,7 @@
 //                              of FILE_RECORD structures
 //
 
-BOOL ConvertFATName(const char* fatName, char* name) // convert name from format 83 to 8.3
+BOOL ConvertFATName(const char* fatName, char* name) // convert a name from FAT 8.3 format
 {
     CALL_STACK_MESSAGE_NONE
     //CALL_STACK_MESSAGE2("ConvertFATName(%s, )", fatName);
@@ -65,7 +65,7 @@ BOOL ConvertFATName(const char* fatName, char* name) // convert name from format
             // of there is extension, insert dot
             if (fatName[i] != ' ')
             {
-                if (p == name) // wrong file name
+                if (p == name) // invalid file name
                     return FALSE;
                 *p = '.';
                 p++;
@@ -77,7 +77,7 @@ BOOL ConvertFATName(const char* fatName, char* name) // convert name from format
         {
             *p = fatName[i];
             if (i == 0 && *p == 0x05)
-                *p = (char)0xE5; // 0x05 is used instead of 0xE5 in the Japan/KANJI
+                *p = (char)0xE5; // 0x05 is used instead of 0xE5 in Japanese/KANJI
             p++;
         }
     }
