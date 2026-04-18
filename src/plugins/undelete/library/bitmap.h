@@ -12,7 +12,7 @@
 //   significant bit in BitmapPartsH.
 //
 
-#define BITMAP_PART_SIZE (5 * 1000 * 1024) // keep this const DWORD aligned!
+#define BITMAP_PART_SIZE (5 * 1000 * 1024) // keep this constant DWORD-aligned
 
 class CClusterBitmap
 {
