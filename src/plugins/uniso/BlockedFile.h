@@ -105,7 +105,7 @@ protected:
     UInt64 FileSize;
 
     CCachedBlock* BlockCache[32]; // 32 MRU blocks
-    int MRUCachedBlock;           // index into MRUCachedBlock
+    int MRUCachedBlock;           // index of the MRU cached block
     CCachedBlock* pCurBlock;
     bool bUnknownBlockErrShown;
 
