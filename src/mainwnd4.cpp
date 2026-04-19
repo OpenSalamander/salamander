@@ -129,7 +129,7 @@ BOOL CMainWindow::CloseDetachedFS(HWND parent, CPluginFSInterfaceEncapsulation* 
     CALL_STACK_MESSAGE1("CMainWindow::CloseDetachedFS()");
     BOOL dummy; // ignored return value
     if (!detachedFS->TryCloseOrDetach(CriticalShutdown, FALSE, dummy, FSTRYCLOSE_UNLOADCLOSEDETACHEDFS) &&
-        !CriticalShutdown) // test close; forceClose==TRUE only during a "critical shutdown"
+        !CriticalShutdown) // try closing; forceClose==TRUE only during a "critical shutdown"
     {                      // ask the user whether to close it even against the FS wishes
         char path[2 * MAX_PATH];
         strcpy(path, detachedFS->GetPluginFSName());
@@ -146,7 +146,7 @@ BOOL CMainWindow::CloseDetachedFS(HWND parent, CPluginFSInterfaceEncapsulation* 
             detachedFS->TryCloseOrDetach(TRUE, FALSE, dummy, FSTRYCLOSE_UNLOADCLOSEDETACHEDFS);
         }
         else
-            return FALSE; // user doesn't want to close the detached FS
+            return FALSE; // the user chose not to close the detached FS
     }
 
     // close the FS
@@ -171,12 +171,12 @@ BOOL CMainWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin)
     if (RightPanel != NULL && !RightPanel->CanUnloadPlugin(parent, plugin))
         return FALSE;
 
-    // find detached FS belonging to the plug-in 'plugin' and attempt to close them
+    // find detached FS belonging to the plugin 'plugin' and attempt to close them
     int i;
     for (i = DetachedFSList->Count - 1; i >= 0; i--) // iterate backwards; as we will be deleting from the array (quadratic complexity)
     {
         CPluginFSInterfaceEncapsulation* detachedFS = DetachedFSList->At(i);
-        if (detachedFS->GetPluginInterface() == plugin) // belongs to plug-in 'plugin'
+        if (detachedFS->GetPluginInterface() == plugin) // belongs to plugin 'plugin'
         {
             if (CloseDetachedFS(parent, detachedFS))
             {
@@ -185,16 +185,16 @@ BOOL CMainWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin)
                     DetachedFSList->ResetState();
             }
             else
-                return FALSE; // unload cannot proceed (user refused to close the plug-in's detached FS)
+                return FALSE; // unload cannot proceed (user refused to close the plugin's detached FS)
         }
     }
 
     // check if data from the plugin is not in SalShExtPastedData
-    // (panels leaving archives might have stored them there due to plug-in unload)
+    // (panels leaving archives might have stored them there due to plugin unload)
     if (!SalShExtPastedData.CanUnloadPlugin(parent, plugin))
         return FALSE; // unload cannot proceed
 
-    return TRUE; // unload is possible; all plug-in resources were released
+    return TRUE; // unload can proceed; all plugin resources have been released
 }
 
 void CMainWindow::MakeFileList()
@@ -393,7 +393,7 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
             {
                 name[0] = 0; // for up-dir or for the first item of an empty panel the name will be empty...
             }
-            else // copy the name for others
+            else // otherwise copy the name
             {
                 CFileData* f = &((index < data->Window->Dirs->Count) ? data->Window->Dirs->At(index) : data->Window->Files->At(index - data->Window->Dirs->Count));
                 strcpy(name, f->Name);
@@ -427,27 +427,27 @@ BOOL GetNextFileFromPanel(int index, char* path, char* name, void* param)
 
 BOOL CheckIfCanBeExecuted(BOOL buildBat, int commandLen, int argumentsLen)
 {
-    /*  MEASURED LIMITS:
-  Batch file:
-    W2K: 2041 including executable name, spaces and parameters
-    XP64/XP: 8185 including executable name, spaces and parameters
-    Win7/Vista: 32776 including executable name, spaces and parameters
+    /*  MEASURED VALUES:
+      Batch file:
+        W2K: 2041 including the executable name, spaces, and parameters
+        XP64/XP: 8185 including the executable name, spaces, and parameters
+        Win7/Vista: 32776 including the executable name, spaces, and parameters
 
-  ShellExecuteEx:
-    XP/XP64/Vista/W2K: 2080 including executable name (without quotes), spaces and parameters
-    Win7: 32764 including executable name (without quotes), spaces and parameters
-*/
+      ShellExecuteEx:
+        XP/XP64/Vista/W2K: 2080 including the executable name (without quotes), spaces, and parameters
+        Win7: 32764 including the executable name (without quotes), spaces, and parameters
+    */
 
-    // WARNING: if a .bat file is executed that runs a .exe and passes all parameters (%*), a long .exe name
-    // can still trigger "too long name" error even when respecting the limit here. The limit is exceeded once
-    // parameters are passed to the .exe. (I wouldn't solve this issue; it would require parsing
-    // .bat files etc., which is just nonsense.)
+    // WARNING: if a .bat file is executed that runs a .exe and passes all parameters (%*),
+    // a longer .exe name than the .bat file name can still trigger a "too long name" error even when the
+    // limit given here is respected. The limit is exceeded after the parameters are expanded for the .exe.
+    // This problem would not be addressed; it would require parsing .bat files, which is not worth it.
 
     int cmdLineLen = commandLen + argumentsLen + 1; // +1 for the space between command and arguments
     if (buildBat)                                   // launching via a .bat file
     {
         if (WindowsVistaAndLater)
-            return cmdLineLen <= 8191; // Vista/Win7: in reality it's 32776 but only 8191 works (with longer parameters, probably due to a Windows bug, characters get erased; tested on Vista and Win7)
+            return cmdLineLen <= 8191; // Vista/Win7: in reality the limit is 32776, but only 8191 works (with longer parameters, characters are apparently erased due to a Windows bug; tested on Vista and Win7)
         return cmdLineLen <= 8185;     // XP/XP64
     }
     else // launching via ShellExecuteEx
@@ -464,18 +464,18 @@ BOOL CheckIfCanBeExecuted(BOOL buildBat, int commandLen, int argumentsLen)
 //
 // parent       - parent window (for error dialogs)
 // cmd          - buffer for the expanded command
-// cmdSize      - size of 'cmd' buffer
+// cmdSize      - size of the 'cmd' buffer
 // args         - buffer for receiving arguments
-// argsSize     - size of 'args' buffer
+// argsSize     - size of the 'args' buffer
 // buildBat     - if TRUE, arguments are placed into 'cmd'
-// initDir      - buffer for the path where the execution should take place
-// initDirSize  - length of initDir buffer
+// initDir      - buffer for the path where execution should take place
+// initDirSize  - length of the initDir buffer
 // item         - user-menu item
 // path         - long path to the file
 // longName     - long filename
 // fileNameUsed - returns TRUE if a file name or path was used during argument expansion
-// userMenuAdvancedData - advanced parameter`s values for User Menu: the Arguments array
-// ignoreEnvVarNotFoundOrTooLong - see ExpandVarString description
+// userMenuAdvancedData - values of the advanced parameters for User Menu: the Arguments field
+// ignoreEnvVarNotFoundOrTooLong - see the ExpandVarString description
 //
 // returns success of the operation
 
@@ -844,7 +844,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                 strcpy(prevInitDir, initDir);
                 BOOL expandOK = ExpandCommand2(parent,
                                                cmdLine, USRMNUCMDLINE_MAXLEN,
-                                               arguments, USRMNUARGS_MAXLEN, buildBat, // if we are running via a batch file, allow
+                                               arguments, USRMNUARGS_MAXLEN, buildBat, // when running via a batch file,
                                                initDir, MAX_PATH,                      // arguments will be inserted into cmdLine
                                                UserMenuItems->At(itemIndex),
                                                path, name, &fileNameUsed,
@@ -882,7 +882,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             break;
                         }
                     }
-                    else // direct execution
+                    else // run directly
                     {
                         // the original launching via CreateProcess couldn't run screen savers (*.SCR)
                         // or Control Panel items (*.cpl) and people kept complaining
@@ -893,15 +893,15 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                         // set correct default directories for individual drives
                         MainWindow->SetDefaultDirectories((initDir[0] != 0) ? initDir : NULL);
 
-                        // to work with old configurations, remove the " character from the start and end of cmdLine
+                        // to support old configurations, remove the '"' character from the beginning and end of cmdLine
                         int cmdLen = (int)strlen(cmdLine);
                         if (cmdLen > 1 && cmdLine[0] == '\"' && cmdLine[cmdLen - 1] == '\"')
                         {
                             memmove(cmdLine, cmdLine + 1, cmdLen - 2);
                             cmdLine[cmdLen - 2] = 0;
                         }
-                        // better not swallow backslashes so that we don't destroy some OLE paths
-                        //RemoveRedundantBackslahes(cmdLine); // ShellExecuteEx dislikes multiple backslashes, "$(SalDir)\salamand.exe"
+                        // It is better not to strip backslashes so we do not break some OLE paths
+                        //RemoveRedundantBackslahes(cmdLine); // ShellExecuteEx does not like multiple backslashes, "$(SalDir)\salamand.exe"
 
                         CShellExecuteWnd shellExecuteWnd;
                         SHELLEXECUTEINFO sei;
@@ -997,7 +997,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                             HANDLES(CloseHandle(pi.hThread));
                         }
                     }
-                    else // an empty .BAT is not worth running (in case of low memory or other crazy errors)
+                    else // an empty .BAT is not worth running (in case of low memory or other serious errors)
                     {
                         DiskCache.ReleaseName(batUniqueName, FALSE);
                     }
@@ -1053,7 +1053,7 @@ BOOL CMainWindow::HandleCtrlLetter(char c)
     else // NC + Windows Ctrl+? hotkeys
     {
         WPARAM cmd;
-        switch (c) // only upper-case characters reach here
+        switch (c) // only uppercase characters are handled here
         {
         case 'A':
             cmd = CM_ACTIVESELECTALL;
@@ -1842,8 +1842,8 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
                     return FALSE;
                 }
                 ReleaseCapture();
-                // the message we peeked changes into a non-client because
-                // of the release capture.
+                // the message we peeked becomes a non-client message because
+                // capture is released.
                 GetMessage(&msg, NULL, WM_NCLBUTTONDOWN, WM_NCLBUTTONDOWN);
                 DispatchMessage(&msg);
                 GetCursorPos(&point);
@@ -1885,7 +1885,7 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
             // Hit one of our apps windows (or desktop) -- dispatch the message.
             PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
 
-            // Dispatch mouse messages that hit the desktop!
+            // Dispatch mouse messages to the desktop.
             DispatchMessage(&msg);
         }
     }
@@ -1903,8 +1903,8 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
         {
             GetMessage(&msg, NULL, msg.message, msg.message);
 
-            // ensure sending messages to our menu (avoiding the need for a keyboard hook)
-            // this supports entering the menu via Alt/F10/Alt+letter during help mode
+            // ensure that messages are delivered to our menu (avoiding the need for a keyboard hook)
+            // this allows entry into the menu via Alt/F10/Alt+letter during help mode
             if (MenuBar == NULL || !MenuBar->IsMenuBarMessage(&msg))
             {
                 TranslateMessage(&msg);
