@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -145,12 +146,12 @@ INT_PTR WINAPI SfxPreviewDlgProc(HWND dlg, UINT uMsg, WPARAM wParam, LPARAM lPar
         dlgWinAboutHeigth = r.bottom - r.top;
         RECT r2;
         GetWindowRect(GetDlgItem(dlg, IDC_SEPARATOR), &r2);
-        // an application built with a newer platform toolset handles dialog sizes differently; see
+        // an application built with a newer Platform Toolset handles window sizes differently; see
         // https://social.msdn.microsoft.com/Forums/vstudio/en-US/7ca548b5-8931-41dc-ac1d-ed9aed223d7a/different-dialog-box-position-and-size-with-visual-c-2012
         // https://connect.microsoft.com/VisualStudio/feedback/details/768135/different-dialog-box-size-and-position-when-compiled-in-visual-c-2012-vs-2010-2008
-        // therefore the original logic no longer works (in VC2012+ the window is shorter than in VC2010-): dlgWinHeigth = r2.top - r.top + 1;
-        // fix: dlgWinHeigth = full window height minus the difference between the client area height and the separator position
-        //         within the dialog's client area
+        // therefore the original solution does not work (in VC2012+ the window is shorter than in VC2010-): dlgWinHeigth = r2.top - r.top + 1;
+        // solution: dlgWinHeigth = full window height minus the difference between the dialog client area height and the separator position
+        //           within the dialog client area
         POINT p;
         p.x = r2.left;
         p.y = r2.top;
