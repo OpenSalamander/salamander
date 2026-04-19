@@ -380,7 +380,7 @@ BOOL CFindIgnore::Save(HKEY hKey)
         if (CreateKey(hKey, buf, subKey))
         {
             SetValue(subKey, FINDIGNOREITEM_PATH_REG, REG_SZ, Items[i]->Path, -1);
-            if (!Items[i]->Enabled) // save only if it is FALSE
+            if (!Items[i]->Enabled) // save only when FALSE
                 SetValue(subKey, FINDIGNOREITEM_ENABLED_REG, REG_DWORD, &Items[i]->Enabled, sizeof(DWORD));
             CloseKey(subKey);
         }
@@ -413,9 +413,9 @@ BOOL CFindIgnore::Load(HKEY hKey, DWORD cfgVersion)
             item->Enabled = TRUE; // saved only if it is FALSE
         if (Configuration.ConfigVersion < 32)
         {
-            // users were confused that this folder was not searched
-            // so we keep it listed but uncheck the checkbox
-            // anyone interested can manually enable it
+            // users were confused that this folder was not being searched
+            // so we keep it in the list, but clear the checkbox
+            // anyone who wants to can enable it
             if (strcmp(item->Path, "Local Settings\\Temporary Internet Files") == 0)
                 item->Enabled = FALSE;
         }
@@ -550,7 +550,7 @@ BOOL CFindIgnore::Contains(const char* path, int startPathLen)
                 m = StrIStr(m, item->Path);
                 if (m != NULL) // found
                 {
-                    if ((m - path) + item->Len > startPathLen) // is it a subpath? then ignore it
+                    if ((m - path) + item->Len > startPathLen) // subpath: ignore it
                         return TRUE;
                     m++; // look for another occurrence, maybe it will be in a subpath
                 }
@@ -694,8 +694,8 @@ protected:
     // before calling this method, the array must be sorted with QuickSort
     void RemoveSingleFiles(BOOL byName, BOOL bySize, BOOL byMD5);
 
-    // goes through all stored items and uses CompareFunc assign them
-    // to groups; Alternates the Different bit for the groups  (0, 1, 0, 1, 0, 1, ...)
+    // Goes through all stored items and uses CompareFunc to assign them
+    // to groups; alternates the Different bit for the groups (0, 1, 0, 1, 0, 1, ...)
     // before calling this method, the array must be sorted with QuickSort
     void SetDifferentFlag(BOOL byName, BOOL bySize, BOOL byMD5);
 
@@ -780,7 +780,7 @@ LABEL_QuickSort:
         }
     } while (i <= j);
 
-    // the following "nice" code was replaced by a version that saves stack space (max. log(N) recursion depth)
+    // the following code was replaced by a version that uses substantially less stack space (max. log(N) recursion depth)
     //  if (left < j) QuickSort(left, j, byName, bySize, byMD5);
     //  if (i < right) QuickSort(i, right, byName, bySize, byMD5);
 
@@ -839,7 +839,7 @@ BOOL CDuplicateCandidates::GetMD5Digest(CGrepData* data, CFoundFilesData* file,
         DWORD read; // number of bytes that were actually read
         while (TRUE)
         {
-            // read a segment from a file 'file' into 'buffer'
+            // read a segment from file 'file' into 'buffer'
             if (!ReadFile(hFile, buffer, DUPLICATES_BUFFER_SIZE, &read, NULL))
             {
                 // error reading the file
@@ -1019,7 +1019,7 @@ void CDuplicateCandidates::Examine(CGrepData* data)
     // search completed, preparing results (MD5 computation may still follow)
     data->SearchingText->Set(LoadStr(IDS_FIND_DUPS_RESULTS));
 
-    // sort them according to selected criteria
+    // sort them by the selected criteria
     QuickSort(0, Count - 1, byName, bySize, FALSE);
 
     // remove items that occur only once
@@ -1087,7 +1087,7 @@ void CDuplicateCandidates::Examine(CGrepData* data)
                             int j;
                             for (j = 0; j <= i; j++)
                                 Delete(0);
-                            break; // show at least the duplicates that have been already found
+                            break; // show at least the duplicates found so far
                         }
                         // an error occurred during reading the file but the user wants to continue
                         // exclude the file from candidates
@@ -1250,10 +1250,10 @@ BOOL TestFileContentAux(BOOL& ok, CQuadWord& fileOffset, const CQuadWord& totalS
                     fileOffset + CQuadWord(viewSize, 0) < totalSize) // the end of the file is not in the file view
                 {                                                    // the line can continue beyond the boundary of the current view of the file
                     fileOffset += CQuadWord(DWORD(beg - txt), 0);
-                    return TRUE; // continue with the next view segment
+                    return TRUE; // continue with the next file view
                 }
 
-                // line beg->end
+                // line: beg->end
                 if (data->RegExp.SetLine(beg, end))
                 {
                     int foundLen, start = 0;
@@ -1385,7 +1385,7 @@ BOOL TestFileContent(DWORD sizeLow, DWORD sizeHigh, const char* path, CGrepData*
                     CQuadWord allocGran(AllocationGranularity, 0);
                     while (!data->StopSearch && fileOffset < totalSize)
                     {
-                        // ensure the offset matches the granularity
+                        // ensure the offset is aligned to the allocation granularity
                         CQuadWord mapFileOffset(fileOffset);
                         mapFileOffset = (mapFileOffset / allocGran) * allocGran;
 
@@ -1401,7 +1401,7 @@ BOOL TestFileContent(DWORD sizeLow, DWORD sizeHigh, const char* path, CGrepData*
                                                                  viewSize));
                         if (txt != NULL)
                         {
-                            // let the file view be examined
+                            // let the file view be searched
                             DWORD diff = (DWORD)(fileOffset - mapFileOffset).Value;
                             BOOL err2 = !TestFileContentAux(ok, fileOffset, totalSize, viewSize - diff,
                                                             path, txt + diff, data);
@@ -1445,7 +1445,7 @@ BOOL AddFoundItem(const char* path, const char* name, DWORD sizeLow, DWORD sizeH
                   DWORD attr, const FILETIME* lastWrite, BOOL isDir, CGrepData* data,
                   CDuplicateCandidates* duplicateCandidates)
 {
-    if (duplicateCandidates != NULL && isDir) // directories are irrelevant to us when searching for duplicates
+    if (duplicateCandidates != NULL && isDir) // directories are ignored when searching for duplicates
         return TRUE;
 
     CFoundFilesData* foundData = new CFoundFilesData;
@@ -1513,16 +1513,16 @@ BOOL AddFoundItem(const char* path, const char* name, DWORD sizeLow, DWORD sizeH
     return TRUE;
 }
 
-// 'dirStack' stores directories for late grepping. Otherwise,
-// during searching in the current directory, recursive searching in subdirectories would occur. With this
-// trick all files and directories matching the criteria are found first and
-// then this function is called for all discovered directories.
-// 'dirStack' only grows. When items are removed from it, they are just destroyed but
-// not removed from the array, therefore the variable 'dirStackCount' holds the
+// 'dirStack' stores directories to be grep-searched later. Otherwise,
+// searching the current directory would recursively search its subdirectories.
+// With this workaround, all files and directories matching the criteria are found first,
+// and then this function is called for all discovered directories.
+// 'dirStack' only grows. When items are removed from it, they are only destroyed,
+// but not removed from the array. Therefore, the variable 'dirStackCount' holds the
 // actual number of items in the array (always less than or equal to dirStack->Count).
 // If memory is low or subdirectories are not searched,
 // 'dirStack' is NULL.
-// If 'duplicateCandidates' != NULL, found items will be added to this array
+// If 'duplicateCandidates' != NULL, found items are added to this array
 // instead of data->FoundFilesListView
 void SearchDirectory(char (&path)[MAX_PATH], char* end, int startPathLen,
                      CMaskGroup* masksGroup, BOOL includeSubDirs, CGrepData* data,
@@ -1598,7 +1598,7 @@ void SearchDirectory(char (&path)[MAX_PATH], char* end, int startPathLen,
                     {
                         // file name
                         // let the extension be resolved if ext==NULL
-                        if (masksGroup->AgreeMasks(file.cFileName, NULL)) // mask is OK
+                        if (masksGroup->AgreeMasks(file.cFileName, NULL)) // mask matches
                         {
                             BOOL ok;
                             if (data->Grep)
@@ -1639,11 +1639,11 @@ void SearchDirectory(char (&path)[MAX_PATH], char* end, int startPathLen,
                         }
                     }
                 }
-                if (isDir && includeSubDirs && !ignoreDir) // directory + not "." or ".."
+                if (isDir && includeSubDirs && !ignoreDir) // directory and not "." or ".."
                 {
                     int l = (int)strlen(file.cFileName);
 
-                    if ((end - path) + l + 1 /* 1 za backslash */ < _countof(path))
+                    if ((end - path) + l + 1 /* 1 for the backslash */ < _countof(path))
                     {
                         BOOL searchNow = TRUE;
 
@@ -1700,7 +1700,7 @@ void SearchDirectory(char (&path)[MAX_PATH], char* end, int startPathLen,
                     }
                 }
             }
-            else // too long file-name
+            else // file name too long
             {
                 FIND_LOG_ITEM log;
                 log.Flags = FLI_ERROR;
@@ -1803,7 +1803,7 @@ void RefineData(CMaskGroup* masksGroup, CGrepData* data)
             {
                 char buf[20];
                 sprintf(buf, "%d%%", progress);
-                data->SearchingText->Set(buf); // set the current path
+                data->SearchingText->Set(buf); // update the progress text
                 oldProgress = progress;
             }
         }
@@ -1938,8 +1938,8 @@ unsigned GrepThreadFBody(void* ptr)
                         TRACE_E(LOW_MEMORY); // the algorithm will run even without the stack
                 }
 
-                // create a local copy of the ignore list since it has to be processed anyway
-                // and as a bonus the user can edit the ignore list while searching
+                // make a local copy of the ignore list, since it has to be processed anyway
+                // this also allows the user to edit the ignore list while the search is in progress
                 CFindIgnore* ignoreList = new CFindIgnore;
                 if (ignoreList == NULL)
                     TRACE_E(LOW_MEMORY); // the algorithm will run even without the ignore list
@@ -2138,10 +2138,10 @@ unsigned ThreadFindDialogMessageLoopBody(void* parameter)
                 if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
                 {
                     if (msg.message == WM_QUIT)
-                        break;      // equivalent to the situation when GetMessage() is returning FALSE
+                        break;      // equivalent to the situation where GetMessage() returns FALSE
                     haveMSG = TRUE; // a message is pending; process it without calling GetMessage()
                 }
-                else // if there is no message in the queue, perform Idle processing
+                else // if the queue is empty, perform idle processing
                 {
                     if (findDialog != NULL)
                         findDialog->OnEnterIdle();
@@ -2153,7 +2153,7 @@ unsigned ThreadFindDialogMessageLoopBody(void* parameter)
     }
 
 #ifndef CALLSTK_DISABLE
-    CCallStack::ReleaseBeforeExitThread(); // before exiting the thread, we must release call-stack data (still in protected section - generating our bug report)
+    CCallStack::ReleaseBeforeExitThread(); // before the thread exits, call-stack data must be released (we are still in the protected section used to generate our bug report)
 #endif                                     // CALLSTK_DISABLE
     _endthreadex(ok ? 0 : 1);
     return ok ? 0 : 1; // dead code to keep the compiler happy
@@ -2172,7 +2172,7 @@ unsigned ThreadFindDialogMessageLoopEH(void* param)
     {
         TRACE_I("Thread FindDialogMessageLoop: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // harder exit (this call still performs some operations)
+        TerminateProcess(GetCurrentProcess(), 1); // more forceful exit (ExitProcess still calls some code)
         return 1;
     }
 #endif // CALLSTK_DISABLE
