@@ -64,8 +64,8 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
     SalPathAddBackslash(path, MAX_PATH);
     int pathLen = (int)strlen(path);
     // Verify that the path does not contain components ending with a space or dot;
-    // as this can confuse the Recycle Bin and cause it to delete from a different path (it quietly trims
-    // those spaces or dots)
+    // this confuses the Recycle Bin and causes it to delete from a different path (it silently trims
+    // those spaces or dots).
     if (!PathContainsValidComponents(path, TRUE))
     {
         char textBuf[2 * MAX_PATH + 200];
@@ -108,7 +108,7 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
     fo.fAnyOperationsAborted = FALSE;
     fo.hNameMappings = NULL;
     fo.lpszProgressTitle = "";
-    // Perform the actual deletion - wonderfully simple, unfortunately it sometimes crashes ;-)
+    // Perform the actual deletion; unfortunately, it sometimes crashes.
     CALL_STACK_MESSAGE1("CFilesWindow::DeleteThroughRecycleBin::SHFileOperation");
     BOOL ret = DeleteThroughRecycleBinAux(&fo) == 0;
     SetCurrentDirectoryToSystem();
@@ -127,7 +127,7 @@ void PluginFSConvertPathToExternal(char* path)
         Plugins.IsPluginFS(fsName, index, fsNameIndex))
     {
         CPluginData* plugin = Plugins.Get(index);
-        if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // the plugin may not be loaded, let it load if needed
+        if (plugin != NULL && plugin->InitDLL(MainWindow->HWindow, FALSE, TRUE, FALSE)) // the plugin may not be loaded yet; load it if necessary
             plugin->GetPluginInterfaceForFS()->ConvertPathToExternal(fsName, fsNameIndex, fsUserPart);
     }
 }
@@ -270,7 +270,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
 
                 // if packing to the archive in the other panel is not possible, leave the path empty
                 int format = PackerFormatConfig.PackIsArchive(target->GetZIPArchive());
-                if (format != 0) // we found a supported archive
+                if (format != 0) // supported archive found
                 {
                     if (!PackerFormatConfig.GetUsePacker(format - 1)) // no edit -> empty operation target
                     {
@@ -286,7 +286,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         (type == atCopy && target->GetPluginFS()->IsServiceSupported(FS_SERVICE_COPYFROMDISKTOFS) ||
                          type == atMove && target->GetPluginFS()->IsServiceSupported(FS_SERVICE_MOVEFROMDISKTOFS)))
                     {
-                        // // this is just a modification of the target path text in the plug-in -> no point in lowering the thread's priority
+                        // // this is just a modification of the target path text in the plugin -> no point in lowering the thread's priority
                         int selFiles = 0;
                         int selDirs = 0;
                         if (count > 0) // some files are selected
@@ -294,7 +294,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                             selFiles = files;
                             selDirs = count - files;
                         }
-                        else // take the focused item
+                        else // use the focused item
                         {
                             int index = GetCaretIndex();
                             if (index >= Dirs->Count)
@@ -341,7 +341,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                 if (invertRecycleBin)
                 {
                     if (Configuration.UseRecycleBin == 0)
-                        recycle = 1; // all
+                        recycle = 1; // for all
                     else
                         recycle = 0; // none
                 }
@@ -397,7 +397,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             else
                 expanded[0] = 0; // not used
         }
-        else // count-files in directories and individualfiles
+        else // `count - files` directories and `files` files
         {
             ExpandPluralFilesDirs(expanded, 200, files, count - files, epfdmNormal, FALSE);
         }
@@ -440,7 +440,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
         DWORD clusterSize = 0;
         CChangeCaseData changeCaseData;
         CCriteriaData criteria;
-        if (CopyMoveOptions.Get() != NULL) // if they exist, pull the defaults
+        if (CopyMoveOptions.Get() != NULL) // if they exist, load the defaults
             criteria = *CopyMoveOptions.Get();
         CCriteriaData* criteriaPtr = NULL; // pointer to 'criteria'; if NULL, they are ignored
         BOOL copyToExistingDir = FALSE;
@@ -461,7 +461,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             while (1)
             {
                 if (strlen(path) >= 2 * MAX_PATH)
-                    path[0] = 0; // the path is too long; not an ideal solution but I'm not up for a better one now :(
+                    path[0] = 0; // the path is too long; this is not an ideal solution
                 res = (int)CCopyMoveMoreDialog(HWindow, path, 2 * MAX_PATH,
                                                (type == atCopy) ? LoadStr(IDS_COPY) : LoadStr(IDS_MOVE), &str,
                                                (type == atCopy) ? IDD_COPYDIALOG : IDD_MOVEDIALOG,
@@ -527,7 +527,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                     {
                         if (pathType == PATH_TYPE_ARCHIVE) // path into an archive
                         {
-                            if (strlen(secondPart) >= MAX_PATH) // isn't the path inside the archive too long?
+                            if (strlen(secondPart) >= MAX_PATH) // is the path inside the archive too long?
                             {
                                 SalMessageBox(HWindow, LoadStr(IDS_TOOLONGPATH),
                                               (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
@@ -535,7 +535,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 continue;
                             }
 
-                            if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // archives do not support options from the Copy/Move dialog
+                            if (criteriaPtr != NULL && Configuration.CnfrmCopyMoveOptionsNS) // archives do not support the options from the Copy/Move dialog
                             {
                                 MSGBOXEX_PARAMS params;
                                 memset(&params, 0, sizeof(params));
@@ -557,7 +557,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 data.IndexesCount = count;
                                 data.Indexes = indexes; // deallocated via 'indexes'
                             }
-                            else // take the focused item
+                            else // use the focused item
                             {
                                 oneIndex = GetCaretIndex();
                                 data.IndexesCount = 1;
@@ -599,7 +599,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                             {
                                 nullFile = (size == CQuadWord(0, 0));
 
-                                //---  if it's a zero-size file, we must delete it; archivers can not handle them
+                                //---  if it is a zero-size file, we must delete it; archivers cannot handle such files
                                 DWORD nullFileAttrs;
                                 if (nullFile)
                                 {
@@ -635,7 +635,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 }
                                 else
                                 {
-                                    if (nullFile) // it failed, we have to create it again
+                                    if (nullFile) // The previous attempt failed, so we have to create it again
                                     {
                                         HANDLE hFile2 = HANDLES_Q(CreateFile(path, GENERIC_READ | GENERIC_WRITE,
                                                                              0, NULL, OPEN_ALWAYS,
@@ -694,9 +694,9 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                         }
                         else
                         {
-                            if (pathType == PATH_TYPE_FS) // file-system path
+                            if (pathType == PATH_TYPE_FS) // file system path
                             {
-                                if (strlen(secondPart) >= MAX_PATH) // is the user's part of the FS path too long?
+                                if (strlen(secondPart) >= MAX_PATH) // is the user-entered part of the FS path too long?
                                 {
                                     SalMessageBox(HWindow, LoadStr(IDS_TOOLONGPATH),
                                                   (type == atCopy) ? LoadStr(IDS_ERRORCOPY) : LoadStr(IDS_ERRORMOVE),
@@ -731,7 +731,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                     data.IndexesCount = count;
                                     data.Indexes = indexes; // deallocated via 'indexes'
                                 }
-                                else // take the focused item
+                                else // use the focused item
                                 {
                                     oneIndex = GetCaretIndex();
                                     if (oneIndex >= Dirs->Count)
@@ -802,13 +802,13 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                 PluginFSConvertPathToExternal(targetPath);
                                                 strcpy(path, targetPath);
                                                 invalidPath = TRUE;
-                                                break; // we must go back to the copy/move dialog
+                                                break; // return to the Copy/Move dialog
                                             }
                                             // trying another FS
                                         }
                                     }
                                 }
-                                if (i == list->Count) // active and detached FS couldn't handle it, we will create a new FS
+                                if (i == list->Count) // neither the active nor the detached FS could handle it, so create a new FS
                                 {
                                     int index;
                                     int fsNameIndex;
@@ -842,16 +842,16 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                                 { // done/cancel
                                                     unselect = !invalidPathOrCancel;
                                                 }
-                                                else // syntax error/plugin error
+                                                else // syntax error or plugin error
                                                 {
                                                     if (invalidPathOrCancel)
                                                     {
                                                         // convert the path to external format (before displaying it in the dialog)
                                                         PluginFSConvertPathToExternal(targetPath);
                                                         strcpy(path, targetPath);
-                                                        invalidPath = TRUE; // we must go back to the Copy/Move dialog
+                                                        invalidPath = TRUE; // we must return to the Copy/Move dialog
                                                     }
-                                                    else // plugin error (new FS, but returns "requested operation cannot be performed on this FS" error)
+                                                    else // plugin error (new FS, but it returns "requested operation cannot be performed on this FS")
                                                     {
                                                         TRACE_E("CopyOrMoveFromDiskToFS on new (empty) FS may not return error 'unable to process operation'.");
                                                     }
@@ -880,7 +880,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 if (invalidPath)
                                     continue; // back to the copy/move dialog
 
-                                if (unselect) // unselect files/directories in the panel
+                                if (unselect) // deselect files/directories in the panel
                                 {
                                     SetSel(FALSE, -1, TRUE);                        // explicit redraw
                                     PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
@@ -935,7 +935,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
             break;
         }
         }
-        if (res == IDOK && // begin disk operation
+        if (res == IDOK && // begin disk operations
             CheckPath(TRUE) == ERROR_SUCCESS)
         {
             if (type == atDelete && recycle == 1)
@@ -1118,7 +1118,7 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
                                 script->ResetState();
                             FreeScript(script);
                         }
-                        else // removing selected index
+                        else // clear the selected index
                         {
                             if (res2)
                             {
@@ -1163,9 +1163,9 @@ void CFilesWindow::FilesAction(CActionType type, CFilesWindow* target, int count
     }
 }
 
-// extracts all subdirectories from 'path' directory and calls itself recursively
-// adds files mapi
-// returns TRUE, if everything succeeded; otherwise returns FALSE
+// extracts all subdirectories from the 'path' directory and calls itself recursively
+// adds files to MAPI
+// returns TRUE if everything succeeded; otherwise returns FALSE
 BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFileSizeOfLnkTgtIgnAll)
 {
     WIN32_FIND_DATA file;
@@ -1232,9 +1232,9 @@ BOOL EmailFilesAddDirectory(CSimpleMAPI* mapi, const char* path, BOOL* errGetFil
     return ok;
 }
 
-// pulls the selection from the panel and processes every item:
-// if it's a directory, calls EmailFilesAddDirectory for it
-// if it's a file, adds it to mapi
+// gets the selection from the panel and processes all items:
+// if it is a directory, calls EmailFilesAddDirectory for it
+// if it is a file, adds it to MAPI
 // if everything succeeds, creates the email
 void CFilesWindow::EmailFiles()
 {
@@ -1377,9 +1377,9 @@ BOOL CFilesWindow::OpenFocusedInOtherPanel(BOOL activate)
     if (otherPanel == NULL)
         return FALSE;
 
-    // allow opening the up-dir
+    // allow opening the parent directory
     //  if (FocusedIndex == 0 && FocusedIndex < Dirs->Count &&
-    //      strcmp(Dirs->At(0).Name, "..") == 0) return FALSE;   // do not handle the up-dir
+    //      strcmp(Dirs->At(0).Name, "..") == 0) return FALSE;   // do not consider the parent directory
     if (FocusedIndex < 0 || FocusedIndex >= Files->Count + Dirs->Count)
         return FALSE; // ignore invalid index
 
