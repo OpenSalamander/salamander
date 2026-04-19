@@ -31,7 +31,7 @@ struct CShellIconOverlayItem
     CLSID IconOverlayIdCLSID;                // CLSID of the respective IShellIconOverlayIdentifier object
     int Priority;                            // priority of this icon overlay (0-100, the highest priority is zero)
     HICON IconOverlay[ICONSIZE_COUNT];       // icon overlay in all sizes
-    BOOL GoogleDriveOverlay;                 // TRUE = Google Drive handler (their handler crashes, so we handle it with extra synchronization)
+    BOOL GoogleDriveOverlay;                 // TRUE = Google Drive handler (it crashes, so extra synchronization is used)
 
     void Cleanup();
 
@@ -44,7 +44,7 @@ class CShellIconOverlays
 protected:
     TIndirectArray<CShellIconOverlayItem> Overlays; // priority-sorted list of icon overlays
     CRITICAL_SECTION GD_CS;                         // for Google Drive we need to mutually exclude calls to IsMemberOf from both icon readers (otherwise it crashes and corrupts its heap)
-    BOOL GetGDAlreadyCalled;                        // TRUE = we already checked where the folder for Google Drive is located
+    BOOL GetGDAlreadyCalled;                        // TRUE = the location of the Google Drive folder has already been checked
     char GoogleDrivePath[MAX_PATH];                 // folder for Google Drive (we do not call their handler elsewhere; it is disgustingly slow and, without the extra synchronization, it crashes)
     BOOL GoogleDrivePathIsFromCfg;                  // TRUE if the folder for Google Drive obtained from the Google Drive configuration (FALSE = it may be only the default one and Google Drive may not be installed at all)
     BOOL GoogleDrivePathExists;                     // does the folder for Google Drive exist on disk?
