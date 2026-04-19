@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -472,7 +473,7 @@ void CFATSnapshot<CHAR>::AddToProgress(DIR_ENTRY_SHORT* entry)
     if (islong(entry->Attr) || entry->Name[0] == 0xE5 || isupdir(entry))
         return;
     int cluster = GetCluster(entry);
-    while (cluster && (DWORD)cluster < EOC && IsValidCluster(cluster)) // type cast (DWORD)cluster is OK
+    while (cluster && (DWORD)cluster < EOC && IsValidCluster(cluster)) // the (DWORD)cluster cast is OK
     {
         ClustersProcessed++;
         cluster = FAT[cluster] & ~MARK_MASK;
@@ -751,7 +752,7 @@ BOOL CFATSnapshot<CHAR>::ScheduleDirectory(FILE_RECORD_I<CHAR>* dir, int cluster
             return FALSE;
 
         cluster = FAT[cluster] & ~MARK_MASK;
-        if ((DWORD)cluster < EOC && !IsValidCluster(cluster)) // type case (DWORD)cluster is OK
+        if ((DWORD)cluster < EOC && !IsValidCluster(cluster)) // the (DWORD)cluster cast is correct
         {
             TRACE_E("ScheduleDirectory: invalid directory cluster chain (cluster=" << cluster << ")");
             break;
@@ -786,7 +787,7 @@ BOOL CFATSnapshot<CHAR>::ScanDirectoryCluster(BYTE* buffer, DWORD len, BOOL forc
     DIR_ENTRY_SHORT* bufmax = (DIR_ENTRY_SHORT*)(buffer + len);
     while (entry < bufmax && entry->Name[0])
     {
-        if ((entry->Attr & FAT_ATTR_DIRECTORY) && !IgnoreEntry(entry, FALSE /* deleteddir doesn't matter */))
+        if ((entry->Attr & FAT_ATTR_DIRECTORY) && !IgnoreEntry(entry, FALSE /* deleteddir does not matter */))
         {
             // already allocate record for directories
             FILE_RECORD_I<CHAR>* dir = new FILE_RECORD_I<CHAR>;
@@ -1045,12 +1046,12 @@ DWORD CFATSnapshot<CHAR>::AnalyzeCluster(BYTE* buffer, DWORD len, DWORD* flags)
         if (nshort != 1)
             return 0;
     }
-    else if (nitems < 10) // up to ten records all must be OK
+    else if (nitems < 10) // for up to ten records, all must be valid
     {
         if (nshort + nlong != nitems)
             return 0;
     }
-    else // otherwise we give tolerance 10%
+    else // otherwise allow 10% tolerance
     {
         if (nshort + nlong < nitems * 9 / 10)
             return 0;
@@ -1221,7 +1222,7 @@ BOOL CFATSnapshot<CHAR>::LoadDeletedDirectories()
                 ret = AnalyzeCluster(p, this->Volume->BytesPerCluster, &flags);
                 TRACE_X("cluster=" << cluster << " ret=" << ret << " flags=" << flags);
                 if (!ret)
-                    break; // it is not directory cluster
+                    break; // not a directory cluster
 
                 // it is directory cluster, accept it
                 nclus++;
@@ -1790,7 +1791,7 @@ BOOL CFATSnapshot<CHAR>::GetLostClustersMap(CLUSTER_MAP_I* clusterMap)
         {
             // for cluster number 'i' find in FAT related two bits
             int c = (FAT[i] >> 28) & 0x3;
-            if ((FAT[i] & ~MARK_MASK) == 0 || c == 2) // cluster is not used (or we don't know about it) || there is FC_FAIR or FC_POOR
+            if ((FAT[i] & ~MARK_MASK) == 0 || c == 2) // cluster is unused (or its state is unknown), or FC_FAIR/FC_POOR is set
             {
                 // if it is beginning of segment that we are interested in, store lcnFirst and set we are in segment
                 if (!inside)
@@ -1844,7 +1845,7 @@ BOOL CFATSnapshot<CHAR>::GetLostClustersMap(CLUSTER_MAP_I* clusterMap)
             }
             else
             {
-                break; // we can stope here, there is nothing to store
+                break; // we can stop here; there is nothing to store
             }
         }
     }
@@ -2058,7 +2059,7 @@ BOOL CFATSnapshot<CHAR>::FilterExistingDirectories(FILE_RECORD_I<CHAR>* record)
         }
     }
     record->NumDirItems = j;
-    return j == 0; // returns TRUE when directory was removed
+    return j == 0; // Returns TRUE when all directory items were removed
 }
 
 template <typename CHAR>
@@ -2087,7 +2088,7 @@ void CFATSnapshot<CHAR>::CountClusters()
 
     UsedClusters = 0;
     FreeClusters = 0;
-    for (DWORD i = 2; i < this->Volume->FAT_CountOfClusters; i++) // what about first two items?
+    for (DWORD i = 2; i < this->Volume->FAT_CountOfClusters; i++) // skip the first two items
     {
         if (FAT[i])
             UsedClusters++;
@@ -2476,7 +2477,7 @@ BOOL CFATSnapshot<CHAR>::Update(CSnapshotProgressDlg* progress, DWORD udFlags, C
         EstimateFileDamage(this->Root, edtDraw);
         EstimateFileDamage(this->Root, edtGetCondition);
     }
-    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is lost cluster map required?
+    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is a lost cluster map requested?
     {
         if (clusterMap != NULL)
         {
@@ -2540,7 +2541,7 @@ void CFATSnapshot<CHAR>::FreeRecord2(FILE_RECORD_I<CHAR>* record)
                 break;
 
             // free what was allocated by ScanDirectoryCluster
-            if ((entry->Attr & FAT_ATTR_DIRECTORY) && !IgnoreEntry(entry, FALSE /* deleteddir doesn't matter */))
+            if ((entry->Attr & FAT_ATTR_DIRECTORY) && !IgnoreEntry(entry, FALSE /* deleteddir does not matter */))
             {
 #ifdef _WIN64
                 // pointer to FileSize doesn't fit on x64, so we store only index into FILE_RECORD_Pointers array
