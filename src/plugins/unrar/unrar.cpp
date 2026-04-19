@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -61,7 +62,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         break;
     }
     }
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 LPCTSTR LoadStr(int resID)
@@ -83,17 +84,17 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // this plugin is built for the current Salamander version and newer - perform a check
+    // this plugin is intended for the current Salamander version and later, so perform a check
     if (salamander->GetVersion() < LAST_VERSION_OF_SALAMANDER)
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnRAR" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnRAR" /* DO NOT TRANSLATE */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnRAR" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnRAR" /* DO NOT TRANSLATE */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -111,7 +112,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "UnRAR" /* neprekladat! */, "rar");
+                                   "UnRAR" /* DO NOT TRANSLATE */, "rar");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -201,7 +202,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     memset(&Config, 0, sizeof(Config));
     Config.ListInfoPackedSize = TRUE;
 
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from registry
     {
         registry->GetValue(regKey, CONFIG_OPTIONS, REG_DWORD, &Config.Options, sizeof(DWORD));
         Config.Options &= OP_SAVED_IN_REGISTRY;
@@ -367,7 +368,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
     if (NotWholeArchListed && !(Config.Options & OP_NO_VOL_ATTENTION))
         AttentionDialog(SalamanderGeneral->GetMainWindowHWND());
 
-    // some files have already been listed, so do not pack and display them
+    // some files have already been listed, so do not discard them; display them
     if (!ret && count)
         ret = TRUE;
 
@@ -1026,7 +1027,7 @@ BOOL CPluginInterfaceForArchiver::OpenArchive()
     // for RAR4 archives with encrypted file names we get here after the callback when an incorrect password is entered,
     // and because PasswordForOpenArchive == TRUE when calling RAROpenArchiveEx, SF_ALLENRYPT is set even after merely clicking OK in the password dialog,
     // which ensures we do not ask for the password again (instead an error message about the wrong password appears)
-    if ((oad.Flags & 0x0080) /* block headers encrypted */)
+    if ((oad.Flags & 0x0080) /* encrypted block headers */)
     {
         if (!(PluginData->Silent & SF_ALLENRYPT))
         {
@@ -1215,7 +1216,7 @@ int CPluginInterfaceForArchiver::ChangeVolProc(char* arcName, int mode)
         if (List)
         {
             NotWholeArchListed = TRUE;
-            return -1; // list only while it works without asking for additional volumes
+            return -1; // list only until asking for another volume is required
         }
         if (NextVolumeDialog(SalamanderGeneral->GetMsgBoxParent(), arcName) != IDOK)
         {
@@ -1310,7 +1311,7 @@ int CPluginInterfaceForArchiver::ProcessDataProc(unsigned char* addr, int size)
                 return -1;
             }
             Success = TRUE;
-            return 1; // sucess
+            return 1; // success
         }
         lstrcpy(buf, LoadStr(IDS_UNABLEWRITE));
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
@@ -1516,7 +1517,7 @@ BOOL CPluginInterfaceForArchiver::MakeFilesList(TIndirectArray2<CRARExtractInfo>
             ProgressTotal += size;
         }
     }
-    return errorOccured != SALENUM_CANCEL && // test whether no error occurred and the user did not request to abort the operation (Cancel button)
+    return errorOccured != SALENUM_CANCEL && // check that no error occurred and the user did not cancel the operation (Cancel button)
            SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(), targetDir, ProgressTotal, LoadStr(IDS_PLUGINNAME));
 }
 
@@ -1782,7 +1783,7 @@ LPTSTR PathFindExtension(LPTSTR pszPath)
     LPTSTR iterator = pszPath + len - 1;
     while (iterator >= pszPath)
     {
-        if (*iterator == '.') // ".cvspass" is considered an extension on Windows
+        if (*iterator == '.') // On Windows, ".cvspass" is treated as an extension.
         {
             return iterator;
         }
@@ -1801,7 +1802,7 @@ LPTSTR PathFindExtension(LPTSTR pszPath)
 void CPluginDataInterface::ReleasePluginData(CFileData& file, BOOL isDir)
 {
     // file.PluginData is NULL for folders not having extra items in the archive - see GetFileDataForUpDir & GetFileDataForNewDir
-    delete (CRARFileData*)file.PluginData; // However, delete NULL is perfectly OK
+    delete (CRARFileData*)file.PluginData; // Deleting NULL is valid
 }
 
 // Callback called by Salamander to obtain custom column text - see spl_com.h / FColumnGetText
