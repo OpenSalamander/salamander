@@ -1,5 +1,6 @@
 /* $Id$ */
 /***************************************************************************
+// CommentsTranslationProject: TRANSLATED
  *             chm_lib.c - CHM archive manipulation routines               *
  *                           -------------------                           *
  *                                                                         *
@@ -372,9 +373,9 @@ static int _unmarshal_itsf_header(unsigned char** pData,
     else
         return 0;
 
-    /* now, if we have a V3 structure, unmarshal the rest.
-     * otherwise, compute it
-     */
+    /* if we have a V3 structure, unmarshal the remaining fields.
+         * otherwise, compute data_offset
+         */
     if (dest->version == 3)
     {
         if (*pDataLen != 0)
@@ -413,7 +414,7 @@ static int _unmarshal_itsp_header(unsigned char** pData,
                                   unsigned int* pDataLen,
                                   struct chmItspHeader* dest)
 {
-    /* we only know how to deal with a 0x54 byte structures */
+    /* we only know how to deal with 0x54-byte structures */
     if (*pDataLen != _CHM_ITSP_V1_LEN)
         return 0;
 
@@ -434,7 +435,7 @@ static int _unmarshal_itsp_header(unsigned char** pData,
     _unmarshal_uuid(pData, pDataLen, dest->system_uuid);
     _unmarshal_uchar_array(pData, pDataLen, dest->unknown_0044, 16);
 
-    /* error check the data */
+    /* Validate the data. */
     if (memcmp(dest->signature, "ITSP", 4) != 0)
         return 0;
     if (dest->version != 1)
@@ -676,7 +677,7 @@ struct chmFile* chm_open(const char* filename)
     struct chmUnitInfo uiLzxc;
     struct chmLzxcControlData ctlData;
 
-    /* allocate handle */
+    /* allocate a handle */
     newHandle = (struct chmFile*)malloc(sizeof(struct chmFile));
     if (newHandle == NULL)
         return NULL;
@@ -988,7 +989,7 @@ void chm_set_param(struct chmFile* h,
                 free(h->cache_block_indices);
             }
 
-            /* now, set new values */
+            /* set the new values */
             h->cache_blocks = newBlocks;
             h->cache_block_indices = newIndices;
             h->cache_num_blocks = paramVal;
@@ -1037,12 +1038,11 @@ static UInt64 _chm_parse_cword(UChar** pEntry)
 /* parse a utf-8 string into an ASCII char buffer */
 static int _chm_parse_UTF8(UChar** pEntry, UInt64 count, char* path)
 {
-    /* XXX: implement UTF-8 support, including a real mapping onto
-     *      ISO-8859-1?  probably there is a library to do this?  As is
-     *      immediately apparent from the below code, I'm presently not doing
-     *      any special handling for files in which none of the strings contain
-     *      UTF-8 multi-byte characters.
-     */
+    /* XXX: implement UTF-8 support, including proper mapping to
+         *      ISO-8859-1. The code below does not perform any special handling
+         *      for files in which the strings contain no UTF-8 multi-byte
+         *      characters.
+         */
     while (count != 0)
     {
         *path++ = (char)(*(*pEntry)++);
@@ -1079,7 +1079,7 @@ static UChar* _chm_find_in_PMGL(UChar* page_buf,
                                 UInt32 block_len,
                                 const char* objPath)
 {
-    /* XXX: modify this to do a binary search using the nice index structure
+    /* XXX: modify this to do a binary search using the index structure
      *      that is provided for us.
      */
     struct chmPmglHeader header;
@@ -1151,7 +1151,7 @@ static Int32 _chm_find_in_PMGI(UChar* page_buf,
         if (!_chm_parse_UTF8(&cur, strLen, buffer))
             return -1;
 
-        /* check if it is the right name */
+        /* check whether this is the correct name */
         if (strcasecmp(buffer, objPath) > 0)
             return page;
 
@@ -1173,7 +1173,7 @@ int chm_resolve_object(struct chmFile* h,
 
     Int32 curPage;
 
-    /* buffer to hold whatever page we're looking at */
+    /* buffer for the current page */
     /* RWE 6/12/2003 */
     UChar* page_buf = malloc(h->block_len);
     if (page_buf == NULL)
@@ -1226,7 +1226,7 @@ int chm_resolve_object(struct chmFile* h,
         }
     }
 
-    /* didn't find anything.  fail. */
+    /* nothing found; fail */
     free(page_buf);
     return CHM_RESOLVE_FAILURE;
 }
@@ -1304,7 +1304,7 @@ static Int64 _chm_decompress_block(struct chmFile* h,
     if (cbuffer == NULL)
         return -1;
 
-    /* let the caching system pull its weight! */
+    /* use the cache when possible */
     if (block - blockAlign <= h->lzx_last_block &&
         block >= h->lzx_last_block)
         blockAlign = (UInt32)(block - h->lzx_last_block);
@@ -1430,7 +1430,7 @@ static Int64 _chm_decompress_region(struct chmFile* h,
     if (nLen > (h->reset_table.block_len - nOffset))
         nLen = h->reset_table.block_len - nOffset;
 
-    /* if block is cached, return data from it. */
+    /* If the block is cached, return data from the cache. */
     CHM_ACQUIRE_LOCK(h->lzx_mutex);
     CHM_ACQUIRE_LOCK(h->cache_mutex);
     if (h->cache_block_indices[nBlock % h->cache_num_blocks] == nBlock &&
@@ -1506,7 +1506,7 @@ LONGINT64 chm_retrieve_object(struct chmFile* h,
             /* swill another mouthful */
             swath = _chm_decompress_region(h, buf, ui->start + addr, len);
 
-            /* if we didn't get any... */
+            /* if no data was retrieved */
             if (swath == 0)
                 return total;
 
