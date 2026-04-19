@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -154,7 +155,7 @@ CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSi
     CALL_STACK_MESSAGE3("CPluginFSInterface::GetFullName(, %d, , %d)", isDir, bufSize);
     lstrcpyn(buf, Path, bufSize); // If the path does not fit, the name will not fit either (report an error).
     if (isDir == 2)
-        return SalamanderGeneral->CutDirectory(buf, NULL);     // parent directory
+        return SalamanderGeneral->CutDirectory(buf, NULL); // parent directory
     else
         return SalamanderGeneral->SalPathAppend(buf, file.Name, bufSize);
 }
@@ -181,7 +182,7 @@ CPluginFSInterface::IsOurPath(int currentFSNameIndex, int fsNameIndex, const cha
     CALL_STACK_MESSAGE4("CPluginFSInterface::IsOurPath(%d, %d, %s)",
                         currentFSNameIndex, fsNameIndex, userPart);
     if (WantReconnect)
-        return FALSE;         // user requested a new connection
+        return FALSE; // user requested a new connection
     char buffer[MAX_PATH];
     if (!RootPathFromFull(userPart, buffer, MAX_PATH))
         return FALSE;
