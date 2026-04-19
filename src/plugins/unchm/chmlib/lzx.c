@@ -1,5 +1,6 @@
 /* $Id$ */
 /***************************************************************************
+// CommentsTranslationProject: TRANSLATED
  *                        lzx.c - LZX decompression routines               *
  *                           -------------------                           *
  *                                                                         *
