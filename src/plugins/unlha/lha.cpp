@@ -406,8 +406,8 @@ int LHAGetHeader(FILE* fp, LHA_HEADER* lpHeader)
                 break;
             case 0x50:
                 /*
-           * UNIX permission
-           */
+                           * UNIX permissions
+                           */
                 if (lpHeader->extend_type == EXTEND_UNIX)
                     lpHeader->unix_mode = get_word();
                 break;
@@ -602,7 +602,7 @@ typedef short node;
 #define MAX_DICSIZ (1 << MAX_DICBIT)
 #define MATCHBIT 8   /* bits for MAXMATCH - THRESHOLD */
 #define MAXMATCH 256 /* formerly F (not more than UCHAR_MAX + 1) */
-#define THRESHOLD 3  /* choose optimal value */
+#define THRESHOLD 3  /* optimal value */
 
 #define CBIT 9       /* $\lfloor \log_2 NC \rfloor + 1$ */
 #define USHRT_BIT 16 /* (CHAR_BIT * sizeof(ushort)) */
@@ -950,7 +950,7 @@ static void decode_start_st1()
 
 static void make_table(short nchar, uchar bitlen[], short tablebits, ushort table[])
 {
-    unsigned short count2[17]; /* count of bitlen */
+    unsigned short count2[17]; /* count for each bit length */
     unsigned short weight[17]; /* 0x10000ul >> bitlen */
     unsigned short start[17];  /* first code of bitlen */
     unsigned short total;
@@ -971,7 +971,7 @@ static void make_table(short nchar, uchar bitlen[], short tablebits, ushort tabl
     for (i = 0; (int)i < nchar; i++)
         count2[bitlen[i]]++;
 
-    /* calculate first code */
+    /* calculate the first code */
     total = 0;
     for (i = 1; i <= 16; i++)
     {
@@ -982,7 +982,7 @@ static void make_table(short nchar, uchar bitlen[], short tablebits, ushort tabl
     error("make_table()", "Bad table (5)\n");*/
     //FIX
 
-    /* shift data for make table. */
+    /* Shift data for make_table(). */
     m = 16 - tablebits;
     for (i = 1; (int)i <= tablebits; i++)
     {
@@ -1822,7 +1822,7 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
     if (LHAGetHeader(f, &hdr) != GH_ERROR)
     { // try to read one header
         fseek(f, 0, SEEK_SET);
-        return TRUE; // everything is OK, the archive is LHZ
+        return TRUE; // archive is LHZ
     }
 
     // failed to read the first header, check whether the archive is an SFX
@@ -1846,7 +1846,7 @@ int LHAOpenArchive(FILE*& f, LPCTSTR lpName)
         /* found "-l??-" keyword (as METHOD type string) */
         if (p[0] == '-' && p[1] == 'l' && p[4] == '-')
         {
-            /* header size and checksum are valid */
+            /* Check the header size and checksum. */
             if ((p[I_HEADER_LEVEL - 2] == 0 || p[I_HEADER_LEVEL - 2] == 0) && p[I_HEADER_SIZE - 2] > 20 && p[I_HEADER_CHECKSUM - 2] == calc_sum((char*)p, p[-2]))
             {
                 fseek(f, (long)((p - 2) - buffer2) - n, SEEK_CUR);
