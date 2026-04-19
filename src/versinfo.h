@@ -4,9 +4,9 @@
 
 #pragma once
 
-// Used to read (and optionally modify) the VERSIONINFO resource. Reading alone 
+// Used to read (and optionally modify) the VERSIONINFO resource. Reading alone
 // could be handled by the GetFileVersionInfo/VerQueryValue API, but that API does not support later modifications,
-// so we solve the problem with our own module. Using the API would also mean 
+// so we solve the problem with our own module. Using the API would also mean
 // linking Version.LIB/DLL, which we do not use for anything else.
 // WARNING: the module exists both in Salamander and in Translator.
 
