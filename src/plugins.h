@@ -2667,7 +2667,7 @@ public:
     // plugin call: PrematureDeleteTmpCopy
     BOOL PrematureDeleteTmpCopy(HWND parent, int copiesCount);
 
-    // returns TRUE if the plugin is an archiver and has its own mechanism for deleting copies of files extracted from the archive 
+    // returns TRUE if the plugin is an archiver and has its own mechanism for deleting copies of files extracted from the archive
     // must work even after unloading the plugin (until it is loaded again)
     BOOL IsArchiverAndHaveOwnDelete() { return ArcCacheOwnDelete; }
 
