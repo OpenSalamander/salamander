@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -139,8 +140,8 @@ void CDeflate::init_block()
 
 /* ===========================================================================
  * Restore the heap property by moving down the tree starting at node k,
- * exchanging a node with the smallest of its two sons if necessary, stopping
- * when the heap property is re-established (each father smaller than its
+ * exchanging a node with the smaller of its two sons if necessary, stopping
+ * when the heap property is re-established (each parent smaller than its
  * two sons).
  */
 void CDeflate::pqdownheap(ct_data near* tree, /* the tree to restore */
@@ -165,7 +166,7 @@ void CDeflate::pqdownheap(ct_data near* tree, /* the tree to restore */
         heap[k] = htemp;
         k = j;
 
-        /* And continue down the tree, setting j to the left son of k */
+        /* Continue down the tree, setting j to the left son of k. */
         j <<= 1;
     }
     heap[k] = v;
@@ -278,7 +279,7 @@ void CDeflate::gen_bitlen(tree_desc near* desc) /* the tree descriptor */
  *     zero code length.
  */
 void CDeflate::gen_codes(ct_data near* tree, /* the tree to decorate */
-                         int max_code)       /* largest code with non zero frequency */
+                         int max_code)       /* largest code with nonzero frequency */
 {
     ush next_code[MAX_BITS + 1]; /* next code value for each bit length */
     ush code = 0;                /* running code value */
@@ -310,7 +311,7 @@ void CDeflate::gen_codes(ct_data near* tree, /* the tree to decorate */
 }
 
 /* ===========================================================================
- * Construct one Huffman tree and assigns the code bit strings and lengths.
+ * Construct one Huffman tree and assign the code bit strings and lengths.
  * Update the total bit length for the current block.
  * IN assertion: the field freq is set for all tree elements.
  * OUT assertions: the fields len and code are set to the optimal bit length
@@ -358,7 +359,7 @@ void CDeflate::build_tree(tree_desc near* desc) /* the tree descriptor */
         opt_len--;
         if (stree)
             static_len -= stree[_new].Len;
-        /* new is 0 or 1 so it does not have extra bits */
+        /* new is 0 or 1, so it has no extra bits */
     }
     desc->max_code = max_code;
 
@@ -414,7 +415,7 @@ void CDeflate::build_tree(tree_desc near* desc) /* the tree descriptor */
  * during the construction of bl_tree.)
  */
 void CDeflate::scan_tree(ct_data near* tree, /* the tree to be scanned */
-                         int max_code)       /* and its largest code of non zero frequency */
+                         int max_code)       /* largest code with non-zero frequency */
 {
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
@@ -476,7 +477,7 @@ void CDeflate::scan_tree(ct_data near* tree, /* the tree to be scanned */
  * bl_tree.
  */
 void CDeflate::send_tree(ct_data near* tree, /* the tree to be scanned */
-                         int max_code)       /* and its largest code of non zero frequency */
+                         int max_code)       /* largest code with non-zero frequency */
 {
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
@@ -549,7 +550,7 @@ void CDeflate::send_tree(ct_data near* tree, /* the tree to be scanned */
  */
 int CDeflate::build_bl_tree()
 {
-    int max_blindex; /* index of last bit length code of non zero freq */
+    int max_blindex; /* index of last bit-length code with non-zero frequency */
 
     /* Determine the bit length frequencies for literal and distance trees */
     scan_tree((ct_data near*)dyn_ltree, l_desc.max_code);
@@ -558,7 +559,7 @@ int CDeflate::build_bl_tree()
     /* Build the bit length tree: */
     build_tree((tree_desc near*)(&bl_desc));
     /* opt_len now includes the length of the tree representations, except
-     * the lengths of the bit lengths codes and the 5+5+4 bits for the counts.
+     * the lengths of the bit length codes and the 5+5+4 bits for the counts.
      */
 
     /* Determine the number of bit length codes to send. The pkzip format
@@ -579,8 +580,8 @@ int CDeflate::build_bl_tree()
 
 /* ===========================================================================
  * Send the header for a block using dynamic Huffman trees: the counts, the
- * lengths of the bit length codes, the literal tree and the distance tree.
- * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
+ * lengths of the bit length codes, the literal tree, and the distance tree.
+ * Assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
  */
 void CDeflate::send_all_trees(int lcodes, int dcodes, int blcodes) /* number of codes for each tree */
 {
@@ -613,7 +614,7 @@ ullg CDeflate::flush_block(char* buf,      /* input block, or NULL if too old */
                            int eof)        /* true if this is the last block for a file */
 {
     ulg opt_lenb, static_lenb; /* opt_len and static_len in bytes */
-    int max_blindex;           /* index of last bit length code of non zero freq */
+    int max_blindex;           /* index of last bit-length code with non-zero frequency */
 
     flag_buf[last_flags] = flags; /* Save the flags for the last 8 items */
 
@@ -673,7 +674,7 @@ ullg CDeflate::flush_block(char* buf,      /* input block, or NULL if too old */
 #else
     if (stored_len + 4 <= opt_lenb && buf != (char*)NULL)
     {
-        /* 4: two words for the lengths */
+        /* 4: two words for the length fields */
 #endif
         /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
          * Otherwise we can't have processed more than WSIZE input bytes since
