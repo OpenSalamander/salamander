@@ -31,10 +31,10 @@ public:
 
     void Set(const char* title, HWND parent, const CQuadWord& totalSize, BOOL fileProgress);
     void Set(const char* title, HWND parent, const CQuadWord& totalSize1, const CQuadWord& totalSize2);
-    void SetTotal(const CQuadWord& total1, const CQuadWord& total2); // CQuadWord(-1, -1) means do not set
+    void SetTotal(const CQuadWord& total1, const CQuadWord& total2); // CQuadWord(-1, -1) means do not update
 
     int AddSize(int size, BOOL delayedPaint);                                       // returns "continue?"
-    int SetSize(const CQuadWord& size1, const CQuadWord& size2, BOOL delayedPaint); // returns "continue?"; size == CQuadWord(-1, -1) means "do not set"
+    int SetSize(const CQuadWord& size1, const CQuadWord& size2, BOOL delayedPaint); // returns "continue?"; passing CQuadWord(-1, -1) for a size means "do not set"
 
     void NewLine(const char* txt, BOOL delayedPaint);
     void EnableCancel(BOOL enable);
@@ -97,9 +97,9 @@ public:
     CSalamanderForOperations(CFilesWindow* panel);
     ~CSalamanderForOperations();
 
-    // PROGRESS DIALOG: the dialog contains one or two progress meters (depending on 'twoProgressBars' FALSE/TRUE)
+    // PROGRESS DIALOG: the dialog contains one or two progress bars ('twoProgressBars' is FALSE/TRUE)
     // opens the progress dialog with the title 'title'; 'parent' is the parent window of the progress dialog (if
-    // NULL, the main window is used); if it contains only one progress meter, it can be labeled
+    // NULL, the main window is used); if it contains only one progress bar, it can be labeled
     // as "File" ('fileProgress' is TRUE) or "Total" ('fileProgress' is FALSE)
     virtual void WINAPI OpenProgressDialog(const char* title, BOOL twoProgressBars, HWND parent, BOOL fileProgress);
     // prints the text 'txt' (even multiple lines - splits to lines) into the progress dialog
@@ -110,7 +110,7 @@ public:
     virtual void WINAPI ProgressSetTotalSize(const CQuadWord& totalSize1, const CQuadWord& totalSize2);
     // if 'size1' is not CQuadWord(-1, -1), sets the value of 'size1' (size1/total1*100 percent) on the first progress meter,
     // if 'size2' is not CQuadWord(-1, -1), sets the value of 'size2' (size2/total2*100 percent) on the second progress meter
-    // (for a progress dialog with a single progress meter, 'size2' must be CQuadWord(-1, -1)); returns whether the action 
+    // (for a progress dialog with a single progress meter, 'size2' must be CQuadWord(-1, -1)); returns whether the action
     // should continue (FALSE = end)
     virtual BOOL WINAPI ProgressSetSize(const CQuadWord& size1, const CQuadWord& size2, BOOL delayedPaint);
     // adds the size 'size' (optionally to both progress meters) (size/total*100 percent progress),
@@ -189,7 +189,7 @@ public:
     int SalDirStrCmp(const char* s1, const char* s2);
     int SalDirStrCmpEx(const char* s1, int l1, const char* s2, int l2);
 
-    // calls 'pluginData'.ReleaseFilesOrDirs (releasing plug-in data) for all files (if 'releaseFiles' is TRUE)
+    // calls 'pluginData'.ReleaseFilesOrDirs (releasing plugin data) for all files (if 'releaseFiles' is TRUE)
     // and all directories (if 'releaseDirs' is TRUE)
     void ReleasePluginData(CPluginDataInterfaceEncapsulation& pluginData, BOOL releaseFiles,
                            BOOL releaseDirs);
@@ -207,10 +207,10 @@ public:
     // returns the directory size - sum of all files in it; note: counters must be reset beforehand
     CQuadWord GetDirSize(const char* path, const char* dirName, int* dirsCount = NULL,
                          int* filesCount = NULL, TDirectArray<CQuadWord>* sizes = NULL);
-    // returns the salamander-dir for the specified directory; if 'readOnly' is TRUE, 
+    // returns the salamander-dir for the specified directory; if 'readOnly' is TRUE,
     // the returned salamander-dir object must not be modified
     CSalamanderDirectory* GetSalamanderDir(const char* path, BOOL readOnly);
-    // returns the salamander-dir for the specified directory index; 
+    // returns the salamander-dir for the specified directory index;
     // the returned salamander-dir object must not be modified
     CSalamanderDirectory* GetSalamanderDir(int i);
     // returns the index of the directory specified by name
@@ -312,7 +312,7 @@ public:
     BOOL SupportLongNames;
     BOOL NeedANSIListFile;
 
-    // helper flag to detect the data layout - TRUE = legacy -> 'Type' (0 ZIP, 1 external, 2 TAR, 3 PAK)
+    // Helper flag indicating the legacy data type format: TRUE -> 'Type' (0 ZIP, 1 external, 2 TAR, 3 PAK)
     BOOL OldType;
 
 public:
@@ -526,7 +526,7 @@ class CUnpackerConfig
 {
 protected:
     int PreferedUnpacker;
-    TIndirectArray<CUnpackerConfigData> Unpackers; // array of packer information, elements of type (CUnpackerConfigData *)
+    TIndirectArray<CUnpackerConfigData> Unpackers; // array of unpacker information, elements of type (CUnpackerConfigData *)
 
 public:
     CUnpackerConfig(/*BOOL disableDefaultValues = FALSE*/);
