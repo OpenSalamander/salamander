@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -128,7 +129,7 @@ int Unreduce(CDecompressionObject* decompress) /* expand probabilistically reduc
     short Len = 0;
     unsigned __int64 s = decompress->ucsize; /* number of bytes left to decompress */
     unsigned w = 0;                          /* position in output window slide[] */
-    unsigned u = 1;                          /* true if slide[] unflushed */
+    unsigned u = 1;                          /* true if slide[] has not been flushed */
     uch Slen[256];
     uch* slide = decompress->Output->SlideWin;
 
@@ -159,7 +160,7 @@ int Unreduce(CDecompressionObject* decompress) /* expand probabilistically reduc
                 nchar = followers[lchar][follower];
             }
         }
-        /* expand the resulting byte */
+        /* decode the resulting byte */
         switch (ExState)
         {
 
