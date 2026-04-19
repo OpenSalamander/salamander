@@ -43,7 +43,7 @@ protected:
 
     // system objects - array of (HANDLE): state "signaled" -> remove this 'lock'
     TDirectArray<HANDLE> LockObject;
-    // the object ownership - array of (BOOL): TRUE -> call CloseHandle('lock')
+    // object ownership: array of BOOL values; TRUE -> call CloseHandle('lock')
     TDirectArray<BOOL> LockObjOwner;
 
     BOOL Cached;                               // is it a cached tmp-file? (did CrtCache already arrive?)
@@ -106,7 +106,7 @@ public:
 
     // see CDiskCache::AssignName() for a description
     //
-    // handles - object for tracking 'lock' objects
+    // handles - object for tracking 'lock' handles
     BOOL AssignName(CCacheHandles* handles, HANDLE lock, BOOL lockOwner, CCacheRemoveType remove);
 
     // see CDiskCache::ReleaseName() for a description
@@ -125,8 +125,8 @@ public:
     // lastLock - pointer to a BOOL that is set to TRUE if there are no more links to the tmp-file
     BOOL WaitSatisfied(HANDLE lock, BOOL* lastLock);
 
-    // if we change our mind about deleting the tmp-file on disk (e.g. it was not possible to pack it,
-    // so we leave it in temp, so that the users don't kill us)
+    // if we decide not to delete the temporary file on disk (for example, packing failed,
+    // it is safer to leave it in the temp directory)
     void DetachTmpFile() { Detached = TRUE; }
 
     // changes type of tmp-file to crtDirect (direct deletion after use)
@@ -177,21 +177,21 @@ public:
     BOOL ContainTmpName(const char* tmpName, const char* rootTmpPath, int rootTmpPathLen,
                         BOOL* canContainThisName);
 
-    // searches for 'name' in the tmp-directory; if it's found, returns TRUE and values 'name' and 'tmpPath',
-    // so that they match expected values from CDiskCache::GetName(); if it's not found,
-    // returns FALSE
+    // Searches for 'name' in the tmp directory; if found, returns TRUE and sets 'tmpPath'
+    // and the related state so they match the expected values from CDiskCache::GetName(); if not found,
+    // returns FALSE.
     //
-    // name - unique item identification
-    // exists - pointer to BOOL, which is set per the description above
+    // name - unique item identifier
+    // exists - pointer to a BOOL set as described above
     // tmpPath - return value of CDiskCache::GetName() (NULL && 'exists'==TRUE -> fatal error)
     //
-    // if 'onlyAdd' is TRUE, it is possible to create only a new name or restore a deleted tmp-file
-    // (the name exists, but the tmp-file is not prepared) - if the name exists, returns TRUE,
-    // 'exists' FALSE and 'tmpPath' NULL ("file already exists");
-    // 'canBlock' is TRUE if waiting for readiness of the tmp-file is expected, in case 'name'
-    // is in cache, but it's not prepared, if 'canBlock' is FALSE and the tmp-file is not prepared,
-    // returns TRUE, 'exists' FALSE and 'tmpPath' NULL ("not found");
-    // if 'errorCode' is not NULL, the error code is returned in it (see DCGNE_XXX)
+    // If 'onlyAdd' is TRUE, only a new name may be created, or a deleted tmp file may be restored
+    // (the name exists, but the tmp file is not prepared); if the name already exists,
+    // returns TRUE, 'exists' FALSE, and 'tmpPath' NULL ("file already exists");
+    // 'canBlock' is TRUE if the call should wait for the tmp file to become ready when
+    // 'name' is in the cache but is not prepared; if 'canBlock' is FALSE and the tmp file is not
+    // prepared, returns TRUE, 'exists' FALSE, and 'tmpPath' NULL ("not found");
+    // if 'errorCode' is not NULL, it receives the error code that occurred (see DCGNE_XXX)
     BOOL GetName(CDiskCache* monitor, const char* name, BOOL* exists, const char** tmpPath,
                  BOOL canBlock, BOOL onlyAdd, int* errorCode);
 
@@ -413,17 +413,17 @@ public:
     // remove - when to delete the tmp-file
     BOOL AssignName(const char* name, HANDLE lock, BOOL lockOwner, CCacheRemoveType remove);
 
-    // called only when NamePrepared() or AssignName() cannot be called after GetName();
-    // used for errors while acquiring the tmp-file or the 'lock' object (the launched
-    // application for which the tmp-file was being acquired)
-    // if NamePrepared() would have to be called, gives other threads a chance to create the
-    // tmp-file (those waiting until the tmp-file is prepared); if AssignName() would have to
-    // be called, cancels the tmp-file's waiting state for assignment of the 'lock' object, and the
-    // tmp-file may be deleted; if 'storeInCache' is TRUE and the tmp-file is prepared and not
-    // locked, it is marked as cached (if the maximum cache capacity allows it, it will not be
-    // deleted)
+    // Called only when NamePrepared() or AssignName() cannot be called after GetName().
+    // Used in case of an error while acquiring the tmp file or the 'lock' object (the
+    // launched application for which the tmp file was being acquired).
+    // If NamePrepared() would otherwise need to be called, it gives other threads a chance
+    // to create the tmp file (those waiting until the tmp file is prepared). If AssignName()
+    // would otherwise need to be called, it cancels the tmp file's waiting state for assignment
+    // of the 'lock' object, and the tmp file may be deleted. If 'storeInCache' is TRUE and the
+    // tmp file is prepared and not locked, it is marked as cached (if the maximum cache capacity
+    // allows it, it will not be deleted).
     //
-    // returns success
+    // Returns success.
     //
     // name - item identifier (used later for lookup)
     BOOL ReleaseName(const char* name, BOOL storeInCache);
