@@ -77,7 +77,7 @@ BOOL CALLBACK CloseAllOwnedEnabledDialogsEnumProc(HWND wnd, LPARAM lParam)
             }
         }
     }
-    return TRUE; // walk through all windows; there may be multiple dialogs next to each other from the same owner
+    return TRUE; // walk through all windows; there may be multiple adjacent dialogs with the same owner
 }
 
 void CloseAllOwnedEnabledDialogs(HWND parent, DWORD tid)
@@ -216,7 +216,7 @@ BOOL GetFileNameForViewer(CFileNamesEnumRequestType requestType, int srcUID, int
         {
             HANDLES(EnterCriticalSection(&FileNamesEnumDataSect));
             waitRes = WaitForSingleObject(FileNamesEnumDone, 0);
-            if (waitRes == WAIT_OBJECT_0) // done (the timeout was a false alarm; the message was delivered, the name lookup just was not finished)
+            if (waitRes == WAIT_OBJECT_0) // done (the timeout was a false alarm; the message was delivered, but the name lookup did not finish)
             {
                 *lastFileIndex = FileNamesEnumData.LastFileIndex;
                 if (fileName != NULL)
@@ -229,7 +229,7 @@ BOOL GetFileNameForViewer(CFileNamesEnumRequestType requestType, int srcUID, int
                     *isFileSelected = FileNamesEnumData.IsFileSelected;
                 ret = FileNamesEnumData.Found;
             }
-            else // a real timeout (timed out while delivering the message to the source)
+            else // actual timeout (message delivery to the source timed out)
             {
                 FileNamesEnumData.TimedOut = TRUE;
                 if (srcBusy != NULL)
@@ -400,7 +400,7 @@ BOOL IsPathOnVolumeSupADS(const char* path, BOOL* isFAT32)
     if (!MyGetVolumeInformation(path, NULL, NULL, NULL, NULL, 0, NULL, NULL, &fileSystemFlags, fileSystemNameBuffer, 100))
     {
         TRACE_E("MyGetVolumeInformation failed for: " << path);
-        return TRUE; // we would rather assume the filesystem supports ADS; if not, something will fail later
+        return TRUE; // we would rather assume that the filesystem supports ADS; otherwise, something will fail later
     }
     if (isFAT32 != NULL)
         *isFAT32 = StrICmp(fileSystemNameBuffer, "FAT32") == 0;
@@ -443,7 +443,7 @@ char* PrintDiskSize(char* buf, const CQuadWord& size2, int mode)
         for (; i < 6; i++)
         {
             if (sizeDouble >= 1023.5)
-                sizeDouble /= 1024; // division in double!
+                sizeDouble /= 1024; // use floating-point division
             else
                 break;
         }
@@ -863,8 +863,8 @@ BOOL CNames::LoadFromClipboard(HWND hWindow)
                 if (size == 0)
                     TRACE_E("CNames::LoadFromClipboard(): unexpected situation: size == 0!");
 
-                // for example Miranda appends additional Unicode data after the text, so we
-                // prefer to find the end of the null-terminated string ourselves, but without exceeding
+                // for example, Miranda appends additional Unicode data after the text, so we
+                // find the end of the null-terminated string ourselves, without exceeding
                 // the end of the allocated memory block
                 const WCHAR* s = textW;
                 const WCHAR* end = textW + size / sizeof(WCHAR);
@@ -880,7 +880,7 @@ BOOL CNames::LoadFromClipboard(HWND hWindow)
                 HANDLES(GlobalUnlock(handle));
             }
         }
-        if (text == NULL) // probably not Unicode, try ANSI (when Unicode is present, ANSI is usually broken — without diacritics)
+        if (text == NULL) // Probably not Unicode; try ANSI (when Unicode is present, ANSI is usually broken, without diacritics)
         {
             handle = GetClipboardData(CF_TEXT);
             if (handle != NULL)
@@ -1466,15 +1466,15 @@ HWND CShellExecuteWnd::Create(HWND hParent, const char* format, ...)
         RECT r;
         if (!IsWindow(hParent) || !GetClientRect(hParent, &r))
         {
-            // hopefully a good default...
+            // reasonable default window size
             r.right = 800;
             r.bottom = 600;
         }
 
-        // the window will be stretched across the MainWindow/Find area and must be transparent (otherwise the dialog background will not redraw)
-        // example: if I remove WS_EX_TRANSPARENT, open Find and press Delete (to the Recycle Bin), then move the
-        // confirmation dialog for deleting to the Recycle Bin, the background of the Find window will not repaint beneath it (this shell window,
-        // which has WM_ERASEBKGND/WM_PAINT suppressed, will show up there)
+        // the window will cover the MainWindow/Find area and must be transparent (otherwise the dialog background will not be drawn)
+        // example: if WS_EX_TRANSPARENT is removed, opening Find and pressing Delete (to the Recycle Bin), then moving the
+        // confirmation dialog for Recycle Bin deletion is enough to stop the Find window background from repainting underneath
+        // it; this shell window, with WM_ERASEBKGND/WM_PAINT suppressed, will be shown there
         CWindow::CreateEx(WS_EX_TRANSPARENT,
                           SHELLEXECUTE_CLASSNAME,
                           buff,
@@ -1510,7 +1510,7 @@ CShellExecuteWnd::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (!CanClose)
         {
             MSG msg; // flush the message queue (WMP9 buffered Enter and pressed OK for us)
-            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: replaced it with just discarding messages from the keyboard (without TranslateMessage and DispatchMessage an endless loop threatens; observed when unloading Automation with memory leaks, before the message box about leaks appeared there was an infinite loop, WM_PAINT kept being added to the queue and we kept throwing it away)
+            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: replaced this with discarding only keyboard messages (without TranslateMessage and DispatchMessage, an infinite loop can occur; this was found while unloading Automation with memory leaks, before the leak message box was displayed, WM_PAINT kept being added to the queue and we kept discarding it)
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
 
@@ -1532,9 +1532,9 @@ CShellExecuteWnd::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             while (1)
                 Sleep(1000);
             /*
-        // the creation of the bug report has started in a separate thread
-        // now we ensure this thread gets stuck as long as the bug report dialog is open
-        // this thread will freeze on the following macro thanks to the DontSuspend and ExceptionExists variables
+        // Bug report creation started in a separate thread.
+        // Now block this thread for as long as the bug report dialog remains open.
+        // This thread will freeze at the following macro due to the DontSuspend and ExceptionExists variables.
         CALL_STACK_MESSAGE1("CShellExecuteWnd::WindowProc: LOCK");
 */
         }
@@ -1576,7 +1576,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
         }
         data->Count++;
     }
-    return TRUE; // keep searching; we want every window
+    return TRUE; // Continue searching; we want all windows
 }
 
 int EnumCShellExecuteWnd(HWND hParent, char* text, int textMax)
@@ -1676,7 +1676,7 @@ CTargetPathState GetTargetPathState(CTargetPathState upperDirState, const char* 
     case tpsNotEncryptedExisting:
     {
         DWORD attr = SalGetFileAttributes(targetPath);
-        if (attr == INVALID_FILE_ATTRIBUTES) // the next subdirectory no longer exists, inherit the Encrypted attribute
+        if (attr == INVALID_FILE_ATTRIBUTES) // subdirectory no longer exists; inherit the encrypted attribute
             return upperDirState == tpsEncryptedExisting ? tpsEncryptedNotExisting : tpsNotEncryptedNotExisting;
         if (attr & FILE_ATTRIBUTE_ENCRYPTED)
             return tpsEncryptedExisting;
@@ -1708,7 +1708,7 @@ BOOL SafeGetOpenFileName(LPOPENFILENAME lpofn)
         ret = GetOpenFileName(lpofn);
         lpofn->lpstrInitialDir = oldInitDir;
     }
-    if (!ret && CommDlgExtendedError() != 0 /* only if this is not Cancel in the dialog */)
+    if (!ret && CommDlgExtendedError() != 0 /* only if the dialog was not canceled */)
         TRACE_E("Cannot open OpenFile dialog box. CommDlgExtendedError()=" << CommDlgExtendedError());
     return ret;
 }
@@ -1729,7 +1729,7 @@ BOOL SafeGetSaveFileName(LPOPENFILENAME lpofn)
         ret = GetSaveFileName(lpofn);
         lpofn->lpstrInitialDir = oldInitDir;
     }
-    if (!ret && CommDlgExtendedError() != 0 /* only if this is not Cancel in the dialog */)
+    if (!ret && CommDlgExtendedError() != 0 /* only if the dialog was not canceled */)
         TRACE_E("Cannot open SaveFile dialog box. CommDlgExtendedError()=" << CommDlgExtendedError());
     return ret;
 }
@@ -1801,7 +1801,7 @@ BOOL DuplicateBackslashes(char* buffer, int bufferSize)
                 l++;
                 s++;
             }
-            else // it does not fit; trim the buffer
+            else // does not fit; trim the buffer
             {
                 ret = FALSE;
                 memmove(s + 1, s, l - (s - buffer)); // double '\\', cut off one character
@@ -1839,7 +1839,7 @@ BOOL DuplicateDollars(char* buffer, int bufferSize)
                 l++;
                 s++;
             }
-            else // it does not fit; trim the buffer
+            else // does not fit; truncate the buffer
             {
                 ret = FALSE;
                 memmove(s + 1, s, l - (s - buffer)); // double the '$', cut off one character
@@ -1866,7 +1866,7 @@ BOOL AddDoubleQuotesIfNeeded(char* buf, int bufSize)
         char* sp = beg;
         while (*++sp > ' ')
             ;
-        if (sp < end) // the name contains at least one space, we need to add quotation marks
+        if (sp < end) // the name contains at least one space, so we need to add double quotes
         {
             if ((bufEnd - buf) + 2 >= bufSize)
                 return FALSE; // not enough room in the buffer
@@ -2022,11 +2022,11 @@ BOOL GetSidMD5(BYTE* sidMD5)
 /*
 // according to http://forums.microsoft.com/msdn/ShowPost.aspx?PostID=748596&SiteID=1
 // the integrity level should be set on Vista, but I have not been able to reproduce the problem on Vista/Server 2008
-// so for now I am keeping it only in the comment until we run into it
+// so for now I am leaving this only as a comment until we run into it
 //
 // Windows Integrity Mechanism Design
 // http://msdn.microsoft.com/en-us/library/bb625963.aspx
-if (windowsVistaAndLater) // FIXME: I have not encountered a situation on Vista where I had to deal with integrity levels (between AsAdmin / regular applications)
+if (windowsVistaAndLater) // FIXME: I have not encountered a case on Vista where I would have to deal with the integrity level (between AdAdmin / normal application)
 {
   PSECURITY_DESCRIPTOR pSD;
   ConvertStringSecurityDescriptorToSecurityDescriptor(
@@ -2133,12 +2133,12 @@ BOOL GetProcessIntegrityLevel(DWORD* integrityLevel)
 
     BOOL ret = FALSE;
 
-    if (WindowsVistaAndLater) // integrity levels were introduced starting with Windows Vista
+    if (WindowsVistaAndLater) // integrity levels were introduced in Windows Vista
     {
         hProcess = GetCurrentProcess();
         if (OpenProcessToken(hProcess, TOKEN_QUERY, &hToken))
         {
-            // Get the Integrity level.
+            // Get the integrity level.
             if (!GetTokenInformation(hToken, (_TOKEN_INFORMATION_CLASS)25 /*TokenIntegrityLevel*/, NULL, 0, &dwLengthNeeded))
             {
                 dwError = GetLastError();
@@ -2203,14 +2203,14 @@ LONG SalRegQueryValue(HKEY hKey, LPCSTR lpSubKey, LPSTR lpData, PLONG lpcbData)
     {
         if (*lpcbData < 1 || ((char*)lpData)[*lpcbData - 1] != 0)
         {
-            if ((DWORD)*lpcbData < dataBufSize) // only values of REG_SZ and REG_EXPAND_SZ type reach this point, so one null terminator is enough
+            if ((DWORD)*lpcbData < dataBufSize) // Only REG_SZ and REG_EXPAND_SZ values can reach this point, so one null terminator is enough
             {
                 ((char*)lpData)[*lpcbData] = 0;
                 (*lpcbData)++;
             }
             else // not enough room for the null terminator in the buffer
             {
-                (*lpcbData)++; // request the necessary null terminator
+                (*lpcbData)++; // request space for the required null terminator
                 return ERROR_MORE_DATA;
             }
         }
@@ -2232,7 +2232,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
             lpcbData != NULL &&
             (ret == ERROR_MORE_DATA || lpData == NULL && ret == ERROR_SUCCESS))
         {
-            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // proactively ask for the possible extra null terminator(s)
+            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request space for possible extra null terminator(s)
             return ret;
         }
         if (ret == ERROR_SUCCESS && lpData != NULL)
@@ -2246,7 +2246,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                 }
                 else // not enough room for the null terminator in the buffer
                 {
-                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request the necessary null terminator(s)
+                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // account for the required null terminator(s)
                     return ERROR_MORE_DATA;
                 }
             }
@@ -2259,7 +2259,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                 }
                 else // not enough room for the second null terminator in the buffer
                 {
-                    (*lpcbData)++; // request the necessary null terminator
+                    (*lpcbData)++; // request space for the required null terminator
                     return ERROR_MORE_DATA;
                 }
             }
