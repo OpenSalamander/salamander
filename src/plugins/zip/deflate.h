@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -446,13 +447,11 @@ class CDeflate
     /* Output buffer for compression to file */
 
     char *in_buf, *out_buf;
-    /* Current input and output buffers. in_buf is used only for in-memory
-     * compression.
-     */
+    /* Current offsets in the input and output buffers. in_offset is used only for in-memory compression. On 16-bit machines, the buffer is limited to 64K. */
 
     unsigned in_offset, out_offset;
-    /* Current offset in input and output buffers. in_offset is used only for
-     * in-memory compression. On 16 bit machines, the buffer is limited to 64K.
+    /* Current positions in the input and output buffers. in_offset is used only for
+     * in-memory compression. On 16-bit machines, the buffer is limited to 64K.
      */
 
     unsigned in_size, out_size;
@@ -496,11 +495,11 @@ class CDeflate
     void copy_block(char* block, unsigned len, int header);
 
     /* ===========================================================================
-     * Return true if the zip file can be seeked. This is used to check if
-     * the local header can be re-rewritten. This function always returns
-     * true for in-memory compression.
-     * IN assertion: the local header has already been written (ftell() > 0).
-     */
+         * Return TRUE if the zip file can be seeked. This is used to check if
+         * the local header can be re-rewritten. This function always returns
+         * TRUE for in-memory compression.
+         * IN assertion: the local header has already been written (ftell() > 0).
+         */
     int seekable()
     {
         return 1;
@@ -587,9 +586,7 @@ class CDeflate
      */
 
     ct_data static_dtree[D_CODES];
-    /* The static distance tree. (Actually a trivial tree since all codes use
-     * 5 bits.)
-     */
+    /* The bit-length tree. */
 
     ct_data bl_tree[2 * BL_CODES + 1];
     /* Huffman tree for the bit lengths */
@@ -599,7 +596,7 @@ class CDeflate
     tree_desc bl_desc;
 
     ush bl_count[MAX_BITS + 1];
-    /* number of codes at each bit length for an optimal tree */
+    /* order of bit length codes */
 
     uch bl_order[BL_CODES];
     /* The lengths of the bit length codes are sent in order of decreasing
@@ -614,7 +611,7 @@ class CDeflate
      */
 
     uch depth[2 * L_CODES + 1];
-    /* Depth of each subtree used as tie breaker for trees of equal frequency */
+    /* Length code for each match length */
 
     uch length_code[MAX_MATCH - MIN_MATCH + 1];
     /* length code for each normalized match length (0 == MIN_MATCH) */
@@ -661,7 +658,7 @@ class CDeflate
     ulg cmpr_len_bits; /* number of bits past 'cmpr_bytelen' */
 
     ulg input_len; /* total byte length of input file */
-    /* input_len is for debugging only since we can get it by other means. */
+    /* file_type points to UNKNOWN, BINARY, or ASCII. */
 
     ush* file_type;   /* pointer to UNKNOWN, BINARY or ASCII */
     int* file_method; /* pointer to DEFLATE or STORE */
@@ -894,7 +891,7 @@ class CDeflate
 
     unsigned max_chain_length;
     /* To speed up deflation, hash chains are never searched beyond this length.
-     * A higher limit improves compression ratio but degrades the speed.
+     * A higher limit improves the compression ratio but reduces speed.
      */
 
     unsigned int max_lazy_match;
