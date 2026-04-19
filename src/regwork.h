@@ -88,7 +88,7 @@ public:
     BOOL CreateKey(HKEY key, const char* name, HKEY& createdKey);
 
     // opens the existing subkey 'name' of key 'key'; returns the handle in 'openedKey'
-    // and TRUE on success. The returned key ('createdKey') must be closed by calling the CloseKey.
+    // and TRUE on success. The returned key ('openedKey') must be closed by calling CloseKey.
     BOOL OpenKey(HKEY key, const char* name, HKEY& openedKey);
 
     // closes a key previously opened via OpenKey or CreateKey
@@ -121,7 +121,7 @@ protected:
     // thread body - all work takes place here
     unsigned Body();
 
-    static DWORD WINAPI ThreadBody(void* param); // helper function for the thread body
+    static DWORD WINAPI ThreadBody(void* param); // thread entry function
     static unsigned ThreadBodyFEH(void* param);  // helper function for the thread body
 };
 
