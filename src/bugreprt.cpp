@@ -43,7 +43,7 @@ BOOL GetProcessorSpeed(DWORD* mhz)
         HANDLE t, p;
 
         if (!QueryPerformanceFrequency(&f))
-            return FALSE; // installed hardware doesn't supports a high-resolution performance counter
+            return FALSE; // installed hardware does not support a high-resolution performance counter
 
         // temporarily raise priority
         t = GetCurrentThread();
@@ -70,7 +70,7 @@ BOOL GetProcessorSpeed(DWORD* mhz)
         c2 = __rdtsc();
         QueryPerformanceCounter(&t2);
 
-        // restore original priority
+        // restore the original priorities
         SetThreadPriority(t, tp);
         SetPriorityClass(p, pp);
 
@@ -173,7 +173,7 @@ MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dw
     sprintf(buf, "Monitor %d: (%d,%d)-(%d,%d) %dx%d pixels", data->Index, r.left, r.top, r.right, r.bottom,
             r.right - r.left, r.bottom - r.top);
 
-    // hdcMonitor is NULL, we must create a DC
+    // hdcMonitor is NULL, so we must create a DC
     HDC hdc = NOHANDLES(CreateDC(mi.szDevice, mi.szDevice, NULL, NULL));
     int planes = GetDeviceCaps(hdc, PLANES);
     int bitsPixels = GetDeviceCaps(hdc, BITSPIXEL);
@@ -575,8 +575,8 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             PrintLine(param, buf, TRUE);
             if (IsDebuggerPresent())
             {
-                // the x64/Debug build on W7 started from the MSVC debugger did not generate a valid minidump (function failed, dump incomplete)
-                // outside MSVC everything worked correctly - note that we are running from the debugger
+                // The x64/Debug build on Windows 7 started from the MSVC debugger did not generate a valid minidump
+                // outside MSVC everything worked correctly, so note that we are running under the debugger
                 sprintf(buf, "Debugger is present!");
                 PrintLine(param, buf, TRUE);
             }
@@ -2026,8 +2026,8 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             int i;
             for (i = 0; i < CCallStack::CallStacks.Count; i++)
             {
-                // !!! accesses to CCallStack::CallStacks array should be protected by a critical section
-                // otherwise we risk touching non-existing memory
+                // !!! access to the CCallStack::CallStacks array should be protected by a critical section
+                // otherwise we risk accessing invalid memory
                 CCallStack* stack;
                 stack = CCallStack::CallStacks[i];
 
@@ -2054,7 +2054,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                     BOOL threadWithException = (Exception != NULL && Exception->ContextRecord != NULL && stack->ThreadID == ThreadID);
                     if (stack->ThreadID != GetCurrentThreadId() || threadWithException)
                     {
-                        // if this isn't our thread, suspend it so we can retrieve context
+                        // if this is not our thread, suspend it so we can retrieve its context
                         if (threadWithException || SuspendThread(hThread) != -1)
                         {
                             if (!firstTime)
@@ -2098,7 +2098,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             //
                             // this function's ebp
                             // points here ------------\
-              //     ebp-0x8   ebp-0x4   ebp+0x0   ebp+0x4   ebp+0x8   ebp+0xC
+                            //     ebp-0x8   ebp-0x4   ebp+0x0   ebp+0x4   ebp+0x8   ebp+0xC
                             //                         caller's  return
                             //     local1    local0    ebp       addr      param0    param1
                             // ... 00000000  00000000  00000000  00000000  00000000  00000000 ...
@@ -2372,11 +2372,11 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
             PrintLine(param, "", FALSE);
 
             /*
-  // leaving thread enumeration unfinished for now because Petr suggested showing
-  // the back trace for the thread where the crash occurred (we know its ID)
+  // leaving thread enumeration unfinished for now because Petr suggested displaying
+  // the backtrace for the thread in which the crash occurred (we know its ID)
 
-      // the knownThreads array contains a list of displayed threads;
-      // now we attempt to find those not yet shown
+      // the knownThreads array contains the list of threads already shown;
+      // now we will try to find those not yet shown
       if (knownThreads.IsGood())
       {
         HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
