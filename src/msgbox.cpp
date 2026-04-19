@@ -191,9 +191,9 @@ BOOL CMessageBox::EscapeEnabled()
         return TRUE;
 }
 
-// returns a copy of 'src' into which 'n' characters are inserted so that the resulting maximum
-// width does not exceed 'maxWidth'. Assumes that the hDC has the correct font selected.
-// returns NULL in case of failure
+// returns a copy of 'src' with '\n' characters inserted so that the resulting maximum
+// width does not exceed 'maxWidth'. Assumes that 'hDC' has the appropriate font selected.
+// returns NULL on failure
 
 char* DuplicateStrAndInsertEOLs(const char* src, HDC hDC, int maxWidth)
 {
@@ -581,7 +581,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // maximum width relative to the desktop where the dialog will appear
         int maxTextWidth = (int)((clipRect.right - clipRect.left) / 1.8);
-        if (maxTextWidth > fontCharWidth * 90) // since Windows Vista dialogs are narrower again - wrap at 90 average characters
+        if (maxTextWidth > fontCharWidth * 90) // Since Windows Vista, dialogs are narrower again, so wrap at 90 average-width characters.
             maxTextWidth = fontCharWidth * 90;
 
         tR.right = maxTextWidth;
@@ -589,8 +589,8 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (tR.right > maxTextWidth)
         {
-            // text width exceeds maxTextWidth limit, so we create a new one
-            // text into which we will insert hard line breaks
+            // text width exceeds the maxTextWidth limit, so we create new text
+            // with hard line breaks inserted
             const char* newText = DuplicateStrAndInsertEOLs(Text.Get(), hDC, maxTextWidth);
             if (newText != NULL)
             {
@@ -790,7 +790,7 @@ CMessageBox::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 // assign text
                 BOOL btnTextWasSet = FALSE;
-                if (AliasBtnNames != NULL) // alias button names
+                if (AliasBtnNames != NULL) // button name aliases
                 {
                     char tmpBuff[1000];
                     char seps[] = "\t";
