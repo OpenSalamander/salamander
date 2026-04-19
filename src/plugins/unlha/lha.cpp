@@ -472,8 +472,7 @@ int LHAGetHeader(FILE* fp, LHA_HEADER* lpHeader)
 
 // PROGRESS ///////////////////////////////////////////////////////////////////////////
 
-BOOL(*pfLHAProgress)
-(int size) = NULL;
+BOOL (*pfLHAProgress)(int size) = NULL;
 static int iProgress;
 #define PROGRESS_MASK 0xffff8000 // progress meter position updates every 32 KB
 
