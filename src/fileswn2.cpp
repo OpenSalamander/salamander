@@ -100,7 +100,7 @@ void CFilesWindow::Execute(int index)
             BOOL linkIsFile = FALSE; // TRUE -> shortcut to file -> test archive
             BOOL linkIsNet = FALSE;  // TRUE -> shortcut to network -> ChangePathToPluginFS
             DWORD err = ERROR_SUCCESS;
-            if (StrICmp(file->Ext, "lnk") == 0) // is it not a directory shortcut?
+            if (StrICmp(file->Ext, "lnk") == 0) // is this a directory shortcut?
             {
                 strcpy(fullName, GetPath());
                 if (!SalPathAppend(fullName, fileName, MAX_PATH))
@@ -129,7 +129,7 @@ void CFilesWindow::Execute(int index)
                             if (link->GetPath(fullName, MAX_PATH, &data, SLGP_UNCPRIORITY) == NOERROR)
                             {                                     // the obtained path will be used for accessibility test, after Resolve it may change
                                 err = CheckPath(FALSE, fullName); // fullName is a full path (shortcuts support no other)
-                                if (err != ERROR_USER_TERMINATED) // if user didn't press ESC, ignore the error
+                                if (err != ERROR_USER_TERMINATED) // If the user did not press Esc, ignore the error.
                                 {
                                     err = ERROR_SUCCESS; // Resolve may change the path, then we check again
                                 }
@@ -202,7 +202,7 @@ void CFilesWindow::Execute(int index)
             if (err != ERROR_SUCCESS)
             {
                 EndStopRefresh();
-                return; // path error or aborted
+                return; // path error or interruption
             }
             if (linkIsDir || linkIsNet) // link points to network or directory, path is OK, we switch to it
             {
@@ -236,7 +236,7 @@ void CFilesWindow::Execute(int index)
                     }
                 }
                 BOOL noChange;
-                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // entering the archive successfully
+                if (ChangePathToArchive(fullName, "", -1, NULL, FALSE, &noChange)) // successfully entered the archive
                 {
                     if (linkIsFile)
                         TopIndexMem.Clear(); // long jump
@@ -369,7 +369,7 @@ void CFilesWindow::Execute(int index)
                 }
                 else // failure
                 {
-                    if (!IsTheSamePath(path, GetPath())) // we're not on the original path -> long jump
+                    if (!IsTheSamePath(path, GetPath())) // no longer on the original path -> long jump
                     {                                    // the condition "!noChange" is not enough - it signals "path change or reload - access-denied-dir"
                         TopIndexMem.Clear();
                     }
@@ -430,7 +430,7 @@ void CFilesWindow::Execute(int index)
                             }
                         }
                     }
-                    else // we're shortening path inside archive
+                    else // shorten the path inside the archive
                     {
                         // we split zip-path into new zip-path and prev-dir
                         strcpy(path, GetZIPPath());
@@ -589,7 +589,7 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
     }
     else
     {
-        i = Dirs->Count;                    // we're searching for a file
+        i = Dirs->Count;                    // searching for a file
         count = Dirs->Count + Files->Count; // there was a bug here; count wasn't initialized
     }
 
@@ -610,7 +610,7 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
             if (i < Dirs->Count)
             {
                 CFileData* d2 = &Dirs->At(i);
-                if (!lessDirs(*d2, d1, ReverseSort)) // due to sorting this becomes TRUE only at the searched item
+                if (!lessDirs(*d2, d1, ReverseSort)) // due to sorting, this becomes TRUE at the sought item
                 {
                     if (!lessDirs(d1, *d2, ReverseSort))
                         focusIndex = i; // condition unnecessary; should be "always true"
@@ -623,7 +623,7 @@ void CFilesWindow::ChangeSortType(CSortType newType, BOOL reverse, BOOL force)
                 if (!lessFiles(*d2, d1, ReverseSort)) // due to sorting this becomes TRUE only at the searched item
                 {
                     if (!lessFiles(d1, *d2, ReverseSort))
-                        focusIndex = i; // condition unnecessary; should be "always true"
+                        focusIndex = i; // unnecessary condition; should always be TRUE
                     break;
                 }
             }
@@ -665,7 +665,7 @@ BOOL CFilesWindow::ChangeToRescuePathOrFixedDrive(HWND parent, BOOL* noChange, B
         {
             if (failReason != NULL)
                 *failReason = failReasonInt;
-            return FALSE; // the issue "cannot close the current path in the panel" won't be solved by switching to a fixed drive (we would just ask about disconnect twice)
+            return FALSE; // the issue "cannot close the current path in the panel" will not be resolved by switching to a fixed drive (it would only prompt for disconnect twice in a row)
         }
         noChangeUsed = TRUE;
     }
@@ -829,8 +829,8 @@ void CFilesWindow::DisconnectNet()
     if (releaseRight)
         MainWindow->RightPanel->HandsOff(TRUE);
 
-    //  Under Windows XP the WNetDisconnectDialog is modeless. Users lost it behind Salamander
-    //  and wondered why accelerators didn't work. When closing Salamander it crashed here
+    //  Under Windows XP, WNetDisconnectDialog is modeless. It could end up behind Salamander,
+    //  and users then wondered why accelerators did not work. When Salamander was closing, it crashed in this method
     //  because MainWindow was NULL;
     //  WNetDisconnectDialog(HWindow, RESOURCETYPE_DISK);
 
@@ -1030,7 +1030,7 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
     CViewTemplate* newTemplate = &Parent->ViewTemplates.Items[templateIndex];
     if (lstrlen(newTemplate->Name) == 0)
     {
-        // undefined view is not desired - we force the detailed view which always exists
+        // Do not allow an undefined view; force Detailed, which is guaranteed to exist
         templateIndex = 2;
         newTemplate = &Parent->ViewTemplates.Items[templateIndex];
     }
@@ -1066,7 +1066,7 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
         ListBox->SetMode(newViewMode, headerLine);
     }
 
-    // we build new columns
+    // build new columns
     BuildColumnsTemplate();
     CopyColumnsTemplateToColumns();
     DeleteColumnsWithoutData(columnValidMask);
@@ -1091,7 +1091,7 @@ BOOL CFilesWindow::SelectViewTemplate(int templateIndex, BOOL canRefreshPath,
             // until ReadDirectory we work with simple icons because the icon geometry changes
             TemporarilySimpleIcons = TRUE;
 
-            // let it compute item sizes and ensure the focused item is visible
+            // compute item sizes and ensure the focused item is visible
             RefreshListBox(0, -1, FocusedIndex, FALSE, FALSE);
 
             // perform a hard refresh
@@ -1212,7 +1212,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
             BOOL someFilesChanged = FALSE;
             if (AssocUsed)
             {
-                // if the user didn't suppress it, we show info about closing an archive that contains edited files
+                // if the user did not suppress it, show information about closing an archive that contains edited files
                 if (Configuration.CnfrmCloseArchive && !CriticalShutdown)
                 {
                     char title[100];
@@ -1237,10 +1237,10 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                 }
                 // pack modified files again (only if it's not a critical shutdown) we prepare them for next use
                 UnpackedAssocFiles.CheckAndPackAndClear(parent, &someFilesChanged);
-                // during critical shutdown we pretend updated files don't exist because there is no time to pack
-                // them back to the archive. We must not delete them so the user can manually repack them after restart,
-                // exception is when nothing was edited then everything may be deleted even during
-                // critical shutdown (it's fast and not confusing for the user with unnecessary questions)
+                // during critical shutdown, treat updated files as if they did not exist: there is no time to pack
+                // them back into the archive, but they must not be deleted, so the user still has a chance to pack them
+                // back into the archive manually after restart; the exception is when nothing was edited, in which case
+                // everything may be deleted even during critical shutdown (it is fast and minimizes unnecessary prompts)
                 if (!someFilesChanged || !CriticalShutdown)
                 {
                     SetEvent(ExecuteAssocEvent); // start file cleanup
@@ -1269,7 +1269,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                 BOOL userAsked = FALSE;
                 CPluginData* plugin = NULL;
                 int index = PackerFormatConfig.GetUnpackerIndex(format);
-                if (index < 0) // view: is it internal processing (plugin)?
+                if (index < 0) // note: is this internal processing (plugin)?
                 {
                     plugin = Plugins.Get(-index - 1);
                     if (plugin != NULL)
@@ -1292,7 +1292,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                         }
                     }
                 }
-                if (PackerFormatConfig.GetUsePacker(format)) // supports editing?
+                if (PackerFormatConfig.GetUsePacker(format)) // does it have an editor?
                 {
                     index = PackerFormatConfig.GetPackerIndex(format);
                     if (index < 0) // is it internal processing (plugin)?
@@ -1302,7 +1302,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                             plugin = Plugins.Get(-index - 1);
                             if (plugin != NULL)
                             {
-                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // it refuses to close
+                                if (!plugin->CanCloseArchive(this, GetZIPArchive(), userForce || CriticalShutdown)) // cannot be closed
                                 {
                                     canclose = FALSE;
                                     if (canForce && !userAsked) // we can ask the user whether to force it
@@ -1328,7 +1328,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
         {
             if (Is(ptPluginFS))
             {
-                if (!canForce && !CriticalShutdown) // we can't ask the user about forcing
+                if (!canForce && !CriticalShutdown) // we cannot ask the user whether to force it
                 {
                     detachFS = FALSE; // to ensure a known value in case the plugin doesn't modify it
                     BOOL r = GetPluginFS()->TryCloseOrDetach(FALSE, canDetach, detachFS, tryCloseReason);
@@ -1336,7 +1336,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                         detachFS = FALSE; // verification/correction of the output value
                     return r;
                 }
-                else // forcing is allowed -> we must close, detaching isn't permitted
+                else // force-closing is allowed -> we must close; detaching is not permitted
                 {
                     if (GetPluginFS()->TryCloseOrDetach(CriticalShutdown, FALSE, detachFS, tryCloseReason) || // try closing without forceClose==TRUE (except during critical shutdown)
                         CriticalShutdown)
@@ -1344,7 +1344,7 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                         detachFS = FALSE;
                         return TRUE; // closed successfully
                     }
-                    else // ask the user whether to close it against the FS's will
+                    else // ask the user whether to force-close it despite the FS
                     {
                         char path[2 * MAX_PATH];
                         GetGeneralPath(path, 2 * MAX_PATH);
@@ -1500,7 +1500,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                             sendDetachEvent = TRUE; // the call mustn't happen here because the FS isn't detached yet (it's still in the panel)
                     }
 
-                    if (!detachFS) // we're closing the FS; let it deallocate and display final messageboxes
+                    if (!detachFS) // closing the FS; let it deallocate and display the final message boxes
                     {
                         GetPluginFS()->ReleaseObject(parent);
                     }
@@ -1519,7 +1519,7 @@ void CFilesWindow::CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOO
                         SimplePluginIcons = NULL;
                     }
 
-                    if (!detachFS) // we're closing the FS
+                    if (!detachFS) // closing the FS
                     {
                         CPluginInterfaceForFSEncapsulation plugin(GetPluginFS()->GetPluginInterfaceForFS()->GetInterface(),
                                                                   GetPluginFS()->GetPluginInterfaceForFS()->GetBuiltForVersion());
@@ -1551,7 +1551,7 @@ void CFilesWindow::RefreshPathHistoryData()
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshPathHistoryData()");
 
     int index = GetCaretIndex();
-    if (index >= 0 && index < Files->Count + Dirs->Count) // bounds check to prevent data inconsistency
+    if (index >= 0 && index < Files->Count + Dirs->Count) // if the data are still in sync
     {
         int topIndex = ListBox->GetTopIndex();
         CFileData* file = index < Dirs->Count ? &Dirs->At(index) : &Files->At(index - Dirs->Count);
@@ -1681,7 +1681,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
     int errTextID;
     //  if (!SalGetFullName(backup, &errTextID, MainWindow->GetActivePanel()->Is(ptDisk) ?
     //                      MainWindow->GetActivePanel()->GetPath() : NULL))
-    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // for the FTP plugin - relative path in "target panel path" during connect
+    if (!SalGetFullName(backup, &errTextID, Is(ptDisk) ? GetPath() : NULL)) // because of the FTP plugin: a relative path in "target panel path" when connecting
     {
         SalMessageBox(parent, LoadStr(errTextID), LoadStr(IDS_ERRORCHANGINGDIR),
                       MB_OK | MB_ICONEXCLAMATION);
@@ -1698,7 +1698,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
     BeginStopRefresh(); // no refreshes please -> they would cause recursion
 
-    //  BOOL firstRun = TRUE;    // commented out because forceUpdate is disabled
+    //  BOOL firstRun = TRUE;    // commented out because `forceUpdate` is commented out
     BOOL fixedDrive = FALSE;
     BOOL canTryUserRescuePath = FALSE; // allows using Configuration.IfPathIsInaccessibleGoTo right before the fixed-drive path
     BOOL openIfPathIsInaccessibleGoToCfg = FALSE;
@@ -1727,33 +1727,33 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
         BOOL pathInvalid, cut;
         SalCheckAndRestorePathWithCut(parent, changedPath, tryNet, err, lastErr, pathInvalid, cut, FALSE);
         if (cut)
-        { // invalidate proposed listbox settings (we'll list a different path)
+        { // invalidate the proposed list box settings (we will list a different path)
             suggestedTopIndex = -1;
             suggestedFocusName = NULL;
         }
 
         if (!pathInvalid && err == ERROR_SUCCESS)
         {
-            /*    // commented optimization for cases when the new path matches the old one -> unusual for disks...
-      if (!forceUpdate && firstRun && Is(ptDisk) && IsTheSamePath(changedPath, GetPath()))
-      {  // no reason to change the path
-        CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - remain on the current path
-        EndStopRefresh();
-        if (setWait) SetCursor(oldCur);
-        if (IsTheSamePath(path, GetPath()))
-        {
-          return TRUE; // the new path matches the current path, nothing to do
-        }
-        else
-        {
-          // shortened path matches the current path
-          // occurs for example when attempting to enter an inaccessible directory (immediate return)
-          CheckPath(TRUE, path, lastErr, TRUE, parent);  // report the error that caused path shortening
-          return FALSE;  // the requested path is not accessible
-        }
-      }
-      firstRun = FALSE;
-*/
+            /*    // disabled optimization for the case when the new path matches the old one; for drives this was unusual...
+                  if (!forceUpdate && firstRun && Is(ptDisk) && IsTheSamePath(changedPath, GetPath()))
+                  {  // no reason to change the path
+                    CloseCurrentPath(parent, TRUE, detachFS, FALSE, isRefresh, FALSE);  // "cancel" - stay on the current path
+                    EndStopRefresh();
+                    if (setWait) SetCursor(oldCur);
+                    if (IsTheSamePath(path, GetPath()))
+                    {
+                      return TRUE; // the new path matches the current path, nothing to do
+                    }
+                    else
+                    {
+                      // the shortened path matches the current path
+                      // this occurs, for example, when trying to enter an inaccessible directory (immediate return)
+                      CheckPath(TRUE, path, lastErr, TRUE, parent);  // report the error that caused the path to be shortened
+                      return FALSE;  // the requested path is not accessible
+                    }
+                  }
+                  firstRun = FALSE;
+            */
             BOOL updateIcon;
             updateIcon = !Is(ptDisk) || // simple because forceUpdate is commented out
                          !HasTheSameRootPath(changedPath, GetPath());
@@ -1781,7 +1781,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                     MainWindow->CanAddToDirHistory = oldCanAddToDirHistory;
                 }
 
-                // we hide the throbber and security icon; we don't need them on a disk
+                // hide the throbber and security icon; they are not needed on a disk path
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
@@ -1791,7 +1791,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             SetPanelType(ptDisk);
             SetPath(changedPath);
             if (updateIcon ||
-                !GetNetworkDrive()) // to ensure icons display correctly when switching to a mounted-volume (doesn't slow on local, so hoppefully no issues)
+                !GetNetworkDrive()) // to ensure the icons display correctly when switching to a mounted volume (it does not slow local access, so it should not cause problems)
             {
                 UpdateDriveIcon(FALSE);
             }
@@ -1804,7 +1804,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh);
             if (isRefresh && !cannotList && GetMonitorChanges() && !AutomaticRefresh)
             {                                                                                                                // auto-refresh failure; we verify whether the directory displayed in the panel is being deleted (happened to me while deleting through the network from another machine) ... If ignored, the panel will never refresh (because auto-refresh is broken)
-                Sleep(400);                                                                                                  // we take a break, so the deletion can proceed (so the directory becomes deleted enough to become unlistable)
+                Sleep(400);                                                                                                  // pause briefly so the directory deletion can proceed far enough for listing to fail
                                                                                                                              //        TRACE_I("Calling CommonRefresh again... (unable to receive change notifications, first listing was OK, but maybe current directory is being deleted)");
                 cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // repeat the listing; this one should fail
             }
@@ -1851,7 +1851,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                                 {
                                     root[0] = d;
                                     if (GetDriveType(root) == DRIVE_FIXED)
-                                        break; // we have our "escape drive"
+                                        break; // we found our "escape drive"
                                 }
                                 disks >>= 1;
                                 d++;
@@ -1861,7 +1861,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                         }
                         if (done)
                         {
-                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // prevention againts an infinite loop
+                            if (LowerCase[root[0]] != LowerCase[changedPath[0]]) // guard against an infinite loop
                             {                                                    // UNC or another disk (like "c:\")
                                 strcpy(changedPath, root);                       // we'll try our "escape drive"
                                 change = TRUE;
@@ -1892,7 +1892,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
 
                 if (lastErr != ERROR_SUCCESS && (!isRefresh || openIfPathIsInaccessibleGoToCfg) && shorterPathWarning)
                 {                        // if it's not a refresh and messages about path-shortening are supposed to be shown ...
-                    if (!refreshListBox) // we'll display a message; we must perform refresh-list-box
+                    if (!refreshListBox) // we are about to display a message, so we must refresh the list box
                     {
                         RefreshListBox(0, -1, -1, FALSE, FALSE);
                     }
@@ -1956,7 +1956,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
             }
             else
             {
-                if (!pathInvalid &&               // the user already knows the UNC path couldn't be revived
+                if (!pathInvalid &&               // the user already knows that restoring the UNC path failed
                     err != ERROR_USER_TERMINATED) // the user also knows about the abort (ESC)
                 {
                     CheckPath(TRUE, changedPath, err, TRUE, parent); // other errors - just display the message
@@ -2059,7 +2059,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
     BOOL checkPath = TRUE;
     BOOL forceUpdateInt = FALSE; // is path change required? (possibly even to disk)
     BOOL tryPathWithArchiveOnError = isHistory;
-    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // not the archive or a different archive
+    if (!Is(ptZIPArchive) || StrICmp(GetZIPArchive(), archive) != 0) // not an archive or a different archive
     {
 
     _REOPEN_ARCHIVE:
@@ -2082,7 +2082,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 CloseCurrentPath(HWindow, TRUE, detachFS, FALSE, isRefresh, FALSE); // failure, stay on the original path
 
                 if (forceUpdateInt) // a path change is required; opening the archive failed, go back to disk
-                {                   // we're certainly in an archive (it's a panel refresh of an archive)
+                {                   // we are certainly in an archive (this is a refresh of an archive in the panel)
                     // if possible, exit the archive (possibly all the way to the "fixed-drive")
                     ChangePathToDisk(HWindow, GetPath(), -1, NULL, noChange, refreshListBox, FALSE, isRefresh);
                 }
@@ -2109,8 +2109,8 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 if (failReason != NULL)
                     *failReason = CHPPFR_INVALIDPATH;
                 if (tryPathWithArchiveOnError)
-                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // shorter path is accessible, we'll try it
-                if (!isRefresh)                                                         // during refresh path-shortening messages are not displayed
+                    tryPathWithArchiveOnError = (err == ERROR_SUCCESS && !pathInvalid); // the shorter path is accessible; we will try it
+                if (!isRefresh)                                                         // path-shortening messages are not displayed during refresh
                 {
                     sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(lastErr));
                     SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -2120,7 +2120,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
 
             if (PackerFormatConfig.PackIsArchive(archive)) // is it an archive?
             {
-                // retrieve file info (does it exist?, size, date & time)
+                // determine file information (exists?, size, date & time)
                 DWORD err2 = NO_ERROR;
                 HANDLE file = HANDLES_Q(CreateFile(archive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
@@ -2178,9 +2178,9 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                             isTheSamePath = TRUE;
                     }
 
-                    // success, switch to the new path - because listing the archive can be time-consuming
-                    // the path changes even if the target path doesn't exist - applies to
-                    // Change Directory (Shift+F7) which otherwise wouldn't change it
+                    // success, switch to the new path; because listing an archive can be time-consuming,
+                    // the path is changed even if the target path does not exist; this applies to the
+                    // Change Directory (Shift+F7) command, which otherwise would not change the path in this situation
                     CloseCurrentPath(HWindow, FALSE, detachFS, isTheSamePath, isRefresh, !isTheSamePath);
 
                     // we just received a new listing; if there are any reported panel changes, we cancel them
@@ -2242,7 +2242,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
             return FALSE;
         }
     }
-    else // already opened archive
+    else // archive already open
     {
         if (forceUpdate) // should we check whether the archive changed?
         {
@@ -2278,7 +2278,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                 else
                 {
                     err = GetLastError(); // unable to open the archive file
-                    if (!isRefresh)       // during refresh missing-path messages are not displayed
+                    if (!isRefresh)       // during refresh, messages about a nonexistent path are not displayed
                     {
                         sprintf(text, LoadStr(IDS_FILEERRORFORMAT), archive, GetErrorText(err));
                         SalMessageBox(HWindow, text, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -2384,7 +2384,7 @@ BOOL CFilesWindow::ChangePathToArchive(const char* archive, const char* archiveP
                   refreshListBox, TRUE, isRefresh);
 
     if (refreshListBox && !ok && useFileName && GetCaretIndex() == 0)
-    { // attempt to focus a file name failed -> it wasn't a file name
+    { // Attempt to focus the file name failed; it was not a file name.
         if (failReason != NULL)
             *failReason = CHPPFR_SHORTERPATH;
     }
@@ -2425,9 +2425,9 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (cutFileName != NULL)
         *cutFileName = 0;
     char bufFSUserPart[MAX_PATH];
-    const char* origUserPart; // user-part to which we switch the path to
+    const char* origUserPart; // user part to which the path should be changed
     int origFSNameIndex;
-    if (fsUserPart == NULL) // detached FS, restoration of the listing...
+    if (fsUserPart == NULL) // detached FS, restore the listing...
     {
         if (!pluginFS.GetCurrentPath(bufFSUserPart))
         {
@@ -2504,7 +2504,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                                                  forceUpdate, mode);
         if (changePathRet) // ChangePath doesn't return an error
         {
-            if (StrICmp(newFSName, fsName) != 0) // fs-name change, verify the new fs-name
+            if (StrICmp(newFSName, fsName) != 0) // FS name changed; verify the new FS name
             {
                 BOOL ok2 = FALSE;
                 int index;
@@ -2535,7 +2535,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                     fsNameIndex = newFSNameIndex;
                 }
             }
-            if (changePathRet) // store the used fs-name in 'pluginFS'
+            if (changePathRet) // store the fs-name in 'pluginFS'
                 pluginFS.SetPluginFS(fsName, fsNameIndex);
         }
 
@@ -2557,7 +2557,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                     break;
                 }
 
-                if (keepOldListing == NULL || !*keepOldListing) // not dead-code (used when allocating workDir fails)
+                if (keepOldListing == NULL || !*keepOldListing) // not dead code (used when workDir allocation fails)
                 {
                     // release listing data in the panel
                     if (UseSystemIcons || UseThumbnails)
@@ -2578,7 +2578,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
             }
 
             // attempt to list files and directories from the current path
-            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // succeeded ...
+            if (pluginFS.ListCurrentPath(workDir, pluginData, pluginIconsType, forceUpdate)) // completed successfully...
             {
                 if (keepOldListing != NULL && *keepOldListing) // we already have the new listing; discard the old one
                 {
@@ -2609,7 +2609,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
                     TRACE_E("Invalid plugin-icons-type!");
                     pluginIconsType = pitSimple;
                 }
-                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // not allowed, degrade the type
+                if (pluginIconsType == pitFromPlugin && pluginData == NULL) // this would not work; fall back to a simpler type
                 {
                     TRACE_E("Plugin-icons-type is pitFromPlugin and plugin-data is NULL!");
                     pluginIconsType = pitSimple;
@@ -2620,7 +2620,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
             }
             // we prepare dir for further use (release leftovers if the plugin left any)
             workDir->Clear(NULL);
-            // path isn't o.k.; we'll try shortening it in the next cycle pass
+            // the path is not OK; we will try to shorten it in the next loop iteration
             if (!pluginFS.GetCurrentPath(user))
             {
                 TRACE_E("Unexpected situation in CFilesWindow::ChangeAndListPathOnFS()");
@@ -2631,7 +2631,7 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
         {
             TRACE_I("Unable to open FS path " << fsName << ":" << origUserPart);
 
-            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // not dead-code (used when allocating workDir fails)
+            if (firstCall && (keepOldListing == NULL || !*keepOldListing)) // not dead code (used when workDir allocation fails)
             {
                 // release listing data in the panel
                 if (UseSystemIcons || UseThumbnails)
@@ -2656,11 +2656,11 @@ BOOL CFilesWindow::ChangeAndListPathOnFS(const char* fsName, int fsNameIndex, co
     if (dir != workDir)
         delete workDir; // 'workDir' wasn't used, free it
 
-    // we try to find a file to focus in the FS listing - not perfect when the file is hidden
-    // from the panel listing (e.g., "don't show hidden files" or filters) because it cannot
-    // be focused and the user won't know about this "error" - but it's probably
-    // not really an error if the file does exist, so we ignore it (same as with
-    // disk paths)...
+    // Attempts to find the file to focus in the FS listing; this is not perfect if the file is hidden
+    // from the panel listing (for example by "don't show hidden files" or by filters), because then it
+    // cannot be focused in the panel and the user will not learn about this "error"; however, it is
+    // probably not possible to report it as an error when the file actually exists, so it is ignored
+    // (as with disk paths)...
     if (ok && useCutFileName && cutFileName != NULL && *cutFileName != 0)
     {
         CFilesArray* files = dir->GetFiles("");
@@ -2748,7 +2748,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
     char cutFileNameBuf[MAX_PATH];
     int fsNameIndex;
     if (!Is(ptPluginFS) || !IsPathFromActiveFS(fsName, fsUserPart2, fsNameIndex, convertPathToInternal))
-    { // is not FS or the path is from a different FS (even within a single plug-in - one FS name)
+    { // is not FS or the path is from a different FS (even within a single plugin - one FS name)
         BOOL detachFS;
         if (PrepareCloseCurrentPath(HWindow, FALSE, TRUE, detachFS, FSTRYCLOSE_CHANGEPATH))
         { // the current path can be closed, attempt to open the new path
@@ -2757,12 +2757,12 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 *failReason = CHPPFR_INVALIDPATH;
             if (Plugins.IsPluginFS(fsName, index, fsNameIndex)) // find the plugin index
             {
-                // obtain the plug-in containing the FS
+                // obtain the plugin containing the FS
                 CPluginData* plugin = Plugins.Get(index);
                 if (plugin != NULL)
                 {
                     // open the new FS
-                    // load the plug-in before obtaining DLLName, Version, and plugin interfaces
+                    // load the plugin before obtaining DLLName, Version, and plugin interfaces
                     CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(fsName, fsNameIndex);
                     CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                              plugin->GetPluginInterfaceForFS()->GetInterface(),
@@ -2980,8 +2980,8 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     {
                         suggestedFocusName = NULL;
 
-                        // the new path shortened back to the original ("unlistable subdirectory"),
-                        // keep topIndex and focusName from before the operation starts (so the user doesn't lose focus)
+                        // the new path shortened back to the original path ("unlistable subdirectory"); preserve
+                        // topIndex and focusName from before the operation so the user does not lose focus
                         if (currentPathOK &&
                             GetPluginFS()->IsCurrentPath(GetPluginFS()->GetPluginFSNameIndex(),
                                                          currentPathFSNameIndex, currentPath))
@@ -3022,7 +3022,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
             }
             else
             {
-                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // the file needs to be focused
+                if (shorterPath && cutFileName != NULL && *cutFileName != 0 && refreshListBox) // focus the file
                 {
                     int focusIndexCase = -1;
                     int focusIndexIgnCase = -1;
@@ -3058,7 +3058,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                         }
                     }
 
-                    if (focusIndexIgnCase != -1) // at least one file was found with potencial case difference
+                    if (focusIndexIgnCase != -1) // at least one file with a possible case difference was found
                     {
                         SetCaretIndex(focusIndexCase != -1 ? focusIndexCase : focusIndexIgnCase, FALSE);
                     }
@@ -3067,7 +3067,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
             ok = TRUE;
         }
-        else // requested path is not accessible, try returning to the original path
+        else // requested path is not accessible, try to return to the original path
         {
             if (noChange != NULL)
                 *noChange = FALSE; // the listing will be cleared or changed
@@ -3077,8 +3077,8 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                                       *GetPluginFS(), GetPluginFSDir(),
                                       pluginData, shorterPath, pluginIconsType, mode,
                                       FALSE, NULL, NULL, -1, FALSE, NULL, &keepOldListing))
-            { // success, the original path (or its subpath) was listed
-                // invalidate proposed listbox settings (we'll list a different path)
+            { // success, the original path (or one of its subpaths) was listed
+                // invalidate the proposed list box settings (we will list a different path)
                 suggestedTopIndex = -1;
                 suggestedFocusName = NULL;
 
@@ -3092,7 +3092,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
 
                 // add the path we just left (paths inside the FS remain open,
                 // so DirHistoryAddPathUnique hasn't been called yet)
-                if (currentPathOK && shorterPath) // if shorterPath is FALSE, the path didn't change...
+                if (currentPathOK && shorterPath) // if shorterPath is FALSE, the path did not change...
                 {
                     if (UserWorkedOnThisPath)
                     {
@@ -3140,7 +3140,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                 // notify the FS that the path changed
                 GetPluginFS()->Event(FSE_PATHCHANGED, GetPanelCode());
             }
-            else // show an empty panel, nothing can be read from the FS, switch to the fixed drive
+            else // show an empty panel; nothing can be loaded from the FS, switch to the fixed drive
             {
                 if (keepOldListing)
                 {
@@ -3152,14 +3152,14 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     ListBox->SetItemsCount(0, 0, 0, TRUE);
                     SelectedCount = 0;
                 }
-                else // not dead-code, see 'workDir' allocation error in ChangeAndListPathOnFS()
+                else // not dead code; see the 'workDir' allocation error in ChangeAndListPathOnFS()
                 {
                     // clean the message queue from buffered WM_USER_UPDATEPANEL
                     MSG msg2;
                     PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
                 }
 
-                // we hide the throbber and security icon; because we're leaving the FS...
+                // hide the throbber and security icon because we are leaving the FS...
                 if (DirectoryLine != NULL)
                     DirectoryLine->HideThrobberAndSecurityIcon();
 
@@ -3397,7 +3397,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         }
         else
         {
-            if (closeDetachedFS) // no path can be opened on the FS anymore, close it
+            if (closeDetachedFS) // No path can be opened in this FS anymore; close it
             {
                 BOOL dummy;
                 if (pluginFS->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_ATTACHFAILURE))
@@ -3438,10 +3438,10 @@ void CFilesWindow::RefreshDiskFreeSpace(BOOL check, BOOL doNotRefreshOtherPanel)
 
             if (!doNotRefreshOtherPanel)
             {
-                // if the other panel uses a path with the same root, we refresh
-                // disk-free-space there as well (it is not perfect - ideally we would
-                // test whether both paths are on the same volume, but that would be too slow;
-                // this simplification should be more than enough for normal use)
+                // if the path in the other panel has the same root, refresh the
+                // disk free space there as well (this is not perfect; ideally we would
+                // test whether the paths are on the same volume, but that would be too slow;
+                // this simplification is more than sufficient for normal use)
                 CFilesWindow* otherPanel = (MainWindow->LeftPanel == this) ? MainWindow->RightPanel : MainWindow->LeftPanel;
                 if (otherPanel->Is(ptDisk) && HasTheSameRootPath(GetPath(), otherPanel->GetPath()))
                     otherPanel->RefreshDiskFreeSpace(TRUE, TRUE /* otherwise we'd recurse endlessly */);
@@ -3491,7 +3491,7 @@ void GetCommonFileTypeStr(char* buf, int* resLen, const char* ext)
         *d++ = UpperCase[*ext++];
     *d = 0;
     if (*ext == 0 && uppercaseExt[0] != 0)
-    { // we have the entire extension in uppercase (no spaces and shorter than MAX_PATH) + it is not empty
+    { // we have the entire extension in uppercase (it contains no spaces, is shorter than MAX_PATH, and is not empty)
         *resLen = _snprintf_s(buf, TRANSFER_BUFFER_MAX, _TRUNCATE, CommonFileTypeName2, uppercaseExt);
         if (*resLen < 0)
             *resLen = TRANSFER_BUFFER_MAX - 1; // _snprintf_s reports truncation to the buffer size
@@ -3816,7 +3816,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
             if (autoWidthColumns & VIEW_SHOW_TYPE)
             {
                 //--- file-type
-                if (!isDir) // it is a file
+                if (!isDir) // file
                 {
                     char buf[TRANSFER_BUFFER_MAX];
                     BOOL commonFileType = TRUE;
@@ -3831,7 +3831,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                         if (Associations.GetIndex(buf, index))
                         {
                             src = Associations[index].Type;
-                            if (src != NULL) // if it is not an empty string
+                            if (src != NULL) // if the string is not empty
                             {
                                 commonFileType = FALSE;
                                 GetTextExtentPoint32(dc, src, (int)strlen(src), &act);
@@ -3851,7 +3851,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                             columnWidthType = act.cx;
                     }
                 }
-                else // it is a directory
+                else // directory
                 {
                     if (!dirTypeDone) // only if we have not computed it yet
                     {
@@ -4069,11 +4069,11 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
     if (suggestedFocusIndex != -1)
     {
         FocusedIndex = suggestedFocusIndex;
-        // if no TopIndex is suggested or focus visibility
-        // is required, compute a new TopIndex
+        // if no TopIndex is suggested or focus visibility is required,
+        // compute a new TopIndex
         // -- clearer version with support for vmIcons and vmThumbnails
-        // -- change for partially visible items: previously TopIndex was recalculated
-        //    and causing unnecessary jumps; now we keep TopIndex unchanged
+        // -- change for partially visible items: TopIndex used to be recalculated
+        //    and caused unnecessary jumps; now we leave TopIndex unchanged
 
         BOOL findTopIndex = TRUE; // TRUE - search for TopIndex; FALSE - keep the current one
         if (suggestedTopIndex != -1)
@@ -4106,7 +4106,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     {
                         if (suggestedTopIndex + cols * ListBox->EntireItemsInColumn <=
                             suggestedFocusIndex)
-                            break; // focus lies past the panel, must find a better TopIndex
+                            break; // focus lies past the panel; we must find a better TopIndex
                     }
 
                     // focus is at least partially visible, skip TopIndex search
@@ -4128,12 +4128,12 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     if (wholeItemVisible)
                     {
                         if (suggestedTopIndex + rows <= suggestedFocusIndex + 1) // avoid partial visibility, hence the +1
-                            break;                                               // focus lies below the panel, we must find a better TopIndex
+                            break;                                               // focused item lies below the panel; we need to find a better TopIndex
                     }
                     else
                     {
                         if (suggestedTopIndex + rows <= suggestedFocusIndex)
-                            break; // focus lies below the panel, we must find a better TopIndex
+                            break; // the focus is below the panel; we need to find a better TopIndex
                     }
 
                     // focus is fully visible, skip TopIndex search
@@ -4153,7 +4153,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     if (wholeItemVisible)
                     {
                         if (suggestedTop < suggestedTopIndex)
-                            break; // focus is above the panel; we must find a better TopIndex
+                            break; // focus lies above the panel, we must find a better TopIndex
 
                         if (suggestedBottom > suggestedTopIndex +
                                                   ListBox->FilesRect.bottom - ListBox->FilesRect.top)
@@ -4162,7 +4162,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
                     else
                     {
                         if (suggestedBottom <= suggestedTopIndex)
-                            break; // focus is above the panel; we must find a better TopIndex
+                            break; // focus lies above the panel, we must find a better TopIndex
 
                         if (suggestedTop >= suggestedTopIndex +
                                                 ListBox->FilesRect.bottom - ListBox->FilesRect.top)
@@ -4208,7 +4208,7 @@ void CFilesWindow::RefreshListBox(int suggestedXOffset,
         // (e.g., Back in history to a place where the previously focused file no longer exists)
         if (ensureFocusIndexVisible && suggestedTopIndex != -1) // focus must be visible
         {
-            suggestedTopIndex = -1; // cannot set top-index (the focus wouldn't be visible)
+            suggestedTopIndex = -1; // cannot set the top index (the focus would not be visible)
         }
     }
 
