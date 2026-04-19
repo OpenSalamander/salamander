@@ -31,7 +31,7 @@ typedef BOOL (*CLessFunction)(const CFileData&, const CFileData&, BOOL);
 int CmpNameExt(const CFileData& f1, const CFileData& f2);
 int CmpNameExtIgnCase(const CFileData& f1, const CFileData& f2); // ignore-case variant
 
-// NOTE: sort codes in RefreshDirectory, ChangeSortType and CompareDirectories must match!!!
+// WARNING: the sort codes in RefreshDirectory, ChangeSortType, and CompareDirectories must match!!
 
 BOOL LessNameExt(const CFileData& f1, const CFileData& f2, BOOL reverse);
 BOOL LessNameExtIgnCase(const CFileData& f1, const CFileData& f2, BOOL reverse);
