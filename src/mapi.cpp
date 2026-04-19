@@ -28,9 +28,9 @@ BOOL CSimpleMAPI::Init(HWND hParent)
         HLibrary = HANDLES_Q(LoadLibrary("mapi32.dll"));
         if (HLibrary == NULL)
         {
-            // under NT4.0 US + IE 4.01 US, mapi32.dll is not installed
-            // but I found msoemapi.dll there which has the necessary export and more importantly, it works,
-            // so why not try it...
+            // Under NT 4.0 US + IE 4.01 US, mapi32.dll is not installed,
+            // but I found msoemapi.dll there. It has the required export and,
+            // more importantly, it works, so it is worth trying.
             HLibrary = HANDLES_Q(LoadLibrary("msoemapi.dll"));
             if (HLibrary == NULL)
             {
@@ -144,7 +144,7 @@ BOOL CSimpleMAPI::SendMail()
     message.nFileCount = FileNames.Count;
     message.lpFiles = fileDesc;
 
-    char* subject = (char*)malloc(subjectSize + strlen(LoadStr(IDS_EMAILFILES_SUBJECT)) + 2); // space for "emailing" and the terminating NULL
+    char* subject = (char*)malloc(subjectSize + strlen(LoadStr(IDS_EMAILFILES_SUBJECT)) + 2); // space for the email subject and the terminating NULL
     if (subject == NULL)
     {
         TRACE_E(LOW_MEMORY);
@@ -183,8 +183,8 @@ BOOL CSimpleMAPI::SendMail()
 
     free(subject);
     free(fileDesc);
-    // report nothing because various clients return different values
-    // for example Outlook 6 on XP returned 1 when cancelling a message or 3
+    // do not report anything, because different clients return different values
+    // for example, Outlook 6 on XP returned 1 when cancelling a message or 3
     // when cancelling the connection wizard (if it was not configured)
     /*
   if (ret != 0)
