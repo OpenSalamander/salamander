@@ -734,7 +734,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     if (uMsg == BFFM_INITIALIZED)
     {
         SetWindowText(hwnd, StringTable[STR_BROWSEDIRTITLE]);
-        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // this is not a root directory
+        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // not the root directory
             PathRemoveBackslash(TargetPath);
         else
             PathAddBackslash(TargetPath);
