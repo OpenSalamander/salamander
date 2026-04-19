@@ -169,12 +169,12 @@ protected:
 
     void CodeCharacters(unsigned char* start, unsigned char* end);
     // if 'hFile' is NULL, Prepare/LoadBefore/LoadBehind open and close the file themselves
-    // if 'hFile' points to a variable (initialize its value to NULL at the start),
-    // the methods open the file and store the file handle into that variable (when opening succeeds).
-    // On the next call they do not open the file again and reuse the handle from that variable.
-    // They also do not close the handle when exiting; the caller must handle that.
-    // This is an optimization for network drives where repeatedly opening/closing the file 
-    // slowed down searching terribly.
+    // if 'hFile' points to a variable (initialize it to NULL before the first call),
+    // the methods open the file and store the file handle in that variable if opening succeeds.
+    // On subsequent calls, they do not open the file again and reuse the handle from that variable.
+    // They do not close the handle on return; the caller must ensure that.
+    // This is an optimization for network drives, where repeatedly opening and closing the file
+    // caused severe delays during searching.
     BOOL LoadBefore(HANDLE* hFile);
     BOOL LoadBehind(HANDLE* hFile);
 
