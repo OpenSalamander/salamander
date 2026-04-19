@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -19,11 +20,11 @@ struct FILE_NAME_I
     FILE_NAME_I* FNNext;
 };
 
-// DATA_STREAM - contains info about one file data stream. Each stream
-// could be resident data (ResidentData != NULL) or data elsewhere on disk,
-// then Ptrs contains list of data runs blocks (DATA_POINTERS). Normal file has
-// only one stream and one block of data runs. Heavily fragmented file whose list
-// of data runs cannot fit inside one MFT stream has more DATA_POINTERS.
+// DATA_STREAM - contains information about one file data stream. Each stream
+// can contain resident data (ResidentData != NULL) or data stored elsewhere on disk;
+// in that case, Ptrs contains a list of data-run blocks (DATA_POINTERS). A normal file has
+// only one stream and one block of data runs. A heavily fragmented file whose list
+// of data runs cannot fit inside one MFT stream has multiple DATA_POINTERS.
 
 struct DATA_POINTERS
 {
@@ -74,12 +75,12 @@ struct DIR_ITEM_I
     FILE_RECORD_I<CHAR>* Record;
 };
 
-// FILE_RECORD - corresponds to one MFT record, we are storing only deleted files and
-// directories. FileNames is list of names (hard-links), we prefer normal names instead of
-// DOS names (if we find normal name and already have DOS name, we will overwrite it).
-// Times are creation, last access, modification times of file. Streams is list of all
-// file streams. Each stream could have data runs in several blocks (see above).
-// DirItems is NULL for files, for directories it contains list of containing items.
+// FILE_RECORD corresponds to one MFT record; we store only deleted files and
+// directories. FileNames is a list of names (hard links); we prefer normal names over
+// DOS names (if we find a normal name and already have a DOS name, we overwrite it).
+// Times are the file creation, last access, and modification times. Streams is a list of all
+// file streams. Each stream can have data runs in several blocks (see above).
+// DirItems is NULL for files; for directories, it contains a list of contained items.
 
 template <typename CHAR>
 struct FILE_RECORD_I
