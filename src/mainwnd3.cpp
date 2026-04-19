@@ -366,7 +366,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID refiid, void FAR* FAR* ppv)
+    (REFIID refiid, void FAR * FAR * ppv)
     {
         if (refiid == IID_IUnknown || refiid == IID_IDropTarget)
         {
