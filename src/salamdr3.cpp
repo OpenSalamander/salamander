@@ -2540,7 +2540,7 @@ CUserMenuItem::CUserMenuItem(CUserMenuItem& item, CUserMenuIconDataArr* bkgndRea
     {
         if (bkgndReaderData == NULL) // this is a copy for the config dialog; do not propagate newly loaded icons (wait until the dialog ends)
         {
-            UMIcon = DuplicateIcon(NULL, item.UMIcon); // GetIconHandle() unnecessarily slowed things down. 
+            UMIcon = DuplicateIcon(NULL, item.UMIcon); // GetIconHandle() unnecessarily slowed things down.
             if (UMIcon != NULL)                        // add the 'UMIcon' handle to HANDLES
                 HANDLES_ADD(__htIcon, __hoLoadImage, UMIcon);
         }
@@ -3474,7 +3474,7 @@ BOOL CFileHistory::AddFile(CFileHistoryItemTypeEnum type, DWORD handlerID, const
             if (i > 0)
             {
                 Files.Detach(i);
-                    if (!Files.IsGood())
+                if (!Files.IsGood())
                     Files.ResetState(); // cannot fail; it only reports an out-of-memory condition when shrinking the array
                 Files.Insert(0, item);
                 if (!Files.IsGood())
