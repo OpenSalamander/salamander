@@ -93,7 +93,7 @@ BOOL HasExtension(const char* filename, const char* extension)
 {
     CALL_STACK_MESSAGE_NONE
     const char* dot = strrchr(filename, '.');
-    if (dot != NULL) // ".cvspass" is extension in Windows
+    if (dot != NULL) // ".cvspass" is an extension in Windows
     {
         if (lstrcmpi(++dot, extension) == 0)
             return TRUE;
@@ -189,7 +189,7 @@ CIcon* LoadIconsFromDirectory(HINSTANCE module, LPICONDIR directory, BOOL isIco)
         if (isIco)
             icons[i].lpData = LoadIconDataFromICO((HANDLE)module, directory->idEntries[i].dwImageOffset, directory->idEntries[i].dwBytesInRes);
         else
-            icons[i].lpData = LoadIconDataFromEXE(module, directory->idEntries[i].dwImageOffset /*it is ID*/);
+            icons[i].lpData = LoadIconDataFromEXE(module, directory->idEntries[i].dwImageOffset /* ID */);
         if (!icons[i].lpData)
         {
             DestroyIcons(icons, i);
