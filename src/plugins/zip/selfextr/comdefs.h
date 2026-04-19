@@ -17,7 +17,7 @@ typedef struct
     unsigned Flags;
     unsigned EOCentrDirOffs;
     unsigned ArchiveSize; //size of zip archive following this header
-    short CommandOffs;    // length of the command line string following this structure, including the terminating '\0'
+    short CommandOffs;    // offset of the command line string following this structure, including the terminating '\0'
     short TextOffs;
     short TitleOffs;
     short SubDirOffs;
