@@ -60,7 +60,7 @@ void InitSalShLib()
     if (SalShExtSharedMemMutex != NULL)
     {
         WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
-        SalShExtSharedMem = HANDLES_Q(CreateFileMapping(INVALID_HANDLE_VALUE, saPtr, PAGE_READWRITE, // FIXME_X64 are we passing incompatible x86/x64 data?
+        SalShExtSharedMem = HANDLES_Q(CreateFileMapping(INVALID_HANDLE_VALUE, saPtr, PAGE_READWRITE, // FIXME_X64: are we passing x86/x64-incompatible data?
                                                         0, sizeof(CSalShExtSharedMem),
                                                         SALSHEXT_SHAREDMEMNAME));
         BOOL created;
@@ -76,13 +76,13 @@ void InitSalShLib()
 
         if (SalShExtSharedMem != NULL)
         {
-            SalShExtSharedMemView = (CSalShExtSharedMem*)HANDLES(MapViewOfFile(SalShExtSharedMem, // FIXME_X64 are we passing incompatible x86/x64 data?
+            SalShExtSharedMemView = (CSalShExtSharedMem*)HANDLES(MapViewOfFile(SalShExtSharedMem, // FIXME_X64: are we passing x86/x64-incompatible data?
                                                                                FILE_MAP_WRITE, 0, 0, 0));
             if (SalShExtSharedMemView != NULL)
             {
                 if (created)
                 {
-                    memset(SalShExtSharedMemView, 0, sizeof(CSalShExtSharedMem)); // it should already be zeroed, but we do not count on it
+                    memset(SalShExtSharedMemView, 0, sizeof(CSalShExtSharedMem)); // it should already be zeroed, but we do not rely on that
                     SalShExtSharedMemView->Size = sizeof(CSalShExtSharedMem);
                 }
             }
@@ -368,12 +368,12 @@ CFakeCopyPasteDataObject::Release(void)
     {
         OurDataOnClipboard = FALSE;
 
-        if (CutOrCopyDone) // if an error occurred during cut/copy, waiting makes no sense and we perform the cleanup elsewhere
+        if (CutOrCopyDone) // if an error occurred during cut/copy, waiting makes no sense and cleanup is performed elsewhere
         {
             //      TRACE_I("CFakeCopyPasteDataObject::Release(): deleting clipfake directory!");
 
             // now we can cancel the "paste" in shared memory, clean up the fake dir, and remove the data object
-            if (SalShExtSharedMemView != NULL) // store the timestamp in shared memory (to distinguish between paste and another copy/move of the fake dir)
+            if (SalShExtSharedMemView != NULL) // store the time in shared memory (to distinguish paste from another copy/move of the fake dir)
             {
                 //        TRACE_I("CFakeCopyPasteDataObject::Release(): DoPasteFromSalamander = FALSE");
                 WaitForSingleObject(SalShExtSharedMemMutex, INFINITE);
@@ -395,7 +395,7 @@ CFakeCopyPasteDataObject::Release(void)
         }
 
         delete this;
-        return 0; // we must not touch the object; it no longer exists
+        return 0; // we must not access the object; it no longer exists
     }
     return RefCount;
 }
@@ -423,7 +423,7 @@ STDMETHODIMP CFakeCopyPasteDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* 
             // only afterwards, it is released and replaced with a new object from Explorer (the problem is a 2-second
             // timeout due to waiting for the copy hook callback — we always expect it after GetData)
             DWORD ti = GetTickCount();
-            if (ti - LastGetDataCallTime >= 100) // optimization: store a new time only if it changes by at least 100 ms
+            if (ti - LastGetDataCallTime >= 100) // optimization: store a new timestamp only if it changes by at least 100 ms
             {
                 LastGetDataCallTime = ti;
                 if (SalShExtSharedMemView != NULL) // store the timestamp in shared memory (to distinguish between paste and another copy/move of the fake dir)
@@ -480,12 +480,12 @@ BOOL CSalShExtPastedData::SetData(const char* archiveFileName, const char* pathI
     for (i = 0; i < selIndexesCount; i++)
     {
         int index = selIndexes[i];
-        if (index < dirs->Count) // it is a directory
+        if (index < dirs->Count) // directory
         {
             if (!SelFilesAndDirs.Add(TRUE, dirs->At(index).Name))
                 break;
         }
-        else // it is a file
+        else // file
         {
             if (!SelFilesAndDirs.Add(FALSE, files->At(index - dirs->Count).Name))
                 break;
@@ -519,7 +519,7 @@ void CSalShExtPastedData::ReleaseStoredArchiveData()
     {
         if (StoredPluginData.NotEmpty())
         {
-            // release the plug-in data for individual files and directories
+            // release the plugin data for individual files and directories
             BOOL releaseFiles = StoredPluginData.CallReleaseForFiles();
             BOOL releaseDirs = StoredPluginData.CallReleaseForDirs();
             if (releaseFiles || releaseDirs)
@@ -542,7 +542,7 @@ BOOL CSalShExtPastedData::WantData(const char* archiveFileName, CSalamanderDirec
 {
     CALL_STACK_MESSAGE1("CSalShExtPastedData::WantData()");
 
-    if (!Lock /* should not happen, but we play it safe */ &&
+    if (!Lock /* should not happen, but we guard against it */ &&
         StrICmp(ArchiveFileName, archiveFileName) == 0 &&
         archiveSize != CQuadWord(-1, -1) && // a corrupted date & time mark indicates an archive that must be reloaded
         (!pluginData.NotEmpty() || pluginData.CanBeCopiedToClipboard()))
@@ -568,25 +568,25 @@ BOOL CSalShExtPastedData::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract*
     {
         if (ArchiveFileName[0] != 0)
         {
-            // find out whether the unloaded plug-in has anything to do with our archive;
-            // the plug-in could unload itself while the archiver is used (each archiver function
-            // loads the plug-in itself), but better safe than sorry, so we cancel any pedning archive listing
+            // find out whether the unloaded plugin has anything to do with our archive;
+            // the plugin could unload itself while the archiver is used (each archiver function
+            // loads the plugin itself), but better safe than sorry, so we cancel any pedning archive listing
             int format = PackerFormatConfig.PackIsArchive(ArchiveFileName);
             if (format != 0) // we found a supported archive
             {
                 format--;
                 CPluginData* data;
                 int index = PackerFormatConfig.GetUnpackerIndex(format);
-                if (index < 0) // view: is it processed internally (plug-in)?
+                if (index < 0) // view: is it processed internally (plugin)?
                 {
                     data = Plugins.Get(-index - 1);
                     if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
                         used = TRUE;
                 }
-                if (PackerFormatConfig.GetUsePacker(format)) // does it have an editor?
+                if (PackerFormatConfig.GetUsePacker(format)) // does it use a packer?
                 {
                     index = PackerFormatConfig.GetPackerIndex(format);
-                    if (index < 0) // is it processed internally (plug-in)?
+                    if (index < 0) // is it processed internally (plugin)?
                     {
                         data = Plugins.Get(-index - 1);
                         if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
@@ -598,8 +598,8 @@ BOOL CSalShExtPastedData::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract*
     }
 
     if (used)
-        ReleaseStoredArchiveData(); // we are using plug-in data, so we should release them
-    return TRUE;                    // unloading the plug-in is possible
+        ReleaseStoredArchiveData(); // we are using plugin data, so it should be released
+    return TRUE;                    // the plugin can be unloaded
 }
 
 void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
@@ -630,7 +630,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             panel->OfferArchiveUpdateIfNeeded(MainWindow->HWindow, IDS_ARCHIVECLOSEEDIT2, &archMaybeUpdated);
             if (archMaybeUpdated)
             {
-                EndStopRefresh(); // the snooper starts now
+                EndStopRefresh(); // refresh monitoring resumes now
                 return;
             }
             // reuse the data from the panel (we are in the main thread, the panel cannot change during the operation)
@@ -640,7 +640,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
         }
     }
 
-    if (StoredArchiveDir != NULL) // if we have any archive data stored
+    if (StoredArchiveDir != NULL) // if we have stored archive data
     {
         if (archiveDir != NULL)
             ReleaseStoredArchiveData(); // the archive is open in a panel, discard the stored data
@@ -658,7 +658,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 SalGetFileSize(file, archiveSize, err); // returns "success?" — ignore it, we test 'err' later
                 HANDLES(CloseHandle(file));
 
-                if (err == NO_ERROR &&                                        // size & date are obtained and
+                if (err == NO_ERROR &&                                        // size and date were obtained
                     CompareFileTime(&archiveDate, &StoredArchiveDate) == 0 && // the date is identical and
                     archiveSize == StoredArchiveSize)                         // the size is identical as well
                 {
@@ -682,7 +682,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             TRACE_E(LOW_MEMORY);
         else
         {
-            // find information about the file (does it exist? size, date, and time)
+            // get file information (exists?, size, date and time)
             DWORD err = NO_ERROR;
             FILETIME archiveDate;  // archive file`s date & time
             CQuadWord archiveSize; // archive file`s size
@@ -691,7 +691,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             if (file != INVALID_HANDLE_VALUE)
             {
                 GetFileTime(file, NULL, NULL, &archiveDate);
-                SalGetFileSize(file, archiveSize, err); // returns "success?" — ignore it, we test 'err' later
+                SalGetFileSize(file, archiveSize, err); // returns "success?" - ignored; 'err' is tested later
                 HANDLES(CloseHandle(file));
             }
             else
@@ -728,7 +728,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                                               plugin->GetPluginInterface()->GetInterface(), plugin->BuiltForVersion);
                     }
                     else
-                        StoredPluginData.Init(NULL, NULL, NULL, NULL, 0); // used only by plug-ins, not by Salamander
+                        StoredPluginData.Init(NULL, NULL, NULL, NULL, 0); // used only by plugins, not by Salamander
                     StoredArchiveDate = archiveDate;
                     StoredArchiveSize = archiveSize;
 
@@ -742,7 +742,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
         }
     }
 
-    if (archiveDir != NULL) // if we have the archive data, perform the Paste
+    if (archiveDir != NULL) // if we have archive data, perform the paste
     {
         CPanelTmpEnumData data;
         SelFilesAndDirs.Sort();
@@ -774,7 +774,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 {
                     if (SelFilesAndDirs.Contains(TRUE, dirs->At(i).Name, &foundOnIndex) &&
                         foundOnIndex >= 0 && foundOnIndex < SelFilesAndDirs.GetDirsCount() &&
-                        !foundDirs[foundOnIndex]) // mark only the first instance of the name (if there are multiple identical names in SelFilesAndDirs, it does not work; halving in Contains always arrives at the same one)
+                        !foundDirs[foundOnIndex]) // mark only the first occurrence of the name (if there are multiple identical names in SelFilesAndDirs, this does not work; the halving in Contains always arrives at the same one)
                     {
                         foundDirs[foundOnIndex] = TRUE; // this name has just been found
                         data.Indexes[actIndex++] = i;
@@ -789,7 +789,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 {
                     if (SelFilesAndDirs.Contains(FALSE, files->At(i).Name, &foundOnIndex) &&
                         foundOnIndex >= 0 && foundOnIndex < SelFilesAndDirs.GetFilesCount() &&
-                        !foundFiles[foundOnIndex]) // mark only the first instance of the name (if there are multiple identical names in SelFilesAndDirs, it does not work; halving in Contains always arrives at the same one)
+                        !foundFiles[foundOnIndex]) // mark only the first occurrence of the name (if there are multiple identical names in SelFilesAndDirs, this does not work; the bisection in Contains always finds the same one)
                     {
                         foundFiles[foundOnIndex] = TRUE;            // this name has just been found
                         data.Indexes[actIndex++] = dirs->Count + i; // all files have their index shifted after directories, as is customary in the panel
@@ -797,7 +797,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
                 }
             }
             data.IndexesCount = actIndex;
-            if (data.IndexesCount == 0) // our ZIP root vanished completely
+            if (data.IndexesCount == 0) // the ZIP root vanished completely
             {
                 SalMessageBox(MainWindow->HWindow, LoadStr(IDS_ARCFILESNOTFOUND),
                               LoadStr(IDS_ERRORUNPACK), MB_OK | MB_ICONEXCLAMATION);
@@ -805,7 +805,7 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             else
             {
                 BOOL unpack = TRUE;
-                if (data.IndexesCount != SelFilesAndDirs.GetCount()) // not all items selected on the clipboard were found (duplicate names or files deleted from the archive)
+                if (data.IndexesCount != SelFilesAndDirs.GetCount()) // not all selected clipboard items were found (duplicate names or files deleted from the archive)
                 {
                     unpack = SalMessageBox(MainWindow->HWindow, LoadStr(IDS_ARCFILESNOTFOUND2),
                                            LoadStr(IDS_ERRORUNPACK),
@@ -857,5 +857,5 @@ void CSalShExtPastedData::DoPasteOperation(BOOL copy, const char* tgtPath)
             free(foundFiles);
     }
 
-    EndStopRefresh(); // the snooper starts now
+    EndStopRefresh(); // refresh notifications resume now
 }
