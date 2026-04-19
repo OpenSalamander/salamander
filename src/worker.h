@@ -16,7 +16,7 @@
 #define CHATTRS_FILE_SIZE CQuadWord(500, 0)
 #define MAX_OP_FILESIZE 6500 // WARNING: highest allowed value in this group
 
-// 4/2012 - increased the buffer to ten times the old size; large files over the network now reach speeds 
+// 4/2012 - increased the buffer to ten times the old size; large files over the network now reach speeds
 // comparable to Total Commander and finish 2-3x faster than with the previous one-tenth buffer
 // verified on local disks and across the network; I see no downside to the larger buffer
 #define OPERATION_BUFFER (10 * 32768)          // 320KB buffer for Copy and Move
@@ -108,7 +108,7 @@ protected:
     DWORD MaxPacketSize;                                     // largest packet size we expect
 
 public:
-    BOOL ResetSpeed; // TRUE = the meter should be reset before the next speed measuring (call JustConnected) - the speed drop was so large we ended up displaying zero speed
+    BOOL ResetSpeed; // TRUE = the meter should probably be reset before the next speed measurement (call JustConnected); the speed drop was too large, so zero speed was displayed
 
 public:
     CTransferSpeedMeter();
@@ -131,9 +131,9 @@ public:
     void BytesReceived(DWORD count, DWORD time, DWORD maxPacketSize);
 
     // tunes 'progressBufferLimit' according to current received packets data;
-    // 'lastFileBlockCount' is the limit we must not cross (we consider only continuous 
+    // 'lastFileBlockCount' is the limit we must not cross (we consider only continuous
     // copying of a single file; the counter 'lastFileBlockCount' is overflow-safe and
-    // values > 1000000 simply mean "a lot", the exact figure is irrelevant); 'lastFileStartTime' 
+    // values > 1000000 simply mean "a lot", the exact figure is irrelevant); 'lastFileStartTime'
     // is the GetTickCount() captured when the most recent file copy started
     void AdjustProgressBufferLimit(DWORD* progressBufferLimit, DWORD lastFileBlockCount,
                                    DWORD lastFileStartTime);
@@ -201,7 +201,7 @@ enum COperationCode
     ocCountSize,
     ocConvert,
     ocLabelForSkipOfCreateDir, // label to jump to when the script skips on ocCreateDirXXX; WARNING: SourceName and TargetName store the LO- and HI-DWORD of the total file sizes (including ADS) contained in the skipped directory; WARNING: Attr stores the ocCreateDirXXX index in the COperations array for that directory
-    ocCopyDirTime,             // Move/Copy: when filterCriteria->PreserveDirTime==TRUE copy the directory timestamps; WARNING: lastWrite is stored in SourceName and Attr (applies to every type; just two DWORDs)
+    ocCopyDirTime,             // Move/Copy: when filterCriteria->PreserveDirTime==TRUE, copy the directory timestamps; WARNING: lastWrite is stored in SourceName and Attr (used regardless of type; just two DWORDs)
 };
 
 #define OPFL_OVERWROLDERALRTESTED 0x00000001 // the "overwrite older, skip other existing" test has already been performed
@@ -250,7 +250,7 @@ public:
 
     BOOL RemovableTgtDisk;      // is this writing to removable media?
     BOOL RemovableSrcDisk;      // is this reading from removable media?
-    BOOL CanUseRecycleBin;      // can we use the Recycle Bin? (only local fixed drives)
+    BOOL CanUseRecycleBin;      // can the Recycle Bin be used? (only on local fixed drives)
     BOOL SameRootButDiffVolume; // TRUE if this is a Move between paths with the same root but different volumes (at least one path contains a junction point)
     BOOL TargetPathSupADS;      // TRUE if the copy/move target supports ADS (delete the file's ADS (or the whole files) before overwriting)
                                 //    BOOL TargetPathSupEFS;       // TRUE if the copy/move target supports EFS (or less generally: it is NTFS rather than FAT)
@@ -259,7 +259,7 @@ public:
     BOOL IsCopyOrMoveOperation; // TRUE = this is a Copy/Move operation (add it to the queue of disk Copy/Move operations)
     BOOL OverwriteOlder;        // overwrite older items and skip newer ones without prompting
     BOOL CopySecurity;          // preserve NTFS permissions; FALSE = don't care = perform no extra handling and accept any result
-    BOOL CopyAttrs;             // preserve the Archive, Encrypt, and Compress attributes; FALSE = don't care = perform no extra handling and accept any result
+    BOOL CopyAttrs;             // preserve the Archive, Encrypted, and Compressed attributes; FALSE = don't care = perform no extra handling and accept any result
     BOOL PreserveDirTime;       // preserve directory timestamps (during Move we detect unintended changes and fix them manually; works e.g. on Samba)
     BOOL StartOnIdle;           // should start only when nothing else is running
     BOOL SourcePathIsNetwork;   // TRUE = the source path is a network path (UNC or mapped drive)
@@ -302,7 +302,7 @@ private:
     DWORD ProgressBufferLimit;    // copy buffer size limit to keep progress updates reasonably frequent
     DWORD LastProgBufLimTestTime; // GetTickCount() from the last ProgressBufferLimit size evaluation
     DWORD LastFileBlockCount;     // blocks copied since the last file started (WARNING: overflow-protected; values > 1000000 mean "a lot", the exact amount doesn't matter)
-    DWORD LastFileStartTime;      // GetTickCount() from when we started copying the last file
+    DWORD LastFileStartTime;      // GetTickCount() value from when the last file started copying
 
 public:
     COperations(int base, int delta, char* waitInQueueSubject, char* waitInQueueFrom, char* waitInQueueTo);
@@ -354,7 +354,7 @@ protected:
 
     // OperDlgs and OperPaused arrays have the same number of elements and share indices (each operation uses the same index in both arrays)
     TDirectArray<HWND> OperDlgs;    // array of HWND handles: dialogs of operations in the queue
-    TDirectArray<DWORD> OperPaused; // int array describing queue operation state: 2/1/0 = "manually-paused"/"auto-paused"/"running"
+    TDirectArray<DWORD> OperPaused; // array of int values describing the operation state in the queue: 2/1/0 = "manually-paused"/"auto-paused"/"running"
 
 public:
     COperationsQueue() : OperDlgs(5, 10), OperPaused(5, 10)
@@ -505,21 +505,21 @@ typedef struct
 } FILE_STREAM_INFORMATION, *PFILE_STREAM_INFORMATION;
 #pragma pack()
 
-// enumerates alternate data streams (ADS) of a file/directory ('isDir' is FALSE/TRUE)
-// 'fileName'; meaningful only on NTFS disks; if 'adsSize' is not NULL it returns the
-// sum of the sizes of all ADS; if 'streamNames' is not NULL it returns an allocated array
-// of Unicode names of all ADS (except the default ADS) - the elements of the array are allocated 
-// the caller must dealocate them and the array itself; the array of names is returned only
-// if no error occurred (see 'lowMemory' and 'winError') and ADS were found (the function 
-// returns TRUE); if 'streamNamesCount' is not NULL it returns the number of elements 
-// in 'streamNames'; if 'lowMemory' is not NULL it returns TRUE when an out-of-memory 
-// error occurs (only possible when 'streamNames' is not NULL); if 'winError' is not NULL 
+// determines the alternate data streams (ADS) of a file/directory ('isDir' is FALSE/TRUE)
+// for 'fileName'; meaningful only on NTFS volumes; if 'adsSize' is not NULL, it returns the
+// sum of the sizes of all ADS; if 'streamNames' is not NULL, it returns an allocated array
+// of Unicode names of all ADS (except the default ADS) - the elements of the array are allocated,
+// and the caller must deallocate them and the array itself; the array of names is returned only
+// if no error occurred (see 'lowMemory' and 'winError') and ADS were found (the function
+// returns TRUE); if 'streamNamesCount' is not NULL, it returns the number of elements
+// in 'streamNames'; if 'lowMemory' is not NULL, it returns TRUE when an out-of-memory
+// error occurs (possible only when 'streamNames' is not NULL); if 'winError' is not NULL,
 // it returns the Windows error code (NO_ERROR if none occurred - if a Windows error occurs,
-// the function always returns FALSE); the function returns TRUE if the file/directory 
-// contains ADS, otherwise FALSE; 'bytesPerCluster' is the cluster size 
-// used to compute disk space occupied by the ADS (0 = unknown size);
-// in 'adsOccupiedSpace' (if not NULL) it returns the disk space occupied by the ADS;
-// in 'onlyDiscardableStreams' (if not NULL) it returns TRUE if only ADS
+// the function always returns FALSE); the function returns TRUE if the file/directory
+// contains any ADS, otherwise FALSE; 'bytesPerCluster' is the cluster size
+// used to compute the disk space occupied by the ADS (0 = unknown size);
+// in 'adsOccupiedSpace' (if not NULL), it returns the disk space occupied by the ADS;
+// in 'onlyDiscardableStreams' (if not NULL), it returns TRUE if only ADS
 // that can be discarded without prompting were found (currently only thumbnails from W2K)
 BOOL CheckFileOrDirADS(const char* fileName, BOOL isDir, CQuadWord* adsSize, wchar_t*** streamNames,
                        int* streamNamesCount, BOOL* lowMemory, DWORD* winError,
