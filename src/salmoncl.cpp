@@ -12,7 +12,7 @@ HANDLE HSalmonProcess = NULL;
 
 //****************************************************************************
 
-// WARNING: we are running from the entry point, before RTL, global objects, etc. are initialized.
+// WARNING: running from the entry point before RTL, global objects, etc. are initialized
 // Do not call TRACE, HANDLES, RTL, ...
 
 HANDLE GetBugReporterRegistryMutex()
@@ -39,8 +39,8 @@ BOOL SalmonGetBugReportUID(DWORD64* uid)
     const char* BUG_REPORTER_KEY = "Software\\Open Salamander\\Bug Reporter";
     const char* BUG_REPORTER_UID = "ID";
 
-    // this section runs during Salamander start-up and theoretically concurrent registry reads/writes may occur
-    // so we guard access with a global mutex
+    // This section runs during Salamander startup, and concurrent registry reads and writes may theoretically occur.
+    // We therefore guard access with a global mutex.
     HANDLE hMutex = GetBugReporterRegistryMutex();
     if (hMutex != NULL)
         WaitForSingleObject(hMutex, INFINITE);
@@ -99,7 +99,7 @@ BOOL SalmonSharedMemInit(CSalmonSharedMemory* mem)
     RtlFillMemory(mem, sizeof(CSalmonSharedMemory), 0);
 
     mem->Version = SALMON_SHARED_MEMORY_VERSION;
-    // Salmon runs as a child process with bInheritHandles == TRUE, so it can access these handles directly
+    // Salmon will be started as a child process with bInheritHandles == TRUE, so it can access these handles directly
     mem->ProcessId = GetCurrentProcessId();
     mem->Process = NOHANDLES(OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, TRUE, mem->ProcessId));
     mem->Fire = NOHANDLES(CreateEvent(&sa, TRUE, FALSE, NULL));      // "nonsignaled" state, manual
@@ -112,7 +112,7 @@ BOOL SalmonSharedMemInit(CSalmonSharedMemory* mem)
     if (SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, mem->BugPath) == S_OK)
     {
         int len = lstrlen(mem->BugPath);
-        if (len > 0 && mem->BugPath[len - 1] == '\\') // better check for a trailing backslash at the end of the path
+        if (len > 0 && mem->BugPath[len - 1] == '\\') // check whether the path ends with a backslash
             mem->BugPath[len - 1] = 0;
         lstrcat(mem->BugPath, "\\Open Salamander");
     }
@@ -173,8 +173,8 @@ BOOL SalmonStartProcess(const char* fileMappingName) //Configuration.LoadedSLGNa
     *(strrchr(rtlDir, '\\') + 1) = 0;
     GetCurrentDirectory(MAX_PATH, oldCurDir);
 
-    // another attempt to solve the problem before we split SALMON.EXE into EXE + DLL
-    // extend the PATH environment variable for the child process (SALMON.EXE) by adding the RTL path.
+    // another attempt to solve the problem before splitting SALMON.EXE into an EXE + DLL
+    // extend the child process PATH environment variable with the RTL path
     if (GetEnvironmentVariable("PATH", envPATH, MAX_ENV_PATH) != 0)
     {
         if (lstrlen(envPATH) + 2 + lstrlen(rtlDir) < MAX_ENV_PATH)
@@ -202,7 +202,7 @@ BOOL SalmonStartProcess(const char* fileMappingName) //Configuration.LoadedSLGNa
     // the running SALMON.EXE could set the current directory and load SALMON.DLL at runtime, which should hopefully work.
     // ----
     // On my computer each of the three path-setting strategies works independently (ENV PATH, SetCurrentDirectory, and the rtlDir parameter in the CreateProcess call)
-    if (NOHANDLES(CreateProcess(NULL, cmd, NULL, NULL, TRUE, // bInheritHandles == TRUE, the event handles must be passed on!
+    if (NOHANDLES(CreateProcess(NULL, cmd, NULL, NULL, TRUE, // bInheritHandles == TRUE so the event handles are inherited
                                 CREATE_DEFAULT_ERROR_MODE | HIGH_PRIORITY_CLASS, NULL,
                                 rtlDir, &si, &pi)))
     {
@@ -311,7 +311,7 @@ void SalmonSetSLG(const char* slgName)
     arr[0] = HSalmonProcess;
     arr[1] = SalmonSharedMemory->Done;
     DWORD waitRet = WaitForMultipleObjects(2, arr, FALSE, INFINITE);
-    if (waitRet != WAIT_OBJECT_0 + 1) // Salmon exited or something went wrong in the communication
+    if (waitRet != WAIT_OBJECT_0 + 1) // Salmon exited or communication failed
     {
         if (!SalmonNotRunningReported && HLanguage != NULL)
         {
@@ -332,7 +332,7 @@ void SalmonCheckBugs()
     arr[0] = HSalmonProcess;
     arr[1] = SalmonSharedMemory->Done;
     DWORD waitRet = WaitForMultipleObjects(2, arr, FALSE, INFINITE);
-    if (waitRet != WAIT_OBJECT_0 + 1) // Salmon exited or something went wrong in the communication
+    if (waitRet != WAIT_OBJECT_0 + 1) // Salmon was terminated or communication failed
     {
         if (!SalmonNotRunningReported && HLanguage != NULL)
         {
