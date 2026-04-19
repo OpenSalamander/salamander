@@ -158,7 +158,7 @@ BOOL UnscramblePassword(char* password)
     }
     if (!ok)
     {
-        password[0] = 0; // some error occured; clear the password
+        password[0] = 0; // some error occurred; clear the password
         TRACE_E("Unable to unscramble password! scrambled=" << backup);
     }
     memset(backup, 0, lstrlen(backup)); // wipe the memory that contained the password
@@ -618,7 +618,7 @@ BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryp
 
 TRY_DECRYPT_AGAIN:
 
-    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call unscramble after AES 
+    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call UnscramblePassword after AES
     memcpy(tmpBuff, encryptedPassword, encryptedPasswordSize);
     tmpBuff[encryptedPasswordSize] = 0; // terminator required by UnscramblePassword
 
@@ -641,10 +641,6 @@ TRY_DECRYPT_AGAIN:
 
             if (plainMasterPassword == OldPlainMasterPassword && UseMasterPassword && PlainMasterPassword != NULL)
             { // handle the case where the password is encrypted with the new master password
-              // (the password cannot be decrypted with the old master password, but can with the new one,
-              // therefore, the message that the password cannot be decrypted would be misleading,
-              // because when the user tries to decrypt it with the new master password, it succeeds
-              // meaning the user has no way to identify the undecryptable password)
                 plainMasterPassword = PlainMasterPassword;
                 goto TRY_DECRYPT_AGAIN;
             }
@@ -718,7 +714,7 @@ void CPasswordManager::SetMasterPassword(HWND hParent, const char* password)
         Plugins.PasswordManagerEvent(hParent, OldPlainMasterPassword == NULL ? PME_MASTERPASSWORDCREATED : PME_MASTERPASSWORDCHANGED);
     }
 
-    // the thread has returned from calling Plugins.PasswordManagerEvent(), so we can discard OldPlainMasterPassword
+    // the thread has returned from Plugins.PasswordManagerEvent(), so we can discard OldPlainMasterPassword
     if (OldPlainMasterPassword != NULL)
     {
         free(OldPlainMasterPassword);
@@ -840,7 +836,7 @@ BOOL CPasswordManager::Save(HKEY hKey)
 BOOL CPasswordManager::Load(HKEY hKey)
 {
     BOOL ret = TRUE;
-    // password manager configuration data
+    // password manager configuration
     if (ret)
         ret &= GetValue(hKey, SALAMANDER_PWDMNGR_USEMASTERPWD, REG_DWORD, &UseMasterPassword, sizeof(UseMasterPassword));
     if (UseMasterPassword)
@@ -855,7 +851,7 @@ BOOL CPasswordManager::Load(HKEY hKey)
 
 BOOL CPasswordManager::AskForMasterPassword(HWND hParent)
 {
-    // return FALSE if master password usage is disabled
+    // return FALSE if the master password is not used
     if (!UseMasterPassword)
         return FALSE;
 
