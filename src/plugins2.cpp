@@ -83,7 +83,7 @@ BOOL CreateGrayscaleDIB(HBITMAP hSource, COLORREF transparent, HBITMAP& hGraysca
     bi.bmiHeader.biBitCount = 24;
     bi.bmiHeader.biCompression = BI_RGB;
 
-    // retrieve the actual bitmap data
+    // retrieve the bitmap data
     if (!GetDIBits(hDC,
                    hSource,
                    0, bi.bmiHeader.biHeight,
@@ -478,7 +478,7 @@ BOOL CPlugins::AreFSNamesFromSamePlugin(const char* fsName1, const char* fsName2
 
 BOOL CPlugins::FindLastCommand(int* pluginIndex, int* menuItemIndex, BOOL rebuildDynMenu, HWND parent)
 {
-    // we must know the path to the plugin that owned the last command
+    // we must know the path to the plugin the last command belonged to
     if (LastPlgCmdPlugin != NULL)
     {
         int i;
@@ -488,7 +488,7 @@ BOOL CPlugins::FindLastCommand(int* pluginIndex, int* menuItemIndex, BOOL rebuil
             // locate the plugin
             if (stricmp(p->DLLName, LastPlgCmdPlugin) == 0)
             {
-                if (p->GetLoaded()) // if the plugin isn't loaded we pretend we didn't find anything
+                if (p->GetLoaded()) // If the plugin is not loaded, pretend nothing was found.
                 {
                     // last-cmd from dynamic menu: rebuild required so we show the item from the
                     // updated menu version (otherwise after opening a submenu and rebuilding the menu, the last-cmd item could disappear)
@@ -508,7 +508,7 @@ BOOL CPlugins::FindLastCommand(int* pluginIndex, int* menuItemIndex, BOOL rebuil
                         }
                     }
                 }
-                break; // no further match of DLLName is possible
+                break; // no further DLLName match is possible
             }
         }
         // command was not found, clear Last Command item to avoid "resurrection" of old commands after reloading the plugin or re-adding an item to the dynamic menu
@@ -525,8 +525,8 @@ BOOL CPlugins::OnLastCommand(CFilesWindow* panel, HWND parent)
     int menuItemIndex;
     if (FindLastCommand(&pluginIndex, &menuItemIndex, FALSE, parent)) // returns FALSE if the plugin isn't loaded
     {
-        // OnLastCommand can be triggered via Ctrl+I so the menu may not be shown
-        // and the state cache might not be computed
+        // OnLastCommand can be invoked via Ctrl+I, so the menu might not have been displayed
+        // and the state cache therefore might not have been computed
         CalculateStateCache();
 
         CPluginData* pluginData = Data[pluginIndex];
@@ -537,7 +537,7 @@ BOOL CPlugins::OnLastCommand(CFilesWindow* panel, HWND parent)
             BOOL unselect;
             if (pluginData->ExecuteMenuItem2(panel, parent, pluginIndex, LastPlgCmdID, unselect))
             {
-                return unselect; // processed, stop
+                return unselect; // handled, stop here
             }
         }
     }
@@ -559,7 +559,7 @@ BOOL CPlugins::ExecuteCommand(int pluginIndex, int menuItemIndex, CFilesWindow* 
             BOOL unselect;
             if (pluginData->ExecuteMenuItem2(panel, parent, pluginIndex, id, unselect))
             {
-                return unselect; // processed, stop
+                return unselect; // handled, stop here
             }
         }
     }
@@ -588,7 +588,7 @@ void CPlugins::InitMenuItems(HWND parent, CMenuPopup* root)
         if (!root->RemoveItemsRange(RootMenuItemsCount, count - 1))
             return; // error
 
-    // add submenus for plugins that have any items and clear their SUIDs
+    // add submenus for plugins that have items and clear the items' SUIDs
     // (new numbers will be assigned)
     count = RootMenuItemsCount;
     UpdatePluginsOrder(Configuration.KeepPluginsSorted);
@@ -597,7 +597,7 @@ void CPlugins::InitMenuItems(HWND parent, CMenuPopup* root)
         int orderIndex = Order[i].Index;
         CPluginData* p = Data[orderIndex];
         p->SubMenu = NULL;                                  // this plugin has no submenu yet
-        if (p->SupportDynMenuExt || p->MenuItems.Count > 0) // dynamic menu or it has some items
+        if (p->SupportDynMenuExt || p->MenuItems.Count > 0) // dynamic menu or has some items
         {
             // due to SkillLevel reduction the submenu might be empty; skip empty submenus
             BOOL containVisibleItem = p->SupportDynMenuExt;
@@ -624,7 +624,7 @@ void CPlugins::InitMenuItems(HWND parent, CMenuPopup* root)
                                 else
                                 {
                                     if (type == pmitEndSubmenu && --level == 0)
-                                        break; // end of submenu reached
+                                        break; // end of submenu found
                                 }
                             }
                         }
@@ -785,7 +785,7 @@ BOOL CPlugins::InitPluginMenuItemsForBar(HWND parent, int index, CMenuPopup* men
     plugin->InitMenuItems(parent, index, menu);
     menu->SetImageList(plugin->CreateImageList(TRUE), TRUE); // the imagelist is destroyed in CMainWindow::WindowProc / WM_USER_UNINITMENUPOPUP (menu must have ID CML_PLUGINS_SUBMENU)
     menu->SetHotImageList(plugin->CreateImageList(FALSE), TRUE);
-    plugin->ReleasePluginDynMenuIcons(); // icons are in the menu image lists and this object is no longer needed (everything is obtained again when the menu shows next time)
+    plugin->ReleasePluginDynMenuIcons(); // the icons are in the menu image lists and this object is no longer needed (everything is obtained again the next time the menu is shown)
     return TRUE;
 }
 
@@ -825,8 +825,8 @@ void CPlugins::CalculateStateCache()
             if (MainWindow->GetActivePanel()->Is(ptPluginFS))
             {
                 CPluginFSInterfaceEncapsulation* fs = MainWindow->GetActivePanel()->GetPluginFS();
-                if (fs->NotEmpty()) // should be "always true"
-                {                   // according to the interface, we find the plug-in index in the active panel
+                if (fs->NotEmpty()) // This should always be TRUE.
+                {                   // find the plugin index in the active panel by its interface
                     StateCache.ActiveFSIndex = Plugins.GetIndex(fs->GetPluginInterface());
                 }
             }
@@ -860,8 +860,8 @@ void CPlugins::CalculateStateCache()
             if (MainWindow->GetNonActivePanel()->Is(ptPluginFS))
             {
                 CPluginFSInterfaceEncapsulation* fs = MainWindow->GetNonActivePanel()->GetPluginFS();
-                if (fs->NotEmpty()) // should be "always true"
-                {                   // according to the interface, we find the plug-in index in the non-active panel
+                if (fs->NotEmpty()) // this should always be true
+                {                   // use the interface to find the plugin index in the inactive panel
                     StateCache.NonactiveFSIndex = Plugins.GetIndex(fs->GetPluginInterface());
                 }
             }
@@ -896,7 +896,7 @@ void CPlugins::CalculateStateCache()
                                                                                MainWindow->GetActivePanel()->Dirs->Count);
 
                     int format = PackerFormatConfig.PackIsArchive(file->Name);
-                    if (format != 0) // not an error
+                    if (format != 0) // nonzero is not an error
                     {
                         format--;
                         int index = PackerFormatConfig.GetUnpackerIndex(format);
@@ -944,7 +944,7 @@ void CPlugins::CalculateStateCache()
 
 void CPlugins::InitSubMenuItems(HWND parent, CMenuPopup* submenu)
 {
-    // we check whether they are not entering any of the plug-in's submenus
+    // we check whether they are not entering any of the plugin's submenus
     int i;
     for (i = 0; i < Data.Count; i++)
     {
@@ -982,7 +982,7 @@ BOOL CPlugins::HelpForMenuItem(HWND parent, int suid)
     {
         CPluginData* pluginData = Data[i];
         if (pluginData->HelpForMenuItem(parent, i, suid, helpDisplayed))
-            return helpDisplayed; // processed, stop
+            return helpDisplayed; // handled, return
     }
     return FALSE;
 }
@@ -1332,7 +1332,7 @@ void CPlugins::Load(HWND parent, HKEY regKey)
                      GetValue(itemKey, SALAMANDER_PLUGINS_FS, REG_DWORD, &fs, sizeof(DWORD));
                 dynMenuExt = FALSE;
             }
-            else // new version (fstores functions in a single DWORD using bit fields)
+            else // new version (stores functions in a single DWORD as bit flags)
             {
                 DWORD functions = 0;
                 ok = GetValue(itemKey, SALAMANDER_PLUGINS_NAME, REG_SZ, name, MAX_PATH) &&
@@ -1633,7 +1633,7 @@ void CPlugins::Save(HWND parent, HKEY regKey, HKEY regKeyConfig, HKEY regKeyOrde
 
                 SetValue(itemKey, SALAMANDER_PLUGINS_FUNCTIONS, REG_DWORD, &functions, sizeof(DWORD));
 
-                if (p->LoadOnStart) // will store only TRUE to save space in the registry
+                if (p->LoadOnStart) // store only TRUE to save space in the registry
                 {
                     DWORD loadOnStartDWORD = TRUE;
                     SetValue(itemKey, SALAMANDER_PLUGINS_LOADONSTART, REG_DWORD, &loadOnStartDWORD, sizeof(DWORD));
@@ -1664,7 +1664,7 @@ void CPlugins::Save(HWND parent, HKEY regKey, HKEY regKeyConfig, HKEY regKeyOrde
                 {
                     SetValue(itemKey, SALAMANDER_PLUGINS_LASTSLGNAME, REG_SZ, p->LastSLGName, -1);
                 }
-                if (p->PluginHomePageURL != NULL && p->PluginHomePageURL[0] != 0) // store it if is not an empty string
+                if (p->PluginHomePageURL != NULL && p->PluginHomePageURL[0] != 0) // store it if it is not an empty string
                 {
                     SetValue(itemKey, SALAMANDER_PLUGINS_HOMEPAGE, REG_SZ, p->PluginHomePageURL, -1);
                 }
@@ -1703,7 +1703,7 @@ void CPlugins::Save(HWND parent, HKEY regKey, HKEY regKeyConfig, HKEY regKeyOrde
                             CPluginMenuItem* item = p->MenuItems[i2];
                             if (item->Name != NULL || item->StateMask == -1)
                             {                                                              // we store "state" only if it is an item or a separator with "call-get-state"
-                                DWORD state = p->SupportDynMenuExt ? -1 : item->StateMask; // dynamic menu: this hack handles the situation when a plugin with a dynamic menu switches to a static one during loading and fails in the entry point (the dynamic menu contents remain and if it lacks call-get-state items, the menu might appear even without loading the plugin)
+                                DWORD state = p->SupportDynMenuExt ? -1 : item->StateMask; // dynamic menu: this hack handles the case where a plugin with a dynamic menu switches to a static menu during loading and then fails in the entry point (the dynamic menu contents remain, and if they contain no call-get-state items, the menu may appear even though the plugin is not loaded)
                                 SetValue(menuItemKey, SALAMANDER_PLUGINS_MENUITEMSTATE, REG_DWORD,
                                          &state, sizeof(DWORD));
                                 SetValue(menuItemKey, SALAMANDER_PLUGINS_MENUITEMID, REG_DWORD,
@@ -1826,7 +1826,7 @@ BOOL IsArchiveIndexOK(int i, CPluginFunctionType type)
     if (i < 0)
     {
         CPluginData* p = Plugins.Get(-i - 1); // plugin index
-        if (p != NULL)                        // plugin exists; check whether it has the requested function
+        if (p != NULL)                        // the plugin exists; now check whether it supports the requested function
         {
             return type == pftPanelView && p->SupportPanelView ||
                    type == pftPanelEdit && p->SupportPanelEdit ||
@@ -2049,7 +2049,7 @@ void CPlugins::CheckData()
         MainWindow->LeaveViewerMasksCS();
     }
     else // default configuration, convert old external+ZIP+TAR+PAK types for "custom pack/unpack"
-    {    // and mark all data as new, also convert old types for "file viewer" and mark
+    {    // and mark all data as new; also convert the old "file viewer" types and flag
         // the data as new
 
         // PackerFormatConfig.GetPackerIndex(i) remains -1 for ZIP, -2 for TAR, -3 for PAK
@@ -2064,7 +2064,7 @@ void CPlugins::CheckData()
         // conversions for "custom pack"
         for (i = 0; i < PackerConfig.GetPackersCount(); i++)
         {
-            if (PackerConfig.GetPackerOldType(i)) // convert old values
+            if (PackerConfig.GetPackerOldType(i)) // remap old values
             {
                 PackerConfig.SetPackerOldType(i, FALSE);
                 switch (PackerConfig.GetPackerType(i))
@@ -2074,7 +2074,7 @@ void CPlugins::CheckData()
                     break; // ZIP
                 case 1:
                     PackerConfig.SetPackerType(i, CUSTOMPACKER_EXTERNAL);
-                    break; // external
+                    break; // external packer
                 case 2:
                     PackerConfig.SetPackerType(i, -2);
                     break; // TAR
@@ -2158,7 +2158,7 @@ void CPlugins::CheckData()
         {
             if (!IsArchiveIndexOK(PackerFormatConfig.GetPackerIndex(i), pftPanelEdit))
             {
-                TRACE_E("Invalid packer index in PackerFormatConfig, ext = " << PackerFormatConfig.GetExt(i)); // when importing configuration from version 2.0, this error is reported because UnCAB released with version 2.0 incorrectly claimed that it could pack archives; (which is nonsense, and this is where the error is corrected) — no further action needed...
+                TRACE_E("Invalid packer index in PackerFormatConfig, ext = " << PackerFormatConfig.GetExt(i)); // when importing configuration from version 2.0, this error is reported because UnCAB shipped with version 2.0 incorrectly claimed to support packing as well; that is incorrect and is corrected here, so no further action is needed...
                 PackerFormatConfig.SetUsePacker(i, FALSE);                                                     // invalid packer index -> "packing is not supported"
             }
         }
@@ -2300,7 +2300,7 @@ void CPlugins::GetUniqueFSName(char* uniqueFSName, const char* fsName, TIndirect
                 char* num = s + offset;
                 while (*num != 0 && *num >= '0' && *num <= '9')
                     num++;
-                if (*num == 0) // numeric suffix -> this old fs-name can be used for the sought fs-name
+                if (*num == 0) // numeric suffix -> this old fs-name can be used for the target fs-name
                 {
                     lstrcpyn(uniqueFSName + offset, s + offset, MAX_PATH - offset);
                     oldFSNameUsed = TRUE;
@@ -2324,7 +2324,7 @@ void CPlugins::GetUniqueFSName(char* uniqueFSName, const char* fsName, TIndirect
                 {
                     if (!oldFSNameUsed)
                         sprintf(uniqueFSName + offset, "%d", number++); // change the key name
-                    else                                                // old name is no longer unique, search for another unique name
+                    else                                                // The old name is no longer unique, so search for another unique name.
                     {
                         oldFSNameUsed = FALSE;
                         uniqueFSName[offset] = 0;
@@ -2471,7 +2471,7 @@ void CPlugins::FindViewEdit(const char* extensions, int exclude, BOOL& viewFound
     for (i = 0; i < Data.Count; i++)
     {
         if (i == exclude)
-            continue; // this index cannot be the result
+            continue; // this index cannot be returned as a result
 
         CPluginData* p = Data[i];
         len = (int)strlen(p->Extensions);
@@ -2543,7 +2543,7 @@ void CPlugins::FindViewEdit(const char* extensions, int exclude, BOOL& viewFound
             int j;
             for (j = 0; j < extArray.Count; j++)
             {
-                if (StrICmp(externalArchivers[i].ext, extArray[j]) == 0) // ext. archiver found
+                if (StrICmp(externalArchivers[i].ext, extArray[j]) == 0) // external archiver found
                 {
                     if (!viewFound)
                     {
@@ -2733,10 +2733,10 @@ void SearchForSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles, WIN32_F
     {
         do
         {
-            if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) // it's a file
+            if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) // File, not a directory
             {
                 char* str = strrchr(data.cFileName, '.');
-                //        if (str != NULL && str > data.cFileName && StrICmp(str, ".spl") == 0) // ".cvspass" in Windows is treated as an extension ...
+                //        if (str != NULL && str > data.cFileName && StrICmp(str, ".spl") == 0) // ".cvspass" in Windows is an extension ...
                 if (str != NULL && StrICmp(str, ".spl") == 0)
                 { // SPL extension, add to the list of found files
                     strcpy(s, data.cFileName);
@@ -2754,7 +2754,7 @@ void SearchForSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles, WIN32_F
                         TRACE_E(LOW_MEMORY);
                 }
             }
-            else // it's a directory
+            else // directory
             {
                 if (data.cFileName[0] != 0 && strcmp(data.cFileName, ".") != 0 && strcmp(data.cFileName, "..") != 0)
                 { // not "." or "..", search the subdirectory...
@@ -2768,7 +2768,7 @@ void SearchForSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles, WIN32_F
 }
 
 BOOL SearchForAddedSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles)
-{ // returns TRUE if plugins from 'foundFiles' should be installed and all plugins loaded
+{ // returns TRUE if the plugins from 'foundFiles' should be installed and all plugins loaded
     strcpy(s, "\\plugins.ver");
     HANDLE file = HANDLES_Q(CreateFile(buf, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                        FILE_FLAG_SEQUENTIAL_SCAN, NULL));
@@ -2786,7 +2786,7 @@ BOOL SearchForAddedSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles)
             if (read == 0)
                 isEOF = TRUE;              // EOF, no point in reading the file further, just process the remaining buffer
             char* end = line + off + read; // end of valid bytes in buffer
-            char* eol = line;              // first EOL byte (marks line end)
+            char* eol = line;              // first EOL byte (points to the end of the line)
             while (eol < end && (*eol == '\r' || *eol == '\n'))
                 eol++;         // skip EOLs (even multiple)
             char* start = eol; // first byte of the line
@@ -2810,7 +2810,7 @@ BOOL SearchForAddedSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles)
                 else
                     name[0] = 0;
 
-                // (ver + name) - contents of the currently read line
+                // (ver + name) - contents of the line just read
                 if (firstRow) // first line of the file
                 {
                     firstRow = FALSE;
@@ -2871,7 +2871,7 @@ BOOL SearchForAddedSPLs(char* buf, char* s, TIndirectArray<char>& foundFiles)
     }
 }
 
-#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need a different approach... (ignoring missing WinSCP in the 64-bit Salamander)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will probably need to be handled differently... (ignoring missing WinSCP in the 64-bit version of Salamander)
 BOOL IsPluginUnsupportedOnX64(const char* dllName, const char** pluginNameEN)
 {
     const char* nameEN = "";
@@ -2958,7 +2958,7 @@ BOOL CPlugins::ReadPluginsVer(HWND parent, BOOL importFromOldConfig)
         for (int i = 0; i < Data.Count; i++)
         {
             if (!Data[i]->GetLoaded()
-#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need a different approach... (ignoring missing WinSCP in the 64-bit Salamander)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need to be handled differently... (ignoring missing WinSCP in the 64-bit version of Salamander)
                 && !IsPluginUnsupportedOnX64(Data[i]->DLLName)
 #endif // _WIN64
             )
@@ -3069,7 +3069,7 @@ void CPlugins::LoadAll(HWND parent)
         for (int i = 0; i < Data.Count; i++)
         {
             if (!Data[i]->GetLoaded()
-#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need a different approach... (ignoring missing WinSCP in the 64-bit Salamander)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will probably need to be handled differently... (ignoring missing WinSCP in the 64-bit version of Salamander)
                 && !IsPluginUnsupportedOnX64(Data[i]->DLLName)
 #endif // _WIN64
             )
@@ -3273,7 +3273,7 @@ void CPlugins::RemoveNoLongerExistingPlugins(BOOL canDelPluginRegKey, BOOL loadA
         }
     }
 
-    if (loadAllPlugins) // load all plugins; we care which ones fail to load (their configuration won't transfer from the old version)
+    if (loadAllPlugins) // load all plugins; track which ones fail to load (their configuration will not transfer from the old version to the new one)
     {
         LoadInfoBase |= LOADINFO_NEWSALAMANDERVER;
 
@@ -3293,7 +3293,7 @@ void CPlugins::RemoveNoLongerExistingPlugins(BOOL canDelPluginRegKey, BOOL loadA
                 _snprintf_s(textProgress, _TRUNCATE, "%s\n%s", LoadStr(IDS_AUTOINSTALLPLUGINS), Data[i]->DLLName);
                 analysing.SetText(textProgress);
 
-                if (!Data[i]->InitDLL(parent, TRUE, FALSE)) // suppress the excessive repeated blinking of the cursor
+                if (!Data[i]->InitDLL(parent, TRUE, FALSE)) // suppress excessive cursor blinking
                 {
                     if (notLoadedPluginNames != NULL && Data[i]->RegKeyName != NULL && Data[i]->RegKeyName[0] != 0)
                     { // if it has a registry key, store its name
@@ -3389,7 +3389,7 @@ void CPlugins::AutoInstallStdPluginsDir(HWND parent)
                 _snprintf_s(textProgress, _TRUNCATE, "%s\n%s", LoadStr(IDS_AUTOINSTALLPLUGINS), pluginName);
                 analysing.SetText(textProgress);
 
-                if (Plugins.AddPlugin(parent, pluginName)) // whatever we add, will already be loaded (loading verifies it is a plugin)
+                if (Plugins.AddPlugin(parent, pluginName)) // Whatever we add here will already be loaded (loading checks whether it is actually a plugin)
                 {
                     CPluginData* p = Plugins.Get(Plugins.GetCount() - 1);
                     if (StrICmp(p->DLLName, "nethood\\nethood.spl") == 0)
@@ -3409,7 +3409,7 @@ void CPlugins::AutoInstallStdPluginsDir(HWND parent)
     for (int i = 0; i < Data.Count; i++)
     {
         if (!Data[i]->GetLoaded()
-#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need a different approach... (ignoring missing WinSCP in the 64-bit Salamander)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will probably need to be handled differently... (ignoring the missing WinSCP in the 64-bit version of Salamander)
             && !IsPluginUnsupportedOnX64(Data[i]->DLLName)
 #endif // _WIN64
         )
@@ -3548,7 +3548,7 @@ BOOL CPlugins::QueryHotKey(WPARAM wParam, LPARAM lParam, int* pluginIndex, int* 
     CALL_STACK_MESSAGE3("CPlugins::QueryHotKey(0x%IX, 0x%IX, , )", wParam, lParam);
     BYTE vk = UpperCase[(BYTE)wParam]; // we should be case-insensitive; the user might accidentally have caps lock on and the hotkey edit line always treats the key as uppercase
     if (vk == 0)
-        return FALSE; // hotkeys with vk == 0 are disabled for plugins
+        return FALSE; // plugins do not support hotkeys with vk == 0
     BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
     BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
     BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
@@ -3585,7 +3585,7 @@ BOOL CPlugins::HandleKeyDown(WPARAM wParam, LPARAM lParam, CFilesWindow* activeP
         PeekMessage(&msg, hParent, WM_SYSCHAR, WM_SYSCHAR, PM_REMOVE);
         PeekMessage(&msg, hParent, WM_CHAR, WM_CHAR, PM_REMOVE);
 
-        // lower the thread priority to "normal" so the operation doesn't burden the machine too much
+        // lower the thread priority to "normal" so the operation does not put too much load on the machine
         SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
         if (ExecuteCommand(pluginIndex, menuItemIndex, activePanel, hParent))
@@ -3682,7 +3682,7 @@ int CPlugins::GetNumOfPluginsToLoad()
     for (int i = 0; i < Data.Count; i++)
     {
         if (!Data[i]->GetLoaded()
-#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need a different approach... (ignoring missing WinSCP in the 64-bit Salamander)
+#ifdef _WIN64 // FIXME_X64_WINSCP - this will likely need to be handled differently... (ignoring the missing WinSCP in the 64-bit version of Salamander)
             && !IsPluginUnsupportedOnX64(Data[i]->DLLName)
 #endif // _WIN64
         )
