@@ -19,7 +19,7 @@ CSharesItem::CSharesItem(const char* localPath, const char* remoteName, const ch
         char buff[MAX_PATH];
         lstrcpyn(buff, localPath, MAX_PATH);
         SalPathAddBackslash(buff, MAX_PATH); // in case it was only "c:", make sure a root is created
-        if (SalGetFullName(buff))            // root "c\\", others without the trailing '\\' at the end
+        if (SalGetFullName(buff))            // root "c:\\", others without a trailing '\\'
         {
             LocalPath = DupStr(buff);
             RemoteName = DupStr(remoteName);
@@ -27,7 +27,7 @@ CSharesItem::CSharesItem(const char* localPath, const char* remoteName, const ch
             if (LocalPath != NULL && RemoteName != NULL && Comment != NULL)
             {
                 char* s = strrchr(LocalPath, '\\');
-                if (s == NULL || *(s + 1) == 0) // root path; s == NULL is only for safety, but it can never happen
+                if (s == NULL || *(s + 1) == 0) // root path; s == NULL is just a safeguard and should never occur
                     LocalName = LocalPath;
                 else
                     LocalName = s + 1;
@@ -262,7 +262,7 @@ BOOL CShares::GetUNCPath(const char* path, char* uncPath, int uncPathMax)
         // append the share name
         strcat(unc, item->RemoteName);
         SalPathAddBackslash(unc, 2 * MAX_PATH); // we want a backslash at the end
-        // from the original path, append the directories starting from the share
+        // append the directories from the original path after the share
         if (strlen(item->LocalPath) < strlen(path))
         {
             const char* s = path + strlen(item->LocalPath);
@@ -270,7 +270,7 @@ BOOL CShares::GetUNCPath(const char* path, char* uncPath, int uncPathMax)
                 s++; // skip an optional backslash
             strcat(unc, s);
         }
-        if (!SalGetFullName(unc)) // root "c\\", others without the trailing '\\' at the end
+        if (!SalGetFullName(unc)) // root "c:\", others without a trailing '\\'
         {
             TRACE_E("Unexpected path in CSharesItem::GetUNCPath()");
             HANDLES(LeaveCriticalSection(&CS));
