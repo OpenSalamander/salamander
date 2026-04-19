@@ -65,7 +65,7 @@ void SalmonSetSLG(const char* slgName); // sets the language in salmon
 void SalmonCheckBugs();
 
 // stores the exception info in shared memory and asks Salmon to create a minidump; then waits for it to finish
-// returns TRUE if successful, FALSE if Salmon could not be invoked for some reason
+// returns TRUE on success, FALSE if Salmon could not be invoked for some reason
 BOOL SalmonFireAndWait(const EXCEPTION_POINTERS* e, char* bugReportPath);
 
 #endif //INSIDE_SALAMANDER
