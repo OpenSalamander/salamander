@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -29,7 +30,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
         DLLInstance = hinstDLL;
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 char* LoadStr(int resID)
@@ -58,12 +59,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "UnLHA" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "UnLHA" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnLHA" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "UnLHA" /* DO NOT TRANSLATE */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -163,7 +164,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
 
     while ((gh = LHAGetHeader(f, &hdr)) == GH_SUCCESS)
     {
-        // if it ends with '\', remove it (because of directories)
+        // if it ends with '\\', remove it (for directories)
         int l = lstrlen(hdr.name) - 1;
         if (hdr.name[l] == '\\')
         {
@@ -252,7 +253,7 @@ BOOL CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract* 
         ret = FALSE;
     }
 
-    // some files have already been listed, so do not pack and display them
+    // some files have already been listed, so do not discard them and display them
     if (!ret && count)
         ret = TRUE;
 
@@ -301,8 +302,8 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
 
     if (hdr.method == LHA_UNKNOWNMETHOD && hdr.original_size != 0 /* see below : */)
     {
-        // I do not know why, but LHA sometimes packs zero-length files with a nonsensical method name...
-        // If the file length is 0, I therefore ignore the method type.
+        // For unknown reasons, LHA sometimes packs zero-length files with a nonsensical method name...
+        // If the file length is 0, the method type is therefore ignored.
         SalamanderGeneral->ShowMessageBox(LoadStr(IDS_METHOD), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         fclose(f);
         return FALSE;
@@ -340,7 +341,7 @@ BOOL CPluginInterfaceForArchiver::UnpackOneFile(CSalamanderForOperationsAbstract
 
     if (!uf)
     {
-        if (iLHAErrorStrId != IDS_WRITEERROR) // because of SafeWriteFile
+        if (iLHAErrorStrId != IDS_WRITEERROR) // SafeWriteFile handles write errors
             SalamanderGeneral->ShowMessageBox(LoadStr(iLHAErrorStrId), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
         return FALSE;
     }
@@ -601,7 +602,7 @@ void CPluginInterfaceForArchiver::UnpackInnerBody(FILE* f, const char* targetDir
         {
             if (!uf)
             {
-                if (iLHAErrorStrId != IDS_WRITEERROR) // because of SafeWriteFile
+                if (iLHAErrorStrId != IDS_WRITEERROR) // SafeWriteFile handles write errors
                     SalamanderGeneral->ShowMessageBox(LoadStr(iLHAErrorStrId), LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
                 Abort = TRUE;
                 Ret = FALSE;
