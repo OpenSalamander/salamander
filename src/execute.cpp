@@ -57,7 +57,7 @@ void CComboboxEdit::GetSel(DWORD* start, DWORD* end)
 
 void CComboboxEdit::ReplaceText(const char* text)
 {
-    // we must refresh the selection because the dumb combobox forgot it
+    // we must restore the selection because the combo box lost it
     SendMessage(HWindow, EM_SETSEL, SelStart, SelEnd);
     SendMessage(HWindow, EM_REPLACESEL, TRUE, (LPARAM)text);
 }
@@ -333,7 +333,7 @@ CExecuteItem CommandExecutes[] =
 
 // Arguments - External View/Edit
 
-/* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+/* used by the export_mnu.py script, which generates salmenu.mnu for Translator
    keep synchronized with the array below...
 MENU_TEMPLATE_ITEM ArgumentsExecutes[] = 
 {
@@ -389,7 +389,7 @@ CExecuteItem ArgumentsExecutes[] =
 
 // Initial directory
 
-/* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+/* used by the export_mnu.py script, which generates salmenu.mnu for Translator
    keep synchronized with the array below...
 MENU_TEMPLATE_ITEM InitDirExecutes[] = 
 {
@@ -580,7 +580,7 @@ struct CExecuteExpData
     char Buffer[MAX_PATH];
     BOOL* FileNameUsed;
 
-    CUserMenuAdvancedData* UserMenuAdvancedData; // applies only to User Menu, otherwise NULL here
+    CUserMenuAdvancedData* UserMenuAdvancedData; // used only for User Menu; otherwise NULL here
 };
 
 const char* WINAPI ExecuteExpDrive(HWND msgParent, void* param) // drive ("D:", "\\server\share") without backslash
@@ -724,7 +724,7 @@ const char* WINAPI ExecuteExpNamePart(HWND msgParent, void* param)
     strcpy(data->Buffer, s + 1);
     char* ss = strrchr(data->Buffer, '.');
     //  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
-    if (ss != NULL) // extension is present (".cvspass" is considered an extension in Windows)
+    if (ss != NULL) // An extension is present (".cvspass" is considered an extension in Windows)
         *ss = 0;
     return data->Buffer;
 }
@@ -743,7 +743,7 @@ const char* WINAPI ExecuteExpExtPart(HWND msgParent, void* param)
     strcpy(data->Buffer, s + 1);
     s = strrchr(data->Buffer, '.');
     //  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
-    if (s != NULL) // extension is present (".cvspass" is considered an extension in Windows)
+    if (s != NULL) // An extension is present here (".cvspass" is considered an extension in Windows)
         return s + 1;
     return "";
 }
@@ -762,7 +762,7 @@ const char* WINAPI ExecuteExpDOSNamePart(HWND msgParent, void* param)
     strcpy(data->Buffer, s + 1);
     char* ss = strrchr(data->Buffer, '.');
     //  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
-    if (ss != NULL) // extension is present (".cvspass" is considered an extension in Windows)
+    if (ss != NULL) // An extension is present (".cvspass" is considered an extension in Windows)
         *ss = 0;
     return data->Buffer;
 }
@@ -781,7 +781,7 @@ const char* WINAPI ExecuteExpDOSExtPart(HWND msgParent, void* param)
     strcpy(data->Buffer, s + 1);
     s = strrchr(data->Buffer, '.');
     //  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
-    if (s != NULL) // extension is present (".cvspass" is considered an extension in Windows)
+    if (s != NULL) // extension present (".cvspass" is considered an extension in Windows)
         return s + 1;
     return "";
 }
@@ -1647,10 +1647,10 @@ CSalamanderVarStrEntry InitDirExpArray[] =
     {
         {EXECUTE_DRIVE, ExecuteExpDrive},
         {EXECUTE_PATH, ExecuteExpPath2},         // j.r. I have no idea why the special versions of variables without
-        {EXECUTE_FULLPATH, ExecuteExpFullPath2}, // trailing backslashes are used; anyway, I added a call to
+        {EXECUTE_FULLPATH, ExecuteExpFullPath2}, // without trailing backslashes; anyway, I have now added a call to
         {EXECUTE_WINDIR, ExecuteExpWinDir2},     // RemoveDoubleBackslahesFromPath so we could probably switch to the
         {EXECUTE_SYSDIR, ExecuteExpSysDir2},     // versions with backslashes at the end -- we would just trim the
-        {EXECUTE_SALDIR, ExecuteExpSalDir2},     // last backslash in ExpandInitDir() (unless it's the root)
+        {EXECUTE_SALDIR, ExecuteExpSalDir2},     // remove the last backslash (unless this is the root)
         {NULL, NULL}};
 
 // !!! do not use InfoLineExpArray directly; use GetInfoLineExpArray()
@@ -1834,7 +1834,7 @@ BOOL ValidateInfoLineItems(HWND msgParent, const char* varText, int& errorPos1, 
 {
     CALL_STACK_MESSAGE2("ValidateInfoLineItems(, %s, ,)", varText);
     return ValidateVarString(msgParent, varText, errorPos1, errorPos2,
-                             GetInfoLineExpArray(TRUE /* for validation there is no difference between TRUE and FALSE */));
+                             GetInfoLineExpArray(TRUE /* TRUE and FALSE are equivalent for validation. */));
 }
 
 BOOL ExpandInfoLineItems(HWND msgParent, const char* varText, CPluginDataInterfaceEncapsulation* pluginData,
