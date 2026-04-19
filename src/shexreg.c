@@ -401,10 +401,11 @@ BOOL MyCreateKey(HKEY hKey, const char* name, HKEY* createdKey, REGSAM regView)
     return res == ERROR_SUCCESS;
 }
 
-// our version of the RegQueryValueEx function, unlike the API variant it ensures
-// a null terminator is added for types REG_SZ, REG_MULTI_SZ, and REG_EXPAND_SZ
-// NOTE: when determining the required buffer size it returns one or two extra characters
-//       (two only for REG_MULTI_SZ) in case the string needs to be terminated with null(s)
+// our version of RegQueryValueEx, unlike the API version, ensures
+// that a null terminator is added for REG_SZ, REG_MULTI_SZ, and REG_EXPAND_SZ
+// NOTE: when determining the required buffer size, it returns one or two extra
+//       characters (two only for REG_MULTI_SZ) in case the string needs to be
+//       terminated with a null character or null characters
 LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                         LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 
@@ -430,19 +431,19 @@ BOOL CheckVersionOfDLL(const char* name)
     return ok;
 }
 
-// Info for UNINSTALL: (the uninstall routine is implemented in DllUnregisterServer())
-// - since version 2.5 RC2, this is no longer used: - delete files from TEMP (default value in HKEY_CLASSES_ROOT\CLSID\{C78B6131-F3EA-11D2-94A1-00E0292A01E3}\InProcServer32)
-//   (keep in mind that it may not be possible to delete it immediately - be able to schedule it after the machine reboots)
-// - since version 3.0 B1: take into account that utils\salextx86.dll and salextx64.dll may not be possible to delete immediately - be able to schedule it after the machine reboots
+// Notes for UNINSTALL: (the uninstall routine is implemented in DllUnregisterServer())
+// - since version 2.5 RC2, this is no longer used: delete the file from TEMP (the default value in HKEY_CLASSES_ROOT\CLSID\{C78B6131-F3EA-11D2-94A1-00E0292A01E3}\InProcServer32)
+//   (allow for the possibility that it cannot be deleted immediately; be able to schedule deletion after the next reboot)
+// - since version 3.0 B1, allow for the possibility that utils\salextx86.dll and salextx64.dll cannot be deleted immediately; be able to schedule deletion after the next reboot
 // - delete HKEY_CLASSES_ROOT\CLSID\{C78B61??-F3EA-11D2-94A1-00E0292A01E3} (the current CLSID is in CLSID_ShellExtension)
 // - delete HKEY_CLASSES_ROOT\Directory\shellex\CopyHookHandlers\AltapSalamander?? (the current key name is in SHEXREG_OPENSALAMANDER)
-// - delete value {C78B61??-F3EA-11D2-94A1-00E0292A01E3} in the key HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved
+// - delete the value {C78B61??-F3EA-11D2-94A1-00E0292A01E3} from the key HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved
 //   (the current CLSID is in CLSID_ShellExtension)
 // - if the macro ENABLE_SH_MENU_EXT is defined:
 //   - delete HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers\AltapSalamander?? (the current key name is in SHEXREG_OPENSALAMANDER)
 //   - delete HKEY_CLASSES_ROOT\Directory\shellex\ContextMenuHandlers\AltapSalamander?? (the current key name is in SHEXREG_OPENSALAMANDER)
-// - everything said above about HKEY_CLASSES_ROOT key must also be attempted to be deleted
-//   from HKEY_CURRENT_USER\Software\Classes key (used when the user does not have permission to write to
+// - everything said above about the HKEY_CLASSES_ROOT key must also be attempted under the key
+//   HKEY_CURRENT_USER\Software\Classes (used when the user does not have permission to write to
 //   HKEY_CLASSES_ROOT)
 BOOL SECRegisterToRegistry(const char* shellExtensionPath, BOOL doNotLoadDLL, REGSAM regView)
 {
@@ -469,7 +470,7 @@ BOOL SECRegisterToRegistry(const char* shellExtensionPath, BOOL doNotLoadDLL, RE
                         NULL);
     shellExtIID[MAX_PATH - 1] = 0;
 
-    // determine whether our shell extension is already registered, optionally where its DLL is and whether it is the correct version
+    // determine whether our shell extension is already registered and, if so, where its DLL is and whether it is the correct version
     registered = FALSE;
     lstrcpy(key, "CLSID\\");
     lstrcat(key, shellExtIID);
@@ -478,8 +479,8 @@ BOOL SECRegisterToRegistry(const char* shellExtensionPath, BOOL doNotLoadDLL, RE
     {
         if (MyGetValue(hKey, NULL /* default value */, REG_SZ, shellExtPath, MAX_PATH))
         {
-            if (doNotLoadDLL && FileExists(shellExtPath) ||       // when I cannot load it, at least I verify that it exists
-                !doNotLoadDLL && CheckVersionOfDLL(shellExtPath)) // otherwise I load it and read back its version
+            if (doNotLoadDLL && FileExists(shellExtPath) ||       // if the DLL cannot be loaded, at least verify that it exists
+                !doNotLoadDLL && CheckVersionOfDLL(shellExtPath)) // otherwise load it and read its version
             {
                 registered = TRUE; // the DLL is registered + it is the correct DLL version
             }
