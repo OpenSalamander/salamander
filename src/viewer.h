@@ -380,8 +380,8 @@ protected:
     DWORD RepeatCmdAfterRefresh; // command to repeat after refresh (-1 = no command)
 
     char* Caption;     // if not NULL, contains the proposed viewer window caption
-    BOOL WholeCaption; // meaningful if Caption != NULL. TRUE -> only 
-                       // Caption is displayed in the viewer title; FALSE -> append 
+    BOOL WholeCaption; // meaningful if Caption != NULL. TRUE -> only
+                       // Caption is displayed in the viewer title; FALSE -> append
                        // the standard " - Viewer" to Caption.
 
     BOOL CanSwitchToHex,           // TRUE if switching to hex is possible when there are more than 10000 characters per line
