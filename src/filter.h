@@ -96,9 +96,10 @@ public:
     // 'modified' is UTC and will be converted to local time
     BOOL Test(DWORD attributes, const CQuadWord* size, const FILETIME* modified);
 
-    // fills 'buffer' with a description of the set values if they differ from the default ones
-    // (after calling the Reset method). 'maxLen' specifies the maximum length of the 'buffer' string.
-    // the function returns TRUE if any value differs from the default
+    // fills 'buffer' with a description of the configured values if they
+    // differ from the default values (after calling the Reset method)
+    // 'maxLen' specifies the maximum length of the 'buffer' string
+    // 'dirty' is set to TRUE if any value differs from the default
     BOOL GetAdvancedDescription(char* buffer, int maxLen, BOOL& dirty);
 
     // save/load to/from the Windows Registry
