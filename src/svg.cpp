@@ -125,7 +125,7 @@ void RenderSVGImage(NSVGrasterizer* rast, HDC hDC, int x, int y, const char* svg
 
         if (!enabled)
         {
-            DWORD disabledColor = GetSVGSysColor(COLOR_BTNSHADOW); // JRYFIXME - initial draft: where will we take the disabled color from?
+            DWORD disabledColor = GetSVGSysColor(COLOR_BTNSHADOW); // JRYFIXME - initial draft: where will we get the disabled color from?
             NSVGshape* shape = image->shapes;
             while (shape != NULL)
             {
