@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 //#include <windows.h>
@@ -109,7 +110,7 @@ BOOL WriteSFXHeader()
     offs += ++l;
     header.ArchiveNameOffs = offs;
     //l = lstrlen(archName);
-    //ArchiveDataOffs += l; // we accounted for this earlier
+    //ArchiveDataOffs += l; // we did not account for this before
     //offs += ++l;
     offs++;
     header.TargetDirSpecOffs = offs;
