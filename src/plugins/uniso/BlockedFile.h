@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -105,7 +106,7 @@ protected:
     UInt64 FileSize;
 
     CCachedBlock* BlockCache[32]; // 32 MRU blocks
-    int MRUCachedBlock;           // index into MRUCachedBlock
+    int MRUCachedBlock;           // index of the MRU cached block
     CCachedBlock* pCurBlock;
     bool bUnknownBlockErrShown;
 
