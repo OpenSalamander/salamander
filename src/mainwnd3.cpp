@@ -39,14 +39,14 @@ extern "C"
 #include "find.h"
 #include "viewer.h"
 
-// critical shutdown: the maximum time we can spend in WM_QUERYENDSESSION (after that,
-// KILL comes from Windows). It is 5s (5s with an open message box, 10s without pumping
-// messages). I left a 500ms reserve. Tested on Vista, Win7, Win8, Win10.
+// critical shutdown: the maximum time that can be spent in WM_QUERYENDSESSION (after that,
+// Windows sends KILL) is 5 s (5 s with an open message box, 10 s without pumping
+// messages); a 500 ms reserve was left. Tested on Vista, Win7, Win8, and Win10.
 #define QUERYENDSESSION_TIMEOUT 4500
 
 // variables used when saving configuration during shutdown, log-off or restart
 // we must pump messages so the system does not kill us as "not responding"
-CWaitWindow* GlobalSaveWaitWindow = NULL; // if a global wait window for Save exists, it's here (otherwise NULL)
+CWaitWindow* GlobalSaveWaitWindow = NULL; // if a global wait window for Save exists, it is here (otherwise NULL)
 int GlobalSaveWaitWindowProgress = 0;     // current progress value of the global wait window for Save
 
 // borrow constants from a newer SDK
@@ -58,7 +58,7 @@ int GlobalSaveWaitWindowProgress = 0;     // current progress value of the globa
 #define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
 #define APPCOMMAND_BROWSER_BACKWARD 1
 #define APPCOMMAND_BROWSER_FORWARD 2
-/* not supported yet
+/* not currently supported
 #define APPCOMMAND_BROWSER_SEARCH         5
 #define APPCOMMAND_HELP                   27
 #define APPCOMMAND_BROWSER_REFRESH        3
@@ -111,8 +111,8 @@ BOOL MainFrameIsActive = FALSE;
 // HtmlHelp support
 //
 
-// universal callback for our MessageBox when the user clicks the HELP button
-// should be called, for example, like this:
+// universal callback for our MessageBox when the user clicks the Help button
+// call it, for example, like this:
 //    MSGBOXEX_PARAMS params;
 //    params.Flags = MSGBOXEX_OK | MSGBOXEX_HELP | MSGBOXEX_ICONEXCLAMATION;
 //    params.ContextHelpId = IDH_LICENSE;
@@ -178,7 +178,7 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
                 !DirExists(helpPath))
             { // the directory from the current .slg file does not exist
                 lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
-                if (_stricmp(helpSubdir, "english") == 0 || // we already tested "english" and it does not exist so no point in trying again
+                if (_stricmp(helpSubdir, "english") == 0 || // we already checked "english" and it does not exist, so there is no point in trying again
                     !SalPathAppend(helpPath, "english", MAX_PATH) ||
                     !DirExists(helpPath))
                 { // the ENGLISH directory does not exist
@@ -274,7 +274,7 @@ BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWO
     }
     }
 
-    if (helpFileName != NULL) // plugin help: to open the window in the right position
+    if (helpFileName != NULL) // plugin help: open the help window in the correct position and restore the Favorites list correctly
     {                         // with remembered Favorites, we must open "salamand.chm" first (then
                               // the plugin help opens in this same window)
         lstrcpyn(helpPath, CurrentHelpDir, MAX_PATH);
@@ -366,7 +366,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID refiid, void FAR* FAR* ppv)
+    (REFIID refiid, void FAR * FAR * ppv)
     {
         if (refiid == IID_IUnknown || refiid == IID_IDropTarget)
         {
@@ -389,7 +389,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // cannot touch the object anymore, it no longer exists
+            return 0; // must not touch the object; it no longer exists
         }
         return RefCount;
     }
@@ -705,7 +705,7 @@ BOOL CMainWindow::IsPanelZoomed(BOOL leftPanel)
 
 void CMainWindow::ToggleSmartColumnMode(CFilesWindow* panel)
 {
-    if (panel->GetViewMode() == vmDetailed) // the panel must be running in detailed mode
+    if (panel->GetViewMode() == vmDetailed) // the panel must be in detailed mode
     {
         if (panel->Columns.Count < 1)
             return;
@@ -822,13 +822,13 @@ BOOL CMainWindow::SHChangeNotifyInitialize()
     entry.pidl = pidl;
     entry.fRecursive = TRUE;
 
-    // message WM_USER_SHCHANGENOTIFY, which will be delivered to us on notifications, crosses process boundaries
-    // by using the constant SHCNRF_NewDelivery (also known as SHCNF_NO_PROXY) we assume responsibility
-    // for accessing the memory passed with the message (via SHChangeNotification_Lock) and tell the OS not to
-    // create proxy windows (note: a bug has been reported on XP where the proxy window is created but not destroyed):
+    // The WM_USER_SHCHANGENOTIFY message delivered for these notifications crosses process boundaries.
+    // By using the SHCNRF_NewDelivery constant (also known as SHCNF_NO_PROXY), we assume responsibility
+    // for accessing the memory passed with the message (using SHChangeNotification_Lock), and the OS must not
+    // create proxy windows (note: under XP, a bug was reported where the proxy window is created but not destroyed):
     // http://groups.google.com/groups?selm=3CDFD449.6BA0CDB4%40ic.ac.uk&output=gplain
     //
-    // through SHCNE_ASSOCCHANGED we receive notifications about association changes
+    // Using SHCNE_ASSOCCHANGED, we receive notifications about association changes.
     SHChangeNotifyRegisterID = SHChangeNotifyRegister(HWindow, SHCNRF_ShellLevel | SHCNRF_NewDelivery,
                                                       SHCNE_MEDIAINSERTED | SHCNE_MEDIAREMOVED | SHCNE_DRIVEREMOVED |
                                                           SHCNE_DRIVEADD | SHCNE_NETSHARE | SHCNE_NETUNSHARE |
@@ -865,17 +865,17 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
     // tweak the icon size
 
     LoadSaveToRegistryMutex.Enter(); // users reported shrunken icons, see https://forum.altap.cz/viewtopic.php?t=638
-    // this synchronization ensures that two Salamanders do not interfere with each other
-    // unfortunately the trick with changing "Shell Icon Size" to rebuild the cache is used by many tools (including Tweak UI),
-    // so if they refresh at the same time as Salamander, conflicts occur
-    // we try to avoid this by postponing the following mess using IDT_ASSOCIATIONSCHNG
+    // this synchronization ensures that two Salamander instances do not interfere with each other
+    // unfortunately, the trick of changing "Shell Icon Size" to rebuild the cache is used by many tools (including Tweak UI),
+    // so if they refresh at the same time as Salamander, a conflict occurs
+    // we try to avoid this by delaying the following hack using IDT_ASSOCIATIONSCHNG
 
     HKEY hKey;
     if (HANDLES(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\Desktop\\WindowMetrics", 0, KEY_READ | KEY_WRITE, &hKey)) == ERROR_SUCCESS)
     {
         // older SHELL32.DLL versions may not export this, fileIconInit will be NULL
         FT_FileIconInit fileIconInit = NULL;
-        fileIconInit = (FT_FileIconInit)GetProcAddress(Shell32DLL, MAKEINTRESOURCE(660)); // no header available
+        fileIconInit = (FT_FileIconInit)GetProcAddress(Shell32DLL, MAKEINTRESOURCE(660)); // no header
 
         char size[50];
         BOOL deleteVal = FALSE;
@@ -894,7 +894,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
             deleteVal = TRUE;
         }
         int val = atoi(size);
-        if (val > 0) // unfortunately (according to net) users set icon sizes randomly (72, 96, 128, etc.) so we cannot filter out "strange" sizes
+        if (val > 0) // unfortunately, users set icon sizes arbitrarily (72, 96, 128, etc.), so we cannot filter out "strange" sizes
         {
             IgnoreWM_SETTINGCHANGE = TRUE;
 
@@ -922,7 +922,7 @@ BOOL CMainWindow::OnAssociationsChangedNotification(BOOL showWaitWnd)
   if (fileIconInit != NULL)
     fileIconInit(TRUE);
 
-  // debug icon display
+  // icon display for debugging
   SHFILEINFO shi;
   HIMAGELIST systemIL = (HIMAGELIST)SHGetFileInfo("C:\\TEST.QWE", 0, &shi, sizeof(shi),
                                        SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_SHELLICONSIZE);
@@ -1249,7 +1249,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_SETTINGCHANGE:
     {
-        if (IgnoreWM_SETTINGCHANGE || LeftPanel == NULL || RightPanel == NULL) // a bug report showed that WM_SETTINGCHANGE was delivered immediately from WM_CREATE of the main window (panels didn't exist yet, causing a NULL access)
+        if (IgnoreWM_SETTINGCHANGE || LeftPanel == NULL || RightPanel == NULL) // a bug report showed that WM_SETTINGCHANGE can be delivered during WM_CREATE of the main window (the panels did not exist yet, so it crashed on NULL access)
             return 0;
 
         // detection based on EXPLORER.EXE on NT4
@@ -1414,7 +1414,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                             HANDLES(LeaveCriticalSection(&TimeCounterSection));
                             PostMessage(panel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
                         }
-                        if (type == DRIVE_NO_ROOT_DIR) // device disappeared (the drive is invalid)
+                        if (type == DRIVE_NO_ROOT_DIR) // the device disappeared (the drive is invalid)
                         {
                             if (LeftPanel == panel)
                             {
@@ -1439,15 +1439,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
     }
 
         /*
-    // WM_DEVICECHANGE didn't work well, for example under Win XP when connecting the DSC F707 camera.
-    // A notification about device connection arrived, but the subsequent device name detection
+    // WM_DEVICECHANGE did not work reliably, for example on Win XP when connecting a DSC F707 camera.
+    // A device connection notification was delivered, but the subsequent device name detection
     // (if the Alt+F1/2 menu was displayed) via SHGetFileInfo returned an empty string.
-    // I found a thread on Google where someone complains about the same problem
+    // I found a Google thread where someone reported the same problem.
     //
     // http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&threadm=99a435fa.0203280715.69a286a8%40posting.
     // google.com&rnum=1&prev=/groups%3Fhl%3Den%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26q%3Ddevice%2Bname%2Bshgetfileinfo
     //
-    // and he solved it with a wait. People recommended abandoning WM_DEVICECHANGE and switching to
+    // He solved it by waiting. People recommended abandoning WM_DEVICECHANGE and switching to
     // the undocumented function SHChangeNotifyRegister...
     // (http://www.geocities.com/SiliconValley/4942/notify.html)
     case WM_DEVICECHANGE:
@@ -1455,7 +1455,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
       if (wParam == DBT_DEVICEARRIVAL || wParam == DBT_DEVICEREMOVECOMPLETE ||
           wParam == DBT_CONFIGCHANGED)  // CD-ROM media change
       {
-        // if the Alt+F1/F2 menu is open, refresh (read volume name)
+        // if the Alt+F1/F2 menu is open, refresh it (read the volume name)
         CFilesWindow *panel = GetActivePanel();
         if (panel != NULL)
           PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
@@ -1468,7 +1468,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             UINT type = MyGetDriveType(panel->GetPath());
             if (type == DRIVE_CDROM || type == DRIVE_REMOVABLE)
             {
-              HANDLES(EnterCriticalSection(&TimeCounterSection));  // capture the time when a refresh is needed
+              HANDLES(EnterCriticalSection(&TimeCounterSection));  // capture the time when the refresh is needed
               int t1 = MyTimeCounter++;
               HANDLES(LeaveCriticalSection(&TimeCounterSection));
               PostMessage(panel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
@@ -1484,8 +1484,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_PROCESSDELETEMAN:
     {
-        // delay data processing due to the main window activation after ESC from the viewer on WinXP;
-        // without this hack, it somehow did not catch up - the main window stayed inactive and the safe-wait window never appeared
+        // delay data processing because the main window is activated after pressing Esc in the viewer on WinXP
+        // without this hack, the timing was too tight: the main window stayed inactive, so the safe-wait window was not shown
         if (!SetTimer(HWindow, IDT_DELETEMNGR_PROCESS, 200, NULL))
             DeleteManager.ProcessData(); // if the timer fails, run immediately; forget about WinXP
         return 0;
@@ -1582,9 +1582,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             UserMenuIconBkgndReader.BeginUserMenuIconsInUse();
             CMenuPopup menu;
             FillUserMenu(&menu);
-            // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
+            // another lock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
             // will occur in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP, but
-            // it is nested and lightweight, so we ignore it and do not fight it
+            // it is nested and has no overhead, so we ignore it
             menu.Track(0, r.left, r.bottom, HWindow, &r);
             UserMenuIconBkgndReader.EndUserMenuIconsInUse();
             break;
@@ -1680,9 +1680,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 iterator++;
                 CMenuPopup menu;
                 FillUserMenu2(&menu, &iterator, endIndex);
-                // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
+                // Another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
                 // will occur in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP,
-                // but it is nested and lightweight, so we ignore it
+                // but it is already nested and has no overhead, so we ignore it
                 menu.Track(0, r.left, r.bottom, HWindow, &r);
                 UserMenuIconBkgndReader.EndUserMenuIconsInUse();
             }
@@ -1728,12 +1728,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             SalamanderBusy = TRUE; // now BUSY
             LastSalamanderIdleTime = GetTickCount();
-            BringWindowToTop(HWindow); // probably not important, but I saw it in a sample so I am adding it here too
+            BringWindowToTop(HWindow); // probably not important, but it appears in one sample, so add it here too
             if (IsIconic(HWindow))
             {
-                // SetForegroundWindow: this is crucial. If we don't call it and
-                // "only one instance" with the tray is active, Salamander sometimes
-                // appears in the background and only later moves to the front.
+                // SetForegroundWindow: this is very important. If we do not call it and
+                // "only one instance" with the tray is enabled, Salamander sometimes
+                // appears in the background and only later comes to the foreground.
                 SetForegroundWindow(HWindow);
                 ShowWindow(HWindow, SW_RESTORE);
             }
@@ -1771,7 +1771,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                     GetCurrentProcess(), &fm,           // this process file-mapping
                                     0, FALSE, DUPLICATE_SAME_ACCESS)))
         {
-          CSetPathsParams *unsafe = (CSetPathsParams *)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, sizeof(CSetPathsParams))); // FIXME_X64 are we passing x86/x64 incompatible data?
+          CSetPathsParams *unsafe = (CSetPathsParams *)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, sizeof(CSetPathsParams))); // FIXME_X64: are x86/x64-incompatible data being passed here?
           if (unsafe != NULL)
           {
             alreadyDone = unsafe->Received;
@@ -1782,12 +1782,12 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
               if (unsafe->MagicSignature1 == 0x07f2ab13 && unsafe->MagicSignature2 == 0x471e0901)
               {
-                // new features since 2.52
-                // WORD version = unsafe->StructVersion; // not used yet, the first version is recognized by the presence of signatures
+                // changes since 2.52
+                // WORD version = unsafe->StructVersion; // not used yet, the first version is recognized by the presence of the signatures
                 lstrcpyn(params.ActivePath, unsafe->ActivePath, MAX_PATH);
                 params.ActivatePanel = unsafe->ActivatePanel;
               }
-              // we return the result value having taken over the data
+              // return confirmation that the data were accepted
               unsafe->Received = TRUE;
             }
             HANDLES(UnmapViewOfFile(unsafe));
@@ -1818,9 +1818,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         if (IsWindow(hCaller))
         {
             // If the window that invoked us still exists, try to bring it to
-            // the foreground. This is a bit dirty because if it opens a modal
-            // dialog in the meantime, it won't get activation. But I don't care,
-            // the viewer will (hopefully) end up inside Salamander - in the plugin ;-)
+            // the foreground. This is a bit of a hack, because if it opens a modal
+            // dialog in the meantime, it will not receive activation. That is acceptable,
+            // because the viewer will hopefully end up in Salamander, that is, in the plugin.
             SetForegroundWindow(hCaller);
         }
         return 0;
@@ -1842,7 +1842,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         UserMenuIconBkgndReader.ResetSysColorsChanged(); // now, we start watching system color changes (icon reload required)
         BOOL readingUMIcons = UserMenuIconBkgndReader.IsReadingIcons();
-        if (readingUMIcons) // new icons are on their way to the user menu; show them after configuration is done (on OK reload icons again so newly added ones are read as well)
+        if (readingUMIcons) // new icons are being loaded for the user menu; show them only after the configuration is finished (on OK, reload the icons so any newly added ones are loaded too)
             UserMenuIconBkgndReader.BeginUserMenuIconsInUse();
         BOOL oldUseCustomPanelFont = UseCustomPanelFont;
         LOGFONT oldLogFont = LogFont;
@@ -1856,7 +1856,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         IdleRefreshStates = TRUE;  // force status variable check on next Idle
         IdleCheckClipboard = TRUE; // also check the clipboard
 
-        if (res == IDOK) // values changed -> refresh everything possible
+        if (res == IDOK) // values changed -> refresh as much as possible
         {
             if (dlg.PageView.IsDirty())
             {
@@ -1944,10 +1944,10 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         if (HasLockedUI())
             break;
 
-        // if the user pressed the Alt button while the initial splash window was shown,
-        // the system menu could be entered before MainWindow appeared and the splash
+        // if the user pressed Alt while the initial splash window was displayed,
+        // the system menu of the not-yet-visible MainWindow could be entered and the splash
         // window remained open until the user pressed Escape
-        // if MainWindow is not yet visible, disable entering the Window menu
+        // if MainWindow is not yet visible, disable access to the Window menu
         if (wParam == SC_KEYMENU && !IsWindowVisible(HWindow))
             return 0;
 
@@ -2147,7 +2147,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         if (LOWORD(wParam) >= CM_PLUGINCMD_MIN && LOWORD(wParam) <= CM_PLUGINCMD_MAX)
         { // command from a plugin menu
-            // lower the thread priority to "normal" (so operations don't burden the system)
+            // lower the thread priority to "normal" (so operations do not burden the system)
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
             if (Plugins.ExecuteMenuItem(activePanel, HWindow, LOWORD(wParam)))
@@ -2344,7 +2344,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 int tgtSelCount = inactivePanel->Is(ptDisk) ? inactivePanel->GetSelItems(2, tgtIndexes) : 0; // interested in: 0-1=number selected, 2=more than one
                 if (selCount == 2)                                                                           // two selected items in the source panel
                 {
-                    if ((indexes[0] < activePanel->Dirs->Count) == (indexes[1] < activePanel->Dirs->Count)) // both items are files/directories
+                    if ((indexes[0] < activePanel->Dirs->Count) == (indexes[1] < activePanel->Dirs->Count)) // both items are either files or directories
                     {
                         f1 = (indexes[0] < activePanel->Dirs->Count) ? &activePanel->Dirs->At(indexes[0]) : &activePanel->Files->At(indexes[0] - activePanel->Dirs->Count);
                         f2 = (indexes[1] < activePanel->Dirs->Count) ? &activePanel->Dirs->At(indexes[1]) : &activePanel->Files->At(indexes[1] - activePanel->Dirs->Count);
@@ -2359,7 +2359,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         userMenuAdvancedData.CompareNamesAreDirs = (indexes[0] < activePanel->Dirs->Count);
                         if (!focusOnUpDir && focus != indexes[0] && tgtSelCount != 1)
                         {
-                            if ((focus < activePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // both items are files/directories
+                            if ((focus < activePanel->Dirs->Count) == userMenuAdvancedData.CompareNamesAreDirs) // both items are of the same type: either files or directories
                             {
                                 f2 = (focus < activePanel->Dirs->Count) ? &activePanel->Dirs->At(focus) : &activePanel->Files->At(focus - activePanel->Dirs->Count);
                             }
@@ -2367,7 +2367,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     else
                     {
-                        if (selCount == 0) // no selected item in the source panel, take the focus
+                        if (selCount == 0) // no item is selected in the source panel, use the focused item
                         {
                             if (!focusOnUpDir)
                             {
@@ -3057,7 +3057,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             {
                 ChangePanel();
                 if (GetActivePanel() != RightPanel)
-                    return 0;          // the panel cannot be activated
+                    return 0;          // the panel could not be activated
                 UpdateWindow(HWindow); // render the focus before the menu appears
             }
             if (RightPanel->DirectoryLine != NULL)
@@ -3297,7 +3297,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             char temporarySelected[MAX_PATH];
             activePanel->SelectFocusedItemAndGetName(temporarySelected, MAX_PATH);
 
-            if (activePanel->Is(ptDisk)) // source is disk - all operations go here
+            if (activePanel->Is(ptDisk)) // source is a disk; all operations go through here
             {
                 CActionType type;
                 switch (LOWORD(wParam))
@@ -3324,7 +3324,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             else
             {
-                if (activePanel->Is(ptZIPArchive)) // source is an archive - all operations go here
+                if (activePanel->Is(ptZIPArchive)) // source is an archive; all operations are handled here
                 {
                     BOOL archMaybeUpdated;
                     activePanel->OfferArchiveUpdateIfNeeded(HWindow, IDS_ARCHIVECLOSEEDIT2, &archMaybeUpdated);
@@ -3346,7 +3346,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 }
                 else
                 {
-                    if (activePanel->Is(ptPluginFS)) // source is a FS - all operations go here
+                    if (activePanel->Is(ptPluginFS)) // source is FS - all operations are routed here
                     {
                         CPluginFSActionType type;
                         switch (LOWORD(wParam))
@@ -3613,7 +3613,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         case CM_FINDFILE:
         {
-            if (activePanel->Is(ptDisk)) // does Find relate to the current path? (archives and FS not yet)
+            if (activePanel->Is(ptDisk)) // does Find apply to the current path? (not yet for archives and file systems)
             {
                 activePanel->UserWorkedOnThisPath = TRUE;
             }
@@ -3902,9 +3902,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 FillUserMenu(&menu);
                 POINT p;
                 activePanel->GetContextMenuPos(&p);
-                // another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse) will occur
-                // in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP, but it is nested and lightweight,
-                // so we ignore it and do not fight it
+                // Another lock/unlock cycle (BeginUserMenuIconsInUse + EndUserMenuIconsInUse)
+                // will occur in WM_USER_ENTERMENULOOP + WM_USER_LEAVEMENULOOP,
+                // but it is already nested and has no overhead, so we ignore it
                 menu.Track(0, p.x, p.y, HWindow, NULL);
                 UserMenuIconBkgndReader.EndUserMenuIconsInUse();
 
@@ -3965,7 +3965,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             else
             {
-                if (EditPermanentVisible || EditWindow->IsEnabled()) // there may be an archive in the panel
+                if (EditPermanentVisible || EditWindow->IsEnabled()) // the panel may contain an archive
                     ShowCommandLine();
             }
             return 0;
@@ -4426,7 +4426,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             SendMessage(LeftPanel->HWindow, WM_USER_REFRESH_DIR, 0, t1);
             SendMessage(RightPanel->HWindow, WM_USER_REFRESH_DIR, 0, t2);
 
-            // distribute this news among plug-ins as well
+            // distribute this news among plugins as well
             Plugins.Event(PLUGINEVENT_CONFIGURATIONCHANGED, 0);
             return 0;
         }
@@ -4490,7 +4490,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
     case WM_USER_DISPACHCHANGENOTIF:
     {
-        if (LastDispachChangeNotifTime < lParam) // not an outdated message
+        if (LastDispachChangeNotifTime < lParam) // not an old message
         {
             if (AlreadyInPlugin || StopRefresh > 0)
                 NeedToResentDispachChangeNotif = TRUE;
@@ -4518,7 +4518,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     else
                         ok = FALSE;
-                    if (!ok) // store the time of the last refresh (still in the critical section)
+                    if (!ok) // store the time of the last dispatch attempt (still in the critical section)
                     {
                         HANDLES(EnterCriticalSection(&TimeCounterSection));
                         LastDispachChangeNotifTime = MyTimeCounter++;
@@ -4526,9 +4526,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     }
                     HANDLES(LeaveCriticalSection(&DispachChangeNotifCS));
 
-                    if (ok) // distribute a notification about the change on 'path' with 'includingSubdirs'
+                    if (ok) // dispatch a change notification for 'path' with 'includingSubdirs'
                     {
-                        // send the message to all loaded plugins
+                        // dispatch the notification to all loaded plugins
                         Plugins.AcceptChangeOnPathNotification(path, includingSubdirs);
 
                         if (GetNonActivePanel() != NULL) // non-active panel first (due to timestamps of subdirectory changes on NTFS)
@@ -4542,8 +4542,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
                         if (DetachedFSList->Count > 0)
                         {
-                            // for better input/output optimization with plugins, the EnterPlugin/LeavePlugin section
-                            // is exported here (not inside the interface encapsulation)
+                            // to optimize plugin entry/exit, the EnterPlugin/LeavePlugin section
+                            // is moved out here (it is not inside the interface encapsulation)
                             EnterPlugin();
                             int i;
                             for (i = 0; i < DetachedFSList->Count; i++)
@@ -4691,7 +4691,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 popup->SetHotImageList(NULL); // just to be safe, so the popup doesn't own an invalid handle
                 ImageList_Destroy(hIcons);
             }
-            if (popupID == CML_PLUGINS) // closing the Plugins menu; dynamic icons can be freed (they are rebuilt before each next menu opening)
+            if (popupID == CML_PLUGINS) // closing the Plugins menu; the dynamic icons can be freed (they are rebuilt before each subsequent menu opening)
                 Plugins.ReleasePluginDynMenuIcons();
             break;
         }
@@ -5200,7 +5200,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             r2.right = r.right;
             DrawSplitLine(HWindow, -1, DragSplitX, r2);
             SendMessage(ToolTipWindow.HWindow, TTM_ACTIVATE, FALSE, 0);
-            DestroyWindow(ToolTipWindow.HWindow); // just detaches the tooltip from the control
+            DestroyWindow(ToolTipWindow.HWindow); // destroys the tooltip window
             if (uMsg == WM_LBUTTONUP)
             {
                 // accept the position only when the drag finishes legally
@@ -5599,7 +5599,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 CALL_STACK_MESSAGE4("CPluginInterfaceForMenuExt::ExecuteMenuItem(, , %d,) (%s v. %s)",
                                     (int)lParam, data->DLLName, data->Version);
 
-                // lower the thread priority to "normal" (so operations don't burden the system)
+                // lower the thread priority to "normal" (so the operation does not put too much load on the machine)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
                 data->GetPluginInterfaceForMenuExt()->ExecuteMenuItem(NULL, HWindow, (int)lParam, 0);
@@ -5782,7 +5782,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             MSG msg;
             CanCloseButInEndSuspendMode = CanClose;
             BOOL oldCanClose = CanClose;
-            CanClose = FALSE; // don't let ourselves be closed; we are inside the method
+            CanClose = FALSE; // do not allow closing while inside this method
             BOOL postWM_USER_CLOSE_MAINWND = FALSE;
             BOOL postWM_USER_FORCECLOSE_MAINWND = FALSE;
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -5954,7 +5954,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
 
         //      if (IsWindowVisible(HWindow))    // now handled by FirstActivateApp
         //      {
-        if (wParam == TRUE) // activating the app
+        if (wParam == TRUE) // app activation
         {
             if (!LeftPanel->DontClearNextFocusName)
                 LeftPanel->NextFocusName[0] = 0;
@@ -6171,7 +6171,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0)
                     endAfterCleanup = TRUE; // cannot be refused -> perform minimal cleanup
                 else
-                    return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
+                    return 0; // reject close/shutdown/logoff; detect any forced shutdown only in WM_ENDSESSION
             }
         }
 
@@ -6205,7 +6205,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         TRACE_E("WM_USER_CLOSE_MAINWND: SalamanderBusy == TRUE!");
                     if (uMsg == WM_QUERYENDSESSION)
                         TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: SalamanderBusy is TRUE");
-                    return 0; // refuse close/shutdown/logoff; a forced shutdown will be detected in WM_ENDSESSION
+                    return 0; // Reject close/shutdown/logoff; detect any forced shutdown in WM_ENDSESSION
                 }
             }
         }
@@ -6266,7 +6266,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     if (uMsg == WM_QUERYENDSESSION)
                         TRACE_I("WM_QUERYENDSESSION: cancelling shutdown: user rejects to close all disk operation progress dialogs");
                     // the user does not want to exit yet
-                    return 0; // refuse closing/shutdown/logoff; any "forced shutdown" will be detected later in WM_ENDSESSION
+                    return 0; // refuse close/shutdown/logoff; any "forced shutdown" will be detected later in WM_ENDSESSION
                 }
                 UpdateWindow(HWindow);
             }
@@ -6283,7 +6283,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                    GetTickCount() - msgArrivalTime <= QUERYENDSESSION_TIMEOUT - 200)
                 Sleep(200);
             WaitInEndSession = TRUE;
-            return TRUE; // continue to WM_ENDSESSION where we will either finish or be killed while waiting
+            return TRUE; // proceed to WM_ENDSESSION, where we either finish or get killed if we wait any longer
         }
 
         int i = 0;
@@ -6329,11 +6329,11 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                     if (findDlg != NULL) // if the window still exists, we send it a close query (otherwise it is pointless)
                     {
                         BOOL myPost = findDlg->StateOfFindCloseQuery == sofcqNotUsed;
-                        if (myPost) // if this is not nesting (maybe possible, not verified but unlikely)
+                        if (myPost) // if this is not a nested call (probably possible, not investigated, but unlikely)
                         {
                             findDlg->StateOfFindCloseQuery = sofcqSentToFind;
                             PostMessage(destroyArray[i], WM_USER_QUERYCLOSEFIND, 0,
-                                        uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0); // during critical shutdown we don't ask, we just cancel
+                                        uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0); // during critical shutdown, do not ask and cancel immediately
                         }
                         BOOL cont = TRUE;
                         while (cont)
@@ -6406,7 +6406,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             // window size and a few other minor things won't be saved, but we ignore that)
             // note: the !endAfterCleanup check here is unnecessary because outside critical shutdown
             // endAfterCleanup is always FALSE
-            if (uMsg != WM_QUERYENDSESSION || (lParam & ENDSESSION_CRITICAL) == 0) // mimo criticky shutdown
+            if (uMsg != WM_QUERYENDSESSION || (lParam & ENDSESSION_CRITICAL) == 0) // except during critical shutdown
             {
                 for (i = 0; i < destroyArray.Count; i++)
                 {
@@ -6456,7 +6456,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 Sleep(200);
 
             WaitInEndSession = TRUE;
-            return TRUE; // continue to WM_ENDSESSION where we finish or are killed if we wait longer
+            return TRUE; // Proceed to WM_ENDSESSION, where we finish or are terminated if we wait longer.
         }
 
         if (uMsg == WM_QUERYENDSESSION && (lParam & ENDSESSION_CRITICAL) != 0) // this applies to Vista+
@@ -6483,7 +6483,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
 
             BOOL backupOK = FALSE;
-            if (cfgOK) // old configuration seems OK; back it up in case saving the new configuration fails
+            if (cfgOK) // the old configuration seems OK; back it up in case saving the configuration fails
             {
                 char backup[200];
                 sprintf_s(backup, "%s.backup.63A7CD13", SALAMANDER_ROOT_REG); // "63A7CD13" prevents the key name from matching a user key
@@ -6514,14 +6514,14 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                    GetTickCount() - msgArrivalTime <= QUERYENDSESSION_TIMEOUT - 200)
                 Sleep(200);
 
-            if (backupOK)                   // backup done, configuration will be saved in WM_ENDSESSION,
-                SaveCfgInEndSession = TRUE; // if we get killed during it, the configuration will load from the backup
+            if (backupOK)                   // backup is ready; the configuration will be saved in WM_ENDSESSION,
+                SaveCfgInEndSession = TRUE; // if we are killed during this, the configuration will be loaded from the backup
             else
             {
                 // EndStopRefresh();  // during critical shutdown we don't end stop-refresh (refreshes are sent to panels)
                 WaitInEndSession = TRUE; // backup failed, we won't risk saving the configuration
             }
-            return TRUE; // we want 5s in WM_ENDSESSION, so return TRUE
+            return TRUE; // we want 5 seconds in WM_ENDSESSION, so return TRUE
         }
 
         if ((uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION) && HLanguage != NULL &&
@@ -6534,7 +6534,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         CWaitWindow analysing(HWindow, IDS_SAVINGCONFIGURATION, FALSE, ooStatic, TRUE);
         HWND oldPluginMsgBoxParent = PluginMsgBoxParent;
         BOOL shutdown = uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION;
-        if (shutdown) // during shutdown/log-off/restart show a wait window for all Saves (including plugins) and process the message loop (so we aren't marked as "not responding" and killed early)
+        if (shutdown) // During shutdown/logoff/restart, show a wait window for all save operations (including plugins) and process the message loop so we are not marked as "not responding" and terminated prematurely.
         {
             // start a thread that will handle registry work while saving the configuration;
             // meanwhile this (main) thread will pump messages in the message loop
@@ -6580,7 +6580,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (uMsg == WM_QUERYENDSESSION || uMsg == WM_ENDSESSION)
                 MyShutdownBlockReasonDestroy(HWindow);
 
-            if (uMsg != WM_ENDSESSION) // during critical shutdown we don't end stop-refresh (refreshes are sent to the panels)
+            if (uMsg != WM_ENDSESSION) // During a critical shutdown, do not end stop-refresh; refreshes are being dispatched to the panels.
             {
                 EndStopRefresh();
                 return 0; // refuse close/shutdown/logoff; any "forced shutdown" will be detected in WM_ENDSESSION
@@ -6602,7 +6602,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                                  reason + (int)strlen(reason), BUG_REPORT_REASON_MAX - ((int)strlen(reason) + 1)) > 0)
         {
             // ask whether Salamander should continue or generate a bug report
-            if (CriticalShutdown || // during critical shutdown there's no point in asking anything, let the system terminate us quietly
+            if (CriticalShutdown || // during a critical shutdown, do not prompt; allow the system to terminate us
                 SalMessageBox(shutdown ? analysing.HWindow : HWindow,
                               LoadStr(IDS_SHELLEXTBREAK3), SALAMANDER_TEXT_VERSION,
                               MSGBOXEX_CONTINUEABORT | MB_ICONINFORMATION) != IDABORT)
@@ -6627,7 +6627,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             BOOL canClose = FALSE;
             BOOL detachFS1, detachFS2;
-            if (LeftPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, FALSE, detachFS1, FSTRYCLOSE_UNLOADCLOSEFS /* unnecessary - plugins (including FS) already unloaded */))
+            if (LeftPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, TRUE, FALSE, detachFS1, FSTRYCLOSE_UNLOADCLOSEFS /* unnecessary - plugins (including FS) are already unloaded */))
             {
                 if (RightPanel->PrepareCloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, TRUE, FALSE, detachFS2, FSTRYCLOSE_UNLOADCLOSEFS /* unnecessary - plugins (including FS) already unloaded */))
                 {
@@ -6636,7 +6636,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         RightPanel->SleepIconCacheThread();
                     RightPanel->CloseCurrentPath(shutdown ? analysing.HWindow : RightPanel->HWindow, FALSE, detachFS2, FALSE, FALSE, TRUE); // close the right panel
 
-                    // protect the list box from errors caused by redraw requests (we just cut its data)
+                    // protect the list box against errors caused by redraw requests (we just cut off its data)
                     RightPanel->ListBox->SetItemsCount(0, 0, 0, TRUE);
                     RightPanel->SelectedCount = 0;
                     // If WM_USER_UPDATEPANEL is delivered, the panel contents are redrawn
@@ -6651,7 +6651,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                         LeftPanel->SleepIconCacheThread();
                     LeftPanel->CloseCurrentPath(shutdown ? analysing.HWindow : LeftPanel->HWindow, FALSE, detachFS1, FALSE, FALSE, TRUE); // close the left panel
 
-                    // Protect the list box from errors caused by redraw requests (after we just cut the data)
+                    // Protect the list box from errors caused by redraw requests (we have just cut off its data)
                     LeftPanel->ListBox->SetItemsCount(0, 0, 0, TRUE);
                     LeftPanel->SelectedCount = 0;
                     // If WM_USER_UPDATEPANEL is delivered, the panel contents are redrawn
@@ -6710,7 +6710,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         DiskCache.PrepareForShutdown(); // clean any empty tmp directories from disk
 
         //      if (TipOfTheDayDialog != NULL)
-        //        DestroyWindow(TipOfTheDayDialog->HWindow);  // the dialog already saved its data (transfer happens there at runtime)
+        //        DestroyWindow(TipOfTheDayDialog->HWindow);  // the dialog has already saved its data (transfer happens there at runtime)
 
         MainWindowCS.SetClosed();
 
@@ -6815,7 +6815,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             // some crazy shell extension has just called DestroyWindow on Salamander's main window
 
             MSG msg; // flush the message queue (WMP9 buffered Enter and dismissed our OK)
-            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: I replaced it by discarding key messages only; without TranslateMessage and DispatchMessage we risk an endless loop (discovered during unloading Automation with memory leaks; before showing the leak message box, an infinite loop occurred because WM_PAINT kept being added to the queue and we kept discarding it)
+            // while (PeekMessage(&msg, HWindow, 0, 0, PM_REMOVE));  // Petr: replaced this with discarding only keyboard messages; without TranslateMessage and DispatchMessage, an infinite loop can occur (found while unloading Automation with memory leaks; before displaying the leak message box, WM_PAINT kept being added to the queue and we kept discarding it)
             while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
                 ;
 
@@ -6947,15 +6947,15 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         }
         if (uMouseMsg == WM_RBUTTONDOWN)
         {
-            /* used by the export_mnu.py script which generates salmenu.mnu for the Translator;
+            /* used by the export_mnu.py script, which generates salmenu.mnu for Translator;
                keep synchronized with the InsertMenu() call below...
-MENU_TEMPLATE_ITEM TaskBarIconMenu[] = 
-{
-  {MNTT_PB, 0
-  {MNTT_IT, IDS_CONTEXTMENU_EXIT
-  {MNTT_PE, 0
-};
-*/
+            MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
+            {
+              {MNTT_PB, 0
+              {MNTT_IT, IDS_CONTEXTMENU_EXIT
+              {MNTT_PE, 0
+            };
+            */
             HMENU hMenu = CreatePopupMenu();
             InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, CM_EXIT, LoadStr(IDS_CONTEXTMENU_EXIT));
 
@@ -6997,7 +6997,7 @@ MENU_TEMPLATE_ITEM TaskBarIconMenu[] =
         int count = activePanel->GetSelCount();
         if (count != 0)
         {
-            // determine the index of the nth (index) selected item
+            // get the index of the nth selected item
             int totalCount = activePanel->Dirs->Count + activePanel->Files->Count;
             if (totalCount == 0 || index >= totalCount)
                 return 0;
