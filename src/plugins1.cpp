@@ -3140,7 +3140,7 @@ BOOL CPluginData::Unload(HWND parent, BOOL ask)
                     PluginIfaceForThumbLoader.Init(NULL, NULL, NULL);
                     SalamanderGeneral.Init(NULL);
 
-                    // when unloading the plugin, remove its icon overlays 
+                    // when unloading the plugin, remove its icon overlays
                     ReleaseIconOverlays();
 
                     // disconnect the unloaded plugin from the delete manager and the disk cache
