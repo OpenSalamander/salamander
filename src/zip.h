@@ -110,7 +110,7 @@ public:
     virtual void WINAPI ProgressSetTotalSize(const CQuadWord& totalSize1, const CQuadWord& totalSize2);
     // if 'size1' is not CQuadWord(-1, -1), sets the value of 'size1' (size1/total1*100 percent) on the first progress meter,
     // if 'size2' is not CQuadWord(-1, -1), sets the value of 'size2' (size2/total2*100 percent) on the second progress meter
-    // (for a progress dialog with a single progress meter, 'size2' must be CQuadWord(-1, -1)); returns whether the action 
+    // (for a progress dialog with a single progress meter, 'size2' must be CQuadWord(-1, -1)); returns whether the action
     // should continue (FALSE = end)
     virtual BOOL WINAPI ProgressSetSize(const CQuadWord& size1, const CQuadWord& size2, BOOL delayedPaint);
     // adds the size 'size' (optionally to both progress meters) (size/total*100 percent progress),
@@ -207,10 +207,10 @@ public:
     // returns the directory size - sum of all files in it; note: counters must be reset beforehand
     CQuadWord GetDirSize(const char* path, const char* dirName, int* dirsCount = NULL,
                          int* filesCount = NULL, TDirectArray<CQuadWord>* sizes = NULL);
-    // returns the salamander-dir for the specified directory; if 'readOnly' is TRUE, 
+    // returns the salamander-dir for the specified directory; if 'readOnly' is TRUE,
     // the returned salamander-dir object must not be modified
     CSalamanderDirectory* GetSalamanderDir(const char* path, BOOL readOnly);
-    // returns the salamander-dir for the specified directory index; 
+    // returns the salamander-dir for the specified directory index;
     // the returned salamander-dir object must not be modified
     CSalamanderDirectory* GetSalamanderDir(int i);
     // returns the index of the directory specified by name
