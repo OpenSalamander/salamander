@@ -111,8 +111,7 @@ public:
     // sorts the Dirs and Files lists so that Contains() can be called;
     void Sort();
 
-    // returns TRUE if the name specified through 'nameIsDir' and 'name' is present in one
-    // of the arrays; if 'foundOnIndex' is not NULL, it returns the index where the item was found
+    // returns TRUE if the name specified by 'nameIsDir' and 'name' is present in one of the arrays; if 'foundOnIndex' is not NULL, it receives the index at which the item was found
     BOOL Contains(BOOL nameIsDir, const char* name, int* foundOnIndex = NULL);
 
     // returns the total number of stored names
@@ -259,7 +258,7 @@ public:
 
     BOOL IsGood() { return FileName != NULL; }
 
-    // returns TRUE if the object was constructed from the specified data
+    // returns TRUE if the object matches the specified data
     BOOL Equal(CFileHistoryItemTypeEnum type, DWORD handlerID, const char* fileName);
 
     BOOL Execute();
@@ -406,7 +405,7 @@ public:
     void Set(DWORD index, const char* name, DWORD flags, BOOL leftSmartMode, BOOL rightSmartMode);
 
     BOOL SwapItems(int index1, int index2); // swaps two items in the array
-    BOOL CleanName(char* name);             // trims spaces and returns TRUE if name is ok
+    BOOL CleanName(char* name);             // trims spaces and returns TRUE if name is not empty
 
     int SaveColumns(CColumnConfig* columns, char* buffer);  // convert the array to a string
     void LoadColumns(CColumnConfig* columns, char* buffer); // and back again
@@ -449,9 +448,9 @@ public:
     // detaches the data from the object (so the buffer is not deallocated in the object's destructor)
     void DetachData();
 
-    // returns TRUE if the string 'str' of length 'len' was successfully appended; if 'len' is -1,
-    // 'len' is determined as "strlen(str)" (addition without the trailing zero); if 'len' is -2,
-    // 'len' is determined as "strlen(str)+1" (addition including the trailing zero)
+    // returns TRUE if the string 'str' of length 'len' was added successfully; if 'len' is -1,
+    // it is determined as "strlen(str)" (without the terminating null); if 'len' is -2,
+    // it is determined as "strlen(str)+1" (including the terminating null)
     virtual BOOL WINAPI Add(const char* str, int len = -1);
 };
 
@@ -523,7 +522,7 @@ class CShares
 {
 protected:
     CRITICAL_SECTION CS;                // section used to synchronize object data
-    TIndirectArray<CSharesItem> Data;   // list of shares
+    TIndirectArray<CSharesItem> Data;   // list of shared resources
     TIndirectArray<CSharesItem> Wanted; // list of references into Data interesting for searching
     BOOL SubsetOnly;
 
@@ -749,7 +748,7 @@ extern CSystemPolicies SystemPolicies;
 // ensures ArrangeHorizontalLines is called for all dialogs
 //
 // If 'HCenterAgains' is different from NULL, it is centered to it, otherwise to the parent.
-// sets the message box parent for plug-ins to this dialog (only while it exists)
+// sets the message box parent for plugins to this dialog (only while it exists)
 //
 
 class CCommonDialog : public CDialog
@@ -840,10 +839,9 @@ public:
     // returns the number of valid messages
     int GetCount() { return Count; }
 
-    // inserts the item according to 'index' into 'buffer' (pass buffer size in 'buffMax')
-    // 'index': for value 0 it will be the oldest item, for value Count
-    // it will be the last added message
-    // if the index is out of the array, it inserts the text "error"
+    // inserts the item selected by 'index' into 'buffer' (pass the buffer size in 'buffMax')
+    // 'index': value 0 is the oldest item; value Count - 1 is the last added message
+    // if 'index' is out of range, inserts the text "error"
     void Print(char* buffer, int buffMax, int index);
 };
 
@@ -866,7 +864,7 @@ extern CMessagesKeeper MessagesKeeper;
 struct CWayPoint
 {
     DWORD WayPoint;     // value defined in the code
-    WPARAM CustomData1; // user-defined value
+    WPARAM CustomData1; // user value
     LPARAM CustomData2; // user-defined value
     DWORD Time;         // insertion time
 };
@@ -900,10 +898,9 @@ public:
         return count;
     }
 
-    // inserts the item according to 'index' into 'buffer' (pass buffer size in 'buffMax')
-    // 'index': for value 0 it will be the oldest item, value Count
-    // it will be the last added waypoint
-    // if the index is out of the array, it inserts the text "error"
+    // inserts the item selected by 'index' into 'buffer' (pass the buffer size in 'buffMax')
+    // 'index': value 0 is the oldest item; value Count - 1 is the last added waypoint
+    // if 'index' is out of range, inserts the text "error"
     void Print(char* buffer, int buffMax, int index);
 };
 
