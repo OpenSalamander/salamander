@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -231,7 +232,7 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
       return Error(IDS_UNDELETE, IDS_ERRORMETADAMAGED); // metafiles must be OK
     else*/
         // fixme // update: on NT4 are records 16-24 unused and doesn't have header, we can skip this check
-        return TRUE; // looks like one of 'BAAD' records, skip it
+        return TRUE; // looks like one of the 'BAAD' records; skip it
     }
 
     if (!meta && !(this->UdFlags & UF_SHOWEXISTING))
@@ -254,7 +255,7 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
                                        << "(i = " << i << ")");
             DumpHexData(data, BytesPerMFTRecord);
             if (index == 0)
-                return String<CHAR>::Error(IDS_UNDELETE, IDS_MFTRECORDDAMAGED); // we cannot skip MFT
+                return String<CHAR>::Error(IDS_UNDELETE, IDS_MFTRECORDDAMAGED); // cannot skip the MFT itself
             else
                 return TRUE;
         }
@@ -307,7 +308,7 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
             if (aheader->NonResident)
             {
                 TRACE_E("$STANDARD_INFORMATION is non-resident?! (index " << index << ")");
-                break; // should be always resident
+                break; // should always be resident
             }
             ATTRIBUTE_STANDARD_INFORMATION* attr = (ATTRIBUTE_STANDARD_INFORMATION*)(data + offset + aheader->AttrOffset);
             record->Attr = attr->Attributes;
@@ -331,7 +332,7 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
             if (aheader->NonResident)
             {
                 TRACE_E("$FILE_NAME is non-resident?! (index " << index << ")");
-                break; // should be always resident
+                break; // should always be resident
             }
             ATTRIBUTE_FILE_NAME* attr = (ATTRIBUTE_FILE_NAME*)(data + offset + aheader->AttrOffset);
 
@@ -344,8 +345,8 @@ BOOL CMFTSnapshot<CHAR>::ParseRecord(BYTE* data, QWORD index)
                 {
                     if (attr->Namespace == 2)
                         ignore = TRUE; // we can ignore DOS names if we have standard names
-                    break;             // ... otherwise overwrite existing
-                                       // todo: we can show DOS name too
+                    break;             // ... otherwise overwrite the existing entry
+                                       // TODO: we could show the DOS name too
                 }
                 fname = fname->FNNext;
             }
@@ -598,7 +599,7 @@ BOOL CMFTSnapshot<CHAR>::Update(CSnapshotProgressDlg* progress, DWORD udFlags, C
     delete[] firstrec;
 
     // check
-    if (mft->Streams == NULL || mft->Streams->DSNext != NULL ||     // just one stream
+    if (mft->Streams == NULL || mft->Streams->DSNext != NULL ||     // only one stream
         mft->IsDir ||                                               // can not be directory
         mft->FileNames == NULL || mft->FileNames->FNNext != NULL || // just one hardlink
         String<CHAR>::StrICmp(mft->FileNames->FNName, STRING_MFT))  // name: $MFT
@@ -838,7 +839,7 @@ void CMFTSnapshot<CHAR>::Mark(FILE_RECORD_I<CHAR>* r, DWORD depth)
         if (IsValidRef(fname->ParentRecord))
         {
             FILE_RECORD_I<CHAR>* parent = MFT[LODWORD(fname->ParentRecord)];
-            if (parent != r) // parent to himself is only root, in such case we will end
+            if (parent != r) // only the root is its own parent; recursion ends there
                 Mark(parent, depth + 1);
             // todo: to speed up we can test if it is already marked from some level and end?
         }
@@ -1283,7 +1284,7 @@ void CMFTSnapshot<CHAR>::DrawDeletedFile(FILE_RECORD_I<CHAR>* record, CClusterBi
                 if (!runsWalker.GetNextRun(&lcn, &length, NULL))
                 {
                     TRACE_IW(L"CMFTSnapshot::DrawDeletedFile() Ignoring: " << CWStr(record->FileNames->FNName).c_str());
-                    break; // unlikely error, moreover it doesn't matter
+                    break; // unlikely error; it does not matter here
                 }
                 if (lcn != -1)
                 {
@@ -1387,7 +1388,7 @@ BOOL CMFTSnapshot<CHAR>::EstimateFileDamage(CLUSTER_MAP_I** clusterMap)
         }
     }
 
-    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // does user want to return map of lost clusters?
+    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // does the user want the map of lost clusters returned?
     {
         if (clusterMap != NULL)
         {
@@ -1435,7 +1436,7 @@ BOOL CMFTSnapshot<CHAR>::GetLostClustersMap(CClusterBitmap* clusterBitmap, CLUST
             // for cluster number 'i' find related two bits in bitmap
             BYTE c;
             clusterBitmap->GetValue(i, &c);
-            if (c == 0 || c == 2) // cluster is not used (or we don't know about it) || there is FC_FAIR or FC_POOR
+            if (c == 0 || c == 2) // cluster is unused (or we do not know about it), or it is FC_FAIR or FC_POOR
             {
                 // if it is beginning of segment that we are interested in, store lcnFirst and set we are in segment
                 if (!inside)
@@ -1488,7 +1489,7 @@ BOOL CMFTSnapshot<CHAR>::GetLostClustersMap(CClusterBitmap* clusterBitmap, CLUST
                 }
             }
             else
-                break; // we can stop here, there is nothing to store
+                break; // stop here, nothing to store
         }
     }
 
