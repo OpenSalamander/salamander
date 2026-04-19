@@ -39,8 +39,8 @@ struct CCallStackMonitoredItem
     DWORD_PTR CallerAddress;         // address where the call-stack macro was invoked
     DWORD NumberOfCalls;             // number of calls during the last CALLSTACK_TRACETIME milliseconds
     __int64 PushesPerfTime;          // total "time" of Push operations for this call-stack macro
-    BOOL NotAlreadyReported;         // TRUE = if the issue has not been reported
-                                     // (to avoid flooding the Trace Server)
+    BOOL NotAlreadyReported;         // TRUE = the problem has not yet been reported
+                                     // (to avoid unnecessary flooding of the Trace Server)
 };
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
@@ -55,12 +55,12 @@ protected:
                                      // terminating null, the length of the
                                      // previous string is always stored (two bytes)
                                      // followed immediately by the next string
-    char* End;                       // pointer to the last two zeros
-    int Skipped;                     // number of messages that could not be stored
+    char* End;                       // pointer to the last two nulls
+    int Skipped;                     // number of messages that could not be saved
     char* Enum;                      // pointer to the last printed text
     BOOL FirstCallstack;             // are we the first instance?
 
-    const char* PluginDLLName; // plug-in DLL currently running in the thread
+    const char* PluginDLLName; // plugin DLL currently running in the thread
                                // (NULL if it is salamand.exe)
     int PluginDLLNameUses;     // the Pop() operation count at which PluginDLLName should be set to NULL
                                // (nesting level)
@@ -84,7 +84,7 @@ protected:
 public:
     DWORD PushesCounter;                      // counter of Push calls invoked in this object (in one thread)
     LARGE_INTEGER PushPerfTimeCounter;        // total time spent in Push calls invoked in this object (one thread)
-    LARGE_INTEGER IgnoredPushPerfTimeCounter; // total time spent in unmeasured (ignored) Push calls invoked here (one thread)
+    LARGE_INTEGER IgnoredPushPerfTimeCounter; // total time spent in unmeasured (ignored) Push calls invoked in this object (in one thread)
     static LARGE_INTEGER SavedPerfFreq;       // nonzero result of QueryPerformanceFrequency
 #define CALLSTK_BENCHMARKTIME 100             // time in milliseconds during which the call-stack speed is measured
     static DWORD SpeedBenchmark;              // how many measured call-stack macros can be pushed+poped within CALLSTK_BENCHMARKTIME milliseconds
@@ -108,7 +108,7 @@ public:
     void Pop();
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
-    // called only when storing a call-stack message from a plug-in
+    // called only when storing a call-stack message from a plugin
     void PushPluginDLLName(const char* dllName)
     {
         if (PluginDLLName == NULL)
@@ -120,7 +120,7 @@ public:
             PluginDLLNameUses++;
     }
 
-    // called only when retrieving a call-stack message from a plug-in
+    // called only when retrieving a call-stack message from a plugin
     void PopPluginDLLName()
     {
         if (PluginDLLNameUses <= 1)
@@ -193,7 +193,7 @@ public:
 
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
-extern BOOL __CallStk_T; // always TRUE - just to check format string and type of parameters of call-stack macros
+extern BOOL __CallStk_T; // always TRUE; only used to check the format string and parameter types of call-stack macros
 
 #define CALL_STACK_MESSAGE1(p1) CCallStackMessage CALLSTK_UNIQUE(_m)(FALSE, 0, p1)
 #define CALL_STACK_MESSAGE2(p1, p2) CCallStackMessage CALLSTK_UNIQUE(_m)(FALSE, (__CallStk_T ? 0 : printf(p1, p2)), p1, p2)
