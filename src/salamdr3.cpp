@@ -300,7 +300,7 @@ int HandleFileException(EXCEPTION_POINTERS* e, char* fileMem, DWORD fileMemSize)
     else
     {
         if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&    // access violation signals a file error only when the failing address falls within the file
-            (e->ExceptionRecord->NumberParameters >= 2 &&                         // we have something to test
+            (e->ExceptionRecord->NumberParameters >= 2 &&                         // we have something to check
              e->ExceptionRecord->ExceptionInformation[1] >= (ULONG_PTR)fileMem && // pointer to the fault is within the mapped file
              e->ExceptionRecord->ExceptionInformation[1] < ((ULONG_PTR)fileMem) + fileMemSize))
         {
@@ -387,7 +387,7 @@ BOOL SalRemovePointsFromPath(WCHAR* afterRoot)
                         d = l;
                     }
                     else
-                        return FALSE; // cannot remove ".."
+                        return FALSE; // ".." cannot be removed
                 }
                 else
                 {
@@ -586,7 +586,7 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir, char* nextFo
     if (err == 0) // removal of any unwanted trailing backslash from the string
     {
         int l = (int)strlen(name);
-        if (l > 1 && name[1] == ':') // path type "c:\path"
+        if (l > 1 && name[1] == ':') // path of the form "c:\path"
         {
             if (l > 3) // not a root path
             {
@@ -601,7 +601,7 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir, char* nextFo
         }
         else
         {
-            if (name[0] == '\\' && name[1] == '\\' && name[2] == '.' && name[3] == '\\' && name[4] != 0 && name[5] == ':') // path like "\\.\C:\"
+            if (name[0] == '\\' && name[1] == '\\' && name[2] == '.' && name[3] == '\\' && name[4] != 0 && name[5] == ':') // path of the form "\\.\C:\"
             {
                 if (l > 7) // not a root path
                 {
@@ -639,7 +639,7 @@ void AuxThreadBody(BOOL add, HANDLE thread, BOOL testIfFinished)
     CEnterCriticalSection enterCS(cs);
 
     static BOOL finished = FALSE;
-    if (!finished) // after calling TerminateAuxThreads(), we no longer accept anything
+    if (!finished) // after calling TerminateAuxThreads(), no more threads are accepted
     {
         if (add)
         {
@@ -714,7 +714,7 @@ class CStopRefreshStack
 
   public:
     CStopRefreshStack() {Count = 0; Ignored = 0;}
-    ~CStopRefreshStack() {CheckIfEmpty(3);} // three BeginStopRefresh() calls are OK: for both panels BeginStopRefresh() is called, and the third comes from WM_USER_CLOSE_MAINWND (invoked first)
+    ~CStopRefreshStack() {CheckIfEmpty(3);} // three BeginStopRefresh() calls are OK: BeginStopRefresh() is called for both panels, and a third call comes from WM_USER_CLOSE_MAINWND (invoked first)
 
     void Push(DWORD caller_called_from, DWORD called_from);
     void Pop(DWORD caller_called_from, DWORD called_from);
@@ -856,7 +856,7 @@ if this code ever needs to be revived, keep in mind it can be replaced (x86 and 
             }
 
             if (MainWindow != NULL && MainWindow->NeedToResentDispachChangeNotif &&
-                !AlreadyInPlugin) // if it is still inside a plug-in, posting the notification is pointless
+                !AlreadyInPlugin) // if it is still inside a plugin, posting the notification is pointless
             {
                 MainWindow->NeedToResentDispachChangeNotif = FALSE;
 
@@ -1068,7 +1068,7 @@ AGAIN:
     if (newDir != NULL)
         newDir[0] = 0;
     int dirLen = (int)strlen(dir);
-    if (dirLen >= MAX_PATH) // too long name
+    if (dirLen >= MAX_PATH) // path is too long
     {
         if (errBuf != NULL)
             strncpy_s(errBuf, errBufSize, LoadStr(IDS_TOOLONGNAME), _TRUNCATE);
@@ -1083,7 +1083,7 @@ AGAIN:
     {
         char root[MAX_PATH];
         GetRootPath(root, dir);
-        if (dirLen <= (int)strlen(root)) // the directory is a root directory
+        if (dirLen <= (int)strlen(root)) // dir is the root directory
         {
             sprintf(buf, LoadStr(IDS_CREATEDIRFAILED), dir);
             if (errBuf != NULL)
@@ -1145,11 +1145,11 @@ AGAIN:
                     break; // we have reached the root directory
                 }
                 attrs = SalGetFileAttributes(name);
-                if (attrs != 0xFFFFFFFF) // the name exists
+                if (attrs != 0xFFFFFFFF) // the path exists
                 {
                     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
                         break; // we will build from this directory
-                    else       // it is a file, that would not work ...
+                    else       // it is a file, so that would not work...
                     {
                         sprintf(buf, LoadStr(IDS_NAMEUSEDFORFILE), name);
                         if (errBuf != NULL)
@@ -1235,7 +1235,7 @@ AGAIN:
     }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
         return TRUE;
-    else // it is a file, that would not work ...
+    else // existing file, so this would not work ...
     {
         sprintf(buf, LoadStr(IDS_NAMEUSEDFORFILE), dir);
         if (errBuf != NULL)
@@ -1294,7 +1294,7 @@ CPathHistoryItem::CPathHistoryItem(int type, const char* pathOrArchiveOrFSName,
         GetRootPath(root, pathOrArchiveOrFSName);
         const char* e = pathOrArchiveOrFSName + strlen(pathOrArchiveOrFSName);
         if ((int)strlen(root) < e - pathOrArchiveOrFSName || // not a root path
-            pathOrArchiveOrFSName[0] == '\\')                // it is a UNC path
+            pathOrArchiveOrFSName[0] == '\\')                // this is a UNC path
         {
             if (*(e - 1) == '\\')
                 e--;
@@ -1362,7 +1362,7 @@ void CPathHistoryItem::ChangeData(int topIndex, const char* focusedName)
     if (FocusedName != NULL)
     {
         if (focusedName != NULL && strcmp(FocusedName, focusedName) == 0)
-            return; // no change -> done
+            return; // no change -> return
         free(FocusedName);
     }
     if (focusedName != NULL)
@@ -1386,7 +1386,7 @@ void CPathHistoryItem::GetPath(char* buffer, int bufferSize)
         l = bufferSize;
     memcpy(buffer, PathOrArchiveOrFSName, l - 1);
     buffer[l - 1] = 0;
-    if (Type == 1 || Type == 2) // archive or FS
+    if (Type == 1 || Type == 2) // archive or file system
     {
         buffer += l - 1;
         bufferSize -= l - 1;
@@ -1561,7 +1561,7 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
                                     }
                                 }
 
-                                break; // done, no further match with PluginFS is possible
+                                break; // no further match with PluginFS is possible
                             }
                         }
                     }
@@ -1583,11 +1583,11 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
                             if (list->At(i)->IsPathFromThisFS(PathOrArchiveOrFSName, ArchivePathOrFSUserPart))
                             {
                                 done = TRUE;
-                                // we try to switch to the requested path while attaching the detached FS
+                                // try to switch to the requested path while attaching the detached FS
                                 if (!panel->ChangePathToDetachedFS(i, TopIndex, FocusedName, TRUE, &failReason,
                                                                    PathOrArchiveOrFSName, ArchivePathOrFSUserPart))
                                 {
-                                    if (failReason == CHPPFR_SHORTERPATH) // almost success (the path was only shortened) (CHPPFR_FILENAMEFOCUSED cannot occur here)
+                                    if (failReason == CHPPFR_SHORTERPATH) // almost successful: the path was only shortened (CHPPFR_FILENAMEFOCUSED cannot occur here)
                                     {                                     // refresh the record about the FS interface
                                         if (panel->Is(ptPluginFS))
                                             PluginFS = panel->GetPluginFS()->GetInterface();
@@ -1598,7 +1598,7 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
                                         clear = FALSE; // no jump, no need to clear stored top indices
                                     }
                                 }
-                                else // full success
+                                else // complete success
                                 {    // refresh the record about the FS interface
                                     if (panel->Is(ptPluginFS))
                                         PluginFS = panel->GetPluginFS()->GetInterface();
@@ -1615,7 +1615,7 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
                         if (!panel->ChangePathToPluginFS(PathOrArchiveOrFSName, ArchivePathOrFSUserPart, TopIndex,
                                                          FocusedName, FALSE, 2, NULL, TRUE, &failReason))
                         {
-                            if (failReason == CHPPFR_SHORTERPATH ||   // almost success (the path was only shortened)
+                            if (failReason == CHPPFR_SHORTERPATH ||   // partial success (the path was only shortened)
                                 failReason == CHPPFR_FILENAMEFOCUSED) // almost success (the path only changed to a file and that file was focused)
                             {                                         // refresh the record about the FS interface
                                 if (panel->Is(ptPluginFS))
@@ -1627,7 +1627,7 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
                                 clear = FALSE; // no jump, no need to clear stored top indices
                             }
                         }
-                        else // full success
+                        else // complete success
                         {    // refresh the record about the FS interface
                             if (panel->Is(ptPluginFS))
                                 PluginFS = panel->GetPluginFS()->GetInterface();
@@ -1637,7 +1637,7 @@ BOOL CPathHistoryItem::Execute(CFilesWindow* panel)
             }
         }
         if (clear)
-            panel->TopIndexMem.Clear(); // long jump
+            panel->TopIndexMem.Clear(); // a long jump occurred
     }
     UpdateWindow(MainWindow->HWindow);
     return ret;
@@ -1849,7 +1849,7 @@ void CPathHistory::Execute(int index, BOOL forward, CFilesWindow* panel, BOOL al
         if (HasBackward() || allItems && HasPaths())
         {
             int count = ((ForwardIndex == -1) ? Paths.Count : ForwardIndex) - 1;
-            if (count - index >= 0) // there is a destination (not the last item)
+            if (count - index >= 0) // there is somewhere to go (not the last item)
             {
                 if (count - index < Paths.Count)
                 {
@@ -1919,7 +1919,7 @@ void CPathHistory::ChangeActualPathData(int type, const char* pathOrArchiveOrFSN
         else
             n2 = Paths[Paths.Count - 1];
 
-        if (n2 != NULL && n.IsTheSamePath(*n2, curPluginFS)) // same paths -> update the data
+        if (n2 != NULL && n.IsTheSamePath(*n2, curPluginFS)) // same path -> update the data
             n2->ChangeData(topIndex, focusedName);
     }
 }
@@ -1937,7 +1937,7 @@ void CPathHistory::RemoveActualPath(int type, const char* pathOrArchiveOrFSName,
         {
             CPathHistoryItem n(type, pathOrArchiveOrFSName, archivePathOrFSUserPart, NULL, pluginFS);
             CPathHistoryItem* n2 = Paths[Paths.Count - 1];
-            if (n.IsTheSamePath(*n2, curPluginFS)) // same paths -> remove the record
+            if (n.IsTheSamePath(*n2, curPluginFS)) // identical paths -> remove the entry
                 Paths.Delete(Paths.Count - 1);
         }
         else
@@ -1974,7 +1974,7 @@ void CPathHistory::AddPath(int type, const char* pathOrArchiveOrFSName, const ch
         if (n2 != NULL && n->IsTheSamePath(*n2, curPluginFS))
         {
             delete n;
-            return; // same paths -> nothing to do
+            return; // same path -> nothing to do
         }
     }
 
@@ -2261,7 +2261,7 @@ CUserMenuIconBkgndReader::CUserMenuIconBkgndReader()
 
 CUserMenuIconBkgndReader::~CUserMenuIconBkgndReader()
 {
-    if (UserMenuIIU_BkgndReaderData != NULL) // they truly are no longer needed, release them now
+    if (UserMenuIIU_BkgndReaderData != NULL) // they are no longer needed, so release them
     {
         delete UserMenuIIU_BkgndReaderData;
         UserMenuIIU_BkgndReaderData = NULL;
@@ -2297,14 +2297,14 @@ unsigned BkgndReadingIconsThreadBody(void* param)
             if (item->UMCommand[0] != 0)
             { // if the previous attempt failed, try to obtain the icon from the system
                 DWORD attrs = SalGetFileAttributes(item->UMCommand);
-                if (attrs != INVALID_FILE_ATTRIBUTES) // accessibility check (instead of CheckPath)
+                if (attrs != INVALID_FILE_ATTRIBUTES) // access check (instead of CheckPath)
                 {
                     umIcon = GetFileOrPathIconAux(item->UMCommand, FALSE,
                                                   (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY)));
                 }
             }
         }
-        item->LoadedIcon = umIcon; // store the result: the loaded icon or NULL if it failed
+        item->LoadedIcon = umIcon; // store the result: the loaded icon or NULL on error
     }
 
     UserMenuIconBkgndReader.ReadingFinished(threadID, bkgndReaderData);
@@ -2486,7 +2486,7 @@ BOOL CUserMenuIconBkgndReader::EnterCSIfCanUpdateUMIcons(CUserMenuIconDataArr** 
 
 void CUserMenuIconBkgndReader::LeaveCSAfterUMIconsUpdate()
 {
-    CurIRThreadIDIsValid = FALSE; // the icons are now handed over to the user menu (IsReadingIcons() must return FALSE)
+    CurIRThreadIDIsValid = FALSE; // at this point, the icons are handed over to the user menu (IsReadingIcons() must return FALSE)
     HANDLES(LeaveCriticalSection(&CS));
 }
 
@@ -2540,7 +2540,7 @@ CUserMenuItem::CUserMenuItem(CUserMenuItem& item, CUserMenuIconDataArr* bkgndRea
     {
         if (bkgndReaderData == NULL) // this is a copy for the config dialog; do not propagate newly loaded icons (wait until the dialog ends)
         {
-            UMIcon = DuplicateIcon(NULL, item.UMIcon); // GetIconHandle() unnecessarily slowed things down. 
+            UMIcon = DuplicateIcon(NULL, item.UMIcon); // GetIconHandle() unnecessarily slowed things down.
             if (UMIcon != NULL)                        // add the 'UMIcon' handle to HANDLES
                 HANDLES_ADD(__htIcon, __hoLoadImage, UMIcon);
         }
@@ -2700,7 +2700,7 @@ BOOL CUserMenuItem::GetIconHandle(CUserMenuIconDataArr* bkgndReaderData, BOOL ge
 
     if (bkgndReaderData != NULL)
     {
-        if (getIconsFromReader) // icons are already loaded, just take the right one
+        if (getIconsFromReader) // icons are already loaded, just use the correct one
         {
             UMIcon = bkgndReaderData->GiveIconForUMI(fileName, iconIndex, umCommand);
             if (UMIcon != NULL)
@@ -2813,7 +2813,7 @@ UINT GetMouseWheelScrollLines()
     {
         msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
         if (msgGetScrollLines == 0)
-            nRegisteredMessage = 1; // couldn't register!  never try again
+            nRegisteredMessage = 1; // registration failed; do not try again
         else
             nRegisteredMessage = 2; // it worked: use it
     }
@@ -2889,7 +2889,7 @@ BOOL PostMouseWheelMessage(MSG* pMSG)
         }
         // if this is a scrollbar with a parent window, post the message to the parent.
         // Scrollbars in the panels are not subclassed, so this is currently the only way
-        // for the panel to learn about the wheel when the cursor is over the scroll bar.
+        // for the panel to receive wheel messages when the cursor is over the scrollbar.
         className[0] = 0;
         if (GetClassName(hWindow, className, 100) == 0 || StrICmp(className, "scrollbar") == 0)
         {
@@ -3002,7 +3002,7 @@ BOOL CFileTimeStampsItem::Set(const char* zipRoot, const char* sourcePath, const
     if (*zipRoot == '\\')
         zipRoot++;
     ZIPRoot = DupStr(zipRoot);
-    if (ZIPRoot != NULL) // zip-root has no '\\' at the beginning or at the end.
+    if (ZIPRoot != NULL) // zipRoot has no leading or trailing '\\'
     {
         int l = (int)strlen(ZIPRoot);
         if (l > 0 && ZIPRoot[l - 1] == '\\')
@@ -3064,7 +3064,7 @@ BOOL CFileTimeStamps::AddFile(const char* zipFile, const char* zipRoot, const ch
             StrICmp(item->SourcePath, item2->SourcePath) == 0)
         {
             delete item;
-            return FALSE; // already present, do not add another one
+            return FALSE; // already present, do not add a duplicate
         }
     }
 
@@ -3285,8 +3285,8 @@ void CFileTimeStamps::CheckAndPackAndClear(HWND parent, BOOL* someFilesChanged, 
     {
         if (someFilesChanged != NULL)
             *someFilesChanged = TRUE;
-        // during a critical shutdown we pretend the updated files do not exist; we cannot re-pack them into the archive,
-        // but we must not delete them either — after startup, the user must still have a chance to manually pack the updated files into the archive
+        // during a critical shutdown, we pretend the updated files do not exist; we cannot pack them back into the archive,
+        // but we must not delete them either, so the user still has a chance to pack the updated files into the archive manually after startup
         if (!CriticalShutdown)
         {
             CArchiveUpdateDlg dlg(parent, this, Panel);
@@ -3317,7 +3317,7 @@ void CFileTimeStamps::CheckAndPackAndClear(HWND parent, BOOL* someFilesChanged, 
                             CFileTimeStampsItem* item2 = List[i];
                             char* r2 = item2->ZIPRoot;
                             char* s2 = item2->SourcePath;
-                            if (strcmp(r1, r2) == 0 && // identical zip root (case-sensitive comparison required - update test\A.txt and Test\b.txt must not run simultaneously)
+                            if (strcmp(r1, r2) == 0 && // identical ZIP root (case-sensitive comparison required - updates to test\A.txt and Test\b.txt must not run at the same time)
                                 StrICmp(s1, s2) == 0)  // identical source path
                             {
                                 packList.Add(item2);
@@ -3390,9 +3390,9 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         ok = s - path == l && StrNICmp(path, Path, l) == 0;
     }
 
-    if (ok) // it follows -> remember the next top index
+    if (ok) // if it continues, remember the next top index
     {
-        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // it is necessary to drop the first stored top index
+        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to discard the oldest top index
         {
             int i;
             for (i = 0; i < TOP_INDEX_MEM_SIZE - 1; i++)
@@ -3402,7 +3402,7 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         strcpy(Path, path);
         TopIndexes[TopIndexesCount++] = topIndex;
     }
-    else // not sequential -> first top index in the series
+    else // path does not match -> first top index in the sequence
     {
         strcpy(Path, path);
         TopIndexesCount = 1;
@@ -3434,7 +3434,7 @@ BOOL CTopIndexMem::FindAndPop(const char* path, int& topIndex)
             topIndex = TopIndexes[--TopIndexesCount];
             return TRUE;
         }
-        else // we no longer have this value (it was never stored or was dropped due to low memory)
+        else // we no longer have this value (it was not stored or was dropped due to low memory)
         {
             Clear();
             return FALSE;
@@ -3474,7 +3474,7 @@ BOOL CFileHistory::AddFile(CFileHistoryItemTypeEnum type, DWORD handlerID, const
             if (i > 0)
             {
                 Files.Detach(i);
-                    if (!Files.IsGood())
+                if (!Files.IsGood())
                     Files.ResetState(); // cannot fail; it only reports an out-of-memory condition when shrinking the array
                 Files.Insert(0, item);
                 if (!Files.IsGood())
