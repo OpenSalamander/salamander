@@ -128,7 +128,7 @@ int Unreduce(CDecompressionObject* decompress) /* expand probabilistically reduc
     short Len = 0;
     unsigned __int64 s = decompress->ucsize; /* number of bytes left to decompress */
     unsigned w = 0;                          /* position in output window slide[] */
-    unsigned u = 1;                          /* true if slide[] unflushed */
+    unsigned u = 1;                          /* true if slide[] has not been flushed */
     uch Slen[256];
     uch* slide = decompress->Output->SlideWin;
 
@@ -159,7 +159,7 @@ int Unreduce(CDecompressionObject* decompress) /* expand probabilistically reduc
                 nchar = followers[lchar][follower];
             }
         }
-        /* expand the resulting byte */
+        /* decode the resulting byte */
         switch (ExState)
         {
 
