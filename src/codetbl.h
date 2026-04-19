@@ -70,16 +70,16 @@ public:
     // otherwise it returns FALSE
     BOOL GetPreloadedIndex(const char* dirName, int* index);
 
-    // selects the best matching item from the Preloaded array
+    // Selects the best matching item from the Preloaded array
     // cfgDirName points to the recommended directory name (from the configuration)
-    // dirName must point to a buffer of MAX_PATH characters where the directory name is returned;
-    // if none exists, an empty string is returned
-    // criteria:
+    // dirName must point to a buffer of size MAX_PATH where the directory name is returned;
+    // if no such item exists, an empty string is returned
+    // Criteria:
     //  1. cfgDirName
-    //  2. item matching the OS code page
+    //  2. Item matching the OS code page
     //  3. westeuro
-    //  4. first in the list
-    //  5. if there is no item in the list, we will return an empty string
+    //  4. First item in the list
+    //  5. If the list is empty, an empty string is returned
     void GetBestPreloadedConversion(const char* cfgDirName, char* dirName);
 
     // prepares the object for use (loads 'convert.cfg' script), hWindow is the parent window for message boxes
