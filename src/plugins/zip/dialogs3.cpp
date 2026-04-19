@@ -130,7 +130,7 @@ CCommentDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_SHOWWINDOW:
         if (FirstShow)
         {
-            // clear the selection of the entire text
+            // clear the selection
             SendMessage(CommentHWnd, EM_SETSEL, 0, 0);
             FirstShow = FALSE;
         }
