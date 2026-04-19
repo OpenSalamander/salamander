@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -40,9 +41,9 @@ enum CDeleteType
 enum CErrorType
 {
     etNone,         // OK
-    etLowMemory,    // new - NULL
-    etUnknownIndex, // index is out of array range
-    etBadInsert,    // index of inserted item is out of array range
+    etLowMemory,    // new returned NULL
+    etUnknownIndex, // index is out of range for the array
+    etBadInsert,    // index of the inserted item is out of array range
     etDestructed,   // array was already destructed using Destroy() method
 };
 
@@ -80,12 +81,12 @@ public:
     }
 
     void Insert(int index, const DATA_TYPE& member);
-    int Add(const DATA_TYPE& member); // adds item to the end of array, returns item index
+    int Add(const DATA_TYPE& member); // adds an item to the end of the array; returns its index
 
-    void Insert(int index, const DATA_TYPE* members, int count); // insert 'count' of 'members' items
-    int Add(const DATA_TYPE* members, int count);                // add 'count' of 'members' items
+    void Insert(int index, const DATA_TYPE* members, int count); // insert 'count' items from 'members'
+    int Add(const DATA_TYPE* members, int count);                // adds 'count' items from 'members'
 
-    DATA_TYPE& At(int index) // returns pointer to item at 'index' possition
+    DATA_TYPE& At(int index) // returns a reference to the item at 'index'
     {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
@@ -97,12 +98,12 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // because of the compiler, we must return an (invalid) item
         }
 #endif
     }
 
-    DATA_TYPE& operator[](int index) // returns pointer to item at 'index' possition
+    DATA_TYPE& operator[](int index) // returns a reference to the item at 'index'
     {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
@@ -114,7 +115,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // because of compiler we must return (invalid) item
+            return Data[0]; // because of the compiler, we must return an (invalid) item
         }
 #endif
     }
@@ -131,12 +132,12 @@ public:
     void DestroyMembers();             // release items from memory (calling destructors), keep array
     void DetachMembers();              // detach all items (destructors are NOT called), keep array
     void Destroy();                    // complete array destruction (calling destructors)
-    void Delete(int index);            // delete item at 'index' possition (calling destructor), move remaining items
-    void Delete(int index, int count); // delete 'count' of items at 'index' possition (calling destructors), move remaining items
-    void Detach(int index);            // detach item at 'index' possition (destructor is NOT called), move remaining items
-    void Detach(int index, int count); // detach 'count' of items at 'index' possition (destructors are NOT called), move remaining items
+    void Delete(int index);            // delete the item at 'index' (calling the destructor), move remaining items
+    void Delete(int index, int count); // delete 'count' items at 'index' position (calling destructors), move remaining items
+    void Detach(int index);            // detach item at 'index' position (destructor is NOT called), move remaining items
+    void Detach(int index, int count); // detach 'count' items at 'index' position (destructors are NOT called), move remaining items
 
-    int SetDelta(int delta); // change 'Delta', return real used value; NOTE: can be used only for empty array
+    int SetDelta(int delta); // change 'Delta', return the actual value used; NOTE: can be used only for an empty array
 
 protected:
     DATA_TYPE* Data; // pointer to array
@@ -144,7 +145,7 @@ protected:
     int Base;        // smallest allocated size of array
     int Delta;       // allocated array size is enlarged/reduced by this value
 
-    virtual void Error(CErrorType err) // array error handling
+    virtual void Error(CErrorType err) // handles array errors
     {
         if (State == etNone)
             State = err;
@@ -154,7 +155,7 @@ protected:
     void EnlargeArray(); // enlarges array
     void ReduceArray();  // reduces array
 
-    void Move(CArrayDirection direction, int first, int count); // move selected items to next/previous index
+    void Move(CArrayDirection direction, int first, int count); // move selected items to the next/previous index
 
     void CallCopyConstructor(DATA_TYPE* placement, const DATA_TYPE& member)
     {
@@ -295,7 +296,7 @@ TDirectArray<DATA_TYPE>::TDirectArray(int base, int delta)
 template <class DATA_TYPE>
 void TDirectArray<DATA_TYPE>::Destroy()
 {
-    if (State == etNone) // it can be also etDestructed
+    if (State == etNone) // it can also be etDestructed
     {
         if (Data != NULL)
         {
