@@ -3810,7 +3810,7 @@ void CCopy_Context::CancelOpPhase2(int errBlkIndex)
 
     // when deleting the target file, set the file pointer to the end of the written portion;
     // the caller will truncate it with SetEndOfFile before deletion (otherwise zeroes might be written
-    // from the end of the written part to the end of the pre-allocated file - pre-allocation is 
+    // from the end of the written part to the end of the pre-allocated file - pre-allocation is
     // used to prevent fragmentation)
     if (*Out != NULL) // only if the target file has not been closed in the meantime
     {
@@ -5352,7 +5352,7 @@ COPY_AGAIN:
                                         // (deletion works, but direct overwrite does not (cannot open for writing) - workaround:
                                         //  delete and recreate the file)
                                         // (Samba can allow deleting read-only files, which enables deleting them,
-                                        //  otherwise Windows cannot delete a read-only file and we cannot drop 
+                                        //  otherwise Windows cannot delete a read-only file and we cannot drop
                                         //  the "read-only" attribute because the current user is not the owner)
                                         if (chAttr)
                                             SetFileAttributes(op->TargetName, attr);
