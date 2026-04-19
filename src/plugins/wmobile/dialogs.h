@@ -51,7 +51,7 @@ public:
     void Set(const char* fileName, DWORD progressTotal, BOOL dalayedPaint);
     void SetProgress(DWORD progressTotal, DWORD progress, BOOL dalayedPaint);
 
-    // empties the message queue (call often enough) and allows repainting, pressing Cancel...
+    // processes the message queue (call often enough) and allows repainting, pressing Cancel, ...
     // returns TRUE if the user wants to interrupt the operation
     BOOL GetWantCancel();
 
