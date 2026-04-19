@@ -67,7 +67,7 @@ int StrCmpLogicalEx(const char* s1, int l1, const char* s2, int l2, BOOL* numeri
             }
         }
 
-        if (isStr1 || isStr2) // comparison of text, dots, or mixed pairs of text, dot, or number (everything except two numbers compares as strings)
+        if (isStr1 || isStr2) // comparison of text, dots, or mixed pairs of text, dots, or numbers (everything except two numbers is compared as strings)
         {
             int ret;
             if (Configuration.SortUsesLocale)
@@ -90,13 +90,13 @@ int StrCmpLogicalEx(const char* s1, int l1, const char* s2, int l2, BOOL* numeri
                 return ret;
             }
         }
-        else // comparison of two numbers
+        else // compare two numbers
         {
             if (numBeg1 == NULL)
             {
                 if (numBeg2 == NULL) // both numbers are zero
                 {
-                    if (suggestion == 0) // only the first "suggested" result matters to us
+                    if (suggestion == 0) // only the first suggested result matters
                     {
                         if (end1 - beg1 > end2 - beg2)
                             suggestion = -1; // "000" < "00"
@@ -144,9 +144,9 @@ int StrCmpLogicalEx(const char* s1, int l1, const char* s2, int l2, BOOL* numeri
                                     *numericalyEqual = FALSE;
                                 return ret;
                             }
-                            else // the numeric values match; if they differ only by the number of leading zeros, take it into account in the suggested result
+                            else // the numeric values are equal; if they differ only in the number of leading zeros, reflect that in the suggested result
                             {
-                                if (suggestion == 0) // only the first "suggested" result matters to us
+                                if (suggestion == 0) // only the first suggested result matters
                                 {
                                     if (end1 - beg1 > end2 - beg2)
                                         suggestion = -1; // "0001" < "001"
@@ -168,7 +168,7 @@ int StrCmpLogicalEx(const char* s1, int l1, const char* s2, int l2, BOOL* numeri
 
     if (numericalyEqual != NULL)
         *numericalyEqual = TRUE; // s1 and s2 are identical or numerically equal
-    return suggestion;           // when equal or numerically equal, return the "suggested" result
+    return suggestion;           // if equal or numerically equal, return the suggested result
 }
 
 //
@@ -318,8 +318,8 @@ int CmpNameExt(const CFileData& f1, const CFileData& f2)
     //--- compare the whole Name (including Ext), same as Explorer
     int res = RegSetStrICmpEx(f1.Name, f1.NameLen, f2.Name, f2.NameLen, NULL);
     if (res != 0 || f1.Name == f2.Name)
-        return res; // if the addresses are identical, they must match
-                    //--- identical names (archives or FS) - try whether they differ at least in letter case
+        return res; // if the addresses are identical, they must be equal
+                    //--- identical names (archives or FS) - check whether they differ at least in letter case
     return RegSetStrCmpEx(f1.Name, f1.NameLen, f2.Name, f2.NameLen, NULL);
 }
 
@@ -422,10 +422,10 @@ BOOL LessExtName(const CFileData& f1, const CFileData& f2, BOOL reverse)
                                f2.Name, (*f2.Ext != 0) ? (int)(f2.Ext - 1 - f2.Name) : f2.NameLen,
                                &numericalyEqual2);
     if (numericalyEqual2 && res1 != 0)
-        return reverse ? res1 > 0 : res1 < 0; // extensions are identical or numerically equal and names are only numerically equal (name comparison has priority)
+        return reverse ? res1 > 0 : res1 < 0; // extensions are identical or numerically equal, and the names are only numerically equal (name comparison takes precedence)
     else
     {
-        if (res2 == 0 && f1.Name != f2.Name) // identical names (archives or FS) - try whether they differ at least in letter case
+        if (res2 == 0 && f1.Name != f2.Name) // identical names (archives or FS) - check whether they differ at least in letter case
         {
             res1 = RegSetStrCmpEx(f1.Ext, f1.NameLen - (int)(f1.Ext - f1.Name),
                                   f2.Ext, f2.NameLen - (int)(f2.Ext - f2.Name),
@@ -437,7 +437,7 @@ BOOL LessExtName(const CFileData& f1, const CFileData& f2, BOOL reverse)
                                   f2.Name, (*f2.Ext != 0) ? (int)(f2.Ext - 1 - f2.Name) : f2.NameLen,
                                   &numericalyEqual2);
             if (numericalyEqual2 && res1 != 0)
-                return reverse ? res1 > 0 : res1 < 0; // names are identical or numerically equal and extensions are only numerically equal (extension comparison has priority)
+                return reverse ? res1 > 0 : res1 < 0; // names are identical or numerically equal, and the extensions are only numerically equal (extension comparison takes precedence)
         }
         return reverse ? res2 > 0 : res2 < 0;
     }
