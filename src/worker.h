@@ -16,7 +16,7 @@
 #define CHATTRS_FILE_SIZE CQuadWord(500, 0)
 #define MAX_OP_FILESIZE 6500 // WARNING: highest allowed value in this group
 
-// 4/2012 - increased the buffer to ten times the old size; large files over the network now reach speeds 
+// 4/2012 - increased the buffer to ten times the old size; large files over the network now reach speeds
 // comparable to Total Commander and finish 2-3x faster than with the previous one-tenth buffer
 // verified on local disks and across the network; I see no downside to the larger buffer
 #define OPERATION_BUFFER (10 * 32768)          // 320KB buffer for Copy and Move
@@ -131,9 +131,9 @@ public:
     void BytesReceived(DWORD count, DWORD time, DWORD maxPacketSize);
 
     // tunes 'progressBufferLimit' according to current received packets data;
-    // 'lastFileBlockCount' is the limit we must not cross (we consider only continuous 
+    // 'lastFileBlockCount' is the limit we must not cross (we consider only continuous
     // copying of a single file; the counter 'lastFileBlockCount' is overflow-safe and
-    // values > 1000000 simply mean "a lot", the exact figure is irrelevant); 'lastFileStartTime' 
+    // values > 1000000 simply mean "a lot", the exact figure is irrelevant); 'lastFileStartTime'
     // is the GetTickCount() captured when the most recent file copy started
     void AdjustProgressBufferLimit(DWORD* progressBufferLimit, DWORD lastFileBlockCount,
                                    DWORD lastFileStartTime);
