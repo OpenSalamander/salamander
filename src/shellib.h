@@ -123,7 +123,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -345,7 +345,7 @@ public:
                               const wchar_t* mapW);
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -433,7 +433,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
