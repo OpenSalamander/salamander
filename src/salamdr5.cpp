@@ -75,7 +75,7 @@ BOOL InitializeCheckThread()
     // try to start the first check-path thread
     DWORD ThreadID;
     ThreadCheckPath[0] = HANDLES(CreateThread(NULL, 0, ThreadCheckPathF, (void*)0, 0, &ThreadID));
-    if (ThreadCheckPath[0] == NULL) // it failed, but that is fine ...
+    if (ThreadCheckPath[0] == NULL) // failure here is acceptable...
     {
         TRACE_E("Unable to start the first CheckPath thread.");
     }
@@ -139,7 +139,7 @@ CPF_AGAIN:
     {
         CPFirstFree = TRUE;                          // for entering the thread, otherwise a redundant safeguard ;-)
                                                      //    TRACE_I("First check-path thread: Wait for start");
-        WaitForSingleObject(CPFirstStart, INFINITE); // wait for startup or termination
+        WaitForSingleObject(CPFirstStart, INFINITE); // wait for the start signal or termination
                                                      //    TRACE_I("First check-path thread: Wait satisfied");
         CPFirstFree = FALSE;
         if (CPFirstTerminate) // termination
@@ -157,7 +157,7 @@ CPF_AGAIN:
     BOOL threadValid = (SalGetFileAttributes(threadPath) != 0xFFFFFFFF);
     DWORD error = GetLastError();
     if (!threadValid && error == ERROR_INVALID_PARAMETER) // reports on the root of removable media (CD/DVD, ZIP)
-        error = ERROR_NOT_READY;                          // bit of a hack,but basically it is about the "not ready" issue and not "invalid parameter" ;-)
+        error = ERROR_NOT_READY;                          // Treat this as a "not ready" problem, not "invalid parameter".
 
     // We are bypassing an error when reading attributes (since W2K, reading attributes can be disabled in Properties/Security), at least on fixed disks.
     if (!threadValid && error == ERROR_ACCESS_DENIED &&
@@ -175,9 +175,9 @@ CPF_AGAIN:
             HANDLE find = HANDLES_Q(FindFirstFile(threadPath, &data));
             if (find != INVALID_HANDLE_VALUE)
             {
-                // the path is probably OK after all (cannot be used without the fixed-disk test, unfortunately FindFirstFile
-                // most likely runs from the cache because a disconnected network disk happily starts listing, so
-                // for check-path it is unusable (we already had it and had to replace it))
+                // the path is probably OK after all (unfortunately this cannot be used without the fixed-disk test; FindFirstFile
+                // most likely uses the cache, because it will happily start listing a disconnected network drive, so
+                // it is unusable for check-path (it was already used here once and had to be replaced))
                 threadValid = TRUE;
                 HANDLES(FindClose(find));
             }
@@ -336,7 +336,7 @@ RETRY:
                 else
                     lastError = ERROR_SUCCESS;
             }
-            else // network path -> go to one of the secondary threads
+            else // network path -> run in one of the worker threads
             {
                 Sleep(100); // take a short break and test again
                 goto TEST_AGAIN;
@@ -374,7 +374,7 @@ RETRY:
             {
                 DWORD exit;
                 GetAsyncKeyState(VK_ESCAPE); // init GetAsyncKeyState - see help
-                if (freeThreadIndex == 0)    // first check-path thread, completion check
+                if (freeThreadIndex == 0)    // check whether the first check-path thread has finished
                 {
                     if (WaitForSingleObject(CPFirstEnd, 200) != WAIT_TIMEOUT) // 200 ms - grace period
                     {
@@ -415,7 +415,7 @@ RETRY:
 
                         if (freeThreadIndex == 0) // first check-path thread, completion check
                         {
-                            if (WaitForSingleObject(CPFirstEnd, 200) != WAIT_TIMEOUT) // 200 ms before the next test
+                            if (WaitForSingleObject(CPFirstEnd, 200) != WAIT_TIMEOUT) // 200 ms before the next check
                             {
                                 exit = CPFirstExit; // return value replacement
                             }
@@ -424,7 +424,7 @@ RETRY:
                         }
                         else
                         {
-                            WaitForSingleObject(ThreadCheckPath[freeThreadIndex], 200); // 200 ms before the next test
+                            WaitForSingleObject(ThreadCheckPath[freeThreadIndex], 200); // 200 ms before the next check
                             if (!GetExitCodeThread(ThreadCheckPath[freeThreadIndex], &exit))
                                 exit = STILL_ACTIVE;
                         }
@@ -433,7 +433,7 @@ RETRY:
                     }
                     DestroySafeWaitWindow();
                 }
-                if (exit == 0) // it was completed successfully
+                if (exit == 0) // completed successfully
                 {
                     valid = ThreadValid;
                     lastError = ThreadLastError;
@@ -447,7 +447,7 @@ RETRY:
                 else // it was terminated; let it finish
                 {
                     valid = FALSE;
-                    lastError = ERROR_USER_TERMINATED; // my error code
+                    lastError = ERROR_USER_TERMINATED; // internal error code
 
                     MSG msg; // discard buffered ESC
                     while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
@@ -558,7 +558,7 @@ BOOL SalCheckAndRestorePath(HWND parent, const char* path, BOOL tryNet)
                         ok = TRUE;
                 }
             }
-            else // if the user does not have an account on the requested machine at all
+            else // if the user does not have an account on the target machine
             {
                 // test the accessibility of the UNC path and let the user log in if necessary
                 if (CheckAndConnectUNCNetworkPath(parent, path, pathInvalid, FALSE))
@@ -630,7 +630,7 @@ _CHECK_AGAIN:
                 if (!donotReconnect && CheckAndRestoreNetworkConnection(parent, path[0], pathInvalid))
                     continue;
             }
-            else // if the user does not have an account on the requested machine at all
+            else // if the user does not have an account on the target machine
             {
                 // we test the accessibility of the UNC path and let the user log in if necessary
                 if (CheckAndConnectUNCNetworkPath(parent, path, pathInvalid, donotReconnect))
@@ -771,7 +771,7 @@ PARSE_AGAIN:
             char root[MAX_PATH];
             GetRootPath(root, path);
 
-            // we do not test network paths if they were recently accessed
+            // do not test network paths if we have just accessed them
             BOOL tryNet = !curPathIsDiskOrArchive || curPath == NULL || !HasTheSameRootPath(root, curPath);
 
             // we check/reconnect the root path; if the root path works, the rest of the path should work as well
@@ -793,17 +793,17 @@ PARSE_AGAIN:
 
             // if the path contains a mask, cut it off without calling SalGetFileAttributes
             BOOL hasMask = FALSE;
-            if (end > afterRoot) // not just the root yet
+            if (end > afterRoot) // not just the root
             {
                 char* end2 = end;
-                while (*--end2 != '\\') // it is certain that there is at least one '\\' after the root path
+                while (*--end2 != '\\') // there is guaranteed to be at least one '\\' after the root path
                 {
                     if (*end2 == '*' || *end2 == '?')
                         hasMask = TRUE;
                 }
                 if (hasMask) // the name contains a mask -> trim it
                 {
-                    CutSpacesFromBothSides(end2 + 1); // spaces at the beginning and end of the mask must be removed at all costs; they only cause trouble (e.g. "*.* " + "a" = "a. ")
+                    CutSpacesFromBothSides(end2 + 1); // spaces at the beginning and end of the mask must be removed; they only cause problems (e.g. "*.* " + "a" = "a. ")
                     end = end2;
                     lastChar = *end;
                     *end = 0;
@@ -822,7 +822,7 @@ PARSE_AGAIN:
                     DWORD attrs = len2 < MAX_PATH ? SalGetFileAttributes(path) : 0xFFFFFFFF;
                     if (attrs != 0xFFFFFFFF) // this part of the path exists
                     {
-                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // it is a file
+                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // file
                         {
                             if (lastChar != 0 || backslashAtEnd || mustBePath) // is there a backslash after the archive name?
                             {
@@ -837,7 +837,7 @@ PARSE_AGAIN:
 
                                     return TRUE;
                                 }
-                                else // it was supposed to be an archive (a path inside the file is provided), report it loudly
+                                else // it should have been an archive (a path inside the file is specified), report an error
                                 {
                                     text = LoadStr(IDS_NOTARCHIVEPATH);
                                     if (error != NULL)
@@ -845,12 +845,12 @@ PARSE_AGAIN:
                                     break; // report the error
                                 }
                             }
-                            else // no trimming yet + no '\\' at the end -> this is a file overwrite
+                            else // nothing has been trimmed yet, and there is no '\\' at the end -> file overwrite
                             {
                                 // the existing path must not contain the file name, trim it...
                                 isDir = FALSE;
                                 while (*--end != '\\')
-                                    ;            // it is certain that there is at least one '\\' after the root path
+                                    ;            // there is definitely at least one '\\' after the root path
                                 lastChar = *end; // so the path is not destroyed
                                 break;           // ordinary Windows path - but to a file
                             }
@@ -874,7 +874,7 @@ PARSE_AGAIN:
                 }
                 *end = lastChar; // restore 'path'
                 while (*--end != '\\')
-                    ; // it is certain that there is at least one '\\' after the root path
+                    ; // there is definitely at least one '\\' after the root path
                 lastChar = *end;
                 *end = 0;
             }
@@ -929,7 +929,7 @@ BOOL SalSplitWindowsPath(HWND parent, const char* title, const char* errorTitle,
     {
         if (mask - 1 > path && *(mask - 2) == '\\' &&
             (mask - 1 > afterRoot || *path == '\\'))           // not a root or it is a UNC root
-        {                                                      // it is necessary to remove the redundant backslash from the end of the string
+        {                                                      // remove the redundant backslash from the end of the string
             memmove(mask - 2, mask - 1, 1 + strlen(mask) + 1); // '\0' + mask + '\0'
             mask--;
         }
@@ -1014,7 +1014,7 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
 
     if (pathIsDir) // the existing part of the path is a directory
     {
-        if (*secondPart != 0) // there is also a non-existent part of the path here
+        if (*secondPart != 0) // the path also contains a non-existent part
         {
             // analyze the non-existent part of the path - file/directory + mask?
             char* s = secondPart;
@@ -1033,7 +1033,7 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
                 }
             }
 
-            if (maskFrom != secondPart) // there is some path before the mask
+            if (maskFrom != secondPart) // path before the mask
             {
                 memcpy(tmpNewDirs, secondPart, maskFrom - secondPart);
                 tmpNewDirs[maskFrom - secondPart] = 0;
@@ -1072,9 +1072,9 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
                     strcpy(mask, "*.*");
                 }
             }
-            CutSpacesFromBothSides(mask); // spaces at the beginning and end of the mask must be removed at all costs; they only cause trouble
+            CutSpacesFromBothSides(mask); // remove spaces at the beginning and end of the mask; they only cause trouble
 
-            if (tmpNewDirs[0] != 0) // there are still new directories to create
+            if (tmpNewDirs[0] != 0) // new directories still need to be created
             {
                 if (newDirs != NULL) // creation is supported
                 {
@@ -1122,7 +1122,7 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
             }
             return TRUE; // leave the Copy/Move dialog loop and perform the operation
         }
-        else // there is no non-existent part of the path (the specified path exists completely)
+        else // no part of the path is missing (the specified path fully exists)
         {
             if (dirName != NULL && curPath != NULL &&
                 !backslashAtEnd && selCount <= 1) // without '\\' at the end of the path (force directory) + one source
@@ -1157,7 +1157,7 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
             return TRUE; // leave the Copy/Move dialog loop and perform the operation
         }
     }
-    else // file overwrite - 'secondPart' points to the file name in the 'path'
+    else // file overwrite - 'secondPart' points to the file name in path 'path'
     {
         char* nameEnd = secondPart;
         while (*nameEnd != 0 && *nameEnd != '\\')
@@ -1179,7 +1179,7 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
             // CutSpacesFromBothSides(mask); // cannot do that here: a file with exactly this name exists; removing the spaces would point to a different file (not a problem: the "invalid" file already existed before the operation, nothing new "invalid" will be created)
             return TRUE; // leave the Copy/Move dialog loop and perform the operation
         }
-        else // path into the archive? not possible here...
+        else // archive path? not supported here...
         {
             SalMessageBox(parent, LoadStr(IDS_ARCPATHNOTSUPPORTED), errorTitle, MB_OK | MB_ICONEXCLAMATION);
             if (backslashAtEnd)
@@ -1218,15 +1218,15 @@ BOOL FileNameIsInvalid(const char* name, BOOL isFullName, BOOL ignInvalidName)
     if (*s == ':')
         return TRUE;
     if (ignInvalidName)
-        return FALSE; // periods and spaces at the end do not concern us now (a directory of that name can exist on the disk)
+        return FALSE; // trailing periods and spaces do not matter here (a directory with that name can exist on disk)
     int nameLen = (int)(s - name);
     return nameLen > 0 && (name[nameLen - 1] <= ' ' || name[nameLen - 1] == '.');
 }
 
 BOOL SalMoveFile(const char* srcName, const char* destName)
 {
-    // if the name ends with a space/period, we must append '\\', otherwise MoveFile
-    // spaces/periods are trimmed and it therefore works with a different name
+    // if the name ends with a space or period, we must append '\\', otherwise MoveFile
+    // trims the spaces or periods and therefore works with a different name
     char srcNameCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(srcName, srcNameCopy);
     char destNameCopy[3 * MAX_PATH];
@@ -1378,7 +1378,7 @@ BOOL CSystemPolicies::GetMyCanRun(const char* fileName)
     while (*p != 0 && *p == ' ')
         p++;
     if (strlen(p) >= MAX_PATH)
-        return RestrictRun == 0; // forbid execution if only selected commands are allowed to run (this one could not be separated from the command line)
+        return RestrictRun == 0; // disallow execution if only selected commands are allowed (this command could not be separated from the command line)
     char name[MAX_PATH];
     lstrcpyn(name, p, MAX_PATH);
     // trim spaces from the right
@@ -1490,9 +1490,9 @@ BOOL SalGetFileSize2(const char* fileName, CQuadWord& size, DWORD* err)
 DWORD SalGetFileAttributes(const char* fileName)
 {
     CALL_STACK_MESSAGE2("SalGetFileAttributes(%s)", fileName);
-    // if the path ends with a space/period, we must append '\\', otherwise GetFileAttributes
-    // trims spaces/periods and works with a different path; it does not work for files,
-    // but it is still better than retrieving attributes of a different file/directory (for "c:\\file.txt   "
+    // if the path ends with a space or period, we must append '\\'; otherwise GetFileAttributes
+    // trims spaces and periods and works with a different path; although this does not work for files,
+    // it is still better than retrieving attributes of a different file or directory (for "c:\\file.txt   "
     // it works with the name "c:\\file.txt")
     char fileNameCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(fileName, fileNameCopy);
@@ -1595,7 +1595,7 @@ BOOL IsLantasticDrive(const char* path, char* lastLantasticCheckRoot, BOOL& last
 
     GetRootPath(lastLantasticCheckRoot, path);
     lastIsLantasticPath = FALSE;
-    if (path[0] != '\\') // not UNC - it may not be a network path (it cannot be LANTASTIC)
+    if (path[0] != '\\') // not UNC - it does not have to be a network path (it cannot be LANTASTIC)
     {
         if (GetDriveType(lastLantasticCheckRoot) != DRIVE_REMOTE)
             return FALSE; // not a network path
@@ -1699,13 +1699,13 @@ BOOL SalIsValidFileNameComponent(const char* fileNameComponent)
     const char* s = fileNameComponent + strlen(fileNameComponent);
     if (s - fileNameComponent > MAX_PATH - 4)
         return FALSE;
-    // test white-spaces and '.' at the end of the name (the file system would trim them)
+    // Check for whitespace and '.' at the end of the name (the file system would trim them)
     s--;
     if (s >= start && (*s <= ' ' || *s == '.'))
         return FALSE;
 
     BOOL testSimple = TRUE;
-    BOOL simple = TRUE; // TRUE = risk of "lpt1", "prn" and other critical names, better append '_'
+    BOOL simple = TRUE; // TRUE = names like "lpt1", "prn", and other reserved names may occur, so append '_'
     BOOL wasSpace = FALSE;
 
     while (*fileNameComponent != 0)
@@ -1727,7 +1727,7 @@ BOOL SalIsValidFileNameComponent(const char* fileNameComponent)
         {
             wasSpace = TRUE;
             if (*fileNameComponent != ' ')
-                return FALSE; // disallowed white-space
+                return FALSE; // disallowed whitespace
         }
         else
         {
@@ -1753,7 +1753,7 @@ BOOL SalIsValidFileNameComponent(const char* fileNameComponent)
         fileNameComponent++;
     }
     if (simple && IsDeviceNameAux(start, fileNameComponent))
-        return FALSE; // simple name + device
+        return FALSE; // simple name that matches a device name
     return TRUE;
 }
 
@@ -1761,7 +1761,7 @@ void SalMakeValidFileNameComponent(char* fileNameComponent)
 {
     char* start = fileNameComponent;
     BOOL testSimple = TRUE;
-    BOOL simple = TRUE; // TRUE = risk of "lpt1", "prn" and other critical names, better append '_'
+    BOOL simple = TRUE; // TRUE = risk of "lpt1", "prn", and other reserved device names, better append '_'
     BOOL wasSpace = FALSE;
     // removal of leading white-spaces (Petr: commented out because spaces at the beginning of file and directory names are simply allowed)
     /*
@@ -1785,7 +1785,7 @@ void SalMakeValidFileNameComponent(char* fileNameComponent)
         s--;
     if (s >= start)
         *(s + 1) = 0;
-    else // empty string or a sequence of '.' characters and white-spaces -> replace with the name "_" (the system trims all of this as well)
+    else // empty string or a sequence of '.' characters and whitespace -> replace with "_" (the system trims all of this as well)
     {
         strcpy(start, "_");
         simple = FALSE;
@@ -1870,7 +1870,7 @@ void SetThreadNameInVC(LPCSTR szThreadName)
     THREADNAME_INFO info;
     info.dwType = 0x1000;
     info.szName = szThreadName;
-    info.dwThreadID = -1 /* caller thread */;
+    info.dwThreadID = -1 /* calling thread */;
     info.dwFlags = 0;
 
     __try
