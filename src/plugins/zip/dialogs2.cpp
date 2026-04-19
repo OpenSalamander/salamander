@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -130,7 +131,7 @@ CAdvancedSEDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SalamanderGeneral->OpenHtmlHelp(Dlg, HHCDisplayContext, IDD_ADVANCEDSE, FALSE);
             return TRUE;
 
-        //spec dir menu
+        //special directory menu
         case CM_TEMP:
         case CM_PROGFILES:
         case CM_WINDIR:
@@ -814,23 +815,23 @@ int CompareMenuItems(char* name1, char* name2)
 
     return SalamanderGeneral->StrICmp(buf1, buf2);
 
-    /* this was case sensitive, otherwise OK
-  int ret = 0 ;
+    /* this was case-sensitive, but otherwise OK
+      int ret = 0 ;
 
-  while (!(ret = *(unsigned char *)(*name1 == '&' ? name1++ : name1) -
-                 *(unsigned char *)(*name2 == '&' ? name2++ : name2)) && *name2)
-      ++name1, ++name2;
+      while (!(ret = *(unsigned char *)(*name1 == '&' ? name1++ : name1) -
+                     *(unsigned char *)(*name2 == '&' ? name2++ : name2)) && *name2)
+          ++name1, ++name2;
 
-  if (ret < 0)
-    ret = -1;
-  else
-  {
-    if (ret > 0)
-      ret = 1;
-  }
+      if (ret < 0)
+        ret = -1;
+      else
+      {
+        if (ret > 0)
+          ret = 1;
+      }
 
-  return ret;
-*/
+      return ret;
+    */
 }
 
 void SortFavoriteSettings(int left, int right)
@@ -1092,7 +1093,7 @@ BOOL CAdvancedSEDialog::OnImport()
                         GetModuleFileName(DLLInstance, settings.IconFile, MAX_PATH);
                         settings.IconIndex = -IDI_SFXICON;
                         // load them a second time to get the texts (these parameters are optional)
-                        // if they are not provided, use the texts from the SFX package, either the specified
+                        // if they are not specified, the texts from the SFX package are used, either the specified one
                         // or the default one
                         ImportSFXSettings(buffer, &settings, zip2sfxDir);
 
@@ -1336,8 +1337,8 @@ BOOL CAdvancedSEDialog::OnResetValues()
 {
     CALL_STACK_MESSAGE1("CAdvancedSEDialog::OnResetValues()");
 
-    // we cannot directly use TmpSfxSettings = DefOptions.SfxSetting, because it would overwrite
-    // the icon, which might then become invalid
+    // We cannot directly use TmpSfxSettings = DefOptions.SfxSettings, because it would overwrite
+    // the icon, which could then be invalid.
     TmpSfxSettings.Flags = DefOptions.SfxSettings.Flags;
     *TmpSfxSettings.Command = 0;
     lstrcpy(TmpSfxSettings.TargetDir, DefOptions.SfxSettings.TargetDir);
@@ -1773,7 +1774,7 @@ BOOL CSfxTextsDialog::OnInit(WPARAM wParam, LPARAM lParam)
 {
     CALL_STACK_MESSAGE1("CSfxTextsDialog::OnInit");
 
-    //!note: below we rely strictly on the order
+    //!below we rely strictly on the order
     int i = 0;
     SendDlgItemMessage(Dlg, IDC_MBOXBUTTONS, CB_ADDSTRING, 0, (LPARAM)LoadStr(IDS_MBOK));
     SendDlgItemMessage(Dlg, IDC_MBOXBUTTONS, CB_SETITEMDATA, i++, (LPARAM)MB_OK);
