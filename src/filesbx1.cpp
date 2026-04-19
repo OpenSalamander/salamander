@@ -826,7 +826,7 @@ BOOL CFilesBox::IsItemVisible(int index, BOOL* isFullyVisible)
         break;
     }
     }
-    return TRUE; // it is visible
+    return TRUE; // visible
 }
 
 // assumes scroll == FALSE - the whole item will be visible
@@ -945,7 +945,7 @@ void CFilesBox::EnsureItemVisible2(int newTopIndex, int index)
 
 void CFilesBox::OnHScroll(int scrollCode, int pos)
 {
-    if (Parent->DragBox && !Parent->ScrollingWindow) // dragging the cage - block mouse wheel scrolling
+    if (Parent->DragBox && !Parent->ScrollingWindow) // dragging the DragBox - block mouse wheel scrolling
         return;
     if (ViewMode == vmDetailed)
     {
@@ -1431,7 +1431,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEACTIVATE:
     {
         if (MainWindow->HasLockedUI())
-            break; // when the UI is locked we want a click on the panel to bring Salamander to front
+            break; // when the UI is locked, we want a click on the panel to bring Salamander to the front
         if (LOWORD(lParam) == HTCLIENT)
         {
             if (!IsIconic(MainWindow->HWindow) &&
@@ -1632,7 +1632,7 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // therefore we will now also catch the message in individual windows where it can potentially appear (depending on focus)
         // and then route it so that it is delivered to the window under the cursor, as we always did
 
-        // if the message arrived "recently" through the other channel, ignore this one
+        // if the message was delivered "recently" through the other channel, ignore this one
         if (MouseWheelMSGThroughHook && MouseWheelMSGTime != 0 && (GetTickCount() - MouseWheelMSGTime < MOUSEWHEELMSG_VALID))
             return 0;
         MouseWheelMSGThroughHook = FALSE;
@@ -1699,9 +1699,9 @@ CFilesBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     wheelScroll = max(1, min(wheelScroll, si.nPage - 1)); // limit at most to page height
                 }
 
-                // wheelScrollLines under WinVista with IntelliMouse Explorer 4.0 and IntelliPoint drivers is 40 at maximum wheel speed
-                // stepsPerLine would then be 120 / 31 = 3.870967..., after truncation 3, which is a large rounding error
-                // therefore I multiply values by 1000 to push the error three orders further
+                // Under WinVista with IntelliMouse Explorer 4.0 and IntelliPoint drivers, wheelScrollLines is 40 at the highest wheel speed
+                // stepsPerLine would then be 120 / 31 = 3.870967..., which truncates to 3 and causes a large rounding error
+                // therefore the values are multiplied by 1000 to move the error three orders of magnitude further
                 MouseWheelAccumulator += 1000 * zDelta;
                 int stepsPerLine = max(1, (1000 * WHEEL_DELTA) / wheelScroll);
                 int linesToScroll = MouseWheelAccumulator / stepsPerLine;
@@ -2016,7 +2016,7 @@ int CFilesBox::GetIndex(int x, int y, BOOL nearest, RECT* labelRect)
             SelectObject(hDC, hOldFont);
             maxWidth += 4;
 
-            if (isItemUpDir) // updir is just "..", we must extend it to the displayed size
+            if (isItemUpDir) // updir is only ".."; we must widen it to the displayed width
             {
                 // see CFilesWindow::DrawIconThumbnailItem
                 maxWidth = max(maxWidth, (Parent->GetViewMode() == vmThumbnails ? ThumbnailWidth : 32) + 4);
@@ -2075,7 +2075,7 @@ int CFilesBox::GetIndex(int x, int y, BOOL nearest, RECT* labelRect)
             int maxTextWidth = ItemWidth - TILE_LEFT_MARGIN - IconSizes[ICONSIZE_48] - TILE_LEFT_MARGIN - 4;
             int widthNeeded = 0;
 
-            char buff[3 * 512]; // destination buffer for strings
+            char buff[3 * 512]; // buffer for strings
             char* out0 = buff;
             int out0Len;
             char* out1 = buff + 512;
