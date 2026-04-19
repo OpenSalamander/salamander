@@ -438,7 +438,7 @@ void CFindTBHeader::StartFlashIcon()
 {
     StopFlash = FALSE;
     if (GetForegroundWindow() != HNotifyWindow)
-        SendMessage(HNotifyWindow, WM_USER_FLASHICON, 0, 0); // if we are not active, postpone flashing
+        SendMessage(HNotifyWindow, WM_USER_FLASHICON, 0, 0); // if we are not active, defer flashing until later
     else
         SetTimer(HWindow, IDT_FLASHICON, FLASH_ICON_DELAY, NULL);
     FlashIconCounter = FLASH_ICON_COUNT;
@@ -1235,7 +1235,7 @@ BOOL CFindDialog::GetCommonPrefixPath(char* buffer, int bufferMax, int& commonPr
                     pathLen = count;
                 }
                 if (count == 0)
-                    return FALSE; // there is no common path part
+                    return FALSE; // no common part of the path
             }
         }
     } while (index != -1);
@@ -1394,10 +1394,10 @@ void CFindDialog::OnDrag(BOOL rightMouseButton)
     {
         // returns dwEffect == 0 for MOVE, see the "Handling Shell Data Transfer Scenarios" section
         // "Handling Optimized Move Operations": http://msdn.microsoft.com/en-us/library/windows/desktop/bb776904%28v=vs.85%29.aspx
-        // shortened: an optimized Move is performed, meaning no copy is made to the target followed by deletion
-        //            of the original. this avoids accidentally deleting the source before it’s actually moved (which might not be moved yet),
-        //            the operation returns DROPEFFECT_NONE or DROPEFFECT_COPY,
-        // so we implement this workaround
+        // shortened: an optimized Move is performed, meaning no copy to the target followed by deletion
+        //            of the original is done, so the source does not accidentally delete the original before it
+        //            is actually moved; the operation result is DROPEFFECT_NONE or DROPEFFECT_COPY,
+        // so we use this workaround
         if (!rightMouseButton && // right button has a menu: dropSource->LastEffect contains the effect before showing the menu, not the final one: the final effect (except for Move) is in dwEffect -  for Move it is 0, same as for Cancel, so we cannot distinguish Move from Cancel and therefore we’d better not delete anything
             (dropSource->LastEffect & DROPEFFECT_MOVE))
         {
