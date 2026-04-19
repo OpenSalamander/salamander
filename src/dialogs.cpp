@@ -126,7 +126,7 @@ void CChangeAttrDialog::Transfer(CTransferInfo& ti)
         DateTime_SetSystemtime(HModifiedDate, GDT_NONE, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_NONE, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_NONE, &TimeAccessed);
-        // fill in the times
+        // populate the time fields
         DateTime_SetSystemtime(HModifiedTime, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedTime, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedTime, GDT_VALID, &TimeAccessed);
@@ -310,7 +310,7 @@ unsigned ThreadProgressDlgBody(void* parameter)
 
     CProgressDialog dlg(NULL, data->Script, data->Caption, attrsData, convertData, TRUE, data);
     INT_PTR res = dlg.Execute();
-    if (res == 0 || res == -1 || res == IDABORT) // failed to open the dialog or worker thread
+    if (res == 0 || res == -1 || res == IDABORT) // failed to open the dialog or start the worker thread
         SetEvent(data->ContEvent);               // let the main thread continue (opening the dialog or starting the operation failed)
 
     if (workPath1[0] != 0)
@@ -683,7 +683,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             WorkerNotSuspended = NULL;
             HANDLES(CloseHandle(WContinue));
             WContinue = NULL;
-            EndDialog(HWindow, IDABORT); // fatal error
+            EndDialog(HWindow, IDABORT); // abort
         }
         else
         {
@@ -918,7 +918,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == IDT_REPAINT)
         {
-            if (!FlushCachedData()) // WM_USER_SETDIALOG did not arrive, we can safely cancel the timer
+            if (!FlushCachedData()) // WM_USER_SETDIALOG was not received, so the timer can be safely canceled
             {
                 TimerIsRunning = FALSE;
                 KillTimer(HWindow, IDT_REPAINT);
@@ -993,7 +993,7 @@ CProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 */
                         secs.Value++;                                                        // add one second so we finish the operation with "time left: 1 sec" (instead of 0 sec)
 
-                        // rounding calculation (roughly 10% error + rounded to nice numbers 1,2,5,10,20,40)
+                        // rounding calculation (approximately 10% error; rounded to nice values: 1, 2, 5, 10, 20, 40)
                         CQuadWord dif = (secs + CQuadWord(5, 0)) / CQuadWord(10, 0);
                         int expon = 0;
                         while (dif >= CQuadWord(50, 0))
@@ -1205,7 +1205,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
     {
         if (CanClose)
         {
-            if (!IsWindowEnabled(HWindow)) // there is a modal dialog above this dialog (a message box asking about operation canceling or reporting an error)
+            if (!IsWindowEnabled(HWindow)) // a modal dialog is open over this dialog (a message box asking whether to cancel the operation or reporting an operation error)
                 CloseAllOwnedEnabledDialogs(HWindow);
             CancelWorker = TRUE; // set worker cancel
             EnableWindow(GetDlgItem(HWindow, IDB_PAUSERESUME), FALSE);
@@ -1235,7 +1235,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 SetThreadPriority(Worker, THREAD_PRIORITY_NORMAL);
             AcceptCommands = TRUE;
         }
-        if (!IsWindowEnabled(HWindow)) // there is a modal window above this dialog (a message box asking about operation canceling or reporting an error)
+        if (!IsWindowEnabled(HWindow)) // a modal window is open over this dialog (a message box asking whether to cancel the operation or reporting an operation error)
         {
             HWND dlg = GetLastActivePopup(HWindow);
             if (dlg != NULL && dlg != HWindow)
@@ -1269,7 +1269,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
         if (RunningInOwnThread && !Configuration.AlwaysOnTop && GetForegroundWindow() == HWindow)
         {
             // Prior to Windows Vista we only called GetNextWindow(), which was enough to reach the next window in the Z-order.
-            // Vista introduced new hidden helper windows such as "MSCTFIME UI" and "Default IME" that sit between us and 
+            // Vista introduced new hidden helper windows such as "MSCTFIME UI" and "Default IME" that sit between us and
             // our window (main, viver, ect.). So we skip hidden windows here.
             BOOL valid;
             HWND hNext = HWindow;
@@ -1353,8 +1353,8 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 int ret = SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION),
                                         LoadStr(IDS_QUESTION),
                                         MB_YESNO | MB_ICONQUESTION /*| MSGBOXEX_ESCAPEENABLED*/); // Escape key is not a good
-                // idea -- Zarevak accidentally started deleting a large batch of files, then began hitting Escape (the machine was 
-                // heavily loaded so it did not respond immediately) canceling the confirmation, therefore the confirmation can 
+                // idea -- Zarevak accidentally started deleting a large batch of files, then began hitting Escape (the machine was
+                // heavily loaded so it did not respond immediately) canceling the confirmation, therefore the confirmation can
                 // no longer be closed with Escape.
 
                 //            BeginSuspendMode();  // we are doing something again ...
@@ -1379,10 +1379,10 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 if ((CancelWorker || ShowPause) && // only if it's Cancel or the operation isn't paused
                     WorkerNotSuspended != NULL)
                 {
-                    SetEvent(WorkerNotSuspended); // may be NULL if the message box was closed from IDOK via WM_CLOSE
+                    SetEvent(WorkerNotSuspended); // may be NULL if the message box was closed by IDOK via WM_CLOSE
                 }
             }
-            return TRUE; // only the worker using IDOK will terminate the dialog ...
+            return TRUE; // only the worker can close the dialog using IDOK ...
         }
 
         case CM_RESUMEOPER:   // resume posted from the operations queue
@@ -1478,8 +1478,8 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
                 SetThreadPriority(Worker, THREAD_PRIORITY_NORMAL);
             AcceptCommands = TRUE;
         }
-        if (wParam == FALSE) // when deactivated we leave directories shown in the panels,
-        {                    // so they can be deleted, disconnected, etc. from other software
+        if (wParam == FALSE) // when deactivated, we leave the directories shown in the panels
+        {                    // so other software can delete or disconnect them
             if (!RunningInOwnThread && CanChangeDirectory())
                 SetCurrentDirectoryToSystem();
         }
@@ -2070,7 +2070,7 @@ CBetaExpiredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         hl = new CHyperLink(HWindow, IDC_BETAEXPIREDURL);
         if (hl != NULL)
         {
-            // if the environment is Czech or Slovak, we will automatically show the Czech version of the web
+            // if the language is Czech or Slovak, automatically show the Czech version of the website
             BOOL english = LanguageID != 0x405 /* Czech */ && LanguageID != 0x41B /* Slovak */;
 
             const char* url =
@@ -2100,7 +2100,7 @@ CBetaExpiredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         sprintf(buff, orig, today, expired);
         SetDlgItemText(HWindow, IDC_BETAEXPIREDDATE, buff);
 
-        // the OK button will show numbers counting down, store the original text
+        // The OK button will display countdown numbers; store the original text.
         GetDlgItemText(HWindow, IDOK, OldOK, 100);
 
         EnableWindow(GetDlgItem(HWindow, IDOK), FALSE);
@@ -2186,7 +2186,7 @@ void CSetSpeedLimDialog::Transfer(CTransferInfo& ti)
             {
                 speedLimNum /= 1024;
                 speedLimUnits++;
-                if (speedLimNum == 0 || speedLimUnits > 3) // should not happen, just for peace of mind
+                if (speedLimNum == 0 || speedLimUnits > 3) // cannot occur; defensive check
                 {
                     TRACE_E("CSetSpeedLimDialog::Transfer(): unexpected situation!");
                     speedLimNum = 4;
