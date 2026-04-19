@@ -171,7 +171,7 @@ CSalamanderSafeFile::SafeFileCreate(const char* fileName,
                                 break;
                             }
                         }
-                        if (tmpName[0] != 0) // if we managed to "clean up" the conflicting file/directory, try creating the target
+                        if (tmpName[0] != 0) // if we managed to "clean up" the conflicting file/directory, try creating the target file/directory
                         {                    // file/directory and then restore the original name to the "cleaned" file/directory
                             hFile = INVALID_HANDLE_VALUE;
                             //              if (!isDir)   // file
@@ -211,7 +211,7 @@ CSalamanderSafeFile::SafeFileCreate(const char* fileName,
         if (attrs & FILE_ATTRIBUTE_DIRECTORY)
         {
             int ret;
-            // it is a directory
+            // directory
             if (isDir)
             {
                 // if we wanted a directory, that is fine
@@ -414,7 +414,7 @@ CSalamanderSafeFile::SafeFileCreate(const char* fileName,
         if (!isDir)
         {
             char* ptr = strrchr(namecopy, '\\');
-            // does a path exist that we could create?
+            // is there a path that we could create?
             if (ptr == NULL)
                 goto CREATE_FILE;
             // if so, keep only the path
@@ -572,7 +572,7 @@ CSalamanderSafeFile::SafeFileCreate(const char* fileName,
             *++ptr = '\\';
             *++ptr = '\0';
         }
-        // add another one
+        // add another backslash
         const char* src = namecopy + strlen(namecpy2);
         while (*src == '\\')
             src++;
@@ -637,14 +637,14 @@ CREATE_FILE:
                                              CREATE_ALWAYS, dwFlagsAndAttributes, NULL))) == INVALID_HANDLE_VALUE)
         {
             DWORD err = GetLastError();
-            // handles the situation when a file needs to be overwritten on Samba:
-            // the file has permissions 440+different_owner and is in a directory where the current user can write to
-            // (it can be deleted, but not overwritten directly (cannot be opened for writing) - we work around it:
-            //  delete and create the file again)
-            // (on Samba it is possible to allow deleting read-only files, which allows deleting a read-only file,
-            //  otherwise it cannot be deleted because Windows cannot delete a read-only file and at the same time
-            //  the "read-only" attribute cannot be cleared on that file because the current user is not the owner)
-            if (DeleteFile(fileName)) // if it is read-only, it can be deleted only on Samba with "delete readonly" allowed
+            // handles the situation where a file needs to be overwritten on Samba:
+            // the file has permissions 440+another_owner and is in a directory where the current user can write
+            // (it can be deleted, but it cannot be overwritten directly because it cannot be opened for writing;
+            //  workaround: delete the file and create it again)
+            // (on Samba, deletion of read-only files can be allowed, which makes it possible to delete
+            //  a read-only file; otherwise it cannot be deleted because Windows cannot delete a read-only
+            //  file, and the "read-only" attribute cannot be cleared because the current user is not the owner)
+            if (DeleteFile(fileName)) // if it is read-only, it can be deleted only on Samba with "delete readonly" enabled
             {                         // add the handle to HANDLES at the end only if the SAFE_FILE structure is being filled
                 hFile = NOHANDLES(CreateFile(fileName, dwDesiredAccess, dwShareMode, NULL,
                                              CREATE_ALWAYS, dwFlagsAndAttributes, NULL));
@@ -757,7 +757,7 @@ CREATE_FILE:
     // return the result - if we got this far, we return success
     if (isDir)
         return (void*)1; // for a directory, just return anything other than INVALID_HANDLE_VALUE
-    if (file != NULL)    // our task is to initialize the SAFE_FILE structure
+    if (file != NULL)    // initialize the SAFE_FILE structure
     {
         file->FileName = DupStr(fileName);
         if (file->FileName == NULL)
@@ -889,7 +889,7 @@ BOOL CSalamanderSafeFile::SafeFileRead(SAFE_FILE* file, LPVOID lpBuffer,
     long currentSeekHi = 0;
     DWORD currentSeekLo = SetFilePointer(file->HFile, 0, &currentSeekHi, FILE_CURRENT);
     if (currentSeekLo == 0xFFFFFFFF && GetLastError() != NO_ERROR)
-        goto READ_ERROR; // cannot set the offset, try again
+        goto READ_ERROR; // Failed to set the offset, try again
 
     while (TRUE)
     {
@@ -999,7 +999,7 @@ BOOL CSalamanderSafeFile::SafeFileWrite(SAFE_FILE* file, LPVOID lpBuffer,
     long currentSeekHi = 0;
     DWORD currentSeekLo = SetFilePointer(file->HFile, 0, &currentSeekHi, FILE_CURRENT);
     if (currentSeekLo == 0xFFFFFFFF && GetLastError() != NO_ERROR)
-        goto WRITE_ERROR; // cannot set the offset, try again
+        goto WRITE_ERROR; // cannot set the offset; retry
 
     while (TRUE)
     {
@@ -1040,7 +1040,7 @@ BOOL CSalamanderSafeFile::SafeFileWrite(SAFE_FILE* file, LPVOID lpBuffer,
                     LONG hi = currentSeekHi;
                     lo = SetFilePointer(file->HFile, lo, &hi, FILE_BEGIN);
                     if (lo == 0xFFFFFFFF && GetLastError() != NO_ERROR)
-                        goto WRITE_ERROR; // cannot set the offset, try again
+                        goto WRITE_ERROR; // could not set the offset; try again
                     if (lo != (long)currentSeekLo || hi != currentSeekHi)
                     {
                         SetLastError(ERROR_SEEK_ON_DEVICE);
