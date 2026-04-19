@@ -72,7 +72,7 @@ protected:
     int TextLen; // Number of characters in 'Text' pointer without the terminator
     char* Size;
     int PathLen;          // -1 (the path occupies the entire Text); otherwise the path length in Text (the remainder is the filter)
-    BOOL History;         // Show the arrow between the text and the size?
+    BOOL History;         // Show the history drop-down arrow between the text and the size?
     BOOL Hidden;          // Show the filter symbol?
     int HiddenFilesCount; // how many files are filtered out?
     int HiddenDirsCount;  // And directories
