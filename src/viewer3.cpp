@@ -733,9 +733,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case SB_THUMBTRACK:
             {
-                // the actual scrolling runs from a timer because USB mice and MS scrollbars 
-                // misbehave otherwise: when the viewer is fullscreen, repainting the whole window 
-                // takes long enough that the stubborn scrollbar waits, so dragging feels like 
+                // the actual scrolling runs from a timer because USB mice and MS scrollbars
+                // misbehave otherwise: when the viewer is fullscreen, repainting the whole window
+                // takes long enough that the stubborn scrollbar waits, so dragging feels like
                 // a chewing gum; posting the scroll message or deferring painting did not help;
                 // a timer was the only reliable fix we found.
                 if (VScrollWParam == -1)
