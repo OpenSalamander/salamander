@@ -44,7 +44,7 @@ BOOL IsFakeDataObject(IDataObject* pDataObject, int* fakeType, char* srcFSPathBu
 // CFakeDragDropDataObject
 //
 // data object used to detect the target of a drag & drop operation (used during
-// extraction from an archive and when copying from a plug-in file system),
+// extraction from an archive and when copying from a plugin file system),
 // it encapsulates the Windows data object obtained for the "fake" directory and adds
 // the SALCF_FAKE_REALPATH format (defines the path that should appear after the drop
 // in the directory line, command line + blocks dropping to the usermenu toolbar),
@@ -89,7 +89,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -171,14 +171,14 @@ class CSalShExtPastedData
 protected:
     DWORD DataID; // version of data stored for Paste from the clipboard
 
-    BOOL Lock; // TRUE = it is locked against deletion, FALSE = not locked
+    BOOL Lock; // TRUE = locked against cancellation, FALSE = not locked
 
     char ArchiveFileName[MAX_PATH]; // full path to the archive
     char PathInArchive[MAX_PATH];   // path inside the archive where Copy to the clipboard happened
     CNames SelFilesAndDirs;         // names of files and directories from PathInArchive that will be extracted
 
     CSalamanderDirectory* StoredArchiveDir;             // stored archive structure (used if the archive is not open in the panel)
-    CPluginDataInterfaceEncapsulation StoredPluginData; // stored plug-in data interface of the archive (used if the archive is not open in the panel)
+    CPluginDataInterfaceEncapsulation StoredPluginData; // stored plugin data interface of the archive (used if the archive is not open in the panel)
     FILETIME StoredArchiveDate;                         // archive file`s date (for testing the validity of the archive listing)
     CQuadWord StoredArchiveSize;                        // archive file`s size (for testing the validity of the archive listing)
 
@@ -215,7 +215,7 @@ public:
                   FILETIME archiveDate, CQuadWord archiveSize);
 
     // returns TRUE if it is possible to unload the plugin 'plugin'; if the object contains
-    // data for the plug-in 'plugin', it tries to get rid of them so it can return TRUE
+    // data for the plugin 'plugin', it tries to get rid of them so it can return TRUE
     BOOL CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin);
 };
 
@@ -266,7 +266,7 @@ public:
     void SetCutOrCopyDone() { CutOrCopyDone = TRUE; }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void)
     {
@@ -291,7 +291,7 @@ public:
     {
         //      TRACE_I("QueryGetData");
         if (formatEtc->cfFormat == CF_HDROP)
-            return DV_E_FORMATETC; // this enforces a "NO" drop in simpler softwares (BOSS, WinCmd, SpeedCommander, MSIE, Word, etc.)
+            return DV_E_FORMATETC; // this ensures a "NO" drop in simpler applications (BOSS, WinCmd, SpeedCommander, MSIE, Word, etc.)
         return WinDataObject->QueryGetData(formatEtc);
     }
 
