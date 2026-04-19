@@ -139,9 +139,9 @@ CEditListBox::CEditListBox(HWND hDlg, int ctrlID, DWORD flags, CObjectOrigin ori
     int itemHeight = max(tm.tmHeight + 4, IconSizes[ICONSIZE_16]);
     SendMessage(HWindow, LB_SETITEMHEIGHT, 0, MAKELPARAM(itemHeight, 0));
 
-    // MakeDragList subclasses the list box and we stop receiving basic messages
-    // such as WM_LBUTTONDOWN, WM_MOUSEMOVE, ect. That makes this function unusable,
-    // so we implement drag&drop support ourselves.
+    // MakeDragList subclasses the list box, and we stop receiving basic messages
+    // such as WM_LBUTTONDOWN, WM_MOUSEMOVE, etc. This makes this function unusable,
+    // so drag-and-drop support is implemented directly here.
     //  MakeDragList(HWindow);
     //  DragNotify = RegisterWindowMessage(DRAGLISTMSGSTRING);
 }
@@ -835,7 +835,7 @@ CEditListBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_KEYUP:
     {
-        if (Dragging) // We don't want the listbox processing this if we are dragging.
+        if (Dragging) // We do not want the list box to process this while dragging.
             return 0;
         break;
     }
@@ -1077,7 +1077,7 @@ CEditListBox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (Dragging)
         {
             LRESULT ret = CWindow::WindowProc(uMsg, wParam, lParam);
-            return ret | DLGC_WANTMESSAGE; // we want Escape
+            return ret | DLGC_WANTMESSAGE; // handle Escape
         }
         break;
     }
