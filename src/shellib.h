@@ -96,13 +96,13 @@ private:
     DWORD MouseButton; // -1 = uninitialized value, otherwise MK_LBUTTON or MK_RBUTTON
 
 public:
-    // Last effect returned by GiveFeedback method - introduced because
+    // Last effect returned by the GiveFeedback method. Introduced because
     // DoDragDrop does not return dwEffect == DROPEFFECT_MOVE; for MOVE it returns dwEffect == 0.
-    // For the reasons, see "Handling Shell Data Transfer Scenarios", section "Handling Optimized Move Operations":
+    // For details, see "Handling Shell Data Transfer Scenarios", section "Handling Optimized Move Operations":
     // http://msdn.microsoft.com/en-us/library/windows/desktop/bb776904%28v=vs.85%29.aspx
-    // (shortly: an optimized Move is done, which means that it does not create a copy to the destination followed by deleting
-    //            the original, so that the source does not accidentally delete the original (it may not have been moved yet), and it receives
-    //            the operation result DROPEFFECT_NONE or DROPEFFECT_COPY)
+    // (in short: an optimized Move is performed, which means no copy to the destination followed by deletion
+    //            of the original is done; to prevent the source from accidentally deleting the original before it
+    //            has actually been moved, the operation returns DROPEFFECT_NONE or DROPEFFECT_COPY)
     DWORD LastEffect;
 
     BOOL DragFromPluginFSWithCopyAndMove; // dragging from the plugin FS with possible Copy and Move, details above
@@ -123,7 +123,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -132,7 +132,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // we must not touch the object, it no longer exists
+            return 0; // Do not touch the object; it no longer exists.
         }
         return RefCount;
     }
@@ -345,7 +345,7 @@ public:
                               const wchar_t* mapW);
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -354,7 +354,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // we must not touch the object, it no longer exists
+            return 0; // The object must not be accessed; it no longer exists
         }
         return RefCount;
     }
@@ -433,7 +433,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
