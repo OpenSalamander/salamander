@@ -113,7 +113,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
                     {
                         if (history[i] != NULL)
                         {
-                            if (strcmp(history[i], Text) == 0) // already in the history
+                            if (strcmp(history[i], Text) == 0) // already in history
                             {                                  // move it to position 0
                                 if (i > 0)
                                 {
@@ -151,7 +151,7 @@ void HistoryComboBox(HWND hWindow, CTransferInfo& ti, int ctrlID, char* Text,
         if (!changeOnlyHistory)
         {
             int i;
-            for (i = 0; i < historySize; i++) // fill the combo-box list
+            for (i = 0; i < historySize; i++) // populate the combo box list
                 if (history[i] != NULL)
                     SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)history[i]);
                 else
@@ -339,7 +339,7 @@ void CFindSetDialog::Transfer(CTransferInfo& ti)
     if (ti.Type == ttDataToWindow)
     { // initialize the search text based on the selection in the viewer (the parent of this dialog)
         CWindowsObject* win = WindowsManager.GetWindowPtr(Parent);
-        if (win != NULL && win->Is(otViewerWindow)) // just to be sure, check that it is a viewer window
+        if (win != NULL && win->Is(otViewerWindow)) // check that this is a viewer window
         {
             CViewerWindow* view = (CViewerWindow*)win;
             char buf[FIND_TEXT_LEN];
@@ -425,7 +425,7 @@ CFindSetDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 if (item->Keyword != EXECUTE_HELP && !regular)
                 {
-                    // the user selected an expression, so tick the checkbox for regular search
+                    // The user selected an expression, so check the regular expression search box
                     CheckDlgButton(HWindow, IDC_VIEWREGEXP, BST_CHECKED);
                     PostMessage(HWindow, WM_COMMAND, MAKELPARAM(IDC_VIEWREGEXP, BN_CLICKED), 0);
                 }
@@ -707,7 +707,7 @@ int GetHexOffsetMode(unsigned __int64 fileSize, int& hexOffsetLength)
                 hexOffsetLength = 14;
                 return 3;
             }
-            else // 16 characters are necessary
+            else // 16 characters are required
             {
                 hexOffsetLength = 19;
                 return 4;
@@ -727,14 +727,14 @@ void PrintHexOffset(char* s, unsigned __int64 offset, int mode)
         return; // 4 characters are enough
     case 2:
         sprintf(s, "%04X %04X", LOWORD64(offset >> 16), LOWORD64(offset));
-        return; // 8 characters are enough
+        return; // 8 digits are enough
     case 3:
         sprintf(s, "%04X %04X %04X", LOWORD64(offset >> 32), LOWORD64(offset >> 16), LOWORD64(offset));
         return; // 12 characters are enough
     case 4:
         sprintf(s, "%04X %04X %04X %04X", LOWORD64(offset >> 48), LOWORD64(offset >> 32),
                 LOWORD64(offset >> 16), LOWORD64(offset));
-        return; // 16 characters are necessary
+        return; // 16 characters are needed
     }
     TRACE_E("Unexpected situation in PrintHexOffset().");
 }
@@ -804,7 +804,7 @@ void CViewerWindow::Paint(HDC dc)
         char line[2001]; // holds at most 2000 fully visible characters per line plus 1 partially visible character
         char* s;
         BOOL fatalErr = FALSE;
-        if (columns <= 2000) // only when this maximum is not exceeded
+        if (columns <= 2000) // only if this limit is not exceeded
         {
             // determine which rows need to be repainted
             RECT clipRect;
@@ -1077,7 +1077,7 @@ void CViewerWindow::Paint(HDC dc)
                         if (r.top <= r.bottom)
                             FillRect(dc, &r, BkgndBrush);
 
-                        if (EOL) // add the last empty line to the LineOffset array -> the line cannot be ignored
+                        if (EOL) // add the last empty line to the LineOffset array -> the line must not be ignored
                         {
                             LineOffset.Add(lineOffset);
                             LineOffset.Add(lineOffset);
@@ -1253,7 +1253,7 @@ void CViewerWindow::Paint(HDC dc)
                             }
                         }
 
-                        if (len == -1) // the line continues into a yet unread section
+                        if (len == -1) // the line continues into an unread section
                         {
                             len = Prepare(NULL, lineOffset + fullLineLen, APROX_LINE_LEN, fatalErr);
                             // if (fatalErr) FatalFileErrorOccured(); // see below
