@@ -19,8 +19,7 @@
 //
 
 // Pointer to the error handling function
-BOOL(*PackErrorHandlerPtr)
-(HWND parent, const WORD errNum, ...) = EmptyErrorHandler;
+BOOL (*PackErrorHandlerPtr)(HWND parent, const WORD errNum, ...) = EmptyErrorHandler;
 
 const char* SPAWN_EXE_NAME = "salspawn.exe";
 const char* SPAWN_EXE_PARAMS = "-c10000";
