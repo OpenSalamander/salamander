@@ -107,7 +107,7 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
                 sqlite3_stmt* pStmt;
                 char utf8Select[] = "SELECT data_value FROM data WHERE entry_key = 'local_sync_root_path';"; // UTF8 string (if any extra character is added, it must be converted ANSI->UTF-8)
 
-                // sqlite3_open_v2 requires a UTF-8 path, so convert it from ANSI to UTF-8
+                // sqlite3_open_v2 requires a UTF-8 path, so we convert it from ANSI to UTF-8
                 if (ConvertA2U(sDbPath, -1, widePath, _countof(widePath)) &&
                     ConvertU2A(widePath, -1, mbPath, _countof(mbPath), FALSE, CP_UTF8))
                 {
@@ -624,9 +624,9 @@ void CShellIconOverlayItem::Cleanup()
 
 CShellIconOverlayItem::~CShellIconOverlayItem()
 {
-    // VC2015 did not like the __try / __except block in the destructor; the linker complained in the x64 build:
+    // VC2015 rejected the __try / __except block in the destructor; the x64 linker reported:
     // error LNK2001: unresolved external symbol __C_specific_handler_noexcept
-    // moving the code into a function solved the issue
+    // moving the code into a helper function resolved the issue
     Cleanup();
 }
 
@@ -667,7 +667,7 @@ void CreateIconReadersIconOverlayIdsAuxAux(CLSID* clsid, const char* name, IShel
                          (LPVOID*)&iconOverlayIdentifier) == S_OK &&
         iconOverlayIdentifier != NULL) // probably a redundant check, just playing it safe
     {
-        // call the usual methods for form's sake (as if we were Explorer and wanted to display the overlays)
+        // call the usual methods as a formality, as if we were Explorer displaying the overlays
         OLECHAR iconFile[MAX_PATH];
         int iconIndex;
         DWORD flags;
@@ -759,7 +759,7 @@ BOOL GetIconOverlayIndexAuxAux(IShellIconOverlayIdentifier** iconReadersIconOver
     }
     else
     {
-        if (res != S_FALSE && res != 0x80070002) // 0x80070002 is "file not found", returned by "Offline Files" for anything not available offline
+        if (res != S_FALSE && res != 0x80070002) // 0x80070002 means "file not found"; "Offline Files" returns it for anything not available offline
             TRACE_I("CShellIconOverlays::GetIconOverlayIndex(): overlay " << name << ": IsMemberOf() returns error: 0x" << std::hex << res << std::dec);
     }
     return FALSE;
@@ -816,9 +816,9 @@ CShellIconOverlays::GetIconOverlayIndex(WCHAR* wPath, WCHAR* wName, char* aPath,
     //  if (SHGetFileInfoAux(aPath, 0, &fi, sizeof(fi), SHGFI_ATTRIBUTES))
     //  {
     // Google Drive crashes when IsMemberOf() is called concurrently from both icon readers: one thread allocates,
-    // the other one deallocates and the heap gets corrupted (hard to say why, their bug). The critical section slows things down
-    // considerably (by 2x) when reading both panels at once, so we try to use it only when GD is 
-    // active (inside its directory)
+    // the other deallocates, and the heap gets corrupted (hard to say why; their bug). This critical section slows things down
+    // considerably (about 2x) when both panels are being read at the same time, so we try to use it only when Google Drive is
+    // active (in its directory).
     BOOL isGD_CS_entered = FALSE;
     for (int i = 0; i < Overlays.Count; i++)
     {
@@ -964,7 +964,7 @@ void CShellIconOverlays::InitGoogleDrivePath(CSQLite3DynLoadBase** sqlite3_Dyn_I
         if (!found)
         {
             // Google Drive is installed in the variant matching Windows (x86 / x64). Therefore Salamander x86
-            // on x64 Windows (and vice versa) does not find GD icon handlers and that is not a bug.
+            // on x64 Windows (and vice versa) does not find GD icon handlers, and that is not an error.
 #ifdef _WIN64
             if (Windows64Bit)
 #else  // _WIN64
