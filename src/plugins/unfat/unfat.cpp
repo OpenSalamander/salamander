@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -68,7 +69,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         break;
     }
     }
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 char* LoadStr(int resID)
@@ -90,7 +91,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // this plugin is made for the current version of Salamander or newer - perform a check
+    // this plugin is intended for the current version of Salamander and later, so check it
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
@@ -376,7 +377,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                     if (!salamander->ProgressAddSize((int)size2.Value, TRUE))
                     {
                         ret = FALSE;
-                        break; // the operation was cancelled
+                        break; // Operation cancelled
                     }
                 }
                 else
@@ -529,7 +530,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
                     unpack = FALSE; // the item lies under skipPath so it is ignored
                 }
                 else
-                    skipPath[0] = 0; // the item does not belong under skipPath, discard skipPath
+                    skipPath[0] = 0; // the item does not lie under skipPath, so discard skipPath
             }
 
             if (unpack)
@@ -572,7 +573,7 @@ BOOL ExtractArchive(CSalamanderDirectoryAbstract const* dir, CSalamanderMaskGrou
                 unpack = FALSE; // the item lies under skipPath so it is ignored
             }
             else
-                skipPath[0] = 0; // the item does not belong under skipPath, discard skipPath
+                skipPath[0] = 0; // the item is not under skipPath, so clear skipPath
         }
 
         if (unpack)
