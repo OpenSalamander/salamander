@@ -193,7 +193,7 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_KEYDOWN:
     {
-        // handles Ctrl+Backspace for deleting a word
+        // handles Ctrl+Backspace to delete a word
         if (wParam == VK_BACK)
         {
             BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -204,13 +204,13 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int iStart, iEnd;
                 SendMessage(hwnd, EM_GETSEL, (WPARAM)&iStart, (LPARAM)&iEnd);
 
-                // if a selection exists, cancel it and move the cursor to the end
+                // if a selection exists, clear it and move the cursor to the end
                 if (iStart != iEnd)
                 {
                     SendMessage(hwnd, EM_SETSEL, iEnd, iEnd);
                     iStart = iEnd;
                 }
-                //          if (iStart == iEnd) // nothing can't be selected
+                //          if (iStart == iEnd) // nothing must be selected
                 //          {
                 char buff[10000];
                 int len = GetWindowTextLength(hwnd);
@@ -242,8 +242,8 @@ BSHandlerSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return CallWindowProc(OldWndProc, hwnd, message, wParam, lParam);
 }
 
-// we don't use WinLib's subclass so we don't step on its toes
-// (some windows we need to attach may already be or will be under WinLib)
+// We do not use WinLib subclassing so that we do not interfere with it
+// (some windows we need to attach to are already or will be managed by WinLib)
 BOOL AttachBackspaceHandler(HWND hwndEdit)
 {
     WNDPROC oldWndProc = (WNDPROC)GetWindowLongPtr(hwndEdit, GWLP_WNDPROC);
@@ -301,11 +301,11 @@ BOOL IsChangeDirAttempt(const char* text)
 int GetCmdLineLimit()
 {
     /*
-  Measured limits when launching via COMSPEC:
-    (4094 + length of the exe string)  W2K (not dependent on COMSPEC length)
-    (8190 + length of the exe string)  XP (not dependent on COMSPEC length)
-    8156                             Vista + Win7 with COMSPEC=C:\Windows\system32\cmd.exe (depends on COMSPEC lenght: longer COMSPEC = smaller limit)
-*/
+      Measured limits when launching via COMSPEC:
+        (4094 + length of the exe string)  W2K (does not depend on COMSPEC length)
+        (8190 + length of the exe string)  XP (does not depend on COMSPEC length)
+        8156                             Vista + Win7 with COMSPEC=C:\Windows\system32\cmd.exe (depends on COMSPEC length: longer COMSPEC = smaller limit)
+    */
 
 #if SALCMDLINE_MAXLEN != 8192 // maximum value that GetCmdLineLimit() can return
 #pragma message(__FILE__ " ERROR: SALCMDLINE_MAXLEN != 8192. SALCMDLINE_MAXLEN and GetCmdLineLimit() must contain the same maximal value!")
@@ -383,7 +383,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 BOOL executed = FALSE;
                 CFilesWindow* panel = MainWindow->GetActivePanel();
-                if (panel->Is(ptDisk)) // running commands on disk -> executed in DOS Prompt
+                if (panel->Is(ptDisk)) // running commands on disk -> run in the DOS Prompt
                 {
                     // users coming from TC and other file managers tend to change the panel path via the command line
                     // we'll try to break this habit
@@ -447,7 +447,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (strlen(cmd) + strlen(cmdLine) + 2 < SALCMDLINE_MAXLEN + MAX_PATH)
                     {
                         strcat(cmd, "\"");
-                        strcat(cmd, cmdLine); // the user's command line must be quoted, otherwise commands containing quotes fail (e.g. >>"C:\APPS\WinRAR\UnRAR.exe" e "test.rar"<< prints >>'C:\APPS\WinRAR\UnRAR.exe" e "test.rar' is not recognized<<)
+                        strcat(cmd, cmdLine); // the user's command line must be enclosed in quotes, otherwise commands containing quotes do not work (e.g. >>"C:\APPS\WinRAR\UnRAR.exe" e "test.rar"<< prints >>'C:\APPS\WinRAR\UnRAR.exe" e "test.rar' is not recognized<<)
                         strcat(cmd, "\"");
                     }
                     else
@@ -461,8 +461,8 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     POINT p;
                     if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
                     {
-                        // if the main window is on another monitor, we should open
-                        // the created window there as well, ideally at the default position (same as on the primary)
+                        // if the main window is on another monitor, the new window should open there as well,
+                        // ideally at the default position (the same as on the primary monitor)
                         si.dwFlags |= STARTF_USEPOSITION;
                         si.dwX = p.x;
                         si.dwY = p.y;
@@ -791,7 +791,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             // panel". I am not interested in this special Alt-Ctrl-functionality in
             // Salamander, I am definitely more interested in being able to type the
             // mentioned characters on the command line.
-            if ((controlPressed && !shiftPressed && !altPressed) /* || // Shift+number from the edit line won't work (you need to type '*' and others)
+            if ((controlPressed && !shiftPressed && !altPressed) /* || // Shift+number does not work in the edit line (you need to type '*' and other characters)
             (Configuration.ShiftForHotPaths && !controlPressed && shiftPressed) */
             )
             {
@@ -857,7 +857,7 @@ CEditLine::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case VK_RETURN:
         {
-            if (controlPressed && !altPressed) // filename of the selected file to the command line
+            if (controlPressed && !altPressed) // Insert the selected file name into the command line
             {
                 SkipCharacter = TRUE;
                 char path[MAX_PATH + 1];
@@ -1024,7 +1024,7 @@ class CEditDropTarget : public IDropTarget
 private:
     long RefCount;                    // object lifetime
     IDataObject* DataObject;          // IDataObject that entered the drag
-    IDataObject* ForbiddenDataObject; // IDataObject we ignore (we are its source)
+    IDataObject* ForbiddenDataObject; // IDataObject to ignore (its source is this object)
     BOOL UseUnicode;                  // is Unicode text in DataObject? (otherwise we try ANSI text)
     CEditLine* EditLine;              // edit line we operate on
     int EditWidth;
@@ -1139,7 +1139,7 @@ public:
             char* start = buff;
             if ((GetKeyState(VK_MENU) & 0x8000) != 0)
             {
-                // we do not want the whole path - trim it
+                // we do not want the full path - trim it
                 int len = lstrlen(buff);
                 if (len > 2)
                 {
@@ -1256,7 +1256,7 @@ public:
             }
             ReleaseStgMedium(&stgMedium);
         }
-        /* removed overly strict check - dropping pagefile.sys failed
+        /* removed an unnecessarily strict check; pagefile.sys could not be dropped
       if (ret && path != NULL)
       {
         DWORD attrs = SalGetFileAttributes(path);
@@ -1268,7 +1268,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID refiid, void FAR* FAR* ppv)
+    (REFIID refiid, void FAR * FAR * ppv)
     {
         if (refiid == IID_IUnknown || refiid == IID_IDropTarget)
         {
@@ -1291,7 +1291,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // must not touch the object, it no longer exists
+            return 0; // must not access the object; it no longer exists
         }
         return RefCount;
     }
@@ -1435,7 +1435,7 @@ public:
             char* path = (char*)HANDLES(GlobalLock(stgMedium.hGlobal));
             if (path != NULL)
             {
-                // change the path
+                // adjust the path
                 if (UseUnicode)
                     path = ConvertAllocU2A((const WCHAR*)path, -1);
                 if (path != NULL)
@@ -1450,9 +1450,9 @@ public:
         else
         {
             char path[2 * MAX_PATH];
-            if (GetNameFromDataObject(pDataObject, path)) // at most MAX_PATH characters are placed into 'path'
+            if (GetNameFromDataObject(pDataObject, path)) // at most MAX_PATH characters are written to 'path'
             {
-                // change the path
+                // Adjust the path
                 if (!IsPluginFSPath(path))
                 {
                     int l = (int)strlen(path);
@@ -1867,15 +1867,15 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (WindowsVistaAndLater)
         {
-            // Vista finally fixed the combobox flickering during resize
-            // so we must manually clear the area between child windows and the
-            // combobox edge, otherwise garbage remains there
+            // Vista finally fixed combobox flicker during resizing,
+            // so we must manually erase the area between the child windows and the
+            // combobox border; otherwise garbage remains there
             (HPEN) SelectObject(hDC, WndPen);
             Rectangle(hDC, cr.left + EL_XBORDER - 1, cr.top + 4 - 1,
                       cr.right - GetSystemMetrics(SM_CXVSCROLL) - 1, cr.bottom - 4 + 1);
         }
 
-        // if a visual style is active, we won't decorate the button
+        // if a visual style is active, do not draw the button ourselves
         if (IsAppThemed())
         {
             SelectObject(hDC, hOldPen);
