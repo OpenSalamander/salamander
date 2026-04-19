@@ -460,7 +460,7 @@ void CFoundFilesListView::SortItems(int sortBy)
     BOOL enabledPathTime = TRUE;
     if (FindDialog->GrepData.FindDuplicates)
     {
-        enabledPathTime = FALSE; // path and time are irrelevant for duplicates
+        enabledPathTime = FALSE; // not meaningful for duplicates
         // sorting by name and size works for duplicates only
         // when searching for identical name and size
         enabledNameSize = (FindDialog->GrepData.FindDupFlags & FIND_DUPLICATES_NAME) &&
@@ -607,7 +607,7 @@ int CFoundFilesListView::CompareFunc(CFoundFilesData* f1, CFoundFilesData* f2, i
     int next = sortBy;
     do
     {
-        if (f1->IsDir == f2->IsDir) // are the items from the same group (directories/files)?
+        if (f1->IsDir == f2->IsDir) // Are the items in the same group (directories/files)?
         {
             switch (next)
             {
@@ -948,7 +948,7 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HANDLES(EnterCriticalSection(&DataCriticalSection));
 
             BOOL selExists = FALSE;
-            if (FileNamesEnumData.PreferSelected) // if needed, check whether there is a selection
+            if (FileNamesEnumData.PreferSelected) // if needed, check whether anything is selected
             {
                 int i = -1;
                 int selCount = 0; // ignore the state where the only marked item is the focused one (this cannot logically be considered as selected items)
@@ -981,7 +981,7 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else
             {
-                if (FileNamesEnumData.LastFileName[0] != 0) // the full name at 'index' is known; check for shifts and search for a new index if needed
+                if (FileNamesEnumData.LastFileName[0] != 0) // the full file name at 'index' is known; check whether the array has shifted and find the new index if needed
                 {
                     BOOL ok = FALSE;
                     CFoundFilesData* f = (index >= 0 && index < count) ? Data[index] : NULL;
@@ -997,7 +997,7 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                     }
                     if (!ok)
-                    { // the name at index 'index' isn't FileNamesEnumData.LastFileName, try to find a new index for that name
+                    { // the name at index 'index' is not FileNamesEnumData.LastFileName; try to find that name's new index
                         int i;
                         for (i = 0; i < count; i++)
                         {
@@ -1240,7 +1240,7 @@ BOOL CFoundFilesListView::InitColumns()
             p++;
         if (IsAlpha[*p])
         {
-            // contains alphabetic characters -- we must find the longest month and day text
+            // contains alphabetic characters -- we must find the longest month and day names
             int maxMonth = 0;
             int sats[] = {1, 5, 4, 1, 6, 3, 1, 5, 2, 7, 4, 2};
             int mo;
@@ -1776,9 +1776,9 @@ void CFindDialog::BuildSerchForData()
     char* begin;
     char* end;
 
-    // Users often want to enter just "i_am_dummy" to find files "*i_am_dummy*".
-    // Therefore, we must inspect each item from the mask group and, if it lacks
-    // any wildcard or '.', surround it with asterisks.
+    // Users often want to enter just "i_am_dummy" to find files like "*i_am_dummy*".
+    // Therefore, we must inspect each item in the mask group and, if it contains neither
+    // a wildcard nor '.', surround it with asterisks.
     char* iterator = named;
     begin = Data.NamedText;
     while (1)
@@ -1950,7 +1950,7 @@ void CFindDialog::StartSearch(WORD command)
 
     case CM_FIND_INTERSECT:
     {
-        // if this is a refine operation, copy data into the DataForRefine array
+        // if this is a refine operation, move the data to the DataForRefine array
         FoundFilesListView->TakeDataForRefine();
         GrepData.Refine = 1;
         break;
@@ -1993,7 +1993,7 @@ void CFindDialog::StartSearch(WORD command)
         GrepData.EOL_CRLF = Configuration.EOL_CRLF;
         GrepData.EOL_CR = Configuration.EOL_CR;
         GrepData.EOL_LF = Configuration.EOL_LF;
-        //    GrepData.EOL_NULL = Configuration.EOL_NULL;   // can't handle this with regexp :(
+        //    GrepData.EOL_NULL = Configuration.EOL_NULL;   // regexp cannot handle this
         GrepData.Regular = Data.RegularExpresions;
         GrepData.WholeWords = Data.WholeWords;
         if (Data.RegularExpresions)
@@ -2087,7 +2087,7 @@ void CFindDialog::StopSearch()
     while (1)
     {
         BOOL oldCanClose = CanClose;
-        CanClose = FALSE; // don't allow closing while we are inside this method
+        CanClose = FALSE; // do not allow closing while this method is running
 
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         { // message loop for messages from the grep thread
@@ -2097,7 +2097,7 @@ void CFindDialog::StopSearch()
 
         CanClose = oldCanClose;
         if (GrepThread == NULL)
-            return; // DispatchMessage may call us again and we've already handled closing
+            return; // DispatchMessage may call us again, and closing has already been handled
         if (WaitForSingleObject(GrepThread, 100) != WAIT_TIMEOUT)
             break;
     }
@@ -2106,7 +2106,7 @@ void CFindDialog::StopSearch()
     GrepThread = NULL;
 
     SearchInProgress = FALSE;
-    if (OKButton != NULL) // trigger the drop-down arrow
+    if (OKButton != NULL) // enable the drop-down arrow
     {
         DWORD flags = OKButton->GetFlags();
         flags |= BTF_DROPDOWN;
@@ -2487,7 +2487,7 @@ void CFindDialog::OnViewFileWith()
     MainWindow->GetActivePanel()->ViewFileWith(longName, FoundFilesListView->HWindow, &menuPoint, &handlerID, -1, -1);
     if (handlerID != 0xFFFFFFFF)
     {
-        if (SalamanderBusy) // almost impossible, but Salamander could be busy
+        if (SalamanderBusy) // unlikely, but Salamander could have become busy
         {
             Sleep(200); // give Salamander time-if we switched from the main window
                         // the menu's message queue might still be running
@@ -2534,7 +2534,7 @@ void CFindDialog::OnEditFileWith()
     MainWindow->GetActivePanel()->EditFileWith(longName, FoundFilesListView->HWindow, &menuPoint, &handlerID);
     if (handlerID != 0xFFFFFFFF)
     {
-        if (SalamanderBusy) // almost impossible, but Salamander could be busy
+        if (SalamanderBusy) // almost impossible, but someone could have kept Salamander busy
         {
             Sleep(200); // give Salamander time-if we switched from the main window
                         // the menu's message queue might still be running
@@ -2562,9 +2562,9 @@ void CFindDialog::OnUserMenu()
     MainWindow->FillUserMenu(&menu, FALSE); // keep customization disabled
     POINT p;
     GetListViewContextMenuPos(FoundFilesListView->HWindow, &p);
-    // another locking round (BeginUserMenuIconsInUse+EndUserMenuIconsInUse) will happen
-    // inside WM_USER_ENTERMENULOOP and WM_USER_LEAVEMENULOOP; it's nested and has no overhead,
-    // so we ignore it and don't try to fight it
+    // another locking round (BeginUserMenuIconsInUse+EndUserMenuIconsInUse) will occur
+    // in WM_USER_ENTERMENULOOP+WM_USER_LEAVEMENULOOP, but it is already nested and adds no overhead,
+    // so it is ignored and no special handling is needed
     DWORD cmd = menu.Track(MENU_TRACK_RETURNCMD, p.x, p.y, HWindow, NULL);
     UserMenuIconBkgndReader.EndUserMenuIconsInUse();
 
@@ -2746,7 +2746,7 @@ void CFindDialog::InsertDrives(HWND hEdit, BOOL network)
     int i = 1;
     while (i != 0)
     {
-        if (mask & i) // the drive is accessible
+        if (mask & i) // the drive is available
         {
             root[0] = drive;
             DWORD driveType = GetDriveType(root);
@@ -2867,7 +2867,7 @@ BOOL CFindDialog::ManageHiddenShortcuts(const MSG* msg)
             }
         }
     }
-    return FALSE; // not our message
+    return FALSE; // message not handled here
 }
 
 void CFindDialog::SetFullRowSelect(BOOL fullRow)
@@ -3086,7 +3086,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     query = FALSE;
                 else
                 {
-                    if (SearchInProgress) // stop searching immediately if the user wants
+                    if (SearchInProgress) // stop searching immediately if the user wants to
                         StopSearch();
                 }
             }
@@ -3323,7 +3323,7 @@ CFindDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 StopSearch();
                 return TRUE;
             }
-            else // no, it is the start
+            else // no, this is a start request
             {
                 if (!ValidateData() || !TransferData(ttDataFromWindow))
                     return TRUE;
@@ -3859,7 +3859,7 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
         if (SkipCharacter) // suppress the beep on Alt+Enter
         {
             SkipCharacter = FALSE;
-            return TRUE; // MSDN says we should return 0, but that beeps, so I am not sure
+            return TRUE; // MSDN says we should return 0, but that causes a beep
         }
         break;
     }
@@ -3872,7 +3872,7 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
             {
             case NM_DBLCLK:
             {
-                if (((LPNMITEMACTIVATE)lParam)->iItem >= 0) // double-click outside items does nothing
+                if (((LPNMITEMACTIVATE)lParam)->iItem >= 0) // double-click outside an item does not open anything
                     OnOpen(TRUE);
                 break;
             }
@@ -3880,14 +3880,14 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
             case NM_RCLICK:
             {
                 int clickedIndex = ((LPNMITEMACTIVATE)lParam)->iItem;
-                if (clickedIndex >= 0) // right-click outside the item won't show the menu
+                if (clickedIndex >= 0) // right-click outside an item will not show the menu
                 {
                     BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
                     BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
                     BOOL shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 
-                    // when clicking outside the selection while holding Shift (Alt+Ctrl doesn't matter) or
-                    // holding only Alt, the selection changes to the clicked item before the menu is opened
+                    // when clicking outside the selection while holding Shift (Alt+Ctrl does not matter), or
+                    // while holding only Alt, the selection changes to the clicked item before the menu opens
                     HWND hListView = FoundFilesListView->HWindow;
                     if ((shiftPressed || altPressed && !controlPressed) &&
                         (ListView_GetItemState(hListView, clickedIndex, LVIS_SELECTED) & LVIS_SELECTED) == 0)
@@ -3936,7 +3936,7 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
                                 CacheBitmap->CreateBmp(hDC, 1, 1);
                         }
                         if (CacheBitmap == NULL)
-                            break; // out of memory; let the list view draw it; we're done
+                            break; // out of memory; let the list view handle drawing; abort custom drawing
 
                         RECT r; // rectangle around the sub item
                         ListView_GetSubItemRect(FoundFilesListView->HWindow, cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &r);
@@ -3988,8 +3988,8 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
                         SelectObject(CacheBitmap->HMemDC, (HFONT)SendMessage(FoundFilesListView->HWindow, WM_GETFONT, 0, 0));
                         int oldTextColor = SetTextColor(CacheBitmap->HMemDC, GetSysColor(textColor));
 
-                        // DT_PATH_ELLIPSIS doesn't work on some strings and causing clipped text to be printed
-                        // PathCompactPath() requires a copy in a local buffer but doesn't clip text
+                        // DT_PATH_ELLIPSIS does not work for some strings and can cause clipped text to be drawn
+                        // PathCompactPath() requires a copy in a local buffer, but it does not clip the text
                         char buff[2 * MAX_PATH];
                         strncpy_s(buff, _countof(buff), item2->Path, _TRUNCATE);
                         PathCompactPath(CacheBitmap->HMemDC, buff, r2.right - r2.left);
@@ -4289,8 +4289,8 @@ MENU_TEMPLATE_ITEM FindLookInBrowseMenu[] =
 
     case WM_ACTIVATEAPP:
     {
-        if (wParam == FALSE) // when deactivated we leave directories shown in panels
-        {                    // so they can be deleted, dissconected, etc. by other software
+        if (wParam == FALSE) // when deactivated, we leave the directories shown in the panels
+        {                    // so other software can delete or disconnect them, etc.
             if (CanChangeDirectory())
                 SetCurrentDirectoryToSystem();
         }
