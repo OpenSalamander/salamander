@@ -64,7 +64,7 @@ protected:
     void ColorizeSVG(NSVGimage* image, DWORD state);
 
 protected:
-    int Width; // dimension of a single image in points
+    int Width; // Width of a single image in points
     int Height;
     HBITMAP HBitmaps[SVGSTATE_COUNT];
 };
