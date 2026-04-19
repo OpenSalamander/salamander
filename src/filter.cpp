@@ -7,7 +7,7 @@
 // Attributes
 const char* FILTERCRITERIA_ATTRIBUTESMASK_REG = "Attributes Mask";
 const char* FILTERCRITERIA_ATTRIBUTESVALUE_REG = "Attributes Value";
-// Size Min/Max
+// Minimum/maximum size
 const char* FILTERCRITERIA_USEMINSIZE_REG = "UseMinSize";
 const char* FILTERCRITERIA_MINSIZELO_REG = "MinSizeLo";
 const char* FILTERCRITERIA_MINSIZEHI_REG = "MinSizeHi";
@@ -30,8 +30,8 @@ const char* FILTERCRITERIA_USETOTIME_REG = "UseToTime";
 const char* FILTERCRITERIA_TOLO_REG = "ToLo";
 const char* FILTERCRITERIA_TOHI_REG = "ToHi";
 
-// we used the following variables in Altap Salamander 2.5,
-// where we switched to CFilterCriteria and its Save/Load
+// the following variables were used up to Altap Salamander 2.5,
+// when we switched to CFilterCriteria and its Save/Load
 const char* OLD_FINDOPTIONSITEM_ARCHIVE_REG = "Archive";
 const char* OLD_FINDOPTIONSITEM_READONLY_REG = "ReadOnly";
 const char* OLD_FINDOPTIONSITEM_HIDDEN_REG = "Hidden";
@@ -86,7 +86,7 @@ void CFilterCriteria::Reset()
     AttributesMask = 0; // 0 -> indeterminate checkbox state
     AttributesValue = 0;
 
-    // Size Min/Max
+    // Minimum/Maximum Size
     UseMinSize = FALSE;
     MinSize.Set(1, 0);
     MinSizeUnits = fcsuKB;
@@ -230,7 +230,7 @@ void CFilterCriteria::PrepareForTest()
     {
         SYSTEMTIME st; // 'st' can be modified, see the reset of hours, minutes, and seconds
         GetLocalTime(&st);
-        // weekday is redundant information; we will not work with it
+        // the weekday is redundant information; we will not use it
         st.wDayOfWeek = 0;
         SYSTEMTIME stCurrent = st; // current time that we won't modify
 
@@ -364,8 +364,8 @@ void CFilterCriteria::PrepareForTest()
                 }
                 if (SystemTimeToFileTime(&st, (FILETIME*)&MaxTime))
                 {
-                    // we want to be the absolute maximum time, sticking right at the very end of the interval
-                    // at the resolution of FILETIME
+                    // we want the absolute maximum time, so we move all the way to the end of the interval
+                    // at FILETIME resolution
                     MaxTime += 9999999; // almost one second
 
                     UseMaxTime = TRUE;
@@ -385,7 +385,7 @@ BOOL CFilterCriteria::Test(DWORD attributes, const CQuadWord* size, const FILETI
     // Attributes
     BOOL ok = ((attributes & AttributesMask) == (AttributesValue & AttributesMask));
 
-    // Size Min/Max
+    // Min/max size
     if (ok && (UseMinSize || UseMaxSize))
     {
         if ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
@@ -395,7 +395,7 @@ BOOL CFilterCriteria::Test(DWORD attributes, const CQuadWord* size, const FILETI
         }
         else
         {
-            // it's a file, so we can compare its size
+            // this is a file, so we can compare its size
             if (UseMinSize)
                 ok = *size >= MinSizeBytes;
             if (ok && UseMaxSize)
@@ -489,8 +489,8 @@ BOOL CFilterCriteria::GetAdvancedDescription(char* buffer, int maxLen, BOOL& dir
 
 BOOL CFilterCriteria::Save(HKEY hKey)
 {
-    // space optimization in the Registry: we store only "non-default values"
-    // before saving, it is necessary to clear the key where we will store the data
+    // registry space optimization: we store only non-default values;
+    // therefore, before saving, the target key must be cleared
     CFilterCriteria def;
 
     // Attributes
@@ -499,7 +499,7 @@ BOOL CFilterCriteria::Save(HKEY hKey)
     if (AttributesValue != def.AttributesValue)
         SetValue(hKey, FILTERCRITERIA_ATTRIBUTESVALUE_REG, REG_DWORD, &AttributesValue, sizeof(DWORD));
 
-    // Size Min/Max
+    // Minimum/maximum size
     if (UseMinSize != def.UseMinSize)
         SetValue(hKey, FILTERCRITERIA_USEMINSIZE_REG, REG_DWORD, &UseMinSize, sizeof(DWORD));
     if (MinSize != def.MinSize)
@@ -537,7 +537,7 @@ BOOL CFilterCriteria::Save(HKEY hKey)
     // note: starting with 2.53 we'll "forget" the times in disabled FROM/TO controls (see TimeMode == fctmFromTo condition)
     // if users request a return to the old behavior, we could by default disable the checkboxes in the Date controls,
     // which would not meet the UseFromDate/UseToDate condition; we would enable the checkbox only when the user enables the control via radio buttons
-    if (From != def.From && TimeMode == fctmFromTo && (UseFromDate || UseFromTime)) // there's no point in storing times when they are not used (controls would insert the current time)
+    if (From != def.From && TimeMode == fctmFromTo && (UseFromDate || UseFromTime)) // No need to store times when they are not used (the controls then fill in the current time)
     {
         SetValue(hKey, FILTERCRITERIA_FROMLO_REG, REG_DWORD, &(((FILETIME*)&From)->dwLowDateTime), sizeof(DWORD));
         SetValue(hKey, FILTERCRITERIA_FROMHI_REG, REG_DWORD, &(((FILETIME*)&From)->dwHighDateTime), sizeof(DWORD));
@@ -546,7 +546,7 @@ BOOL CFilterCriteria::Save(HKEY hKey)
         SetValue(hKey, FILTERCRITERIA_USETODATE_REG, REG_DWORD, &UseToDate, sizeof(DWORD));
     if (UseToTime != def.UseToTime)
         SetValue(hKey, FILTERCRITERIA_USETOTIME_REG, REG_DWORD, &UseToTime, sizeof(DWORD));
-    if (To != def.To && TimeMode == fctmFromTo && (UseToDate || UseToTime)) // there's no point in storing times when they are not used (controls would insert the current time)
+    if (To != def.To && TimeMode == fctmFromTo && (UseToDate || UseToTime)) // There is no point in storing times when they are not used (the controls then insert the current time)
     {
         SetValue(hKey, FILTERCRITERIA_TOLO_REG, REG_DWORD, &(((FILETIME*)&To)->dwLowDateTime), sizeof(DWORD));
         SetValue(hKey, FILTERCRITERIA_TOHI_REG, REG_DWORD, &(((FILETIME*)&To)->dwHighDateTime), sizeof(DWORD));
@@ -560,7 +560,7 @@ BOOL CFilterCriteria::Load(HKEY hKey)
     GetValue(hKey, FILTERCRITERIA_ATTRIBUTESMASK_REG, REG_DWORD, &AttributesMask, sizeof(DWORD));
     GetValue(hKey, FILTERCRITERIA_ATTRIBUTESVALUE_REG, REG_DWORD, &AttributesValue, sizeof(DWORD));
 
-    // Size Min/Max
+    // Minimum/maximum size
     GetValue(hKey, FILTERCRITERIA_USEMINSIZE_REG, REG_DWORD, &UseMinSize, sizeof(DWORD));
     GetValue(hKey, FILTERCRITERIA_MINSIZELO_REG, REG_DWORD, &MinSize.LoDWord, sizeof(DWORD));
     GetValue(hKey, FILTERCRITERIA_MINSIZEHI_REG, REG_DWORD, &MinSize.HiDWord, sizeof(DWORD));
@@ -1029,7 +1029,7 @@ void CFilterCriteriaDialog::Transfer(CTransferInfo& ti)
         }
         st.wMilliseconds = 0;
         if (!SystemTimeToFileTime(&st, (FILETIME*)&Data->From))
-            Data->From = (unsigned __int64)0; // error for validation
+            Data->From = (unsigned __int64)0; // error for Validate
 
         Data->UseToDate = DateTime_GetSystemtime(GetDlgItem(HWindow, IDC_FFA_TO_DATE), &st) == GDT_VALID;
         Data->UseToTime = DateTime_GetSystemtime(GetDlgItem(HWindow, IDC_FFA_TO_TIME), &st2) == GDT_VALID;
@@ -1047,7 +1047,7 @@ void CFilterCriteriaDialog::Transfer(CTransferInfo& ti)
         }
         st.wMilliseconds = 0;
         if (!SystemTimeToFileTime(&st, (FILETIME*)&Data->To))
-            Data->To = (unsigned __int64)0; // error for validation
+            Data->To = (unsigned __int64)0; // Error for Validate()
     }
 
     if (ti.Type == ttDataToWindow)
@@ -1197,14 +1197,14 @@ void CFilterCriteriaDialog::EnableControls()
 
     BOOL minOrMax = FALSE;
 
-    // Size Min
+    // Minimum Size
     checked = IsDlgButtonChecked(HWindow, IDC_FFA_SIZEMIN) == BST_CHECKED;
     minOrMax |= checked;
     EnableWindow(GetDlgItem(HWindow, IDC_FFA_SIZEMIN_VALUE), checked);
     EnableWindow(GetDlgItem(HWindow, IDC_FFA_SIZEMIN_UPDOWN), checked);
     EnableWindow(GetDlgItem(HWindow, IDC_FFA_SIZEMIN_UNITS), checked);
 
-    // Size Max
+    // Maximum Size
     checked = IsDlgButtonChecked(HWindow, IDC_FFA_SIZEMAX) == BST_CHECKED;
     minOrMax |= checked;
     EnableWindow(GetDlgItem(HWindow, IDC_FFA_SIZEMAX_VALUE), checked);
@@ -1276,9 +1276,9 @@ CFilterCriteriaDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS,
                                             0, 0, 0, 0, HWindow, upDownID[i], HInstance,
                                             hEdit, 10000, i == 2 ? 1 : 0, 0);
-            // move the UpDown control in the z-order right after the edit line, otherwise
-            // on a slow machine the dialog display looked odd
-            // (the UpDown was drawn after all the other controls)
+            // move the UpDown control immediately behind the edit box in the Z-order; otherwise,
+            // the dialog could display oddly on a slow machine
+            // (the UpDown was drawn only after all other controls)
             SetWindowPos(hWnd, hEdit, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         }
         if (!EnableDirectory)
@@ -1310,12 +1310,12 @@ CFilterCriteriaDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             if (LOWORD(wParam) == IDC_FFA_SIZEMIN_VALUE)
             {
-                // size min
+                // minimum size
                 FillUnits(IDC_FFA_SIZEMIN_VALUE, IDC_FFA_SIZEMIN_UNITS, sizeUnits, TRUE);
             }
             if (LOWORD(wParam) == IDC_FFA_SIZEMAX_VALUE)
             {
-                // size max
+                // maximum size
                 FillUnits(IDC_FFA_SIZEMAX_VALUE, IDC_FFA_SIZEMAX_UNITS, sizeUnits, TRUE);
             }
             if (LOWORD(wParam) == IDC_FFA_TIMEDURING_VALUE)
