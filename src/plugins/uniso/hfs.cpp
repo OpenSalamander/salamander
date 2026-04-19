@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -77,7 +78,7 @@ static void FixIllegalFSChars(char* s)
         {
             s++; // Skip both the lead and following bytes
             if (!*s)
-                break; // Invalid string! Lead byte followed by terminating byte!
+                break; // Invalid string: lead byte followed by a terminating null byte.
         }
         else
         {
@@ -162,7 +163,7 @@ BOOL CHFS::Open(BOOL quiet)
     }
     else
     {
-        return Error(IDS_ERR_HFS_UNRECOGNIZED, quiet); // Can this happen???
+        return Error(IDS_ERR_HFS_UNRECOGNIZED, quiet); // Can this case occur?
     }
 
     // VolumeHeader is stored at sector 2 & second to last sector (starting 1024 bytes before the end)
@@ -179,7 +180,7 @@ BOOL CHFS::Open(BOOL quiet)
     {
         MDBRecord mdb;
 
-        // It is a HFS, not HFS partition. Look for wrapped HFS+ partition
+        // It is HFS, not an HFS partition. Look for a wrapped HFS+ partition
         SeekRel(-(int)sizeof(VolHeader));
         if (!Read(&mdb, sizeof(mdb), &dwBytesRead))
             return FALSE;
@@ -215,7 +216,7 @@ BOOL CHFS::Open(BOOL quiet)
     return TRUE;
 }
 
-// Seeks on disk (sector is usually 512 or 2048 bytes)
+// Seeks to the specified sector on disk (a sector is usually 512 or 2048 bytes)
 // Returns TRUE on success
 BOOL CHFS::SeekSector(int sector)
 {
@@ -223,7 +224,7 @@ BOOL CHFS::SeekSector(int sector)
     return (newPos == Image->File->Seek(newPos, FILE_BEGIN)) ? TRUE : FALSE;
 }
 
-// Seeks on HFS+ partition (block is usually 4096 bytes)
+// Seeks to the specified block in the HFS+ partition (a block is usually 4096 bytes)
 // Returns TRUE on success
 BOOL CHFS::SeekBlock(int block)
 {
@@ -289,7 +290,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
         int keyLen = FromM16(pKey->keyLength);
         int nameLen = FromM16(pKey->nodeName.length);
         wchar_t fileNameW[256];
-        char fileName[256 * 2]; // twice the length for MBCS
+        char fileName[256 * 2]; // twice the length to allow for MBCS
         CFileData fd;
         char* path = rootPath;
         union
@@ -301,7 +302,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
 
         if ((keyLen <= 6) || (nameLen == 0) || (bSkipRootParent && pKey->parentID == FromM32(kHFSRootParentID)))
         {
-            continue; // Skip threads with empty name and RootParent already used as volume label
+            continue; // Skip threads with an empty name and RootParent, which is already used as the volume label
         }
         for (int j = 0; j < nameLen; j++)
             fileNameW[j] = FromM16(pKey->nodeName.unicode[j]);
@@ -394,7 +395,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
                     pFolders[nFolders++] = fi;
                     continue;
                 }
-                // AddDir failed (too long path?) -> continue
+                // AddDir failed (path too long?)
                 free(fi);
                 Error(IDS_ERR_TOO_LONG_PATH, FALSE);
             }
@@ -408,7 +409,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
 
             if ((rec.file->userInfo.fdCreator == kSymLinkCreator) && (rec.file->userInfo.fdType == kSymLinkFileType))
             {
-                // Symbolic links. The data fork contains UTF8-encoded path to target
+                // Symbolic links. The data fork contains the UTF-8-encoded path to the target
                 fd.IsLink = true;
                 //        SalamanderGeneral->Free(fd.Name);
                 //        delete filePos;
@@ -495,7 +496,7 @@ int CHFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         if (toSkip)
             return UNPACK_ERROR;
 
-        // Full Cancel
+        // Cancel the entire operation
         if (hFile == INVALID_HANDLE_VALUE)
             return UNPACK_CANCEL;
 
@@ -566,13 +567,13 @@ int CHFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         if (!bFileComplete)
         {
             // because it was created with the read-only attribute, we must clear
-            // the R attribute so the file can be deleted
+            // the read-only attribute so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
             // the user cancelled the operation
-            // delete the incomplete file afterwards
+            // delete the incomplete file
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());
         }
@@ -640,7 +641,7 @@ CHFS::BTree::BTree(CHFS* hfs, CHFS::HFSPlusForkData* fork, BOOL quiet)
 
     BTNodeDescriptor* node = (BTNodeDescriptor*)pBTreeData;
 
-    // We require full tree with header node.
+    // We require the full tree, including the header node.
     if (node->kind != kBTHeaderNode)
     {
         Error(IDS_ERR_HFS_BTREE_NODETYPE, quiet);
@@ -674,8 +675,8 @@ CHFS::BTree::BTree(CHFS* hfs, CHFS::HFSPlusForkData* fork, BOOL quiet)
         nRecordsCheck += nRecordsInNode;
         if (nRecordsCheck > nRecords)
         {
-            // In theory, should not be needed.
-            // But buggy MagicISO 5.2 stores # of nodes and not records in numRecords :-(
+            // In theory, this should not be needed.
+            // However, buggy MagicISO 5.2 stores the number of nodes, not records, in numRecords.
             int currInd = (int)(pRecord - pRecords);
             void** tmp = (void**)realloc(pRecords, sizeof(void*) * nRecordsCheck);
             if (!tmp)
@@ -693,7 +694,7 @@ CHFS::BTree::BTree(CHFS* hfs, CHFS::HFSPlusForkData* fork, BOOL quiet)
             UInt16 ofs = *(UInt16*)(((char*)node) + nodeSize - (i + 1) * sizeof(UInt16));
             *pRecord++ = (char*)node + FromM16(ofs);
         }
-        // Traverse till the forward link is empty
+        // Traverse until the forward link is empty
         if (!node->fLink)
             break;
         node = (BTNodeDescriptor*)(pBTreeData + FromM32(node->fLink) * nodeSize);
@@ -710,7 +711,7 @@ CHFS::BTree::BTree(CHFS* hfs, CHFS::HFSPlusForkData* fork, BOOL quiet)
         }
         else if (!nRecords)
         {
-            // Either realloc failed or nRecord is 0 and thus pRecords was freed
+            // Either realloc failed, or nRecords is 0 and pRecords was therefore freed
             pRecords = NULL;
         }
     }
