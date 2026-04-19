@@ -205,7 +205,7 @@ void CEnvVariables::LoadFromProcess()
         // if this is not the current directory for drives, store the found item into the array
         // We ignore:
         // =::=::\
-    // =C:=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE
+        // =C:=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE
         // =E:=E:\Source\salamand\vcproj
         if (*begin != '=')
         {
