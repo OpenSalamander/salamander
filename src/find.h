@@ -269,9 +269,9 @@ public:
 };
 
 // The CFindIgnore object serves two purposes:
-// 1. A global object holding the list of paths editable in the Find/Options/Ignore Directory List
-// 2. A temporary copy used for searching -- contains only Enabled items which are
-//    adjusted (backslashes added) and classified (CFindIgnoreItem::Type set)
+// 1. A global object holding the list of paths editable in Find/Options/Ignore Directory List
+// 2. A temporary copy of this array for searching; it contains only enabled items, which are
+//    additionally adjusted (backslashes added) and qualified (CFindIgnoreItem::Type set)
 class CFindIgnore
 {
 protected:
@@ -691,7 +691,7 @@ protected:
     int ResultsY;      // position of the results list
     int AdvancedY;     // position of the Advanced button
     int AdvancedTextY; // position of the text after the Advanced button
-    int AdvancedTextX; // position of the text after the Advanced button
+    int AdvancedTextX; // X position of the text after the Advanced button
     int FindTextY;     // position of the header above the results
     int FindTextH;     // height of the header
     int CombosX;       // position of the comboboxes
@@ -715,7 +715,7 @@ protected:
     CMenuBar* MenuBar;
     HWND HStatusBar;
     HWND HProgressBar; // status bar child window shown for certain operations in a special field
-    BOOL TwoParts;     // does the status bar have two texts?
+    BOOL TwoParts;     // does the status bar have two text fields?
                        //    CFindAdvancedDialog FindAdvanced;
     CFoundFilesListView* FoundFilesListView;
     char FoundFilesDataTextBuffer[MAX_PATH]; // for obtaining text from CFoundFilesData::GetText
@@ -746,7 +746,7 @@ protected:
 
     CBitmap* CacheBitmap; // used when drawing the path
 
-    BOOL FlashIconsOnActivation; // flash the status icons when we get activated
+    BOOL FlashIconsOnActivation; // flash the status icons on activation
 
     char FindNowText[100];
 
