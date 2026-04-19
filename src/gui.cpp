@@ -22,7 +22,7 @@
 // CGuiBitmap
 //
 
-// support for the silly drawing of the disabled button variant
+// support for drawing the disabled button variant
 class CGuiBitmap : public CBitmap
 {
 public:
@@ -160,9 +160,9 @@ void CProgressBar::Paint(HDC hDC)
         releaseDC = TRUE;
     }
 
-    // if we have a bitmap, use the cache
+    // if we have a bitmap, use the cached DC
     HDC hMemDC = NULL;
-    if (Bitmap != NULL && Progress != -1) // caching Progress==-1 is pointless, there's nothing to flicker
+    if (Bitmap != NULL && Progress != -1) // Caching for Progress == -1 is pointless; there is nothing to flicker.
         hMemDC = Bitmap->HMemDC;
     else
         hMemDC = hDC;
@@ -572,7 +572,7 @@ BOOL CStaticText::SetText(const char* text)
                 free(newText);
                 return FALSE;
             }
-            char* newText2 = (char*)realloc(Text2, l + ST_ALLOC_GRANULARITY + 3); // 3: space for "..." (I can remove W and add "...")
+            char* newText2 = (char*)realloc(Text2, l + ST_ALLOC_GRANULARITY + 3); // 3: space for "..." (can remove W and add "...")
             if (newText2 == NULL)
             {
                 TRACE_E(LOW_MEMORY);
@@ -914,7 +914,7 @@ BOOL CStaticText::ShowHint()
 
     MainWindow->ToolTip->SetCurrentToolTip(HWindow, 1, -1);
     MainWindow->ToolTip->Show(r.left + xOffset, r.bottom, FALSE, TRUE, HWindow);
-    // note: Show has the parameter 'modal'==TRUE, so control returns here only after the tooltip is closed
+    // Show is called with modal == TRUE, so execution returns here only after the tooltip is closed.
     return TRUE;
 }
 
@@ -988,7 +988,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == TRUE)
             break;
-        // if someone hides us, we must dismiss the tooltip
+        // if we are hidden, we must dismiss the tooltip
         if (MainWindow != NULL && MainWindow->ToolTip != NULL && MainWindow->ToolTip->HWindow != NULL)
             MainWindow->ToolTip->Hide();
         //PostMessage(MainWindow->ToolTip->HWindow, WM_CANCELMODE, 0, 0);
@@ -1065,7 +1065,7 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HANDLES(BeginPaint(HWindow, &ps));
 
-        // if we have a bitmap,we will draw into it, otherwise directly to the screen
+        // if we have a bitmap, draw into it; otherwise draw directly to the screen
         HDC hDC;
         if (Bitmap != NULL)
             hDC = Bitmap->HMemDC;
@@ -1121,8 +1121,8 @@ CStaticText::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                     drawFlags |= DT_LEFT;
                 // because ClearType spills beyond the control and leaves stray colored dots, we must
-                // clip everything; the issue is visible in the Plugins Manager Salamander 2.51 when scrolling
-                // the plugin list, leaving a red dot before the URL
+                // clip everything; the issue is visible in Salamander 2.51's Plugins Manager when scrolling
+                // the plugin list up and down: a red dot remains before the URL
                 // if (!ClipDraw)
                 drawFlags |= DT_NOCLIP;
 
@@ -1281,15 +1281,15 @@ BOOL CHyperLink::ExecuteIt()
 
 void CHyperLink::OnContextMenu(int x, int y)
 {
-    /* used by the export_mnu.py script that generates salmenu.mnu for the Translator
+    /* used by the export_mnu.py script, which generates salmenu.mnu for Translator
        keep synchronized with the InsertMenu() call below...
-MENU_TEMPLATE_ITEM HyperLinkMenu[] = 
-{
-  {MNTT_PB, 0
-  {MNTT_IT, IDS_COPYTOCLIPBOARD
-  {MNTT_PE, 0
-};
-*/
+    MENU_TEMPLATE_ITEM HyperLinkMenu[] =
+    {
+      {MNTT_PB, 0
+      {MNTT_IT, IDS_COPYTOCLIPBOARD
+      {MNTT_PE, 0
+    };
+    */
     HMENU hMenu = CreatePopupMenu();
     InsertMenu(hMenu, 0, MF_BYPOSITION, 1, LoadStr(IDS_COPYTOCLIPBOARD));
     DWORD cmd = TrackPopupMenuEx(hMenu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON,
@@ -1771,7 +1771,7 @@ int CButton::HitTest(LPARAM lParam)
         RECT r = ClientRect;
         r.left = r.right - GetDropPartWidth() - 1;
         if (PtInRect(&r, p))
-            return 2; // drop down
+            return 2; // drop-down part
     }
 
     return 1; // button
@@ -2953,10 +2953,10 @@ CAnimate::IsGood()
 void
 CAnimate::Paint(HDC hdc)
 {
-  // just to be safe, we synchronize access to the bitmap
+  // just to be safe, synchronize access to the bitmap
   HANDLES(EnterCriticalSection(&GDICriticalSection));
 
-  // if no DC is provided, we obtain our own
+  // if no DC is provided, obtain our own
   HDC hDC;
   if (hdc == NULL)
     hDC = HANDLES(GetDC(HWindow));
@@ -3046,8 +3046,8 @@ CAnimate::ThreadF(void *param)
   handles[0] = animate->HTerminateEvent;  // must be at index zero because it has priority
   handles[1] = animate->HRunEvent;
 
-  // raise the thread priority so the animation doesn't buffer
-  // we can afford it because it consumes almost no time
+  // raise the thread priority so the animation does not stutter
+  // we can afford it because it takes almost no time
   SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 
   while (TRUE)
@@ -3055,9 +3055,9 @@ CAnimate::ThreadF(void *param)
     DWORD wait = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 
     if (wait == WAIT_OBJECT_0)
-      break;  // we need to terminate the thread
+      break;  // terminate the thread
 
-    if (animate->SleepThread)     // we should stop the animation
+    if (animate->SleepThread)     // stop the animation
     {
       animate->FirstFrame();          // move to the first frame
       ResetEvent(animate->HRunEvent); // and disable running
@@ -3067,8 +3067,8 @@ CAnimate::ThreadF(void *param)
     animate->Paint();
     // move to the next one
     animate->NextFrame();
-    // 1000ms / 40ms = 25 frames per second, just like in a movie
-    WaitForSingleObject(animate->HTerminateEvent, 40); // if we should exit, we wll not wait unnecessarily
+    // 1000 ms / 40 ms = 25 frames per second, like in a movie
+    WaitForSingleObject(animate->HTerminateEvent, 40); // if we are terminating, do not wait here unnecessarily
   }
   TRACE_I("End");
   return 0;
@@ -3089,7 +3089,7 @@ CAnimate::AuxThreadEH(void *param)
   {
     TRACE_I("Thread in CAnimate: calling ExitProcess(1).");
 //    ExitProcess(1);
-    TerminateProcess(GetCurrentProcess(), 1);  // harder exit (this call still performs some operations)
+    TerminateProcess(GetCurrentProcess(), 1);  // more forceful exit
     return 1;
   }
 #endif // CALLSTK_DISABLE
@@ -3341,7 +3341,7 @@ void CondenseStaticTexts(HWND hWindow, int* staticsArr)
     while (staticsArr[count] != 0)
         count++;
     if (count < 2)
-        return; // there isnothing to do
+        return; // nothing to do
 
     HFONT hFont = (HFONT)SendDlgItemMessage(hWindow, staticsArr[0], WM_GETFONT, 0, 0);
     HDC hDC = HANDLES(GetDC(hWindow));
@@ -3388,7 +3388,7 @@ BOOL CALLBACK FindHorizLines(HWND hwnd, LPARAM lParam)
 {
     RECT r;
     GetClientRect(hwnd, &r);
-    if (r.bottom == 0) // horizontal line 0 points high
+    if (r.bottom == 0) // horizontal line with zero height
     {
         LONG style = GetWindowLong(hwnd, GWL_STYLE);
         if ((style & SS_TYPEMASK) == SS_ETCHEDHORZ)
@@ -3426,7 +3426,7 @@ struct CDataForFindHorizLineLabel
 BOOL CALLBACK FindHorizLineLabel(HWND hwnd, LPARAM lParam)
 {
     CDataForFindHorizLineLabel* data = (CDataForFindHorizLineLabel*)lParam;
-    if (data->Line != hwnd) // skip the line for which we search a label
+    if (data->Line != hwnd) // skip the line whose label we are looking for
     {
         RECT r;
         GetWindowRect(hwnd, &r);
@@ -3454,7 +3454,7 @@ BOOL CALLBACK FindHorizLineLabel(HWND hwnd, LPARAM lParam)
                     }
                     else
                     {
-                        if (stricmp(className, "Button") == 0) // it's a button (check box, radio button, or push button)
+                        if (stricmp(className, "Button") == 0) // this is a button (check box, radio button, or push button)
                         {
                             if (((style & BS_TYPEMASK) == BS_CHECKBOX ||
                                  (style & BS_TYPEMASK) == BS_AUTOCHECKBOX ||
@@ -3491,7 +3491,7 @@ struct CDataForFindGroupBoxLabel
 BOOL CALLBACK FindGroupBoxLabel(HWND hwnd, LPARAM lParam)
 {
     CDataForFindGroupBoxLabel* data = (CDataForFindGroupBoxLabel*)lParam;
-    if (data->GroupBox != hwnd) // skip the group box for which we search a label
+    if (data->GroupBox != hwnd) // skip the group box whose label we are looking for
     {
         RECT r;
         GetWindowRect(hwnd, &r);
@@ -3595,7 +3595,7 @@ void ArrangeHorizontalLines(HWND hWindow)
                                           -lf.lfHeight < 16 ? 20
                                                             : // < 150% DPI
                                           -lf.lfHeight < 21 ? 25
-                                                            : 27; // < 200% DPI : == 200% DPI
+                                                            : 27; // >= 200% DPI
                         if (p2.x + (data.LineRect.right - data.LineRect.left) > p.x + boxSize + txtR.right + 2 * spaceWidth)
                         {
                             MoveWindow(data.Label, p.x, p.y, boxSize + txtR.right + spaceWidth, labelRect.bottom - labelRect.top, TRUE);
