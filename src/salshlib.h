@@ -89,7 +89,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void) { return ++RefCount; }
     STDMETHOD_(ULONG, Release)
@@ -266,7 +266,7 @@ public:
     void SetCutOrCopyDone() { CutOrCopyDone = TRUE; }
 
     STDMETHOD(QueryInterface)
-    (REFIID, void FAR* FAR*);
+    (REFIID, void FAR * FAR*);
     STDMETHOD_(ULONG, AddRef)
     (void)
     {
