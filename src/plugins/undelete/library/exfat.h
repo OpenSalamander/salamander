@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -145,7 +146,7 @@ private:
     DWORD GetFATItem(DWORD index);
     QWORD GetFATItems() { return FATItems; }
     BOOL LoadDirectoryTree(FILE_RECORD_I<CHAR>* parent, DWORD dirFirstCluster, QWORD dirFileSize, BOOL dirClusterChainInFAT, BOOL isRootDirectory, CHAR* tracePath);
-    DWORD GetClusterChainLen(DWORD index);                                                                    // return number of clusters in cluster chain starting at 'index'
+    DWORD GetClusterChainLen(DWORD index);                                                                    // Returns the number of clusters in the cluster chain starting at 'index'
     BOOL LoadClusterChain(BYTE** buff, DWORD firstCluster, QWORD fileSize, BOOL chainInFAT, QWORD* clusters); // allocate 'buffer' and read clusters based on cluster chain starting at 'index', returns number of 'clusters'
     DWORD ConvertExFATAttr(DWORD exfatattr);
     void DosTimeToFileTime(DWORD dosTime, BYTE dosTime10ms, FILETIME* ft);
@@ -166,8 +167,8 @@ private:
     BOOL EstimateFileDamage(const FILE_RECORD_I<CHAR>* deletedFiles, CLUSTER_MAP_I** clusterMap);
     BOOL GetLostClustersMap(CClusterBitmap* clusterBitmap, CLUSTER_MAP_I* clusterMap);
 
-    // exFAT FAT table could contain 2^32 items (cluster),
-    // it is not possible to allocate/read it whole as we do with FAT32 volumes
+    // The exFAT FAT table can contain 2^32 items (clusters),
+    // so it is not possible to allocate/read it as a whole as we do for FAT32 volumes
     DWORD FATItems;          // total number of DWORD items in FAT
     DWORD* FATHead;          // buffer with first clusters of FAT, up to MAX_FAT_HEAD_SIZE size
     DWORD FATHeadItems;      // number of DWORD items in FATHead
@@ -933,7 +934,7 @@ BOOL CExFATSnapshot<CHAR>::FilterExistingDirectories(FILE_RECORD_I<CHAR>* record
         }
     }
     record->NumDirItems = j;
-    return j == 0; // returns TRUE when directory was removed
+    return j == 0; // Returns TRUE when all directory items were removed
 }
 
 template <typename CHAR>
@@ -1158,7 +1159,7 @@ void CExFATSnapshot<CHAR>::DrawDeletedFile(FILE_RECORD_I<CHAR>* record, CCluster
                 QWORD lcn;
                 QWORD length;
                 if (!runsWalker.GetNextRun(&lcn, &length, NULL))
-                    break; // unlikely error, moreover it doesn't matter
+                    break; // unlikely error; it does not matter here
                 if (lcn != -1)
                 {
                     // if value in bitmap is smaller than 2, increase it
@@ -1263,7 +1264,7 @@ BOOL CExFATSnapshot<CHAR>::EstimateFileDamage(const FILE_RECORD_I<CHAR>* deleted
         }
     }
 
-    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is lost cluster map required?
+    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is a lost cluster map required?
     {
         if (clusterMap != NULL)
         {
@@ -1312,7 +1313,7 @@ BOOL CExFATSnapshot<CHAR>::GetLostClustersMap(CClusterBitmap* clusterBitmap, CLU
             // for cluster number 'i' find related two bits in bitmap
             BYTE c;
             clusterBitmap->GetValue(i - 2, &c); // exFAT bitmap is zero based
-            if (c == 0 || c == 2)               // cluster is not used (or we don't know about it) || there is FC_FAIR or FC_POOR
+            if (c == 0 || c == 2)               // cluster is not used (or we do not know about it), or it is FC_FAIR or FC_POOR
             {
                 // if it is beginning of segment that we are interested in, store lcnFirst and set we are in segment
                 if (!inside)
