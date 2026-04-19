@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -72,7 +73,7 @@ typedef struct
 //decopmression object
 
 typedef int (*FProgressMonitor)(CDecompressionObject*);
-//if return zero value decompression is aborted
+// If zero is returned, decompression is aborted.
 
 struct tagCDecompressionObject
 {
@@ -99,7 +100,7 @@ struct tagCDecompressionObject
     unsigned Flag;          //general purpose bit flag
 
     //unshrink + unreduce
-    unsigned __int64 CompBytesLeft; //bytes left to decompress
+    unsigned __int64 CompBytesLeft; //compressed bytes left to decompress
 
     //unreduce
     int Method;
