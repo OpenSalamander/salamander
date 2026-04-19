@@ -109,7 +109,7 @@ BOOL WriteSFXHeader()
     offs += ++l;
     header.ArchiveNameOffs = offs;
     //l = lstrlen(archName);
-    //ArchiveDataOffs += l; // we accounted for this earlier
+    //ArchiveDataOffs += l; // we did not account for this before
     //offs += ++l;
     offs++;
     header.TargetDirSpecOffs = offs;
