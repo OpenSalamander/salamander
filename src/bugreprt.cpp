@@ -2098,7 +2098,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                             //
                             // this function's ebp
                             // points here ------------\
-              //     ebp-0x8   ebp-0x4   ebp+0x0   ebp+0x4   ebp+0x8   ebp+0xC
+                            //     ebp-0x8   ebp-0x4   ebp+0x0   ebp+0x4   ebp+0x8   ebp+0xC
                             //                         caller's  return
                             //     local1    local0    ebp       addr      param0    param1
                             // ... 00000000  00000000  00000000  00000000  00000000  00000000 ...
