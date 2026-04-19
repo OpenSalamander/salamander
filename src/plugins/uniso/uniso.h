@@ -142,7 +142,7 @@ public:
 extern HINSTANCE DLLInstance; // handle to the SPL - language-independent resources
 extern HINSTANCE HLanguage;   // handle to the SLG - language-dependent resources
 
-//extern DWORD Options;// configuration
+//extern COptions Options; // configuration
 struct COptions
 {
     BOOL ClearReadOnly;      // Clear read-only attribute when copying from archive
