@@ -284,7 +284,7 @@ void CMenuItem::DecodeSubTextLenghtsAndWidths(CMenuSharedResources* sharedRes, B
     ColumnL2 = NULL;
     ColumnR = NULL;
 
-    // set column pointers and character counts
+    // set pointers and character counts for each column
     while (inifiniteLoop)
     {
         if (*iterator == '\t' || *iterator == 0)
