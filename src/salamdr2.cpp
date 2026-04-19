@@ -152,7 +152,7 @@ char* GetErrorText(DWORD error)
 
     char* ret = act;
     // NOTE: sprintf_s fills the entire buffer in the debug build, so we cannot pass it the whole buffer (it contains
-    // other strings as well); either handle it via _CrtSetDebugFillThreshold or provide a smaller size)
+    // other strings as well); either use _CrtSetDebugFillThreshold or pass a smaller size
     int l = sprintf(act, ((int)error < 0 ? "(%08X) " : "(%d) "), error);
     int fl;
     if ((fl = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
@@ -189,7 +189,7 @@ WCHAR* GetErrorTextW(DWORD error)
 
     WCHAR* ret = act;
     // NOTE: swprintf_s fills the entire buffer in the debug build, so we cannot pass it the whole buffer (it contains
-    // other strings as well); either handle it via _CrtSetDebugFillThreshold or provide a smaller size)
+    // other strings as well); either use _CrtSetDebugFillThreshold or pass a smaller size
     int l = swprintf(act, _countof(buffer) - (act - buffer), ((int)error < 0 ? L"(%08X) " : L"(%d) "), error);
     int fl;
     if ((fl = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
@@ -231,7 +231,7 @@ BOOL SalamanderActive()
 {
     HWND foreground = GetForegroundWindow();
     if (foreground == NULL)
-        return TRUE; // during the Salamander activation blocked by the wait window, GetForegroundWindow() returns NULL
+        return TRUE; // when Salamander activation is blocked by the wait window, GetForegroundWindow() returns NULL
     DWORD pid;
     GetWindowThreadProcessId(foreground, &pid);
     return pid == GetCurrentProcessId();
@@ -277,8 +277,8 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
         {
         case WM_USER_CREATEWAITWND:
         {
-            hForegroundWnd = (HWND)msg.wParam; // if it is not NULL, open the window only if hForegroundWnd is active
-            if ((int)msg.lParam > 0)           // if the delay > 0
+            hForegroundWnd = (HWND)msg.wParam; // if hForegroundWnd is not NULL, open the window only if it is active
+            if ((int)msg.lParam > 0)           // if delay > 0
             {
                 if (timer != 0)
                 {
@@ -335,8 +335,8 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
                     showWindow = pid == GetCurrentProcessId();
                 }
 
-                // seemingly redundant call to SetWindowPos twice, but otherwise the window unfortunately stays
-                // all the way at the bottom (above the desktop but below all other windows)
+                // A seemingly redundant double call to SetWindowPos, but otherwise the window unfortunately stays
+                // at the very bottom (above the desktop, but below all other windows)
                 SetWindowPos(waitWnd.HWindow, HWND_TOPMOST, 0, 0, 0, 0,
                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
                 SetWindowPos(waitWnd.HWindow, HWND_NOTOPMOST, 0, 0, 0, 0,
@@ -352,10 +352,10 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
             BOOL show = (BOOL)msg.wParam;
             if (show)
             {
-                // postpone the display for a brief moment; the reason is the case where the display
-                // happens because hForegroundWnd is activated after closing a MessageBox;
-                // if the user interrupted the operation there, an immediate display would
-                // cause a brief flash of the wait window and its immediate destruction;
+                // postpone showing the window briefly; this is needed when showing it
+                // is triggered by activation of hForegroundWindow after a MessageBox closes;
+                // if the user cancelled the operation there, showing it immediately would
+                // cause the wait window to flash briefly and then be destroyed immediately;
                 // the delay prevents that
                 if (timer == 0)
                     timer = SetTimer(NULL, 0, 100, NULL); // show the window again after 100ms
@@ -374,27 +374,27 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
             break;
         }
             /*
-      case WM_USER_ACTIVATEWAITMSG:
-      {
-        if (waitWnd.HWindow != NULL)   // only if the window is open
-        {
-          // seemingly redundant call to SetWindowPos twice, but otherwise the window unfortunately stays
-          // all the way at the bottom (above the desktop but below all other windows)
+                  case WM_USER_ACTIVATEWAITMSG:
+                  {
+                    if (waitWnd.HWindow != NULL)   // only if the window is open
+                    {
+                      // apparently redundant double call to SetWindowPos, but otherwise the window unfortunately stays
+                      // at the very bottom (above the desktop, but below all other windows)
 
-          // It is necessary to show the window only in the second operation,
-          // because changing the Z-order while the window is shown means the window loses
-          // its cached bitmap (it has CS_SAVEBITS set) and after it closes
-          // it triggers a repaint of the windows beneath it.
+                      // The window must be shown only in the second operation,
+                      // because changing the Z-order while the window is visible means the window loses
+                      // its cached bitmap (it has CS_SAVEBITS set) and after it closes
+                      // triggers a repaint of the windows beneath it.
 
-          BOOL visible = IsWindowVisible(waitWnd.HWindow);
-          SetWindowPos(waitWnd.HWindow, HWND_TOPMOST, 0, 0, 0, 0,
-                       SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-          SetWindowPos(waitWnd.HWindow, HWND_NOTOPMOST, 0, 0, 0, 0,
-                       visible ? SWP_SHOWWINDOW : 0 | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-        }
-        break;
-      }
-*/
+                      BOOL visible = IsWindowVisible(waitWnd.HWindow);
+                      SetWindowPos(waitWnd.HWindow, HWND_TOPMOST, 0, 0, 0, 0,
+                                   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                      SetWindowPos(waitWnd.HWindow, HWND_NOTOPMOST, 0, 0, 0, 0,
+                                   visible ? SWP_SHOWWINDOW : 0 | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                    }
+                    break;
+                  }
+            */
         case WM_USER_DESTROYWAITWND:
         {
             if (timer != 0)
@@ -413,7 +413,7 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
                 waitWnd.HWindow = NULL;
             }
             if (msg.wParam)
-                run = FALSE; // terminate the thread
+                run = FALSE; // terminate the worker thread
             hForegroundWnd = NULL;
             break;
         }
@@ -479,7 +479,7 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
         SafeWaitWindowClosePressed = FALSE;
         SafeWaitMessageCallerID = GetCurrentThreadId();
-        if (!SafeWaitMessageThreadStarted) // the thread is not running
+        if (!SafeWaitMessageThreadStarted) // the thread has not been started
         {
             HANDLE thread = HANDLES(CreateThread(NULL, 0, ThreadSafeWaitWindowF,
                                                  (void*)(UINT_PTR)showCloseButton, 0, &SafeWaitMessageThreadID));
@@ -508,7 +508,7 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
             if (GetLastError() == ERROR_INVALID_THREAD_ID)
                 Sleep(100); // not started yet, wait
             else
-                break; // different error
+                break; // another error
         }
     }
     else
@@ -521,9 +521,9 @@ void CreateSafeWaitWindow(const char* message, const char* caption,
 void DestroySafeWaitWindow(BOOL killThread)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (killThread ||                                        // kill applies to everyone
+    if (killThread ||                                        // killThread bypasses these checks
         SafeWaitMessageCallerSet &&                          // the window is created
-            SafeWaitMessageCallerID == GetCurrentThreadId()) // this is the thread that opened it
+            SafeWaitMessageCallerID == GetCurrentThreadId()) // this is the thread that created it
     {
         SafeWaitMessageCallerSet = FALSE;
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
@@ -548,7 +548,7 @@ BOOL GetSafeWaitWindowClosePressed()
         SafeWaitMessageCallerID == GetCurrentThreadId()) // this is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // the thread is running
+        if (SafeWaitMessageThreadStarted) // the thread has started
         {
             return SafeWaitWindowClosePressed;
         }
@@ -570,11 +570,11 @@ BOOL UserWantsToCancelSafeWaitWindow()
 void ShowSafeWaitWindow(BOOL show)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (SafeWaitMessageCallerSet &&                      // the window is created
+    if (SafeWaitMessageCallerSet &&                      // the window has been created
         SafeWaitMessageCallerID == GetCurrentThreadId()) // this is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // the thread is running; send a command to show or hide
+        if (SafeWaitMessageThreadStarted) // the thread is running; send a message to show or hide the window
         {
             PostThreadMessage(SafeWaitMessageThreadID, WM_USER_SHOWWAITWND, show, 0);
             // we must reset the pressed button and this is a good opportunity,
@@ -589,11 +589,11 @@ void ShowSafeWaitWindow(BOOL show)
 void SetSafeWaitWindowText(const char* message)
 {
     HANDLES(EnterCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-    if (SafeWaitMessageCallerSet &&                      // the window is created
+    if (SafeWaitMessageCallerSet &&                      // window created
         SafeWaitMessageCallerID == GetCurrentThreadId()) // this is the thread that opened it
     {
         HANDLES(LeaveCriticalSection(&SafeWaitMessageCallerSetSection.cs));
-        if (SafeWaitMessageThreadStarted) // the thread is running; send a command to show or hide
+        if (SafeWaitMessageThreadStarted) // the thread is running; post a command to show or hide
         {
             HANDLES(EnterCriticalSection(&SafeWaitMessageTextSection));
             if (SafeWaitMessageText != NULL)
@@ -627,9 +627,9 @@ BOOL FileExists(const char* fileName)
     return TRUE;
   }
   */
-    // forget that; we will do it via attributes
+    // ignore that and use attributes instead
     //
-    // j.r. FIXME: discuss with Petr; I tried removing the file's right to read
+    // j.r. FIXME: Discuss with Petr; I tried removing the file's permission to read
     // attributes, but SalGetFileAttributes() still does not report an error. How is that possible?
     DWORD attr = SalGetFileAttributes(fileName);
     return (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0);
@@ -755,7 +755,7 @@ BOOL DoExpandVarString(HWND msgParent, const char* varText, BOOL validateOnly, i
                                     }
                                     else
                                     {
-                                        if (!validateOnly && validMax && !detectMax) // phase of using precomputed values
+                                        if (!validateOnly && validMax && !detectMax) // use precomputed values
                                         {
                                             if (currentMaxVarIndex < maxVarWidthsCount)
                                             {
@@ -939,7 +939,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                     if (buffer != NULL)
                     {
                         int totalLen = (valueOutLen > 0) ? valueOutLen : len;
-                        if (out + totalLen + 1 <= outEnd) // it must still be possible to null-terminate it
+                        if (out + totalLen + 1 <= outEnd) // there must still be room for the null terminator
                         {
                             if (varPlacementIndex < varPlacementIndexCount)
                             {
@@ -1085,7 +1085,7 @@ CQuadWord MyGetDiskFreeSpace(const char* path, CQuadWord* total)
                 *total = CQuadWord(a, 0) * CQuadWord(b, 0) * CQuadWord(d, 0);
         }
         else
-            ret = CQuadWord(-1, -1); // error, do not display it
+            ret = CQuadWord(-1, -1); // error, do not display
     }
     return ret;
 }
@@ -1152,7 +1152,7 @@ BOOL ResolveSubsts(char* resPath)
             break;
         }
         char tgt[MAX_PATH];
-        if (GetSubstInformation(LowerCase[resPath[0]] - 'a', tgt, MAX_PATH) && tgt[0] != '\\' /* mapped network disks handled elsewhere */)
+        if (GetSubstInformation(LowerCase[resPath[0]] - 'a', tgt, MAX_PATH) && tgt[0] != '\\' /* mapped network drives are handled elsewhere */)
         {
             if (!SalPathAppend(tgt, resPath + 2, MAX_PATH))
             {
@@ -1234,14 +1234,14 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                 firstRepPoint = FALSE;
                 UINT drvType = getRepPointDestRes && repPointPath[0] != 0 && repPointPath[1] == ':' ? GetDriveTypeForDriveLetterPath(repPointPath) : DRIVE_UNKNOWN;
                 if (getRepPointDestRes && (IsUNCPath(repPointPath) || drvType == DRIVE_REMOTE)) // symlink to a UNC or mapped network path (available since Vista)
-                {                                                                               // it only makes sense to look for reparse points on fixed disks, so stop here (network paths are a problem because their reparse points will return "local paths" (C:\...), which, if used on this machine (instead of the remote one they come from), it will lead to nonsensical results)
+                {                                                                               // It only makes sense to look for reparse points on fixed disks, so stop here (network paths are a problem because their reparse points return "local paths" (C:\...), which, if used on this machine instead of the remote one they come from, lead to nonsensical results)
                     if (netPath != NULL)
                         lstrcpyn(netPath, repPointPath, MAX_PATH);
                     GetRootPath(resPath, repPointPath);
                     break;
                 }
                 if (!getRepPointDestRes || repPointPath[0] == 0 || repPointPath[1] != ':')
-                { // unknown reparse point or volume mount point; in any case do not traverse it, let the system try + the path must not be shortened or it may refer to another volume
+                { // unknown reparse point or volume mount point; in any case, do not traverse it, let the system handle it, and do not shorten the path or it may refer to another volume
                     *cutResPathIsPossible = FALSE;
                     break;
                 }
@@ -1266,7 +1266,7 @@ void ResolveLocalPathWithReparsePoints(char* resPath, const char* path, BOOL* cu
                     break;
                 }
                 if (drvType != DRIVE_FIXED)
-                    break; // reparse points only make sense to look for on fixed disks
+                    break; // only look for reparse points on fixed disks
             }
         }
     }
@@ -1282,7 +1282,7 @@ BOOL MyGetDiskFreeSpace(const char* path, LPDWORD lpSectorsPerCluster,
     lstrcpyn(resPath, path, MAX_PATH);
     ResolveSubsts(resPath);
     GetRootPath(ourPath, resPath);
-    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // reparse points only make sense to look for on fixed disks
+    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // only look for reparse points on fixed disks
     {                                                                // gradually try shortening the path; on a mounted directory it can return the mounted disk parameters
         // if it is not a root path, try traversing the reparse points as well
         BOOL cutPathIsPossible = TRUE;
@@ -1319,7 +1319,7 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
     lstrcpyn(resPath, path, MAX_PATH);
     ResolveSubsts(resPath);
     GetRootPath(ourPath, resPath);
-    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // reparse points only make sense to look for on fixed disks
+    if (!IsUNCPath(ourPath) && GetDriveType(ourPath) == DRIVE_FIXED) // it only makes sense to look for reparse points on fixed disks
     {                                                                // gradually try shortening the path; on a mounted directory it can return the mounted disk parameters
         // if it is not a root path, try traversing the reparse points as well
         BOOL rootOrCurReparsePointSet = FALSE;
@@ -1344,7 +1344,7 @@ BOOL MyGetVolumeInformation(const char* path, char* rootOrCurReparsePoint, char*
             GetRootPath(resPath, path);
             ResolveSubsts(resPath);
             GetRootPath(rootOrCurReparsePoint, path);
-            if (strlen(resPath) < strlen(ourPath)) // if the path we return volume info for is longer than the path obtained by resolving the subst, we must append this part of the path after the subst root
+            if (strlen(resPath) < strlen(ourPath)) // if the path for which we return volume information is longer than the path obtained by resolving the subst, we must append this part of the path after the subst root
             {
                 if (_strnicmp(resPath, ourPath, strlen(resPath)) == 0) // always true
                 {
@@ -1496,7 +1496,7 @@ BOOL GetReparsePointDestination(const char* repPointDir, char* repPointDstBuf, D
                 TRACE_E("GetReparsePointDestination(): Unexpected format of symbolic link name (it is not a local path): " << repPointDir);
                 return FALSE;
             }
-            symlinkAbsPath[0] = (WCHAR)(unsigned char)repPointDir[0]; // a bit of a hack (we rely on a fact that 'a-zA-Z' convert to Unicode 1:1)
+            symlinkAbsPath[0] = (WCHAR)(unsigned char)repPointDir[0]; // a bit of a hack (we rely on the fact that 'a-zA-Z' map to Unicode 1:1)
             symlinkAbsPath[1] = L':';
             if (*s == L'\\')
                 lstrcpynW(symlinkAbsPath + 2, s, 1000 - 2);
@@ -1601,9 +1601,9 @@ UINT MyGetDriveType(const char* path)
             ResolveLocalPathWithReparsePoints(ourPath, path, &cutPathIsPossible, NULL, NULL, NULL, NULL, NULL);
 
             while ((ret = GetDriveType(ourPath)) == DRIVE_UNKNOWN)
-            { // NOTE: differs from MyGetVolumeInformation because GetDriveType returns success for any path (not just root + mounted volume)
+            { // NOTE: differs from MyGetVolumeInformation in that GetDriveType succeeds for any path (not just a root or mounted volume)
                 if (!cutPathIsPossible || !CutDirectory(ourPath))
-                    break; // we must not cut it or even the root did not succeed; end with error
+                    break; // cannot shorten the path, or even the root did not succeed; stop with an error
                 SalPathAddBackslash(ourPath, MAX_PATH);
             }
         }
@@ -1702,7 +1702,7 @@ void GetMessagePos(POINT& p)
 
 void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, int change, BOOL dir)
 {
-    // j.r. I disabled the macro because AlterFileName is called heavily from RefreshListBox()
+    // j.r. The macro was disabled because AlterFileName is called heavily from RefreshListBox()
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE6("AlterFileName(, %s, %d, %d, %d, %d)", filename, filenameLen, format, change, dir);
     if (format == 6)
@@ -1714,7 +1714,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
     if (change != 0 && format != 5 && format != 7)
     {
         char* s = filename;
-        while (*s != 0) // searching for the last dot (file extensions)
+        while (*s != 0) // find the last dot (file extension)
             if (*s++ == '.')
                 ext = s;
         //  if (ext != NULL && ext <= filename + 1) ext = NULL;  // ".cvspass" in Windows is considered an extension ..
@@ -1829,7 +1829,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
     case 7: // name mixed case, extension lower case
     {
         char* s = filename;
-        while (*s != 0) // searching for the last dot (file extension)
+        while (*s != 0) // find the last dot (file extension)
             if (*s++ == '.')
                 ext = s;
         //    if (ext == NULL || ext <= filename + 1) ext = s;  // ".cvspass" in Windows is considered an extension ...
@@ -1839,7 +1839,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
         BOOL capital = TRUE;
         char* tgt = tgtName;
         char* name = filename;
-        while (name < ext) // name mixed case
+        while (name < ext) // name in mixed case
         {
             if (!capital)
             {
@@ -1870,7 +1870,7 @@ void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, i
     }
     }
 
-    if (change == 1 && format != 5 && format != 7) // change only the name
+    if (change == 1 && format != 5 && format != 7) // change only the file name
     {
         if (ext != NULL)
         {
@@ -1907,8 +1907,8 @@ void MinimizeApp(HWND mainWnd)
 // ****************************************************************************
 BOOL CheckOnlyOneInstance(const CCommandLineParams* cmdLineParams)
 {
-    // :-) a small gift for the transition to the text config :-))))
-    // load even if ForceOnlyOneInstance == TRUE
+    // Compatibility for the transition to the text config:
+    // load the setting even if ForceOnlyOneInstance == TRUE
     LoadSaveToRegistryMutex.Enter();
     HKEY salamander;
     if (SALAMANDER_ROOT_REG != NULL &&
@@ -1934,7 +1934,7 @@ BOOL CheckOnlyOneInstance(const CCommandLineParams* cmdLineParams)
 /*
 BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const char *activePath, BYTE activatePanel)
 {
-  // :-) a small gift for the transition to the text config :-))))
+  // temporary aid for the transition to a text config
   // load even if ForceOnlyOneInstance == TRUE
   LoadSaveToRegistryMutex.Enter();
   HKEY salamander;
@@ -1955,18 +1955,18 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
   if (Configuration.ForceOnlyOneInstance || Configuration.OnlyOneInstance)
   {
     HWND wnd;
-    int c = 100;   // wait up to five seconds to find the predecessor (it may not have opened the main window yet)
+    int c = 100;   // wait up to five seconds to find the previous instance (it may not have opened the main window yet)
     while (c--)
     {
       wnd = FindWindow(CMAINWINDOW_CLASSNAME, NULL);
-      if (wnd == NULL && !FirstLocalInstance_252b1_or_later) 
+      if (wnd == NULL && !FirstLocalInstance_252b1_or_later)
         Sleep(50);
-      else 
-        break; // professional optimization since 2.52 -- why loop 100 times ;-)
+      else
+        break; // optimization since 2.52: stop polling once it is no longer needed
     }
-    if (wnd != NULL)  // we have a predecessor
+    if (wnd != NULL)  // a previous instance exists
     {
-      // allow the use of SetForegroundWindow, otherwise Salamander will not be able to bring itself to the front
+      // allow SetForegroundWindow, otherwise Salamander will not be able to bring itself to the foreground
       DWORD otherSalPID;
       GetWindowThreadProcessId(wnd, &otherSalPID);
       AllowSetForegroundWindow(otherSalPID);
@@ -1974,28 +1974,28 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
       PostMessage(wnd, WM_USER_SHOWWINDOW, 0, 0);
 
       // allocate shared space in pagefile.sys
-      HANDLE fm = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 are we passing x86/x64 incompatible data?
+      HANDLE fm = HANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, // FIXME_X64 are we passing x86/x64-incompatible data?
                                             sizeof(CSetPathsParams), NULL));
       if (fm != NULL)
       {
         int c = -1;
-        CSetPathsParams *params = (CSetPathsParams*)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 are we passing x86/x64 incompatible data?
+        CSetPathsParams *params = (CSetPathsParams*)HANDLES(MapViewOfFile(fm, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 are we passing x86/x64-incompatible data?
         if (params != NULL)
         {
           ZeroMemory(params, sizeof(CSetPathsParams));
           lstrcpyn(params->LeftPath, leftPath, MAX_PATH);
           lstrcpyn(params->RightPath, rightPath, MAX_PATH - 1); // Salamander older than 2.52 could crash on a path of length MAX_PATH - 1
 
-          // unfortunately when receiving mapped memory we cannot determine its size to the byte (only with page-size granularity)
-          // so we use a "trick" -- append a signature after the structure; if it is there, it is very likely our data
-          // and the receiver can keep reading
+          // unfortunately, when receiving mapped memory we cannot determine its exact byte size
+          // only with memory-page granularity, so we use a trick: append a signature after the structure;
+          // if it is present, the data is very likely ours and the receiver can continue reading
           params->MagicSignature1 = 0x07f2ab13;
           params->MagicSignature2 = 0x471e0901;
           params->StructVersion = 1;
           lstrcpyn(params->ActivePath, activePath, MAX_PATH);
           params->ActivatePanel = activatePanel;
 
-          // let the old process read the memory and change directories
+          // let the old process read the memory and change the directories
           c = 51;  // give it 5 seconds
           while (--c)
           {
@@ -2008,7 +2008,7 @@ BOOL CheckOnlyOneInstance(const char *leftPath, const char *rightPath, const cha
             }
           }
 
-          // then we wrap it up
+          // clean up
           HANDLES(UnmapViewOfFile(params));
         }
         HANDLES(CloseHandle(fm));
@@ -2054,7 +2054,7 @@ void DrawSplitLine(HWND HWindow, int newDragSplitX, int oldDragSplitX, RECT clie
     int r0 = client.left + newDragSplitX + splitThick;
     if (newDragSplitX == -1)
         r0 = l0 = -1;
-    if (oldDragSplitX != -1) // compute the stripe for invalidation
+    if (oldDragSplitX != -1) // compute the strip to invalidate
     {
         int l1 = client.left + oldDragSplitX;
         int r1 = client.left + oldDragSplitX + splitThick;
@@ -2158,8 +2158,8 @@ BOOL LoadRGB(HKEY hKey, const char* name, COLORREF& color)
 {
     char buf[50];
     DWORD returnedType;
-    // for backward compatibility (up to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive) we can load both
-    // the representation as a string and the more efficient binary one
+    // for backward compatibility (up to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive), both
+    // the string representation and the more efficient binary one can be loaded
     if (GetValue2(hKey, name, REG_SZ, REG_DWORD, &returnedType, buf, 50))
     {
         if (returnedType == REG_SZ)
@@ -2209,8 +2209,8 @@ BOOL LoadRGBF(HKEY hKey, const char* name, SALCOLOR& color)
 {
     char buf[50];
     DWORD returnedType;
-    // for backward compatibility (up to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive) we can load both
-    // the representation as a string and the more efficient binary one
+    // for backward compatibility (up to reg:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.53 beta 1 (DB 33) inclusive), both
+    // the string representation and the more efficient binary one can be loaded
     if (GetValue2(hKey, name, REG_SZ, REG_DWORD, &returnedType, buf, 50))
     {
         if (returnedType == REG_SZ)
@@ -2773,7 +2773,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
 
     if (buf != NULL)
     {
-        // first try to parse it into memory; if it contains format errors we will not shove it into the registry at all
+        // first try to parse it into memory; if it contains syntax errors, we will not put it into the registry at all
         CSalamanderRegistryExAbstract* memReg = REG_MemRegistryFactory();
         LPTSTR bufMem = _tcsdup(buf); // the Parse call changes the buffer, so we must keep the original for the next Parse
         TRACE_I("ImportConfiguration(): Parse to memory: begin");
@@ -2833,7 +2833,7 @@ BOOL ImportConfiguration(HWND hParent, const char* fileName, BOOL ignoreIfNotExi
             case RPE_INVALID_MBCS:
             case RPE_INVALID_FORMAT:
                 errTextID = IDS_IMPORTCFG_INVALIDFORMAT;
-                break; // format error
+                break; // syntax error
 
                 // case RPE_OUT_OF_MEMORY:
                 // case RPE_KEY_OPEN:
