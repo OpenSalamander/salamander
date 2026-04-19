@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -16,8 +17,8 @@
 /* inflate.c -- modified by Lucas Cerman 
    version 1.0b, August 1999
    
-   based on file inflate.c distributed with infozip,
-   writen by  Mark Adler
+   based on the inflate.c file distributed with Info-ZIP,
+   written by Mark Adler
    version c16b, 29 March 1998 */
 
 /*
@@ -165,12 +166,12 @@ int huft_build(CDecompressionObject* decompress,
                struct huft** t,   /* result: starting table */
                int* m);
 
-/* The inflate algorithm uses a sliding 32K byte window on the uncompressed
-   stream to find repeated byte strings.  This is implemented here as a
-   circular buffer.  The index is updated simply by incrementing and then
-   and'ing with 0x7fff (32K-1) (window size - 1). */
+/* The inflate algorithm uses a sliding 32K-byte window on the uncompressed
+   stream to find repeated byte strings. This is implemented here as a
+   circular buffer. The index is updated simply by incrementing and then
+   bitwise-ANDing with 0x7fff (32K-1) (window size - 1). */
 // sliding window is defined in CDecompressionObject and could be
-// any size greater or equal 32K
+// any size greater than or equal to 32K
 
 /* Tables for deflate from PKZIP's appnote.txt. */
 /* Order of the bit length code lengths */
@@ -226,7 +227,7 @@ static const uch cpdext32[] = {
 #define MAXDISTS 30
 #endif
 
-/* And'ing with mask_bits[n] masks the lower n bits */
+/* ANDing with mask_bits[n] masks the lower n bits */
 const ush mask_bits[] = {
     0x0000,
     0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
@@ -240,16 +241,16 @@ const ush mask_bits[] = {
         DUMPBITS(j)
 
    where NEEDBITS makes sure that b has at least j bits in it, and
-   DUMPBITS removes the bits from b.  The macros use the variable k
-   for the number of bits in b.  Normally, b and k are register
-   variables for speed and are initialized at the begining of a
+   DUMPBITS removes the bits from b. The macros use the variable k
+   for the number of bits in b. Normally, b and k are register
+   variables for speed and are initialized at the beginning of a
    routine that uses these macros from a global bit buffer and count.
 
-   In order to not ask for more bits than there are in the compressed
-   stream, the Huffman tables are constructed to only ask for just
-   enough bits to make up the end-of-block code (value 256).  Then no
-   bytes need to be "returned" to the buffer at the end of the last
-   block.  See the huft_build() routine.
+   In order not to ask for more bits than there are in the compressed
+   stream, the Huffman tables are constructed to ask for just enough
+   bits to make up the end-of-block code (value 256). Then no bytes
+   need to be "returned" to the buffer at the end of the last block.
+   See the huft_build() routine.
  */
 
 //this function should replace NEXTBYTE macro
@@ -313,7 +314,7 @@ uch NextByte(CDecompressionObject* decompress)
    the longer codes.  The time it costs to decode the longer codes is
    then traded against the time it takes to make longer tables.
 
-   This results of this trade are in the variables lbits and dbits
+   The results of this tradeoff are reflected in the variables lbits and dbits
    below.  lbits is the number of bits the first level table for literal/
    length codes can decode in one step, and dbits is the same thing for
    the distance codes.  Subsequent tables are also less than or equal to
@@ -338,8 +339,8 @@ static const int dbits = 6; /* bits in base distance lookup table */
 
 #ifndef ASM_INFLATECODES
 
-/* inflate (decompress) the codes in a deflated (compressed) block.
-   Return an error code or zero if it all goes ok. */
+/* Inflate (decompress) the codes in a deflated (compressed) block.
+   Returns an error code, or zero on success. */
 int inflate_codes(CDecompressionObject* decompress,
                   struct huft* tl, //literal/length
                   struct huft* td, //distance decoder tables
@@ -366,7 +367,7 @@ int inflate_codes(CDecompressionObject* decompress,
     /* inflate the coded data */
     ml = mask_bits[bl]; /* precompute masks for speed */
     md = mask_bits[bd];
-    while (1) /* do until end of block */
+    while (1) /* repeat until end of block */
     {
         NEEDBITS((unsigned)bl, decompress)
         t = tl + ((unsigned)b & ml);
@@ -451,7 +452,7 @@ int inflate_codes(CDecompressionObject* decompress,
                 break;
             }
 
-            if (e == 31) /* it's the EOB signal */
+            if (e == 31) /* end-of-block (EOB) code */
             {
                 /* sorry for this goto, but we have to exit two loops at once */
                 goto cleanup_decode;
@@ -490,7 +491,7 @@ int inflate_stored(CDecompressionObject* decompress)
     unsigned outBytes,
         inBytes; //temporary variables
 
-    // make local copies of globals
+    // make local copies of the decompressor state
     b = decompress->Input->BitBuf; // initialize bit buffer
     k = decompress->Input->BitCount;
 
@@ -507,22 +508,22 @@ int inflate_stored(CDecompressionObject* decompress)
         return 1; // error in compressed data
     DUMPBITS(16)
 
-    /* old copy routine, the new should be faster (I hope so)
-  // read and output the compressed data
-  while (n--)
-  {
-    NEEDBITS(8, decompress)
-    decompress->Output->SlideWin[w++] = (uch)b;
-    if (w == decompress->Output->WinSize)
-    {
-      decompress->Output->Flush(w, decompress);
-      w = 0;
-    }
-    DUMPBITS(8, decompress)
-  }
-*/
+    /* old copy routine; the new one should be faster
+      // read and output the stored block data
+      while (n--)
+      {
+        NEEDBITS(8, decompress)
+        decompress->Output->SlideWin[w++] = (uch)b;
+        if (w == decompress->Output->WinSize)
+        {
+          decompress->Output->Flush(w, decompress);
+          w = 0;
+        }
+        DUMPBITS(8, decompress)
+      }
+    */
 
-    //copy bytes from intup to the output
+    // Copy bytes from input to the output
     while (n)
     {
         if (n <= decompress->Output->WinSize - decompress->Output->WinPos)
@@ -621,7 +622,7 @@ int inflate_fixed(CDecompressionObject* decompress)
                          decompress->fixed_bl, decompress->fixed_bd) != 0;
 }
 
-/* decompress an inflated type 2 (dynamic Huffman codes) block. */
+/* Decompress a type 2 (dynamic Huffman codes) block. */
 int inflate_dynamic(CDecompressionObject* decompress)
 {
     int i; /* temporary variables */
@@ -636,11 +637,11 @@ int inflate_dynamic(CDecompressionObject* decompress)
     unsigned nb;                        /* number of bit length codes */
     unsigned nl;                        /* number of literal/length codes */
     unsigned nd;                        /* number of distance codes */
-    unsigned ll[MAXLITLENS + MAXDISTS]; /* lit./length and distance code lengths */
+    unsigned ll[MAXLITLENS + MAXDISTS]; /* literal/length and distance code lengths */
     ulg b;                              /* bit buffer */
     unsigned k;                         /* number of bits in bit buffer */
 
-    /* make local bit buffer */
+    /* create a local bit buffer */
     b = decompress->Input->BitBuf;
     k = decompress->Input->BitCount;
 
@@ -667,7 +668,7 @@ int inflate_dynamic(CDecompressionObject* decompress)
     for (; j < 19; j++)
         ll[border[j]] = 0;
 
-    /* build decoding table for trees--single level, 7 bit lookup */
+    /* build a decoding table for the trees -- single-level, 7-bit lookup */
     bl = 7;
     i = huft_build(decompress, ll, 19, 19, NULL, NULL, &tl, &bl);
     if (bl == 0) /* no bit lengths */
@@ -691,7 +692,7 @@ int inflate_dynamic(CDecompressionObject* decompress)
         DUMPBITS(j)
         j = td->v.n;
         if (j < 16)          /* length of code in bits (0..15) */
-            ll[i++] = l = j; /* save last length in l */
+            ll[i++] = l = j; /* save the last length in l */
         else if (j == 16)    /* repeat last length 3 to 6 times */
         {
             NEEDBITS(2, decompress)
@@ -787,7 +788,7 @@ int inflate_dynamic(CDecompressionObject* decompress)
     if ((i = inflate_codes(decompress, tl, td, bl, bd)) != 0)
         TRACE_I("inflate_dynamic: error in inflate_codes");
 
-    /* free the decoding tables, return */
+    /* Free the decoding tables and return. */
     huft_free(decompress, tl);
     huft_free(decompress, td);
     return i;
@@ -832,7 +833,7 @@ int inflate_block(CDecompressionObject* decompress, int* e)
     return 2;
 }
 
-//decompress an inflated entry
+// Decompress a deflated entry
 int Inflate(CDecompressionObject* decompress, int deflate64)
 {
     CALL_STACK_MESSAGE2("Inflate( , int %d)", deflate64);
@@ -840,12 +841,12 @@ int Inflate(CDecompressionObject* decompress, int deflate64)
     int r; /* result code */
 
     /*
-#ifdef DEBUG
-  unsigned h = 0;       // maximum struct huft's malloc'ed
-#endif
-*/
+    #ifdef DEBUG
+      unsigned h = 0;       // maximum number of allocated struct huft objects
+    #endif
+    */
 
-    /* initialize window, bit buffer */
+    /* initialize the window and bit buffer */
     decompress->Output->WinPos = 0;
     decompress->Input->BitCount = 0;
     decompress->Input->BitBuf = 0;
@@ -1053,7 +1054,7 @@ int huft_build(CDecompressionObject* decompress,
         if ((j = *p++) != 0)
             v[x[j]++] = i;
     } while (++i < n);
-    n = x[g]; /* set n to length of v */
+    n = x[g]; /* set n to the length of v */
 
     /* Generate the Huffman codes and for each, make the table entries */
     x[0] = i = 0;              /* first Huffman code is zero */
@@ -1090,9 +1091,9 @@ int huft_build(CDecompressionObject* decompress,
                     }
                 }
                 if ((unsigned)w + j > el && (unsigned)w < el)
-                    j = el - w; /* make EOB code end at table */
+                    j = el - w; /* make the EOB code end at this table */
                 z = 1 << j;     /* table entries for j-bit table */
-                l[h] = j;       /* set table size in stack */
+                l[h] = j;       /* store table size on the stack */
 
                 /* allocate and link in new table */
                 if ((q = (struct huft*)MemAlloc((z + 1) * sizeof(struct huft), decompress->HeapInfo)) ==
