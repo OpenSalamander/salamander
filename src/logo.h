@@ -12,5 +12,5 @@
 BOOL SplashScreenOpen();                           // opens splash screen window
 void SplashScreenCloseIfExist();                   // if window exists, closes it
 BOOL ExistSplashScreen();                          // detects existence of splash screen window
-HWND GetSplashScreenHandle();                      // returns handle of splash screen, or NULL if it doesn't exist
+HWND GetSplashScreenHandle();                      // returns the splash screen handle, or NULL if it does not exist
 void IfExistSetSplashScreenText(const char* text); // if it exists, sets text that will be displayed immediately
