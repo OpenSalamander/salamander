@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -102,16 +103,16 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
                         panel, pluginFSName, pluginFSNameIndex, isDir);
 
     CPluginFSInterface* fs = (CPluginFSInterface*)pluginFS;
-    if (isDir) // sub-dir or up-dir
+    if (isDir) // subdirectory or parent directory
     {
         char newPath[MAX_PATH];
         strcpy(newPath, fs->Path);
-        if (isDir == 2) // up-dir
+        if (isDir == 2) // parent directory
         {
             char* cutDir = NULL;
             if (SalamanderGeneral->CutDirectory(newPath, &cutDir)) // cut last component from the path
             {
-                int topIndex; // next top-index, -1 -> invalid
+                int topIndex; // next top index; -1 means invalid
                 if (!fs->TopIndexMem.FindAndPop(newPath, topIndex))
                     topIndex = -1;
                 // change path in panel
@@ -127,15 +128,15 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
             strcpy(backupPath, newPath);
             int topIndex = SalamanderGeneral->GetPanelTopIndex(panel);
 
-            if (SalamanderGeneral->SalPathAppend(newPath, file.Name, MAX_PATH)) // set path
+            if (SalamanderGeneral->SalPathAppend(newPath, file.Name, MAX_PATH)) // append the name to the path
             {
                 // change path in panel
                 fs = NULL; // after ChangePanelPathToXXX the pointer could be invalid
                 if (SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newPath))
                 {
                     fs = (CPluginFSInterface*)SalamanderGeneral->GetPanelPluginFS(panel); // we need to get current object (in case FS changes)
-                    if (fs != NULL && fs == pluginFS)                                     // if it is original FS
-                        fs->TopIndexMem.Push(backupPath, topIndex);                       // store top-index for return
+                    if (fs != NULL && fs == pluginFS)                                     // if this is the original FS
+                        fs->TopIndexMem.Push(backupPath, topIndex);                       // store the top index for returning
                 }
             }
         }
