@@ -144,7 +144,7 @@ BOOL CISOImage::DumpInfo(FILE* outStream)
 {
     CALL_STACK_MESSAGE1("CISOImage::DumpInfo( )");
 
-    // display information about sessions
+    // display session information
     fprintf(outStream, LoadStr(*GetLabel() ? IDS_INFO_LABEL_LABEL : IDS_INFO_LABEL), GetLabel());
     fprintf(outStream, LoadStr(IDS_INFO_CNT_SESSIONS), Session.Count);
 
