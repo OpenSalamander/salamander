@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -263,7 +264,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         return FALSE;
     }
 
-    int fatIndex = 0; // ignore the zeroth entry from the 'fat' array; we already received 'sector'
+    int fatIndex = 0; // ignore the zeroth entry in the 'fat' array; we already have 'sector'
 
     CDirEntry dirEnt;
     wchar_t longName[63 * 13 + 1];
@@ -363,7 +364,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             {
                 if (dirEnt.Long.Chksum != longNameChksum)
                 {
-                    // invalid data; abort reading
+                    // corrupt entry, stop reading the long name
                     longNameOrd = 0; // do not read long_name
                     TRACE_E("CFATImage::AddDirectory: Different checksum in the long name. offset=0x" << _i64toa(seek.Value, seekStr, 16));
                     continue;
@@ -380,7 +381,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
             continue;                        // move on to the next part of the long_name or to the short_name
         }
 
-        if (longNameOrd > 1) // are we stuck in the middle (neither 0 nor 1)?
+        if (longNameOrd > 1) // are we in the middle of reading the long name (neither 0 nor 1)?
             longNameOrd = 0; // the long_name was not fully read -> discard it
 
         CFileData file;
@@ -389,7 +390,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
         {
             longNameOrd = 0;
             TRACE_E("CFATImage::AddDirectory: Error converting to 8.3 name. offset=0x" << _i64toa(seek.Value, seekStr, 16));
-            continue; // skip the nonsensical name
+            continue; // skip the invalid name
         }
 
         // skip . and ..
@@ -586,7 +587,7 @@ BOOL CFATImage::AddDirectory(char* root, TDirectArray<DWORD>* fat,
 BOOL CFATImage::LoadFAT(DWORD cluster, TDirectArray<DWORD>* fat, HWND hParent,
                         DWORD buttons, DWORD* pressedButton, DWORD* silentMask)
 {
-    if (pressedButton != NULL)          // if we return FALSE and do not change this value
+    if (pressedButton != NULL)          // If we return FALSE without changing this value, it means the entire operation was canceled.
         *pressedButton = DIALOG_CANCEL; // we meant cancellation of the entire operation
 
     fat->DetachMembers();
@@ -775,7 +776,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
     CQuadWord allocFileSize = fileData->Size;
     BOOL allocateWholeFile = FALSE;
     if (*allocWholeFileOnStart != awfDisabled &&  // preallocating the whole file is not disabled
-        allocFileSize > minAllocFileSize &&       // fileSize validity condition + below the copy buffer size preallocation makes no sense (smaller files all use COPY_MIN_FILE_SIZE) (and there is no point below 1 byte)
+        allocFileSize > minAllocFileSize &&       // file size validity condition; below the copy buffer size, preallocation makes no sense (all smaller files use COPY_MIN_FILE_SIZE) (and it also makes no sense for files smaller than 1 byte)
         allocFileSize < CQuadWord(0, 0x80000000)) // the file size must be a positive number (otherwise seeking is impossible - these are numbers above 8EB, so this likely never happens)
     {
         allocateWholeFile = TRUE;
@@ -856,7 +857,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         remains.Value -= read;
     }
 
-    if (fileData->Size < COPY_MIN_FILE_SIZE) // small file -- enlarge it for progress reporting
+    if (fileData->Size < COPY_MIN_FILE_SIZE) // small file -- count it as larger for progress reporting
     {
         remains = COPY_MIN_FILE_SIZE - fileData->Size;
         if (!salamander->ProgressAddSize((int)remains.Value, TRUE))
@@ -881,10 +882,10 @@ EXIT:
     }
     else
     {
-        // FIXME: (consult with Petr) I am not sure here
-        // if the source has no attribute, SafeCreateFile assigned it 'A'
+        // FIXME: (consult with Petr) this is unclear
+        // if the source has no attributes, SafeCreateFile assigned it 'A'
         // this guarantees an exact copy, but it is not compatible with Salamander's Copy command
-        // every plugin behaves differently; it is a mess
+        // each plugin behaves differently; the behavior is inconsistent
 
         if (!SetFileAttributes(targetName, fileData->Attr))
             TRACE_E("SetFileAttributes failed");
