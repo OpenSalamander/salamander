@@ -107,7 +107,7 @@ unsigned ThreadViewerMessageLoopBody(void* parameter)
                               //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 10");
                               //  CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 10");
 
-    if (ok) // if the window was created, run the application loop
+    if (ok) // if the window was created, run the message loop
     {
         CALL_STACK_MESSAGE1("ThreadViewerMessageLoopBody::message_loop");
         if (SalGetFullName(name))
@@ -289,7 +289,7 @@ CViewerWindow::Prepare(HANDLE* hFile, __int64 offset, __int64 bytes, BOOL& fatal
     fatalErr = FALSE;
     if (Seek <= offset)
         if (Seek + Loaded >= offset + bytes)
-            return bytes; // o.k.
+            return bytes; // OK
         else
         {
             if (Seek + Loaded == FileSize) // data loaded up to the end of the file
@@ -330,9 +330,9 @@ CViewerWindow::Prepare(HANDLE* hFile, __int64 offset, __int64 bytes, BOOL& fatal
     }
     if (Seek <= offset)
         if (Seek + Loaded >= offset + bytes)
-            return bytes; // o.k.
+            return bytes; // OK
         else
-            return Seek + Loaded > offset ? Seek + Loaded - offset : 0; // shortened
+            return Seek + Loaded > offset ? Seek + Loaded - offset : 0; // shortened result
     else
         return 0; // nothing is usable (because the beginning was not loaded)
 }
@@ -449,7 +449,7 @@ BOOL CViewerWindow::LoadBefore(HANDLE* hFile)
         if (hFile == NULL) // if the caller does not close the handle, it is up to us
             HANDLES(CloseHandle(file));
 
-        if (!ret && kill) // possibly end working with this file
+        if (!ret && kill) // if necessary, stop working with this file
         {
             free(FileName);
             FileName = NULL;
@@ -603,7 +603,7 @@ BOOL CViewerWindow::LoadBehind(HANDLE* hFile)
         if (hFile == NULL) // if the caller does not close the handle, it is up to us
             HANDLES(CloseHandle(file));
 
-        if (!ret && kill) // possibly end working with this file
+        if (!ret && kill) // possibly stop working with this file
         {
             free(FileName);
             FileName = NULL;
@@ -730,8 +730,8 @@ void CViewerWindow::ReleaseMouseDrag()
 int CViewerWindow::SalMessageBoxViewerPaintBlocked(HWND hParent, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 {
     BOOL oldEnablePaint = EnablePaint;
-    // showing a message box triggers Paint = reading the file = more errors,
-    // therefore disable Paint = only the viewer background will be cleared (e.g., parts of the file already displayed)
+    // Showing a message box triggers Paint, which reads the file and can cause further errors.
+    // Therefore, disable Paint; only the viewer background will be erased (for example, parts of the file already displayed).
     EnablePaint = FALSE;
     int res = SalMessageBox(hParent, lpText, lpCaption, uType);
     EnablePaint = oldEnablePaint;
@@ -877,7 +877,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                                     int c = CodeTables.GetConversionToWinCodePage(codePage);
                                     if (CodeTables.Valid(c))
                                         SetCodeType(c);
-                                    else // conversion "none"
+                                    else // "none" conversion
                                     {
                                         CodeType = 0;
                                         UseCodeTable = FALSE;
@@ -897,7 +897,7 @@ void CViewerWindow::FileChanged(HANDLE file, BOOL testOnlyFileSize, BOOL& fatalE
                                 defCodeType = 0;
                             if (CodeTables.Valid(defCodeType))
                                 SetCodeType(defCodeType);
-                            else // conversion "none"
+                            else // "none" conversion
                             {
                                 CodeType = 0;
                                 UseCodeTable = FALSE;
@@ -1185,7 +1185,7 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 if (lineBegin < minSeek)
                     break;
                 previousLineEnd = lineBegin - 1;
-                if (*s == '\n' && Configuration.EOL_CRLF) // test for '\r\n'
+                if (*s == '\n' && Configuration.EOL_CRLF) // check for '\r\n'
                 {
                     len = min(lineBegin, 2);
                     len = Prepare(NULL, lineBegin - len, len, fatalErr);
@@ -1224,8 +1224,8 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 tabAdd += tab - 1;
                 tabsCount--;
             }
-            if ((takeLineBegin && lineBegin + columns - tabAdd > seek) || // treat "seek" as the offset of the character in the line (at line boundaries it acts as the start of the line)
-                (!takeLineBegin && lineBegin + columns - tabAdd >= seek)) // treat "seek" as the offset of the end of the line (at line boundaries it acts as the end of the line)
+            if ((takeLineBegin && lineBegin + columns - tabAdd > seek) || // treat "seek" as the character offset within the line (at line boundaries it acts as the start of the line)
+                (!takeLineBegin && lineBegin + columns - tabAdd >= seek)) // treat "seek" as the end-of-line offset (at line boundaries, it acts as the end of the line)
             {
                 if (takeLineBegin && addLineIfSeekIsWrap && originalLineBegin < lineBegin && lineBegin == seek)
                 {
@@ -1244,13 +1244,13 @@ BOOL CViewerWindow::FindPreviousEOL(HANDLE* hFile, __int64 seek, __int64 minSeek
                 {
                     if (originalLineBegin < lineBegin) // wrapped line
                         *firstLineEndOff = lineBegin;  // the start of this wrapped line is also the end of the previous wrapped line
-                    firstLineEndOff = NULL;            // we have what we wanted, no further adjustments (could potentially concern ends of previous lines up to the count of "lines")
+                    firstLineEndOff = NULL;            // we have what we wanted, no further adjustments (they could affect the ends of previous lines up to the count in "lines")
                 }
 
                 if (originalLineBegin < lineBegin) // wrapped line
                 {
                     if (lines != NULL && *lines > 0)
-                    { // if we need to look for the start of more lines, do it while we are here (so the loaded data is used)
+                    { // if we need to look for the start of additional lines, do it now so the loaded data is used
                         (*lines)--;
                         takeLineBegin = FALSE; // from now on treat "seek" as the offset of the end of the line
                         seek = lineBegin;
@@ -1469,7 +1469,7 @@ BOOL CViewerWindow::GetOffsetOrXAbs(__int64 x, __int64* offset, __int64* offsetX
                 return TRUE;
             }
         }
-        break; // execution never reaches here
+        break; // unreachable
     }
 
     case vtHex:
@@ -1558,7 +1558,7 @@ void CViewerWindow::SetScrollBar()
         __int64 max = ViewSize + MaxSeekY;
         ScrollScaleY = ((double)max) / 20000.0;
         if (ScrollScaleY < 0.00001)
-            ScrollScaleY = 0.00001; // against "divide by zero"
+            ScrollScaleY = 0.00001; // avoid "divide by zero"
         int page = (int)(ViewSize / ScrollScaleY + 0.5 + 1);
         if (max == 0 || si.nMin != 0 || si.nMax != max / ScrollScaleY + 0.5 + 1 ||
             si.nPage != (DWORD)page ||
@@ -1594,7 +1594,7 @@ void CViewerWindow::SetScrollBar()
 
         ScrollScaleX = ((double)max) / 20000.0;
         if (ScrollScaleX < 0.00001)
-            ScrollScaleX = 0.00001; // against "divide by zero"
+            ScrollScaleX = 0.00001; // avoid "divide by zero"
         page = (int)(((Width - BORDER_WIDTH) / CharWidth) / ScrollScaleX + 0.5 + 2);
         if (max == 0 || si.nMin != 0 || si.nMax != max / ScrollScaleX + 0.5 + 1 ||
             si.nPage != (DWORD)page ||
@@ -1688,7 +1688,7 @@ BOOL CViewerWindow::CheckSelectionIsNotTooBig(HWND parent, BOOL* msgBoxDisplayed
             TooBigSelAction = 1 /* YES */;
         return res == IDNO;
     }
-    return TRUE; // less than 100MB = YES
+    return TRUE; // under 100 MB = YES
 }
 
 HGLOBAL
