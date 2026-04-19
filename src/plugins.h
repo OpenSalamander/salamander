@@ -138,7 +138,7 @@ public:
     }
 
     // ********************************************************************************
-    // WARNING: lower thread priority before executing plug-in operations!
+    // WARNING: lower thread priority before executing plugin operations!
     // ********************************************************************************
 };
 
@@ -301,23 +301,23 @@ public:
     // called right after ChangeDriveMenuItemContextMenu -- the plugin is definitely loaded
     void ExecuteChangeDrivePostCommand(int panel, int postCmd, void* postCmdParam);
 
-    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack message is created;
     // called only when 'pluginFS' is in a panel - the plugin is definitely loaded
     void ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* pluginFS,
                      const char* pluginFSName, int pluginFSNameIndex,
                      CFileData& file, int isDir);
 
-    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack message is created;
     // called only when 'pluginFS' exists (either in a panel or detached) - the plugin is definitely loaded
     BOOL DisconnectFS(HWND parent, BOOL isInPanel, int panel,
                       CPluginFSInterfaceAbstract* pluginFS,
                       const char* pluginFSName, int pluginFSNameIndex);
 
-    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack message is created;
     // called only when the plugin is loaded (its FS is open)
     void ConvertPathToInternal(const char* fsName, int fsNameIndex, char* fsUserPart);
 
-    // direct interface call (does not go through CPluginData + InitDLL), call-stack-message is created;
+    // direct interface call (does not go through CPluginData + InitDLL), call-stack message is created;
     // called only when the plugin is loaded (its FS is open)
     void ConvertPathToExternal(const char* fsName, int fsNameIndex, char* fsUserPart);
 
@@ -990,10 +990,10 @@ public:
     // returns a reference to the string from the CPluginData of the plugin that created this interface
     const char* GetVersion() { return Version; }
 
-    // returns the plug-in interface that created the FS interface (FS part)
+    // returns the plugin interface that created the FS interface (FS part)
     CPluginInterfaceForFSEncapsulation* GetPluginInterfaceForFS() { return &IfaceForFS; }
 
-    // returns the plug-in interface that created the FS interface (base class)
+    // returns the plugin interface that created the FS interface (base class)
     CPluginInterfaceAbstract* GetPluginInterface() { return Iface; }
 
     // returns the name of the opened FS
@@ -1362,7 +1362,7 @@ public:
                               LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
                 if (invalidPathOrCancel != NULL)
                     *invalidPathOrCancel = TRUE;
-                return FALSE; // let the user fix the target path (copy/move to this path is not supported)
+                return FALSE; // let the user fix the target path (copying/moving to this path is not supported)
             }
         }
     }
@@ -1853,7 +1853,7 @@ public:
 class CSalamanderGeneral : public CSalamanderGeneralAbstract
 {
 protected:
-    CPluginInterfaceAbstract* Plugin; // plug-in used by this iface; !!! note: may be NULL
+    CPluginInterfaceAbstract* Plugin; // plugin used by this iface; !!! note: may be NULL
                                       // (plugin not loaded) or -1 (during the plugin's entry point)
 
     char HelpFileName[MAX_PATH]; // if not empty, this is the name (without path) of the .chm help file used by this plugin (optimization only, not stored anywhere)
@@ -2362,7 +2362,7 @@ public:
     DWORD StateMask;          // hiword is an OR mask, loword is an AND mask; if it is -1,
                               // CPluginInterfaceAbstract::GetMenuItemState is used
     DWORD SkillLevel;         // which user levels should see this item MENU_SKILLLEVEL_XXX
-    int ID;                   // plug-in UID - unique item number within the plugin
+    int ID;                   // plugin UID - unique item number within the plugin
     DWORD HotKey;             // hot key: LOWORD=hotkey(LOBYTE:vk, HIBYTE:mods), HIWORD=(0:user kept it, 1:user changed it,it is dirty)
 
     // helper data:
@@ -2473,7 +2473,7 @@ public:
 #endif
 
 protected:
-    HINSTANCE DLL;                                                         // handle of the plug-in’s DLL file
+    HINSTANCE DLL;                                                         // handle of the plugin’s DLL file
     CPluginInterfaceEncapsulation PluginIface;                             // plugin interface (set to -1 during the entry point call)
     CPluginInterfaceForArchiverEncapsulation PluginIfaceForArchiver;       // plugin interface: archiver
     CPluginInterfaceForViewerEncapsulation PluginIfaceForViewer;           // plugin interface: viewer
@@ -2501,13 +2501,13 @@ public:
     CPluginInterfaceForViewerEncapsulation* GetPluginInterfaceForViewer() { return &PluginIfaceForViewer; }
     CPluginInterfaceForThumbLoaderEncapsulation* GetPluginInterfaceForThumbLoader() { return &PluginIfaceForThumbLoader; }
 
-    // loads the DLL into memory, attaches to it and verifies the validity of the stored information (SupportXXX, etc.)
-    // loads only a DLL that matches exactly, otherwise the plugin reinstallation is required
-    // 'parent' is the parent window for message boxes; if it is 'quiet'==TRUE no error messages are shown
+    // loads the DLL into memory, attaches to it, and verifies the validity of the information stored here (SupportXXX, etc.)
+    // loads only a DLL that matches exactly; otherwise, the plugin must be reinstalled
+    // 'parent' is the parent window for message boxes; if 'quiet'==TRUE, no error messages are shown
     // (however, messages from inside the plugin are still displayed)
-    // 'waitCursor' shows the Wait cursor while loading the DLL library
-    // if 'showUnsupOnX64' is TRUE, a message box warns about plugins unsupported on x64
-    // if 'releaseDynMenuIcons' is TRUE, plugins`s dynamic menu icons are released (they are reloaded before opening the menu)
+    // 'waitCursor' shows the wait cursor while the DLL is being loaded
+    // if 'showUnsupOnX64' is TRUE, a message box is shown for plugins unsupported on x64
+    // if 'releaseDynMenuIcons' is TRUE, the plugin's dynamic menu icons are released (they are reacquired before the menu is opened)
     BOOL InitDLL(HWND parent, BOOL quiet = FALSE, BOOL waitCursor = TRUE, BOOL showUnsupOnX64 = TRUE,
                  BOOL releaseDynMenuIcons = TRUE);
 
@@ -2581,10 +2581,10 @@ public:
     BOOL HelpForMenuItem(HWND parent, int index, int suid, BOOL& helpDisplayed);
 
     // plugin call: BuildMenu
-    // let the plugin build a new menu; 'parent' is the parent message box window;
+    // lets the plugin build a new menu; 'parent' is the parent window of the message box;
     // if 'force' is TRUE, 'DynMenuWasAlreadyBuild' is ignored and the menu is always built;
     // returns TRUE if the plugin is loaded and has a static menu or has a dynamic menu and
-    // also returns the menu-extension interface
+    // provides the menu-extension interface
     BOOL BuildMenu(HWND parent, BOOL force);
 
     // plugin call: ListArchive
@@ -2667,14 +2667,14 @@ public:
     // plugin call: PrematureDeleteTmpCopy
     BOOL PrematureDeleteTmpCopy(HWND parent, int copiesCount);
 
-    // returns TRUE if the plugin is an archiver and has its own mechanism for deleting copies of files extracted from the archive 
+    // returns TRUE if the plugin is an archiver and has its own mechanism for deleting copies of files extracted from the archive
     // must work even after unloading the plugin (until it is loaded again)
     BOOL IsArchiverAndHaveOwnDelete() { return ArcCacheOwnDelete; }
 
     HIMAGELIST CreateImageList(BOOL gray);
 
-    // fills 'mii::State' and 'mii::Type' structuresaccording to the command for 'pluginIndex' and 'menuItemIndex'
-    // returns TRUE if the item is enabled and FALSE if it is grayed
+    // fills the 'mii::State' and 'mii::Type' members according to the command specified by 'pluginIndex' and 'menuItemIndex'
+    // returns TRUE if the item is enabled and FALSE if it is GRAYED
     BOOL GetMenuItemStateType(int pluginIndex, int menuItemIndex, MENU_ITEM_INFO* mii);
 
     // synchronizes old hot keys (from configuration) with new ones (from Connect()):
@@ -2791,7 +2791,7 @@ protected:
 
     BOOL DefaultConfiguration; // TRUE => ZIP+TAR+PAK; allows recoding of old archiver data
 
-    TIndirectArray<CPluginFSTimer> PluginFSTimers;    // timers of individual plugin FS
+    TIndirectArray<CPluginFSTimer> PluginFSTimers;    // timers of individual plugin file systems
     DWORD TimerTimeCounter;                           // "time" for adding timer (prevents endless loops inside CPlugins::HandlePluginFSTimers())
     BOOL StopTimerHandlerRecursion;                   // prevents recursive calls to HandlePluginFSTimers()
     CPluginFSInterfaceEncapsulation* WorkingPluginFS; // working plugin FS object (neither in a panel nor among detached FS yet)
@@ -2852,13 +2852,13 @@ public:
     void CheckData();
 
     // removes from Data all plugins whose .spl file no longer exists; if 'canDelPluginRegKey' is TRUE,
-    // their configuration in the registry is also deleted. in the 'notLoadedPluginNames' (buffer of size
-    // 'notLoadedPluginNamesSize') returns a list of names (up to 'maxNotLoadedPluginNames' names) of
-    // plugins that were not loaded but with the configuration in the registry(either removed or failed InitDLL()),
-    // separated by ", " + in 'numOfSkippedNotLoadedPluginNames' (if not NULL) returns the number of
-    // names that are not stored in 'notLoadedPluginNames'. in 'loadAllPlugins' is TRUE only when upgrading
-    // to a new Salamander version and all plugins should be loaded; those that fail and still
-    // have the configuration in the registryare should be stored in 'notLoadedPluginNames'
+    // their configuration in the registry is also deleted. in 'notLoadedPluginNames' (a buffer of size
+    // 'notLoadedPluginNamesSize') it returns a list of names (up to 'maxNotLoadedPluginNames' names) of
+    // plugins not loaded but having configuration in the registry (either removed or with failed InitDLL()),
+    // separated by ", "; in 'numOfSkippedNotLoadedPluginNames' (if not NULL) it returns the number of
+    // names that are not stored in 'notLoadedPluginNames'. 'loadAllPlugins' is TRUE only if upgrading
+    // to a new Salamander version and all plugins are to be loaded; those that fail and still
+    // have configuration in the registry are to be stored in 'notLoadedPluginNames'
     void RemoveNoLongerExistingPlugins(BOOL canDelPluginRegKey, BOOL loadAllPlugins = FALSE,
                                        char* notLoadedPluginNames = NULL,
                                        int notLoadedPluginNamesSize = 0,
@@ -2870,9 +2870,9 @@ public:
     // those not yet added) and automatically uninstalls plugins whose .spl files disappeared
     void AutoInstallStdPluginsDir(HWND parent);
 
-    // handles addition of newly installed plugins (reads plugins.ver); returns TRUE if a new
-    // version of plugins.ver file was found (configuration must be saved so the process doesn't repeat
-    // on the next start of Salamander)
+    // handles adding newly installed plugins (reads plugins.ver); returns TRUE if a new
+    // version of the plugins.ver file was found (the configuration must be saved so this does not repeat
+    // the next time Salamander starts)
     BOOL ReadPluginsVer(HWND parent, BOOL importFromOldConfig);
 
     // loads all plugins and calls their ClearHistory methods
@@ -2924,11 +2924,11 @@ public:
     // the name is based on 'regKeyName'
     void GetUniqueRegKeyName(char* uniqueKeyName, const char* regKeyName);
 
-    // it stores a unique FS name based on 'fsName' in 'uniqueFSName';
-    // 'uniqueFSNames' (if not NULL) is an array of names to which the resulting
+    // Stores a unique FS name based on 'fsName' in 'uniqueFSName';
+    // 'uniqueFSNames' (if not NULL) is an array of names against which the resulting
     // 'uniqueFSName' must also be unique; 'oldFSNames' (if not NULL) is an array of old
-    // fs names from previous plugin loads from which a unique name is preferably selected
-    // and removed (so the user's FS name doesn't change with each plugin load)
+    // fs names from previous plugin loads, from which a unique FS name is preferably selected
+    // and removed (so the user's FS name does not change on each plugin load)
     void GetUniqueFSName(char* uniqueFSName, const char* fsName,
                          TIndirectArray<char>* uniqueFSNames,
                          TIndirectArray<char>* oldFSNames);
@@ -3133,7 +3133,7 @@ public:
 
     // adds a new timer to the PluginFSTimers array; the absolute timeout is GetTickCount() + 'relTimeout'.
     // Once GetTickCount() returns a value greater than or equal to that timeout,
-    // the FS object's Event() method is called with FSE_TIMER and 'timerParam'.
+    // the Event() method of the FS object 'timerOwner' is called with FSE_TIMER and 'timerParam'.
     // Returns TRUE on success (timer successfully added)
     BOOL AddPluginFSTimer(DWORD relTimeout, CPluginFSInterfaceAbstract* timerOwner, DWORD timerParam);
 
@@ -3170,7 +3170,7 @@ public:
     int GetPluginSaveCount();
 
     // after changing Salamander's language clears LastSLGName for all plugins so a new fallback
-    // language is chosen for a plugin (used if the plug-in does not support the language currently selected in Salamander)
+    // language is chosen for a plugin (used if the plugin does not support the language currently selected in Salamander)
     void ClearLastSLGNames();
 
     // returns the number of plugins that can be loaded (GetLoaded() returns TRUE)
@@ -3182,19 +3182,19 @@ public:
     BOOL GetFirstNethoodPluginFSName(char* fsName = NULL, CPluginData** nethoodPlugin = NULL);
 
     // invokes PasswordManagerEvent method for all plugins using the Password Manager.
-    // See CSalamanderGeneralAbstract::SetPluginUsesPasswordManager (loads unloaded plug-ins if necessary)
+    // See CSalamanderGeneralAbstract::SetPluginUsesPasswordManager (loads unloaded plugins if necessary)
     void PasswordManagerEvent(HWND parent, int event);
 
     // releases and clears each plugin's 'PluginDynMenuIcons'
     void ReleasePluginDynMenuIcons();
 
 protected:
-    // based on the LastPlgCmdXXX variables finds the plugin and item in its menu corresponding to
-    // the the last executed command from the Plugins menu; 'rebuildDynMenu' is TRUE if, in the case of a
-    // dynamic menu, BuildMenu() should be called before searching; 'parent' is the parent message box
-    // window (only when 'rebuildDynMenu' is TRUE);
-    // if the command is found, TRUE is returned and 'pluginIndex' holds the plugin index in CPlugins::Data
-    // and 'menuItemIndex' holds the index in the MenuItems array
+    // uses the LastPlgCmdXXX variables to find the plugin and the item in its menu corresponding to
+    // the last command executed from the Plugins menu; 'rebuildDynMenu' is TRUE if, for a dynamic
+    // menu, BuildMenu() should be called before searching; 'parent' is the parent window of the
+    // message box (only when 'rebuildDynMenu' is TRUE);
+    // if the command is found, TRUE is returned and 'pluginIndex' contains the plugin index in
+    // CPlugins::Data and 'menuItemIndex' contains the index in the MenuItems array
     // otherwise FALSE is returned
     BOOL FindLastCommand(int* pluginIndex, int* menuItemIndex, BOOL rebuildDynMenu, HWND parent);
 
@@ -3206,7 +3206,7 @@ protected:
     // adds a record to the Order array; returns the index in the array on success, otherwise returns -1
     int AddPluginToOrder(const char* dllName, BOOL showInBar);
 
-    // Sorts the Orders array by plugin name (used for newly added plug-ins to ensure alphabetical order)
+    // Sorts the Orders array by plugin name (used for newly added plugins to ensure alphabetical order)
     void QuickSortPluginsByName(int left, int right);
 
     // used only for the conversion from the old configuration (the visibility variable has been moved to CPluginData)
@@ -3229,7 +3229,7 @@ protected:
     BOOL Valid;                      // TRUE if SetBasicPluginData was called successfully
     BOOL Error;                      // has an error already been displayed?
     DWORD LoadInfo;                  // DWORD value returned by GetLoadInformation()
-    TIndirectArray<char> OldFSNames; // array of old fs-names (names from the registry, replaced during plug-in loading)
+    TIndirectArray<char> OldFSNames; // array of old fs names (names from the registry, replaced during plugin loading)
 
 public:
     CSalamanderPluginEntry(HWND parent, CPluginData* plugin) : OldFSNames(1, 10)
