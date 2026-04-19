@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -79,7 +80,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         break;
     }
     }
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 char* LoadStr(int resID)
@@ -102,7 +103,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // this plugin is built for the current version of Salamander and newer - perform a check
+    // this plugin requires the current Salamander version or newer; check the version
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
     { // we reject older versions
         MessageBox(salamander->GetParentWindow(),
@@ -193,7 +194,7 @@ BOOL Error(int resID, BOOL quiet, ...)
 BOOL Error(char* msg, DWORD err, BOOL quiet)
 {
     if (!quiet)
-        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // it is an error
+        if (err != ERROR_FILE_NOT_FOUND && err != ERROR_NO_MORE_FILES) // actual error
         {
             char buf[1024];
             sprintf(buf, "%s\n\n%s", msg, SalamanderGeneral->GetErrorText(err));
@@ -298,33 +299,33 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect(,)");
 
-    /*  GENERAL RULES FOR IMPLEMENTING CONNECT (for more complex plugins with a configuration version - the
-                                                ConfigVersion variable and the CURRENT_CONFIG_VERSION constant):
-    - with each change you need to increase the CURRENT_CONFIG_VERSION number
-      (in the first version CURRENT_CONFIG_VERSION = 1, not 0, so an upgrade can be distinguished from
-       an installation)
-    - in the base part (before the "if (ConfigVersion < YYY)" conditions):
-      - write the code for the first installation of the plugin (the state where the plugin does not yet have a record
-        in Salamander)
-      - for AddCustomPacker and AddCustomUnpacker calls provide the condition "ConfigVersion < XXX" in the 'update'
-        parameter, where XXX is the number of the last version in which the extensions for custom packers or
-        unpackers changed (XXX for packers may differ from unpackers)
-      - AddMenuItem, SetChangeDriveMenuItem, and SetThumbnailLoader work the same every time the plugin is loaded
-        (installation/upgrades make no difference - we always start on a clean slate)
-    - in the upgrade section (after the base part):
-      - add a condition "if (ConfigVersion < XXX)", where XXX is the new value of the
-        CURRENT_CONFIG_VERSION constant + add a comment from that version;
-        in the body of that condition call:
-        - if extensions were added for the "panel archiver", call
-          "AddPanelArchiver(PPP, EEE, TRUE)", where PPP are only the new extensions separated
-          by a semicolon and EEE is TRUE/FALSE ("panel view+edit"/"panel view only")
-        - if extensions were added for the "viewer", call "AddViewer(PPP, TRUE)",
-          where PPP are only the new extensions separated by a semicolon
-        - if some old extensions for the "viewer" need to be removed, call
-          "ForceRemoveViewer(PPP)" for each such extension PPP
-        - if extensions for the "panel archiver" need to be removed, let Petr know; nobody has
-          needed it yet, so it is not implemented
-  */
+    /*  GENERAL RULES FOR IMPLEMENTING Connect (for more complex plugins with a configuration version: the
+                                                    ConfigVersion variable and the CURRENT_CONFIG_VERSION constant):
+        - with each change, increase the CURRENT_CONFIG_VERSION number
+          (in the first version, CURRENT_CONFIG_VERSION = 1, not 0, so an upgrade can be distinguished
+           from an installation)
+        - in the base part (before the "if (ConfigVersion < YYY)" conditions):
+          - write the code for the initial plugin installation (the state when the plugin does not yet
+           have a record in Salamander)
+          - for AddCustomPacker and AddCustomUnpacker, pass the condition "ConfigVersion < XXX" in the
+           'update' parameter, where XXX is the number of the last version in which the extensions for
+           custom packers or unpackers changed (XXX for packers may differ from XXX for unpackers)
+          - AddMenuItem, SetChangeDriveMenuItem, and SetThumbnailLoader work the same on every plugin
+           load (installation and upgrades do not differ; they always start from a clean state)
+        - in the upgrade section (after the base part):
+          - add the condition "if (ConfigVersion < XXX)", where XXX is the new value of the
+           CURRENT_CONFIG_VERSION constant, and add a comment for that version;
+           in the body of that condition, call:
+            - if extensions were added for the "panel archiver", call
+             "AddPanelArchiver(PPP, EEE, TRUE)", where PPP are only the new extensions separated by
+             semicolons and EEE is TRUE/FALSE ("panel view+edit"/"panel view only")
+            - if extensions were added for the "viewer", call "AddViewer(PPP, TRUE)", where PPP are
+             only the new extensions separated by semicolons
+            - if some old extensions for the "viewer" need to be removed, call
+             "ForceRemoveViewer(PPP)" for each such extension PPP
+            - if some extensions for the "panel archiver" need to be removed, let Petr know;
+             nobody has needed this yet, so it is not implemented
+      */
 
     // Davide, when you add more extensions you need to increase CURRENT_CONFIG_VERSION, see ^^^
 
@@ -359,7 +360,7 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
         salamander->AddPanelArchiver("c2d", FALSE, TRUE);
     }
 
-    if (ConfigVersion < 4) // addition of MDF/MDS
+    if (ConfigVersion < 4) // addition of MDF
     {
         salamander->AddViewer("*.mdf", TRUE);
         salamander->AddPanelArchiver("mdf", FALSE, TRUE);
@@ -508,7 +509,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
 
     // unpack
     BOOL delTempDir = TRUE;
-    if (errorOccured != SALENUM_CANCEL && // test to see whether an error occurred and the user did not request to cancel the operation (Cancel button)
+    if (errorOccured != SALENUM_CANCEL && // test whether no error occurred and the user did not request to cancel the operation (Cancel button)
         SalamanderGeneral->TestFreeSpace(SalamanderGeneral->GetMsgBoxParent(),
                                          targetDir, totalSize, LoadStr(IDS_UNPACKING_ARCHIVE)))
     {
@@ -782,8 +783,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
                          name, left, top, width, height,
                          showCmd, alwaysOnTop, returnLock, enumFilesSourceUID, enumFilesCurrentIndex);
 
-    // we do not set 'lock' or 'lockOwner'; we only need the validity of the file 'name'
-    // within this method
+    // We do not set 'lock' or 'lockOwner'; we only need 'name' to remain valid
+    // within this method.
 
     HCURSOR hOldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
