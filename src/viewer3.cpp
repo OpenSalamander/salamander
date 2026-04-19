@@ -31,7 +31,7 @@ void CViewerWindow::SetViewerCaption()
             caption[0] = 0;
     }
     else
-        lstrcpyn(caption, Caption, MAX_PATH); // caption according to the plug-in request
+        lstrcpyn(caption, Caption, MAX_PATH); // caption according to the plugin request
     if (Caption == NULL || !WholeCaption)
     {
         if (caption[0] != 0)
@@ -243,7 +243,7 @@ CViewerWindow::GetMaxVisibleLineLen(__int64 newFirstLineLen, BOOL ignoreFirstLin
     case vtText:
     {
         int lineOffsetCount = LineOffset.Count;
-        if (newFirstLineLen != -1) // situation: scroll down by one line (there will be a new first line)
+        if (newFirstLineLen != -1) // scrolling down by one line (there will be a new first line)
         {
             max = newFirstLineLen;
             if (lineOffsetCount >= 3)
@@ -298,7 +298,7 @@ void CViewerWindow::EnsureXVisibleInView(__int64 x, BOOL showPrevChar, BOOL& ful
         // terminated by EOL (not wrapping), the 'x' position is beyond the end of the view (the condition above is met),
         // but 'OriginX' can no longer be increased (it is already at 'maxOX'), so prevent needless redrawing
         // of the entire view
-        if (maxOX > OriginX) // only if it is still possible to move the view to the right
+        if (maxOX > OriginX) // only if the view can still be moved to the right
         {
             OriginX = x - columns + MAKEVIS_LEFTRIGHT;
             if (OriginX > maxOX)
@@ -346,7 +346,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL fatalErr = FALSE;
                 FileChanged(NULL, FALSE, fatalErr, FALSE);
                 if (!fatalErr && ExitTextMode)
-                    SeekY = LastSeekY; // in HEX we want to be roughly at the same position as before in Text mode
+                    SeekY = LastSeekY; // in HEX mode, we want to be at roughly the same position as before in Text mode
                 if (!fatalErr && !ExitTextMode)
                 {
                     SeekY = min(MaxSeekY, LastSeekY); // restore LastSeekY in the new version of the file
@@ -357,7 +357,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (fatalErr)
                 {
                     FatalFileErrorOccured();
-                    //    // I commented out this block because otherwise the "Retry" button in the message box with the error opened from LoadBehind() and LoadBefore() does not work
+                    //    // This block was commented out because otherwise the "Retry" button in the error message box opened from LoadBehind() and LoadBefore() does not work
                     //            if (Caption != NULL)
                     //            {
                     //              free(Caption);
@@ -367,7 +367,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     //            if (Lock != NULL)
                     //            {
                     //              SetEvent(Lock);
-                    //              Lock = NULL;     // from now on it relies on the disk cache only
+                    //              Lock = NULL;     // from now on, only the disk cache handles this
                     //            }
                     //            FileName = NULL;
                     //            Seek = 0;
@@ -720,7 +720,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case SB_THUMBPOSITION:
             {
-                // drag finished; we must call OnVScroll() from here or the scrollbar briefly blinks at the old position
+                // dragging finished; we must call OnVScroll() from here, otherwise the scrollbar briefly flashes at the old position
                 VScrollWParam = wParam;
                 KillTimer(HWindow, IDT_THUMBSCROLL);
                 MSG msg; // we do not want any additional timer; clear the queue
@@ -733,9 +733,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             case SB_THUMBTRACK:
             {
-                // the actual scrolling runs from a timer because USB mice and MS scrollbars 
-                // misbehave otherwise: when the viewer is fullscreen, repainting the whole window 
-                // takes long enough that the stubborn scrollbar waits, so dragging feels like 
+                // the actual scrolling runs from a timer because USB mice and MS scrollbars
+                // misbehave otherwise: when the viewer is fullscreen, repainting the whole window
+                // takes long enough that the stubborn scrollbar waits, so dragging feels like
                 // a chewing gum; posting the scroll message or deferring painting did not help;
                 // a timer was the only reliable fix we found.
                 if (VScrollWParam == -1)
@@ -819,7 +819,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        if (!IsWindowEnabled(HWindow)) // workaround for brain-dead software that activates the main window while our modal dialog is open (e.g. ClipMate)
+        if (!IsWindowEnabled(HWindow)) // workaround for software that activates the main window while a modal dialog is open (e.g. ClipMate)
             return 0;
         BOOL ch = FALSE;
         switch (LOWORD(wParam))
@@ -914,7 +914,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                               FileName, LOWORD(wParam) == CM_NEXTSELFILE, TRUE,
                                               fileName, &noMoreFiles,
                                               &srcBusy, NULL);
-                if (ok && LOWORD(wParam) == CM_NEXTSELFILE) // take only selected files
+                if (ok && LOWORD(wParam) == CM_NEXTSELFILE) // selected files only
                 {
                     BOOL isSrcFileSel = FALSE;
                     ok = IsFileNameForViewerSelected(EnumFileNamesSourceUID, enumFileNamesLastFileIndex,
@@ -933,7 +933,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 OpenFile(fileName, NULL, FALSE);
 
-                // set the index even if it failed so the user can move to the next/previous file
+                // set the index even on failure so the user can move to the next/previous file
                 EnumFileNamesLastFileIndex = enumFileNamesLastFileIndex;
             }
             else
@@ -1116,7 +1116,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 StartSelection = lineBegin + found;
                                                 FindOffset = EndSelection = StartSelection + foundLen;
                                                 SelectionIsFindResult = TRUE;
-                                                break; // found!
+                                                break; // match found
                                             }
                                         }
                                         else // error - low memory
@@ -1229,7 +1229,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                                 FindOffset = StartSelection = lineBegin + found;
                                                 EndSelection = StartSelection + foundLen;
                                                 SelectionIsFindResult = TRUE;
-                                                break; // found!
+                                                break; // match found
                                             }
                                         }
                                         else // error - low memory
@@ -1502,7 +1502,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (h != NULL)
                 {
                     __int64 startSel = min(StartSelection, EndSelection);
-                    // if (startSel == -1) startSel = 0; // cannot happen (-1 can only be both at once and we do not get here)
+                    // if (startSel == -1) startSel = 0; // cannot happen (-1 can only occur when both are -1, and we do not get here)
                     __int64 endSel = max(StartSelection, EndSelection);
                     // if (endSel == -1) endSel = 0; // cannot happen (-1 can only be both at once and we do not get here)
                     if (fatalErr || !CopyHTextToClipboard(h, (int)(endSel - startSel)))
@@ -1590,7 +1590,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     char path[MAX_PATH];
                     if (endBackSlash != NULL)
                     {
-                        if (attr != 0xFFFFFFFF) // file overwrite -> do it via a temp file (because of self-overwrite)
+                        if (attr != 0xFFFFFFFF) // file overwrite -> do it via a temp file (to avoid self-overwrite)
                         {
                             memcpy(path, fileName, endBackSlash - fileName + 1);
                             path[endBackSlash - fileName + 1] = 0;
@@ -1615,7 +1615,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     if (fatalErr)
                                         break;
                                     if (len == 0)
-                                        break; // read error
+                                        break; // write error
                                     if (!WriteFile(file, Buffer + (off - Seek), (int)len, &written, NULL) ||
                                         written != len)
                                     {
@@ -1828,7 +1828,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             Configuration.AutoCopySelection = !Configuration.AutoCopySelection;
 
-            if (MainWindow != NULL && MainWindow->HWindow != NULL) // propagate the value to plug-ins as SALCFG_AUTOCOPYSELTOCLIPBOARD, i.e. notify them about the change
+            if (MainWindow != NULL && MainWindow->HWindow != NULL) // propagate the value to plugins as SALCFG_AUTOCOPYSELTOCLIPBOARD, i.e. notify them about the change
                 PostMessage(MainWindow->HWindow, WM_USER_DISPACHCFGCHANGE, 0, 0);
 
             return 0;
@@ -2114,12 +2114,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 while (1)
                 {
                     for (int i = 0; i + 3 < LineOffset.Count; i += 3)
-                    { // search for the end of the selection in LineOffset without the last line (if it is only partially visible,
-                        // that's fine; if it is fully visible we will find the end of the selection in it as well, see below)
-                        // in wrap mode: if the block is forward (dragged from the beginning towards the end of the file) and ends at the end
+                    { // search for the end of the selection in LineOffset except for the last line (if it is only partially visible,
+                        // that is OK; if it is fully visible, we will find the end of the selection there as well, see below)
+                        // in wrap mode: if the block is forward (dragged from the beginning toward the end of the file) and ends at the end
                         // of a wrapped line, it is drawn at the end of the wrapped line and not at the beginning of the next line (both positions
-                        // share the same offset); if the block is backward (dragged in the opposite direction) it is drawn for the same offset
-                        // from the beginning of the line and not from the end of the previous line = the selection of 'endSelLineIndex' must respect this
+                        // have the same offset); if the block is backward (dragged in the opposite direction), it is drawn for the same offset
+                        // from the beginning of the line and not from the end of the previous line; the choice of 'endSelLineIndex' must respect this
                         if ((EndSelection > LineOffset[i] ||
                              // wrap mode only: if the view starts with the continuation of a wrapped line and a forward block ends at the view's
                              // starting offset, we need the previous line where the drawn block ends (the "cursor" is outside the view)
@@ -2352,7 +2352,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             }
                         }
                         else
-                            skipCmd = TRUE; // no next line exists = we are at the end of the file, cannot go further
+                            skipCmd = TRUE; // there is no next line, so we are at the end of the file and cannot go any further
                     }
                     break;
                 }
@@ -2360,7 +2360,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 case CM_EXTSEL_UP:
                 case CM_EXTSEL_DOWN:
                 {
-                    if (EndSelectionPrefX == -1) // no preferred X coordinate yet; initialize it to the block end
+                    if (EndSelectionPrefX == -1) // no preferred X coordinate yet; initialize it to the coordinate of the block end
                     {
                         if (!GetXFromOffsetInText(&EndSelectionPrefX, EndSelection, endSelLineIndex))
                             return 0;
@@ -2762,12 +2762,12 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (shiftPressed && StartSelection != -1 ||
                     GetOffset((short)LOWORD(lParam), (short)HIWORD(lParam), off, fatalErr) && !fatalErr)
-                { // we must determine the position of the drag start/end - leftMost must be FALSE
+                { // determine the drag start/end position; leftMost must be FALSE
                     SetCapture(HWindow);
                     MouseDrag = TRUE;
                     SelectionIsFindResult = FALSE;
                     ChangingSelWithShiftKey = FALSE;
-                    if (shiftPressed && StartSelection != -1) // changing the block end (Shift+click)
+                    if (shiftPressed && StartSelection != -1) // changing the end of the block (Shift+click)
                     {
                         EndSelectionRow = -1; // currently invalid; do not look for the end of the current block
                         PostMouseMove();
@@ -2930,8 +2930,8 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     // but we do not care, precise detection would be unnecessarily complex)
                     if (WrapText && StartSelection < EndSelection && off > EndSelection && minRow > 0)
                         minRow--;
-                    // when shortening the block after reaching the left edge of the view (start of the line after wrapping)
-                    // repaint the end of the previous line (its black-end was erased)
+                    // when shortening the block after reaching the left edge of the view (start of the line after line wrapping)
+                    // repaint the end of the previous line to erase its black end
                     if (WrapText && StartSelection < EndSelection && off < EndSelection &&
                         (x - BORDER_WIDTH + CharWidth / 2) / CharWidth <= Configuration.TabSize / 2 && minRow > 0)
                     {
@@ -3198,7 +3198,7 @@ MENU_TEMPLATE_ITEM ViewerCodingMenu[] =
 };
 */
 
-                    // Recognize at the very top of the submenu and follow it with a separator
+                    // Recognize at the very top, then a separator
                     mi.fMask = MIIM_TYPE | MIIM_ID;
                     mi.fType = MFT_STRING;
                     mi.wID = CM_RECOGNIZE_CODEPAGE;
@@ -3211,10 +3211,10 @@ MENU_TEMPLATE_ITEM ViewerCodingMenu[] =
                     InsertMenuItem(subMenu, 1, TRUE, &mi);
                     count++;
 
-                    // append another separator at the end of the submenu
+                    // separator at the bottom
                     InsertMenuItem(subMenu, count++, TRUE, &mi);
 
-                    // now append the rest of the commands
+                    // and the commands
                     mi.fMask = MIIM_TYPE | MIIM_ID;
                     mi.fType = MFT_STRING;
 
