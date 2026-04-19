@@ -41,7 +41,7 @@ void DoWantDataEvent()
     ReleaseMutex(DataUsageMutex);                  // release the data to the main thread
     WaitForSingleObject(WantDataEvent, INFINITE);  // wait until it takes ownership
     WaitForSingleObject(DataUsageMutex, INFINITE); // once it finishes, take ownership again
-    SetEvent(ContinueEvent);                       // we own it again, let the main thread continue
+    SetEvent(ContinueEvent);                       // we own the data again; allow the main thread to continue
 }
 
 unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions (not even TRACE) !!!
@@ -60,7 +60,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
         sharesKey = NULL;
         TRACE_E("Unable to open key in registry (LanMan Shares). error: " << GetErrorText(res));
     }
-    else // the key is OK, enable notifications (otherwise RegNotifyChangeKeyValue will not be called again)
+    else // key opened successfully; enable notifications (otherwise RegNotifyChangeKeyValue will not be called again)
     {
         if ((res = RegNotifyChangeKeyValue(sharesKey, TRUE, REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET, SharesEvent,
                                            TRUE)) != ERROR_SUCCESS)
@@ -152,7 +152,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
                     }
 
                     case WAIT_TIMEOUT:
-                        break; // ignore it (the mode for ignoring directory changes has just ended)
+                        break; // ignore it; the directory-change ignore mode has ended
 
                     default:
                     {
@@ -221,7 +221,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
                 }
                 SetEvent(ContinueEvent); // no longer suspended; allow the main thread to continue
 
-                if (setSharesEvent) // resume monitoring further registry changes
+                if (setSharesEvent) // continue monitoring further changes in the registry
                 {
                     if (MainWindowCS.LockIfNotClosed())
                     {
@@ -291,7 +291,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
             }
 
             case WAIT_TIMEOUT:
-                break; // ignore it (end of directory change ignoring mode)
+                break; // ignore it (end of the mode that ignores directory changes)
 
             default:
             {
@@ -301,7 +301,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
                 {
                     DWORD err = GetLastError();
                     TRACE_E("Unexpected value returned from WaitForMultipleObjects(): " << res);
-                    break; // in case res holds some other value
+                    break; // for any other value of res
                 }
 
                 // calling FindNextChangeNotification invalidates other handles for the same path
@@ -374,7 +374,7 @@ unsigned ThreadSnooperBody(void* /*param*/) // do not call main-thread functions
                             PostMessage(WindowArray[index]->HWindow, WM_USER_REFRESH_DIR, TRUE, MyTimeCounter++);
                             HANDLES(LeaveCriticalSection(&TimeCounterSection));
 
-                            if (r != WAIT_TIMEOUT) // if the error is cleared, request the next change
+                            if (r != WAIT_TIMEOUT) // if there is no error, request the next change
                             {
                                 FindNextChangeNotification((HANDLE)ObjectArray[index]); // discard this change
                             }
@@ -571,8 +571,8 @@ void AddDirectory(CFilesWindow* win, const char* path, BOOL registerDevNotificat
     WaitForSingleObject(DataUsageMutex, INFINITE); // wait for it
     SetEvent(WantDataEvent);                       // the snooper can resume waiting on DataUsageMutex
                                                    //--- the data now belong to the main thread; the snooper is waiting
-    // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
-    // trims the trailing spaces/dots and thus works with a different path
+    // if the path ends with a space or dot, we must append '\\'; otherwise FindFirstChangeNotification
+    // trims trailing spaces and dots and thus works with a different path
     char pathCopy[3 * MAX_PATH];
     MakeCopyWithBackslashIfNeeded(path, pathCopy);
     HANDLE h = HANDLES_Q(FindFirstChangeNotification(path, FALSE,
@@ -713,8 +713,8 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
             SetEvent(SafeFindCloseStart);                    // start the cleanup
             WaitForSingleObject(SafeFindCloseFinished, 200); // 200 ms timeout for closing the handle
 
-            // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
-            // trims the trailing spaces/dots and thus works with a different path
+            // if the path ends with a space or dot, we must append '\\'; otherwise FindFirstChangeNotification
+            // trims trailing spaces and dots and thus works with a different path
             char newPathCopy[3 * MAX_PATH];
             MakeCopyWithBackslashIfNeeded(newPath, newPathCopy);
             ObjectArray[i] = HANDLES_Q(FindFirstChangeNotification(newPath, FALSE,
@@ -743,8 +743,8 @@ void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNot
     //---  not found -> add it
     if (i == WindowArray.Count)
     {
-        // if the path ends with a space or dot we must append '\\', otherwise FindFirstChangeNotification
-        // trims the trailing spaces/dots and thus works with a different path
+        // if the path ends with a space or dot, we must append '\\'; otherwise FindFirstChangeNotification
+        // trims trailing spaces and dots and thus works with a different path
         char newPathCopy[3 * MAX_PATH];
         MakeCopyWithBackslashIfNeeded(newPath, newPathCopy);
         HANDLE h = HANDLES_Q(FindFirstChangeNotification(newPath, FALSE,
@@ -941,7 +941,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
     if (SnooperSuspended < 1)
     {
         TRACE_E("Incorrect call to EndSuspendMode()");
-        SnooperSuspended = 0; // reset; maybe someone is misusing CM_LEFTREFRESH, CM_RIGHTREFRESH, or CM_ACTIVEREFRESH again
+        SnooperSuspended = 0; // maybe CM_LEFTREFRESH, CM_RIGHTREFRESH, or CM_ACTIVEREFRESH is being misused again
     }
     else
     {
@@ -955,7 +955,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
 }
 
 /*
-#ifdef _DEBUG     // verify whether BeginSuspendMode() and EndSuspendMode() are invoked from the same function (based on the return address of the calling function -> cannot detect a "bug" when called from different functions that are both invoked from the same function)
+#ifdef _DEBUG     // verify whether BeginSuspendMode() and EndSuspendMode() are called from the same function (based on the caller's return address, so it will not detect a "bug" when two different functions are both called from the same function)
 void EndSuspendMode(BOOL debugDoNotTestCaller)
 {
   DWORD *register_ebp;
@@ -965,7 +965,7 @@ void EndSuspendMode(BOOL debugDoNotTestCaller)
   {
     called_from = *(DWORD*)((char*)register_ebp + 4);
 
-if this code ever needs to be revived, use the fact that it can be replaced (x86 and x64):
+if this code ever needs to be re-enabled, note that it can be replaced with this (x86 and x64):
     called_from = *(DWORD_PTR *)_AddressOfReturnAddress();
 
     caller_called_from = *(DWORD*)((char*)(*register_ebp) + 4);
