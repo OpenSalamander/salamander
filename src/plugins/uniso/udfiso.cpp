@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -70,7 +71,7 @@ BOOL CUDFISO::Open(BOOL quiet)
         return FALSE;
     }
 
-    // Scan HFS part but silently ignore any problem
+    // Scan the HFS part, but silently ignore any problems
     if (hfs->Open((udf || iso) ? TRUE : quiet))
         HFS = hfs;
     else
@@ -103,8 +104,8 @@ BOOL CUDFISO::ListDirectory(char* path, int session, CSalamanderDirectoryAbstrac
 
         strcat(path, partPath);
 
-        // avoid creating virtual session folder
-        // (we have created ISO virtual folder (for partition) and therefore virtual session folder is not needed)
+        // Avoid creating a virtual session folder
+        // (the ISO virtual folder for the partition has already been created, so a virtual session folder is not needed)
         if (ISO->BootRecordInfo != NULL && session == -1)
             session = 1;
         ISO->ListDirectory(path, session, dir, pluginData);
@@ -124,7 +125,7 @@ BOOL CUDFISO::ListDirectory(char* path, int session, CSalamanderDirectoryAbstrac
         if (UDF->LVD.LogicalVolumeIdentifier[3] == 0 &&
             UDF->LVD.LogicalVolumeIdentifier[5] == 0)
         {
-            // seems to be 16bit char
+            // seems to be 16-bit chars
             WideCharToMultiByte(CP_ACP, 0, (WCHAR*)(UDF->LVD.LogicalVolumeIdentifier + 2), 64, volId, sizeof(volId) - 1, 0, 0);
             volId[sizeof(volId) - 1] = 0;
         }
