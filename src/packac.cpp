@@ -400,7 +400,7 @@ void CPackACDialog::LayoutControls()
         // block finished
         HANDLES(EndDeferWindowPos(hdwp));
     }
-    // and adjust the column width in the list view
+    // adjust the list view column widths
     ListView->SetColumnWidth();
 }
 
@@ -425,11 +425,13 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
             {
                 char magic[4];
                 BOOL lfanewValid = FALSE;
-                // We do have a DOS image so we will now try to seek into the file by the amount indicated by the field
-                // "Offset to extended header" and read in the "magic" field information at that location.
-                // This will tell us if there is more header information to read or not.
+                // We have a DOS image, so now try to seek to the offset specified in the
+                // "Offset to extended header" field and read the "magic" field at that
+                // location.
+                // This tells us whether there is more header information to read.
                 //
-                // But before we do we will make sure that header structure encompasses the "Offset to extended header" field.
+                // First make sure the header structure includes the "Offset to extended header"
+                // field.
                 if ((mz_header.e_cparhdr << 4) >= sizeof(IMAGE_DOS_HEADER))
                     if ((mz_header.e_crlc == 0) ||
                         (mz_header.e_lfarlc >= sizeof(IMAGE_DOS_HEADER)))
@@ -607,7 +609,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
             unsigned int nameLen = (unsigned int)strlen(findData.cFileName);
             if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
             {
-                // it is a file; now check if it is an exe
+                // File: now check whether it is an EXE
                 if (nameLen > 4 && pathLen + nameLen < MAX_PATH &&
                     (findData.cFileName[nameLen - 1] == 'e' || findData.cFileName[nameLen - 1] == 'E') &&
                     (findData.cFileName[nameLen - 2] == 'x' || findData.cFileName[nameLen - 2] == 'X') &&
@@ -625,7 +627,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
                         TRACE_I("Invalid executable or error getting type: " << fullName);
                         continue;
                     }
-                    // and see whether we are interested in it
+                    // and see whether we want it
                     mustStop |= ListView->ConsiderItem(path, findData.cFileName,
                                                        findData.ftLastWriteTime,
                                                        CQuadWord(findData.nFileSizeLow,
@@ -669,7 +671,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
         HANDLES(FindClose(fileFind));
     }
     HANDLES(GlobalFree((HGLOBAL)fileName));
-    // and done
+    // end
     return mustStop;
 }
 
@@ -753,7 +755,7 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
     int found;
     do
     {
-        // look for who is using us
+        // find who uses us
         buffer[0] = '.';
         int j = 1;
         while (*ptr != ';' && *ptr != '\0')
@@ -773,10 +775,10 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
         {
             int pos;
             CPackACPacker* p = NULL;
-            // if we are working with a packer adjust the record for the packer
+            // If we are working with a packer, update the packer entry
             if (foundPacker->GetPackerType() == Packer_Packer || foundPacker->GetPackerType() == Packer_Standalone)
             {
-                // if we used a packer, find out whether we found it
+                // if we used a packer, check whether we found it
                 if (PackerFormatConfig.GetUsePacker(found - 1))
                 {
                     pos = PackerFormatConfig.GetPackerIndex(found - 1);
@@ -818,7 +820,7 @@ void CPackACDialog::AddToExtensions(int foundIndex, int packerIndex, CPackACPack
                     if (p->GetArchiverIndex() == pos && p->GetPackerType() != Packer_Packer)
                         break;
                 }
-                // if the existing packer is not a plugin, was not found, or is different and we have a 32-bit one
+                // if the current packer is not a plugin, was not found, or is different and we have a 32-bit one
                 if (pos >= 0 && pos != packerIndex &&
                     (p == NULL || p->GetSelectedFullName() == NULL || foundPacker->GetExeType() == EXE_32BIT))
                 {
@@ -987,8 +989,8 @@ void CPackACDialog::RemoveFromCustom(int foundIndex, int packerIndex)
     CALL_STACK_MESSAGE3("CPackACDialog::RemoveFromCustom(%d, %d)", foundIndex, packerIndex);
 
     // a custom packer/unpacker is removed if:
-    //   1) the packer wasn't found or was found but not selected (fullName == NULL)
-    //   2) the invoked program is a variable corresponding to this packer
+    //   1) the packer was not found, or it was found but not selected (fullName == NULL)
+    //   2) the invoked program is the variable corresponding to this packer
 
     CPackACPacker* p = NULL;
     char variable[50];
@@ -1218,8 +1220,8 @@ int CPackACPacker::CheckAndInsert(const char* path, const char* fileName, FILETI
         ref++;
         act++;
     }
-    // the extension has been checked already; now verify if we are at the end of the string
-    // and whether other requirements are met (currently only the type, we will see in the future...)
+    // the extension has already been checked; now just verify that we are at the end of the string
+    // and that the other requirements are met (currently only the type; more may be added in the future)
     if (*ref == '\0' && act == &fileName[lstrlen(fileName) - 4] &&
         exeType == Type)
     {
@@ -1311,7 +1313,7 @@ int CPackACArray::AddAndCheck(CPackACFound* member)
 void CPackACArray::InvertSelect(int index)
 {
     CALL_STACK_MESSAGE2("CPackACArray::InvertSelect(%d)", index);
-    // the user must be allowed to select nothing
+    // the user must be allowed to leave nothing selected
     if (At(index)->Selected)
         At(index)->Selected = FALSE;
     else
@@ -1401,7 +1403,7 @@ CPackACListView::GetPacker(int item, int* index)
     return PackersTable->At(archiver);
 }
 
-// find an archiver by the index in the list view
+// finds an archiver by its index in the list view
 BOOL CPackACListView::FindArchiver(unsigned int listViewIndex,
                                    unsigned int* archiver, unsigned int* arcIndex)
 {
@@ -1492,7 +1494,7 @@ void CPackACListView::SetColumnWidth()
 {
     CALL_STACK_MESSAGE1("CPackACListView::SetColumnWidth()");
     RECT r;
-    // find out the size we must fit into
+    // determine the size we must fit into
     GetClientRect(HWindow, &r);
     // total width
     DWORD cx = r.right - r.left - 1;
@@ -1519,7 +1521,7 @@ BOOL CPackACListView::ConsiderItem(const char* path, const char* fileName, FILET
     // initialization
     BOOL stop = FALSE;
     int totalCount = 0;
-    // go through all packers to see if it is the one we are looking for
+    // go through all packers to see whether any of them is one of the ones we are looking for
     int i;
     for (i = 0; i < PackersTable->Count; i++)
     {
