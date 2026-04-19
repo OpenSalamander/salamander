@@ -212,7 +212,7 @@ public:
     int GetUnassignedHotPathIndex();
 
     BOOL GetVisible(int index) { return Items[index].Visible; }
-    BOOL CleanName(char* name); // trims spaces and returns TRUE if the name is valid
+    BOOL CleanName(char* name); // trims spaces and returns TRUE if name is not empty
 
     BOOL SwapItems(int index1, int index2); // swaps two items in the array
 
@@ -354,7 +354,7 @@ struct CDynString
             free(Buffer);
     }
 
-    BOOL Append(const char* str, int len); // returns TRUE on success; if 'len' is -1 the length is calculated using "len = strlen(str)"
+    BOOL Append(const char* str, int len); // returns TRUE on success; if 'len' is -1, "len = strlen(str)" is used
 
     const char* GetString() const { return Buffer; }
 };
@@ -403,7 +403,7 @@ public:
 
     CUserMenuItems* UserMenuItems;
     CViewerMasks* ViewerMasks;
-    CRITICAL_SECTION ViewerMasksCS; // section used only for synchronizing access to 'ViewerMasks' (writes anywhere and reads outside the main thread)
+    CRITICAL_SECTION ViewerMasksCS; // critical section used only to synchronize access to 'ViewerMasks' (writes anywhere and reads outside the main thread)
     CViewerMasks* AltViewerMasks;
     CEditorMasks* EditorMasks;
     CHighlightMasks* HighlightMasks;
@@ -441,7 +441,7 @@ public:
 
     int ActivateSuspMode; // counter of WM_ACTIVATEAPP activations/deactivations; some messages may get lost
 
-    RECT WindowRect; // current window position
+    RECT WindowRect; // current window rectangle
 
     BOOL CaptionIsActive; // is the main window caption active?
 
@@ -487,7 +487,7 @@ public:
 
     void EnterViewerMasksCS() { HANDLES(EnterCriticalSection(&ViewerMasksCS)); }
     void LeaveViewerMasksCS() { HANDLES(LeaveCriticalSection(&ViewerMasksCS)); }
-    BOOL GetViewersAssoc(int wantedViewerType, CDynString* strViewerMasks); // helper: collects all masks associated with the given viewer type "wantedViewerType"; returns TRUE on success (when enough memory for the string)
+    BOOL GetViewersAssoc(int wantedViewerType, CDynString* strViewerMasks); // helper method: collects all masks associated with viewer type "wantedViewerType"; returns TRUE on success (if there is enough memory for the string)
 
     void ClearHistory(); // clears all histories
 
@@ -503,7 +503,7 @@ public:
 
     // these functions have no effect if CFilesWindow::CanBeFocused is not satisfied
     void ChangePanel(BOOL force = FALSE);                                   // respects EditMode; activates the inactive panel; (ignores ZOOM if force is TRUE)
-    void FocusPanel(CFilesWindow* focus, BOOL testIfMainWndActive = FALSE); // clears EditMode because focus is put into the panel
+    void FocusPanel(CFilesWindow* focus, BOOL testIfMainWndActive = FALSE); // clears EditMode because it sets focus to the panel
     void FocusLeftPanel();                                                  // calls FocusPanel for the left panel
 
     // compares directories in the left and right panels
@@ -584,7 +584,7 @@ public:
     BOOL ToggleBottomToolBar();
     BOOL ToggleUserMenuToolBar(BOOL storePos = TRUE);
     BOOL ToggleHotPathsBar(BOOL storePos = TRUE);
-    // If 'twoDriveBars' is TRUE, the user wants two drive lists; otherwise only one
+    // If 'twoDriveBars' is TRUE, the user wants to toggle two drive bars; otherwise only one
     BOOL ToggleDriveBar(BOOL twoDriveBars, BOOL storePos = TRUE);
 
     void ToggleToolBarGrips();
@@ -675,7 +675,7 @@ public:
     BOOL CanEnterHelpMode();
     void OnContextHelp();
     HWND SetHelpCapture(POINT point, BOOL* pbDescendant);
-    BOOL ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow); // hDirtyWindow: returns the window to which we sent WM_USER_HELP_MOUSEMOVE and that needs to receive WM_USER_HELP_MOUSELEAVE
+    BOOL ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow); // hDirtyWindow: returns the window to which WM_USER_HELP_MOUSEMOVE was sent and which needs to receive WM_USER_HELP_MOUSELEAVE
     void ExitHelpMode();
     DWORD MapClientArea(POINT point);
     DWORD MapNonClientArea(int iHit);
