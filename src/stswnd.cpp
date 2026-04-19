@@ -389,7 +389,7 @@ void CStatusWindow::SetThrobber(BOOL show, int delay, BOOL calledFromDestroyWind
     }
     else
     {
-        if (DelayedThrobber) // Waiting to be shown, but the throbber should be hidden, cancel the wait
+        if (DelayedThrobber) // The throbber is waiting to be shown, but it should be hidden; cancel the wait
         {
             if (HWindow == NULL)
                 TRACE_E("Unexpected situation 2 in CStatusWindow::SetThrobber(): DelayedThrobber is TRUE but HWindow is NULL");
@@ -1002,7 +1002,7 @@ void CStatusWindow::Paint(HDC hdc, BOOL highlightText, BOOL highlightHotTrackOnl
                 if (truncateEnd)
                 { // Without truncation, or with the end trimmed
                     ExtTextOut(dc, TextRect.left, textY, 0, NULL, Text, min(visibleChars, firstClipChar), NULL);
-                    if (visibleChars < min(TextLen, firstClipChar)) // If the end was trimmed -> append "..."
+                    if (visibleChars < min(TextLen, firstClipChar)) // If the end was trimmed, append "..."
                     {
                         int offset = (visibleChars > 0) ? AlpDX[visibleChars - 1] : 0;
                         ExtTextOut(dc, TextRect.left + offset, textY, 0, NULL, "...", 3, NULL);
@@ -1027,7 +1027,7 @@ void CStatusWindow::Paint(HDC hdc, BOOL highlightText, BOOL highlightHotTrackOnl
                 // Without truncation or the trimmed end
                 int visibleChars2 = visibleChars - lastClipChar;
                 ExtTextOut(dc, TextRect.left + AlpDX[lastClipChar - 1], textY, 0, NULL, Text + lastClipChar, visibleChars2, NULL);
-                if (visibleChars < TextLen) // If the end was trimmed -> append "..."
+                if (visibleChars < TextLen) // If the end was truncated, append "..."
                 {
                     int offset = (visibleChars > 0) ? AlpDX[visibleChars - 1] : 0;
                     ExtTextOut(dc, TextRect.left + offset, textY, 0, NULL, "...", 3, NULL);
@@ -1339,7 +1339,7 @@ public:
     }
 
     STDMETHOD(QueryInterface)
-    (REFIID refiid, void FAR* FAR* ppv)
+    (REFIID refiid, void FAR * FAR * ppv)
     {
         if (refiid == IID_IUnknown || refiid == IID_IDropTarget)
         {
@@ -1362,7 +1362,7 @@ public:
         if (--RefCount == 0)
         {
             delete this;
-            return 0; // Must not touch the object, it no longer exists
+            return 0; // Must not touch the object; it no longer exists
         }
         return RefCount;
     }
@@ -1935,7 +1935,7 @@ CStatusWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             if (isInSizeRect)
             {
-                // Drive info works only if it's not an FS that doesn't support drive info
+                // Drive info works only if the FS supports drive info
                 if (FilesWindow->Is(ptDisk) || FilesWindow->Is(ptZIPArchive) ||
                     FilesWindow->Is(ptPluginFS) && FilesWindow->GetPluginFS()->NotEmpty() &&
                         FilesWindow->GetPluginFS()->IsServiceSupported(FS_SERVICE_SHOWINFO))
@@ -2074,7 +2074,7 @@ CStatusWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         CHotTrackItem* lastItem = NULL;
                         if (HotTrackItems.Count > 0)
                             lastItem = &HotTrackItems[HotTrackItems.Count - 1];
-                        //if (HotItem->Chars != (int)TextLen) // This condition failed when a filter was active
+                        //if (HotItem->Chars != (int)TextLen) // This condition failed when a filter was attached
                         if (HotItem != lastItem)
                         {
                             // Path shortening
