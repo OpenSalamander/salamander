@@ -226,7 +226,7 @@ CConvertFilesDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
           SetMenuItemBitmaps(hMenu, mi.wID, MF_BYCOMMAND, NULL, HMenuCheckDot);
         }
 
-        // insert a separator after none
+        // insert a separator after 'None'
         mi.fMask = MIIM_TYPE;
         mi.fType = MFT_SEPARATOR;
         InsertMenuItem(hMenu, 1, TRUE, &mi);
@@ -519,8 +519,8 @@ CEditNewFileDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (LOWORD(wParam) == IDB_BROWSE)
         {
-            /* used by the export_mnu.py script which generates salmenu.mnu for the Translator
-   keep synchronized with the InsertMenu() call below...
+            /* Used by the export_mnu.py script that generates salmenu.mnu for Translator.
+   Keep synchronized with the InsertMenu() call below.
 MENU_TEMPLATE_ITEM EditNewFileDialogMenu[] = 
 {
   {MNTT_PB, 0
@@ -687,7 +687,7 @@ void CCopyMoveMoreDialog::TransferCriteriaControls(CTransferInfo& ti)
     {
         Criteria->Masks.SetMasksString(masks);
         int errpos = 0;
-        // masks must go out in the Prepared state
+        // masks must be passed out in the Prepared state
         if (!Criteria->Masks.PrepareMasks(errpos)) // invalid mask, this shouldn't happen thanks to validation
             Criteria->UseMasks = FALSE;
         char dummy[200];
@@ -723,7 +723,7 @@ void CCopyMoveMoreDialog::TransferCriteriaControls(CTransferInfo& ti)
             {
                 speedLimNum /= 1024;
                 speedLimUnits++;
-                if (speedLimNum == 0 || speedLimUnits > 3) // cannot happen, just for peace of mind
+                if (speedLimNum == 0 || speedLimUnits > 3) // cannot happen; defensive check
                 {
                     TRACE_E("CCopyMoveMoreDialog::TransferCriteriaControls(): unexpected situation!");
                     speedLimNum = 4;
@@ -1644,7 +1644,7 @@ CDriveInfo::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         HDC hdc = HANDLES(GetDC(HWindow));
         int devCaps = GetDeviceCaps(hdc, NUMCOLORS);
         HANDLES(ReleaseDC(HWindow, hdc));
-        if (devCaps == -1) // more than 256 colors
+        if (devCaps == -1) // more than 256 colors available
         {
             FreeLight = RGB(35, 245, 156);
             FreeDark = RGB(9, 159, 96);
@@ -1667,7 +1667,7 @@ CDriveInfo::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (cr != NULL)
             cr->SetColor(UsedLight);
 
-        Graph = new CColorGraph(HWindow, IDB_GRAPH); // JRYFIXME - rewrite to W10 look; see disk properties, it won't be comfortable to use GDI+ maybe our SVG?
+        Graph = new CColorGraph(HWindow, IDB_GRAPH); // JRYFIXME - rewrite to match the Windows 10 look; see disk properties. Would it be better to use GDI+ or our SVGs?
         if (Graph != NULL)
             Graph->SetColor(FreeLight, FreeDark, UsedLight, UsedDark);
 
@@ -1826,7 +1826,7 @@ void CPackDialog::Transfer(CTransferInfo& ti)
             char* s = strrchr(Path, '.');
             char* s2 = strrchr(Path, '\\');
             int nameLen = (int)strlen(Path);
-            if ((s == NULL || s2 != NULL && s2 > s) && // '.cvspass' in Windows is considered an extension ...
+            if ((s == NULL || s2 != NULL && s2 > s) && // '.cvspass' is treated as an extension in Windows ...
                 (s2 == NULL || (s2 - Path + 1) < nameLen) &&
                 nameLen > 0 &&
                 nameLen + 1 + 1 + strlen(ext) < MAX_PATH)
@@ -1862,7 +1862,7 @@ BOOL CPackDialog::ChangeExtension(char* name, const char* ext)
 {
     char* s = strrchr(name, '.');
     char* s2 = strrchr(name, '\\');
-    if (s != NULL && // '.cvspass' in Windows is considered an extension ...
+    if (s != NULL && // '.cvspass' is treated as an extension in Windows ...
                      //if (s != NULL && s > name &&
         (s2 == NULL || s > s2) &&
         strlen(ext) + 1 + ((s + 1) - name) < MAX_PATH)
@@ -2589,7 +2589,7 @@ void CWaitWindow::PaintText(HDC hDC)
         HFONT hOldFont = (HFONT)SelectObject(hDestDC, EnvFont);
         int prevBkMode = SetBkMode(hDestDC, TRANSPARENT);
         SetTextColor(hDestDC, GetSysColor(COLOR_BTNTEXT));
-        // we won't clip so that we survive minor text extension
+        // do not clip, to tolerate minor text extension
         // that may occur during a SetText call
         DrawText(hDestDC, Text, (int)strlen(Text), &r, DT_LEFT | DT_NOPREFIX | DT_NOCLIP | (NeedWrap ? DT_WORDBREAK : 0));
         SetBkMode(hDestDC, prevBkMode);
