@@ -250,7 +250,7 @@ void CZIPUnpackProgress::NewLine(const char* txt, BOOL delayedPaint)
     if (txt == NULL)
         return;
 
-    while (1) // output even multiple lines into the dialog
+    while (1) // output multiple lines to the dialog
     {
         while (*txt != 0 && (*txt == '\r' || *txt == '\n' || *txt == ' ' || *txt == '\t'))
             txt++;
@@ -266,7 +266,7 @@ void CZIPUnpackProgress::NewLine(const char* txt, BOOL delayedPaint)
 
         char* s = LinesCache[CacheIndex];
         char* sEnd = s + 300 - 1;
-        while (*txt != 0 && *txt != '\r' && *txt != '\n') // read one line + convert '/' -> '\\'
+        while (*txt != 0 && *txt != '\r' && *txt != '\n') // read one line and convert '/' to '\\'
         {
             if (*txt == '/')
             {
@@ -386,7 +386,7 @@ CZIPUnpackProgress::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        if (ResID == IDD_ZIPUNPACKPROG && FileProgress) // it is necessary to replace the text "Total:" with "File:"
+        if (ResID == IDD_ZIPUNPACKPROG && FileProgress) // Replace the text "Total:" with "File:"
             SetDlgItemText(HWindow, IDT_PROGTITLE, LoadStr(IDS_UNPACKFILEPROGRESS));
 
         SetWindowText(HWindow, Title);
@@ -468,7 +468,7 @@ void CSalamanderGeneral::Clear()
 
 int CSalamanderGeneral::ShowMessageBox(const char* text, const char* title, int type)
 {
-    if (MainThreadID != GetCurrentThreadId()) // Petr: just close; I do not have the energy to track down every wrong call
+    if (MainThreadID != GetCurrentThreadId()) // Petr: just log an error; tracking down every incorrect call is not worth it here
         TRACE_E("You can call CSalamanderGeneral::ShowMessageBox() only from main thread!");
     HWND parent = GetMsgBoxParent();
     switch (type)
@@ -528,7 +528,7 @@ int CSalamanderGeneral::SalMessageBoxEx(const MSGBOXEX_PARAMS* params)
 
 HWND CSalamanderGeneral::GetMsgBoxParent()
 {
-    if (MainThreadID != GetCurrentThreadId()) // Petr: just close; I do not have the energy to track down every wrong call
+    if (MainThreadID != GetCurrentThreadId()) // Petr: just log an error; I do not have the energy to track down every incorrect call
         TRACE_E("You can call CSalamanderGeneral::GetMsgBoxParent() only from main thread!");
     // if the following code should change, it must also be updated in EnterPlugin - so the check keeps working
     return PluginProgressDialog != NULL ? PluginProgressDialog : PluginMsgBoxParent;
@@ -559,7 +559,7 @@ int DialogError(HWND parent, DWORD flags, const char* fileName,
     case BUTTONS_SKIPCANCEL:
     {
         resID = IDD_ERROR2;
-        noSkip = FALSE; // does not apply; something about resID == 0
+        noSkip = FALSE; // noSkip has no effect here; it is only used when resID == 0
         break;
     }
 
@@ -1034,7 +1034,7 @@ BOOL CSalamanderGeneral::GetPanelPath(int panel, char* buffer, int bufferSize, i
 
         int l = (int)strlen(buf) + 1;
         if (l > bufferSize)
-            return bufferSize == 0; // if the user does not want the path back, we do not treat it as an error
+            return bufferSize == 0; // if the caller does not want the path returned, we do not treat it as an error
         memcpy(buffer, buf, l);
 
         if (archiveOrFS != NULL && offset != -1)
@@ -1142,7 +1142,7 @@ CSalamanderGeneral::GetPanelItem(int panel, int* index, BOOL* isDir)
     {
         int i = *index;
         if (i < 0)
-            return NULL;                          // enumeration already finished
+            return NULL;                          // enumeration has already finished
         if (i < p->Files->Count + p->Dirs->Count) // enumerate more items
         {
             *index = i + 1; // next time move to the following item
@@ -1248,14 +1248,14 @@ void CSalamanderGeneral::SelectPanelItem(int panel, const CFileData* file, BOOL 
             CFileData* first = &p->Dirs->At(0);
             CFileData* last = &p->Dirs->At(p->Dirs->Count - 1);
             if (first <= file && file <= last)
-                index = (int)(file - first); // it is a directory
+                index = (int)(file - first); // directory
         }
         if (index == -1 && p->Files->Count > 0)
         {
             CFileData* first = &p->Files->At(0);
             CFileData* last = &p->Files->At(p->Files->Count - 1);
             if (first <= file && file <= last)
-                index = p->Dirs->Count + (int)(file - first); // it is a directory
+                index = p->Dirs->Count + (int)(file - first); // directory
         }
         if (index != -1)
             p->SetSel(select, index, FALSE); // change selection
@@ -1314,14 +1314,14 @@ void CSalamanderGeneral::SetPanelFocusedItem(int panel, const CFileData* file, B
             CFileData* first = &p->Dirs->At(0);
             CFileData* last = &p->Dirs->At(p->Dirs->Count - 1);
             if (first <= file && file <= last)
-                index = (int)(file - first); // it is a directory
+                index = (int)(file - first); // this is a directory
         }
         if (index == -1 && p->Files->Count > 0)
         {
             CFileData* first = &p->Files->At(0);
             CFileData* last = &p->Files->At(p->Files->Count - 1);
             if (first <= file && file <= last)
-                index = p->Dirs->Count + (int)(file - first); // it is a directory
+                index = p->Dirs->Count + (int)(file - first); // directory
         }
         if (index != -1)
             p->SetCaretIndex(index, partVis); // change focus
@@ -1366,8 +1366,8 @@ int CSalamanderGeneral::GetSourcePanel()
         return PANEL_RIGHT;
 }
 
-// activates the other panel (like the TAB key); panels marked through PANEL_SOURCE and PANEL_TARGET
-// swap naturally as a result
+// activates the other panel (like the Tab key); panels marked with PANEL_SOURCE and PANEL_TARGET
+// naturally swap as a result
 void CSalamanderGeneral::ChangePanel()
 {
     if (MainThreadID != GetCurrentThreadId())
@@ -1808,7 +1808,7 @@ void CSalamanderGeneral::PostUnloadThisPlugin()
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostUnloadThisPlugin().");
         }
     }
-    else // outside the entry point the Plugin is certainly set...
+    else // Outside the entry point, Plugin is already set...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
@@ -1847,7 +1847,7 @@ void CSalamanderGeneral::PostPluginMenuChanged()
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostPluginMenuChanged().");
         }
     }
-    else // outside the entry point the Plugin is certainly set...
+    else // Outside the entry point, Plugin is certainly already set...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
@@ -1894,7 +1894,7 @@ void CSalamanderGeneral::PostMenuExtCommand(int id, BOOL waitForSalIdle)
                 TRACE_E("Unexpected situation in CSalamanderGeneral::PostMenuExtCommand().");
             }
         }
-        else // outside the entry point the Plugin is certainly set...
+        else // outside the entry point, Plugin is guaranteed to be set...
         {
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
             {
@@ -2305,7 +2305,7 @@ BOOL CSalamanderGeneral::CloseDetachedFS(HWND parent, CPluginFSInterfaceAbstract
             {
                 CPluginFSInterfaceEncapsulation* fs = list->At(i);
                 BOOL dummy;
-                if (fs->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)) // the FS has no objection to closing
+                if (fs->TryCloseOrDetach(FALSE, FALSE, dummy, FSTRYCLOSE_PLUGINCLOSEDETACHEDFS)) // the FS allows closing
                 {
                     CPluginInterfaceForFSEncapsulation plugin(fs->GetPluginInterfaceForFS()->GetInterface(),
                                                               fs->GetPluginInterfaceForFS()->GetBuiltForVersion());
@@ -2398,7 +2398,7 @@ BOOL CSalamanderGeneral::CopyTextToClipboard(const char* text, int textLen, BOOL
 BOOL CSalamanderGeneral::CopyTextToClipboardW(const wchar_t* text, int textLen, BOOL showEcho, HWND echoParent)
 {
     CALL_STACK_MESSAGE3("CSalamanderGeneral::CopyTextToClipboardW(, %d, %d,)", textLen, showEcho);
-    // j.r. threw the text parameter, which did not have to be null-terminated
+    // j.r. removed the text parameter, since it did not have to be null-terminated
     if (text == NULL)
     {
         TRACE_E("Unexpected parameter (NULL) in CSalamanderGeneral::CopyTextToClipboardW().");
@@ -2450,7 +2450,7 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
     const char* fileName; // name of the file we will pass to the viewer
     if (useCache)
     {
-        // verify that 'fileNameInCache' is valid (a name without path)
+        // verify that 'fileNameInCache' was not specified incorrectly (a name without a path)
         const char* s = NULL;
         if (fileNameInCache != NULL)
         {
@@ -2533,7 +2533,7 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
     // finally open the viewer itself
     BOOL diskCacheNameClosed = FALSE;
     error = 0;
-    if (pluginSPL != NULL) // viewer from a plug-in
+    if (pluginSPL != NULL) // viewer from a plugin
     {
         CPluginData* data = Plugins.GetPluginDataFromSuffix(pluginSPL);
         if (data != NULL && data->SupportViewer)
@@ -2617,7 +2617,7 @@ BOOL ViewFileInPluginViewer(const char* pluginSPL,
         DiskCache.ReleaseName(viewUniqueName, FALSE);
         //    ::DeleteFile(fileName);   // the cache already removed the file and deallocated fileName
     }
-    return error == 0; // returning success?
+    return error == 0; // return success?
 }
 
 BOOL CSalamanderGeneral::ViewFileInPluginViewer(const char* pluginSPL,
@@ -2664,7 +2664,7 @@ int CSalamanderGeneral::GetPanelTopIndex(int panel)
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
         return p->ListBox->GetTopIndex();
-    return 0; // error; should not happen...
+    return 0; // error, should not occur...
 }
 
 void CSalamanderGeneral::GetPanelEnumFilesParams(int panel, int* enumFilesSourceUID, int* enumFilesCurrentIndex)
@@ -3082,7 +3082,7 @@ BOOL CSalamanderGeneral::GetConfigParameter(int paramID, void* buffer, int buffe
         memcpy(buffer, auxBuf, auxDataSize);
     else
     {
-        if (bufferSize > 0 && auxDataSize > 0) // copy at least what fits
+        if (bufferSize > 0 && auxDataSize > 0) // copy at least what fits in the buffer
         {
             memcpy(buffer, auxBuf, bufferSize);
             if (auxType == SALCFGTYPE_STRING)
@@ -3147,7 +3147,7 @@ BOOL CSalamanderGeneral::GetFileFromCache(const char* uniqueFileName, const char
     const char* name = DiskCache.GetName(uniqueFileName, NULL, &fileExists, FALSE, NULL, FALSE, NULL, NULL);
     if (name != NULL) // file found
     {
-        if (!fileExists) // some helpful soul deleted it straight from the disk
+        if (!fileExists) // someone deleted it directly from disk
         {
             // cannot prepare the file; tell the disk cache we give up
             DiskCache.ReleaseName(uniqueFileName, FALSE);
@@ -3185,7 +3185,7 @@ BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char*
         return FALSE;
     }
 
-    // verify that 'nameInCache' is valid (a name without a path)
+    // verify that 'nameInCache' was not specified incorrectly (a name without a path)
     const char* s = nameInCache;
     while (*s != 0 && *s != '\\' && *s != '/' && *s != ':' &&
            *s >= 32 && *s != '<' && *s != '>' && *s != '|' && *s != '"')
@@ -3199,7 +3199,7 @@ BOOL CSalamanderGeneral::MoveFileToCache(const char* uniqueFileName, const char*
     // add the file 'newFileName' to the disk cache under the name 'uniqueFileName'
     BOOL exists;
     const char* fileName = DiskCache.GetName(uniqueFileName, nameInCache, &exists, TRUE, rootTmpPath, FALSE, NULL, NULL);
-    if (fileName == NULL) // error (if 'exists' is TRUE -> fatal, otherwise "file already exists")
+    if (fileName == NULL) // error (if `exists` is TRUE, it is fatal; otherwise "file already exists")
     {
         if (alreadyExists != NULL)
             *alreadyExists = !exists;
@@ -3375,7 +3375,7 @@ void CSalamanderGeneral::CallPluginOperationFromDisk(int panel, SalPluginOperati
             else
                 p->GetSelItems(count, data.Indexes);
         }
-        else // take the focus
+        else // use the focused item
         {
             oneIndex = p->GetCaretIndex();
 
@@ -3633,7 +3633,7 @@ void CSalamanderGeneral::PostSalamanderCommand(int salCmd)
             TRACE_E("Unexpected situation in CSalamanderGeneral::PostSalamanderCommand().");
         }
     }
-    else // outside the entry point the Plugin is certainly set...
+    else // Outside the entry point, Plugin is already certainly set...
     {
         if (MainWindow != NULL && MainWindow->HWindow != NULL)
         {
@@ -4161,7 +4161,7 @@ void ActivateDropTarget(HWND dropTarget, HWND progressWnd)
         while ((tmp = ::GetParent(tgtWnd)) != NULL && IsWindowEnabled(tmp))
             tgtWnd = tmp;
         if (MainWindow != NULL && tgtWnd != MainWindow->HWindow)
-        { // perform it only if it is not an operation inside our Salamander
+        { // perform this only if it is not an operation inside Salamander
             SetForegroundWindow(progressWnd);
             SetForegroundWindow(tgtWnd);
             //        TRACE_I("SetForegroundWindow: " << hex << tgtWnd);
@@ -4274,7 +4274,7 @@ void CSalamanderGeneral::FreeSalamanderDirectory(CSalamanderDirectoryAbstract* s
 }
 
 BOOL CSalamanderGeneral::AddPluginFSTimer(int timeout, CPluginFSInterfaceAbstract* timerOwner,
-                                          DWORD timerParam) // FIXME_X64 - review the Salamander interface to ensure we do not pass parameters that should hold x64 pointers; for example here 'timerParam'
+                                          DWORD timerParam) // FIXME_X64 - review the Salamander interface to ensure we do not pass parameters that should be able to hold x64 pointers; for example, 'timerParam' here
 {
     CALL_STACK_MESSAGE3("CSalamanderGeneral::AddPluginFSTimer(%d, , 0x%X)", timeout, timerParam);
     if (MainThreadID != GetCurrentThreadId())
@@ -4449,7 +4449,7 @@ public:
     virtual HBITMAP WINAPI LoadPNGBitmap(HINSTANCE hInstance, LPCTSTR lpBitmapName, DWORD flags, COLORREF unused)
     {
         HBITMAP hBitmap = ::LoadPNGBitmap(hInstance, lpBitmapName, flags);
-        if (hBitmap != NULL) // the handle is handed over to the plug-in; the plug-in is responsible for destroying it, remove it from Salamander HANDLES
+        if (hBitmap != NULL) // the handle is handed over to the plugin; the plugin is responsible for destroying it, so remove it from Salamander HANDLES
             HANDLES_REMOVE(hBitmap, __htHandle_comp_with_DeleteObject, "DeleteObject");
         return hBitmap;
     }
@@ -4457,7 +4457,7 @@ public:
     virtual HBITMAP WINAPI LoadRawPNGBitmap(const void* rawPNG, DWORD rawPNGSize, DWORD flags, COLORREF unused)
     {
         HBITMAP hBitmap = ::LoadRawPNGBitmap(rawPNG, rawPNGSize, flags);
-        if (hBitmap != NULL) // the handle is handed over to the plug-in; the plug-in is responsible for destroying it, remove it from Salamander HANDLES
+        if (hBitmap != NULL) // the handle is handed over to the plugin; the plugin is responsible for destroying it, so remove it from Salamander HANDLES
             HANDLES_REMOVE(hBitmap, __htHandle_comp_with_DeleteObject, "DeleteObject");
         return hBitmap;
     }
@@ -4619,7 +4619,7 @@ BOOL CSalamanderGeneral::IsArchiveHandledByThisPlugin(const char* name)
     {
         format--;
         int index = PackerFormatConfig.GetUnpackerIndex(format);
-        if (index < 0) // view: is it internal processing (plug-in)?
+        if (index < 0) // does this mean internal plugin handling?
         {
             CPluginData* foundData = Plugins.Get(-index - 1);
             if (foundData == data) // is it us?
@@ -4768,7 +4768,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
     CFilesWindow* p = GetPanel(panel);
     if (p != NULL)
     {
-        BeginStopRefresh(); // no refreshes needed (formality: the call comes from a plug-in, so refreshes are already disabled by EnterPlugin)
+        BeginStopRefresh(); // no refreshes needed (formality: the call comes from a plugin, so refreshes are already disabled by EnterPlugin)
 
         int* indexes = NULL;
         int index = 0;
@@ -4833,7 +4833,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
                 RemoveUselessSeparatorsFromMenu(h);
 
                 int cmd = 0;
-                if (GetMenuItemCount(h) > 0) // guard against a completely trimmed menu
+                if (GetMenuItemCount(h) > 0) // guard against a completely empty menu
                 {
                     CMenuPopup contextPopup;
                     contextPopup.SetTemplateMenu(h);
@@ -4859,7 +4859,7 @@ void CSalamanderGeneral::OpenNetworkContextMenu(HWND parent, int panel, BOOL for
                         if (SalPathAppend(root, (focus < p->Dirs->Count ? p->Dirs->At(focus) : p->Files->At(focus - p->Dirs->Count)).Name, MAX_PATH))
                         {
                             char newDrive = 0;
-                            p->ConnectNet(TRUE, root, FALSE /* called from a plug-in; must not change the panel path, otherwise
+                            p->ConnectNet(TRUE, root, FALSE /* called from a plugin; must not change the panel path, otherwise
                                                 we would return to a deallocated FS object */
                                           ,
                                           &newDrive);
@@ -5508,7 +5508,7 @@ void CSalamanderForViewFileOnFS::FreeFileNameInCache(const char* uniqueFileName,
         DiskCache.AssignName(uniqueFileName, fileLock, fileLockOwner,
                              (fileExists || removeAsSoonAsPossible) ? crtDirect : crtCache); // for files present in the disk cache we use crtDirect, because it does not affect the "lifetime" setting (it stays as the file's author requested)
     }
-    else // the viewer did not open or simply does not have a "lock" object
+    else // the viewer either did not open or does not have a "lock" object
     {
         DiskCache.ReleaseName(uniqueFileName, !fileExists && !removeAsSoonAsPossible); // if 'removeAsSoonAsPossible' is not TRUE, at least try to keep a copy of the file in the disk cache (if it was not an existing file, we do not change its "lifetime")
     }
@@ -5532,7 +5532,7 @@ CSalamanderDirectory::CSalamanderDirectory(BOOL isForFS, DWORD validData, DWORD 
 
 CSalamanderDirectory::~CSalamanderDirectory()
 {
-    Clear(NULL); // plug-in data are released only in the root sal-dir
+    Clear(NULL); // plugin data are released only in the root sal-dir
     FreeAddCache();
 }
 
@@ -5574,7 +5574,7 @@ int CSalamanderDirectory::SalDirStrCmpEx(const char* s1, int l1, const char* s2,
 
 void CSalamanderDirectory::Clear(CPluginDataInterfaceAbstract* pluginData)
 {
-    if (pluginData != NULL) // release plug-in-specific data
+    if (pluginData != NULL) // release plugin-specific data
     {
         CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
         BOOL releaseFiles = plugin.CallReleaseForFiles();
@@ -5661,7 +5661,7 @@ CSalamanderDirectory::AllocSalamDir(int index)
 // 's' - output: points past the first name in the path 'path'
 // 'i' - output: index of the found subdirectory (which should continue processing the path 's')
 // 'file' - input: if the directory must be created, where to copy data from
-// 'pluginData' - input: interface for creating plug-in-specific data for the new directory (if needed)
+// 'pluginData' - input: interface for creating plugin-specific data for the new directory (if needed)
 // 'archivePath' - input: full path in the archive ('path' and 's' both point into it)
 
 BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, const CFileData& file,
@@ -5725,13 +5725,13 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
         data.IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED;
         data.IconOverlayDone = 0;
 
-        if (pluginData != NULL) // let the plug-in add its specific data
+        if (pluginData != NULL) // let the plugin add its specific data
         {
             char arcPath[MAX_PATH]; // name of the added directory inside the archive
             memcpy(arcPath, archivePath, s - archivePath);
             arcPath[s - archivePath] = 0;
             CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
-            if (!plugin.GetFileDataForNewDir(arcPath, data)) // cannot add the plug-in data
+            if (!plugin.GetFileDataForNewDir(arcPath, data)) // failed to add plugin data
             {
                 free(data.Name);
                 return FALSE;
@@ -5742,7 +5742,7 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
         if (!Dirs.IsGood())
         {
             Dirs.ResetState();
-            if (pluginData != NULL) // release plug-in-specific data
+            if (pluginData != NULL) // release plugin-specific data
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -5753,27 +5753,27 @@ BOOL CSalamanderDirectory::FindDir(const char* path, const char*& s, int& i, con
         }
         //--- adding the Salamander directory corresponding to the new directory
         /*
-    CSalamanderDirectory *dir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
-    if (dir != NULL) SalamDirs.Add((DWORD)dir);
-    else TRACE_E(LOW_MEMORY);
-    if (dir == NULL || !SalamDirs.IsGood())
-    {
-      if (dir != NULL) delete dir;
-      SalamDirs.ResetState();
-      if (pluginData != NULL)   // release plug-in-specific data
-      {
-        CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
-        if (plugin.CallReleaseForDirs()) plugin.ReleasePluginData2(Dirs[Dirs.Count - 1], TRUE);
-      }
-      Dirs.Delete(Dirs.Count - 1);
-      return FALSE;
-    }
-*/
+            CSalamanderDirectory *dir = new CSalamanderDirectory(IsForFS, ValidData, Flags);
+            if (dir != NULL) SalamDirs.Add((DWORD)dir);
+            else TRACE_E(LOW_MEMORY);
+            if (dir == NULL || !SalamDirs.IsGood())
+            {
+              if (dir != NULL) delete dir;
+              SalamDirs.ResetState();
+              if (pluginData != NULL)   // release plugin-specific data
+              {
+                CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
+                if (plugin.CallReleaseForDirs()) plugin.ReleasePluginData2(Dirs[Dirs.Count - 1], TRUE);
+              }
+              Dirs.Delete(Dirs.Count - 1);
+              return FALSE;
+            }
+        */
         SalamDirs.Add(NULL); // add NULL (the object will be allocated the first time it is needed)
         if (!SalamDirs.IsGood())
         {
             SalamDirs.ResetState();
-            if (pluginData != NULL) // release plug-in-specific data
+            if (pluginData != NULL) // release plugin-specific data
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -5860,7 +5860,7 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
     file.CutToClip = 0;
     file.IconOverlayDone = 0;
 
-    // if we have the path cached from the previous addition, we can insert the file right into its place
+    // if the path is cached from the previous add, we can insert the file directly there
     if (path != NULL && AddCache != NULL && pathLen > 0 &&
         pathLen == AddCache->PathLen && memcmp(path, AddCache->Path, pathLen) == 0)
     {
@@ -5876,7 +5876,7 @@ BOOL CSalamanderDirectory::AddFile(const char* path, CFileData& file, CPluginDat
 
     CSalamanderDirectory* ret = AddFileInt(path, file, pluginData, path);
 
-    // if the insertion succeeded and the cache is used, remember the path
+    // if adding succeeded and the cache is in use, store the path
     if (ret != NULL && AddCache != NULL && pathLen > 0)
     {
         AddCache->PathLen = pathLen;
@@ -6007,7 +6007,7 @@ CSalamanderDirectory*
 CSalamanderDirectory::AddFileInt(const char* path, CFileData& file,
                                  CPluginDataInterfaceAbstract* pluginData, const char* archivePath)
 {
-    CALL_STACK_MESSAGE_NONE // time-critical method; in addition, path may be NULL
+    CALL_STACK_MESSAGE_NONE // time-critical method; path may also be NULL
                             //  CALL_STACK_MESSAGE3("CSalamanderDirectory::AddFileInt(%s, , , %s)", path, archivePath);
 
         if (path != NULL)
@@ -6046,7 +6046,7 @@ CSalamanderDirectory*
 CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
                                 CPluginDataInterfaceAbstract* pluginData, const char* archivePath)
 {
-    CALL_STACK_MESSAGE_NONE // time-critical method; in addition, path may be NULL
+    CALL_STACK_MESSAGE_NONE // performance-critical method; path may also be NULL
                             //  CALL_STACK_MESSAGE3("CSalamanderDirectory::AddDirInt(%s, , , %s)", path, archivePath);
 
         if (path != NULL)
@@ -6072,7 +6072,7 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
     }
 
     BOOL newDir = TRUE;
-    if ((Flags & SALDIRFLAG_IGNOREDUPDIRS) == 0) // if we should test for duplicate directories
+    if ((Flags & SALDIRFLAG_IGNOREDUPDIRS) == 0) // if duplicate directories should be checked
     {
         int i;
         for (i = 0; i < Dirs.Count; i++)
@@ -6083,7 +6083,7 @@ CSalamanderDirectory::AddDirInt(const char* path, CFileData& dir,
         newDir = (i == Dirs.Count); // not created yet
         if (!newDir)                // updating existing data
         {
-            if (pluginData != NULL) // release plug-in-specific data
+            if (pluginData != NULL) // release plugin-specific data
             {
                 CPluginDataInterfaceEncapsulation plugin(pluginData, STR_NONE, STR_NONE, NULL, 0);
                 if (plugin.CallReleaseForDirs())
@@ -6245,7 +6245,7 @@ CSalamanderDirectory::GetDirs(const char* path)
                         return salDir->GetDirs(s);
                     }
                     else
-                        return NULL; // low memory error (as if the directory did not exist)
+                        return NULL; // out-of-memory error (as if the directory did not exist)
                 }
             }
         }
@@ -6263,7 +6263,7 @@ CSalamanderDirectory::GetFiles(const char* path)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // some subdirectory
+        if (*path != 0) // a subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6281,7 +6281,7 @@ CSalamanderDirectory::GetFiles(const char* path)
                         return salDir->GetFiles(s);
                     }
                     else
-                        return NULL; // low memory error (as if the directory did not exist)
+                        return NULL; // out-of-memory error (as if the directory did not exist)
                 }
             }
         }
@@ -6299,7 +6299,7 @@ CSalamanderDirectory::GetUpperDir(const char* path)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // some subdirectory
+        if (*path != 0) // a subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6321,15 +6321,15 @@ CSalamanderDirectory::GetUpperDir(const char* path)
                             return salDir->GetUpperDir(s);
                         }
                         else
-                            return NULL; // low memory error (as if the directory did not exist)
+                            return NULL; // out of memory error (as if the directory did not exist)
                     }
                 }
             }
         }
         else
-            return NULL; // for root return NULL
+            return NULL; // return NULL for the root
     }
-    return NULL; // for root and unknown paths return NULL
+    return NULL; // return NULL for the root and unknown paths
 }
 
 CQuadWord
@@ -6415,7 +6415,7 @@ CSalamanderDirectory::GetSalamanderDir(const char* path, BOOL readOnly)
     {
         if (*path == '\\')
             path++;
-        if (*path != 0) // some subdirectory
+        if (*path != 0) // a subdirectory
         {
             const char* s = path;
             while (*s != 0 && *s != '\\')
@@ -6440,7 +6440,7 @@ CSalamanderDirectory::GetSalamanderDir(const char* path, BOOL readOnly)
                                 return salDir->GetSalamanderDir(s, readOnly);
                             }
                             else
-                                return NULL; // allocation error
+                                return NULL; // allocation failed
                         }
                     }
                 }
