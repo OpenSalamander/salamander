@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -45,7 +46,7 @@ CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSi
 {
     lstrcpyn(buf, Path, bufSize); // if the path does not fit, the name certainly will not either (an error will be reported)
     if (isDir == 2)
-        return SalamanderGeneral->CutDirectory(buf, NULL); // up-dir
+        return SalamanderGeneral->CutDirectory(buf, NULL); // parent directory
     else
         return CRAPI::PathAppend(buf, file.Name, bufSize);
 }
@@ -62,7 +63,7 @@ CPluginFSInterface::GetFullFSPath(HWND parent, const char* fsName, char* path, i
         strcpy(root, Path); // paths such as "path" inherit the current FS path
 
     success = CRAPI::PathAppend(root, path, MAX_PATH);
-    if (success && (int)strlen(root) < 1) // shorter than the root is impossible (it would become a relative path again)
+    if (success && (int)strlen(root) < 1) // shorter than the root is not possible (it would be a relative path again)
     {
         success = SalamanderGeneral->SalPathAddBackslash(root, MAX_PATH);
     }
@@ -107,7 +108,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     if (FatalError)
     {
         FatalError = FALSE;
-        return FALSE; // ListCurrentPath failed due to memory, fatal error
+        return FALSE; // ListCurrentPath failed due to insufficient memory; fatal error
     }
 
     if (forceRefresh)
@@ -126,7 +127,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     {              // try to trim the path
         PathError = FALSE;
         if (!SalamanderGeneral->CutDirectory(path, NULL))
-            return FALSE; // nowhere to shorten, fatal error
+            return FALSE; // cannot shorten the path any further, fatal error
         fileNameAlreadyCut = TRUE;
         if (pathWasCut != NULL)
             *pathWasCut = TRUE;
@@ -134,9 +135,9 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     while (1)
     {
         DWORD attr = CRAPI::GetFileAttributes(path, TRUE);
-        if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // success, use the path as current
+        if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // success, use the path as the current path
         {
-            if (errBuf[0] != 0) // if we have a message, print it here (it arose during trimming)
+            if (errBuf[0] != 0) // if we have a message, display it here (it was generated while shortening the path)
             {
                 sprintf(buf, LoadStr(IDS_PATH_ERROR), userPart, errBuf);
                 SalamanderGeneral->ShowMessageBox(buf, TitleWMobileError, MSGBOX_ERROR);
@@ -144,7 +145,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
             strcpy(Path, path);
             return TRUE;
         }
-        else // failure, try to shorten the path
+        else // failure, try shortening the path
         {
             err = CRAPI::GetLastError();
 
@@ -158,8 +159,8 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
                 else
                     SalamanderGeneral->GetErrorText(err, errBuf, MAX_PATH);
 
-                // if opening the FS is time-consuming and we want to adjust Change Directory (Shift+F7)
-                // to behave like archives, comment out the following line with "break" for mode 3
+                // if opening the FS is time-consuming and we want Change Directory (Shift+F7)
+                // to behave like it does for archives, just comment out the following line with "break" for mode 3
 
                 //JR try trimming only if RAPI reports that the path does not exist
                 if (mode == 3 || err != ERROR_FILE_NOT_FOUND)
@@ -167,7 +168,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
             }
 
             char* cut;
-            if (!SalamanderGeneral->CutDirectory(path, &cut)) // nowhere to shorten, fatal error
+            if (!SalamanderGeneral->CutDirectory(path, &cut)) // cannot shorten it any further, fatal error
             {
                 SalamanderGeneral->GetErrorText(err, errBuf, MAX_PATH);
                 break;
@@ -179,7 +180,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
                 if (!fileNameAlreadyCut) // it can be a file name only during the first trim
                 {
                     fileNameAlreadyCut = TRUE;
-                    if (cutFileName != NULL && attr != 0xFFFFFFFF) // it is a file
+                    if (cutFileName != NULL && attr != 0xFFFFFFFF) // file
                         lstrcpyn(cutFileName, cut, MAX_PATH);
                 }
                 else
@@ -514,7 +515,7 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
 {
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // request for the standard dialog
+        return FALSE; // request the standard dialog
 
     // Verify the provided name syntactically
     char* s = newName;
@@ -543,7 +544,7 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the mask adjustment
+        // 'newName' is already returned after masking
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -555,7 +556,7 @@ CPluginFSInterface::QuickRename(const char* fsName, int mode, HWND parent, CFile
         DWORD err = CRAPI::GetLastError();
         SalamanderGeneral->SalMessageBox(parent, SalamanderGeneral->GetErrorText(err),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the mask adjustment
+        // 'newName' is already returned after masking
         return FALSE; // error -> show the standard dialog again
     }
     else // operation succeeded - report the change on the path (triggers refresh) and return success
@@ -584,9 +585,9 @@ void WINAPI
 CPluginFSInterface::AcceptChangeOnPathNotification(const char* fsName, const char* path, BOOL includingSubdirs)
 {
 
-    // test whether the paths or at least their prefixes match (only paths on our FS have a chance;
-    // disk paths and other FS paths in 'path' are excluded automatically because they can never
-    // match 'fsName'+':' at the start of 'path2' below)
+    // test whether the paths or at least their prefixes match (only paths
+    // on our FS can match; disk paths and paths on other file systems in 'path'
+    // are excluded automatically because they can never match 'fsName'+':' at the start of 'path2' below)
     char path1[2 * MAX_PATH];
     char path2[2 * MAX_PATH];
     lstrcpyn(path1, path, 2 * MAX_PATH);
@@ -661,7 +662,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR1),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the path expansion
+        // 'newName' is already returned modified (after path expansion)
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -670,7 +671,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
     { // not a CEFS path
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR2),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the path expansion
+        // 'newName' is returned already modified (after path expansion)
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -678,7 +679,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_SORRY_CREATEDIR3),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the path expansion
+        // 'newName' is already returned with the path expanded
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -687,7 +688,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
     {
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_INVALIDPATH),
                                          TitleWMobile, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is returned after expanding the path and possibly adjusting ".." and "."
+        // 'newName' is returned modified: with the path expanded and some ".." and "." components possibly adjusted
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -701,7 +702,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
         DWORD err = CRAPI::GetLastError();
         SalamanderGeneral->SalMessageBox(parent, SalamanderGeneral->GetErrorText(err),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'newName' is already returned after the path expansion
+        // 'newName' is already returned modified (with the path expanded)
         return FALSE; // error -> show the standard dialog again
     }
 
@@ -742,7 +743,7 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     // determine whether a disk-cache copy of the file needs to be prepared (download)
     BOOL newFileOK = FALSE;
     CQuadWord newFileSize(0, 0);
-    if (!fileExists) // preparing a copy (download) is necessary
+    if (!fileExists) // preparing a file copy (download) is necessary
     {
         const char* name = uniqueFileName + strlen(AssignedFSName) + 1;
 
@@ -790,7 +791,7 @@ CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     // open the viewer
     HANDLE fileLock;
     BOOL fileLockOwner;
-    if (!fileExists && !newFileOK || // open the viewer only if the file copy is ready
+    if (!fileExists && !newFileOK || // open the viewer only if the file copy is valid
         !salamander->OpenViewer(parent, tmpFileName, &fileLock, &fileLockOwner))
     { // on error, reset "lock"
         fileLock = NULL;
@@ -881,7 +882,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
         delDlg.Create();
     }
 
-    if (!showProgressDialog || delDlg.HWindow != NULL) // dialog opened successfully
+    if (!showProgressDialog || delDlg.HWindow != NULL) // no progress dialog, or the dialog opened successfully
     {
         if (showProgressDialog)
             SetForegroundWindow(delDlg.HWindow);
@@ -904,7 +905,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
             if (showProgressDialog)
             {
                 float progress = ((float)i / (float)array.Count);
-                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE so we don't slow things down
+                delDlg.Set(fileName, (DWORD)(progress * 1000), TRUE); // delayedPaint == TRUE so we do not slow things down
             }
 
             if (showProgressDialog && delDlg.GetWantCancel())
@@ -977,7 +978,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                     }
                 }
 
-                if (success && !skip) // neither canceled nor skipped
+                if (success && !skip) // not canceled or skipped
                 {
                     skip = FALSE;
                     while (1)
@@ -1104,7 +1105,7 @@ CPluginFSInterface::Delete(const char* fsName, int mode, HWND parent, int panel,
                             SalamanderGeneral->ToLowerCase(dfsFileName);
                             // remove the deleted file's cache copy if it exists
                             SalamanderGeneral->RemoveOneFileFromCache(dfsFileName);
-                            break; // successful delete
+                            break; // delete succeeded
                         }
                         if (!success || skip)
                             break;
@@ -1216,14 +1217,14 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             SalamanderGeneral->SalPathAppend(targetPath, "*.*", 2 * MAX_PATH);
             SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the path in the target panel
         }
-        return FALSE; // request for the standard dialog
+        return FALSE; // request to show the standard dialog
     }
 
     if (mode == 4) // error during the standard Salamander processing of the target path
     {
         // 'targetPath' contains an invalid path, the user has already been informed, so we just
         // let them edit the destination path again
-        return FALSE; // request for the standard dialog
+        return FALSE; // request to show the standard dialog
     }
 
     char buf[3 * MAX_PATH + 100];
@@ -1244,10 +1245,10 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             if (userPart == NULL) // path does not contain an FS name, so it is relative
             {                     // a relative path with ':' is not allowed here (cannot be distinguished from an absolute path to some FS)
 
-                // For disk paths we could use SalGetFullName:
-                // SalamanderGeneral->SalGetFullName(targetPath, &errTextID, Path, nextFocus) + handle the errors
-                // After that it would be enough to prepend the FS name to the obtained path
-                // but instead we demonstrate our own implementation (using SalRemovePointsFromPath and others):
+                // For disk paths, it would be preferable to use SalGetFullName:
+                // SalamanderGeneral->SalGetFullName(targetPath, &errTextID, Path, nextFocus) + handle errors
+                // Then it would only be necessary to prepend the FS name to the resulting path
+                // But here we prefer to show our own implementation instead (using SalRemovePointsFromPath and others):
 
                 char* s = strchr(targetPath, '\\');
                 if (s == NULL || *(s + 1) == 0)
@@ -1270,7 +1271,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 BOOL tooLong = FALSE;
                 int rootLen = 1;
                 *s = '\\';
-                if (targetPath[0] == '\\') // "\\path" -> compose root + newName
+                if (targetPath[0] == '\\') // "\\path" -> build root + newName
                 {
                     s += rootLen;
                     int len = (int)strlen(targetPath + 1); // without the leading '\\'
@@ -1296,7 +1297,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_NAMETOOLONG),
                                                      TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
                     // 'targetPath' is returned unchanged (as entered by the user)
-                    return FALSE; // error -> reopen the standard dialog
+                    return FALSE; // on error, show the standard dialog again
                 }
 
                 strcpy(targetPath, path);
@@ -1325,7 +1326,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         rootLen = userPartLen;
                 }
 
-                // The full path to this FS may also contain "." and ".." entered by the user - remove them
+                // The user may also have used "." and ".." in the full path to this FS; remove them.
                 if (invPath || !SalamanderGeneral->SalRemovePointsFromPath(userPart + rootLen))
                 {
                     // Additionally we could display 'err' (when 'invPath' is TRUE); ignored here for simplicity
@@ -1338,7 +1339,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 // Trim the unnecessary backslash
                 int l = (int)strlen(userPart);
                 BOOL backslashAtEnd = l > 0 && userPart[l - 1] == '\\';
-                if (l > 1 && userPart[l - 1] == '\\') // path of the form "\path\"
+                if (l > 1 && userPart[l - 1] == '\\') // path of the form "\\path\\"
                     userPart[l - 1] = 0;              // remove the trailing backslash
 
                 // Analyse the path - locate the existing part, the missing part, and the operation mask
@@ -1363,8 +1364,8 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 BOOL pathIsDir = TRUE;
                 BOOL pathError = FALSE;
 
-                // If the path contains a mask, cut it off without calling GetFileAttributes
-                if (end > afterRoot) // still more than just the root
+                // If the path contains a mask, trim it off without calling GetFileAttributes
+                if (end > afterRoot) // still not just the root
                 {
                     char* end2 = end;
                     BOOL cut = FALSE;
@@ -1373,7 +1374,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         if (*end2 == '*' || *end2 == '?')
                             cut = TRUE;
                     }
-                    if (cut) // the name contains a mask -> trim it
+                    if (cut) // the name contains a wildcard -> trim it
                     {
                         end = end2;
                         lastChar = *end;
@@ -1381,12 +1382,12 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     }
                 }
 
-                while (end > afterRoot) // still more than just the root
+                while (end > afterRoot) // not yet at the root
                 {
                     DWORD attrs = CRAPI::GetFileAttributes(userPart);
                     if (attrs != 0xFFFFFFFF) // this portion of the path exists
                     {
-                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // it is a file
+                        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // the existing part of the path is a file
                         {
                             // An existing path must not include a file name (see SalSplitGeneralPath); trim it...
                             *end = lastChar;   // restore 'targetPath'
@@ -1422,7 +1423,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 *end = lastChar; // restore 'targetPath'
                 SetCursor(oldCur);
 
-                if (!pathError) // the split finished without errors
+                if (!pathError) // the split completed without errors
                 {
                     if (*end == '\\')
                         end++;
@@ -1451,7 +1452,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                                                                backslashAtEnd, dirName, curPath, mask, newDirs,
                                                                CEFS_IsTheSamePath))
                     {
-                        if (newDirs[0] != 0) // need to create some subdirectories on the target path
+                        if (newDirs[0] != 0) // create any needed subdirectories in the target path
                         {
                             if (!CRAPI::CheckAndCreateDirectory(userPart, parent, true, NULL, 0, NULL))
                             {
@@ -1479,7 +1480,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
                 if (pathError)
                 {
-                    // 'targetPath' is returned after the modification (path expansion) + the ".." and "." cleanup + the mask that may have been added
+                    // 'targetPath' is returned after path expansion, resolution of ".." and ".", and with any added masks
                     return FALSE; // error -> reopen the standard dialog
                 }
                 diskPath = FALSE; // path on this FS successfully analysed
@@ -1496,19 +1497,19 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
     }
 
     const char* opMask = NULL; // operation mask
-    if (mode == 5)             // operation target specified via drag&drop
+    if (mode == 5)             // operation target was specified via drag and drop
     {
         // If it is a disk path, just set the operation mask and continue (same as with 'mode'==3);
-        // if it is a path into an archive, throw a "not supported" error; for a CEFS path set
-        // 'diskPath'=FALSE and compute 'userPart' (points to the user portion of the CEFS path); for
-        // a path to another FS, throw a "not supported" error
+        // if it is a path into an archive, report a "not supported" error; for a CEFS path set
+        // 'diskPath'=FALSE and compute 'userPart' (points to the user part of the CEFS path); for
+        // a path into another FS, report a "not supported" error
 
         BOOL ok = FALSE;
         opMask = "*.*";
         int type;
         char* secondPart;
         BOOL isDir;
-        if (targetPath[0] != 0 && targetPath[1] == ':' ||   // disk path (C:\path)
+        if (targetPath[0] != 0 && targetPath[1] == ':' ||   // drive-letter path (C:\path)
             targetPath[0] == '\\' && targetPath[1] == '\\') // UNC path (\\server\share\path)
         {                                                   // append a trailing backslash so it is always treated as a path (for 'mode'==5 it is always a path)
             SalamanderGeneral->SalPathAddBackslash(targetPath, MAX_PATH);
@@ -1536,7 +1537,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 userPart = secondPart;
                 if ((userPart - targetPath) - 1 == (int)strlen(fsName) &&
                     SalamanderGeneral->StrNICmp(targetPath, fsName, (int)(userPart - targetPath) - 1) == 0)
-                { // je to CEFS
+                { // different FS, report only "not supported"
                     diskPath = FALSE;
                     ok = TRUE;
                 }
@@ -1566,7 +1567,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
     // 'mode' is 2, 3 or 5
 
-    // Determine the operation mask (the target path is in 'targetPath')
+    // find the operation mask (the target path is in 'targetPath')
     if (opMask == NULL)
     {
         opMask = targetPath;
@@ -1763,7 +1764,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     {
                         targetPathChanged = TRUE;
                         subdirsOfTargetPathChanged = TRUE;
-                        break; // successfully created directory
+                        break; // directory created successfully
                     }
                 } // end of while(1)
             }
@@ -1772,7 +1773,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         {
             DWORD attr = 0xFFFFFFFF;
 
-            if (!rename || SalamanderGeneral->StrICmp(sourceName, targetName) != 0) // Not a simple change in letter case
+            if (!rename || SalamanderGeneral->StrICmp(sourceName, targetName) != 0) // Not just a change in letter case
             {
                 if (diskPath)
                     attr = SalamanderGeneral->SalGetFileAttributes(targetName);
@@ -1852,7 +1853,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 {
                     DWORD err = 0;
                     LPCTSTR errFileName = "";
-                    if (diskPath) // JR Windows destination path
+                    if (diskPath) // Windows destination path //JR
                     {
                         if (attr != 0xFFFFFFFF &&
                             (attr & (FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY)))
@@ -1886,7 +1887,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
                     if (err != 0)
                     {
-                        if (err == -1) // JR cancelled by the user
+                        if (err == -1) // JR interrupted by the user
                             success = FALSE;
                         else if (!skipAllErrors)
                         {
@@ -1925,7 +1926,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             }
         }
 
-        if (success && !copy && !skip && !fileMoved) // it is a "move" and the file was not skipped -> delete the source file
+        if (success && !copy && !skip && !fileMoved) // move and the file was not skipped -> delete the source file
         {
             while (1)
             {
@@ -1969,7 +1970,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
 
                             sourcePathChanged = TRUE;
                             subdirsOfSourcePathChanged = TRUE;
-                            break; // successful RemoveDirectory
+                            break; // RemoveDirectory succeeded
                         }
                     }
                     else
@@ -1977,7 +1978,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 }
                 else
                 {
-                    // remove the file on CEFS
+                    // delete the file on CEFS
                     if (fi.dwFileAttributes & (FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY))
                         CRAPI::SetFileAttributes(sourceName, FILE_ATTRIBUTE_ARCHIVE);
 
@@ -2029,7 +2030,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // Determine whether it makes sense to continue (when not cancelled)
+            break; // Determine whether to continue if not cancelled
     }
 
     EnableWindow(mainWnd, TRUE);
@@ -2052,7 +2053,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         strcpy(targetPath, nextFocus); // success
     else
         cancelOrHandlePath = TRUE; // error/cancel
-    return TRUE;                   // success or error/cancel handled
+    return TRUE;                   // success or error/cancel
 }
 
 static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR fileName, CFileInfoArray& array, BOOL dirFirst, int block)
@@ -2072,7 +2073,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
     {
         DWORD err = GetLastError();
         if (err == ERROR_NO_MORE_FILES || err == ERROR_FILE_NOT_FOUND)
-            return TRUE; // JR empty directory, stop
+            return TRUE; // JR: empty directory, done
 
         char buf[2 * MAX_PATH + 100];
         sprintf(buf, LoadStr(IDS_PATH_ERROR), fullPath, SalamanderGeneral->GetErrorText(err));
@@ -2142,7 +2143,7 @@ static BOOL FindAllFilesInTree(LPCTSTR rootPath, char (&path)[MAX_PATH], LPCTSTR
         if (!FindNextFile(find, &data))
         {
             if (GetLastError() == ERROR_NO_MORE_FILES)
-                break; // JR Everything is fine, stop
+                break; // JR Everything is fine, stop here
 
             DWORD err = GetLastError();
             SalamanderGeneral->ShowMessageBox(SalamanderGeneral->GetErrorText(err), TitleWMobileError, MSGBOX_ERROR);
@@ -2215,7 +2216,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
         // Additionally we could display 'err' (when 'invPath' is TRUE); ignored here for simplicity
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_ERR_INVALIDPATH),
                                          TitleWMobileError, MB_OK | MB_ICONEXCLAMATION);
-        // 'targetPath' is returned after possibly adjusting some ".." and "."
+        // 'targetPath' is returned after possible adjustment of some ".." and "." segments
         if (invalidPathOrCancel != NULL)
             *invalidPathOrCancel = TRUE;
         return FALSE; // let the user correct the path
@@ -2256,7 +2257,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             if (*end2 == '*' || *end2 == '?')
                 cut = TRUE;
         }
-        if (cut) // the name contains a mask -> trim it
+        if (cut) // the name contains a wildcard -> trim it
         {
             end = end2;
             lastChar = *end;
@@ -2269,7 +2270,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
         DWORD attrs = CRAPI::GetFileAttributes(userPart);
         if (attrs != 0xFFFFFFFF) // this portion of the path exists
         {
-            if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // it is a file
+            if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) // the existing part of the path is a file
             {
                 // An existing path must not include a file name (see SalSplitGeneralPath); trim it...
                 *end = lastChar;   // restore 'targetPath'
@@ -2317,7 +2318,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                                                    backslashAtEnd, NULL, NULL, opMask, newDirs,
                                                    NULL /* 'isTheSamePathF' not needed */))
         {
-            if (newDirs[0] != 0) // need to create some subdirectories on the target path
+            if (newDirs[0] != 0) // create any needed subdirectories in the target path
             {
                 if (!CRAPI::CheckAndCreateDirectory(userPart, parent, true, NULL, 0, NULL))
                 {
@@ -2336,7 +2337,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
 
     if (pathError)
     {
-        // 'targetPath' is returned after cleaning up ".." and "." + any mask that was added
+        // 'targetPath' is returned with ".." and "." cleaned up, plus any added masks
         if (invalidPathOrCancel != NULL)
             *invalidPathOrCancel = TRUE;
         return FALSE; // path error - let the user fix it
@@ -2370,7 +2371,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                                             500, FALSE, SalamanderGeneral->GetMainWindowHWND());
     CFileInfoArray array(10, 10);
 
-    BOOL success = TRUE; // FALSE in case of an error or user cancellation
+    BOOL success = TRUE; // FALSE if an error occurs or the user cancels
 
     BOOL isDir;
     const char* name;
@@ -2438,8 +2439,8 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
         // Construct the full name; trimming to MAX_PATH is theoretically redundant, but unfortunately needed in practice
         lstrcpyn(endSource, fi.cFileName, endSourceSize);
 
-        // Compose the target name - simplified without the LoadStr(IDS_ERR_NAMETOOLONG) error check
-        // ('name' covers only the root of the source path - no subdirectories - adjust the entire 'name' with the mask)
+        // Build the target name - simplified, without checking the LoadStr(IDS_ERR_NAMETOOLONG) error
+        // ('name' is only from the root of the source path - no subdirectories - the mask modifies the entire 'name')
         lstrcpyn(endTarget, targetFile, endTargetSize);
 
         isDir = (fi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -2492,7 +2493,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     {
                         targetPathChanged = TRUE;
                         subdirsOfTargetPathChanged = TRUE;
-                        break; // successfully created directory
+                        break; // directory created successfully
                     }
                 } // end of while(1)
             }
@@ -2658,7 +2659,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                         {
                             sourcePathChanged = TRUE;
                             subdirsOfSourcePathChanged = TRUE;
-                            break; // successful RemoveDirectory
+                            break; // RemoveDirectory succeeded
                         }
                     }
                     else
@@ -2697,7 +2698,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     else
                     {
                         sourcePathChanged = TRUE;
-                        break; // successful delete
+                        break; // delete succeeded
                     }
                 }
                 if (!success || skip)
@@ -2713,7 +2714,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // Determine whether it makes sense to continue (when not cancelled)
+            break; // determine whether to continue (if not cancelled)
     }
 
     EnableWindow(mainWnd, TRUE);
@@ -2738,7 +2739,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     {
         if (invalidPathOrCancel != NULL)
             *invalidPathOrCancel = TRUE;
-        return TRUE; // cancel
+        return TRUE; // canceled
     }
 }
 
