@@ -109,7 +109,7 @@ void CFilesWindow::Convert()
                     {
                         FilesActionInProgress = FALSE;
                         EndStopRefresh(); // snooper will start again now
-                        return;           // do not process ".."
+                        return;           // we do not work with ".."
                     }
                     f = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
                 }
@@ -164,7 +164,7 @@ void CFilesWindow::Convert()
                             script->ResetState();
                         FreeScript(script);
                     }
-                    else // clear the selected index (do not wait for the operation to finish; it runs in another thread)
+                    else // removal of selection index (no waiting for operation finish, operation runs in another thread)
                     {
                         SetSel(FALSE, -1, TRUE);                        // explicit repaint
                         PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // selection change notify
@@ -489,7 +489,7 @@ void CFilesWindow::ChangeAttr(BOOL setCompress, BOOL compressed, BOOL setEncrypt
                         UnselectItemWithName(temporarySelected);
                         FilesActionInProgress = FALSE;
                         EndStopRefresh(); // snooper will start again now
-                        return;           // do not process ".."
+                        return;           // we do not work with ".."
                     }
                     f = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
                 }
@@ -604,7 +604,7 @@ void CFilesWindow::ChangeAttr(BOOL setCompress, BOOL compressed, BOOL setEncrypt
                             script->ResetState();
                         FreeScript(script);
                     }
-                    else // remove selected indexes (do not wait for the operation to finish; it runs in another thread)
+                    else // removal of selection index (no waiting for operation finish, operation runs in another thread)
                     {
                         SetSel(FALSE, -1, TRUE);                        // explicit repaint
                         PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // selection change notify
