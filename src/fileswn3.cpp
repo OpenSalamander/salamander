@@ -617,7 +617,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 }
                 else
                 {
-                    if (s >= st) // an extension exists
+                    if (s >= st) // extension exists
                     {
                         while (*++s != 0)
                             *st++ = LowerCase[*s];
@@ -635,7 +635,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                               : 0;
                         }
 
-                        if (PackerFormatConfig.PackIsArchive(file.Name, file.NameLen)) // is it an archive that we can process?
+                        if (PackerFormatConfig.PackIsArchive(file.Name, file.NameLen)) // is this an archive format we can handle?
                         {
                             file.Association = 1;
                             file.Archive = 1;
@@ -701,7 +701,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 }
 
                 // at the file, we will check if it's necessary to load its thumbnail
-                if (readThumbnails &&                              // thumbnails should be loaded
+                if (readThumbnails &&                              // load thumbnails
                     (file.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && // (it is ptDisk, so using FILE_ATTRIBUTE_DIRECTORY is o.k.)
                     file.Archive == 0)                             // archive icon is preferred before thumbnail
                 {
@@ -713,7 +713,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         if (p->ThumbnailMasks.AgreeMasks(file.Name, file.Ext) &&
                             !p->ThumbnailMasksDisabled) // its unload/remove is not in progress
                         {
-                            if (!p->GetLoaded()) // the plugin must be loaded (the "thumbnail loader" mask may change)
+                            if (!p->GetLoaded()) // plugin needs to be loaded (the "thumbnail loader" mask may change)
                             {
                                 //                RefreshListBox(0, -1, -1, FALSE, FALSE); // replaced with ListBox->SetItemsCound + WM_USER_UPDATEPANEL, because it was blinking e.g. when adding the first *.doc file to a directory with images (Eroiica is loaded (for thumbnail *.doc))
 
@@ -767,7 +767,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             size -= (size & 0x3); // size % 4 (4-byte alignment)
                             int nameSize = size;
                             size += sizeof(CQuadWord) + sizeof(FILETIME);
-                            size += (foundThumbLoaderPlugins.Count + 1) * sizeof(void*); // space for pointers to plugin interfaces + NULL at the end
+                            size += (foundThumbLoaderPlugins.Count + 1) * sizeof(void*); // space for pointers to plugin interfaces and NULL at the end
                             iconData.NameAndData = (char*)malloc(size);
                             if (iconData.NameAndData != NULL)
                             {
@@ -819,8 +819,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     {
                         memmove(iconData.NameAndData, file.Name, len);
                         memset(iconData.NameAndData + len, 0, size - len); // end of name is zeroed
-                        iconData.SetFlag(0);                               // no not-loaded icon yet
-                                                                           // need to allocate space for bitmaps, can't be done in thread
+                        iconData.SetFlag(0);                               // icon not loaded yet
+// bitmap storage must be allocated here; it cannot be done in the worker thread
                         iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                         if (iconData.GetIndex() != -1)
                         {
@@ -841,7 +841,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
 #ifndef _WIN64
                     isWin64RedirectedDir = FALSE;
 #endif                     // _WIN64
-                    break; // the second pass (adding ".." or the win64 redirected-dir)
+                    break; // second pass (adding ".." or the Win64-redirected directory)
                 }
             } while (FindNextFile(search, &fileData));
             DWORD err = GetLastError();
@@ -1115,7 +1115,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     const char* iconLocation = NULL;
                     CFileData* f = &Files->At(i);
 
-                    if (*f->Ext != 0) // an extension exists
+                    if (*f->Ext != 0) // file has an extension
                     {
                         /*
             if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive that we can process?
@@ -1165,8 +1165,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                 memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment +
                                 memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
-                                iconData.SetFlag(3); // not-loaded icon given by icon-location only
-                                                     // we need to allocate space for bitmaps, can't be done in thread
+                                iconData.SetFlag(3); // icon not loaded yet; only the icon location is known
+// we need to allocate space for the bitmaps, which cannot be done in this thread
                                 iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                 if (iconData.GetIndex() != -1)
                                 {
@@ -1196,7 +1196,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     CFileData* f = &Files->At(i);
 
-                    if (*f->Ext != 0) // an extension exists
+                    if (*f->Ext != 0) // has an extension
                     {
                         /*
             if (PackerFormatConfig.PackIsArchive(f->Name))   // is it an archive that we can process?
@@ -1329,7 +1329,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 {
                     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
                     //          TRACE_I("ReadDirectory: end");
-                    return FALSE; // the directory has ceased to exist ...
+                    return FALSE; // the directory no longer exists ...
                 }
 
                 // if the panel is empty, we will set infoline to "No files found"
@@ -1426,8 +1426,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment +
                                     memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
-                                    iconData.SetFlag(3); // not-loaded icon given by icon-location only
-                                                         // we need to allocate space for bitmaps, can't be done in thread
+                                    iconData.SetFlag(3); // icon not yet loaded, specified only by icon-location
+// we need to allocate space for the bitmaps; this cannot be done in the worker thread
                                     iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                     if (iconData.GetIndex() != -1)
                                     {
@@ -1564,8 +1564,8 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                             memcpy(iconData.NameAndData, f->Name, f->NameLen);                  // name +
                                             memset(iconData.NameAndData + f->NameLen, 0, nameLen - f->NameLen); // zeroes alignment
 
-                                            iconData.SetFlag(0); // so far not loaded icon (plugin-icon)
-                                                                 // need to allocate space for bitmaps, can't be done in thread
+                                            iconData.SetFlag(0); // icon not loaded yet (plugin icon)
+                                                                 // bitmap storage must be allocated outside the thread
                                             iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                             if (iconData.GetIndex() != -1)
                                             {
@@ -1620,7 +1620,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
     return TRUE;
 }
 
-// sorts array Dirs and Files independently on global variables
+// sorts the Dirs and Files arrays independently of global variables
 void SortFilesAndDirectories(CFilesArray* files, CFilesArray* dirs, CSortType sortType, BOOL reverseSort, BOOL sortDirsByName)
 {
     CALL_STACK_MESSAGE1("SortDirectoryAux()");
@@ -1717,7 +1717,7 @@ BOOL IsWin64RedirectedDirAux(const char* subDir, const char* redirectedDir, cons
             if (h != INVALID_HANDLE_VALUE)
             {
                 HANDLES(FindClose(h));
-                return FALSE; // this is not just a pseudo-directory, there is a directory with the same name, which means that e.g. the context menu will work more or less normally
+                return FALSE; // this is not just a pseudo-directory; a directory with the same name exists there, which means that, for example, the context menu will work almost normally
             }
         }
 
@@ -1806,7 +1806,7 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
             if (StrICmp(dirs->At(i).Name, redirectedDirLastComp) == 0)
             {
                 if (dirs->At(i).IsLink)
-                    return FALSE; // this redirected-dir has already been added
+                    return FALSE; // this redirected directory has already been added
                 deleteIndex = i;
                 break;
             }
@@ -1838,7 +1838,7 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
                     lstrcpyn(fileData->cFileName, redirectedDirLastComp, MAX_PATH);
                     fileData->cAlternateFileName[0] = 0;
 
-                    if (CutDirectory(findPath)) // find out if there's a directory with the same name as redirected-dir on the disk (it does not need to be in the 'dirs' array, e.g. because of the command "Hide Selected Names")
+                    if (CutDirectory(findPath)) // Check whether a directory with the same name as redirected-dir exists on disk (it may not be in the 'dirs' array, e.g. due to the "Hide Selected Names" command)
                     {
                         WIN32_FIND_DATA fd;
                         h = HANDLES_Q(FindFirstFile(findPath, &fd));
@@ -1963,7 +1963,7 @@ CHANGE_AGAIN:
                         EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    return FALSE; // cannot retry, stop here
+                    return FALSE; // cannot retry, returning failure
                 }
                 goto CHANGE_AGAIN;
             }
@@ -1996,7 +1996,7 @@ CHANGE_AGAIN:
                 // which would be able to list the path (so that a new FS is not opened unnecessarily)
                 int fsNameIndexDummy;
                 BOOL convertPathToInternalDummy = FALSE;
-                if (!Is(ptPluginFS) || // FS interface in the panel cannot list the path (ChangePathToPluginFS opens a new FS)
+                if (!Is(ptPluginFS) || // the panel's FS interface cannot display this path (ChangePathToPluginFS opens a new FS)
                     !IsPathFromActiveFS(fsName, fsUserPart, fsNameIndexDummy, convertPathToInternalDummy))
                 {
                     CDetachedFSList* list = MainWindow->DetachedFSList;
@@ -2059,7 +2059,7 @@ CHANGE_AGAIN:
                         EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = CHPPFR_INVALIDPATH;
-                    return FALSE; // Stop here; retry is not possible
+                    return FALSE; // Cannot continue; retry is not possible
                 }
                 goto CHANGE_AGAIN;
             }
@@ -2181,7 +2181,7 @@ CHANGE_AGAIN:
                             EndStopRefresh(); // snooper will be started again
                         if (failReason != NULL)
                             *failReason = CHPPFR_INVALIDPATH;
-                        return FALSE; // stopping here, cannot retry
+                        return FALSE; // stop here, cannot retry
                     }
                     goto CHANGE_AGAIN;
                 }
@@ -2235,7 +2235,7 @@ CHANGE_AGAIN:
                             err = GetLastError();
                             if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND &&
                                 err != ERROR_BAD_PATHNAME && err != ERROR_INVALID_NAME)
-                            { // if there is a chance that the path contains a directory we cannot access (try whether later path components are accessible)
+                            { // If the path may contain a directory we cannot access (try whether later path components are accessible)
                                 DWORD firstErr = err;
                                 char* firstCopyEnd = st + strlen(st);
                                 while (*end != 0)
@@ -2246,7 +2246,7 @@ CHANGE_AGAIN:
                                     memcpy(st, s, end - s);
                                     st[end - s] = 0;
                                     s = end;
-                                    if ((int)strlen(copy) >= MAX_PATH) // path is too long, stop
+                                    if ((int)strlen(copy) >= MAX_PATH) // Path is too long, abort.
                                     {
                                         h = INVALID_HANDLE_VALUE;
                                         break;
@@ -2255,11 +2255,11 @@ CHANGE_AGAIN:
                                     {
                                         h = HANDLES_Q(FindFirstFile(copy, &find));
                                         if (h != INVALID_HANDLE_VALUE)
-                                            break; // accessible component found, continue
+                                            break; // found an accessible component, continue
                                         err = GetLastError();
                                         if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND ||
                                             err == ERROR_BAD_PATHNAME || err == ERROR_INVALID_NAME)
-                                            break; // error in the path, stopping...
+                                            break; // path error, stopping...
                                     }
                                 }
                                 if (*end == 0 && h == INVALID_HANDLE_VALUE) // no other accessible component found; try listing the current path
@@ -2361,7 +2361,7 @@ CHANGE_AGAIN:
                                     char* name;
                                     char shortenedPath[MAX_PATH];
                                     strcpy(shortenedPath, copy);
-                                    if (*end == 0 && CutDirectory(shortenedPath, &name)) // if the path does not end with '\\' (path to a file)
+                                    if (*end == 0 && CutDirectory(shortenedPath, &name)) // if the path does not end with '\\' (it is a file path)
                                     {
                                         // change of the path to absolute windows path + focus to the file
                                         ChangePathToDisk(HWindow, shortenedPath, -1, name, NULL, TRUE, FALSE, FALSE, failReason);
@@ -2369,7 +2369,7 @@ CHANGE_AGAIN:
                                             EndStopRefresh(); // snooper will be started again
                                         if (failReason != NULL && *failReason == CHPPFR_SUCCESS)
                                             *failReason = CHPPFR_FILENAMEFOCUSED;
-                                        return FALSE; // list a different path (without the file name)
+                                        return FALSE; // browse a different path (without the file name)
                                     }
                                     else
                                     {
@@ -2458,7 +2458,7 @@ CHANGE_AGAIN:
                         EndStopRefresh(); // snopper will be started again
                     if (failReason != NULL)
                         *failReason = textFailReason;
-                    return FALSE; // stop here, cannot retry
+                    return FALSE; // Stop here; cannot retry.
                 }
                 goto CHANGE_AGAIN;
             }
@@ -2633,7 +2633,7 @@ void CFilesWindow::ChangeDrive(char drive)
                 }
             }
 
-            if (ifaceForFS != NULL) // post-cmd from the context menu of the active/detached FS
+            if (ifaceForFS != NULL) // post-cmd from the context menu of the active or detached FS
             {
                 ifaceForFS->ExecuteChangeDrivePostCommand(PANEL_SOURCE, postCmd, postCmdParam);
             }
