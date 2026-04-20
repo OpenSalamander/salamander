@@ -194,13 +194,13 @@ struct CConfiguration
         SortNewerOnTop,         // show newer items first -- Salamander 2.0 behavior
         SortDirsByName,         // sort directories by name
         SortDirsByExt,          // emulate extensions for directories (sort by extension + show in separated Ext column)
-        SaveHistory,            // store history in the configuration?
+        SaveHistory,            // store histories into the configuration?
         SaveWorkDirs,           // store the List of Working Directories?
         EnableCmdLineHistory,   // keep history of the command line?
         SaveCmdLineHistory,     // store the command line history?
         OnlyOneInstance,        // allow just a single instance
         ForceOnlyOneInstance,   // set from cmdline: Salamander should behave as if the OnlyOneInstance option is enabled
-        StatusArea,             // Salamander stays in the tray and does not appear in the taskbar when minimized
+        StatusArea,             // Salamander lives in the tray and won't appear in the taskbar when minimized
         SingleClick,            // single click selects an item
         TopToolBarVisible,      // toolbar visibility
         PluginsBarVisible,      // toolbar visibility
@@ -213,8 +213,8 @@ struct CConfiguration
         UseSalOpen,             // should salopen.exe be used (otherwise association runs directly)
         NetwareFastDirMove,     // should fast-dir-move (rename directories) be used on the Novell Netware? (otherwise rename files only, directories are created + old empty ones deleted) (REASON: for some users, fast-dir-move works on Novell and they don’t want to wait)
         UseAsyncCopyAlg,        // Win7+ only (older OS: always FALSE): should asynchronous file copy algorithm be used on network drives?
-        ReloadEnvVariables,     // Regenerate when environment variables change?
-        QuickRenameSelectAll,   // Quick Rename/Pack selects everything, not just the name
+        ReloadEnvVariables,     // should we perform regeneration when environment variables change??
+        QuickRenameSelectAll,   // Quick Rename/Pack selects everything (not just the name) (users disliked the new selection)
         EditNewSelectAll,       // EditNew should select everything (not just the name). users requested a separate option because some always create .TXT (and are fine with overwriting just the name) while others use different extensions and want to overwrite the entire filename
         ShiftForHotPaths,       // use Shift+1..0 for go to hot path?
         IconSpacingVert,        // vertical spacing in points between Icons/Thumbnails in the panel
