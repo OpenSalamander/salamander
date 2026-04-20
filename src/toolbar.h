@@ -132,7 +132,7 @@ public:
     virtual void WINAPI SetHotImageList(HIMAGELIST hImageList);
     virtual HIMAGELIST WINAPI GetHotImageList();
 
-    // Toolbar style accessors.
+    // Toolbar style
     virtual void WINAPI SetStyle(DWORD style);
     virtual DWORD WINAPI GetStyle();
 
@@ -141,7 +141,7 @@ public:
 
     virtual int WINAPI GetItemCount() { return Items.Count; }
 
-    // Opens the configuration dialog.
+    // Opens the Customize dialog.
     virtual void WINAPI Customize();
 
     virtual void WINAPI SetPadding(const TOOLBAR_PADDING* padding);
@@ -155,10 +155,10 @@ public:
     // otherwise returns a negative value.
     virtual int WINAPI HitTest(int xPos, int yPos);
 
-    // Returns TRUE if the point lies on an item boundary; in that case it sets 'index'
-    // to that item and the 'after' flag to indicate whether it is the left or right side.
-    // Returns FALSE if the point lies over an item. If the point does not lie over any item,
-    // it returns TRUE and sets 'index' to -1.
+    // Returns TRUE if the point lies on an item boundary; in that case, it sets 'index'
+    // to that item and the 'after' flag to indicate whether the insertion mark is before or
+    // after it. Returns FALSE if the point lies over an item. If the point does not lie over
+    // any item, it returns TRUE and sets 'index' to -1.
     virtual BOOL WINAPI InsertMarkHitTest(int xPos, int yPos, int& index, BOOL& after);
 
     // Sets the insert mark to the given index (before or after).
