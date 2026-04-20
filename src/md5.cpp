@@ -56,12 +56,12 @@ void MD5::update(uint1* input, uint4 input_length)
              input_index += 64)
             transform(input + input_index);
 
-        buffer_index = 0; // so we can buffer remaining
+        buffer_index = 0; // so we can buffer the remaining input
     }
     else
         input_index = 0; // so we can buffer the whole input
 
-    // and here we do the buffering:
+    // Buffer the input here:
     memcpy(buffer + buffer_index, input + input_index, input_length - input_index);
 }
 
