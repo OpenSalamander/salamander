@@ -44,15 +44,16 @@ BOOL PostMouseWheelMessage(MSG* pMSG);
 // Can be called from any thread.
 BOOL SalamanderIsNotBusy(DWORD* lastIdleTime);
 
-// opens Salamander or plugin HTML help. The help language (directory with .chm files) is selected as follows:
+// Opens Salamander or plugin HTML Help. The help language (the directory with .chm files) is selected as follows:
 // - directory from the current Salamander .slg file (see SLGHelpDir in shared\versinfo.rc)
 // - HELP\ENGLISH\*.chm
 // - first subdirectory found in HELP
-// 'helpFileName' is the .chm file name to use (without path); if NULL, "salamand.chm" is used.
-// 'parent' is the parent of the error message box; 'command' is the HTML Help command (HHCDisplayXXX);
-// 'dwData' is the parameter of the HTML Help command. Can be called from any thread.
+// 'helpFileName' is the .chm file name to use (without a path); if NULL, "salamand.chm" is used.
+// 'parent' is the parent window for the error message box; 'command' is the HTML Help command,
+// see HHCDisplayXXX; 'dwData' is the HTML Help command parameter, see HHCDisplayXXX
+// Can be called from any thread.
 // If 'quiet' is TRUE, no error message is shown.
-// Returns TRUE if the help was opened successfully, otherwise FALSE.
+// Returns TRUE if the help was opened successfully; otherwise returns FALSE.
 BOOL OpenHtmlHelp(char* helpFileName, HWND parent, CHtmlHelpCommand command, DWORD_PTR dwData, BOOL quiet);
 
 extern CRITICAL_SECTION OpenHtmlHelpCS; // critical section used by OpenHtmlHelp()
@@ -92,10 +93,10 @@ public:
     }
 };
 
-// Windows GetTempFileName does not work for us, so we wrote our own clone:
+// Because Windows GetTempFileName does not work correctly, this function is our own clone:
 // creates a file/directory (depending on 'file') at 'path' (NULL -> Windows TEMP dir),
-// with prefix 'prefix', returns the created name in 'tmpName' (at least MAX_PATH in size).
-// Returns success status; on failure SetLastError contains the Windows error code for compatibility.
+// with prefix 'prefix', returns the created name in 'tmpName' (minimum buffer size MAX_PATH),
+// and returns success status; on failure, SetLastError contains the Windows error code for compatibility.
 BOOL SalGetTempFileName(const char* path, const char* prefix, char* tmpName, BOOL file);
 
 // Windows MoveFile cannot rename a file with the read-only attribute on Novell volumes,
@@ -111,15 +112,17 @@ BOOL SalGetFileSize2(const char* fileName, CQuadWord& size, DWORD* err); // 'err
 
 struct COperation;
 
-// Finds the size of the file pointed to by the symlink 'fileName'. If 'op' is not NULL
-// and the operation is canceled the structure is released. If 'fileName' is NULL,
-// 'op->SourceName' is used instead. The size is returned in 'size'. 'ignoreAll' works as
-// both input and output; set it to FALSE before the call or the error dialog will never
-// appear. On error the standard Retry/Ignore/Ignore All/Cancel dialog with the parent
-// window 'parent' is shown. When Ignore or Ignore All is pressed the function returns
-// FALSE and 'cancel' receives FALSE.
-// If 'ignoreAll' is TRUE the dialog is skipped and behaves as if the user had clicked
-// Ignore; when Cancel is pressed the function returns FALSE and 'cancel' receives TRUE
+// Determines the size of the file pointed to by the symlink 'fileName'. If 'op' is not
+// NULL, the contents of 'op' are released on Cancel. If 'fileName' is NULL,
+// 'op->SourceName' is used. The size is returned in 'size'. 'ignoreAll' is both input
+// and output; if it is TRUE, all errors are ignored. Set it to FALSE before the
+// operation, otherwise the error dialog is not shown at all, and do not change it
+// afterwards. On error, the standard Retry / Ignore / Ignore All / Cancel dialog with
+// parent 'parent' is shown. Returns TRUE if the size is determined successfully. On
+// error, if Ignore or Ignore All is chosen, returns FALSE and stores FALSE in 'cancel'.
+// If 'ignoreAll' is TRUE, the dialog is not shown and the function behaves as if the
+// user had pressed Ignore. On error, if Cancel is chosen, returns FALSE and stores TRUE
+// in 'cancel'.
 BOOL GetLinkTgtFileSize(HWND parent, const char* fileName, COperation* op, CQuadWord* size,
                         BOOL* cancel, BOOL* ignoreAll);
 
@@ -185,8 +188,8 @@ HANDLE SalCreateFileEx(const char* fileName, DWORD desiredAccess,
 // space or ends with a dot the function returns TRUE; otherwise FALSE
 BOOL FileNameInvalidForManualCreate(const char* path);
 
-// Trims spaces from the beginning and end of the name (CutWS or StripWS or CutWhiteSpace or StripWhiteSpace)
-// Returns TRUE if trimming occurred
+// Trims spaces from the beginning and end of the path (CutWS or StripWS or CutWhiteSpace or StripWhiteSpace)
+// Returns TRUE if any trimming occurred
 BOOL CutSpacesFromBothSides(char* path);
 
 // Trims leading spaces and trailing spaces or dots in the same way Explorer does
@@ -223,7 +226,7 @@ BOOL SalCreateDirectoryEx(const char* name, DWORD* err);
 
 void InitLocales();                                       // must be called before NumberToStr and PrintDiskSize
 char* NumberToStr(char* buffer, const CQuadWord& number); // converts integer to a more readable string, !char buffer[50]!
-int NumberToStr2(char* buffer, const CQuadWord& number);  // converts integer to a readable string, !char buffer[50]!, returns number of characters copied to the buffer
+int NumberToStr2(char* buffer, const CQuadWord& number);  // converts an integer to a more readable string, !char buffer[50]!, returns the number of characters written to the buffer
 char* GetErrorText(DWORD error);                          // converts error code to a string
 WCHAR* GetErrorTextW(DWORD error);                        // converts error code to a wide string
 BOOL IsDirError(DWORD err);                               // does the error relate to directories?
@@ -246,8 +249,8 @@ BOOL PathsAreOnTheSameVolume(const char* path1, const char* path2, BOOL* resIsOn
 // compares two paths: case-insensitive and ignoring a single backslash at the start and end
 BOOL IsTheSamePath(const char* path1, const char* path2);
 
-// determines whether 'path' is a plugin FS path; 'path' is the path to check,
-// 'fsName' is a MAX_PATH buffer for the FS name (or NULL); stores in 'userPart'
+// Determines whether 'path' is a plugin FS path; 'path' is the path to check,
+// 'fsName' is a MAX_PATH buffer for the FS name (or NULL); returns in 'userPart'
 // (if not NULL) a pointer into 'path' to the first character of the plugin-defined path (after the first ':')
 BOOL IsPluginFSPath(const char* path, char* fsName = NULL, const char** userPart = NULL);
 BOOL IsPluginFSPath(char* path, char* fsName = NULL, char** userPart = NULL);
@@ -270,9 +273,10 @@ int GetRootPath(char* root, const char* path);
 // UNC or standard path
 const char* SkipRoot(const char* path);
 
-// returns TRUE if 'path' (UNC or standard) can be shortened by removing the last
-// directory. The last backslash remains only for paths like "c:\". If 'cutDir' is
-// not NULL it receives a pointer to the removed directory
+// returns TRUE if `path` (UNC or regular path) can be shortened by removing the last
+// directory (cut at the last backslash; the shortened path retains a trailing backslash
+// only for paths like "c:\"), `cutDir` returns a pointer to the last directory
+// (the removed part)
 // replacement for PathRemoveFileSpec
 BOOL CutDirectory(char* path, char** cutDir = NULL);
 
@@ -335,16 +339,16 @@ BOOL SalPathIsPrefix(const char* prefix, const char* path);
 BOOL SalRemovePointsFromPath(char* afterRoot);
 BOOL SalRemovePointsFromPath(WCHAR* afterRoot);
 
-// Converts a relative or absolute path to an absolute one without '.', '..', or a trailing
-// backslash (except "X:\"); if 'curDir' is NULL, relative paths such as "\\path" and "path"
-// are reported as errors (they are indeterminate); otherwise 'curDir' must be a valid adjusted
+// Converts a relative or absolute path to an absolute path without '.', '..', or a trailing
+// backslash (except for "X:\"); if 'curDir' is NULL, relative paths such as "\\path" and "path"
+// return an error (they cannot be resolved); otherwise, 'curDir' must be a valid normalized
 // current path (UNC or regular); current paths of other drives (except 'curDir'; regular only,
 // not UNC) are in DefaultDir (it is advisable to call CMainWindow::UpdateDefaultDir before use);
 // 'name' is an in/out buffer of at least MAX_PATH characters (its size is in 'nameBufSize');
 // if 'nextFocus' is not NULL and the specified relative path contains no backslash,
 // strcpy(nextFocus, name) is called
-// Returns TRUE - the name in 'name' is ready for use; otherwise, if 'errTextID' is not NULL it
-// contains the error (constants for LoadStr - IDS_SERVERNAMEMISSING, IDS_SHARENAMEMISSING,
+// Returns TRUE: the name in 'name' is ready for use; otherwise, if 'errTextID' is not NULL, it
+// contains the error (constants for LoadStr: IDS_SERVERNAMEMISSING, IDS_SHARENAMEMISSING,
 // IDS_TOOLONGPATH, IDS_INVALIDDRIVE, IDS_INCOMLETEFILENAME, IDS_EMPTYNAMENOTALLOWED, and
 // IDS_PATHISINVALID); TRUE is returned in 'callNethood' (if not NULL) if the Nethood plugin should
 // be called for IDS_SERVERNAMEMISSING and IDS_SHARENAMEMISSING; if 'allowRelPathWithSpaces' is
@@ -384,33 +388,43 @@ BOOL SalCheckAndRestorePath(HWND parent, const char* path, BOOL tryNet);
 BOOL SalCheckAndRestorePathWithCut(HWND parent, char* path, BOOL& tryNet, DWORD& err, DWORD& lastErr,
                                    BOOL& pathInvalid, BOOL& cut, BOOL donotReconnect);
 
-// Detects the path type (FS, Windows, or archive) and splits it into parts.
-// For FS paths this means fs-name and user part, for archives the path to the
-// archive file and the path inside it, and for Windows paths the existing part
-// and the remainder. FS paths are not validated; Windows paths are checked for
-// how far they exist (and network connections are restored if needed). Archive
-// paths check for file existence based on extension. Because SalGetFullName is
-// used, CMainWindow::UpdateDefaultDir should be called beforehand.
+// Detects the path type (FS/Windows/archive) and splits it into parts.
+// For FS paths, this means the file-system name and user part; for archive
+// paths, the path to the archive file and the path inside the archive; for
+// Windows paths, the existing part and the remainder of the path. FS paths are
+// not checked; Windows paths (normal and UNC) are checked for how far the path
+// exists, and the network connection is restored if needed. For archive paths,
+// the existence of the archive file is checked (archives are distinguished by
+// extension). This function uses SalGetFullName, so it is advisable to call
+// CMainWindow::UpdateDefaultDir first.
 // 'path' is a full or relative path (buffer of at least 'pathBufSize' chars; for
-// relative paths the current directory 'curPath' is used as the base). If the
-// current path is an archive, 'curArchivePath' holds its file name. The resolved
-// full path is stored back to 'path'. On success TRUE is returned, 'type' holds
-// the path type (PATH_TYPE_XXX) and 'secondPart' points to:
-// - in Windows paths: the location after the existing portion (after '\\' or at
-//   end; if a file is present it points after the file name). Length is not
-//   checked (may exceed MAX_PATH).
-// - in archive paths: after the archive file name (length may exceed MAX_PATH).
-// - in FS paths: after ':' following the file-system name; length of the user
-//   part is not checked.
-// When TRUE is returned, 'isDir' is additionally set to:
-// - TRUE if the existing portion is a directory, FALSE if it is a file (Windows
-//   path type)
-// - FALSE for archive and FS paths.
-// If FALSE is returned, an error message has already been shown to the user
-// (except for SPP_INCOMLETEPATH). If 'error' is not NULL, one of the SPP_XXX
-// constants is stored there. 'errorTitle' is the title of the error message box.
-// When 'nextFocus' is not NULL and the path does not contain '\\' or ends with
-// '\\', the path is copied into 'nextFocus' (see SalGetFullName).
+// relative paths, the current path 'curPath' is used as the base for resolving
+// the full path, if it is not NULL; 'curPathIsDiskOrArchive' is TRUE if
+// 'curPath' is a Windows or archive path; if the current path is an archive
+// path, 'curArchivePath' contains the archive file name, otherwise it is NULL).
+// The resulting full path is stored in 'path' (which must be at least
+// 'pathBufSize' chars long). Returns TRUE on successful recognition; then
+// 'type' is the path type (see PATH_TYPE_XXX) and 'secondPart' is set to:
+// - in 'path', at the position after the existing path (after '\\' or at the
+//   end of the string; if the path contains a file, it points past the path to
+//   that file) (Windows path type); WARNING: the length of the returned part of
+//   the path is not handled (the whole path may be longer than MAX_PATH)
+// - after the archive file (archive path type); WARNING: the length of the path
+//   inside the archive is not handled (it may be longer than MAX_PATH)
+// - after ':' following the file-system name, i.e. to the user part of the
+//   file-system path (FS path type); WARNING: the length of the user part is
+//   not handled (it may be longer than MAX_PATH);
+// if TRUE is returned, 'isDir' is also set to:
+// - TRUE if the existing part of the path is a directory, FALSE if it is a file
+//   (Windows path type)
+// - FALSE for archive and FS paths;
+// if FALSE is returned, an error that occurred during recognition has already
+// been shown to the user (with one exception; see the description of
+// SPP_INCOMLETEPATH); if 'error' is not NULL, one of the SPP_XXX constants is
+// returned in it. 'errorTitle' is the title of the error message box; if
+// 'nextFocus' != NULL and the Windows/archive path does not contain '\\' or
+// only ends with '\\', the path is copied to 'nextFocus' (see
+// SalGetFullName).
 BOOL SalParsePath(HWND parent, char* path, int& type, BOOL& isDir, char*& secondPart,
                   const char* errorTitle, char* nextFocus, BOOL curPathIsDiskOrArchive,
                   const char* curPath, const char* curArchivePath, int* error,
@@ -435,33 +449,26 @@ BOOL SalSplitWindowsPath(HWND parent, const char* title, const char* errorTitle,
                          char* path, char* secondPart, BOOL pathIsDir, BOOL backslashAtEnd,
                          const char* dirName, const char* curDiskPath, char*& mask);
 
-// Retrieves the existing portion and the operation mask from the target path;
-// recognizes any non-existent part. On success returns TRUE, the relative path
-// to create (in 'newDirs'), the existing target path (in 'path'; valid only if
-// the relative path will be created) and the found operation mask (in 'mask'
-// pointing into the 'path' buffer; the path and mask are separated by a zero. If
-// the path contains no mask, "*.*" is generated automatically). 'parent' is the
-// parent of message boxes; 'title' + 'errorTitle' are their captions;
-// 'selCount' is the number of selected files and directories. 'path' is the
-// input target path and on output (at least 2 * MAX_PATH characters) it holds
-// the existing target path (always ending with a backslash). 'afterRoot' points
-// inside 'path' just after the root (after '\\' or at the end). 'secondPart'
-// points inside 'path' just after the existing portion (after '\\' or at the
-// end; if a file is present it points after that file). 'pathIsDir' is TRUE or
-// FALSE depending on whether the existing part is a directory or a file.
-// 'backslashAtEnd' is TRUE if there was a backslash at the end of 'path' before
-// parsing (SalParsePath removes such a backslash). 'dirName' and 'curPath' are
-// non-NULL when at most one file/directory is selected-its name without the path
-// is stored in 'dirName' and its path in 'curPath'; if nothing is selected the
-// focused item is used. 'mask' receives the operation mask pointer inside
-// 'path'. When 'newDirs' is not NULL it is a buffer (at least MAX_PATH) for the
-// relative path (with respect to the existing path in 'path') that must be
-// created (the user agreed to create it using the same prompt as for disk to
-// disk copy; empty string means create nothing). If 'newDirs' is NULL and a
-// relative path needs to be created but cannot be, only an error is shown.
-// 'isTheSamePathF' is a comparison function for two paths (used only when
-// 'curPath' is not NULL; otherwise IsTheSamePath is used). The method returns
-// FALSE on error and the user has already been notified
+// Retrieves the existing part of the target path and the operation mask; also recognizes any non-existent part. On
+// success, returns TRUE, the relative path to create (in 'newDirs'), the existing target path (in 'path'; valid only
+// if the relative path 'newDirs' is created), and the found operation mask (in 'mask', which points into the 'path'
+// buffer, with the path and mask separated by a zero; if the path contains no mask, the mask "*.*" is created
+// automatically). 'parent' is the parent of any message boxes; 'title' and 'errorTitle' are the captions of the
+// information and error message boxes; 'selCount' is the number of selected files and directories; 'path' is the
+// target path to process on input and, on output (at least 2 * MAX_PATH characters), the existing target path (always
+// ending with a backslash); 'afterRoot' points into 'path' past the path root (past '\\' or to the end of the
+// string); 'secondPart' points into 'path' to the position after the existing path (past '\\' or to the end of the
+// string; if the path contains a file, it points past the path to that file); 'pathIsDir' is TRUE/FALSE if the
+// existing part of the path is a directory/file; 'backslashAtEnd' is TRUE if 'path' ended with a backslash before
+// parsing (for example, SalParsePath removes such a backslash); 'dirName' and 'curPath' are non-NULL if at most one
+// file/directory is selected (its name without the path is in 'dirName'; its path is in 'curPath'; if nothing is
+// selected, the focused item is used); 'mask' receives a pointer to the operation mask in the 'path' buffer; if
+// 'newDirs' is not NULL, it is a buffer (of size at least MAX_PATH) for the relative path (with respect to the
+// existing path in 'path') that must be created (the user agrees to create it; the same prompt is used as when copying
+// from disk to disk; an empty string means create nothing); if 'newDirs' is NULL and some relative path needs to be
+// created, only an error is reported; 'isTheSamePathF' is a function for comparing two paths (needed only if 'curPath'
+// is not NULL); if it is NULL, IsTheSamePath is used; if the path contains an error, the method returns FALSE and the
+// problem has already been reported to the user
 BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle, int selCount,
                          char* path, char* afterRoot, char* secondPart, BOOL pathIsDir, BOOL backslashAtEnd,
                          const char* dirName, const char* curPath, char*& mask, char* newDirs,
@@ -474,8 +481,8 @@ BOOL SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
 BOOL SalIsValidFileNameComponent(const char* fileNameComponent);
 
 // transforms 'fileNameComponent' so it can be used as a Windows file name
-// component (handles strings longer than MAX_PATH-4 (4 = "C:\" + null terminator),
-// empty strings, strings of '.', whitespace-only strings; characters "*?\\/<>|:"
+// component (handles strings longer than MAX_PATH-4 (4 = "C:\\" + null terminator),
+// empty strings, strings of '.', whitespace-only strings; characters "*?\\/<>|\":"
 // are replaced with '_'; simple names like "prn" and "prn  .txt" get an '_'
 // appended at the end of the name); 'fileNameComponent' must be extendable by at
 // least one character (but at most MAX_PATH bytes of 'fileNameComponent' are used)
@@ -552,7 +559,7 @@ void GetAttrsString(char* text, DWORD attrs);
 // possible from both strings are kept.
 void AddStrToStr(char* dstStr, int dstBufSize, const char* srcStr);
 
-// Creates an allocated full file name. If 'dosName' is not NULL and
+// Creates and returns an allocated full file name. If 'dosName' is not NULL and
 // 'path'+'name' is too long, it tries 'path'+'dosName'. If 'skip', 'skipAll',
 // and 'sourcePath' are not NULL and a "name too long" error occurs, the user
 // can skip this name (the function then returns NULL and sets 'skip' to TRUE).
@@ -578,15 +585,15 @@ BOOL InitializeCheckThread(); // initializes the thread used by CFilesWindow::Ch
 void ReleaseCheckThreads();   // releases the thread used by CFilesWindow::CheckPath()
 void InitDefaultDir();        // initializes the DefaultDir array (last visited paths for all drives)
 
-// shows or hides a message window in its own thread without draining the
-// message queue; only one message can be displayed at a time. Repeated calls
-// report an error in TRACE (non-fatal). 'delay' is the wait time before the
-// window is opened (counted from the call to CreateSafeWaitWindow).
-// 'message' may span multiple lines separated by '\n'. If 'caption' is NULL the
-// default caption "Open Salamander" is used.
-// 'showCloseButton' determines whether the window has a Close button.
-// 'hForegroundWnd' designates the window that must stay active for the wait window
-// to be shown and which is activated when clicking the wait window
+// shows or hides a message in its own thread without draining the message
+// queue; only one message can be displayed at a time. Repeated calls report
+// an error to TRACE (non-fatal). 'delay' is the delay before the window is
+// opened (counted from the call to CreateSafeWaitWindow).
+// 'message' may span multiple lines; individual lines are separated by '\n'.
+// 'caption' may be NULL; in that case, the caption "Open Salamander" is used.
+// 'showCloseButton' specifies whether the window contains a Close button.
+// 'hForegroundWnd' specifies the window that must be active for the wait window
+// to be shown and the window that will be activated when the wait window is clicked.
 void CreateSafeWaitWindow(const char* message, const char* caption, int delay,
                           BOOL showCloseButton, HWND hForegroundWnd);
 void DestroySafeWaitWindow(BOOL killThread = FALSE);
@@ -606,7 +613,7 @@ void ShowSafeWaitWindow(BOOL show);
 // after calling CreateSafeWaitWindow or ShowSafeWaitWindow the function returns
 // FALSE until the user clicks the Close button (if shown); then it returns TRUE
 BOOL GetSafeWaitWindowClosePressed();
-// returns TRUE if the user presses ESC or clicks the Close button
+// returns TRUE if the user is pressing ESC or clicked the Close button
 BOOL UserWantsToCancelSafeWaitWindow();
 // Used to change the message text later. NOTE: the window layout is not
 // recomputed; if the text grows it will be truncated. Useful for countdowns
@@ -782,8 +789,8 @@ BOOL CanUseShellExecuteWndAsParent(const char* cmdName);
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/dn323738%28v=vs.85%29.aspx
 BOOL IsFilePlaceholder(WIN32_FIND_DATA const* findData);
 
-// before opening an editor or viewer the placeholder is converted to an offline file
-// so that the viewer/editor can handle it
+// before opening the editor or viewer, the placeholder is converted to an offline file
+// so that the viewer/editor can work with it
 //BOOL MakeFileAvailOfflineIfOneDriveOnWin81(HWND parent, const char *name);
 
 // sets the thread priority to normal and calls menu->InvokeCommand() in a try-except block;
@@ -872,8 +879,8 @@ void RestoreApp(HWND mainWnd, HWND dlgWnd); // restore from minimized state
                                             // adjusts the name format (letter case), filename must be null-terminated
 void AlterFileName(char* tgtName, char* filename, int filenameLen, int format, int change, BOOL dir);
 
-// returns a string with size and times of the file; 'fileTime' receives the time (may be NULL);
-// if 'getTimeFailed' is not NULL it is set to TRUE on failure to obtain the file time
+// returns a string with the file size and times; 'fileTime' receives the time (may be NULL);
+// if 'getTimeFailed' is not NULL, it is set to TRUE on failure to obtain the file time
 void GetFileOverwriteInfo(char* buff, int buffLen, HANDLE file, const char* fileName, FILETIME* fileTime = NULL, BOOL* getTimeFailed = NULL);
 
 void ColorsChanged(BOOL refresh, BOOL colorsOnly, BOOL reloadUMIcons);                // call after color change
@@ -987,13 +994,14 @@ void GetMessagePos(POINT& p);
 // The caller is responsible for destroying the icon. The icon is assigned to HANDLES.
 HICON GetFileOrPathIconAux(const char* path, BOOL large, BOOL isDir);
 
-// If the UNC root is inaccessible (for listing), tries to establish a network
-// connection, asking the user for credentials if needed. Returns TRUE when the
-// connection succeeded. Returns FALSE if the path is not UNC, the root is
-// accessible, or the connection attempt failed. In 'pathInvalid' returns TRUE
-// when the user cancelled the credentials dialog or the attempt failed (e.g.
-// "credentials conflict"). When 'donotReconnect' is TRUE no connection attempt
-// is made and FALSE is returned immediately.
+// If the UNC root of `UNCPath` is inaccessible (for listing), tries to establish a
+// network connection and prompts the user for credentials if needed. Returns TRUE
+// if the connection is established. Returns FALSE if `UNCPath` is not a UNC path,
+// if the UNC root is accessible, or if the connection could not be established. In
+// `pathInvalid`, returns TRUE if the user cancelled the credentials dialog or if
+// establishing the connection failed (e.g. "credentials conflict"). If
+// `donotReconnect` is TRUE, no network connection is attempted and FALSE is
+// returned immediately.
 BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathInvalid,
                                    BOOL donotReconnect);
 
@@ -1137,10 +1145,10 @@ struct COpenViewerData
 #define WM_USER_HELPHITTEST WM_APP + 172  // lResult = dwContext, lParam = MAKELONG(x,y)
 #define WM_USER_EXITHELPMODE WM_APP + 173 // [0, 0]
 
-#define WM_USER_POSTCMDORUNLOADPLUGIN WM_APP + 180 // [plug-in iface, 0, 1 or salCmd+2 or menuCmd+502] - sets ShouldUnload or ShouldRebuildMenu or adds salCmd/menuCmd to plugin data
-#define WM_USER_POSTMENUEXTCMD WM_APP + 181        // [plug-in iface, cmdID] - post a menu-ext command from a plugin
+#define WM_USER_POSTCMDORUNLOADPLUGIN WM_APP + 180 // [plugin iface, 0, 1 or salCmd+2 or menuCmd+502] - sets ShouldUnload or ShouldRebuildMenu or adds salCmd/menuCmd to plugin data
+#define WM_USER_POSTMENUEXTCMD WM_APP + 181        // [plugin iface, cmdID] - post a menu-ext command from a plugin
 
-#define WM_USER_SHOWPLUGINMSGBOX WM_APP + 185 // [0, 0] - open the plug-in message box above the Bug Report dialog
+#define WM_USER_SHOWPLUGINMSGBOX WM_APP + 185 // [0, 0] - open the plugin message box above the Bug Report dialog
 
 // commands for the main thread (cannot be run from another thread) - uses the
 // Find dialog (running in its own thread)
@@ -1409,7 +1417,7 @@ extern HFONT EnvFontUL;       // underlined list box font
 extern int EnvFontCharHeight; // font height
 extern HFONT TooltipFont;     // font for tooltips (and status bars, although we don't use it there)
 
-BOOL GetSystemGUIFont(LOGFONT* lf); // returns the font used for the main Salamander window
+BOOL GetSystemGUIFont(LOGFONT* lf); // retrieves the font used for the main Salamander window
 BOOL CreateEnvFonts();              // fills EnvFont, EnvFontUL, EnvFontCharHeight and TooltipFont based on system metrics
 
 extern DWORD MouseHoverTime; // how long before highlighting occurs
@@ -1420,7 +1428,7 @@ extern HBRUSH HSelectedBkBrush;      // background of the selected panel item
 extern HBRUSH HFocSelBkBrush;        // background of a focused and selected item
 extern HBRUSH HDialogBrush;          // dialog background fill
 extern HBRUSH HButtonTextBrush;      // button text
-extern HBRUSH HDitherBrush;          // 1-bit checkerboard; the color can be set via SetTextColor/SetBkColor
+extern HBRUSH HDitherBrush;          // 1-bit checkerboard pattern; the color can be set via SetTextColor/SetBkColor
 extern HBRUSH HActiveCaptionBrush;   // background of the active panel title
 extern HBRUSH HInactiveCaptionBrush; // background of the inactive panel title
 
@@ -1474,9 +1482,9 @@ enum CSymbolsImageListIndexes
 {
     symbolsExecutable,    // 0: exe/bat/pif/com
     symbolsDirectory,     // 1: dir
-    symbolsNonAssociated, // 2: unassociated file
+    symbolsNonAssociated, // 2: non-associated file
     symbolsAssociated,    // 3: associated file
-    symbolsUpDir,         // 4: up-dir ".."
+    symbolsUpDir,         // 4: parent directory ".."
     symbolsArchive,       // 5: archive
     symbolsCount          // TERMINATOR
 };
@@ -1675,7 +1683,7 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
                          DWORD state, CIconSizeEnum iconSize, DWORD iconOverlayIndex,
                          const RECT* overlayRect, BOOL overlayOnly, BOOL iconOverlayFromPlugin,
                          int pluginIconOverlaysCount, HICON* pluginIconOverlays);
-DWORD GetImageListColorFlags(); // returns the ILC_COLOR flag suitable for the current Windows version when using image lists in list views
+DWORD GetImageListColorFlags(); // returns the ILC_COLOR* flag for the current Windows version; tuned for using image lists in list views
 
 // The GetOpenFileName/GetSaveFileName APIs return FALSE and set
 // CommDlgExtendedError() to FNERR_INVALIDFILENAME when the file path in
@@ -1686,7 +1694,7 @@ BOOL SafeGetOpenFileName(LPOPENFILENAME lpofn);
 BOOL SafeGetSaveFileName(LPOPENFILENAME lpofn);
 
 extern char DecimalSeparator[5]; // characters (max. 4) obtained from the system
-extern int DecimalSeparatorLen;  // length in characters without the terminating zero
+extern int DecimalSeparatorLen;  // length in characters without the terminating null
 extern char ThousandsSeparator[5];
 extern int ThousandsSeparatorLen;
 
@@ -1699,7 +1707,7 @@ extern int MenuNewExceptionHasOccured; // has the New menu crashed already? (may
 extern int FGIExceptionHasOccured;     // has SHGetFileInfo crashed?
 extern int ICExceptionHasOccured;      // has InvokeCommand crashed?
 extern int QCMExceptionHasOccured;     // has QueryContextMenu crashed?
-extern int OCUExceptionHasOccured;     // has OleUninitialize or CoUninitialize crashed?
+extern int OCUExceptionHasOccured;     // has OleUninitialize or CoUninitialize failed?
 extern int GTDExceptionHasOccured;     // has GetTargetDirectory crashed?
 extern int SHLExceptionHasOccured;     // has something from ShellLib crashed?
 extern int RelExceptionHasOccured;     // has any IUnknown::Release() call crashed?
@@ -1736,8 +1744,8 @@ extern char WindowsDirectory[MAX_PATH]; // cached result of GetWindowsDirectory
 extern char RTCErrorDescription[RTC_ERROR_DESCRIPTION_SIZE];
 //#endif // MSVC_RUNTIME_CHECKS
 
-// path where we create the bug report and minidump: before Vista next to
-// salamand.exe, in Vista and later in CSIDL_APPDATA + "\\Open Salamander"
+// path where the bug report and minidump are created: before Vista, next to
+// salamand.exe; in Vista and later, in CSIDL_APPDATA + "\\Open Salamander"
 extern char BugReportPath[MAX_PATH];
 
 // name of the file that will be imported into the registry if it exists
@@ -1749,7 +1757,7 @@ extern HWND PluginMsgBoxParent;   // parent for plugin message boxes (main windo
 
 extern BOOL CriticalShutdown; // TRUE = "critical shutdown" in progress; no time to ask, exiting quickly, 5s until kill
 
-// "translation" of POSIX names to MS
+// "translation" of POSIX names to MS equivalents
 #define itoa _itoa
 #define stricmp _stricmp
 #define strnicmp _strnicmp
@@ -2184,23 +2192,26 @@ extern HANDLE FileNamesEnumDone;
 
 #define FILENAMESENUM_TIMEOUT 1000 // timeout for delivering WM_USER_ENUMFILENAMES to the source window
 
-// returns TRUE when the enumeration source is a panel and 'panel' receives
-// PANEL_LEFT or PANEL_RIGHT; returns FALSE if the source cannot be found or it
-// is a Find window
+// returns TRUE if the enumeration source is a panel; 'panel' then receives
+// PANEL_LEFT or PANEL_RIGHT. Returns FALSE if the enumeration source was not
+// found or if it is a Find window
 BOOL IsFileEnumSourcePanel(int srcUID, int* panel);
 
-// Retrieves the next file name for the viewer from the given source
-// (left/right panel or Find window). 'srcUID' uniquely identifies the source.
-// 'lastFileIndex' is an IN/OUT value used to track the current file and should
-// be set to -1 when requesting the first file. 'lastFileName' contains the full
-// name of the current file (empty if unknown). When 'preferSelected' is TRUE and
-// at least one name is selected, only selected names are returned. If
-// 'onlyAssociatedExtensions' is TRUE, only files associated with this plugin's
-// viewer are returned (ignoring other plugins). 'fileName' receives the next file
-// name (buffer size at least MAX_PATH). The function returns TRUE on success or
-// FALSE on error: no more names (if 'noMoreFiles' is not NULL it becomes TRUE),
-// the source is busy (if 'srcBusy' is not NULL it becomes TRUE), or the source no
-// longer exists (path or sorting changed).
+// Returns the next file name for the viewer from the source (left/right panel or Find window).
+// 'srcUID' is the unique identifier of the source (it is passed as a parameter when opening
+// the viewer). 'lastFileIndex' (must not be NULL) is an IN/OUT parameter that the plugin should
+// change only if it wants to return the first file name; in that case, set 'lastFileIndex'
+// to -1. The initial value of 'lastFileIndex' is passed as a parameter when opening the
+// viewer. 'lastFileName' is the full name of the current file (an empty string if it is not
+// known, for example if 'lastFileIndex' is -1). If 'preferSelected' is TRUE and at least one
+// name is selected, selected names are returned. If 'onlyAssociatedExtensions' is TRUE, only
+// files with an extension associated with this plugin's viewer are returned (pressing F3 on that
+// file would attempt to open this plugin's viewer, and possible shadowing by another plugin's
+// viewer is ignored). 'fileName' is the buffer for the retrieved name (size at least
+// MAX_PATH). Returns TRUE if the name is retrieved successfully. Returns FALSE on error: there
+// is no next file name in the source (if 'noMoreFiles' is not NULL, TRUE is returned in it),
+// the source is busy (it is not processing messages; if 'srcBusy' is not NULL, TRUE is returned
+// in it), or the source no longer exists (panel path changed, sorting changed, etc.).
 BOOL GetNextFileNameForViewer(int srcUID, int* lastFileIndex, const char* lastFileName,
                               BOOL preferSelected, BOOL onlyAssociatedExtensions,
                               char* fileName, BOOL* noMoreFiles, BOOL* srcBusy,
@@ -2225,11 +2236,16 @@ BOOL GetPreviousFileNameForViewer(int srcUID, int* lastFileIndex, const char* la
 BOOL IsFileNameForViewerSelected(int srcUID, int lastFileIndex, const char* lastFileName,
                                  BOOL* isFileSelected, BOOL* srcBusy);
 
-// Sets or clears the selection state of the current viewer file in the source
-// (left/right panel or Find window). Parameters match
-// IsFileNameForViewerSelected. Returns TRUE on success or FALSE if the source no
-// longer exists, the file is missing, or the source is busy. When FALSE is
-// returned 'srcBusy' indicates whether the source was busy.
+// Sets or clears the selection of the current file from the viewer in the source
+// (left/right panel or Find window); 'srcUID' is the unique identifier of the source
+// (passed as a parameter when opening the viewer); 'lastFileIndex' is a parameter that
+// the plugin should not modify, its initial value is passed as a parameter when opening
+// the viewer; 'lastFileName' is the full name of the current file; 'select' is TRUE/FALSE
+// depending on whether the current file should be selected/deselected; returns TRUE on
+// success; returns FALSE on error: the source no longer exists (panel path changed, etc.)
+// or the file 'lastFileName' is no longer in the source (for these two errors, if
+// 'srcBusy' is not NULL, FALSE is returned in it), or the source is busy (not processing
+// messages; for this error, if 'srcBusy' is not NULL, TRUE is returned in it).
 BOOL SetSelectionOnFileNameForViewer(int srcUID, int lastFileIndex, const char* lastFileName,
                                      BOOL select, BOOL* srcBusy);
 
@@ -2356,7 +2372,7 @@ HWND GetTopLevelParent(HWND hWindow);
 //******************************************************************************
 
 // variables used while saving the configuration during shutdown, logoff, or restart
-// we must pump messages so the system does not kill us as a "not responding" application
+// we must pump messages so the system does not terminate us as a "not responding" application
 class CWaitWindow;
 extern CWaitWindow* GlobalSaveWaitWindow; // if a global wait window for Save exists, it is stored here (otherwise NULL)
 extern int GlobalSaveWaitWindowProgress;  // current progress value of the global wait window for Save
@@ -2389,7 +2405,7 @@ void GetIfPathIsInaccessibleGoTo(char* path, BOOL forceIsMyDocs = FALSE);
 // loads icon overlay handler configuration from the registry
 void LoadIconOvrlsInfo(const char* root);
 
-// returns TRUE if the icon overlay handler is disabled (or if all icon overlay handlers are disabled)
+// returns TRUE if the icon overlay handler is disabled, or if custom icon overlays are disabled globally
 BOOL IsDisabledCustomIconOverlays(const char* name);
 
 // returns TRUE if the icon overlay handler is in the list of disabled icon overlay handlers
