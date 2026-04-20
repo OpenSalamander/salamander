@@ -75,7 +75,7 @@ protected:
     DWORD PictureFlags;
     BOOL ProcessTopDown;
 
-    CShrinkImage Shrinker; // Handles the actual image shrinking.
+    CShrinkImage Shrinker; // Handles image shrinking.
     BOOL ShrinkImage;
 
 public:
