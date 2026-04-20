@@ -678,7 +678,7 @@ void CToolBar::DrawAllItems(HDC hDC)
         return;
     }
     if (Refresh())
-        return; // If everything was redrawn, nothing more to do.
+        return; // If everything was redrawn, nothing more needs to be done.
 
     BOOL vertical = (Style & TLB_STYLE_VERTICAL) != 0;
 
