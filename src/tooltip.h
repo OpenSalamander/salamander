@@ -55,7 +55,7 @@ protected:
     POINT LastCursorPos;
     BOOL IsModal;     // is our message loop running right now?
     BOOL ExitASAP;    // close as soon as possible and stop being modal
-    UINT_PTR TimerID; // returned from SetTimer, we need it for KillTimer
+    UINT_PTR TimerID; // returned by SetTimer; needed for KillTimer
 
 public:
     CToolTip(CObjectOrigin origin = ooStatic);
