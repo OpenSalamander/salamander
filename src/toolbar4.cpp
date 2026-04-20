@@ -255,8 +255,9 @@ CButtonData ToolBarButtons[TBBE_TERMINATOR] =
 //
 // TopToolbar
 //
-// Represents all buttons that TopToolbar can contain.
-// The order defines how buttons appear in the toolbar configuration dialog and can be changed freely.
+// Represents all possible buttons that TopToolbar can contain.
+// The order determines the order of buttons in the toolbar configuration dialog and can
+// be changed freely.
 //
 
 DWORD TopToolBarButtons[] =
@@ -357,7 +358,7 @@ DWORD TopToolBarButtons[] =
         NIB2(TBBE_HELP_CONTENTS)
             NIB2(TBBE_HELP_CONTEXT)
 
-                TBBE_TERMINATOR // terminator - must remain here!
+                TBBE_TERMINATOR // terminator - must be here
 };
 
 DWORD LeftToolBarButtons[] =
@@ -399,7 +400,7 @@ DWORD RightToolBarButtons[] =
         TBBE_REFRESH,
         TBBE_SMART_COLUMN_MODE,
 
-        TBBE_TERMINATOR // terminator - must remain here!
+        TBBE_TERMINATOR // terminator - must be here
 };
 
 void GetSVGIconsMainToolbar(CSVGIcon** svgIcons, int* svgIconsCount)
@@ -743,8 +744,8 @@ BOOL CreateToolbarBitmaps(HINSTANCE hInstance, int resID, COLORREF transparent, 
     int iconSize = GetIconSizeForSystemDPI(ICONSIZE_16); // small icon size
     int iconCount = 0;
 
-    // Windows XP and newer use transparent icons. Render them into this temporary bitmap
-    // so the area beneath their transparent parts uses the toolbar gray instead of our purple mask color.
+    // Windows XP and newer use transparent icons; render them into this temporary bitmap
+    // so that the area under the transparent parts uses the toolbar gray instead of our purple mask color.
     HBITMAP hTmpBitmap = NULL;
     HDC hTmpMemDC = NULL;
     HBITMAP hOldTmpBitmap = NULL;
