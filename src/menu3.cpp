@@ -395,13 +395,11 @@ void CMenuPopup::DrawCheckBitmapVista(HDC hDC, CMenuItem* item, int yOffset, BOO
         GetObject(hBitmap, sizeof(bitmap), &bitmap);
 
         int bmpX = 0; // the position in the bitmap from which the image should be extracted
-        // 2.12.2012: if the DPI is set to 105% on Windows 7 (or 125, 150, etc.)
-        // and bmpW/bmpH are enlarged here using the original max() function,
-        // the subsequent AlphaBlend() call fails and the icons are not displayed.
-        // A review of the repository history suggests that no workarounds belong here;
-        // the values should be assigned directly.
-        // Tested under Windows 7 with various DPI settings using TortoiseSVN and HG,
-        // SourceGear DiffMerge, BeyondCompare, and Adobe Acrobat; everything looks OK.
+        // 2.12.2012: if I set the resolution to 105% DPI (or 125, 150, etc.) on Windows 7
+        // and bmpW/bmpH were increased here using the original max() function,
+        // the subsequent AlphaBlend() call failed and the icons were not displayed
+        // I went through the change history in the repository and believe no workarounds belong here; the values must be assigned directly
+        // tested under Windows 7 with various DPIs using TortoiseSVN and HG, SourceGear DiffMerge, BeyondCompare, Adobe Acrobat and everything looks OK
         int bmpW = bitmap.bmWidth;
         int bmpH = bitmap.bmHeight;
         int targetBmpW = bmpW; // final size
@@ -1099,8 +1097,8 @@ void CMenuPopup::DrawItem(HDC hDC, CMenuItem* item, int yOffset, BOOL selected)
         // deal with which color to fill the background (caused issues in the New menu)
         int oldBkMode = SetBkMode(hDC, /*OPAQUE*/ TRANSPARENT);
 
-        // always set and restore the font; there is no way to know
-        // what others may do with the DC
+        // in any case, I set and restore the font - we can't know
+        // what mischief others might do with the DC
         if (item->State & MENU_STATE_DEFAULT)
             hOldFont = (HFONT)SelectObject(hDC, SharedRes->HBoldFont);
         else
