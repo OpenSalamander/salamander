@@ -146,10 +146,10 @@ extern char ShellExtConfigSubmenuName[SEC_SUBMENUNAME_MAX];
 // when loading, verify the version and reload the registry if it differs from the one in use
 extern DWORD ShellExtConfigVersion;
 
-// returns the index of the specified item
+// returns the item at the specified index
 CShellExtConfigItem* SECGetItem(int index);
 
-// if an item with a matching cmd is found, stores its index in index and returns TRUE; otherwise returns FALSE
+// if an item with a matching Cmd is found, stores the found item's index in index and returns TRUE; otherwise returns FALSE
 BOOL SECGetItemIndex(UINT cmd, int* index);
 
 BOOL SECLoadRegistry();
