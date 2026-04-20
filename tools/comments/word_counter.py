@@ -1,4 +1,4 @@
-"""Count occurrences of predefined Czech words across source files."""
+"""Count occurrences of predefined Czech words that still remain in comments."""
 
 from __future__ import annotations
 
@@ -10,13 +10,14 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-from unidecode import unidecode
-
 from .translation_status import (
     DEFAULT_EXTENSIONS,
     WORD_RE,
     _path_is_excluded,
+    detect_czech_residue_tokens,
+    extract_comment_records_from_file,
 )
+from unidecode import unidecode
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_WORDS = (
@@ -196,7 +197,7 @@ DEFAULT_WORDS = (
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Count predefined Czech words in the codebase.")
+    parser = argparse.ArgumentParser(description="Count predefined Czech words that still remain in comments.")
     parser.add_argument(
         "--project-root",
         type=Path,
@@ -302,16 +303,18 @@ def main(argv: list[str] | None = None) -> int:
         no_recursion=args.no_recursion,
     ):
         try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            comments = extract_comment_records_from_file(file_path)
         except Exception as exc:
             print(f"Failed to read {file_path.relative_to(project_root)}: {exc}", file=sys.stderr)
             continue
 
-        # Normalize accented characters so we can compare tokens with ASCII word lists.
-        normalized_tokens = (unidecode(token).lower() for token in WORD_RE.findall(content))
-        for token in normalized_tokens:
-            if token in target_words:
-                counter[token] += 1
+        for comment in comments:
+            if not detect_czech_residue_tokens(comment.text):
+                continue
+            normalized_tokens = (unidecode(token).lower() for token in WORD_RE.findall(comment.text))
+            for token in normalized_tokens:
+                if token in target_words:
+                    counter[token] += 1
 
     lines = [f"{word}: {counter[word]}" for word in sorted(target_words)]
     output = "\n".join(lines)
@@ -330,6 +333,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
 
 

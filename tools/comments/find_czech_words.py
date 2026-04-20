@@ -1,4 +1,4 @@
-"""Utilities for listing Czech words (normalized) that appear in source files."""
+"""Utilities for listing Czech words (normalized) that still remain in comments."""
 
 from __future__ import annotations
 
@@ -10,12 +10,10 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-from unidecode import unidecode
-
 from .translation_status import (
     DEFAULT_EXTENSIONS,
-    WORD_RE,
-    _load_word_sets,
+    detect_czech_residue_tokens,
+    extract_comment_records_from_file,
     _path_is_excluded,
     _path_sort_key,
 )
@@ -25,7 +23,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Locate unique Czech words (without diacritics) used in comments or identifiers.",
+        description="Locate unique Czech words (without diacritics) that still remain in comments.",
     )
     parser.add_argument(
         "--project-root",
@@ -177,15 +175,11 @@ def _iter_source_files(
             yield file_path
 
 
-def _collect_words(text: str, cs_words: frozenset[str], en_words: frozenset[str]) -> set[str]:
-    """Return normalised Czech words appearing in *text* while ignoring English tokens."""
+def _collect_words(file_path: Path) -> set[str]:
+    """Return normalized Czech words still present in extracted comments from *file_path*."""
     found: set[str] = set()
-    for token in WORD_RE.findall(text):
-        candidate = unidecode(token).lower()
-        if candidate in en_words:
-            continue
-        if candidate in cs_words:
-            found.add(candidate)
+    for comment in extract_comment_records_from_file(file_path):
+        found.update(detect_czech_residue_tokens(comment.text))
     return found
 
 
@@ -204,7 +198,6 @@ def main(argv: list[str] | None = None) -> int:
         else None
     )
 
-    cs_words, en_words = _load_word_sets()
     files_with_words: dict[Path, set[str]] = {}
     unique_words: set[str] = set()
 
@@ -215,13 +208,7 @@ def main(argv: list[str] | None = None) -> int:
         exclude_patterns=exclude_patterns,
         no_recursion=args.no_recursion,
     ):
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-        except Exception as exc:
-            print(f"Failed to read {file_path.relative_to(project_root)}: {exc}", file=sys.stderr)
-            continue
-
-        words = _collect_words(content, cs_words, en_words)
+        words = _collect_words(file_path)
         if words:
             files_with_words[file_path] = words
             unique_words.update(words)
@@ -253,7 +240,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
-
 
 

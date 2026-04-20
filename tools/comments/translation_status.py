@@ -4,6 +4,7 @@ import fnmatch
 import os
 import re
 import sys
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
@@ -21,30 +22,96 @@ import tree_sitter_cpp as ts_cpp
 from tree_sitter import Language, Parser
 
 WORD_RE = re.compile(r"[A-Za-z]+")
+DIACRITIC_RE = re.compile(r"[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]")
+
+CZECH_RESIDUE_MARKERS = frozenset(
+    {
+        "aby",
+        "alokovana",
+        "alokovano",
+        "antivir",
+        "bitmapa",
+        "bitmapy",
+        "cekame",
+        "cesta",
+        "cesty",
+        "delka",
+        "dialogu",
+        "hlavni",
+        "ikona",
+        "ikony",
+        "inicializaci",
+        "jmena",
+        "klavesa",
+        "komprimace",
+        "modulu",
+        "misto",
+        "navic",
+        "neni",
+        "nepodporuji",
+        "okno",
+        "oznacenych",
+        "panelu",
+        "polozka",
+        "polozky",
+        "pokud",
+        "poznamka",
+        "pozor",
+        "projekty",
+        "prikaz",
+        "sestaveni",
+        "soubor",
+        "souboru",
+        "stavu",
+        "tesne",
+        "trida",
+        "ukazatel",
+        "unikatni",
+        "vieweru",
+        "volat",
+        "vraci",
+        "vratit",
+        "zbytku",
+        "zdroje",
+        "znatelne",
+        "znamka",
+        "zkusime",
+    }
+)
 
 
 MANUAL_ENGLISH_WORDS = frozenset(
     {
         "arton",
+        "ashampoo",
         "bzip",
+        "cleartype",
         "cvut",
         "dpb",
         "filezilla",
         "ftps",
+        "hitem",
+        "himl",
+        "hkm",
         "hlist",
         "isel",
         "mkdir",
         "msie",
         "ocsp",
+        "pacl",
         "partl",
         "pecl",
+        "psz",
         "ramdisk",
         "regedit",
         "srand",
         "tgz",
+        "templ",
         "ubyte",
         "ulong",
+        "vko",
         "winapi",
+        "windir",
         "winscp",
     }
 )
@@ -94,6 +161,13 @@ C_PARSER = Parser(C_LANGUAGE)
 DEFAULT_EXTENSIONS = (".h", ".rh", ".c", ".cpp", ".rc")
 
 
+@dataclass(frozen=True)
+class CommentRecord:
+    text: str
+    start_line: int
+    end_line: int
+
+
 def get_parser(file_path: Path) -> Parser:
     """Return a tree-sitter parser based on file suffix."""
     if file_path.suffix == ".c":
@@ -101,22 +175,27 @@ def get_parser(file_path: Path) -> Parser:
     return CPP_PARSER
 
 
-def extract_comments_from_file(file_path: Path) -> list[str]:
-    """Return every comment found in *file_path*."""
+def extract_comment_records_from_file(file_path: Path) -> list[CommentRecord]:
+    """Return every comment found in *file_path* together with its line span."""
     parser = get_parser(file_path)
     try:
-        with file_path.open("r", encoding="utf-8", errors="ignore") as handle:
-            code = handle.read()
+        code_bytes = file_path.read_bytes()
     except Exception as exc:  # pragma: no cover - defensive I/O guard
         print(f"Error reading file {file_path}: {exc}", file=sys.stderr)
         return []
 
-    tree = parser.parse(code.encode("utf-8"))
-    comments: list[str] = []
+    tree = parser.parse(code_bytes)
+    comments: list[CommentRecord] = []
 
     def visit(node) -> None:
         if "comment" in node.type:
-            comments.append(code[node.start_byte : node.end_byte])
+            comments.append(
+                CommentRecord(
+                    text=code_bytes[node.start_byte : node.end_byte].decode("utf-8", errors="ignore"),
+                    start_line=code_bytes.count(b"\n", 0, node.start_byte) + 1,
+                    end_line=code_bytes.count(b"\n", 0, node.end_byte) + 1,
+                )
+            )
         for child in node.children:
             visit(child)
 
@@ -124,17 +203,47 @@ def extract_comments_from_file(file_path: Path) -> list[str]:
     return comments
 
 
-def _token_counts(text: str) -> tuple[int, int]:
-    """Return counts of (czech_like, english_like) tokens in *text*."""
+def extract_comments_from_file(file_path: Path) -> list[str]:
+    """Return every comment found in *file_path*."""
+    return [record.text for record in extract_comment_records_from_file(file_path)]
+
+
+def _tokenize_with_languages(text: str) -> tuple[list[str], list[str]]:
+    """Return normalized Czech-like and English-like tokens found in *text*."""
     cs_words, en_words = _load_word_sets()
-    cs_total = en_total = 0
+    cs_hits: list[str] = []
+    en_hits: list[str] = []
     for token in WORD_RE.findall(text):
         normalized = unidecode(token).lower()
         if normalized in cs_words:
-            cs_total += 1
+            cs_hits.append(normalized)
         elif normalized in en_words:
-            en_total += 1
-    return cs_total, en_total
+            en_hits.append(normalized)
+    return cs_hits, en_hits
+
+
+def _token_counts(text: str) -> tuple[int, int]:
+    """Return counts of (czech_like, english_like) tokens in *text*."""
+    cs_hits, en_hits = _tokenize_with_languages(text)
+    return len(cs_hits), len(en_hits)
+
+
+def detect_czech_residue_tokens(comment: str) -> list[str]:
+    """Return Czech-like tokens when *comment* still contains untranslated Czech residue."""
+    cs_hits, _en_hits = _tokenize_with_languages(comment)
+    unique_cs = sorted(set(cs_hits))
+    if not unique_cs:
+        return []
+
+    long_unique_cs = sorted({token for token in unique_cs if len(token) >= 4})
+
+    if DIACRITIC_RE.search(comment):
+        return unique_cs
+
+    if len(long_unique_cs) >= 2 and CZECH_RESIDUE_MARKERS.intersection(unique_cs):
+        return unique_cs
+
+    return []
 
 
 def classify_language(comment: str) -> str:
@@ -273,8 +382,10 @@ def main(argv: list[str] | None = None) -> int:
     # Optional glob patterns let us limit scanning to a subset of files.
     name_filters = tuple(args.name_filter) if args.name_filter else None
     output_file_path = output_dir / "comments.txt"
+    residue_csv_path = output_dir / "comments_czech_residue.csv"
 
     file_stats: dict[str, dict[str, int]] = {}
+    residue_stats: dict[str, dict[str, object]] = {}
     print(f"Starting comment extraction from '{project_root}'...")
 
     with output_file_path.open("w", encoding="utf-8") as out_file:
@@ -314,12 +425,15 @@ def main(argv: list[str] | None = None) -> int:
 
                 out_file.write(f"--- File: {relative_display} ---\n")
 
-                comments = extract_comments_from_file(file_path)
+                comments = extract_comment_records_from_file(file_path)
                 file_cs_size = 0
                 file_en_size = 0
+                file_residue_bytes = 0
+                file_residue_blocks = 0
+                file_residue_words: set[str] = set()
 
                 for comment in comments:
-                    comment_text = comment.strip()
+                    comment_text = comment.text.strip()
                     if not comment_text:
                         continue
 
@@ -327,14 +441,26 @@ def main(argv: list[str] | None = None) -> int:
 
                     language = classify_language(comment_text)
                     comment_size = len(comment_text.encode("utf-8"))
+                    residue_tokens = detect_czech_residue_tokens(comment_text)
 
                     if language == "cs":
                         file_cs_size += comment_size
                     elif language == "en":
                         file_en_size += comment_size
 
+                    if residue_tokens:
+                        file_residue_bytes += comment_size
+                        file_residue_blocks += 1
+                        file_residue_words.update(residue_tokens)
+
                 if file_cs_size > 0 or file_en_size > 0:
                     file_stats[relative_path] = {"cs": file_cs_size, "en": file_en_size}
+                if file_residue_blocks > 0:
+                    residue_stats[relative_path] = {
+                        "bytes": file_residue_bytes,
+                        "blocks": file_residue_blocks,
+                        "words": sorted(file_residue_words),
+                    }
 
                 out_file.write("\n")
 
@@ -346,11 +472,35 @@ def main(argv: list[str] | None = None) -> int:
     total_bytes = total_cs_bytes + total_en_bytes
     files_with_comments = len(file_stats)
     translated_pct = (total_en_bytes / total_bytes * 100) if total_bytes else 0.0
+    residue_total_bytes = sum(int(stats["bytes"]) for stats in residue_stats.values())
+    residue_total_blocks = sum(int(stats["blocks"]) for stats in residue_stats.values())
     print("\nOverall statistics:")
     print(f"  Files with comments: {files_with_comments}")
     print(f"  Czech comments: {total_cs_bytes} bytes")
     print(f"  English comments: {total_en_bytes} bytes")
     print(f"  Translated to English: {translated_pct:.1f}%")
+    print(f"  Czech residue comments: {residue_total_bytes} bytes across {residue_total_blocks} comment blocks")
+
+    try:
+        with residue_csv_path.open("w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["File Path", "Czech Residue Comment Bytes", "Czech Residue Comment Blocks", "Detected Czech Words"])
+            for path, stats in sorted(
+                residue_stats.items(),
+                key=lambda item: (-int(item[1]["bytes"]), _path_sort_key(item[0])),
+            ):
+                writer.writerow(
+                    [
+                        path.replace("/", os.sep),
+                        stats["bytes"],
+                        stats["blocks"],
+                        " ".join(stats["words"]),
+                    ]
+                )
+        print(f"  Czech residue report: {residue_csv_path}")
+    except Exception as exc:
+        print(f"\nError saving Czech residue CSV report: {exc}", file=sys.stderr)
+
     generate_treemap(file_stats, output_dir)
     return 0
 
