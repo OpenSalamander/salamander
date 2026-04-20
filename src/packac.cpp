@@ -425,13 +425,11 @@ BOOL CPackACDialog::MyGetBinaryType(LPCSTR filename, LPDWORD lpBinaryType)
             {
                 char magic[4];
                 BOOL lfanewValid = FALSE;
-                // We have a DOS image, so now try to seek to the offset specified in the
-                // "Offset to extended header" field and read the "magic" field at that
-                // location.
-                // This tells us whether there is more header information to read.
+                // We do have a DOS image so we will now try to seek into the file by the amount indicated by the field
+                // "Offset to extended header" and read in the "magic" field information at that location.
+                // This will tell us if there is more header information to read or not.
                 //
-                // First make sure the header structure includes the "Offset to extended header"
-                // field.
+                // But before we do we will make sure that header structure encompasses the "Offset to extended header" field.
                 if ((mz_header.e_cparhdr << 4) >= sizeof(IMAGE_DOS_HEADER))
                     if ((mz_header.e_crlc == 0) ||
                         (mz_header.e_lfarlc >= sizeof(IMAGE_DOS_HEADER)))
@@ -609,7 +607,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
             unsigned int nameLen = (unsigned int)strlen(findData.cFileName);
             if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
             {
-                // File: now check whether it is an EXE
+                // it is a file; now check if it is an exe
                 if (nameLen > 4 && pathLen + nameLen < MAX_PATH &&
                     (findData.cFileName[nameLen - 1] == 'e' || findData.cFileName[nameLen - 1] == 'E') &&
                     (findData.cFileName[nameLen - 2] == 'x' || findData.cFileName[nameLen - 2] == 'X') &&
@@ -627,7 +625,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
                         TRACE_I("Invalid executable or error getting type: " << fullName);
                         continue;
                     }
-                    // and see whether we want it
+                    // and see whether we are interested in it
                     mustStop |= ListView->ConsiderItem(path, findData.cFileName,
                                                        findData.ftLastWriteTime,
                                                        CQuadWord(findData.nFileSizeLow,
@@ -671,7 +669,7 @@ BOOL CPackACDialog::DirectorySearch(char* path)
         HANDLES(FindClose(fileFind));
     }
     HANDLES(GlobalFree((HGLOBAL)fileName));
-    // end
+    // and done
     return mustStop;
 }
 
