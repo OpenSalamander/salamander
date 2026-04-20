@@ -70,7 +70,7 @@ struct CTmpDragDropOperData
     CDragDropOperData* Data;
 };
 
-class CCriteriaData // data pro atCopy/atMove
+class CCriteriaData // data for atCopy/atMove
 {
 public:
     BOOL OverwriteOlder;      // overwrite older, skip newer ones
@@ -371,7 +371,7 @@ public:
         TopIndexesCount = 0;
     } // clears memory
     void Push(const char* path, int topIndex);        // stores the top index for the given path
-    BOOL FindAndPop(const char* path, int& topIndex); // looks for the top index of the path, FALSE -> not found
+    BOOL FindAndPop(const char* path, int& topIndex); // finds the top index for the given path; returns FALSE if not found
 };
 
 //******************************************************************************
@@ -483,7 +483,7 @@ private:
     BOOL MonitorChanges; // should changes be monitored (auto refresh)?
     UINT DriveType;      // disk+archive: drive type of Path (see MyGetDriveType())
 
-    // when we are inside an archive:
+    // when browsing an archive:
     CSalamanderDirectory* ArchiveDir; // content of the open archive; basic data - array of CFileData
     char ZIPArchive[MAX_PATH];        // path to the open archive
     char ZIPPath[MAX_PATH];           // path inside the open archive
@@ -491,31 +491,31 @@ private:
     CQuadWord ZIPArchiveSize;         // archive size - used to detect archive changes
 
     // when browsing a plugin file system:
-    CPluginFSInterfaceEncapsulation PluginFS; // pointer to the open FS
+    CPluginFSInterfaceEncapsulation PluginFS; // encapsulation of the open FS
     CSalamanderDirectory* PluginFSDir;        // content of the open FS; basic data - array of CFileData
-    int PluginIconsType;                      // icon type in the panel when listing a FS
+    int PluginIconsType;                      // icon type in the panel when browsing a plugin FS
 
     // when viewing an archive listed by a plugin or within a plugin FS
     CPluginInterfaceAbstract* PluginIface; // use exclusively for locating the plugin in Plugins (not for invoking methods)
     int PluginIfaceLastIndex;              // index of PluginIface in Plugins during the last search, use only to locate the plugin
 
 public:
-    // contents of all columns shown in the panel (both basic data and plug-in data for archives and FS)
+    // contents of all columns shown in the panel (both basic data and plugin data for archives and FS)
     CFilesArray* Files; // filtered list of files (shallow copy; basic data - CFileData structure)
     CFilesArray* Dirs;  // filtered list of directories (shallow copy; basic data - CFileData structure)
-    // interface used to obtain plug-in specific data; data for plug-in columns; defines how
-    // to use CFileData::PluginData; for FS plug-ins with pitFromPlugin icons, it is also used to
+    // interface used to obtain plugin specific data; data for plugin columns; defines how
+    // to use CFileData::PluginData; for FS plugins with pitFromPlugin icons, it is also used to
     // retrieving icons "in the background" in the icon reader thread - before making any changes, call SleepIconCacheThread()
     CPluginDataInterfaceEncapsulation PluginData;
 
-    CIconList* SimplePluginIcons; // FS + pitFromPlugin only: image list with simple plug-in icons
+    CIconList* SimplePluginIcons; // FS + pitFromPlugin only: image list with simple plugin icons
 
     // current number of selected items; must be updated everywhere the variable
     // CFileData::Selected is modified
     int SelectedCount;
 
     // helper variables used for smoother refresh (without "the panel contains no items")
-    // for plug-in file systems:
+    // for plugin file systems:
     // TRUE = the listing should not be released in a standard way but only detached (objects from NewFSXXX will continue
     // to be used)
     BOOL OnlyDetachFSListing;
@@ -529,7 +529,7 @@ public:
     ~CFilesWindowAncestor();
 
     // NULL -> Path; echo && err != ERROR_SUCCESS -> only report the error
-    // 'parent' is the parent of the message box (NULL == HWindow)
+    // 'parent' is the parent window of the message box (NULL == HWindow)
     DWORD CheckPath(BOOL echo, const char* path = NULL, DWORD err = ERROR_SUCCESS,
                     BOOL postRefresh = TRUE, HWND parent = NULL);
 
@@ -640,7 +640,7 @@ enum CCopyFocusedNameModeEnum
 class CVisibleItemsArray
 {
 protected:
-    CRITICAL_SECTION Monitor; // section used to synchronize this object (monitor behavior)
+    CRITICAL_SECTION Monitor; // critical section used to synchronize this object (monitor behavior)
 
     BOOL SurroundArr; // TRUE/FALSE = array of items around the visible area / array ofitems only from the visible area
 
@@ -678,8 +678,9 @@ public:
     // called only by the icon reader
     BOOL ArrContains(const char* name, BOOL* isArrValid, int* versionNum);
 
-    // If the array is filled and valid and contains the given index 'index', it returns
-    // TRUE; moreover, in 'isArrValid', it returns TRUE if the array is filled and valid and in 'versionNum' the number of the array version
+    // Returns TRUE if the array is populated, valid, and contains index 'index';
+    // additionally, stores in 'isArrValid' whether the array is valid and in 'versionNum'
+    // the array version number
     // Called only by the icon reader
     BOOL ArrContainsIndex(int index, BOOL* isArrValid, int* versionNum);
 };
@@ -715,12 +716,12 @@ public:
                                             // If a filesystem is attached, it may modify these columns: new
                                             // columns can appear and some of the visible ones may be temporarily removed
     TDirectArray<CColumn> ColumnsTemplate;  // template for the Columns variable
-                                            // Firstly, this template is built from the current 'ViewTemplate'
-                                            // and panel content type (disk / archive + FS). Then the template is
-                                            // copied into Columns. Added for performance so we do not build the
-                                            // array repeatedly.
+                                            // This template is first built from the current 'ViewTemplate'
+                                            // and panel content type (disk / archive + FS). It is then
+                                            // copied into Columns. Introduced for performance so the
+                                            // array does not have to be rebuilt repeatedly.
     BOOL ColumnsTemplateIsForDisk;          // TRUE = if ColumnsTemplate was built for a disk, otherwise for archive or FS
-    FGetPluginIconIndex GetPluginIconIndex; // callback for retrieving a simple icon index for plug-ins
+    FGetPluginIconIndex GetPluginIconIndex; // callback for retrieving a simple icon index for plugins
                                             // with their own icons (FS, pitFromPlugin)
 
     CFilesMap FilesMap;        // used for selecting items by dragging a selection box
@@ -728,7 +729,7 @@ public:
 
     CIconCache* IconCache;                // cache containing icons directly from files
     BOOL IconCacheValid;                  // is the cache already loaded?
-    BOOL InactWinOptimizedReading;        // TRUE = only icons/thumbnails/overlays from the visible part of the panel are being read (used when the main window is inactive and a refresh is triggered – we try to minimize system load as we're "in the background")
+    BOOL InactWinOptimizedReading;        // TRUE = read only icons/thumbnails/overlays from the visible part of the panel (used when the main window is inactive and a refresh is triggered to minimize system load because the application is "in the background")
     DWORD WaitBeforeReadingIcons;         // how many milliseconds to wait before the icon reader starts reading icons (used on refresh; while waiting old icons can be pushed into the cache to avoid repeated reading and endless refreshes on network drives)
     DWORD WaitOneTimeBeforeReadingIcons;  // how many milliseconds to wait before starting to read icons, then this value resets (used to catch batches of changes from Tortoise SVN, see IconOverlaysChangedOnPath())
     DWORD EndOfIconReadingTime;           // GetTickCount() from the moment all icons were loaded in the panel
@@ -785,10 +786,10 @@ public:
                                    // as a recipient of device event notifications (used to detect the media before
                                    // it is disconnected from the computer)
 
-    // should icons be retrieved from files on this disk??
-    // For ptDisk: TRUE if icons are retrieved from files; for ptZIPArchive: TRUE
-    // if icons are retrieved from the registry; for ptPluginFs: TRUE if icons are retrieved from the registry (pitFromRegistry) or
-    // directly from the plug-in (pitFromPlugin)
+    // should icons be retrieved from files on this disk?
+    // for ptDisk, TRUE if icons are retrieved from files; for ptZIPArchive, TRUE if
+    // icons are retrieved from the registry; for ptPluginFS, TRUE if icons are retrieved
+    // from the registry (pitFromRegistry) or directly from the plugin (pitFromPlugin)
     BOOL UseSystemIcons;
     BOOL UseThumbnails; // TRUE when thumbnails are displayed in the panel and loaded in the icon reader
 
@@ -800,7 +801,7 @@ public:
 
     BOOL NeedRefreshAfterEndOfSM;         // will a refresh be needed after exiting suspend mode?
     int RefreshAfterEndOfSMTime;          // "time" of the latest refresh that arrived after suspend mode started
-    BOOL PluginFSNeedRefreshAfterEndOfSM; // will the plug-in FS need a refresh after leaving suspend mode?
+    BOOL PluginFSNeedRefreshAfterEndOfSM; // will the plugin FS need a refresh after leaving suspend mode?
 
     BOOL SmEndNotifyTimerSet;  // TRUE when the timer for sending WM_USER_SM_END_NOTIFY_DELAYED is running
     BOOL RefreshDirExTimerSet; // TRUE when the timer for sending WM_USER_REFRESH_DIR_EX_DELAYED is running
@@ -814,7 +815,7 @@ public:
     BOOL NeedRefreshAfterIconsReading; // is a refresh needed after icon reading finishes?
     int RefreshAfterIconsReadingTime;  // "time" of the latest refresh that arrived while icons were being read
 
-    CPathHistory* PathHistory; // browsing history for this panel (for the panel)
+    CPathHistory* PathHistory; // browsing history for this panel
 
     DWORD HiddenDirsFilesReason; // bit field indicating the reason why files/directories are hidden (HIDDEN_REASON_xxx)
     int HiddenDirsCount,         // number of hidden directories in the panel (number of skipped ones)
@@ -860,9 +861,9 @@ public:
     BOOL DragSelect;           // mode for marking/unmarking by mouse drag
     BOOL BeginDragDrop;        // are we dragging the file?
     BOOL DragDropLeftMouseBtn; // TRUE = drag&drop with left mouse button, FALSE = with the right one
-    BOOL BeginBoxSelect;       // are we "opening" the selection box?
+    BOOL BeginBoxSelect;       // start of selection box
     BOOL PersistentTracking;   // during WM_CAPTURECHANGED, tracking mode will not be disabled
-    BOOL SelectItems;          // during Drag Select, do we mark items?
+    BOOL SelectItems;          // mark items during Drag Select?
     BOOL FocusedSinceClick;    // the item already had focus when we clicked it
 
     BOOL CutToClipChanged; // is at least one CutToClip flag set on files/directories?
@@ -930,26 +931,31 @@ public:
     // returns TRUE if the path is accessible
     BOOL CheckAndRestorePath(const char* path);
 
-    // recognizes the path type (FS/Windows/archive) and splits it into components:
-    // for FS paths it's fs-name and fs-user-part; for archives it's path-to-archive and
-    // path-in-archive; for Windows paths it's an existing part and the remaining path. for FS paths, nothing is checked,
-    // for Windows (normal/UNC) paths, it checks how far the path exists (possibly restore network paths),
-    // for archives, it checks whether the archive file exists (determined by extension);
-    // 'path' is a full or relative path (for relative paths, the path in the active panel is used as the base for evaluating the full path). The resulting full path is
-    // stored back into 'path' (buffer must be at least 'pathBufSize' characters). Returns TRUE
-    // when recognized successfully, setting 'type' to PATH_TYPE_XXX and 'pathPart' as follows:
-    // - for Windows paths, pointer just after the existing path (after '\\' or at the end of string);
-    //   if a file exists in the path, it points after the path to this file, WARNING: the returned part length is not
-    //   checked and may exceed MAX_PATH.
-    // - for archive paths, pointer past the archive file; WARNING: again the length inside the archive is not checked and can
-    //   exceed MAX_PATH.
-    // - for FS paths, pointer after ':' following the file-system name (user - part of the path);
-    //   WARNING: length of user - part path isn't checked and may exceed MAX_PATH.
-    // On success, 'isDir' is TRUE if the first part of the path up to 'pathPart' is a directory,
-    // FALSE if it's a file (Windows paths). For archive and FS paths, 'isDir' is FALSE.
-    // If it returns FALSE, an error that occurred during recognition was already displayed to the user, 'errorTitle' is the message box title with the error.
-    // If 'nextFocus' is not NULL and the Windows/archive path doesn't contain '\\' or ends with
-    // it, the path is copied to 'nextFocus' (see SalGetFullName)
+    // Recognizes the path type (FS/Windows/archive) and splits it into its parts:
+    // for FS paths, into fs-name and fs-user-part; for archive paths, into path-to-archive and
+    // path-in-archive; for Windows paths, into the existing part and the rest of the path. FS paths
+    // are not checked; for Windows (normal/UNC) paths, it checks how much of the path exists
+    // (and may restore the network connection); for archive paths, it checks whether the archive file
+    // exists (archive type is determined by the extension);
+    // 'path' is a full or relative path (for relative paths, the path in the active panel is used
+    // as the base for resolving the full path); the resulting full path is stored back into 'path'
+    // (the buffer must be at least 'pathBufSize' characters). Returns TRUE on successful recognition;
+    // then 'type' is the path type (see PATH_TYPE_XXX) and 'secondPart' is set:
+    // - in 'path' to the position after the existing path (after '\\' or at the end of the string;
+    //   if the path contains a file, it points past the path to that file) (Windows path type), WARNING:
+    //   the length of the returned part of the path is not checked (the whole path may be longer than MAX_PATH)
+    // - after the archive file (archive path type), WARNING: the length of the path inside the archive is not checked
+    //   (it may be longer than MAX_PATH)
+    // - after ':' following the file system name, to the user part of the file system path (FS path type), WARNING:
+    //   the length of the user part is not checked (it may be longer than MAX_PATH);
+    // if TRUE is returned, 'isDir' is also set to:
+    // - TRUE if the first part of the path (from the beginning up to 'secondPart') is a directory, FALSE if it is a file
+    //   (Windows path type)
+    // - FALSE for archive and FS paths;
+    // if FALSE is returned, an error that occurred during recognition has already been reported to the user;
+    // 'errorTitle' is the title of the error message box; if 'nextFocus' != NULL and the Windows/archive
+    // path does not contain '\\' or only ends with '\\', the path is copied to 'nextFocus' (see
+    // SalGetFullName)
     BOOL ParsePath(char* path, int& type, BOOL& isDir, char*& secondPart, const char* errorTitle,
                    char* nextFocus, int* error, int pathBufSize);
 
@@ -965,12 +971,12 @@ public:
     // when 0, a dialog is shown, the change is applied immediately
     void ChangeDrive(char drive = 0);
 
-    // it finds the first fixed drive and switches to it;
-    // 'parent' is the parent of message boxes;
-    // if 'noChange' is not NULL it returns TRUE if the panel listing data (Files + Dirs)
-    // were not recreated again;
+    // finds the first fixed drive and switches to it;
+    // 'parent' is the parent window for message boxes;
+    // if 'noChange' is not NULL, it returns TRUE if the panel listing data (Files + Dirs)
+    // were not recreated;
     // if 'refreshListBox' is FALSE, RefreshListBox is not called;
-    // if 'canForce' is TRUE, the user can forcibly close even a path the plug-in refuses to close;
+    // if 'canForce' is TRUE, the user gets a chance to forcibly close even a path the plugin refuses to close;
     // if 'failReason' != NULL, it is set to one of the CHPPFR_XXX constants;
     // only for FS in panel: 'tryCloseReason' is the reason passed to CPluginFSInterfaceAbstract::TryCloseOrDetach();
     // returns TRUE on success
@@ -985,34 +991,36 @@ public:
                                         int* failReason = NULL);
 
     // helper method:
-    // serves as preparation for CloseCurrentPath, prepares closing/detached the current path (updates
-    // edited files and calls CanCloseArchive for archives; TryCloseOrDetach for FS);
-    // returns TRUE if the path can be closed/detached by the upcoming CloseCurrentPath call,
-    // returns FALSE if it cannot close/defer(the current path won't change or close);
-    // when 'canForce' is TRUE, the user may forcibly close even a path the plug-in doesn't want
-    // to close (necessary when closing Salamander – if there is a bug in the plug-in, Salamander would otherwise not close);
-    // when 'canForce' is FALSE and 'canDetach' is TRUE and it's an FS path, the path may be
-    // closed (returns 'detachFS' FALSE) or detached (returns 'detachFS' TRUE). In other cases the
-    // path can only be closed (returns 'detachFS' FALSE). For FS in the panel only, 'tryCloseReason'
-    // is the reason passed to CPluginFSInterfaceAbstract::TryCloseOrDetach()
-    // 'parent' is the parent message box
+    // prepares for CloseCurrentPath; prepares closing/detaching the current path (updates
+    // edited files and calls CanCloseArchive for archives; calls TryCloseOrDetach for FS);
+    // returns TRUE if the path can be closed/detached by the following CloseCurrentPath call,
+    // returns FALSE if the path cannot be closed/detached (the current path will neither change nor close);
+    // if 'canForce' is TRUE, the user gets a chance to force-close even a path that the plugin
+    // does not want to close (necessary when closing Salamander; if there is a bug in the plugin,
+    // Salamander could not be closed otherwise); if 'canForce' is FALSE and 'canDetach' is TRUE
+    // and this is an FS path, the path may be closed (returns 'detachFS' FALSE) or detached
+    // (returns 'detachFS' TRUE); in other cases, the path can only be closed (returns 'detachFS'
+    // FALSE); for FS in the panel only, 'tryCloseReason' is the reason for calling
+    // CPluginFSInterfaceAbstract::TryCloseOrDetach()
+    // 'parent' is the parent of the message box
     BOOL PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canDetach, BOOL& detachFS,
                                  int tryCloseReason);
-    // helper method:
-    // finishes closing/detaching the current path started by PrepareCloseCurrentPath; if 'cancel'
-    // is TRUE the current path is restored (it is neither closed nor changed; triggers
-    // Event(FSE_CLOSEORDETACHCANCELED) for FS). If 'cancel' is FALSE all no-longer-needed
-    // resources of the current path are released (depending on path type: Files, Dirs, PluginData,
-    // ArchiveDir, PluginFS and PluginFSDir). 'detachFS' is the value returned from
+    // Helper method:
+    // completes closing/detaching the current path started by PrepareCloseCurrentPath; if 'cancel'
+    // is TRUE, the current path is restored (it is neither closed nor changed; this ensures
+    // Event(FSE_CLOSEORDETACHCANCELED) is called for FS). If 'cancel' is FALSE, all resources of the
+    // current path that are no longer needed are released (depending on the path type: Files, Dirs,
+    // PluginData, ArchiveDir, PluginFS, and PluginFSDir). 'detachFS' is the value returned by
     // PrepareCloseCurrentPath (meaningful only for FS; if TRUE, PluginFS is added to DetachedFSList
-    // instead of being freed). When closing an FS with pitFromPlugin icons you must first call
-    // SleepIconCacheThread() so PluginData isn't released while its method loads icons.
-    // 'parent' is the message box parent; 'newPathIsTheSame' is TRUE (meaningful only if 'cancel'
-    // is FALSE) if the same path ends up in the panel again after closing the path (for example a successful path refresh);
-    // 'isRefresh' is TRUE for a hard refresh (Ctrl+R or change notification);
-    // if 'canChangeSourceUID' is TRUE you may change EnumFileNamesSourceUID and with that cancel enumeration
-    // of files from the panel (e.g. for the viewer). FALSE is used when changing to the same path
-    // that was already in the panel (similar to refresh via hot-path, focus-name, etc.)
+    // instead of being released). When closing an FS with pitFromPlugin icons, SleepIconCacheThread()
+    // must be called first so that PluginData is not released while its method is loading icons.
+    // 'parent' is the parent of the message box; 'newPathIsTheSame' is TRUE (meaningful only if
+    // 'cancel' is FALSE) if the same path appears in the panel again after the path is closed
+    // (for example, after a successful path refresh); 'isRefresh' is TRUE for a hard refresh
+    // (Ctrl+R or a change notification); if 'canChangeSourceUID' is TRUE, EnumFileNamesSourceUID may
+    // be changed, which cancels file enumeration from the panel (e.g. for the viewer). FALSE is used
+    // when changing to the same path that was already in the panel (similar to a refresh, but via
+    // hot-path, focus-name, etc.)
     void CloseCurrentPath(HWND parent, BOOL cancel, BOOL detachFS, BOOL newPathIsTheSame,
                           BOOL isRefresh, BOOL canChangeSourceUID);
 
@@ -1044,21 +1052,21 @@ public:
                                int currentPathFSNameIndex, BOOL forceUpdate,
                                char* cutFileName, BOOL* keepOldListing);
 
-    // path change-handles both relative and absolute paths to Windows form (UNC and C:\path);
-    // shortens the path if needed. When changing within the same drive (including archives)
+    // changes the path, handling both relative and absolute paths in Windows form (UNC and C:\path),
+    // and shortens the path if needed. When changing within the same drive (including archives),
     // it finds a valid directory even if that means switching to a fixed drive (when the current drive is inaccessible);
     // 'parent' is the parent of the message box;
     // if suggestedTopIndex != -1 the top index will be set;
     // if suggestedFocusName != NULL and present in the new list it will be focused;
-    // if noChange (if not NULL) it returns TRUE when the listing data in the panel were not recreated
+    // in noChange (if not NULL) it returns TRUE if the listing data in the panel were not recreated
     // (Files + Dirs);
     // if refreshListBox is FALSE RefreshListBox is not called;
-    // if canForce is TRUE, the user can forcibly close even a path the plug-in refuses to close;
-    // if isRefresh is TRUE, this call comes from RefreshDirectory (no error leading to shortening is shown,
+    // if canForce is TRUE, the user gets a chance to forcibly close even a path the plugin refuses to close;
+    // if isRefresh is TRUE, this call comes from RefreshDirectory (no error leading to path shortening is shown,
     // quick search is not canceled);
     // if failReason != NULL, it is set to one of the CHPPFR_XXX constants;
-    // if shorterPathWarning is TRUE, a message box with an error is opened when the path is shortened
-    // (only when it is not a refresh);
+    // if shorterPathWarning is TRUE, a message box with an error is opened when the path is shortened,
+    // but only if this is not a refresh;
     // only for FS in the panel: 'tryCloseReason' is the reason passed to CPluginFSInterfaceAbstract::TryCloseOrDetach()
     // returns TRUE if the requested path was listed successfully
     BOOL ChangePathToDisk(HWND parent, const char* path, int suggestedTopIndex = -1,
@@ -1066,52 +1074,55 @@ public:
                           BOOL refreshListBox = TRUE, BOOL canForce = FALSE, BOOL isRefresh = FALSE,
                           int* failReason = NULL, BOOL shorterPathWarning = TRUE,
                           int tryCloseReason = FSTRYCLOSE_CHANGEPATH);
-    // changes to an archive path; only absolute Windows paths are allowed (archive is UNC or C:\path\archive)
+    // changes the path to an archive; only absolute Windows paths are allowed (archive is UNC or C:\path\archive);
     // if suggestedTopIndex != -1, the top index will be set;
-    // if suggestedFocusName != NULL, and present in the new list, it will be focused;
+    // if suggestedFocusName != NULL and is present in the new list, it will be selected;
     // if forceUpdate is TRUE, the case where the new path equals the current one is not optimized;
     // if noChange is not NULL, it returns TRUE if the listing data in the panel were not recreated
     //   (ArchiveDir + PluginData);
     // if refreshListBox is FALSE, RefreshListBox is not called;
-    // if failReason != NULL it is set to one of the CHPPFR_XXX constants;
+    // if failReason != NULL, it is set to one of the CHPPFR_XXX constants;
     // if isRefresh is TRUE, this call comes from RefreshDirectory (quick search is not canceled);
     // if archivePath contains a file name and canFocusFileName is TRUE, that file is focused
     //   (returns FALSE because the path was shortened);
-    // if isHistory is TRUE (used when selecting a path from a path history) and the archive cannot
+    // if isHistory is TRUE (used when selecting a path from the panel path history) and the archive cannot
     //   be opened (or does not exist), the panel opens at least the path to the archive
-    //   (optionally shortened, on path error it does not switch to a fixed drive);
-    // returns TRUE if the requested path was uccessfully listed
+    //   (optionally shortened; on path error it does not switch to a fixed drive);
+    // returns TRUE if the requested path was successfully listed
     BOOL ChangePathToArchive(const char* archive, const char* archivePath, int suggestedTopIndex = -1,
                              const char* suggestedFocusName = NULL, BOOL forceUpdate = FALSE,
                              BOOL* noChange = NULL, BOOL refreshListBox = TRUE, int* failReason = NULL,
                              BOOL isRefresh = FALSE, BOOL canFocusFileName = FALSE, BOOL isHistory = FALSE);
-    // change path to the plug-in FS;
-    // if suggestedTopIndex != -1 the top index will be set;
-    // if suggestedFocusName != NULL and present in the new list, it will be focused;
-    // if forceUpdate is TRUE, the case where the new path equals the current one is not optimized;
-    // 'mode' is the path change mode:
-    //   1 (refresh path) - shortens the path, if needed; do not report path not found (just shorten them),
-    //                      report a file instead of path, inaccessibility of path and other errors
-    //   2 (called via ChangePanelPathToPluginFS from plugin, back/forward in history, etc.) - shortens the path, if needed;
-    //                      report all path errors (file instead of path, not found, not accessible, ...)
+    // Changes the path to the plugin FS.
+    // If suggestedTopIndex != -1, the top index is set.
+    // If suggestedFocusName != NULL and it is present in the new list, it is selected.
+    // If forceUpdate is TRUE, the case where the current path matches the new path is not optimized away.
+    // 'mode' is the path-change mode:
+    //   1 (refresh path) - shortens the path if needed; do not report a non-existing path
+    //                      (shorten it silently), report file-instead-of-path, path inaccessibility,
+    //                      and other errors
+    //   2 (called from a plugin via ChangePanelPathToPluginFS, back/forward in history, etc.) - shortens the path
+    //                      if needed; report all path errors (file instead of path,
+    //                      non-existence, inaccessibility, and others)
     //   3 (change-dir command) - shortens the path only if it is a file or the path cannot be listed
-    //                      (ListCurrentPath returns FALSE); do not report file instead of path
-    //                      (silent shorten and return the file name), report all other path errors (not found, not accessible, ...)
-    // if noChange is not NULL, it returns TRUE when the listing data in the panel were not recreated
-    //   (PluginFSDir + PluginData);
-    // if refreshListBox is FALSE, RefreshListBox is not called;
-    // if failReason != NULL, it is set to one of the CHPPFR_XXX constants;
-    // if isRefresh is TRUE, this call comes from RefreshDirectory (quick search is not canceled);
-    // if fsUserPart contains a file name and canFocusFileName is TRUE, the file is focused
-    //   (returns FALSE because the path was shortened);
-    // if 'convertPathToInternal' is TRUE, CPluginInterfaceForFSAbstract::ConvertPathToInternal() is called;
-    // returns TRUE if the requested path was listed successfully
+    //                      (ListCurrentPath returns FALSE for it); do not report file instead of path
+    //                      (shorten it silently and return the file name), report all other
+    //                      path errors (non-existence, inaccessibility, and others)
+    // In noChange (if not NULL), returns TRUE if the listing data in the panel were not recreated
+    //   (PluginFSDir + PluginData).
+    // If refreshListBox is FALSE, RefreshListBox is not called.
+    // If failReason != NULL, it is set to one of the CHPPFR_XXX constants.
+    // If isRefresh is TRUE, this is a call from RefreshDirectory (quick search is not canceled).
+    // If fsUserPart contains a file name and canFocusFileName is TRUE, that file is focused
+    //   (returns FALSE because the path was shortened).
+    // If 'convertPathToInternal' is TRUE, CPluginInterfaceForFSAbstract::ConvertPathToInternal() is called.
+    // Returns TRUE if the requested path was listed successfully.
     BOOL ChangePathToPluginFS(const char* fsName, const char* fsUserPart, int suggestedTopIndex = -1,
                               const char* suggestedFocusName = NULL, BOOL forceUpdate = FALSE,
                               int mode = 2, BOOL* noChange = NULL, BOOL refreshListBox = TRUE,
                               int* failReason = NULL, BOOL isRefresh = FALSE,
                               BOOL canFocusFileName = FALSE, BOOL convertPathToInternal = FALSE);
-    // change path to a detached plug-in FS (in MainWindow->DetachedFSList at index 'fsIndex');
+    // change path to a detached plugin FS (in MainWindow->DetachedFSList at index 'fsIndex');
     // if suggestedTopIndex != -1, the top index will be set;
     // if suggestedFocusName != NULL and present in the new list, it will be selected;
     // if refreshListBox is FALSE, RefreshListBox is not called;
@@ -1128,19 +1139,20 @@ public:
                                 int* failReason = NULL, const char* newFSName = NULL,
                                 const char* newUserPart = NULL, int mode = -1,
                                 BOOL canFocusFileName = FALSE);
-    // changes the panel path; the input may be an absolute or relative Windows path or an archive path
-    // or an FS path (absolute/relative is handled directly by the plug-in). If the input path points to a file,
+    // changes the path in the panel; the input may be an absolute or relative Windows path or an archive path
+    // or an FS path (absolute/relative is handled directly by the plugin); if the input is a path to a file,
     // that file is focused;
     // if suggestedTopIndex != -1, the top index will be set;
-    // if suggestedFocusName != NULL and present in the new list, it will be selected;
-    // 'mode' specifies the change mode for FS paths-see ChangePathToPluginFS(); it has no meaning
+    // if suggestedFocusName != NULL and it is present in the new list, it will be selected;
+    // 'mode' specifies the path-change mode for FS paths, see ChangePathToPluginFS(); it has no meaning
     // for archives or disks;
     // if failReason != NULL, it is set to one of the CHPPFR_XXX constants;
-    // if 'convertFSPathToInternal' is TRUE or 'newDir' is NULL and it is an FS path,
+    // if 'convertFSPathToInternal' is TRUE or 'newDir' is NULL and this is an FS path,
     // CPluginInterfaceForFSAbstract::ConvertPathToInternal() is called;
-    // 'showNewDirPathInErrBoxes' exists only for paths taken from links (disk paths only)
-    // the entire path from the link should be shown, not just the part where the error was detected (otherwise the user won’t get the full path from the link);
-    // returns TRUE if the requested path was successfully listed
+    // 'showNewDirPathInErrBoxes' was added only for paths extracted from links (disk paths only);
+    // the full path from the link should be shown, not only the part where the error was detected (otherwise the user
+    // will not get the full path from the link);
+    // returns TRUE if the requested path was listed successfully
     BOOL ChangeDir(const char* newDir = NULL, int suggestedTopIndex = -1,
                    const char* suggestedFocusName = NULL, int mode = 3 /*change-dir*/,
                    int* failReason = NULL, BOOL convertFSPathToInternal = TRUE,
@@ -1185,7 +1197,7 @@ public:
     // // removes the current path in the panel from the path history of this panel
     void RemoveCurrentPathFromHistory();
 
-    // returns TRUE, if the plug-in is no longer used by the panel
+    // returns TRUE, if the plugin is no longer used by the panel
     BOOL CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin);
 
     void ItemFocused(int index); // called when focus changes
@@ -1265,9 +1277,8 @@ public:
     BOOL FillViewWithData(TDirectArray<CViewerMasksItem*>* items);
     // displays the focused file using the viewer identified by 'index'
     void OnViewFileWith(int index);
-    // view-file-with: opens a menu to choose a viewer; name == NULL -> item under the cursor in the panel;
-    // if handlerID != NULL, only the selected handler ID is returned (the viewer is not opened);
-    // on error returns 0xFFFFFFFF
+    // view-file-with: opens a menu for selecting a viewer; name == NULL -> item under the cursor in the panel;
+    // handlerID != NULL -> returns only the selected handler ID (does not open the viewer); on failure returns 0xFFFFFFFF
     void ViewFileWith(char* name, HWND hMenuParent, const POINT* menuPos, DWORD* handlerID,
                       int enumFileNamesSourceUID, int enumFileNamesLastFileIndex);
 
@@ -1275,9 +1286,8 @@ public:
     void FillEditWithMenu(CMenuPopup* popup);
     // edits the focused file using the editor identified by the variable 'index'
     void OnEditFileWith(int index);
-    // edit-file-with: opens a menu to choose an editor; name == NULL -> item under the cursor in the panel;
-    // if handlerID != NULL, only the selected handler ID is returned (the editor is not opened),
-    // on error returns 0xFFFFFFFF
+    // edit-file-with: opens a menu for selecting an editor; name == NULL -> item under the cursor in the panel;
+    // handlerID != NULL -> returns only the selected handler ID (does not open the viewer); on failure returns 0xFFFFFFFF
     void EditFileWith(char* name, HWND hMenuParent, const POINT* menuPos, DWORD* handlerID = NULL);
     void FindFile();
     void DriveInfo();
@@ -1323,11 +1333,11 @@ public:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // loads Files and Dirs according to panel type from disk, ArchiveDir or PluginFSDir;
-    // for ptDisk it returns TRUE if the directory was successfully read from disk (FALSE on read
-    // error or out of memory). For ptZIPArchive and ptPluginFS it returns FALSE only when memory
-    // runs out or if the path does not exist (checked before calling ReadDirectory, should not happen);
-    // 'parent' is the parent of message boxes;
-    // if TRUE is returned, SortDirectory() is also called
+    // for ptDisk it returns TRUE if the directory was successfully read from disk (FALSE on failure
+    // to read or out of memory); for ptZIPArchive and ptPluginFS it returns FALSE only if memory
+    // runs out or if the path does not exist (that is checked before calling ReadDirectory, so it
+    // should not happen); 'parent' is the parent of message boxes
+    // if it returns TRUE, it also calls SortDirectory()
     BOOL ReadDirectory(HWND parent, BOOL isRefresh);
 
     // sorts Files and Dirs using the current ordering method; because it reorders them,
@@ -1348,14 +1358,14 @@ public:
     void RefreshDirectory(BOOL probablyUselessRefresh = FALSE, BOOL forceReloadThumbnails = FALSE,
                           BOOL isInactiveRefresh = FALSE);
 
-    // read-dir (archives, FS, disk), sort
-    // parent is the parent message box
-    // if suggestedTopIndex != -1, the top index will be set
-    // if suggestedFocusName != NULL and present in the new list, it will be selected
+    // reads the directory (archives, FS, disk), sorts
+    // parent is the parent of the message box
+    // if suggestedTopIndex != -1, the top index is set
+    // if suggestedFocusName != NULL and it is present in the new list, it is selected
     // if refreshListBox is FALSE, RefreshListBox is not called
     // if readDirectory is FALSE, ReadDirectory is not called
-    // if isRefresh is TRUE, the path in the panel is refreshed by this
-    // returns TRUE if ReadDirectory succeeded
+    // if isRefresh is TRUE, this refreshes the path in the panel
+    // returns TRUE if ReadDirectory succeeds
     BOOL CommonRefresh(HWND parent, int suggestedTopIndex = -1,
                        const char* suggestedFocusName = NULL, BOOL refreshListBox = TRUE,
                        BOOL readDirectory = TRUE, BOOL isRefresh = FALSE);
@@ -1434,8 +1444,8 @@ public:
     BOOL IsTextOnClipboard();
     void ClipboardPastePath(); // for changing the current directory
 
-    // postprocesses of the user provided path: trims surrounding white spaces and quotes, removes file:// and
-    // expands environment variables; returns FALSE on error (processing should stop); 'parent' is
+    // postprocesses the user-provided path: trims surrounding white spaces and quotes, removes file:// and
+    // expands ENV variables; returns FALSE on failure (processing should stop); 'parent' is
     // the parent for error message boxes
     BOOL PostProcessPathFromUser(HWND parent, char (&buff)[2 * MAX_PATH]);
 
@@ -1446,7 +1456,7 @@ public:
     void EndQuickSearch(); // ends Quick Search mode
 
     // QuickRenameWindow
-    void AdjustQuickRenameRect(const char* text, RECT* r); // adjusts 'r' so it doesn't exceed the panel and is large enough at the same time
+    void AdjustQuickRenameRect(const char* text, RECT* r); // adjusts 'r' so it does not exceed the panel and is large enough
     void AdjustQuickRenameWindow();
     //    void QuickRenameOnIndex(int index); // calls QuickRenameBegin for the given index
     void QuickRenameBegin(int index, const RECT* labelRect); // opens QuickRenameWindow
@@ -1487,7 +1497,7 @@ public:
     int GetCaretIndex();
 
     void SetDropTarget(int index);       // marks where files will be dropped
-    void SetSingleClickIndex(int index); // highlights the item and clears the old one
+    void SetSingleClickIndex(int index); // highlights the item and unhighlights the old one
     void SelectFocusedIndex();
 
     void DrawDragBox(POINT p);
@@ -1498,13 +1508,13 @@ public:
     // RepaintListBox(DRAWFLAG_DIRTY_ONLY | DRAWFLAG_SKIP_VISTEST);
     // only the first method SetSel can repaint items on explicit request
     // the first two methods (SetSel and SetSelRange) do not mark the ".." directory item
-    void SetSel(BOOL select, int index, BOOL repaintDirtyItems = FALSE); // If index is -1 the selection is added to or removed from all strings
+    void SetSel(BOOL select, int index, BOOL repaintDirtyItems = FALSE); // If index is -1, the selection is added to or removed from all items
     // returns TRUE if the state of at least one item has changed, otherwise returns FALSE
     BOOL SetSelRange(BOOL select, int firstIndex, int lastIndex);
     void SetSel(BOOL select, CFileData* data); // data must be held by the corresponding list
 
     BOOL GetSel(int index);
-    int GetSelItems(int itemsCountMax, int* items, BOOL focusedItemFirst = FALSE); // if 'focusedItemFirst' is TRUE (not used anymore; see GetSelItems body): for context menus, we start we start from the focused item and end with the item before the focus (there is intermediate wrapping back to the beginning of the name list) (the system does it in the same way, see Add To Windows Media Player List on MP3 files)
+    int GetSelItems(int itemsCountMax, int* items, BOOL focusedItemFirst = FALSE); // if 'focusedItemFirst' is TRUE (no longer used; see the GetSelItems implementation): for context menus, start at the focused item and end with the item before it (wrapping back to the start of the name list in between). The system does the same; see Add To Windows Media Player List on MP3 files
 
     // if GetSelCount > 0 returns TRUE, if at least one directory is selected (".." not counted); otherwise it returns FALSE
     // if GetSelCount == 0 returns TRUE, if a directory is focused (".." not counted); otherwise it returns FALSE
@@ -1535,7 +1545,7 @@ public:
 
     void GotoSelectedItem(BOOL next); // if 'next' is TRUE, it moves caret to the next selected item, otherwise to the previous one
 
-    void OnSetFocus(BOOL focusVisible = TRUE); // 'focusVisible'==FALSE when switching from the command line to the panel while the user is in a modeless dialog (main window is inactive) - required by the FTP plugin Welcome Message dialog
+    void OnSetFocus(BOOL focusVisible = TRUE); // 'focusVisible'==FALSE when switching from the command line to the panel while the user is in a modeless dialog (the main window is not active) - needed for the FTP plugin Welcome Message dialog
     void OnKillFocus(HWND hwndGetFocus);
 
     BOOL OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult);
@@ -1545,7 +1555,7 @@ public:
     BOOL OnRButtonUp(WPARAM wParam, LPARAM lParam, LRESULT* lResult);
     BOOL OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult);
 
-    BOOL IsDragDropSafe(int x, int y); // safer drag&drop: returns TRUE if the drag was long enough; x,y are coordinates relative to the panel origin
+    BOOL IsDragDropSafe(int x, int y); // safer drag-and-drop: returns TRUE if dragging lasted long enough; x and y are coordinates relative to the panel origin
 
     BOOL OnTimer(WPARAM wParam, LPARAM lParam, LRESULT* lResult);
     BOOL OnCaptureChanged(WPARAM wParam, LPARAM lParam, LRESULT* lResult);
@@ -1553,7 +1563,7 @@ public:
 
     void LayoutListBoxChilds(); // after a font change layout must be updated
     void RepaintListBox(DWORD drawFlags);
-    void RepaintIconOnly(int index);   // for index == -1 redraws icons of all items
+    void RepaintIconOnly(int index);   // for index == -1, redraws the icons of all items
     void EnsureItemVisible(int index); // ensures the item is visible
     void SetQuickSearchCaretPos();     // sets caret position within FocusedIndex
 
