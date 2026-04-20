@@ -975,7 +975,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                     }
                     if (*s >= 128)
                         nonAscii++;
-                    if (IsNotAlphaNorNum[*s]) // character is neither alpha nor numeric
+                    if (IsNotAlphaNorNum[*s]) // character is not alphanumeric
                     {
                         if (*s == '?')
                         {
@@ -1066,11 +1066,12 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                     s++;
                 }
 
-                if (s == end) // this is a text
-                // && penalty / patternLen <= 5)  // and not a totally unreadable mess (Lukas' test:
-                // characters 0x04 -> only EBCDIC passed, but ratio was
-                // 10 -> unreadable) - WARNING: unusable because
-                // configuraiton files and .inf files also look like complete mess based on 'penalty'
+                if (s == end) // this is text
+                // && penalty / patternLen <= 5)  // and it is not a completely unreadable mess (Lukas's test:
+                // characters 0x04 -> only EBCDIC passed, but the ratio was
+                // 10 -> unreadable) - WARNING: unusable, because
+                // configuration files and .inf files also look like a complete mess
+                // according to 'penalty'
                 {
                     if (isText != NULL)
                         *isText = TRUE;
@@ -1082,7 +1083,7 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
                             strcpy(codePage, lastCodePage);
 
                         if (i == -1 && nonAscii * 200 < patternLen)
-                            break; // under 0.5% non-ASCII characters -> ASCII, stop searching
+                            break; // fewer than 0.5% non-ASCII characters -> ASCII, stop searching
                     }
                 }
             }
