@@ -134,7 +134,7 @@ public:
 
     // Fills the task-list items; 'items' is an array of at least MAX_TL_ITEMS CProcessListItem structures; returns the number of items
     // 'items' can be NULL if only 'itemsStateUID' is needed
-    // Returns the "version" of the process list; the version increases with every change to the list (when an item is added or removed)
+    // 'itemsStateUID' returns the "version" of the process list; the version increases with every change to the list (when an item is added or removed)
     // Used by the dialog to know when to refresh the list; 'itemsStateUID' can be NULL
     // If 'timeouted' is not NULL, it is set to indicate whether the failure was caused by a timeout while waiting for shared memory
     int GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* timeouted = NULL);
