@@ -94,7 +94,7 @@ public:
     COLORREF HilightColor;
     COLORREF GrayTextColor;
 
-    // cache DC
+    // cache bitmap
     CBitmap* CacheBitmap;
     CBitmap* MonoBitmap;
 
@@ -254,7 +254,7 @@ protected:
     BOOL SelectedByMouse;      // TRUE->ByMouse FALSE->ByKeyboard
     HIMAGELIST HImageList;
     HIMAGELIST HHotImageList;
-    int ImageWidth; // dimensions of one image from HImageList
+    int ImageWidth; // width of one image from HImageList
     int ImageHeight;
     DWORD ID;                  // copy of ID from CMenuItem
     BOOL Closing;              // HideAll was called and we finish as soon as possible
@@ -359,22 +359,22 @@ public:
     // 'hwnd'         [in] Handle to the window that owns the shortcut menu. This window
     //                receives all messages from the menu. The window does not receive a
     //                WM_COMMAND message from the menu until the function returns.
-    //                If you specify TPM_NONOTIFY in the fuFlags parameter, the function
-    //                does not send messages to the window identified by hwnd. However,
-    //                you still have to pass a window handle in hwnd. It can be any window
-    //                handle from your application.
+    //                If you specify MENU_TRACK_NONOTIFY in the 'trackFlags' parameter, the
+    //                function does not send messages to the window identified by hwnd.
+    //                However, you still have to pass a window handle in hwnd. It can be
+    //                any window handle from your application.
     //
     // 'exclude'      [in] Rectangle to exclude when positioning the menu, in screen
     //                coordinates. This parameter can be NULL.
     //
     // Return Values:
-    //   If you specify TPM_RETURNCMD in the 'flags' parameter, the return value is the
-    //   menu-item identifier of the item that the user selected. If the user cancels
-    //   the menu without making a selection, or if an error occurs, then the return
-    //   value is zero.
+    //   If you specify MENU_TRACK_RETURNCMD in the 'trackFlags' parameter, the return
+    //   value is the menu-item identifier of the item that the user selected. If the
+    //   user cancels the menu without making a selection, or if an error occurs, then
+    //   the return value is zero.
     //
-    //   If you do not specify TPM_RETURNCMD in the 'flags' parameter, the return value
-    //   is nonzero if the function succeeds and zero if it fails.
+    //   If you do not specify MENU_TRACK_RETURNCMD in the 'trackFlags' parameter, the
+    //   return value is nonzero if the function succeeds and zero if it fails.
     virtual DWORD WINAPI Track(DWORD trackFlags, int x, int y, HWND hwnd, const RECT* exclude);
 
     virtual BOOL WINAPI GetItemRect(int index, RECT* rect); // returns bounding rectangle of the item in screen coordinates
@@ -405,7 +405,7 @@ protected:
 
     BOOL FindNextItemIndex(int fromIndex, BOOL topToDown, int* index);
     inline CMenuPopup* FindActivePopup();       // finds the last opened popup; returns a pointer to the object
-    inline CMenuPopup* FindPopup(HWND hWindow); // searches from this popup down to the last child; returns a pointer to the object or NULL
+    inline CMenuPopup* FindPopup(HWND hWindow); // searches from this popup down to the last child; returns a pointer to the popup object or NULL
     inline void DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, BOOL* dispatchLater);
     void OnTimerTimeout();
     void CheckSelectedPath(CMenuPopup* terminator); // traverses the whole branch and sets SelectedItems so they lead to the last popup
@@ -489,7 +489,7 @@ protected:
     BOOL Closing;        // WM_USER_CLOSEMENU was called and we exit as soon as possible
     HANDLE HCloseEvent;  // used to start the message queue
     BOOL MouseIsTracked; // is the mouse tracked using TrackMouseEvent?
-    BOOL HelpMode;       // are we in Context Help mode (Shift+F1)?
+    BOOL HelpMode;       // Context Help mode (Shift+F1)?
 
     // these two variables are used for cooperation between MenuBar and MenuPopup
     // they are set in CMenuPopup::TrackInternal and determine further behavior
@@ -501,7 +501,7 @@ protected:
     BOOL ExitMenuLoop;   // TRUE to exit MenuLoop
     BOOL HelpMode2;      // did we receive WM_USER_HELP_MOUSEMOVE and wait for
                          // WM_USER_HELP_MOUSELEAVE? (we must highlight the item under the cursor)
-    WORD UIState;        // accelerator display state
+    WORD UIState;        // accelerator display
     BOOL ForceAccelVisible;
 
 public:
