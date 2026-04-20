@@ -124,8 +124,8 @@ CToolTip::GetTime(BOOL init)
         return (GetDoubleClickTime() * 10) / 100;
 }
 
-// The only method I devised for detecting cursor height
-// is drawing the cursor mask into a DIB and then scanning the bit field.
+// The only method found for detecting the cursor height
+// is to draw the cursor mask into a DIB and then scan the bit array.
 BOOL GetCursorHeight(HCURSOR hCursor)
 {
     if (hCursor == 0)
@@ -224,8 +224,8 @@ void CToolTip::MessageLoop()
     ShowWindow(HWindow, SW_HIDE);
     IsModal = FALSE;
 
-    // our window captured the input; we received all messages
-    // now we need to deliver the last message to the recipient
+    // our window had captured the input, so all messages were delivered to us
+    // now we need to deliver the last message to its target
     if (msg.message == WM_LBUTTONDOWN || msg.message == WM_RBUTTONDOWN ||
         msg.message == WM_MBUTTONDOWN)
     {
@@ -533,9 +533,9 @@ void CToolTip::OnTimer()
         POINT p;
         GetCursorPos(&p);
         HWND hWnd = WindowFromPoint(p);
-        if (hWnd == HNotifyWindow) // we must still be on the notify window
+        if (hWnd == HNotifyWindow) // the cursor must still be over the notify window
         {
-            if (HasActiveParent(hWnd)) // the root window must also be active
+            if (HasActiveParent(hWnd)) // its root window must also be active
             {
                 if (Show(p.x, p.y, TRUE, FALSE, HNotifyWindow))
                 {
