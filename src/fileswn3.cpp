@@ -176,7 +176,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             break;
         }
 
-        default: // case DRIVE_FIXED:   // not just fixed, but also the others (RAM DISK, etc.)
+        default: // case DRIVE_FIXED:   // not only fixed, but also the other types (RAM disk, etc.)
         {
             UseSystemIcons = !Configuration.DrvSpecFixedSimple;
             break;
@@ -228,7 +228,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         BOOL UNCRootUpDir = FALSE;
         if (GetPath()[0] == '\\' && GetPath()[1] == '\\')
         {
-            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // path of the "\\.\C:\" type
+            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // "\\.\C:\"-type path
             {
                 upDir = strlen(GetPath()) > 7;
             }
@@ -304,7 +304,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     StatusLine->SetText(LoadStr(IDS_NOFILESFOUND));
                     SetCurrentDirectoryToSystem();
                     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
-                    if (UseSystemIcons || UseThumbnails) // even though we don't have any icons, we need to start loading them (just to set IconCacheValid = TRUE)
+                    if (UseSystemIcons || UseThumbnails) // even if no icons are available, loading must still start to set IconCacheValid = TRUE
                     {
                         if (IconCache->Count > 1)
                             IconCache->SortArray(0, IconCache->Count - 1, NULL);
@@ -369,7 +369,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 if (isRefresh &&
                     (err == ERROR_ACCESS_DENIED || err == ERROR_PATH_NOT_FOUND ||
                      err == ERROR_BAD_PATHNAME || err == ERROR_FILE_NOT_FOUND))
-                { // when a path displayed in the panel is deleted, these errors appear, which we do not want, so just silently shorten the path to the first existing one (unfortunately this is not caught earlier because the path still exists for some time after deletion due to Windows behavior)
+                { // if the path displayed in the panel is deleted, these errors appear and should be suppressed, so just silently shorten the path to the first existing one (unfortunately this is not caught earlier because the path may still appear to exist for some time after deletion due to Windows behavior)
                     //          TRACE_I("ReadDirectory(): silently ignoring FindFirstFile failure: " << GetErrorText(err));
                     showErr = FALSE;
                 }
@@ -764,7 +764,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         if (foundThumbLoaderPlugins.Count > 0)
                         {
                             int size = len + 4;
-                            size -= (size & 0x3); // size % 4 (4-byte alignment)
+                            size -= (size & 0x3); // 4-byte alignment
                             int nameSize = size;
                             size += sizeof(CQuadWord) + sizeof(FILETIME);
                             size += (foundThumbLoaderPlugins.Count + 1) * sizeof(void*); // space for pointers to plugin interfaces and NULL at the end
@@ -820,7 +820,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         memmove(iconData.NameAndData, file.Name, len);
                         memset(iconData.NameAndData + len, 0, size - len); // end of name is zeroed
                         iconData.SetFlag(0);                               // icon not loaded yet
-// bitmap storage must be allocated here; it cannot be done in the worker thread
+                                                                           // bitmap storage must be allocated here; it cannot be done in the worker thread
                         iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                         if (iconData.GetIndex() != -1)
                         {
@@ -846,7 +846,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
             } while (FindNextFile(search, &fileData));
             DWORD err = GetLastError();
 
-            if (search != NULL) // the first pass
+            if (search != NULL) // first pass
             {
                 DestroySafeWaitWindow();
                 HANDLES(FindClose(search));
@@ -1166,7 +1166,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                 memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
                                 iconData.SetFlag(3); // icon not loaded yet; only the icon location is known
-// we need to allocate space for the bitmaps, which cannot be done in this thread
+                                                     // we need to allocate space for the bitmaps, which cannot be done in this thread
                                 iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                 if (iconData.GetIndex() != -1)
                                 {
@@ -1427,7 +1427,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
                                     iconData.SetFlag(3); // icon not yet loaded, specified only by icon-location
-// we need to allocate space for the bitmaps; this cannot be done in the worker thread
+                                                         // we need to allocate space for the bitmaps; this cannot be done in the worker thread
                                     iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                     if (iconData.GetIndex() != -1)
                                     {
@@ -1532,10 +1532,10 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     BOOL isDir = i < FSDirs->Count;
                                     CFileData* f = (isDir ? &FSDirs->At(i) : &FSFiles->At(i - FSDirs->Count));
 
-                                    // a pointer to CFileData is needed for PluginFSDir, because items in Files and Dirs can move
-                                    // for example when sorting (Files and Dirs are arrays of CFileData, not `CFileData*`, which causes these problems)
+                                    // a pointer to CFileData is needed in PluginFSDir because items in Files and Dirs can move
+                                    // for example during sorting (Files and Dirs are arrays of CFileData, not `CFileData*`, which causes these problems)
                                     if (Configuration.NotHiddenSystemFiles &&
-                                        (f->Hidden || //both Hidden a Attr jsou nulovane pokud jsou neplatne -> testy failnou
+                                        (f->Hidden || // both Hidden and Attr are zeroed when invalid -> tests fail
                                          (f->Attr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))))
                                     { // skip hidden file/directory
                                         continue;
@@ -1625,7 +1625,7 @@ void SortFilesAndDirectories(CFilesArray* files, CFilesArray* dirs, CSortType so
 {
     CALL_STACK_MESSAGE1("SortDirectoryAux()");
 
-    // CAUTION: must match the sort code in RefreshDirectory, ChangeSortType, and CompareDirectories !!
+    // CAUTION: must match the sort code used in RefreshDirectory, ChangeSortType, and CompareDirectories.
 
     if (dirs->Count > 0)
     {
@@ -1717,7 +1717,7 @@ BOOL IsWin64RedirectedDirAux(const char* subDir, const char* redirectedDir, cons
             if (h != INVALID_HANDLE_VALUE)
             {
                 HANDLES(FindClose(h));
-                return FALSE; // this is not just a pseudo-directory; a directory with the same name exists there, which means that, for example, the context menu will work almost normally
+                return FALSE; // this is not just a pseudo-directory; a directory with the same name exists there, which means that, for example, the context menu will work more or less normally
             }
         }
 
@@ -2235,7 +2235,7 @@ CHANGE_AGAIN:
                             err = GetLastError();
                             if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND &&
                                 err != ERROR_BAD_PATHNAME && err != ERROR_INVALID_NAME)
-                            { // If the path may contain a directory we cannot access (try whether later path components are accessible)
+                            { // If the path may contain a directory we cannot access (check whether later path components are accessible)
                                 DWORD firstErr = err;
                                 char* firstCopyEnd = st + strlen(st);
                                 while (*end != 0)
@@ -2259,7 +2259,7 @@ CHANGE_AGAIN:
                                         err = GetLastError();
                                         if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND ||
                                             err == ERROR_BAD_PATHNAME || err == ERROR_INVALID_NAME)
-                                            break; // path error, stopping...
+                                            break; // invalid path, stop
                                     }
                                 }
                                 if (*end == 0 && h == INVALID_HANDLE_VALUE) // no other accessible component found; try listing the current path
