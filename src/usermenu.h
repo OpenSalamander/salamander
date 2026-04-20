@@ -132,17 +132,17 @@ struct CUserMenuItem
 
     ~CUserMenuItem();
 
-    // Tries to retrieve the icon handle in this order
+    // Tries to retrieve the icon handle in this order:
     // a) the Icon variable
     // b) SHGetFileInfo
-    // c) takes the system default
-    // Reading icons in the background: if 'bkgndReaderData' is NULL, we read immediately; otherwise the icons
-    // are read in the background. If 'getIconsFromReader' is FALSE, we collect what to load into 'bkgndReaderData'.
-    // If it is TRUE, the icons are already loaded and we simply take over the handles of the loaded icons
-    // from 'bkgndReaderData'.
+    // c) the system default icon
+    // Background icon loading: if 'bkgndReaderData' is NULL, read immediately; otherwise the icons
+    // are read in the background. If 'getIconsFromReader' is FALSE, collect what should be loaded into
+    // 'bkgndReaderData'. If it is TRUE, the icons are already loaded and we only take the loaded icon
+    // handles from 'bkgndReaderData'.
     BOOL GetIconHandle(CUserMenuIconDataArr* bkgndReaderData, BOOL getIconsFromReader);
 
-    // Searches ItemName for '&' and returns HotKey; returns TRUE if one is found.
+    // Searches ItemName for '&' and returns the hot key in key; returns TRUE if one is found.
     BOOL GetHotKey(char* key);
 
     BOOL Set(char* name, char* umCommand, char* arguments, char* initDir, char* icon);
