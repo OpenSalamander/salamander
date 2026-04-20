@@ -636,7 +636,7 @@ void CFilesWindow::ChangeAttr(BOOL setCompress, BOOL compressed, BOOL setEncrypt
             {
                 // count how many directories are selected (the rest of the selected items are files)
                 int i;
-                for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, the check would be unnecessary
+                for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, so the check would be unnecessary
                 {
                     if (Dirs->At(i).Selected)
                         selectedDirs++;
@@ -651,7 +651,7 @@ void CFilesWindow::ChangeAttr(BOOL setCompress, BOOL compressed, BOOL setEncrypt
             // raise the thread priority again, the operation has finished
             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-            if (success) // success -> unselect
+            if (success) // On success, clear the selection
             {
                 SetSel(FALSE, -1, TRUE);                        // explicit repaint
                 PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // selection change notify
@@ -728,7 +728,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
 
     BOOL addToHistory = name != NULL;
     // if viewing/editing from the panel, obtain the full long name
-    BOOL useDiskCache = FALSE;          // TRUE only for ZIP - uses disk-cache
+    BOOL useDiskCache = FALSE;          // TRUE only for ZIP; uses the disk cache
     BOOL arcCacheCacheCopies = TRUE;    // cache copies in disk-cache unless the archiver plugin requests otherwise
     char dcFileName[3 * MAX_PATH + 50]; // ZIP: name for disk-cache
     if (name == NULL)
@@ -768,7 +768,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
                         if (strlen(f->DosName) + (s - path) < MAX_PATH)
                         {
                             strcpy(s, f->DosName);
-                            if (SalGetFileAttributes(path) == 0xffffffff) // still error -> revert to the long name
+                            if (SalGetFileAttributes(path) == 0xffffffff) // still an error -> revert to the long name
                             {
                                 if ((s - path) + f->NameLen < MAX_PATH)
                                     strcpy(s, f->Name);
@@ -805,7 +805,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
                     {
                         format--;
                         int index = PackerFormatConfig.GetUnpackerIndex(format);
-                        if (index < 0) // view: is the processing internal (plugin)?
+                        if (index < 0) // view: is this handled internally by a plugin?
                         {
                             CPluginData* data = Plugins.Get(-index - 1);
                             if (data != NULL)
@@ -909,7 +909,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
                 {
                     if (Is(ptPluginFS))
                     {
-                        if (GetPluginFS()->NotEmpty() && // FS is fine and supports view-file
+                        if (GetPluginFS()->NotEmpty() && // FS is valid and supports ViewFile
                             GetPluginFS()->IsServiceSupported(FS_SERVICE_VIEWFILE))
                         {
                             // lower the thread priority to "normal" (so the operations don't overload the machine)
@@ -921,7 +921,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
                             // raise the thread priority again, the operation has finished
                             SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                         }
-                        return; // view on the FS is already done
+                        return; // viewing on the FS is already handled
                     }
                     else
                     {
@@ -948,7 +948,7 @@ void CFilesWindow::ViewFile(char* name, BOOL altView, DWORD handlerID, int enumF
         {
             DiskCache.AssignName(dcFileName, lock, lockOwner, arcCacheCacheCopies ? crtCache : crtDirect);
         }
-        else // viewer didn't open or has no "lock" object - try leaving the file in disk-cache
+        else // viewer did not open or has no "lock" object; try to at least keep the file in the disk cache
         {
             DiskCache.ReleaseName(dcFileName, arcCacheCacheCopies);
         }
@@ -1038,17 +1038,17 @@ BOOL ViewFileInt(HWND parent, const char* name, BOOL altView, DWORD handlerID, B
 
                     if (viewer != NULL && viewer->ViewerType != VIEWER_EXTERNAL &&
                         viewer->ViewerType != VIEWER_INTERNAL)
-                    { // plug-in viewers only
+                    { // plugin viewers only
                         CPluginData* plugin = Plugins.Get(-viewer->ViewerType - 1);
                         if (plugin != NULL && plugin->SupportViewer)
                         {
                             if (!plugin->CanViewFile(name))
-                                continue; // try to find another viewer, this one won't do it
+                                continue; // try to find another viewer; this one cannot view the file
                         }
                         else
                             TRACE_E("Unexpected error (before CanViewFile) in (Alt)ViewerMasks (invalid ViewerType).");
                     }
-                    break; // everything is fine, open the viewer
+                    break; // Everything is OK, proceed to open the viewer
                 }
             }
             else
@@ -1186,7 +1186,7 @@ BOOL ViewFileInt(HWND parent, const char* name, BOOL altView, DWORD handlerID, B
             break;
         }
 
-        default: // plug-ins
+        default: // plugins
         {
             HANDLE lockAux = NULL;
             BOOL lockOwnerAux = FALSE;
@@ -1292,7 +1292,7 @@ void CFilesWindow::EditFile(char* name, DWORD handlerID)
                         if (strlen(f->DosName) + (s - path) < MAX_PATH)
                         {
                             strcpy(s, f->DosName);
-                            if (SalGetFileAttributes(path) == 0xffffffff) // still error -> revert to the long name
+                            if (SalGetFileAttributes(path) == 0xffffffff) // still an error -> revert to the long name
                             {
                                 if ((s - path) + f->NameLen < MAX_PATH)
                                     strcpy(s, f->Name);
@@ -1508,8 +1508,8 @@ void CFilesWindow::EditNewFile()
             if (first)
             {
                 const char* dot = strrchr(path, '.');
-                if (dot != NULL && dot > path) // although ".cvspass" is an extension in Windows, Explorer selects the entire name, so we do the same
-                                               //      if (dot != NULL)
+                if (dot != NULL && dot > path) // although ".cvspass" counts as an extension in Windows, Explorer selects the whole name, so we do the same
+//      if (dot != NULL)
                     selectionEnd = (int)(dot - path);
                 dlg.SetSelectionEnd(selectionEnd);
                 first = FALSE; // after an error we get the full file name, so we select it all
@@ -1585,7 +1585,7 @@ void CFilesWindow::EditNewFile()
         else
             break;
     }
-    EndStopRefresh(); // snooper will start again now
+    EndStopRefresh(); // resume refresh monitoring
 }
 
 // fills the popup based on available viewers
@@ -1706,7 +1706,7 @@ BOOL CFilesWindow::FillViewWithData(TDirectArray<CViewerMasksItem*>* items)
 
 void CFilesWindow::OnViewFileWith(int index)
 {
-    BeginStopRefresh(); // snooper takes a break
+    BeginStopRefresh(); // suspend refresh monitoring
 
     // get the list of viewer indexes
     TDirectArray<CViewerMasksItem*> items(50, 10);
@@ -1869,7 +1869,7 @@ void CFilesWindow::EditFileWith(char* name, HWND hMenuParent, const POINT* menuP
             *handlerID = masks->At(index)->HandlerID;
     }
 
-    EndStopRefresh(); // snooper will start again now
+    EndStopRefresh(); // refresh watching resumes now
 }
 
 BOOL FileNameInvalidForManualCreate(const char* path)
@@ -1956,7 +1956,7 @@ void CFilesWindow::CreateDir(CFilesWindow* target)
     // restore DefaultDir
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() == this);
 
-    if (Is(ptDisk)) // create directory on disk
+    if (Is(ptDisk)) // create a directory on disk
     {
         CTruncatedString subject;
         subject.Set(LoadStr(IDS_CREATEDIRECTORY_TEXT), NULL);
@@ -1974,10 +1974,10 @@ void CFilesWindow::CreateDir(CFilesWindow* target)
             // for disk paths we flip '/' to '\\' and eliminate duplicate backslashes
             SlashesToBackslashesAndRemoveDups(path);
 
-            // clean the name from undesirable characters at the beginning and end
-            // we do this only for the last component; the previous ones already exist and it doesn't matter
-            // (the system handles it) or they are checked during creation and an error is shown
-            // (we don't clean them, we let the user do some work, it's easy enough)
+            // clean invalid characters from the beginning and end of the name
+            // only for the last component; the previous ones either already exist and are handled
+            // by the system, or they are checked during creation and an error is shown if needed
+            // (we do not sanitize them on our side, so the user still has to correct them)
             char* lastCompName = strrchr(path, '\\');
             MakeValidFileName(lastCompName != NULL ? lastCompName + 1 : path);
 
@@ -2061,7 +2061,7 @@ void CFilesWindow::CreateDir(CFilesWindow* target)
             newName[0] = 0;
             BOOL cancel = FALSE;
             BOOL ret = GetPluginFS()->CreateDir(GetPluginFS()->GetPluginFSName(), 1, HWindow, newName, cancel);
-            if (!cancel) // not a cancel of the operation
+            if (!cancel) // the operation was not canceled
             {
                 if (!ret)
                 {
@@ -2186,7 +2186,7 @@ void CFilesWindow::RenameFileInternal(CFileData* f, const char* formatedFileName
             }
             else
             {
-                if (StrICmp(path, tgtPath) != 0 && // if it isn't just change-case
+                if (StrICmp(path, tgtPath) != 0 && // if this is not just a case change
                     (err == ERROR_FILE_EXISTS ||   // check whether it's only rewriting the DOS name of the file
                      err == ERROR_ALREADY_EXISTS))
                 {
@@ -2196,7 +2196,7 @@ void CFilesWindow::RenameFileInternal(CFileData* f, const char* formatedFileName
                     {
                         HANDLES(FindClose(find));
                         const char* tgtName = SalPathFindFileName(tgtPath);
-                        if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // match only for DOS name
+                        if (StrICmp(tgtName, data.cAlternateFileName) == 0 && // match only for the DOS name
                             StrICmp(tgtName, data.cFileName) != 0)            // (full name differs)
                         {
                             // rename ("clean up") the file/directory with the conflicting DOS name to a temporary 8.3 name (no extra DOS name needed)
@@ -2362,7 +2362,7 @@ void CFilesWindow::RenameFile(int specialIndex)
                         &subject, IDD_RENAMEDIALOG, Configuration.QuickRenameHistory,
                         QUICKRENAME_HISTORY_SIZE, FALSE);
 
-    if (Is(ptDisk)) // rename on disk
+    if (Is(ptDisk)) // renaming on disk
     {
 #ifndef _WIN64
         if (Windows64Bit && isDir)
@@ -2454,7 +2454,7 @@ void CFilesWindow::RenameFile(int specialIndex)
             // if we selected an item, we deselect it again
             UnselectItemWithName(temporarySelected);
 
-            if (!cancel) // not a cancel of the operation
+            if (!cancel) // the operation was not canceled
             {
                 if (!ret)
                 {
@@ -2625,7 +2625,7 @@ void CFilesWindow::QuickRenameBegin(int index, const RECT* labelRect)
     else
         subDir = FALSE;
     if (index == 0 && subDir)
-        return; // we do not work with ".."
+        return; // skip ".."
 
     CFileData* f = NULL;
     BOOL isDir = index < Dirs->Count;
@@ -2762,18 +2762,18 @@ BOOL CFilesWindow::HandeQuickRenameWindowKey(WPARAM wParam)
     char newName[MAX_PATH];
     GetWindowText(hWnd, newName, MAX_PATH);
 
-    // lower the thread priority to "normal" (so operations don't overload the machine)
+    // lower the current thread priority to "normal" (so the operation does not put too much load on the machine)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
     BOOL tryAgain = FALSE;
     BOOL mayChange = FALSE;
     if (Is(ptDisk))
     {
-        // If this is an in-place rename and the user didn't change the name, we shouldn't
-        // attempt to rename it because the user might be on a CD-ROM or other read-only disk
-        // and we would display the "Access is denied" error. The user has no mouse option
-        // to cancel the operation, so they would have to press Escape.
-        // Explorer behaves this way now.
+        // If this is an in-place rename and the user did not change the name, we should not
+        // attempt to rename it because the user may be on a CD-ROM or another read-only disk,
+        // and we would then display an "Access is denied" error. The user cannot cancel the
+        // operation with the mouse, so they would have to press Escape.
+        // Explorer behaves this way as well.
         if (strcmp(f->Name, newName) != 0)
             RenameFileInternal(f, newName, &mayChange, &tryAgain);
     }
