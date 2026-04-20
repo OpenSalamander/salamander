@@ -110,7 +110,7 @@ ENUM_NEXT:
     }
     else
     {
-        if (data->EnumLastDir == NULL) // need to "open" the directory
+        if (data->EnumLastDir == NULL) // the directory needs to be "opened"
         {
             int i = data->Indexes[data->CurrentIndex];
             BOOL localIsDir = i < data->Dirs->Count;
@@ -193,7 +193,7 @@ ENUM_NEXT:
 
             while (1)
             {
-                if (data->EnumLastDir->IsDirectory(data->EnumLastIndex)) // directory -> descend into it
+                if (data->EnumLastDir->IsDirectory(data->EnumLastIndex)) // directory -> descend
                 {
                     CFileData* f = data->EnumLastDir->GetDirEx(data->EnumLastIndex);
                     BOOL tooLong1 = strlen(data->EnumLastPath) + 1 + f->NameLen >= MAX_PATH;
@@ -309,7 +309,7 @@ ENUM_NEXT:
                         // check whether we have already exited the tree
                         if (strlen(dir) == strlen(curZIPPath))
                         {
-                            if (fileData != NULL) // find the CFileData for the subdirectory we are leaving
+                            if (fileData != NULL) // find CFileData for the subdirectory that we are exiting
                             {
                                 int i = data->Indexes[data->CurrentIndex];
                                 if (i < data->Dirs->Count)
@@ -362,7 +362,7 @@ ENUM_NEXT:
                             if (dosName != NULL)
                                 *dosName = data->EnumTmpDosFileName;
                         }
-                        return data->EnumTmpFileName; // return the directory
+                        return data->EnumTmpFileName; // return the directory when exiting
                     }
                 }
             }
@@ -432,7 +432,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
         // build the subject for the dialog
         ExpandPluralFilesDirs(expanded, 200, files, data.IndexesCount - files, epfdmNormal, FALSE);
     }
-    else // use the selected file or directory
+    else // take the selected file or directory
     {
         int index;
         if (data.IndexesCount == 0)
