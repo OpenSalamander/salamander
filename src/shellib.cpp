@@ -156,7 +156,7 @@ void CImpDropTarget::SetDirectory(const char* path, DWORD grfKeyState, POINTL pt
             strcpy(CurDir, path);
         }
     }
-    else // archives + filesystem
+    else // archives + file system
     {
         if (CurDirDropTarget != NULL)
         {
@@ -190,15 +190,15 @@ BOOL CImpDropTarget::ProcessClipboardData(BOOL copy, const DROPFILES* data,
     CCopyMoveData* array = new CCopyMoveData(100, 50);
     if (array != NULL)
     {
-        // array->MakeCopyOfName will be TRUE if it is our own copy & paste from the clipboard
-        // (copying with the rule that if the destination already exists, "Copy of ..." will be created)
-        //    array->MakeCopyOfName = copy && OurClipDataObject && mapA == NULL && mapW == NULL;  // to make it work even through drag&drop
+        // array->MakeCopyOfName is TRUE for our own copy-and-paste from the clipboard
+        // (copying where, if the destination already exists, "Copy of ..." will be created)
+        //    array->MakeCopyOfName = copy && OurClipDataObject && mapA == NULL && mapW == NULL;  // so it also works via drag and drop
         array->MakeCopyOfName = copy && mapA == NULL && mapW == NULL; // only our data object arrives here
 
         if (data->fWide)
         {
             const wchar_t* fileW = (wchar_t*)(((char*)data) + data->pFiles);
-            while (1) // double null terminated, assumes no empty strings (start)
+            while (1) // double-null-terminated; does not handle empty strings at the start
             {
                 if (*fileW == 0)
                 {
@@ -334,7 +334,7 @@ BOOL IsSimpleSelection(IDataObject* pDataObject, CDragDropOperData* namesList)
 {
     CALL_STACK_MESSAGE1("IsSimpleSelection()");
     BOOL ret = FALSE;
-    if (pDataObject != NULL && !IsFakeDataObject(pDataObject, NULL, NULL, 0)) // data from an archive or plug-in filesystem are not accepted here
+    if (pDataObject != NULL && !IsFakeDataObject(pDataObject, NULL, NULL, 0)) // data from an archive or plugin filesystem are not accepted here
     {
         IEnumFORMATETC* enumFormat;
         if (pDataObject->EnumFormatEtc(DATADIR_GET, &enumFormat) == S_OK)
@@ -345,12 +345,12 @@ BOOL IsSimpleSelection(IDataObject* pDataObject, CDragDropOperData* namesList)
             UINT CF_FileMapA = RegisterClipboardFormat(CFSTR_FILENAMEMAPA);
             UINT CF_FileMapW = RegisterClipboardFormat(CFSTR_FILENAMEMAPW);
 
-            // Windows XP Remote Desktop problem, viz https://forum.altap.cz/viewtopic.php?p=13176#13176
-            // If we detect truncated versions of format names, it is almost certainly Remote Desktop
+            // Windows XP Remote Desktop problem, see https://forum.altap.cz/viewtopic.php?p=13176#13176
+            // If we detect truncated versions of the format names, it is most likely Remote Desktop
             // and we must not call pDataObject->GetData(), because that would trigger copying the file on the remote machine
-            // to our temp directory and we would stay frozen during that time
-            // Since Windows Vista the problem has been fixed and the names are no longer truncated, so this patch
-            // concerns only XP.
+            // to our temp directory, and we would remain frozen for that entire time
+            // Starting with Windows Vista, the problem is fixed and the names are no longer truncated, so this patch
+            // affects only XP.
             BOOL cfRemoteDesktop1 = FALSE;
             BOOL cfRemoteDesktop2 = FALSE;
             BOOL cfRemoteDesktop3 = FALSE;
@@ -520,7 +520,7 @@ BOOL IsSimpleSelection(IDataObject* pDataObject, CDragDropOperData* namesList)
                                 const char* fileA = ((char*)data) + data->pFiles;
                                 while (1) // double null terminated, assumes no empty strings (start)
                                 {
-                                    if (*fileA == 0) // no more names, success!
+                                    if (*fileA == 0) // no more names remain; success
                                     {
                                         if (namesList != NULL) // add the common path of all names to namesList
                                         {
@@ -666,10 +666,10 @@ STDMETHODIMP CImpDropTarget::DragEnter(IDataObject* pDataObject,
         }
     }
 
-    if (CurDirDropTarget != NULL) // jen idtttWindows
+    if (CurDirDropTarget != NULL) // only idtttWindows
     {
         HRESULT res = CurDirDropTarget->DragEnter(pDataObject, grfKeyState, pt, pdwEffect);
-        if (res != S_OK) // drop-target error - report it as a "none" drop effect because
+        if (res != S_OK) // drop-target error - report it as a "none" drop effect because other drop targets in the panel may still work
         {                // other drop targets in the panel may still work
             LastEffect = -1;
             *pdwEffect = DROPEFFECT_NONE;
@@ -734,7 +734,7 @@ STDMETHODIMP CImpDropTarget::DragEnter(IDataObject* pDataObject,
                                     pdwEffect, GetFSToFSDropEffectParam);
                 DragFromPluginFSEffectIsFromPlugin = TRUE;
             }
-            else // from disk to archive and from disk to FS: Copy has priority
+            else // from disk to archive and from disk to FS: Copy takes priority
             {
                 if ((*pdwEffect & DROPEFFECT_COPY) != 0)
                     *pdwEffect = DROPEFFECT_COPY;
@@ -786,7 +786,7 @@ STDMETHODIMP CImpDropTarget::DragOver(DWORD grfKeyState, POINTL pt,
                 SetDirectory(NULL, grfKeyState, pt, pdwEffect, OldDataObject, FALSE, idtttWindows);
         }
     }
-    if (CurDirDropTarget != NULL) // jen idtttWindows
+    if (CurDirDropTarget != NULL) // only idtttWindows
     {
         HRESULT res = CurDirDropTarget->DragOver(grfKeyState, pt, pdwEffect);
         if (res == S_OK && OldDataObjectIsFake)
@@ -804,7 +804,7 @@ STDMETHODIMP CImpDropTarget::DragOver(DWORD grfKeyState, POINTL pt,
                 {
                     if ((origEffect & DROPEFFECT_MOVE) != 0)
                         *pdwEffect = DROPEFFECT_MOVE;
-                    else // drop-target error
+                    else // drop target failure
                     {
                         *pdwEffect = DROPEFFECT_NONE;
                         pdwEffect = NULL;
@@ -974,7 +974,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
             }
             else
             {
-                if (CurDirDropTarget != NULL) // obtain the default drop effect
+                if (CurDirDropTarget != NULL) // determine the default drop effect
                 {
                     CurDirDropTarget->DragOver(grfKeyState, pt, &defEffect);
                 }
@@ -1011,7 +1011,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
                         defEffect = 0; // drop-target error
                     DragFromPluginFSEffectIsFromPlugin = TRUE;
                 }
-                else // from disk to archive and from disk to FS: Copy has priority
+                else // from disk to archive and from disk to FS: copy takes priority
                 {
                     if ((defEffect & DROPEFFECT_COPY) != 0)
                         defEffect = DROPEFFECT_COPY;
@@ -1036,7 +1036,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
         *pdwEffect = defEffect;
         origEffect = *pdwEffect;
 
-        if (CurDirDropTarget != NULL) // info about key changes (shift+control for other...), probably redundant since W2K
+        if (CurDirDropTarget != NULL) // information about modifier key changes (Shift+Control and others), probably redundant since Windows 2000
         {
             CurDirDropTarget->DragOver(grfKeyState, pt, &defEffect);
             defEffect = *pdwEffect;
@@ -1089,7 +1089,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
             else
             {
                 defEffect = *pdwEffect;
-                if (CurDirDropTarget != NULL) // obtain the default drop effect
+                if (CurDirDropTarget != NULL) // determine the default drop effect
                 {
                     CurDirDropTarget->DragOver(grfKeyState, pt, &defEffect);
                 }
@@ -1103,7 +1103,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
         if (ownRutine &&
             (defEffect == DROPEFFECT_COPY || defEffect == DROPEFFECT_MOVE) &&
             pDataObject != NULL && DoCopyMove != NULL)
-        { // are we unable to perform the operation ourselves?
+        { // can we perform the operation ourselves?
             IEnumFORMATETC* enumFormat;
             if (pDataObject->EnumFormatEtc(DATADIR_GET, &enumFormat) == S_OK)
             {
@@ -1200,7 +1200,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
             CurDirDropTarget = NULL;
         }
     }
-    else // archives and filesystem
+    else // archives and file systems
     {
         if (TgtType == idtttArchive || TgtType == idtttPluginFS ||
             TgtType == idtttArchiveOnWinPath || TgtType == idtttFullPluginFSPath)
@@ -1227,7 +1227,7 @@ STDMETHODIMP CImpDropTarget::Drop(IDataObject* pDataObject, DWORD grfKeyState,
                                     origKeyState, pdwEffect, GetFSToFSDropEffectParam);
                 DragFromPluginFSEffectIsFromPlugin = TRUE;
             }
-            else // from disk to archive and from disk to FS: Copy has priority
+            else // from disk to archive and from disk to FS: COPY takes priority
             {
                 if ((*pdwEffect & DROPEFFECT_COPY) != 0)
                     *pdwEffect = DROPEFFECT_COPY;
@@ -1421,7 +1421,7 @@ LPITEMIDLIST GetItemIdListForFileName(LPSHELLFOLDER folder, const char* fileName
                                     enumNamePrefix == NULL && StrICmp(name, fileName) == 0) // we found the share we were looking for
                                 {
                                     foundPidl = idList;
-                                    break; // PIDL found (obtained)
+                                    break; // PIDL found
                                 }
                             }
                         }
@@ -1522,9 +1522,9 @@ ITEMIDLIST** CreateItemIdList(LPSHELLFOLDER folder, int files,
     for (i = 0; i < files; i++)
     {
         const char* fileName = nextFile(i, param);
-        // for example, to obtain a working data object, the contained names must be valid,
-        // drag&drop of an invalid name results in an operation on a name with silently trimmed spaces/dots
-        // at the end (instead of "a   " it uses "a"), which we definitely do not want
+        // for example, to obtain a working data object, the contained names must be valid.
+        // Drag and drop of an invalid name results in an operation on a name with silently trimmed trailing spaces/dots
+        // (instead of "a   " it uses "a"), which we definitely do not want
         if (namesMustBeValid && FileNameIsInvalid(fileName, FALSE))
         {
             TRACE_I("CreateItemIdList: unable to create IdList becuase of invalid name: \"" << fileName << "\"");
@@ -1535,7 +1535,7 @@ ITEMIDLIST** CreateItemIdList(LPSHELLFOLDER folder, int files,
         if (pidl != NULL)
             list[i] = pidl;
         else
-            break; // some error
+            break; // error
     }
 
     if (pidl == NULL)
@@ -1564,8 +1564,8 @@ BOOL GetShellFolder(const char* dir, IShellFolder*& shellFolderObj, LPITEMIDLIST
     HRESULT ret;
     LPSHELLFOLDER desktop;
     // if the path contains components ending with spaces or dots, the shell will not return
-    // the folder for the requested path, but only for the path created by trimming those
-    // spaces/dots, so we should give up on it early...
+    // the folder for the requested path, but for the path created by trimming those
+    // spaces/dots, so it is better to give up early
     if (PathContainsValidComponents((char*)dir, FALSE))
     {
         if (SUCCEEDED((ret = SHGetDesktopFolder(&desktop))))
@@ -1665,10 +1665,10 @@ BOOL GetShellFolder(const char* dir, IShellFolder*& shellFolderObj, LPITEMIDLIST
 
                                                 if (name != NULL)
                                                 {
-                                                    if (strlen(name) <= 3 && StrNICmp(name, root, 2) == 0) // name = "c:" nebo "c:\"
+                                                    if (strlen(name) <= 3 && StrNICmp(name, root, 2) == 0) // name = "c:" or "c:\"
                                                     {
                                                         pidlFolder = idList;
-                                                        break; // PIDL found (obtained)
+                                                        break; // PIDL found
                                                     }
                                                 }
                                             }
@@ -1775,7 +1775,7 @@ BOOL GetShellFolder(const char* dir, IShellFolder*& shellFolderObj, LPITEMIDLIST
                                                                         LPSHELLFOLDER swap = shellFolderObj;
                                                                         shellFolderObj = folder2;
                                                                         folder2 = swap;
-                                                                        break; // PIDL found (obtained)
+                                                                        break; // PIDL found
                                                                     }
                                                                 }
                                                             }
@@ -2173,15 +2173,15 @@ void OpenFolderAndFocusItem(HWND hOwnerWindow, const char* dir, const char* item
 {
     CALL_STACK_MESSAGE2("OpenFolder(, %s)", dir);
     // if the path contains components ending with spaces or dots, the shell will not return
-    // the PIDL for the requested path, but for the path created by trimming those
-    // spaces/dots, so it is better to give up on it early...
+    // a PIDL for the requested path, but for the path produced by trimming those
+    // spaces/dots, so it is better to give up early
     char mydir[2 * MAX_PATH];
     strcpy(mydir, dir);
     if (item[0] != 0)
         SalPathAppend(mydir, item, 2 * MAX_PATH);
     if (PathContainsValidComponents((char*)mydir, FALSE))
     {
-        BOOL useOldMethod = TRUE; // SHOpenFolderAndSelectItems is supported from XP onward, and we still run on W2K and XP without SPx
+        BOOL useOldMethod = TRUE; // SHOpenFolderAndSelectItems is supported on XP and later, and we still run on W2K and on XP without any service pack
         if (item[0] != 0)         // if no item should be selected, avoid using SHOpenFolderAndSelectItems because it would display the parent directory (see MSDN)
         {
             HMODULE hShell32 = LoadLibrary("shell32.dll");
@@ -2330,12 +2330,12 @@ BOOL GetTargetDirectoryAux(HWND parent, HWND hCenterWindow,
         bi.pszDisplayName = display;
         bi.lpszTitle = comment;
         bi.ulFlags = BIF_RETURNONLYFSDIRS;
-        /* j.r.: under W2K, after opening, the focus is set to OK instead of the tree view (as it used to);
-           moreover, ensure_visible stops working; simply AWFUL, so we are returning to the old version of the dialog;
-           we may rewrite it later.
-    if (!onlyNet)  // Petr: the Network dialog works only in the old version - the new one cannot ask the user for server login credentials (when the current login is not sufficient)
-      bi.ulFlags |= BIF_NEWDIALOGSTYLE; // larger and resizable dialog
-    */
+        /* j.r.: under W2K, after opening, the focus is set to OK instead of the tree view (as it used to be);
+                   moreover, ensure_visible does not work; the behavior is poor, so we are returning to the old version of the dialog;
+                   we may rewrite it later.
+            if (!onlyNet)  // Petr: the Network dialog works only in the old version - the new one cannot ask the user for server login credentials (when the current login is not sufficient)
+              bi.ulFlags |= BIF_NEWDIALOGSTYLE; // larger and resizable dialog
+            */
         bi.lpfn = DirectoryBrowse;
         CBrowseData bd;
         bd.Title = title;
@@ -2371,14 +2371,14 @@ BOOL GetTargetDirectoryAux(HWND parent, HWND hCenterWindow,
 void ResolveNetHoodPath(char* path)
 {
     if (path[0] == '\\')
-        return; // UNC path -> cannot be NetHood
+        return; // UNC path, so it cannot be NetHood
 
     char name[MAX_PATH];
     GetRootPath(name, path);
     if (GetDriveType(name) != DRIVE_FIXED)
         return; // not a local fixed path -> cannot be NetHood
 
-    BOOL tryTarget = FALSE; // if TRUE, it is worth trying to find the "target.lnk" file
+    BOOL tryTarget = FALSE; // if TRUE, try to find the "target.lnk" file
     lstrcpyn(name, path, MAX_PATH);
     if (SalPathAppend(name, "desktop.ini", MAX_PATH))
     {
@@ -2397,7 +2397,7 @@ void ResolveNetHoodPath(char* path)
                 {
                     char* s = buf;
                     char* end = buf + read;
-                    while (s < end) // search the file for the CLSID "folder shortcut"
+                    while (s < end) // Search the file for the "folder shortcut" CLSID
                     {
                         if (*s == '{')
                         {
@@ -2541,7 +2541,7 @@ void GetNewOrBackgroundMenu(HWND hOwnerWindow, const char* dir, CMenuNew* menu,
                         GetMenuNewAux(contextMenu2, m, minCmd, maxCmd);
                         RemoveUselessSeparatorsFromMenu(m);
 
-                        if (backgoundMenu) // take the entire background menu
+                        if (backgoundMenu) // use the entire background menu
                         {
                             menu->Set(contextMenu2, m);
                         }
@@ -2702,7 +2702,7 @@ STDMETHODIMP CTextDataObject::GetData(FORMATETC* formatEtc, STGMEDIUM* medium)
                 dataDup = NULL;
             }
         }
-        if (dataDup != NULL) // we have the data, store them in the medium and return
+        if (dataDup != NULL) // we have the data, store it in the medium and return
         {
             medium->tymed = TYMED_HGLOBAL;
             medium->hGlobal = dataDup;
@@ -2801,7 +2801,7 @@ BOOL GetSHObjectName(ITEMIDLIST* pidl, DWORD flags, char* name, int nameSize, IM
                 }
                 desktopFolder->Release();
             }
-            else // empty list of IDs = the folder is the desktop itself
+            else // empty ID list = the folder is the desktop itself
                 folder = desktopFolder;
 
             if (folder != NULL)
