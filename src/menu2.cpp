@@ -233,7 +233,7 @@ BOOL CMenuPopup::EndModifyMode()
     }
     if (HWindow != NULL)
     {
-        // handle bounds
+        // handle the boundaries
         if (SelectedItemIndex >= Items.Count)
             SelectedItemIndex = Items.Count - 1;
         if (SelectedItemIndex >= 0 && SelectedItemIndex < Items.Count)
@@ -280,13 +280,13 @@ BOOL CMenuPopup::EndModifyMode()
                      SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
         UpdateWindow(HWindow);
         /*
-            // force the current item to update
+    // update the current item
             POINT cursorPos;
             GetCursorPos(&cursorPos);
             ScreenToClient(HWindow, &cursorPos);
-            SharedRes->LastMouseMove.x = cursorPos.x - 1; // bypass the condition
+            SharedRes->LastMouseMove.x = cursorPos.x - 1; // disable the condition
             SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
-        */
+*/
     }
     ModifyMode = FALSE;
     return TRUE;
@@ -401,7 +401,7 @@ void CMenuPopup::UpdateItemsState()
 
         if (item->Enabler != NULL)
         {
-            // TLBI_STATE_GRAYED bit handling
+            // the TLBI_STATE_GRAYED bit is controlled
             BOOL enabled = (item->State & MENU_STATE_GRAYED) == 0;
             BOOL enabledSrc = *item->Enabler != 0;
             if (enabled != enabledSrc)
@@ -537,7 +537,7 @@ BOOL CMenuPopup::SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_IN
         item->SubMenu = (CMenuPopup*)mii->SubMenu;
         if (item->SubMenu != NULL)
         {
-            // this caused problems: 0 was propagated even when the item had
+            // this caused trouble, 0 was propagated even when the item had
             // an assigned ID
             /*
       if (mii->Mask & MENU_MASK_ID)
@@ -1633,8 +1633,8 @@ void CMenuPopup::OnChar(char key, BOOL* leaveMenu, DWORD* retValue)
         // no matching item found
         // try asking the context menu (Tortoise SVN uses owner-draw popups, does not fill strings, but handles WM_MENUCHAR)
         HMENU hMenu = GetTemplateMenu();
-        // On x64, 7-Zip returns 0xcccccccccccccccc when right-clicking a .7z file,
-        // opening the 7-Zip menu, and pressing 'h', which is inconsistent with
+        // x64 7zip returns 0xcccccccccccccccc when right-clicking a .7z file,
+        // expanding the 7Zip menu and pressing 'h', which is inconsistent with
         // http://msdn.microsoft.com/en-us/library/windows/desktop/ms646349%28v=vs.85%29.aspx
         // (it should return 0 because nothing in the menu starts with H).
         // In any case, RTCs were firing, so we mask to the lower DWORD.
