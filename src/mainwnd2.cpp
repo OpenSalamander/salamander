@@ -51,102 +51,102 @@
 // 21 = 2.5b6           only to transfer plug-in configuration from version 2.5b5(a)
 // 22 = 2.5b6           panel filters - unified into one history
 // 23 = 2.5b6           new panel view (Tiles)
-// 24 = 2.5b7           only to transfer plug-in configuration from version 2.5b6
-// 25 = 2.5b7           plugins: show in plugin bar -> transfer variable into CPluginData
-// 26 = 2.5b8           only to transfer plug-in configuration from version 2.5b7
-// 27 = 2.5b9           only to transfer plug-in configuration from version 2.5b8
-// 28 = 2.5b9           new color scheme from old DOS Navigator -> convert 'scheme'
-// 29 = 2.5b10          only to transfer plug-in configuration from version 2.5b9
-// 30 = 2.5b11          only to transfer plug-in configuration from version 2.5b10
-// 31 = 2.5b11          introduced Floppy section in Drives configuration - need to force reading icons for Removable
+// 24 = 2.5b7           only to transfer plugin configuration from version 2.5b6
+// 25 = 2.5b7           plugins: show in plugin bar -> transfer the variable to CPluginData
+// 26 = 2.5b8           only to transfer plugin configuration from version 2.5b7
+// 27 = 2.5b9           only to transfer plugin configuration from version 2.5b8
+// 28 = 2.5b9           new color scheme based on the old DOS Navigator -> convert 'scheme'
+// 29 = 2.5b10          only to transfer plugin configuration from version 2.5b9
+// 30 = 2.5b11          only to transfer plugin configuration from version 2.5b10
+// 31 = 2.5b11          introduced the Floppy section in the Drives configuration - need to force icon loading for Removable
 // 32 = 2.5b11          Find: "Local Settings\\Temporary Internet Files" is searched by default
-// 33 = 2.5b12          only to transfer plug-in configuration from version 2.5b11
-// 34 = 2.5b12          modification of external packer/unpacker PKZIP25 (external Win32 version)
-// 35 = 2.5RC1          only to transfer plug-in configuration from version 2.5b12 (internal only, we shipped RC1 instead)
-// 36 = 2.5RC2          only to transfer plug-in configuration from version 2.5RC1
-// 37 = 2.5RC3          only to transfer plug-in configuration from version 2.5RC2
+// 33 = 2.5b12          only to transfer plugin configuration from version 2.5b11
+// 34 = 2.5b12          modification of the external PKZIP25 packer/unpacker (external Win32 version)
+// 35 = 2.5RC1          only to transfer plugin configuration from version 2.5b12 (internal only, RC1 was released instead)
+// 36 = 2.5RC2          only to transfer plugin configuration from version 2.5RC1
+// 37 = 2.5RC3          only to transfer plugin configuration from version 2.5RC2
 // 38 = 2.5RC3          renamed Servant Salamander to Altap Salamander
-// 39 = 2.5             only to transfer plug-in configuration from version 2.5RC3
-// 40 = 2.51            only to transfer plug-in configuration from version 2.5
+// 39 = 2.5             only to transfer plugin configuration from version 2.5RC3
+// 40 = 2.51            only to transfer plugin configuration from version 2.5
 // 41 = 2.51            configuration version containing a list of disabled icon overlay handlers (see CONFIG_DISABLEDCUSTICOVRLS_REG)
-// 42 = 2.52b1          only to transfer plug-in configuration from version 2.51
-// 43 = 2.52b2          only to transfer plug-in configuration from version 2.52 beta 1
-// 44 = 2.52b2          changed viewer, editor and archiver extensions to lowercase (uppercase extensions are obsolete in Windows)
-// 45 = 2.52b2          introduced password manager, forced FTP client load so it registers to use the Password Manager, see SetPluginUsesPasswordManager
-// 46 = 2.52 (DB30)     only to transfer plug-in configuration from version 2.52 beta 2
-// 47 = 2.52 (IB31)     support for Sal/Env variables like $(SalDir) or $[USERPROFILE] in hot paths; need to escape old hot paths
-// 48 = 2.52            only to transfer plug-in configuration from version 2.52 (DB30)
-// 49 = 2.53b1 (DB33)   only to transfer plug-in configuration from version 2.52
-// 50 = 2.53b1 (DB36)   only to transfer plug-in configuration from version 2.53b1 (DB33)
-// 51 = 2.53b1 (PB38)   only to transfer plug-in configuration from version 2.53b1 (DB36)
-// 52 = 2.53b1 (DB39)   only to transfer plug-in configuration from version 2.53b1 (PB38)
-// 53 = 2.53b1 (DB41)   only to transfer plug-in configuration from version 2.53b1 (DB39)
-// 54 = 2.53b1 (PB44)   only to transfer plug-in configuration from version 2.53b1 (DB41)
-// 55 = 2.53b1 (DB46)   only to transfer plug-in configuration from version 2.53b1 (PB44)
-// 56 = 2.53b1          only to transfer plug-in configuration from version 2.53b1 (DB46)
-// 57 = 2.53 (DB52)     only to transfer plug-in configuration from version 2.53b1
-// 58 = 2.53b2 (IB55)   only to transfer plug-in configuration from version 2.53 (DB52)
-// 59 = 2.53b2          only to transfer plug-in configuration from version 2.53b2 (IB55)
-// 60 = 2.53 (DB60)     only to transfer plug-in configuration from version 2.53b2
-// 61 = 2.53            only to transfer plug-in configuration from version 2.53 (DB60)
-// 62 = 2.54b1 (DB66)   only to transfer plug-in configuration from version 2.53
-// 63 = 2.54            only to transfer plug-in configuration from version 2.54b1 (DB66)
-// 64 = 2.55b1 (DB72)   only to transfer plug-in configuration from version 2.54
-// 65 = 2.55b1 (DB72)   external archivers: identify by UID instead of Title (translated according to language version, so cannot be used for identification) - switching language caused external archiver paths to be lost
-// 66 = 3.00b1 (PB75)   only to transfer plug-in configuration from version 2.55b1 (DB72)
-// 67 = 3.00b1 (DB76)   only to transfer plug-in configuration from version 3.00b1 (PB75)
-// 68 = 3.00b1 (PB79)   only to transfer plug-in configuration from version 3.00b1 (DB76)
-// 69 = 3.00b1 (DB80)   only to transfer plug-in configuration from version 3.00b1 (PB79)
-// 70 = 3.00b1 (DB83)   only to transfer plug-in configuration from version 3.00b1 (DB80)
-// 71 = 3.00b1 (PB87)   only to transfer plug-in configuration from version 3.00b1 (DB83)
-// 72 = 3.00b1 (DB88)   only to transfer plug-in configuration from version 3.00b1 (PB87)
-// 73 = 3.00b1          only to transfer plug-in configuration from version 3.00b1 (DB88)
-// 74 = 3.00b2 (DB94)   only to transfer plug-in configuration from version 3.00b1
-// 75 = 3.00b2          only to transfer plug-in configuration from version 3.00b2 (DB94)
-// 76 = 3.00b3 (DB100)  only to transfer plug-in configuration from version 3.00b2
-// 77 = 3.00b3 (PB103)  only to transfer plug-in configuration from version 3.00b3 (DB100)
-// 78 = 3.00b3 (DB105)  only to transfer plug-in configuration from version 3.00b3 (PB103)
-// 79 = 3.00b3          only to transfer plug-in configuration from version 3.00b3 (DB105)
-// 80 = 3.00b4 (DB111)  only to transfer plug-in configuration from version 3.00b3
-// 81 = 3.00b4 (DB111)  RAR 5.0 needs a new switch on the command line because of file list encoding
-// 82 = 3.00b4          only to transfer plug-in configuration from version 3.00b4 (DB111)
-// 83 = 3.00b5 (DB117)  only to transfer plug-in configuration from version 3.00b4
-// 84 = 3.0             only to transfer plug-in configuration from version 3.00b5 (DB117)
-// 85 = 3.10b1 (DB123)  only to transfer plug-in configuration from version 3.0
-// 86 = 3.01            only to transfer plug-in configuration from version 3.10b1 (DB123)
-// 87 = 3.10b1 (DB129)  only to transfer plug-in configuration from version 3.01
-// 88 = 3.02            only to transfer plug-in configuration from version 3.10b1 (DB129)
-// 89 = 3.10b1 (DB135)  only to transfer plug-in configuration from version 3.02
-// 90 = 3.03            only to transfer plug-in configuration from version 3.10b1 (DB135)
-// 91 = 3.10b1 (DB141)  only to transfer plug-in configuration from version 3.03
-// 92 = 3.04            only to transfer plug-in configuration from version 3.10b1 (DB141)
-// 93 = 3.10b1 (DB147)  only to transfer plug-in configuration from version 3.04
-// 94 = 3.05            only to transfer plug-in configuration from version 3.10b1 (DB147)
-// 95 = 3.10b1 (DB153)  only to transfer plug-in configuration from version 3.05
-// 96 = 3.06            only to transfer plug-in configuration from version 3.10b1 (DB153)
-// 97 = 3.10b1 (DB159)  only to transfer plug-in configuration from version 3.06
-// 98 = 3.10b1 (DB162)  only to transfer plug-in configuration from version 3.10b1 (DB159)
-// 99 = 3.07            only to transfer plug-in configuration from version 3.10b1 (DB162)
-// 100 = 4.00b1 (DB168) only to transfer plug-in configuration from version 3.07
-// 101 = 3.08           only to transfer plug-in configuration from version 4.00b1 (DB168) - by mistake 3.08 and DB171 share the same version number 101, sorry, I will be more careful next time
-// 101 = 4.00b1 (DB171) only to transfer plug-in configuration from version 4.00b1 (DB168); this is the last VC2008 build, later versions are VC2019
-// 102 = 4.00b1 (DB177) only to transfer plug-in configuration from version 4.00b1 (DB171)
-// 103 = 4.00           only to transfer plug-in configuration from version 4.00b1 (DB177)
-// 104 = 5.00           only to transfer plug-in configuration from version 4.00, first Open Salamander release
+// 42 = 2.52b1          only to transfer plugin configuration from version 2.51
+// 43 = 2.52b2          only to transfer plugin configuration from version 2.52 beta 1
+// 44 = 2.52b2          changed viewer, editor, and archiver extensions to lowercase (uppercase extensions are obsolete in Windows)
+// 45 = 2.52b2          introduced the password manager, forced the FTP client to load so it registers to use the Password Manager; see SetPluginUsesPasswordManager
+// 46 = 2.52 (DB30)     only to transfer plugin configuration from version 2.52 beta 2
+// 47 = 2.52 (IB31)     support for Sal/Env variables such as $(SalDir) or $[USERPROFILE] in hot paths; old hot paths need to be escaped
+// 48 = 2.52            only to transfer plugin configuration from version 2.52 (DB30)
+// 49 = 2.53b1 (DB33)   only to transfer plugin configuration from version 2.52
+// 50 = 2.53b1 (DB36)   only to transfer plugin configuration from version 2.53b1 (DB33)
+// 51 = 2.53b1 (PB38)   only to transfer plugin configuration from version 2.53b1 (DB36)
+// 52 = 2.53b1 (DB39)   only to transfer plugin configuration from version 2.53b1 (PB38)
+// 53 = 2.53b1 (DB41)   only to transfer plugin configuration from version 2.53b1 (DB39)
+// 54 = 2.53b1 (PB44)   only to transfer plugin configuration from version 2.53b1 (DB41)
+// 55 = 2.53b1 (DB46)   only to transfer plugin configuration from version 2.53b1 (PB44)
+// 56 = 2.53b1          only to transfer plugin configuration from version 2.53b1 (DB46)
+// 57 = 2.53 (DB52)     only to transfer plugin configuration from version 2.53b1
+// 58 = 2.53b2 (IB55)   only to transfer plugin configuration from version 2.53 (DB52)
+// 59 = 2.53b2          only to transfer plugin configuration from version 2.53b2 (IB55)
+// 60 = 2.53 (DB60)     only to transfer plugin configuration from version 2.53b2
+// 61 = 2.53            only to transfer plugin configuration from version 2.53 (DB60)
+// 62 = 2.54b1 (DB66)   only to transfer plugin configuration from version 2.53
+// 63 = 2.54            only to transfer plugin configuration from version 2.54b1 (DB66)
+// 64 = 2.55b1 (DB72)   only to transfer plugin configuration from version 2.54
+// 65 = 2.55b1 (DB72)   external archivers: identify by UID instead of Title (translated by language version, so it cannot be used for identification) - switching languages caused the external archiver paths to be lost
+// 66 = 3.00b1 (PB75)   only to transfer plugin configuration from version 2.55b1 (DB72)
+// 67 = 3.00b1 (DB76)   only to transfer plugin configuration from version 3.00b1 (PB75)
+// 68 = 3.00b1 (PB79)   only to transfer plugin configuration from version 3.00b1 (DB76)
+// 69 = 3.00b1 (DB80)   only to transfer plugin configuration from version 3.00b1 (PB79)
+// 70 = 3.00b1 (DB83)   only to transfer plugin configuration from version 3.00b1 (DB80)
+// 71 = 3.00b1 (PB87)   only to transfer plugin configuration from version 3.00b1 (DB83)
+// 72 = 3.00b1 (DB88)   only to transfer plugin configuration from version 3.00b1 (PB87)
+// 73 = 3.00b1          only to transfer plugin configuration from version 3.00b1 (DB88)
+// 74 = 3.00b2 (DB94)   only to transfer plugin configuration from version 3.00b1
+// 75 = 3.00b2          only to transfer plugin configuration from version 3.00b2 (DB94)
+// 76 = 3.00b3 (DB100)  only to transfer plugin configuration from version 3.00b2
+// 77 = 3.00b3 (PB103)  only to transfer plugin configuration from version 3.00b3 (DB100)
+// 78 = 3.00b3 (DB105)  only to transfer plugin configuration from version 3.00b3 (PB103)
+// 79 = 3.00b3          only to transfer plugin configuration from version 3.00b3 (DB105)
+// 80 = 3.00b4 (DB111)  only to transfer plugin configuration from version 3.00b3
+// 81 = 3.00b4 (DB111)  RAR 5.0 needs a new command-line switch because of file list encoding
+// 82 = 3.00b4          only to transfer plugin configuration from version 3.00b4 (DB111)
+// 83 = 3.00b5 (DB117)  only to transfer plugin configuration from version 3.00b4
+// 84 = 3.0             only to transfer plugin configuration from version 3.00b5 (DB117)
+// 85 = 3.10b1 (DB123)  only to transfer plugin configuration from version 3.0
+// 86 = 3.01            only to transfer plugin configuration from version 3.10b1 (DB123)
+// 87 = 3.10b1 (DB129)  only to transfer plugin configuration from version 3.01
+// 88 = 3.02            only to transfer plugin configuration from version 3.10b1 (DB129)
+// 89 = 3.10b1 (DB135)  only to transfer plugin configuration from version 3.02
+// 90 = 3.03            only to transfer plugin configuration from version 3.10b1 (DB135)
+// 91 = 3.10b1 (DB141)  only to transfer plugin configuration from version 3.03
+// 92 = 3.04            only to transfer plugin configuration from version 3.10b1 (DB141)
+// 93 = 3.10b1 (DB147)  only to transfer plugin configuration from version 3.04
+// 94 = 3.05            only to transfer plugin configuration from version 3.10b1 (DB147)
+// 95 = 3.10b1 (DB153)  only to transfer plugin configuration from version 3.05
+// 96 = 3.06            only to transfer plugin configuration from version 3.10b1 (DB153)
+// 97 = 3.10b1 (DB159)  only to transfer plugin configuration from version 3.06
+// 98 = 3.10b1 (DB162)  only to transfer plugin configuration from version 3.10b1 (DB159)
+// 99 = 3.07            only to transfer plugin configuration from version 3.10b1 (DB162)
+// 100 = 4.00b1 (DB168) only to transfer plugin configuration from version 3.07
+// 101 = 3.08           only to transfer plugin configuration from version 4.00b1 (DB168) - 3.08 and DB171 accidentally share version number 101; hopefully harmless, but avoid this next time
+// 101 = 4.00b1 (DB171) only to transfer plugin configuration from version 4.00b1 (DB168); this is the last VC2008 build, later versions are built with VC2019
+// 102 = 4.00b1 (DB177) only to transfer plugin configuration from version 4.00b1 (DB171)
+// 103 = 4.00           only to transfer plugin configuration from version 4.00b1 (DB177)
+// 104 = 5.00           only to transfer plugin configuration from version 4.00, first Open Salamander release
 //
-// When increasing configuration version, add one to THIS_CONFIG_VERSION
+// When increasing the configuration version, add 1 to THIS_CONFIG_VERSION
 //
 // When upgrading to a new program version, THIS_CONFIG_VERSION must be incremented by 1
-// so that new plug-ins are auto-installed and the plugins.ver counter resets.
+// so that new plugins are auto-installed and the plugins.ver counter is reset.
 //
 
 const DWORD THIS_CONFIG_VERSION = 104;
 
 // Configuration roots for individual Open Salamander versions.
-// The root of the current (youngest) configuration is at index 0.
-// Then follow other roots towards older versions of the program.
-// The last index contains NULL and serves as a terminator when working with the array.
-// When creating a new configuration version (should be stored separately in the registry from the previous one)
+// The root of the current (latest) configuration is at index 0.
+// It is followed by the other roots, in order toward older program versions.
+// The last index contains NULL, which serves as a terminator when working with the array.
+// When creating a new configuration version (which should be stored separately in the registry from the previous one),
 // simply insert the path at index 0.
 
 // !!! Keep the corresponding lines in SalamanderConfigurationVersions up to date
@@ -325,11 +325,11 @@ const char* SalamanderConfigurationVersions[SALCFG_ROOTS_COUNT] =
 const char* SALAMANDER_ROOT_REG = NULL; // will be set in salamdr1.cpp
 
 const char* SALAMANDER_SAVE_IN_PROGRESS = "Save In Progress"; // value exists only during configuration save (detects interrupted saves -> corrupted configuration)
-BOOL IsSetSALAMANDER_SAVE_IN_PROGRESS = FALSE;                // TRUE = the registry contains SALAMANDER_SAVE_IN_PROGRESS (detect interrupted configuration saving)
+BOOL IsSetSALAMANDER_SAVE_IN_PROGRESS = FALSE;                // TRUE = the registry contains SALAMANDER_SAVE_IN_PROGRESS (detects interrupted configuration saving)
 
 const char* SALAMANDER_COPY_IS_OK = "Copy Is OK"; // backup key only: value exists only if the key was copied completely
 
-const char* SALAMANDER_AUTO_IMPORT_CONFIG = "AutoImportConfig"; // value exists only during upgrade: installer overwrites the old version with the new and stores this value pointing to the old configuration key from which the configuration should be imported
+const char* SALAMANDER_AUTO_IMPORT_CONFIG = "AutoImportConfig"; // value exists only during upgrade: the installer overwrites the old version with the new one and stores this value in the new version's key, pointing to the old configuration key from which the configuration should be imported
 
 const char* FINDDIALOG_WINDOW_REG = "Find Dialog Window";
 const char* SALAMANDER_WINDOW_REG = "Window";
@@ -921,7 +921,7 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
     if (!*autoImportConfig && // this version's key lacks "AutoImportConfig" or does not point to a valid old configuration
         HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER, SalamanderConfigurationRoots[0], 0,
                                KEY_READ | KEY_WRITE, &rootKey)) == ERROR_SUCCESS)
-    { // remove "AutoImportConfig" from this version's key (if it exists it makes no sense here)
+    { // remove "AutoImportConfig" from this version's key if it exists; it serves no purpose here
         RegDeleteValue(rootKey, SALAMANDER_AUTO_IMPORT_CONFIG);
         HANDLES(RegCloseKey(rootKey));
     }
@@ -976,7 +976,7 @@ BOOL FindLanguageFromPrevVerOfSal(char* slgName)
         if (cfgFound)
         {
             BOOL found = FALSE;
-            if (rootIndex != 0 &&                      // only for one of the older keys
+            if (rootIndex != 0 &&                      // only if this is one of the older keys
                 configVersion >= 59 /* 2.53 beta 2 */) // before 2.53 beta 2 there was only English, so reading makes no sense; offer system default language or manual selection of the language
             {
                 GetValue(hCfgKey, CONFIG_LANGUAGE_REG, REG_SZ, slgName, MAX_PATH);
@@ -993,8 +993,8 @@ BOOL FindLanguageFromPrevVerOfSal(char* slgName)
     return FALSE;
 }
 
-// obtains a number from a string (unsigned decimal format); returns TRUE, if a number was found
-// ignores white spaces before and after the number
+// Gets a number from a string (decimal format without a sign); returns TRUE if a number was found
+// Ignores whitespace before and after the number
 BOOL GetNumFromStr(const char* s, DWORD* retNum)
 {
     DWORD n = 0;
@@ -1013,7 +1013,7 @@ void CheckShutdownParams()
 {
     // HKEY_CURRENT_USER\Control Panel\Desktop\WaitToKillAppTimeout=20000,REG_SZ ... warn if less than 20000
     // HKEY_CURRENT_USER\Control Panel\Desktop\AutoEndTasks=0,REG_SZ ... warn if not 0
-    // W2K and XP have it; I could not find it on Vista but supposedly it is there (info from the internet)
+    // W2K and XP have these settings; they were not found on Vista, but they are reportedly present there as well (per internet sources)
 
     BOOL showWarning = FALSE;
     HKEY key;
@@ -1043,10 +1043,11 @@ void CheckShutdownParams()
 BOOL MyRegRenameKey(HKEY key, const char* name, const char* newName)
 {
     BOOL ret = FALSE;
-    // There is also NtRenameKey but I could not get it working (requires UNICODE_STRING
-    // and probably the key opened via NtOpenKey with the key passed via OBJECT_ATTRIBUTES initialized through
-    // InitializeObjectAttributes). It's overly complicated and not frequently used code,
-    // so we'll do it the slow but simple way... copy the key to a new one and then delete the original
+    // NtRenameKey also exists, but it proved impractical here (it requires UNICODE_STRING
+    // and probably also a key opened via NtOpenKey, with the key passed through OBJECT_ATTRIBUTES
+    // initialized by InitializeObjectAttributes). That is unnecessarily complicated for
+    // infrequently used code, so use the slow but simple approach: copy the key to a new one,
+    // then delete the original.
     HKEY newKey;
     if (!OpenKeyAux(NULL, key, newName, newKey)) // verify if the target key does not already exist
     {
@@ -1087,7 +1088,7 @@ BOOL MyRegRenameKey(HKEY key, const char* name, const char* newName)
 BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfiguration)
 {
     HKEY hRootKey;
-    loadConfiguration = NULL; // we don't want to load any configuration - default values will be used
+    loadConfiguration = NULL; // do not load any configuration; default values will be used
     int rootIndex = 0;
     const char* root;
     DWORD saveInProgress; // dummy
@@ -1114,7 +1115,7 @@ BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfig
         else
             copyIsOK = 0; // backup is corrupted
         HANDLES(RegCloseKey(backupKey));
-        if (!copyIsOK) // delete the corrupted backup and pretend it never existed (it probably wasn't fully created)
+        if (!copyIsOK) // delete the corrupted backup and treat it as if it never existed (it probably was not fully created)
         {
             TRACE_I("Configuration backup is incomplete, removing... " << backup);
             SHDeleteKey(HKEY_CURRENT_USER, backup);
@@ -1151,13 +1152,13 @@ BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfig
                     }
                     TRACE_I("Corrupted configuration was moved to: " << corrupted);
                     TRACE_I("Using configuration backup instead ...");
-                    continue; // in the second pass load configuration from the backup created during "critical shutdown"
+                    continue; // in the second pass, load the configuration from the backup created during "critical shutdown"
                 }
                 else
                     TRACE_E("Unable to move corrupted configuration or configuration backup.");
             }
 
-            if (rootIndex == 0) // for the active version inform the user about the corrupted configuration and let them back up the key, then try to delete it (older versions - simply ignore the corrupted configuration)
+            if (rootIndex == 0) // For the current program version, inform the user about the corrupted configuration and let them back up the key, then try to delete it (for older versions, simply ignore the corrupted configuration)
             {
                 char buf[1500];
                 _snprintf_s(buf, _TRUNCATE, LoadStr(IDS_CORRUPTEDCONFIGFOUND), root);
@@ -1204,7 +1205,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
         if (rootFound)
             CloseKeyAux(hRootKey);
 
-        if (rootIndex == 0 && backupFound) // backup not needed, remove it
+        if (rootIndex == 0 && backupFound) // backup is not needed, remove it
         {
             TRACE_I("Removing unnecessary configuration backup: " << backup);
             SHDeleteKey(HKEY_CURRENT_USER, backup);
@@ -1301,7 +1302,7 @@ void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoI
                 }
             }
         }
-        if (autoImportConfig) // clean old configuration (already stored in the new key) and remove "AutoImportConfig" from the new key
+        if (autoImportConfig) // clean the old configuration (already stored in the new key) and remove "AutoImportConfig" from the new key
         {
             BOOL ok = FALSE;
             HKEY cfgKey;
@@ -1312,13 +1313,13 @@ void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoI
                     ok = TRUE;
                 HANDLES(RegCloseKey(cfgKey));
             }
-            if (!ok) // if this happens it's probably fine because we likely didn't
-                     // write Salamander's configuration either (it goes to the
-                     // same key) and the whole upgrade will need to be run again
+            if (!ok) // if this happens, it is probably not a problem because we likely did not
+// write Salamander's configuration either (it goes to the same key), and
+// the whole upgrade will need to be run again
             {
                 TRACE_E("CMainWindow::DeleteOldConfigurations(): unable to delete " << SALAMANDER_AUTO_IMPORT_CONFIG << " value from HKCU\\" << SalamanderConfigurationRoots[0]);
             }
-            else // clean the old configuration (already saved to the new key)
+            else // clear the old configuration (it is already stored in the new key)
             {
                 if (!doNotDeleteImportedCfg)
                 {
@@ -1380,7 +1381,7 @@ void CMainWindow::SaveConfig(HWND parent)
 
     if (SALAMANDER_ROOT_REG == NULL)
     {
-        TRACE_E("SALAMANDER_ROOT_REG == NULL"); // not necessarily an error: during UPGRADE we may exit Salamander without saving the configuration (if not all plug-ins are installed and the user chooses Exit)
+        TRACE_E("SALAMANDER_ROOT_REG == NULL"); // not necessarily an error: during UPGRADE we may exit Salamander without saving the configuration (if not all plugins are installed and the user chooses Exit)
         return;
     }
 
@@ -1397,7 +1398,7 @@ void CMainWindow::SaveConfig(HWND parent)
         analysing.Create();
         EnableWindow(parent, FALSE);
 
-        // SaveConfiguration plug-ins will be invoked as well -> set the parent for their message boxes
+        // SaveConfiguration plugins will be invoked as well -> set the parent for their message boxes
         PluginMsgBoxParent = analysing.HWindow;
     }
 
@@ -2400,7 +2401,7 @@ void CMainWindow::LoadPanelConfig(char* panelPath, CFilesWindow* panel, HKEY hSa
                 panel->HeaderLineVisible = value;
             if (GetValue(actKey, PANEL_VIEW_REG, REG_DWORD, &value, sizeof(DWORD)))
             {
-                if (Configuration.ConfigVersion < 13 && !value) // conversion: the Detailed view was stored as FALSE
+                if (Configuration.ConfigVersion < 13 && !value) // conversion: the Detailed view was saved as FALSE
                     value = 2;
                 panel->SelectViewTemplate(value, FALSE, FALSE, VALID_DATA_ALL, FALSE, TRUE);
             }
@@ -2506,7 +2507,7 @@ void LoadIconOvrlsInfo(const char* root)
             }
             else
             {
-                if (configVersion >= 41) // if this value is missing in newer configurations, disable overlays (older versions didn't have these variables, so it's not an error-leave overlays enabled)
+                if (configVersion >= 41) // If this value is missing in newer configurations, disable overlays (older versions did not have these variables, so it is not an error; leave overlays enabled)
                     Configuration.EnableCustomIconOverlays = FALSE;
             }
 
@@ -2870,7 +2871,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
         }
 
         //---  Plugins
-        if (OpenKey(salamander, SALAMANDER_PLUGINS, actKey)) // otherwise default values
+        if (OpenKey(salamander, SALAMANDER_PLUGINS, actKey)) // otherwise use default values
         {
             Plugins.Load(HWindow, actKey);
             CloseKey(actKey);
@@ -3301,7 +3302,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             {
                 char path[MAX_PATH];
                 GetIfPathIsInaccessibleGoTo(path, TRUE);
-                if (IsTheSamePath(path, Configuration.IfPathIsInaccessibleGoTo)) // user wants to go to My Documents
+                if (IsTheSamePath(path, Configuration.IfPathIsInaccessibleGoTo)) // the user prefers My Documents
                 {
                     Configuration.IfPathIsInaccessibleGoToIsMyDocs = TRUE;
                     Configuration.IfPathIsInaccessibleGoTo[0] = 0;
@@ -3340,7 +3341,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
             else
             {
-                if (Configuration.ConfigVersion == 11) // in 1.6 beta 7 it was enabled ... turn it off
+                if (Configuration.ConfigVersion == 11) // In 1.6 beta 7 this was enabled ... disable it
                 {
                     Configuration.UseSalOpen = FALSE; // default is not to use it
                 }
@@ -3406,7 +3407,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.CompareIgnoreFiles, sizeof(DWORD));
             GetValue(actKey, CONFIG_COMPAREIGNOREDIRS_REG, REG_DWORD,
                      &Configuration.CompareIgnoreDirs, sizeof(DWORD));
-            // a bit ugly: we provide MasksString, but the range is checked so it's fine
+            // a bit of a hack: we provide MasksString; the range is checked, so it is harmless
             GetValue(actKey, CONFIG_CONFIGTIGNOREFILESMASKS_REG, REG_SZ,
                      Configuration.CompareIgnoreFilesMasks.GetWritableMasksString(), MAX_PATH);
             GetValue(actKey, CONFIG_CONFIGTIGNOREDIRSMASKS_REG, REG_SZ,
@@ -3760,7 +3761,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.TabSize, sizeof(DWORD));
             GetValue(actKey, VIEWER_CONFIGDEFMODE_REG, REG_DWORD,
                      &Configuration.DefViewMode, sizeof(DWORD));
-            // a bit ugly: we provide MasksString, but the range is checked so it's fine
+            // a bit ugly, but we pass MasksString; the range is checked, so it is safe
             GetValue(actKey, VIEWER_CONFIGTEXTMASK_REG, REG_SZ,
                      Configuration.TextModeMasks.GetWritableMasksString(), MAX_PATH);
             if (Configuration.ConfigVersion < 17 &&
@@ -3770,7 +3771,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
             int errPos;
             Configuration.TextModeMasks.PrepareMasks(errPos);
-            // a bit ugly: we provide MasksString, but the range is checked so it's fine
+            // a bit ugly, but we pass MasksString; the range is checked, so it is safe
             GetValue(actKey, VIEWER_CONFIGHEXMASK_REG, REG_SZ,
                      Configuration.HexModeMasks.GetWritableMasksString(), MAX_PATH);
             Configuration.HexModeMasks.PrepareMasks(errPos);
@@ -3850,7 +3851,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
         if (cmdLineFocus)
             SendMessage(HWindow, WM_COMMAND, CM_EDITLINE, 0);
 
-        // this caused trouble:
+        // this caused problems here:
         // when a panel pointed to an unavailable UNC path,
         // it would wait here for several seconds
         //    LeftPanel->UpdateDriveIcon(TRUE);
@@ -3890,7 +3891,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      Configuration.AlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST,
                      0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-        // show the window in full
+        // show the window normally
         if (useWinPlacement)
         {
             // from MSDN:
@@ -3898,8 +3899,8 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             //          3 = SW_SHOWMAXIMIZED
             //          7 = SW_SHOWMINNOACTIVE
 
-            // we don't want the application minimized on startup unless the user
-            // defined it in a shortcut
+            // we do not want the application minimized at startup unless the user
+            // specified it in the shortcut
             if (!Configuration.StatusArea)
             {
                 switch (CmdShow)
@@ -3968,7 +3969,7 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
         {
             if (cmdLineParams->LeftPath[0] == 0 && cmdLineParams->RightPath[0] == 0 && cmdLineParams->ActivePath[0] != 0)
             {
-                if (GetActivePanel()->ChangeDirLite(cmdLineParams->ActivePath)) // no point in combining this with left/right panel settings
+                if (GetActivePanel()->ChangeDirLite(cmdLineParams->ActivePath)) // no point in combining this with the left/right panel paths
                 {
                     if (rightPanelFocused)
                         rightPanelPathSet = TRUE;
@@ -3997,10 +3998,10 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
             }
         }
 
-        // save the array of visible items; normally this is done in idle time, but if it
-        // should be ready so that icon reading for user menu entries has priority over icons
-        // outside the visible part of the panel, we must handle it manually (icon loading
-        // is already running, but sooner is better than later, this minimal delay should not hurt)
+        // save the array of visible items; normally this is done during idle time, but if it
+        // is to be ready so that icon loading for user menu items has priority over icons
+        // outside the visible part of the panel, we must handle it manually (icon loading is
+        // already running, but better now than even later; this minimal delay should not matter much)
         if (rightPanelPathSet)
             RightPanel->RefreshVisibleItemsArray();
 
