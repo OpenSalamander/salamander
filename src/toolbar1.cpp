@@ -871,7 +871,7 @@ CToolBar::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        if (WindowsVistaAndLater) // Rebar flickers under Vista.
+        if (WindowsVistaAndLater) // On Vista, the rebar flickers.
             return TRUE;
         RECT r;
         GetClientRect(HWindow, &r);
