@@ -228,7 +228,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         BOOL UNCRootUpDir = FALSE;
         if (GetPath()[0] == '\\' && GetPath()[1] == '\\')
         {
-            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // "\\.\C:\"-type path
+            if (GetPath()[2] == '.' && GetPath()[3] == '\\' && GetPath()[4] != 0 && GetPath()[5] == ':') // path of the "\\.\C:\" type
             {
                 upDir = strlen(GetPath()) > 7;
             }
@@ -304,7 +304,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     StatusLine->SetText(LoadStr(IDS_NOFILESFOUND));
                     SetCurrentDirectoryToSystem();
                     DirectoryLine->SetHidden(HiddenFilesCount, HiddenDirsCount);
-                    if (UseSystemIcons || UseThumbnails) // even if no icons are available, loading must still start to set IconCacheValid = TRUE
+                    if (UseSystemIcons || UseThumbnails) // even though we don't have any icons, we need to start loading them (just to set IconCacheValid = TRUE)
                     {
                         if (IconCache->Count > 1)
                             IconCache->SortArray(0, IconCache->Count - 1, NULL);
@@ -369,7 +369,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 if (isRefresh &&
                     (err == ERROR_ACCESS_DENIED || err == ERROR_PATH_NOT_FOUND ||
                      err == ERROR_BAD_PATHNAME || err == ERROR_FILE_NOT_FOUND))
-                { // when a path displayed in the panel is deleted, these errors appear and should be suppressed, so just silently shorten the path to the first existing one (unfortunately this is not caught earlier because the path may still appear to exist for some time after deletion due to Windows behavior)
+                { // when a path displayed in the panel is deleted, these errors appear, which we do not want, so just silently shorten the path to the first existing one (unfortunately this is not caught earlier because the path still exists for some time after deletion due to Windows behavior)
                     //          TRACE_I("ReadDirectory(): silently ignoring FindFirstFile failure: " << GetErrorText(err));
                     showErr = FALSE;
                 }
