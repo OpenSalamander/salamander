@@ -158,7 +158,7 @@ BOOL UnscramblePassword(char* password)
     }
     if (!ok)
     {
-        password[0] = 0; // some error occured; clear the password
+        password[0] = 0; // some error occurred; clear the password
         TRACE_E("Unable to unscramble password! scrambled=" << backup);
     }
     memset(backup, 0, lstrlen(backup)); // wipe the memory that contained the password
@@ -618,7 +618,7 @@ BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryp
 
 TRY_DECRYPT_AGAIN:
 
-    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call unscramble after AES 
+    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call unscramble after AES
     memcpy(tmpBuff, encryptedPassword, encryptedPasswordSize);
     tmpBuff[encryptedPasswordSize] = 0; // terminator required by UnscramblePassword
 
