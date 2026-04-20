@@ -14,8 +14,8 @@ extern "C"
 #include "salshlib.h"
 
 // original location in fileswnd.h (kept here only because of MakeCopyOfName in CImpDropTarget::ProcessClipboardData)
-extern BOOL OurClipDataObject; // TRUE when pasting our IDataObject
-// (detecting our custom copy/move routine with foreign data)
+extern BOOL OurClipDataObject; // TRUE when "paste" is done with our IDataObject
+                               // (detecting our custom copy/move routine with foreign data)
 
 void* LastSafeDataObject = NULL;
 
