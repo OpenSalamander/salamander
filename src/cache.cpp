@@ -56,7 +56,7 @@ CCacheData::CCacheData(const char* name, const char* tmpName, BOOL ownDelete,
 
 CCacheData::~CCacheData()
 {
-    if (TmpName != NULL && LockObject.Count == 0) // temporary file is no longer needed
+    if (TmpName != NULL && LockObject.Count == 0) // tmp-file is no longer needed
     {
         if (!CleanFromDisk())
         {
@@ -127,7 +127,7 @@ BOOL CCacheData::CleanFromDisk()
         else // deletion should be handled by the plugin
         {
             if (OwnDeletePlugin != NULL) // we can start deleting (the plugin cannot be unloaded); otherwise the file will not be deleted
-            {                            // will not be deleted (it is either already deleted or only disconnected; the plugin chooses that during unload)
+            {                            // won't be deleted (it is either already deleted or just disconnected; the plugin decides this during unload)
                 DeleteManager.AddFile(TmpName, OwnDeletePlugin);
                 OwnDeletePlugin = NULL; // no more deleting will be done
             }
@@ -147,7 +147,7 @@ CCacheData::GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyA
     DWORD res;
     if (canBlock && !onlyAdd)
     {
-        // release the monitor for other threads while waiting for the tmp-file to become ready
+        // release the monitor for other threads for the duration of waiting for the readiness of the tmp-file
         monitor->Leave();
         res = WaitForSingleObject(Preparing, INFINITE);
         monitor->Enter();
@@ -201,7 +201,7 @@ CCacheData::GetName(CDiskCache* monitor, BOOL* exists, BOOL canBlock, BOOL onlyA
                     *exists = FALSE;
                     if (errorCode != NULL)
                         *errorCode = DCGNE_ALREADYEXISTS;
-                    return NULL; // return the "file already exists" error
+                    return NULL; // returning the "file already exists" error
                 }
                 else
                 {
@@ -485,7 +485,7 @@ BOOL CCacheDirData::GetName(CDiskCache* monitor, const char* name, BOOL* exists,
     if (GetNameIndex(name, i)) // 'name' found at index 'i'
     {
         *tmpPath = Names[i]->GetName(monitor, exists, canBlock, onlyAdd, errorCode);
-        if (*tmpPath != NULL) // not a fatal error and not a temporary file that is still being prepared
+        if (*tmpPath != NULL) // neither a fatal error nor an unprepared tmp file
         {                     // not a "file already exists" error either (only if 'onlyAdd' is TRUE)
             CheckAndCreateDirectory(Path, NULL, TRUE);
         }
@@ -581,7 +581,7 @@ BOOL CCacheDirData::ReleaseName(const char* name, BOOL* ret, BOOL* lastCached, B
         BOOL last;
         *ret = Names[i]->ReleaseName(&last, storeInCache);
         *lastCached = FALSE;
-        if (last) // this was also the last reference to this tmp file
+        if (last) // this was also the last link to this tmp-file
         {
             if (Names[i]->IsCached())
                 *lastCached = TRUE;
