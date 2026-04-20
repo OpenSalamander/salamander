@@ -535,11 +535,11 @@ void CToolBar::Customize()
     InvalidateRect(HWindow, NULL, FALSE);
     UpdateWindow(HWindow);
 
-    // perform the customization
+    // set up the customization dialog
     CTBCustomizeDialog dialog(this);
     dialog.Execute();
 
-    // return to the original button setup
+    // restore the original button state
     Customizing = FALSE;
     InvalidateRect(HWindow, NULL, FALSE);
 
