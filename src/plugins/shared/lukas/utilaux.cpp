@@ -286,16 +286,16 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir)
                 else // "c:path..."
                 {
                     /*
-          int l1 = strlen(s + 2);  // delka zbytku ("path...")
+          int l1 = strlen(s + 2);  // length of the remainder ("path...")
           if (SalamanderGeneral->CharToLowerCase(*s) >= 'a' && SalamanderGeneral->CharToLowerCase(*s) <= 'z')
           {
             const char *head;
             if (curDir != NULL && SalamanderGeneral->CharToLowerCase(curDir[0]) == SalamanderGeneral->CharToLowerCase(*s)) head = curDir;
             else head = DefaultDir[LowerCase[*s] - 'a'];
             int l2 = strlen(head);
-            if (head[l2 - 1] != '\\') l2++;  // misto pro '\\'
+            if (head[l2 - 1] != '\\') l2++;  // room for '\\'
             if (l1 + l2 >= MAX_PATH) err = GFN_TOOLONGPATH;
-            else  // sestaveni full path
+            else  // build the full path
             {
               memmove(name + l2, s + 2, l1 + 1);
               *(name + l2 - 1) = '\\';
