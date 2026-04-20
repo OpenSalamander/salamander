@@ -33,8 +33,8 @@ enum CPluginFSActionType
 enum CPanelType
 {
     ptDisk,       // current path is "c:\path" or UNC
-    ptZIPArchive, // current path is inside an archive (handled either by a plugin or code supporting external archivers)
-    ptPluginFS,   // current path is on a plugin file system (handled by a plugin)
+    ptZIPArchive, // current path is inside an archive (handled either by a plug-in or code supporting external archivers)
+    ptPluginFS,   // current path is on a plug-in file system (handled by a plug-in)
 };
 
 struct CAttrsData // data for atChangeAttrs
@@ -121,8 +121,8 @@ protected:
 public:
     CCopyMoveOptions() : Items(1, 1) {}
 
-    void Set(const CCriteriaData* item); // stores the item (if the array already contains an item, it is overwritten); if 'item' is NULL, the existing item is discarded and the array remains empty
-    const CCriteriaData* Get();          // if an item is stored, returns a pointer to it; otherwise returns NULL
+    void Set(const CCriteriaData* item); // it stores the item (if the item already exists in the array, it will be overwritten); if 'item' is NULL, the current item is cleared and the array becomes empty
+    const CCriteriaData* Get();          // if an item is held, it returns a pointer to it, otherwise it returns NULL
 
     BOOL Save(HKEY hKey);
     BOOL Load(HKEY hKey);
@@ -248,7 +248,7 @@ inline BOOL CFilesMap::PointInRect(int col, int row, RECT r)
 class CScrollPanel
 {
 protected:
-    CFilesWindow* Panel; // panel
+    CFilesWindow* Panel; // our panel
     BOOL ExistTimer;
     BOOL ScrollInside;      // scrolling along the panel's inner edges
     POINT LastMousePoint;   // if ScrollInside is active, helps precisely detect scroll requests
@@ -296,7 +296,7 @@ class CFileTimeStamps
 protected:
     char ZIPFile[MAX_PATH];                   // name of the archive that stores all monitored files
     TIndirectArray<CFileTimeStampsItem> List; // list of files with data needed for their update
-    CFilesWindow* Panel;                      // panel this object works for
+    CFilesWindow* Panel;                      // panel we work for
 
 public:
     CFileTimeStamps() : List(10, 5)
@@ -358,7 +358,7 @@ public:
 class CTopIndexMem
 {
 protected:
-    // path for the last remembered top index; the longest case is archive + archive path, so 2 * MAX_PATH
+    // path for the last remembered top index; the longest is archive + archive-path so 2 * MAX_PATH
     char Path[2 * MAX_PATH];
     int TopIndexes[TOP_INDEX_MEM_SIZE]; // stored top indexes
     int TopIndexesCount;                // number of stored top indexes
