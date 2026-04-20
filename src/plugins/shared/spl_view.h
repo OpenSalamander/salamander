@@ -39,14 +39,14 @@ public:
     // Called when the viewer is requested to open and load file
     // 'name'; 'left'+'top'+'width'+'height'+'showCmd'+'alwaysOnTop' is the recommended window placement;
     // window; if 'returnLock' is FALSE, 'lock'+'lockOwner' have no meaning; if 'returnLock' is
-    // TRUE, mel by viewer vratit system-event 'lock' v nonsignaled stavu, do signaled stavu 'lock'
+    // TRUE, the viewer should return system event 'lock' in the nonsignaled state; 'lock'
     // becomes signaled when viewing file 'name' ends (the file is removed from the temporary
     // directory at that moment); it should also return TRUE in 'lockOwner' if the 'lock' object is to be closed
     // by the caller (FALSE means the viewer closes 'lock' itself - in that case the viewer must use
     // CSalamanderGeneralAbstract::UnlockFileInCache to make 'lock' signaled);
     // if the viewer does not set 'lock' (it remains NULL), file 'name' is valid only until this
     // ViewFile call ends; if 'viewerData' is not NULL, it passes extended viewer parameters (see
-    // CSalamanderGeneralAbstract::ViewFileInPluginViewer); 'enumFilesSourceUID' je UID zdroje (panelu
+    // CSalamanderGeneralAbstract::ViewFileInPluginViewer); 'enumFilesSourceUID' is the source UID (panel
     // or Find window) from which the viewer is opened; if it is -1, the source is unknown (archives
     // or file systems, or Alt+F11, etc.) - see e.g. CSalamanderGeneralAbstract::GetNextFileNameForViewer;
     // 'enumFilesCurrentIndex' is the index of the opened file in the source (panel or Find window); if it is -1,
