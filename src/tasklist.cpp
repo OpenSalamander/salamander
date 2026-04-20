@@ -62,7 +62,7 @@ void RaiseBreakException()
 
 DWORD WINAPI FControlThread(void* param)
 {
-    // this thread does not run with our CCallStack; when I investigated
+    // this thread does not run with our CCallStack; when investigating
     // a leaked handle, Salamander crashed while trying to dump it during shutdown
 
     CTaskList* tasklist = (CTaskList*)param;
@@ -99,7 +99,7 @@ DWORD WINAPI FControlThread(void* param)
             if (waitRet == WAIT_FAILED || waitRet == WAIT_TIMEOUT)
                 break;
 
-            // guard against looping after executing the command
+            // prevent looping after executing the command
             if (tasklist->ProcessList->TodoUID <= lastTodoUID)
             {
                 // release ProcessList
@@ -131,7 +131,7 @@ DWORD WINAPI FControlThread(void* param)
             if (tickCount - tasklist->ProcessList->TodoTimestamp >= TASKLIST_TODO_TIMEOUT)
             {
                 // TIMEOUT
-                // release ProcessList
+                // release the ProcessList mutex
                 ReleaseMutex(tasklist->FMOMutex);
                 break;
             }
@@ -154,7 +154,7 @@ DWORD WINAPI FControlThread(void* param)
 
             case TASKLIST_TODO_BREAK:
             {
-                SetEvent(tasklist->EventProcessed); // notification to the requesting process: we're done
+                SetEvent(tasklist->EventProcessed); // notification to the requesting process: done
 
                 RaiseBreakException();
                 // the code never gets here
@@ -164,7 +164,7 @@ DWORD WINAPI FControlThread(void* param)
 
             case TASKLIST_TODO_TERMINATE:
             {
-                SetEvent(tasklist->EventProcessed); // notification to the requesting process: we're done
+                SetEvent(tasklist->EventProcessed); // notify the requesting process that processing is complete
 
                 HANDLE h = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
                 if (h != NULL)
@@ -184,8 +184,8 @@ DWORD WINAPI FControlThread(void* param)
                 ResetEvent(CommandLineParamsProcessed);
                 NOHANDLES(LeaveCriticalSection(&CommandLineParamsCS));
 
-                // if the main thread is IDLE, we poke it and force it to check CommandLineParams::RequestUID
-                // if it is not IDLE, it is already handling something and will process the message when it next enters IDLE
+                // if the main thread is idle, wake it up and force it to check CommandLineParams::RequestUID
+                // if it is not idle, it is handling something else and will process the message when it next enters idle
                 if (HSafeMainWindow != NULL)
                     PostMessage(HSafeMainWindow, WM_USER_WAKEUP_FROM_IDLE, 0, 0);
 
@@ -268,7 +268,7 @@ BOOL CTaskList::Init()
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES* saPtr = CreateAccessableSecurityAttributes(&sa, &sd, GENERIC_ALL, &psidEveryone, &paclNewDacl);
 
-    //---  first a short detour: on Vista+ create an event used for communication with the copy hook (the control thread waits for it)
+    //---  first, a side note: on Vista and later, create an event for communication with the copy hook (the control thread waits for it)
     if (WindowsVistaAndLater)
     {
         SalShExtDoPasteEvent = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, SALSHEXT_DOPASTEEVENTNAME));
@@ -280,7 +280,7 @@ BOOL CTaskList::Init()
 
     //---  try to attach to the FMO mutex - also serves as a test whether any Salamander is already running
     FMOMutex = NOHANDLES(OpenMutex(SYNCHRONIZE, FALSE, AS_PROCESSLIST_MUTEX_NAME));
-    if (FMOMutex == NULL) // we are the first Salamander 3.0 or newer in the local session
+    if (FMOMutex == NULL) // we are the first instance of Salamander 3.0 or newer in the local session
     {
         //---  create system objects for communication, claim the FMO
         FMOMutex = NOHANDLES(CreateMutex(saPtr, TRUE, AS_PROCESSLIST_MUTEX_NAME)); // the task list is valid only for the given session; the mutex lives in the local namespace
@@ -295,7 +295,7 @@ BOOL CTaskList::Init()
             return FALSE; // fail
         Event = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, AS_PROCESSLIST_EVENT_NAME));
         if (Event == NULL)
-            return FALSE; // fail
+            return FALSE; // failure
         EventProcessed = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, AS_PROCESSLIST_EVENT_PROCESSED_NAME));
         if (EventProcessed == NULL)
             return FALSE; // fail
@@ -311,7 +311,7 @@ BOOL CTaskList::Init()
         //---  release the FMO
         ReleaseMutex(FMOMutex);
     }
-    else // another instance, just attach ...
+    else // another instance, just connect ...
     {
         //---  claim the FMO
         DWORD waitRet = WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT);
@@ -365,7 +365,7 @@ BOOL CTaskList::Init()
     char mutexName[1000];
     if (sid == NULL)
     {
-        // failed to obtain SID -- local namespace without an attached SID
+        // failed to obtain the SID -- local namespace, without the SID appended
         _snprintf_s(mutexName, _TRUNCATE, "%s", FIRST_SALAMANDER_MUTEX_NAME);
     }
     else
@@ -566,7 +566,7 @@ BOOL CTaskList::FireEvent(DWORD todo, DWORD pid, BOOL* timeouted)
             return FALSE; // fail
         }
 
-        // set the passed parameters
+        // set the parameters to pass
         ProcessList->Todo = todo;
         ProcessList->TodoUID++;
         ProcessList->TodoTimestamp = GetTickCount();
@@ -656,7 +656,7 @@ BOOL CTaskList::ActivateRunningInstance(const CCommandLineParams* cmdLineParams,
             {
                 ReleaseMutex(FMOMutex); // so release the memory to others
                 if (firstStarting == -1)
-                    return FALSE; // no starting candidate found
+                    return FALSE; // no starting candidate found, give up
                 else
                     Sleep(200); // found a starting candidate, pause for 200 ms to give it a chance to call SetProcessState()
             }
@@ -675,7 +675,7 @@ BOOL CTaskList::ActivateRunningInstance(const CCommandLineParams* cmdLineParams,
     ProcessList->TodoTimestamp = GetTickCount();
     ProcessList->PID = item->PID;
 
-    // take parameters from the command line
+    // copy parameters from the command line
     memcpy(&ProcessList->CommandLineParams, cmdLineParams, sizeof(CCommandLineParams));
     // and set our internal variables
     ProcessList->CommandLineParams.Version = 1;
