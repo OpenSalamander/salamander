@@ -149,7 +149,7 @@ BOOL IsSalHotKey(WORD hotKey)
         {
         case NONE:    // up
         case CONTROL: // scroll up, keep cursor
-        case ALT:     // up to selected item
+        case ALT:     // move to the selected item
         case SHIFT:   // select + up
             found = TRUE;
         }
@@ -176,7 +176,7 @@ BOOL IsSalHotKey(WORD hotKey)
         {
         case NONE:    // down
         case CONTROL: // scroll down, keep cursor
-        case ALT:     // down to selected item
+        case ALT:     // move down to the selected item
         case SHIFT:   // select + down
             found = TRUE;
         }
@@ -513,7 +513,7 @@ BOOL IsSalHotKey(WORD hotKey)
         switch (mods)
         {
         case NONE:    // quick search/type in command line
-        case CONTROL: // files list
+        case CONTROL: // file list
         case ALT:     // enter menu
         case SHIFT:   // change drive
             found = TRUE;
@@ -786,8 +786,8 @@ BOOL IsSalHotKey(WORD hotKey)
         case NONE:          // edit
         case CONTROL:       // sort by extension
         case ALT:           // exit
-        case SHIFT:         // edit new
-        case CONTROL_SHIFT: // edit width
+        case SHIFT:         // edit new file
+        case CONTROL_SHIFT: // edit in wide mode
             found = TRUE;
         }
         break;
