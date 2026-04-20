@@ -198,7 +198,6 @@ struct CConfiguration
         SaveWorkDirs,           // store the List of Working Directories?
         EnableCmdLineHistory,   // keep history of the command line?
         SaveCmdLineHistory,     // store the command line history?
-                                //      LantasticCheck,        // Lantastic 7.0 paranoid check (compare sizes after Copy)
         OnlyOneInstance,        // allow just a single instance
         ForceOnlyOneInstance,   // set from cmdline: Salamander should behave as if the OnlyOneInstance option is enabled
         StatusArea,             // Salamander lives in the tray and won't appear in the taskbar when minimized
@@ -223,7 +222,6 @@ struct CConfiguration
         TileSpacingVert,        // vertical spacing in points between Tiles in the panel
         ThumbnailSpacingHorz,   // horizontal spacing in points between Thumbnails in the panel
         ThumbnailSize,          // square dimensions of thumbnails in points
-                                //      PanelTooltip,         // shortened texts in panels get tooltips
         KeepPluginsSorted,      // plugins will be sorted alphabetically (plugins manager, menu)
         ShowSLGIncomplete,      // TRUE = if IsSLGIncomplete is not empty, show message about incomplete translation (we are looking for a translator)
 
@@ -254,7 +252,7 @@ struct CConfiguration
         CnfrmCopyMoveOptionsNS,  // Copy/Move: some Options are set but the target is FS/archive (options are NotSupported)
 
         // Drive specific
-        DrvSpecFloppyMon,    // Use automatic refresh
+        DrvSpecFloppyMon,    // Use automatic monitoring
         DrvSpecFloppySimple, // Use simple icons
         DrvSpecRemovableMon,
         DrvSpecRemovableSimple,
@@ -274,7 +272,7 @@ struct CConfiguration
     int CompareSubdirs;
     int CompareSubdirsAttr;
     int CompareOnePanelDirs; // mark names of directories that exist only in one panel
-    int CompareMoreOptions;  // is the dialog displayed in extended mode?
+    int CompareMoreOptions;  // is the dialog shown in expanded mode?
     int CompareIgnoreFiles;  // should specified filenames be ignored?
     int CompareIgnoreDirs;   // should specified names of directories be ignored?
     CMaskGroup CompareIgnoreFilesMasks;
@@ -351,7 +349,7 @@ struct CConfiguration
         SavePosition; // store window position / place relative to the main window
 
     CMaskGroup TextModeMasks; // mask array for files always shown in text mode
-    CMaskGroup HexModeMasks;  // mask array for files always shown in hex mode
+    CMaskGroup HexModeMasks;  // mask group for files always shown in hex mode
 
     WINDOWPLACEMENT WindowPlacement; // invalid unless SavePosition != TRUE
 
@@ -405,7 +403,7 @@ struct CConfiguration
     //  int  ShowTipOfTheDay;         // display Tip of the Day at program startup
     //  int  LastTipOfTheDay;         // index of the last displayed tip
 
-    // plug-ins
+    // plugins
     int LastPluginVer;   // ACTUAL_VERSION from plugins.ver (detect newly installed plugins)
     int LastPluginVerOP; // ACTUAL_VERSION from plugins.ver for the other platform (x86/x64); must be saved, otherwise we won't know if the configuration was overwritten by the other version.
                          // Example: start x64, auto-save x64 with added pictview, start x86, auto-save x86 with added winscp (x86 pictview not added because it was already in the x64 config), exit/save x86, WARNING: exit/save x64 would remove the record of winscp (x64 knows nothing about winscp and continues running)
@@ -432,7 +430,7 @@ struct CConfiguration
     BOOL PrepareRecycleMasks(int& errorPos); // prepare recycle-bin masks for use
     BOOL AgreeRecycleMasks(const char* fileName, const char* fileExt);
 
-    DWORD LastFocusedPage;          // last visited page in the dialog
+    DWORD LastFocusedPage;          // last focused page in the dialog
     DWORD ConfigurationHeight;      // height of the configuration dialog in points
     BOOL ViewersAndEditorsExpanded; // expanded items in the tree
     BOOL PackersAndUnpackersExpanded;
@@ -447,13 +445,13 @@ struct CConfiguration
     char SLGName[MAX_PATH];          // xxxxx.slg to use next time Salamander starts
     int DoNotDispCantLoadPluginSLG;  // TRUE = suppress warning that an SLG with the same name cannot be loaded into the plugin as in Salamander
     int DoNotDispCantLoadPluginSLG2; // TRUE = suppress warning that the SLG plugin used last time (either user-selected or auto-selected) cannot be loaded
-    int UseAsAltSLGInOtherPlugins;   // TRUE = try to use AltSLGName for plugins
+    int UseAsAltSLGInOtherPlugins;   // TRUE = try to use AltPluginSLGName for plugins
     char AltPluginSLGName[MAX_PATH]; // only if UseAsAltSLGInOtherPlugins is TRUE: fallback SLG module for plugins (if LoadedSLGName for plugin does not exist)
 
     // Directory name convert\\XXX\\convert.cfg from which convert.cfg is loaded
     char ConversionTable[MAX_PATH];
 
-    int TitleBarShowPath;                        // will we display the path in the title bar?
+    int TitleBarShowPath;                        // display the path in the title bar?
     int TitleBarMode;                            // title bar display mode (TITLE_BAR_MODE_xxx)
     int UseTitleBarPrefix;                       // should prefix be shown in the title bar?
     char TitleBarPrefix[TITLE_PREFIX_MAX];       // prefix for the title bar
@@ -671,7 +669,7 @@ protected:
     void EnableButtons();
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void DeleteSubmenuEnd(int index); // for opening the selected submenu ('index') remove the closing item
+    void DeleteSubmenuEnd(int index); // deletes the closing item for the selected submenu ('index')
 
     void RefreshGroupIconInUMItems(); // after changing colors, HGroupIcon changes; we must update it in UserMenuItems as well
 
@@ -697,7 +695,7 @@ protected:
     BOOL DisableNotification;
     BOOL EditMode;
     int EditIndex;
-    BOOL LabelEdit; // we are editing a label
+    BOOL LabelEdit; // label edit mode
 
 public:
     CCfgPageHotPath(BOOL editMode, int editIndex);
