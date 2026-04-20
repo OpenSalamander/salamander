@@ -276,9 +276,9 @@ public:
     // in cycles (after the last one it returns to the first)
     HWND GetNextOpenedDlg(int* index);
 
-    // ensures that all open dialogs are closed;
-    // call only from the main thread (otherwise another dialog may open and will not
-    // know that it should terminate)
+    // ensures all open dialogs are closed
+    // call only from the main thread (otherwise another dialog might open and won't
+    // know it should terminate)
     void PostCancelToAllDlgs();
 
     // sends a message to all dialogs that the icon (color) has changed and needs 
@@ -316,7 +316,7 @@ public:
 protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    BOOL FlushCachedData(); // updates modified data in static controls and progress bars; returns TRUE if there was anything to update (something was dirty)
+    BOOL FlushCachedData(); // sends modified data to statics and progress bars; returns TRUE if there was something to update (something was dirty)
 
     void SetDlgTitle(BOOL minimized);
     void SetWindowIcon();
@@ -325,7 +325,7 @@ protected:
     BOOL RunningInOwnThread;                // TRUE/FALSE = dialog runs in its own thread ("background") / dialog runs in the main thread and is modal to its parent (usually one of the panels)
     CStartProgressDialogData* ProgrDlgData; // non-NULL only if the dialog runs in its own thread and the main thread hasn't been resumed yet (waiting for dialog opening and operation start)
 
-    HANDLE Worker;                // handle of the worker thread associated with this dialog (NULL if the thread does not exist yet or no longer exists)
+    HANDLE Worker;                // worker thread associated with this dialog (NULL if it doesn't exist yet/any more)
     HANDLE WContinue;             // multi-purpose event
     HANDLE WorkerNotSuspended;    // non-signaled == the worker should enter suspend mode
     BOOL CancelWorker;            // if TRUE, the worker thread will terminate
@@ -357,7 +357,7 @@ protected:
 
     BOOL TimerIsRunning; // if TRUE, a timer for text changes and the progress bar updates is running
 
-    BOOL FirstUserSetDialog; // TRUE = the WM_USER_SETDIALOG message has not been processed yet (for the first one, a repaint is forced so the user sees the dialog at least flash)
+    BOOL FirstUserSetDialog; // TRUE = WM_USER_SETDIALOG message isn't processed yet (the first call forces a repaint so the user sees the dialog at least flash)
 
     HWND NextForegroundWindow; // window that should be foreground after closing this dialog (on XP with service pack 1 and with a top-most window opened the activation may fail after closing the dialog - focus sometimes went to the top-most window instead of Salamander)
 
