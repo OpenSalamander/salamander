@@ -17,8 +17,8 @@
 //
 
 //
-// included in Open Salamander for configuration and inter-process communication
-// and simultaneously compiled into SHELLEXT.DLL for presentation and coordination
+// part of Open Salamander for configuration and mutual communication
+// and also part of SHELLEXT.DLL for presentation and mutual communication
 //
 
 //
@@ -149,7 +149,7 @@ extern DWORD ShellExtConfigVersion;
 // returns the item at the specified index
 CShellExtConfigItem* SECGetItem(int index);
 
-// if an item with matching Cmd is found, fills index and returns TRUE; otherwise returns FALSE
+// if an item with a matching Cmd is found, stores the found item's index in index and returns TRUE; otherwise returns FALSE
 BOOL SECGetItemIndex(UINT cmd, int* index);
 
 BOOL SECLoadRegistry();
@@ -227,14 +227,13 @@ typedef struct CSalShExtSharedMem CSalShExtSharedMem;
 
 #ifdef INSIDE_SALAMANDER
 
-// writes the registry entries required by the library
-// parameters: path to the library, whether to skip loading the DLL when verifying its version,
-// and the registry view (0, 32-bit, or 64-bit) that should be updated
+// writes the registry entries needed for the library to work
+// parameters: path to the library; FALSE/TRUE = test/do not test the DLL version by loading it; and 0 or the registry view (32-bit or 64-bit) to write to
 BOOL SECRegisterToRegistry(const char* shellExtensionPath, BOOL doNotLoadDLL, REGSAM regView);
 
 #ifdef ENABLE_SH_MENU_EXT
 
-// saves the configuration to the registry
+// saves data to the registry
 BOOL SECSaveRegistry();
 
 // returns the number of items in the list
