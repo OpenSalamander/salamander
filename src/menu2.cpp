@@ -281,11 +281,11 @@ BOOL CMenuPopup::EndModifyMode()
         UpdateWindow(HWindow);
         /*
     // update the current item
-    POINT cursorPos;
-    GetCursorPos(&cursorPos);
-    ScreenToClient(HWindow, &cursorPos);
-    SharedRes->LastMouseMove.x = cursorPos.x - 1; // disable the condition
-    SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+            POINT cursorPos;
+            GetCursorPos(&cursorPos);
+            ScreenToClient(HWindow, &cursorPos);
+            SharedRes->LastMouseMove.x = cursorPos.x - 1; // disable the condition
+            SendMessage(HWindow, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
 */
     }
     ModifyMode = FALSE;
@@ -1131,7 +1131,7 @@ BOOL CMenuPopup::LoadFromHandle()
         // convert the mii.fState variable
         if (mii.fState & MFS_CHECKED)
         {
-            if (mii.hbmpChecked == NULL) // quick hack because of ICQ which uses checked && mii.hbmpChecked
+            if (mii.hbmpChecked == NULL) // workaround for ICQ, which uses checked && mii.hbmpChecked
                 item->State |= MENU_STATE_CHECKED;
             else
                 mii.hbmpUnchecked = mii.hbmpChecked;
@@ -1636,8 +1636,8 @@ void CMenuPopup::OnChar(char key, BOOL* leaveMenu, DWORD* retValue)
         // x64 7zip returns 0xcccccccccccccccc when right-clicking a .7z file,
         // expanding the 7Zip menu and pressing 'h', which is inconsistent with
         // http://msdn.microsoft.com/en-us/library/windows/desktop/ms646349%28v=vs.85%29.aspx
-        // (it should return 0 because nothing in the menu starts with H)
-        // in any case, we were getting RTCs, so we mask to the lower DWORD
+        // (it should return 0 because nothing in the menu starts with H).
+        // In any case, RTCs were firing, so we mask to the lower DWORD.
         DWORD ret = (DWORD)(SendMessage(SharedRes->HParent, WM_MENUCHAR, MF_POPUP, (LPARAM)hMenu) & 0xffffffff);
         if (HIWORD(ret) == MNC_SELECT)
             SelectNewItemIndex(LOWORD(ret), FALSE);
@@ -1952,7 +1952,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     if (firstVisibleItem == NULL || lastVisibleItem == NULL)
         return;
     if (TopItemY == 0 && lastVisibleItem->YOffset + lastVisibleItem->Height <= Height)
-        return; // all items are visible; there’s no point in scrolling in this popup
+        return; // all items are visible; there is no point in scrolling in this popup
 
     // check the upper bound (so the top item is not pulled below the top edge of the menu)
     if (TopItemY + delta >= 0)
@@ -1972,7 +1972,7 @@ void CMenuPopup::OnMouseWheel(WPARAM wParam, LPARAM lParam)
     else
         downArrow = TRUE;
 
-    // if something changed, we will paint (forget scrolling; if it flickers, we can add code later)
+    // if anything changed, repaint it (ignoring scrolling for now; if it flickers, we can add it later)
     if (delta != 0 || UpArrowVisible != upArrow || DownArrowVisible != downArrow)
     {
         TopItemY += delta;
@@ -2051,10 +2051,10 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
 
     case WM_SYSKEYUP:
     {
-        // if the sys key up with VK_F10 was delivered to a modal dialog, a
-        // WM_SYSCOMMAND message with uCmdType=SC_KEYMENU was sent which activates the window menu
-        // this happened in Plugins/Encrypt/Create Key/Shift+F10 in one of the edit lines
-        // with passwords where our menu expands
+        // If the system key-up for VK_F10 was delivered to a modal dialog, a
+        // WM_SYSCOMMAND message with uCmdType=SC_KEYMENU was sent, which activated the window menu.
+        // This occurred in Plugins/Encrypt/Create Key/Shift+F10 in one of the password
+        // edit boxes, where our menu opens.
         if (msg->wParam == VK_F10)
             return;
         break;
@@ -2078,7 +2078,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             }
             return;
         }
-        if (msg->wParam == VK_MENU && (msg->lParam & 0x40000000) == 0 || // Alt down, ale ne autorepeat
+        if (msg->wParam == VK_MENU && (msg->lParam & 0x40000000) == 0 || // Alt pressed, but not auto-repeat
             (!shiftPressed && msg->wParam == VK_F10))
         {
             *leaveMenu = TRUE;
@@ -2210,7 +2210,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
         case VK_RETURN:
         {
             popup->OnKeyReturn(leaveMenu, retValue); // open sub menu or produce a command
-            return;                                  // must not let TranslateMessage handle Return
+            return;                                  // must not let TranslateMessage translate Return
         }
         }
         msg->hwnd = HWindow; // redirect to us (to prevent keystrokes from leaking out)
@@ -2261,15 +2261,15 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             CMenuItem* item = popup->Items[popup->SelectedItemIndex];
             if (!(item->State & MENU_STATE_GRAYED) ||
                 SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode && // Petr: we are opened from the menubar and in HelpMode (Shift+F1) +
-                    (item->SubMenu == NULL || item->ID != 0))                 // Petr: plus we have a command ID or submenu (a "grayed" submenu cannot be opened)
+                    (item->SubMenu == NULL || item->ID != 0))                                     // Petr: and we have a command ID or submenu (a "grayed" submenu cannot be opened)
             {
-                if (!(item->State & MENU_STATE_GRAYED) && // Petr: opening "grayed" submenus is not possible
+                if (!(item->State & MENU_STATE_GRAYED) && // Petr: a "grayed" submenu cannot be opened
                     item->SubMenu != NULL && item->SubMenu != popup->OpenedSubMenu)
                 {
                     // if a sub-menu is open, close it
                     if (popup->OpenedSubMenu != NULL)
                         popup->CloseOpenedSubmenu();
-                    // now I can open a new one
+                    // now a new one can be opened
                     RECT itemRect;
                     popup->GetItemRect(popup->SelectedItemIndex, &itemRect);
                     item->SubMenu->SharedRes = SharedRes;
@@ -2290,7 +2290,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
                         {
                             *leaveMenu = TRUE;
                             *retValue = item->ID;
-                            if (SharedRes->MenuBar != NULL)              // we were opened from the menubar
+                            if (SharedRes->MenuBar != NULL)              // opened from the menu bar
                                 SharedRes->MenuBar->ExitMenuLoop = TRUE; // so we exit it
                         }
                     }
@@ -2585,7 +2585,7 @@ BOOL CMenuPopup::CreatePopupWindow(CMenuPopup* firstPopup, int x, int y, int sub
     else if (TrackFlags & MENU_TRACK_BOTTOMALIGN)
         newY -= height;
 
-    // handle the menu crossing the right or left edge of the visible area
+    // handle overflow past the right and left edges of the visible area
     if (newX + width > clipRect.right)
         newX = clipRect.right - width;
     if (newX < clipRect.left)
@@ -2924,14 +2924,14 @@ CMenuPopup::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HANDLES(BeginPaint(HWindow, &ps));
         PaintAllItems(NULL);
-        HANDLES(EndPaint(HWindow, &ps)); // only turns off the caret that we do not have anyway
+        HANDLES(EndPaint(HWindow, &ps)); // only hides the caret, which we do not have anyway
         return 0;
     }
         /*
-    // support for animation
+    // animation support
     case WM_PRINTCLIENT:
     {
-      HDC hDC = (HDC) wParam; 
+      HDC hDC = (HDC) wParam;
       if (lParam & PRF_CLIENT)
       {
         int y = 0;
@@ -2963,17 +2963,17 @@ CMenuPopup::Track(DWORD trackFlags, int x, int y, HWND hwnd, const RECT* exclude
     if (!(trackFlags & MENU_TRACK_NONOTIFY))
         SendMessage(hwnd, WM_USER_ENTERMENULOOP, 0, 0);
 
-    SelectedByMouse = FALSE; // in 2.5b9 the variable was not initialized and ChangeDeriveMenu Alt+F1/2
-                             // behaved unpredictably -- moving the cursor outside the menu sometimes
+    SelectedByMouse = FALSE; // in 2.5b9 the variable was not initialized, and ChangeDeriveMenu Alt+F1/2
+                             // behaved unpredictably: moving the cursor outside the menu sometimes
                              // caused the selection to be lost
-                             // if this behaviour is not suitable for CMenuPopup::Track(),
-                             // it might be time to introduce a control flag in trackFlags
+                             // if this behavior is not suitable for CMenuPopup::Track(),
+                             // a control flag in trackFlags should probably be introduced
     DWORD retValue = TrackInternal(trackFlags, x, y, hwnd, exclude, NULL, msg, dispatchMsg);
 
     if (!(trackFlags & MENU_TRACK_NONOTIFY))
         SendMessage(hwnd, WM_USER_LEAVEMENULOOP, 0, 0);
 
-    // if we installed a hook, we will also unhook it
+    // if we installed a hook, unhook it as well
     if (hOldHookProc != NULL)
         OldMenuHookTlsAllocator.UnhookThread(hOldHookProc);
 
@@ -3059,7 +3059,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
     BeginStopRefresh();     // we do not want any refreshes
     BeginStopIconRepaint(); // we do not want any icon repaints
 
-    // open the father window
+    // open the parent window
     //  TRACE_I("MENU: creating window");
     if (CreatePopupWindow(this, x, y, 0, exclude))
     {
@@ -3097,7 +3097,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
                             if (msg.message == WM_LBUTTONDOWN)
                                 skipFirstLBtnDblclk = FALSE;
                             if (msg.message == WM_LBUTTONDBLCLK)
-                                continue; // skip the message because it is a typo after lbuttondown
+                                continue; // skip the message because it is a spurious double-click after WM_LBUTTONDOWN
                         }
                         if (skipFirstLBtnUp)
                         {
@@ -3107,7 +3107,7 @@ CMenuPopup::TrackInternal(DWORD trackFlags, int x, int y, HWND hwnd, const RECT*
                             {
                                 skipFirstLBtnUp = FALSE;
                                 if (FindPopup(PopupWindowFromPoint(msg.pt)) == NULL)
-                                    continue; // skip the message to avoid immediate window closing
+                                    continue; // skip the message to prevent the window from closing immediately
                             }
                         }
                         DoDispatchMessage(&msg, &leaveMenu, &retValue, &dispatchLater);
