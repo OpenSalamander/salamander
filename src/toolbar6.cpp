@@ -56,8 +56,8 @@ BOOL CDriveBar::CreateDriveButtons(CDriveBar* copyDrivesListFrom)
     if (HWindow == NULL)
         return FALSE;
 
-    // Suppress painting to avoid the checked item blinking (opening and closing the plugins manager would make it flicker).
-    // This also prevented flicker during Salamander startup.
+    // Suppress painting to prevent the checked item from flickering (for example, when opening and closing the Plugins Manager).
+    // It also flickered during Salamander startup.
     SendMessage(HWindow, WM_SETREDRAW, FALSE, 0);
     RemoveAllItems();
     SetStyle(TLB_STYLE_IMAGE | TLB_STYLE_TEXT);
@@ -295,7 +295,7 @@ BOOL CDriveBar::OnContextMenu()
             FromContextMenu = FALSE;
             const char* dllName = NULL;
             List->OnContextMenu(TRUE, indexInList, panel == MainWindow->LeftPanel ? PANEL_LEFT : PANEL_RIGHT, &dllName);
-            if (PostCmd != 0) // set only for drvtPluginFS and drvtPluginCmd, and drvtPluginFS cannot be on the Drive bar
+            if (PostCmd != 0) // PostCmd is set only for drvtPluginFS and drvtPluginCmd, and drvtPluginFS cannot be on the Drive bar
             {
                 UpdateWindow(MainWindow->HWindow);
 
