@@ -57,7 +57,7 @@ BOOL CShrinkImage::Alloc(DWORD origWidth, DWORD origHeight,
     // allocate and initialize the coefficients
     RowCoeff = CreateCoeff(origWidth, newWidth, NormCoeffX);
     ColCoeff = CreateCoeff(origHeight, newHeight, NormCoeffY);
-    // allocate and clear the accumulation buffer
+    // allocate and clear the buffer
     Buff = (DWORD*)malloc(3 * newWidth * sizeof(DWORD));
     if (RowCoeff == NULL || ColCoeff == NULL || Buff == NULL)
     {
@@ -120,7 +120,7 @@ CShrinkImage::CreateCoeff(DWORD origLen, WORD newLen, DWORD& norm)
         boundary = sum / newLen;
         // how much of the previous boundary belongs to the left part of this section
         lCoeff = norm - rCoeff;
-        // and finally the weight of the pixel at the section's right edge
+        // Weight of the pixel at the right edge of the section
         modulo = sum % newLen;
         if (modulo == 0)
         {
@@ -424,8 +424,8 @@ void CSalamanderThumbnailMaker::Clear(int thumbnailMaxSize)
     Shrinker.Destroy();
 }
 
-// returns TRUE when the entire thumbnail is ready in this object (obtained
-// successfully from the plugin)
+// returns TRUE if the entire thumbnail is ready in this object (it was
+// successfully obtained from the plugin)
 BOOL CSalamanderThumbnailMaker::ThumbnailReady()
 {
     return OriginalHeight != 0 && NextLine >= OriginalHeight && !Error;
@@ -519,7 +519,7 @@ void CSalamanderThumbnailMaker::TransformThumbnail()
     }
 }
 
-// convert the thumbnail we hold into a DDB and store its data into CThumbnailData
+// Convert the held thumbnail to a DDB and store its data in CThumbnailData
 BOOL CSalamanderThumbnailMaker::RenderToThumbnailData(CThumbnailData* data)
 {
     // create a DDB and let it initialize with the thumbnail's RGB data
