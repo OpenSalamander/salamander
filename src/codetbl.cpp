@@ -64,7 +64,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
     strcpy(convertCfgFileName, fileName);
 
     BOOL comment;
-    char* text; // != NULL - error message text
+    char* text; // != NULL - means an error message
     char* endTxt = txt + fileSize;
     __try
     {
@@ -167,7 +167,7 @@ void InitAux(HWND hWindow, TIndirectArray<CCodeTablesData>& Data,
                                     txt++;
                                 if (beg < txt) // another encoding file (or ANSI->OEM/OEM->ANSI)
                                 {
-                                    if (*beg == '\\' || beg + 1 < txt && *(beg + 1) == ':') // full name (UNC or normal)
+                                    if (*beg == '\\' || beg + 1 < txt && *(beg + 1) == ':') // full-name (UNC, normal)
                                     {
                                         char fullName[MAX_PATH];
                                         l = (int)min(txt - beg, MAX_PATH - 1);
@@ -365,7 +365,7 @@ CCodeTable::CCodeTable(HWND hWindow, const char* dirName)
             SalMessageBox(hWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
         }
     }
-    else // if convert\\xxx\\convert.cfg is missing, load the default configuration
+    else // if convert\\xxx\\convert.cfg is missing, "load" the default configuration
     {
         lstrcpyn(WinCodePage, LoadStr(IDS_VIEWERANSICODEPAGE), 101); // "ANSI" code page
         int i;
@@ -583,7 +583,7 @@ BOOL CCodeTables::Init(HWND hWindow)
         BOOL findBest = FALSE;
         if (Configuration.ConversionTable[0] != '*')
         {
-            // if the path to convert.cfg is configured, try to load it
+            // if the path to convert.cfg is initialized, try to load it
             Table = new CCodeTable(hWindow, Configuration.ConversionTable);
             if (Table != NULL && Table->GetState() != ctsSuccessfullyLoaded)
             {
@@ -896,14 +896,14 @@ void CCodeTables::RecognizeFileType(const char* pattern, int patternLen, BOOL fo
         {
             const char* n = (i == -1 ? NULL : Table->Data[i]->Name);
             testBuf = NULL;
-            if (i == -1) // without changing the encoding (text in WinCodePage)
+            if (i == -1) // without changing encoding (text in WinCodePage)
             {
                 testBuf = pattern;
                 strcpy(lastCodePage, Table->WinCodePage);
             }
             else
             {
-                if (n != NULL && winCodePageLen > 0) // not a separator and WinCodePage has been loaded
+                if (n != NULL && winCodePageLen > 0) // not a separator and WinCodePage is loaded
                 {
                     // remove '&' characters, they would interfere with comparison
                     char buf3[200];
