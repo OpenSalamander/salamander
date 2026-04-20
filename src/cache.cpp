@@ -127,8 +127,7 @@ BOOL CCacheData::CleanFromDisk()
         else // deletion should be handled by the plugin
         {
             if (OwnDeletePlugin != NULL) // we can start deleting (the plugin cannot be unloaded); otherwise the file will not be deleted
-            {                            // won't be  deleted (it's either already deleted or it's just
-                                         // disconnected - the plugin decides this during its unload
+            {                            // won't be deleted (it is either already deleted or just disconnected; the plugin decides this during unload)
                 DeleteManager.AddFile(TmpName, OwnDeletePlugin);
                 OwnDeletePlugin = NULL; // no more deleting will be done
             }
@@ -647,7 +646,7 @@ void CCacheDirData::AddVictimsToArray(TDirectArray<CCacheData*>& victArr)
 
 BOOL CCacheDirData::DetachTmpFile(const char* tmpName)
 {
-    if (StrNICmp(tmpName, Path, PathLength) == 0) // if there's a chance that this is our tmp-file
+    if (StrNICmp(tmpName, Path, PathLength) == 0) // if there is a chance that this is our tmp file
     {
         int i;
         for (i = 0; i < Names.Count; i++)
@@ -687,7 +686,7 @@ void CCacheDirData::FlushCache(const char* name)
             }
         }
         else
-            break; // there cannot be any more, stop here
+            break; // there can be no more; stop here
     }
 }
 
@@ -866,7 +865,7 @@ CCacheHandles::CCacheHandles() : Handles(100, 50), Owners(100, 50)
 void CCacheHandles::Destroy()
 {
     CALL_STACK_MESSAGE1("CCacheHandles::Destroy()");
-    if (Thread != NULL) // thread termination is required
+    if (Thread != NULL) // the thread needs to be terminated
     {
         SetEvent(Terminate);                                   // "you should end now"
         if (WaitForSingleObject(Thread, 1000) == WAIT_TIMEOUT) // let's give it 1 second
@@ -1044,7 +1043,7 @@ void CCacheHandles::WaitForIdle()
 {
     CALL_STACK_MESSAGE1("CCacheHandles::WaitForIdle()");
     TRACE_I("CCacheHandles::WaitForIdle begin");
-    Idle = 1;                              // we are asking
+    Idle = 1;                              // asking whether we're idle
     SetEvent(TestIdle);                    // if the watching thread is waiting, we will stop the wait (we will run the idle-state test)
     WaitForSingleObject(IsIdle, INFINITE); // we are waiting for idle
     TRACE_I("CCacheHandles::WaitForIdle end");
@@ -1270,7 +1269,7 @@ BOOL CDiskCache::ReleaseName(const char* name, BOOL storeInCache)
         if (Dirs[i]->ReleaseName(name, &ret, &lastCached, storeInCache)) // 'name' found
         {
             if (lastCached) // The tmp-file is orphaned and cached; we will see whether it already needs to be released.
-            {               // to release it, or if we need to release space on disk
+            {               // Check whether we need to free up disk space.
                 CheckCachedFiles();
             }
             Leave();
@@ -1325,7 +1324,7 @@ void CDiskCache::CheckCachedFiles()
             Dirs[i]->AddVictimsToArray(victArr);
         }
         if (!victArr.IsGood())
-            return; // low memory, we won't perform optimization
+            return; // low memory, optimization will not be performed
         if (victArr.Count > 1)
             SortVictims(victArr, 0, victArr.Count - 1);
         int actVict = 0;
@@ -1343,9 +1342,9 @@ void CDiskCache::CheckCachedFiles()
                 }
             }
             else
-                break; // at least one cached file must remain in cache, it will be
-                       // the one which was released last, it prevents discarding
-                       // of the file which the user is currently looking at
+                break; // at least one cached file must remain in the cache;
+                       // it will be the one most recently released,
+                       // preventing the file the user is currently viewing from being discarded
         }
     }
 }
@@ -1357,13 +1356,13 @@ void CDiskCache::WaitSatisfied(HANDLE lock, CCacheData* owner)
     BOOL last;
     if (owner->WaitSatisfied(lock, &last))
     {
-        if (last) // the tmp-file has no more links; we can cancel it
+        if (last) // the tmp file is orphaned; we can delete it
         {
             if (owner->IsCached()) // see if we already need to free some space
-            {                      // and free up disk space if needed
+            {                      // free up disk space if needed
                 CheckCachedFiles();
             }
-            else // we should delete the file directly
+            else // delete the file directly
             {
                 int i;
                 for (i = 0; i < Dirs.Count; i++)
@@ -1602,7 +1601,7 @@ void CDeleteManager::ProcessData()
     if (BlockDataProcessing)
         return;
 
-    // we will lower the priority of the thread - we are going to delete a file to a plugin
+    // lower the thread priority; we are going to delete the file via the plugin
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
     if (MainWindow != NULL)
@@ -1673,10 +1672,10 @@ void CDeleteManager::PluginMayBeUnloaded(HWND parent, CPluginData* plugin)
             WaitingForProcessing = TRUE; // Block sending WM_USER_PROCESSDELETEMAN: it is undesirable and unnecessary; data will be processed at the end of the method
         HANDLES(LeaveCriticalSection(&CS));
 
-        BlockDataProcessing = TRUE; // in case we missed a WM_TIMER posted to the main window (we block it because it can be delivered by the first displayed message box and its message loop)
+        BlockDataProcessing = TRUE; // in case a WM_TIMER posted to the main window would otherwise be missed (we block it because it can be delivered by the first displayed message box and its message loop)
 
         int copiesCount = DiskCache.CountNamesDeletedByPlugin(plugin->GetPluginInterface()->GetInterface());
-        if (copiesCount > 0) // plugin still has some tmp-files opened (and it should ensure their deletion)
+        if (copiesCount > 0) // The plugin still has some temporary files open (and should ensure they are deleted)
         {
             if (plugin->PrematureDeleteTmpCopy(parent, copiesCount))
             { // user wants to delete tmp-files, even if they are still opened (they are in viewers, etc.)
