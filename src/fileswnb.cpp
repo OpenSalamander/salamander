@@ -26,7 +26,7 @@ extern "C"
 // define the "Lock Volume" event GUID (e.g., "chkdsk /f E:" where E: is a USB stick): {50708874-C9AF-11D1-8FEF-00A0C9A06D32}
 GUID GUID_IO_LockVolume = {0x50708874, 0xC9AF, 0x11D1, 0x8F, 0xEF, 0x00, 0xA0, 0xC9, 0xA0, 0x6D, 0x32};
 //
-// in Ioevent.h from the DDK, this constant (and many others) is defined:
+// Ioevent.h from the DDK defines this constant (and many others):
 //
 //  Volume lock event.  This event is signalled when an attempt is made to
 //  lock a volume.  There is no additional data.
@@ -239,7 +239,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     // count how many directories are selected (the rest of the marked items are files)
                     int i;
-                    for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, so the test would be pointless
+                    for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, so the test would be unnecessary
                     {
                         if (Dirs->At(i).Selected)
                             selectedDirs++;
@@ -278,16 +278,16 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 if (ret && !cancelOrHandlePath)
                 {
-                    if (targetPath[0] != 0) // change the focus to 'targetPath'
+                    if (targetPath[0] != 0) // change focus to 'targetPath'
                     {
                         lstrcpyn(NextFocusName, targetPath, MAX_PATH);
                         // RefreshDirectory may not run; the source may be unchanged, so post a message just in case
                         PostMessage(HWindow, WM_USER_DONEXTFOCUS, 0, 0);
                     }
 
-                    // successful operation, but do not deselect the source because this is drag&drop
+                    // successful operation, but do not clear the source selection because this is drag and drop
                     //            SetSel(FALSE, -1, TRUE);   // explicit redraw
-                    //            PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);  // sel-change notify
+                    //            PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0);  // selection-change notification
                     UpdateWindow(MainWindow->HWindow);
                 }
 
@@ -401,7 +401,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else
                 PostMessage(HWindow, WM_USER_REFRESH_DIR_EX_DELAYED, FALSE, lParam);
         }
-        else // waiting for WM_USER_REFRESH_DIR_EX_DELAYED to be sent
+        else // waiting for WM_USER_REFRESH_DIR_EX_DELAYED to be posted
         {
             if (RefreshDirExLParam < lParam) // take the "newer" time
                 RefreshDirExLParam = lParam;
@@ -504,7 +504,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 lParam = RefreshAfterIconsReadingTime;
                 wParam = FALSE; // do not trigger RefreshFinishedEvent
                 setWait = FALSE;
-                probablyUselessRefresh = TRUE; // probably just a refresh wrongly triggered by the system after loading icons from a network drive
+                probablyUselessRefresh = TRUE; // probably just a refresh incorrectly triggered by the system after loading icons from a network drive
                                                //          TRACE_I("delayed refresh (after reading of all icons): probablyUselessRefresh=TRUE");
             }
             else
@@ -536,12 +536,12 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (GetTickCount() - EndOfIconReadingTime < 1000)
             {
-                probablyUselessRefresh = TRUE; // for one second after icon reading finishes, we still expect a redundant refresh caused by reading icons
+                probablyUselessRefresh = TRUE; // for one second after icon reading finishes, we still expect a redundant refresh caused by icon reading
                                                //          TRACE_I("less than second after reading of icons was finished: probablyUselessRefresh=TRUE");
             }
             else
             {
-                probablyUselessRefresh = (uMsg == WM_USER_REFRESH_DIR_EX_DELAYED || uMsg == WM_USER_INACTREFRESH_DIR); // deferred refresh that may also be useless (prevents an endless loop when reading icons on network drives triggers more refreshes)
+                probablyUselessRefresh = (uMsg == WM_USER_REFRESH_DIR_EX_DELAYED || uMsg == WM_USER_INACTREFRESH_DIR); // deferred refresh that may also be unnecessary (this prevents an infinite loop when reading icons on network drives triggers additional refreshes)
                                                                                                                        //          TRACE_I("WM_USER_REFRESH_DIR_EX_DELAYED or WM_USER_INACTREFRESH_DIR: probablyUselessRefresh=" << probablyUselessRefresh);
             }
         }
@@ -569,7 +569,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else // not a refresh during suspend mode
             {
-                if (lParam >= LastRefreshTime) // not an unnecessary old refresh
+                if (lParam >= LastRefreshTime) // not a stale refresh
                 {
                     BOOL isInactiveRefresh = FALSE;
                     BOOL skipRefresh = FALSE;
@@ -580,7 +580,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         //              TRACE_I("Refresh from snooper in inactive window");
                         isInactiveRefresh = TRUE;
-                        if (LastInactiveRefreshStart != LastInactiveRefreshEnd) // some refresh already happened since the last deactivation
+                        if (LastInactiveRefreshStart != LastInactiveRefreshEnd) // a refresh has already occurred since the last deactivation
                         {
                             DWORD delay = 20 * (LastInactiveRefreshEnd - LastInactiveRefreshStart);
                             //                TRACE_I("Calculated delay between refreshes is " << delay);
@@ -642,7 +642,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (isInactiveRefresh)
                         {
                             if (typeBackup != GetPanelType() || StrICmp(pathBackup, GetPath()) != 0)
-                            { // if the path changed (someone likely deleted the directory shown in the panel), perform any further refresh immediately (the newly shown directory might be deleted as well, so we can quickly "back out" from it)
+                            { // if the path changed (most likely because someone just deleted the directory shown in the panel), perform any further refresh immediately (the newly displayed directory may be deleted as well, so we can back out of it quickly)
                                 LastInactiveRefreshEnd = LastInactiveRefreshStart;
                             }
                             else
@@ -652,7 +652,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     LastInactiveRefreshEnd = LastInactiveRefreshStart + 1; // must not be equal (this means "no refresh yet")
                             }
                         }
-                        /*  // Petr: I do not know why LastRefreshTime was set only here - logically if a change occurs during a refresh, another refresh is necessary - it failed in Nethood because the enumeration thread posted a refresh before RefreshDirectory finished, so it was ignored (a refresh during a refresh)
+                        /*  // Petr: It is unclear why LastRefreshTime was set only here. If a change occurs during a refresh, another refresh is required. This caused problems in Nethood because the enumeration thread posted a refresh before RefreshDirectory finished, so it was ignored as a refresh during a refresh.
               HANDLES(EnterCriticalSection(&TimeCounterSection));
               LastRefreshTime = MyTimeCounter++;
               HANDLES(LeaveCriticalSection(&TimeCounterSection));
@@ -672,8 +672,8 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_REFRESH_PLUGINFS:
     {
         if (SnooperSuspended || StopRefresh)
-        { // suspend mode is already on (working with internal data -> cannot refresh)
-            // moreover we might be inside a plugin -> multiple calls to plugin methods are not supported
+        { // suspend mode is already active (working with internal data -> cannot refresh)
+            // moreover, we might also be inside a plugin -> multiple calls to plugin methods are not supported
             PluginFSNeedRefreshAfterEndOfSM = TRUE;
         }
         else
@@ -763,7 +763,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         // redraw the affected index
-        if (file != NULL) // file is used here only as a NULL check
+        if (file != NULL) // file is used here only to test for NULL
         {
             if (!StopIconRepaint) // if icon repainting is allowed
                 RepaintIconOnly((int)wParam);
@@ -867,7 +867,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER_DONEXTFOCUS: // if RefreshDirectory did not manage it already, do it here
     {
         DontClearNextFocusName = FALSE;
-        if (NextFocusName[0] != 0) // if there is anything to focus
+        if (NextFocusName[0] != 0) // if there is something to focus
         {
             int total = Files->Count + Dirs->Count;
             int found = -1;
@@ -1082,7 +1082,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         HANDLES(EnterCriticalSection(&FileNamesEnumDataSect));
 
-        if (InactiveRefreshTimerSet) // if a refresh is delayed here, execute it now, otherwise enumeration would use outdated listing; a longer delay is fine, GetFileNameForViewer waits for the result...
+        if (InactiveRefreshTimerSet) // if a refresh is pending here, execute it now; otherwise enumeration would use an outdated listing; a longer delay is fine, GetFileNameForViewer waits for the result...
         {
             //        TRACE_I("Refreshing during enumeration (refresh in inactive window was delayed)");
             KillTimer(HWindow, IDT_INACTIVEREFRESH);
@@ -1098,7 +1098,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (Files != NULL && Is(ptDisk))
             {
                 BOOL selExists = FALSE;
-                if (FileNamesEnumData.PreferSelected) // if needed, check whether a selection exists
+                if (FileNamesEnumData.PreferSelected) // if needed, check whether anything is selected
                 {
                     int i;
                     for (i = 0; i < Files->Count; i++)
@@ -1114,7 +1114,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int index = FileNamesEnumData.LastFileIndex;
                 int count = Files->Count;
                 BOOL indexNotFound = TRUE;
-                if (index == -1) // search from the first or the last item
+                if (index == -1) // searching from the first or last item
                 {
                     if (FileNamesEnumData.RequestType == fnertFindPrevious)
                         index = count; // searching for the previous item + start at the last item
@@ -1165,7 +1165,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BOOL onlyAssociatedExtensions = FALSE;
                 if (FileNamesEnumData.OnlyAssociatedExtensions) // does the viewer request filtering by associated extensions?
                 {
-                    if (FileNamesEnumData.Plugin != NULL) // viewer from plugin
+                    if (FileNamesEnumData.Plugin != NULL) // viewer from a plugin
                     {
                         int pluginIndex = Plugins.GetIndex(FileNamesEnumData.Plugin);
                         if (pluginIndex != -1) // "always true"
@@ -1450,8 +1450,8 @@ MENU_TEMPLATE_ITEM SortByMenu[] =
 };
 */
 
-    // temporary solution for 1.6 beta 6: always populate (regardless of ValidFileData)
-    // the Name, Ext, Date, and Size items
+    // temporary solution for 1.6 beta 6: always populate the
+    // Name, Ext, Date, and Size entries (regardless of ValidFileData)
     // the order must correspond to the CSortType enum
     int textResID[5] = {IDS_COLUMN_MENU_NAME, IDS_COLUMN_MENU_EXT, IDS_COLUMN_MENU_TIME, IDS_COLUMN_MENU_SIZE, IDS_COLUMN_MENU_ATTR};
     int leftCmdID[5] = {CM_LEFTNAME, CM_LEFTEXT, CM_LEFTTIME, CM_LEFTSIZE, CM_LEFTATTR};
