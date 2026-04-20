@@ -441,7 +441,7 @@ public:
                     }
                     MainWindow->UserMenuItems->Insert(i, item);
 
-                    if (UserMenuIconBkgndReader.IsReadingIcons()) // icon loading is in progress, so restart it because the user menu item count changed (as a side effect this drops the icon just read for the dropped file, but that's acceptable)
+                    if (UserMenuIconBkgndReader.IsReadingIcons()) // icon loading is in progress, so restart it because the number of items in the user menu has changed (as a side effect, this drops the icon just loaded for the dropped file, but that is acceptable)
                     {
                         CUserMenuIconDataArr* bkgndReaderData = new CUserMenuIconDataArr();
                         for (int i2 = 0; i2 < MainWindow->UserMenuItems->Count; i2++)
