@@ -277,7 +277,7 @@ public:
     HWND GetNextOpenedDlg(int* index);
 
     // ensures all open dialogs are closed
-    // call only from the main thread (otherwise another dialog might open and it won't 
+    // call only from the main thread (otherwise another dialog might open and won't
     // know it should terminate)
     void PostCancelToAllDlgs();
 
@@ -635,7 +635,7 @@ public:
     char Mask[MAX_PATH]; // which files will be converted?
     int Change;          // which conversion should be performed?
     BOOL SubDirs;        // include subdirectories?
-    int CodeType;        // selected encoding (0 = none)
+    int CodeType;        // which encoding is selected (0 = none)
     int EOFType;         // selected line endings (0 = none)
                          // 1 = CRLF
                          // 2 = LF
@@ -831,7 +831,7 @@ protected:
 
 protected:
     CBitmap* Bitmap;         // includes the text
-    CBitmap* OriginalBitmap; // graphics only, without text
+    CBitmap* OriginalBitmap; // bitmap only, without text
     HFONT HNormalFont;
     HFONT HBoldFont;
     RECT OpenSalR;
@@ -935,7 +935,7 @@ protected:
     char* IconFile;
     int* IconIndex;
     BOOL Dirty;
-    HICON* Icons;     // array of enumerated icon handles
+    HICON* Icons;     // array of icon handles
     DWORD IconsCount; // number of icons in the array
 
 public:
@@ -988,8 +988,8 @@ protected:
     void InitColumns();     // add columns to the listview
     void SetColumnWidths(); // set optimal column widths
     void RefreshListView(BOOL setOnly = TRUE, int selIndex = -1, const CPluginData* selectPlugin = NULL, BOOL setColumnWidths = FALSE);
-    void OnSelChanged();                                                    // selected item in the listview changed
-    CPluginData* GetSelectedPlugin(int* index = NULL, int* lvIndex = NULL); // returns NULL if no item is selected; index returns index to the Plugins array; lvIndex returns index within listview, can be NULL
+    void OnSelChanged();                                                    // the selected item in the list view changed
+    CPluginData* GetSelectedPlugin(int* index = NULL, int* lvIndex = NULL); // returns NULL if no item is selected; index returns the index into the Plugins array; lvIndex returns the index within the list view and can be NULL
     void EnableButtons(CPluginData* plugin);
     void OnContextMenu(int x, int y); // show the context menu for the selected item at coordinates x, y
     void OnMove(BOOL up);
@@ -1025,7 +1025,7 @@ protected:
     void RefreshListView(BOOL setOnly = TRUE);
 
     WORD GetHotKey(BYTE* virtKey = NULL, BYTE* mods = NULL);
-    CPluginMenuItem* GetSelectedItem(int* orgIndex); // orgIndex returns index to Plugin array->MenuItems; may be NULL
+    CPluginMenuItem* GetSelectedItem(int* orgIndex); // orgIndex receives the index into the Plugin->MenuItems array; it may be NULL
     CPluginMenuItem* GetItem(int index);
     void EnableButtons();
     void HandleConflictWarning();
@@ -1167,9 +1167,9 @@ struct CImportOldKey
 class CImportConfigDialog : public CCommonDialog
 {
 public:
-    // array corresponding to SalamanderConfigurationRoots array; TRUE:the configuration exists, FALSE:it doesn't
+    // array corresponding to the SalamanderConfigurationRoots array; TRUE: configuration exists, FALSE: does not exist
     BOOL ConfigurationExist[SALCFG_ROOTS_COUNT];
-    // pointer to the same sized array where the dialog stores TRUE for configurations to delete
+    // pointer to an array of the same size where the dialog stores TRUE for configurations to be deleted
     BOOL* DeleteConfigurations;
     // dialog returns here which configuration the user wants to import; -1 -> none
     // index points into the SalamanderConfigurationRoots array
@@ -1213,7 +1213,7 @@ public:
     BOOL Initialize(const char* slgSearchPath = NULL, HINSTANCE pluginDLL = NULL);
 
     int GetLanguagesCount() { return Items.Count; }
-    BOOL GetSLGName(char* path, int index = 0); // returns xxxx.slg of the item at index 'index'
+    BOOL GetSLGName(char* path, int index = 0); // returns the xxxx.slg for the item at index 'index'
     BOOL SLGNameExists(const char* slgName);    // checks whether 'slgName' exists in 'Items'
 
     void FillControls();
@@ -1286,8 +1286,8 @@ protected:
 public:
     CSharesDialog(HWND hParent);
 
-    const char* GetFocusedPath(); // returns the path of the selected share; call only after the dialog returns
-                                  // returns NULL if "Focus" wasn't clicked and the dialog returned IDOK
+    const char* GetFocusedPath(); // returns the path of the selected share; call only after Execute() returns
+                                  // returns NULL if the "Focus" button was not pressed and the dialog returned IDOK
                                   // from Execute()
 
 protected:
@@ -1299,7 +1299,7 @@ protected:
     void Refresh();     // loads shared folders and adds them to the listview
     static int CALLBACK SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
     void SortItems();                        // sorts items based on the SortBy variable
-    int GetFocusedIndex();                   // returns index to SharetDirs array or -1 if no item is selected
+    int GetFocusedIndex();                   // returns the index into the SharetDirs array, or -1 if no item is selected
     void DeleteShare(const char* shareName); // request the system to remove the share
     void OnContextMenu(int x, int y);        // shows the context menu for the selected item at coordinates x, y
     void EnableControls();                   // button enabler
@@ -1349,9 +1349,9 @@ public:
     CDisconnectDialog(CFilesWindow* panel);
     ~CDisconnectDialog();
 
-    const char* GetFocusedPath();                 // returns the path of the selected share; call only after the dialog returns
-                                                  // returns NULL if "Focus" wasn't clicked and the dialog returned IDOK
-                                                  // from Execute()
+    const char* GetFocusedPath();                 // returns the path of the selected share; call only after Execute() returns
+                                  // returns NULL if the "Focus" button was not pressed and the dialog returned IDOK
+                                  // from Execute()
     BOOL NoConnection() { return NoConncection; } // returns TRUE if the dialog wasn't opened because there was no connection
 
 protected:
@@ -1446,7 +1446,7 @@ protected:
     int OriginalHeight;   // full dialog height
     int OriginalButtonsY; // Y position of the buttons in client coordinates
     int SpacerHeight;     // spacer used when shrinking/expanding the dialog
-    BOOL Expanded;        // are we currently expanded?
+    BOOL Expanded;        // is the dialog currently expanded?
 
 public:
     CCompareDirsDialog(HWND hParent, BOOL enableByDateAndTime, BOOL enableBySize,
@@ -1499,7 +1499,7 @@ protected:
     CITaskBarList3* TaskBarList3; // pointer to the interface owned by the Salamander main window
 
 public:
-    CCmpDirProgressDialog(HWND hParent, BOOL hasProgress, CITaskBarList3* taskBarList3); // if 'hasProgress' is TRUE, the dialog shows a progress bar
+    CCmpDirProgressDialog(HWND hParent, BOOL hasProgress, CITaskBarList3* taskBarList3); // if 'hasProgress' is TRUE, the dialog with a progress bar is used
 
     // text setup
     void SetSource(const char* text);
