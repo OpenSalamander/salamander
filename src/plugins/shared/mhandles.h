@@ -13,12 +13,12 @@
 #pragma once
 
 // MHANDLES_ENABLE macro - enables handle monitoring
-// POZOR: volat HANDLES_CAN_USE_TRACE() tesne po inicializaci "dbg.h" modulu
+// WARNING: call HANDLES_CAN_USE_TRACE() immediately after initializing the "dbg.h" module
 //        (after SalamanderDebug and SalamanderVersion have been initialized)
 // WARNING: MHANDLES are initialized/destroyed at the "lib" level; if a plugin
 //        uses the "lib" (or "compiler") level, it must ensure that MHANDLES are not
 //        used at those levels (see #pragma init_seg (lib))
-// POZNAMKA: pro snazsi rozmisteni maker HANDLES() a HANDLES_Q() pouzijte program CheckHnd.exe
+// NOTE: use CheckHnd.exe to simplify the placement of HANDLES() and HANDLES_Q() macros
 
 #define NOHANDLES(function) function
 
