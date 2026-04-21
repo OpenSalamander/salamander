@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __TEXTS_RH2
 #define __TEXTS_RH2
 
@@ -1078,7 +1079,7 @@
 #define IDS_BUTTON_CONTINUE           10847
 #define IDS_BUTTON_YES                10848
 #define IDS_BUTTON_NO                 10849
-// nechat jeste par polozek rezervu
+// keep a few items reserved
 
 #define IDS_ESCAPE                    10860
 #define IDS_F11                       10861
@@ -1182,7 +1183,7 @@
 #define IDS_BROWSEONERRGOTOTITLE      10950
 // Configuration: Drives: text of Browse (...) path window: Select the path you want to visit when current path in panel is inaccessible
 #define IDS_BROWSEONERRGOTOTEXT       10951
-// 10952 je uz pouzite
+// 10952 is already used
 
 // Error Opening Alternate Data Stream dialog: second item in menu on Ignore button: Ignore &All
 #define IDS_ERROPENADS_IGNOREALL      10955
@@ -1339,7 +1340,7 @@
 #define IDS_PACK_EXE_UZP16           11067
 #define IDS_PACK_EXE_BROWSE          11068
 
-// 11070 je zabrany pro IDS_PACKRET_BREAK2
+// 11070 is reserved for IDS_PACKRET_BREAK2
 
 #define IDS_PACKQRY_PREFIX           11101
 // User query, whether discard root dir in archive while compressing
@@ -1562,7 +1563,7 @@
 // plugins manager/test all: all plugins seem to work correctly
 #define IDS_PLUGINTESTALLOK          12108
 
-// 12109 je zabrane !!!
+// 12109 is reserved !!!
 
 // plugins manager/column name
 #define IDS_PLUGINS_NAME             12110
@@ -1702,7 +1703,7 @@
 // There are no items in this panel.
 #define IDS_NOITEMSINPANEL           12233
 
-// text, ktery je pridan ke jmenu plug-inu, aby zvyraznil ze jde o plug-in - " (Plug-in)"
+// text appended to the plug-in name to highlight that it is a plug-in - " (Plug-in)"
 #define IDS_PLUGINSUFFIX             12235
 
 // task list dialog: You cannot break this task. Use another
