@@ -347,8 +347,8 @@ public:
     // receives information about a change on path 'path' (if 'includingSubdirs' is TRUE, it
     // also includes changes in subdirectories of path 'path'); this method should decide
     // whether this FS needs to be refreshed (for example via method
-    // CSalamanderGeneralAbstract::PostRefreshPanelFS); tyka se jak aktivnich FS, tak
-    // detached FSs; 'fsName' is the current FS name
+    // CSalamanderGeneralAbstract::PostRefreshPanelFS); this applies to both active
+    // FSs and detached FSs; 'fsName' is the current FS name
     // NOTE: for the plugin as a whole, there is also the method
     //           CPluginInterfaceAbstract::AcceptChangeOnPathNotification()
     virtual void WINAPI AcceptChangeOnPathNotification(const char* fsName, const char* path,
