@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -12,7 +13,7 @@
 #pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_view) // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_view) // Make structures independent of the current alignment settings.
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -29,39 +30,34 @@ struct CSalamanderPluginViewerData;
 class CPluginInterfaceForViewerAbstract
 {
 #ifdef INSIDE_SALAMANDER
-private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForViewerEncapsulation)
+private: // Guard against incorrect direct method calls (see CPluginInterfaceForViewerEncapsulation).
     friend class CPluginInterfaceForViewerEncapsulation;
 #else  // INSIDE_SALAMANDER
 public:
 #endif // INSIDE_SALAMANDER
 
-    // funkce pro "file viewer", vola se pri pozadavku na otevreni viewru a nacteni souboru
-    // 'name', 'left'+'right'+'width'+'height'+'showCmd'+'alwaysOnTop' je doporucene umisteni
-    // okna, je-li 'returnLock' FALSE nemaji 'lock'+'lockOwner' zadny vyznam, je-li 'returnLock'
+    // Function for the file viewer; called to open the viewer and load a file
+    // Parameters 'name', 'left', 'right', 'width', 'height', 'showCmd', and 'alwaysOnTop' are the recommended window placement parameters
+    // If 'returnLock' is FALSE, 'lock' and 'lockOwner' have no meaning; if 'returnLock'
     // TRUE, mel by viewer vratit system-event 'lock' v nonsignaled stavu, do signaled stavu 'lock'
-    // prejde v okamziku ukonceni prohlizeni souboru 'name' (soubor je v tomto okamziku odstranen
-    // z docasneho adresare), dale by mel vratit v 'lockOwner' TRUE pokud ma byt objekt 'lock' uzavren
-    // volajicim (FALSE znamena, ze si viewer 'lock' rusi sam - v tomto pripade viewer musi pro
-    // prechod 'lock' do signaled stavu pouzit metodu CSalamanderGeneralAbstract::UnlockFileInCache);
-    // pokud viewer nenastavi 'lock' (zustava NULL) je soubor 'name' platny jen do ukonceni volani teto
-    // metody ViewFile; neni-li 'viewerData' NULL, jde o predani rozsirenych parametru viewru (viz
+    // the 'lock' transitions to the signaled state when viewing of the file 'name' finishes (the file is removed from the temporary directory),
+    // the viewer should set 'lockOwner' to TRUE if the 'lock' object is to remain held by the caller
+    // FALSE means the viewer releases the 'lock' itself — in that case the viewer must use
+    // CSalamanderGeneralAbstract::UnlockFileInCache to transition the 'lock' to the signaled state);
+    // If the viewer does not set 'lock' (it remains NULL), the file 'name' is valid only until this ViewFile call returns;
+    // if 'viewerData' is not NULL, it passes extended parameters to the viewer (see
     // CSalamanderGeneralAbstract::ViewFileInPluginViewer); 'enumFilesSourceUID' je UID zdroje (panelu
-    // nebo Find okna), ze ktereho je viewer otviran, je-li -1, je zdroj neznamy (archivy a
-    // file_systemy nebo Alt+F11, atd.) - viz napr. CSalamanderGeneralAbstract::GetNextFileNameForViewer;
-    // 'enumFilesCurrentIndex' je index oteviraneho souboru ve zdroji (panelu nebo Find okne), je-li -1,
-    // neni zdroj nebo index znamy; vraci TRUE pri uspechu (FALSE znamena neuspech, 'lock' a
-    // 'lockOwner' v tomto pripade nemaji zadny vyznam)
+    // or Find window) from which the viewer is opened; if -1, the source is unknown (archives and
+    // file systems or Alt+F11, etc.) — see e.g. CSalamanderGeneralAbstract::GetNextFileNameForViewer;
+    // 'enumFilesCurrentIndex' is the index of the opened file in the source (panel or Find window); if -1,
+    // the source or index is unknown; returns TRUE on success (FALSE indicates failure; 'lock' and
+    // 'lockOwner' have no meaning in that case)
     virtual BOOL WINAPI ViewFile(const char* name, int left, int top, int width, int height,
                                  UINT showCmd, BOOL alwaysOnTop, BOOL returnLock, HANDLE* lock,
                                  BOOL* lockOwner, CSalamanderPluginViewerData* viewerData,
                                  int enumFilesSourceUID, int enumFilesCurrentIndex) = 0;
 
-    // funkce pro "file viewer", vola se pri pozadavku na otevreni viewru a nacteni souboru
-    // 'name'; tato fuknce by nemela zobrazovat zadna okna typu "invalid file format", tato
-    // okna se zobrazi az pri volani metody ViewFile tohoto rozhrani; zjisti jestli je
-    // soubor 'name' zobrazitelny (napr. soubor ma odpovidajici signaturu) ve vieweru
-    // a pokud je, vraci TRUE; pokud vrati FALSE, zkusi Salamander pro 'name' najit jiny
-    // viewer (v prioritnim seznamu vieweru, viz konfiguracni stranka Viewers)
+    // Function for the file viewer; called to check whether the viewer can open and display 'name'. This function must not show dialogs such as "invalid file format" — those dialogs are shown by ViewFile. Return TRUE if the viewer can display 'name' (for example, if the file has a matching signature); return FALSE otherwise. If FALSE is returned, Salamander will try to find another viewer for 'name' using the viewer priority list (see Viewers configuration).
     virtual BOOL WINAPI CanViewFile(const char* name) = 0;
 };
 
