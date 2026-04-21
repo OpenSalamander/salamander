@@ -350,8 +350,8 @@ BOOL GetSidMD5(BYTE* sidMD5)
 // Dr. GUI thinks that in your case you should only set the security for specific objects because you are developing a DLL, which may not want to change the security for every object in the process.
 // The following function wraps CreateMutex with the additional functionality of creating security that is more relaxed than is the default for a service:
 /*
-    // pridelime mutexu vsechna mozna prava (aby napriklad fungovalo otevirani mezi AsAdmin a User ucty)
-    // cistejsi by bylo zavolani funkce ObtainAccessableMutex(), viz jeji obsahly komentar
+    // grant the mutex all possible access rights (so opening it works, for example, between AsAdmin and User accounts)
+    // a cleaner solution would be to call ObtainAccessableMutex(), see its detailed comment
     SECURITY_ATTRIBUTES secAttr;
     char secDesc[ SECURITY_DESCRIPTOR_MIN_LENGTH ];
     secAttr.nLength = sizeof(secAttr);
