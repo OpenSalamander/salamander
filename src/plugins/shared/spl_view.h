@@ -36,22 +36,10 @@ private: // guard against incorrect direct method calls (see CPluginInterfaceFor
 public:
 #endif // INSIDE_SALAMANDER
 
-    // Called when the viewer is requested to open and load file
-    // 'name'; 'left'+'top'+'width'+'height'+'showCmd'+'alwaysOnTop' is the recommended window placement;
-    // window; if 'returnLock' is FALSE, 'lock'+'lockOwner' have no meaning; if 'returnLock' is
-    // TRUE, the viewer should return system event 'lock' in the nonsignaled state; 'lock'
-    // becomes signaled when viewing file 'name' ends (the file is removed from the temporary
-    // directory at that moment); it should also return TRUE in 'lockOwner' if the 'lock' object is to be closed
-    // by the caller (FALSE means the viewer closes 'lock' itself - in that case the viewer must use
-    // CSalamanderGeneralAbstract::UnlockFileInCache to make 'lock' signaled);
-    // if the viewer does not set 'lock' (it remains NULL), file 'name' is valid only until this
-    // ViewFile call ends; if 'viewerData' is not NULL, it passes extended viewer parameters (see
-    // CSalamanderGeneralAbstract::ViewFileInPluginViewer); 'enumFilesSourceUID' is the source UID (panel
-    // or Find window) from which the viewer is opened; if it is -1, the source is unknown (archives
-    // or file systems, or Alt+F11, etc.) - see e.g. CSalamanderGeneralAbstract::GetNextFileNameForViewer;
-    // 'enumFilesCurrentIndex' is the index of the opened file in the source (panel or Find window); if it is -1,
-    // the source or index is unknown; returns TRUE on success (FALSE means failure, 'lock' and
-    // 'lockOwner' have no meaning in that case)
+    // Called when the viewer is requested to open and load file 'name'. 'left'+'top'+'width'+'height'+'showCmd'+'alwaysOnTop' specify the recommended window placement.
+    // If 'returnLock' is FALSE, 'lock' and 'lockOwner' are ignored. If 'returnLock' is TRUE, the viewer should return the system event 'lock' in the nonsignaled state; 'lock' becomes signaled when viewing of file 'name' ends (the file is removed from the temporary directory at that time). Set 'lockOwner' to TRUE if the caller should close the 'lock' object; set it to FALSE if the viewer will close 'lock' itself. In the latter case the viewer must call CSalamanderGeneralAbstract::UnlockFileInCache to make 'lock' signaled.
+    // If the viewer does not set 'lock' (it remains NULL), file 'name' is valid only until this ViewFile call returns. If 'viewerData' is not NULL, it passes extended viewer parameters (see CSalamanderGeneralAbstract::ViewFileInPluginViewer).
+    // 'enumFilesSourceUID' is the UID of the source (panel or Find window) that opened the viewer; if -1, the source is unknown (archives, file systems, Alt+F11, etc.) — see CSalamanderGeneralAbstract::GetNextFileNameForViewer. 'enumFilesCurrentIndex' is the index of the opened file within the source; if -1, the source or index is unknown. Returns TRUE on success; FALSE on failure (in that case 'lock' and 'lockOwner' are ignored).
     virtual BOOL WINAPI ViewFile(const char* name, int left, int top, int width, int height,
                                  UINT showCmd, BOOL alwaysOnTop, BOOL returnLock, HANDLE* lock,
                                  BOOL* lockOwner, CSalamanderPluginViewerData* viewerData,
