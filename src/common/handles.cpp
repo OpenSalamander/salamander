@@ -568,7 +568,7 @@ C__Handles::~C__Handles()
                   MB_YESNO | MB_SETFOREGROUND) == IDYES)
 */
         {
-            ConnectToTraceServer(); // v pripade, ze nebyl nahozeny server
+            ConnectToTraceServer(); // in case the server has not been started
             TRACE_I("List of opened handles:");
             for (int i = 0; i < Handles.Count; i++)
             {
