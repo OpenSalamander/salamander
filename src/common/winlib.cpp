@@ -86,7 +86,7 @@ BOOL SetupWinLibHelp(CWinLibHelp* winLibHelp)
 }
 
 // ****************************************************************************
-// WinLibIsWindowsVersionOrGreater (kopie SalIsWindowsVersionOrGreater)
+// WinLibIsWindowsVersionOrGreater (copy of SalIsWindowsVersionOrGreater)
 //
 // Based on SDK 8.1 VersionHelpers.h
 // Indicates if the current OS version matches, or is greater than, the provided
