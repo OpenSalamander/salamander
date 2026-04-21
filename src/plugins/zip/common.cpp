@@ -1180,7 +1180,7 @@ int CZipCommon::CheckForExtraBytes()
     {
         if (Extract && expectedEndOfCentrDir > CentrDirOffs)
         {
-            TRACE_W("Invalid central directory size, compensating for the error");
+            TRACE_W("spatna velikost centralniho adresare, kompenzuji chybu");
             CentrDirSize = expectedEndOfCentrDir - CentrDirOffs;
             return 0;
         }
