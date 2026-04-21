@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file, and the resource compiler does not seem to support "#pragma once".
 #ifndef __PICTVIEW_RH2
 #define __PICTVIEW_RH2
 
@@ -7,16 +8,16 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 az 3039 jsou timto zabrane !!!
+#include "statics.rh2"   // 3000 to 3039 are reserved by this include.
 
-// ikona pro hlavni okno
+// icon for the main window
 #define IDI_WINDOW_ICON       70
 #define IDI_SB_ANCHOR         71
 #define IDI_SB_CURSOR         72
 #define IDI_SB_PIPETTE        73
 #define IDI_SB_SIZE           74
 
-// kruzory: normalni a sevrena ruka
+// cursors: normal and clenched hand
 #define IDC_HAND1             80
 #define IDC_HAND2             81
 #define IDC_PIPETA            82
@@ -26,7 +27,7 @@
 
 #define IDA_ACCELERATORS      90
 
-// nastrojove listy
+// toolbars
 #define IDB_TOOLBAR16         95
 #define IDB_TOOLBAR256        96
 #define IDB_PICTVIEW          97
@@ -120,7 +121,7 @@
 #define CMD_ZOOM_INMAX        193
 #define CMD_IMG_COPYTO        194
 
-// Petr: zakomentoval jsem, uz snad nebude nikdy potreba...
+// Petr: I commented this out; hopefully it will never be needed again...
 //#define CMD_INTERNAL_REFRESHLPANEL 195
 //#define CMD_INTERNAL_REFRESHRPANEL 196
 
@@ -128,7 +129,7 @@
 #define CMD_INTERNAL_SAVEAS   198
 #define CMD_INTERNAL_SCAN_EXTRA_IMAGES  199
 
-// intervaly pro Recent Files/Directories
+// command ID ranges for Recent Files/Directories
 #define CMD_RECENTFILES_FIRST 460
 #define CMD_RECENTFILES_LAST  469
 #define CMD_RECENRDIRS_FIRST  470
@@ -200,7 +201,7 @@
 #define IDS_MENU_EDIT_LEFT       543
 #define IDS_MENU_EDIT_FLIPV      544
 #define IDS_MENU_EDIT_FLIPH      545
-// 550 az 552 jsou zabrane
+// 550 to 552 are reserved
 
 #define IDS_MENU_VIEW            560
 #define IDS_MENU_VIEW_ZOOMIN     561
@@ -465,7 +466,7 @@
 // Texts for PVW32Cnv.dll - reserved IDs 4000-4999 !!!
 #define IDS_DLL         4000
 
-// IDcka stranek v html helpu
+// HTML Help page IDs
 #define IDH_INTRODUCTION          3500
 #define IDH_SCANIMAGE             3501
 #define IDH_SCREENCAPTURE         3502
