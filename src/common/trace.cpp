@@ -494,7 +494,7 @@ BOOL C__Trace::Connect(BOOL onUserRequest)
         // try to open the mutex for access to the shared memory
         HANDLE hOpenConnectionMutex;
         hOpenConnectionMutex = OpenMutex(/*MUTEX_ALL_ACCESS*/ SYNCHRONIZE, FALSE, __OPEN_CONNECTION_MUTEX);
-        if (hOpenConnectionMutex != NULL) // server available
+        if (hOpenConnectionMutex != NULL) // server found
         {
             // acquire ConnectionMutex
             DWORD waitRet;
@@ -1150,7 +1150,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
             if (msgBoxOpened)
             {
                 while (1)
-                    Sleep(1000); // blokace vede na deadlock napr. kdyz je (a nema byt) TRACE_C v DLL_THREAD_DETACH
+                    Sleep(1000); // Blocking causes a deadlock, for example if TRACE_C is used in DLL_THREAD_DETACH, where it must not be.
             }
         }
     }
