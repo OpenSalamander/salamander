@@ -694,7 +694,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-            break; // function returns TRUE
+            break; // return TRUE
         }
 
         if (IsLogonFailureErr(err))
@@ -805,7 +805,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-            break; // return TRUE
+            break; // function returns TRUE
         }
     }
     memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
