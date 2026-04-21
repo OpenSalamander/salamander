@@ -374,7 +374,7 @@ void C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
             if (msgBoxOpened)
             {
                 while (1)
-                    Sleep(1000); // blokace vede na deadlock napr. kdyz je (a nema byt) TRACE_C v DLL_THREAD_DETACH
+                    Sleep(1000); // blocking here causes a deadlock, for example when TRACE_C is present in DLL_THREAD_DETACH even though it must not be
             }
         }
     }
