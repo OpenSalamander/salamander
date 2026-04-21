@@ -1,4 +1,5 @@
-﻿#include "..\texts.rh2"
+﻿// CommentsTranslationProject: TRANSLATED
+#include "..\texts.rh2"
 
 STRINGTABLE
 {
@@ -1415,8 +1416,8 @@ STRINGTABLE
 
  IDS_GETCOMPRFILESIZEERROR, "Unable to get compressed file size for file: ""%s""\nError: %s\nDo you want to skip all similar errors?"
 
- // pozor %s zde nesmi byt v uvozovkach, protoze bude obsahovat variabilni texty,
- // ktere uvozovky budou mit
+ // Note: %s must not be in quotation marks here, because it will contain variable text
+ // that already includes quotation marks.
  IDS_CONFIRM_NTFSCOMPRESS, "Are you sure you want to compress %s?\n\nWarning: files and directories will be decrypted before compressing."
  IDS_CONFIRM_NTFSUNCOMPRESS, "Are you sure you want to uncompress %s?"
  IDS_CONFIRM_NTFSENCRYPT, "Are you sure you want to encrypt %s?\n\nWarning: files and directories will be uncompressed before encrypting."
@@ -1451,7 +1452,7 @@ STRINGTABLE
 //
 // plural strings -- begin
 //
-// znaky '<' a '>' ohranicuji oblast, kterou lze mysi prenest na clipboard
+// the '<' and '>' characters mark the area that can be copied to the clipboard with the mouse
 
  IDS_PLURAL_X_BYTES, "{!}%s byte{s|0||1|s}"
 
@@ -1484,6 +1485,7 @@ STRINGTABLE
  IDS_DLG_PLURAL_X_DIRS, "{!}%d Director{y|1|ies}"
  IDS_DLG_PLURAL_X_FILES_Y_DIRS, "{!}%d File{|1|s} and %d Director{y|1|ies}"
 
+// Keep the original Czech plural examples below as reference data; do not translate this block.
 // IDS_PLURAL_X_FILES, "{!}%d {vybraný soubor|1|vybrané soubory|4|vybraných souborů}"
 // IDS_PLURAL_X_DIRS, "{!}%d {vybraný adresář|1|vybrané adresáře|4|vybraných adresářů}"
 // IDS_PLURAL_X_FILES_Y_DIRS, "{!}%d {vybraný soubor|1|vybrané soubory|4|vybraných souborů} a %d {vybraný adresář|1|vybrané adresáře|4|vybraných adresářů}"
