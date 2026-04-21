@@ -33,13 +33,13 @@ class CSalamanderForOperationsAbstract;
 class CSalamanderBuildMenuAbstract
 {
 public:
-    // ikony se zadavaji metodou CSalamanderBuildMenuAbstract::SetIconListForMenu, zbytek
-    // popisu viz CSalamanderConnectAbstract::AddMenuItem
+    // icons are provided through CSalamanderBuildMenuAbstract::SetIconListForMenu; for the
+    // rest of the description, see CSalamanderConnectAbstract::AddMenuItem
     virtual void WINAPI AddMenuItem(int iconIndex, const char* name, DWORD hotKey, int id, BOOL callGetState,
                                     DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
-    // ikony se zadavaji metodou CSalamanderBuildMenuAbstract::SetIconListForMenu, zbytek
-    // popisu viz CSalamanderConnectAbstract::AddSubmenuStart
+    // icons are provided through CSalamanderBuildMenuAbstract::SetIconListForMenu; for the
+    // rest of the description, see CSalamanderConnectAbstract::AddSubmenuStart
     virtual void WINAPI AddSubmenuStart(int iconIndex, const char* name, int id, BOOL callGetState,
                                         DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
