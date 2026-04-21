@@ -6,7 +6,7 @@
 
 // ****************************************************************************
 //
-// Eliminace TRACE a CALL-STACK pro projekty, ktere to nepodporuji
+// Eliminate TRACE and CALL-STACK for projects that do not support them
 
 // ****************************************************************************
 //
