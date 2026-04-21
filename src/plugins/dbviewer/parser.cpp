@@ -925,7 +925,7 @@ CParserInterfaceCSV::OpenFile(const char* fileName)
         if (Csv->GetStatus() != CSVE_OK)
         {
             status = TranslateCSVStatus(Csv->GetStatus());
-            CloseFile(); // po Close bude Csv=NULL
+            CloseFile(); // after Close Csv will be NULL
         }
     }
     else
