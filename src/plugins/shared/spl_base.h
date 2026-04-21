@@ -293,16 +293,18 @@ public:
 
     // adds items to the Plugins/"plugin name" menu in Salamander, 'iconIndex' is the
     // item icon index (-1=no icon; for assigning a bitmap with icons see
-    // CSalamanderConnectAbstract::SetBitmapWithIcons; u separatoru se ignoruje), 'name' je
+    // CSalamanderConnectAbstract::SetBitmapWithIcons; it is ignored for separators), 'name' is
     // the item name (max. MAX_PATH - 1 characters), or NULL for a separator (the
     // 'state_or'+'state_and' parameters have no meaning in that case); 'hotKey' is the item's hot key
     // obtained with the SALHOTKEY macro; 'name' may contain a hot-key hint,
     // separated by '\t'; in that case the 'hotKey' variable must be assigned the
-    // SALHOTKEY_HINT, vice viz komentar k SALHOTKEY_HINT; 'id' je unikatni identifikacni
+    // SALHOTKEY_HINT, for more details see the comment for SALHOTKEY_HINT; 'id' is the unique
+    // identifier
     // item's unique identifier within the plugin (for a separator it matters only if 'callGetState' is TRUE),
     // if 'callGetState' is TRUE, the item state is obtained by calling
-    // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (u separatoru ma vyznam jen stav
-    // MENU_ITEM_STATE_HIDDEN, ostatni se ignoruji), jinak se k vypoctu stavu polozky (enabled/disabled)
+    // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (for separators, only the
+    // MENU_ITEM_STATE_HIDDEN state matters; the others are ignored), otherwise the item state
+    // (enabled/disabled)
     // is computed from 'state_or'+'state_and' - the item state is calculated by first building the mask
     // ('eventMask') as the logical OR of all events that occurred (see
     // MENU_EVENT_XXX); the item is enabled if the following expression is TRUE:
@@ -320,10 +322,11 @@ public:
     // name (max. MAX_PATH - 1 characters), 'id' is the unique menu-item identifier
     // within the plugin menu (for a submenu it matters only if 'callGetState' is TRUE),
     // if 'callGetState' is TRUE, the submenu state is obtained by calling
-    // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (vyznam maji jen stavy
+    // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (only the
     // MENU_ITEM_STATE_ENABLED and MENU_ITEM_STATE_HIDDEN states matter; the others are ignored), otherwise
     // the item state (enabled/disabled) is computed from 'state_or'+'state_and' - for the state calculation
-    // stavu polozky viz CSalamanderConnectAbstract::AddMenuItem(), parametr 'skillLevel'
+    // for the item state calculation, see CSalamanderConnectAbstract::AddMenuItem(); the
+    // 'skillLevel' parameter
     // specifies for which user levels the submenu is displayed; the value contains one or more
     // MENU_SKILLLEVEL_XXX constants ORed together; the submenu is closed by calling
     // CSalamanderConnectAbstract::AddSubmenuEnd();
@@ -340,7 +343,7 @@ public:
 
     // sets the item for FS in the Change Drive menu and in drive bars; 'title' is its text,
     // 'iconIndex' is the icon index (-1=no icon; for assigning a bitmap with icons see
-    // CSalamanderConnectAbstract::SetBitmapWithIcons), 'title' muze obsahovat az tri sloupce
+    // CSalamanderConnectAbstract::SetBitmapWithIcons), 'title' may contain up to three columns
     // separated by '\t' (see the Alt+F1/F2 menu); item visibility can be set
     // from Plugins Manager or directly from the plugin by calling
     // CSalamanderGeneralAbstract::SetChangeDriveMenuItemVisibility
@@ -358,7 +361,7 @@ public:
     // bitmap width, and the icons are always 16x16 pixels; the transparent part of the icons is
     // purple (RGB(255,0,255)); the bitmap color depth may be 4 or 8 bits (16 or 256
     // colors); ideally, prepare both color variants and choose between them according to the
-    // vysledku metody CSalamanderGeneralAbstract::CanUse256ColorsBitmap()
+    // result of CSalamanderGeneralAbstract::CanUse256ColorsBitmap()
     // WARNING: this method is obsolete, does not support alpha transparency; use
     //        SetIconListForGUI()
     virtual void WINAPI SetBitmapWithIcons(HBITMAP bitmap) = 0;
@@ -478,9 +481,10 @@ public:
     // 'parent' is the parent window for message boxes; 'force' is TRUE if the return
     // value is ignored; if it returns TRUE, this object and all other objects obtained from it
     // will no longer be used and the plugin will be unloaded; if a critical shutdown is in progress (see
-    // CSalamanderGeneralAbstract::IsCriticalShutdown), nema smysl se usera na cokoliv ptat
+    // CSalamanderGeneralAbstract::IsCriticalShutdown), there is no point in asking the user
+    // anything
     // (do not open any windows)
-    // POZOR!!! Je nutne ukoncit vsechny thready pluginu (pokud Release vrati TRUE, vola se
+    // WARNING!!! All plugin threads must be terminated (if Release returns TRUE, Salamander calls
     // FreeLibrary is called on the plugin .SPL, so the plugin code is unmapped from memory and the threads
     // have nothing left to run; usually neither a bug report nor Windows exception info is generated)
     virtual BOOL WINAPI Release(HWND parent, BOOL force) = 0;
@@ -506,7 +510,7 @@ public:
     // called to connect the plugin to Salamander; called only after LoadConfiguration,
     // 'parent' is the parent of the message boxes; 'salamander' is the set of methods used to connect the plugin
 
-/*  RULES FOR IMPLEMENTING THE CONNECT METHOD
+    /*  RULES FOR IMPLEMENTING THE CONNECT METHOD
         (plugins must store the configuration version - see DEMOPLUGin,
          variable ConfigVersion and constant CURRENT_CONFIG_VERSION; below is
          an illustrative EXAMPLE of adding the "dmp2" extension to DEMOPLUGin):
