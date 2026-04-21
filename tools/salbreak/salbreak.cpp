@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include <windows.h>
 #include <Sddl.h>
@@ -11,9 +12,9 @@
 
 #define MAX_LOADSTRING 100
 
-#define NOHANDLES(function) function // obrana proti zanaseni maker HANDLES do zdrojaku pomoci CheckHnd
+#define NOHANDLES(function) function // protects against polluting the source with HANDLES macros via CheckHnd
 
-// aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
+// to avoid problems with semicolons in the macros defined below
 inline void __TraceEmptyFunction() {}
 
 #define TRACE_E(str) __TraceEmptyFunction()
@@ -259,7 +260,7 @@ BOOL GetStringSid(LPTSTR* stringSid)
         return FALSE;
     }
 
-    // volajici musi uvolnit vracenou pamet pomoci LocalFree, viz MSDN
+    // the caller must free the returned memory with LocalFree, see MSDN
     ConvertSidToStringSid(pTokenUser->User.Sid, stringSid);
 
     free(pTokenUser);
@@ -362,13 +363,13 @@ BOOL GetSidMD5(BYTE* sidMD5)
 */
 
 /*
-// podle http://forums.microsoft.com/msdn/ShowPost.aspx?PostID=748596&SiteID=1
-// by se pod vistou mel nastavit integrity level, ale nedokazal jsem problem na Viste/Serveru2008 navodit
-// takze zatim nechavam pouze v komentari, dokud na to nenarazime
+// according to http://forums.microsoft.com/msdn/ShowPost.aspx?PostID=748596&SiteID=1
+// the integrity level should be set on Vista, but I could not reproduce the problem on
+// Vista/Server2008, so for now I am leaving this only as a comment until we run into it
 //
 // Windows Integrity Mechanism Design
 // http://msdn.microsoft.com/en-us/library/bb625963.aspx
-if (windowsVistaAndLater) // FIXME: nenarazil jsem na viste na to, ze bych musel integrity level resit (mezi AdAdmin / normalni aplikaci)
+if (windowsVistaAndLater) // FIXME: I did not encounter a case on Vista where I would need to handle the integrity level (between AdAdmin and a normal application)
 {
   PSECURITY_DESCRIPTOR pSD;
   ConvertStringSecurityDescriptorToSecurityDescriptor(
@@ -457,9 +458,9 @@ ErrorExit:
 
 //****************************************************************************
 //
-// GetProcessIntegrityLevel (vytazeno z MSDN)
-// V pripade uspechu vrati TRUE a naplni DWORD na ktery odkazuje 'integrityLevel'
-// jinak (pri selhani nebo pod OS strasima nez Vista) vrati FALSE
+// GetProcessIntegrityLevel (pulled from MSDN)
+// Returns TRUE on success and fills the DWORD pointed to by 'integrityLevel'
+// otherwise (on failure or on OSes older than Vista) returns FALSE
 //
 
 #define SECURITY_MANDATORY_UNTRUSTED_RID (0x00000000L)
@@ -477,7 +478,7 @@ BOOL SalIsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD w
                                                                                VER_MINORVERSION, VER_GREATER_EQUAL),
                                                            VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-    SecureZeroMemory(&osvi, sizeof(osvi)); // nahrada za memset (nevyzaduje RTLko)
+    SecureZeroMemory(&osvi, sizeof(osvi)); // replacement for memset (does not require the RTL)
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = wMajorVersion;
     osvi.dwMinorVersion = wMinorVersion;
@@ -500,7 +501,7 @@ BOOL GetProcessIntegrityLevel(DWORD* integrityLevel)
 
     BOOL WindowsVistaAndLater = SalIsWindowsVersionOrGreater(6, 0, 0);
 
-    if (WindowsVistaAndLater) // integrity levels byly zavedeny od Windows Vista
+    if (WindowsVistaAndLater) // integrity levels were introduced starting with Windows Vista
     {
         hProcess = GetCurrentProcess();
         if (OpenProcessToken(hProcess, TOKEN_QUERY, &hToken))
