@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file, and the resource compiler does not seem to support "#pragma once".
 #ifndef __UNMIME_RH2
 #define __UNMIME_RH2
 
@@ -7,11 +8,11 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 2000
-#include "statics.rh2"   // 2000 az 2039 jsou timto zabrane !!!
+#include "statics.rh2"   // 2000 to 2039 are reserved by this include.
 
 // ********************************************************************************
 //
-//  TEXTY
+//  STRINGS
 //
 
 #define IDS_PLUGINNAME                  1
