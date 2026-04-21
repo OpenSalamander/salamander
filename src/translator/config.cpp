@@ -271,7 +271,7 @@ BOOL ClearKey(HKEY key)
     while (RegEnumValue(key, 0, name, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
         if (RegDeleteValue(key, name) != ERROR_SUCCESS)
         {
-            TRACE_E("Failed to delete registry values from the key.");
+            TRACE_E("Nepodarilo se smazat hodnoty klice z registry.");
             break;
         }
         else
