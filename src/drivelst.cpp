@@ -805,7 +805,7 @@ BOOL RestoreNetworkConnection(HWND parent, const char* name, const char* remoteN
             if (MainWindow != NULL && MainWindow->HWindow != NULL)
                 PostMessage(MainWindow->HWindow, WM_USER_DRIVES_CHANGE, 0, 0);
 
-            break; // return TRUE
+            break; // function returns TRUE
         }
     }
     memset(dlg.Passwd, 0, sizeof(dlg.Passwd));
@@ -911,7 +911,7 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
         }
         else
         {
-            if (trySharepoint) // if error 67 occurs, try calling the shell so it can make the path accessible
+            if (trySharepoint) // on error 67, try calling the shell to make the path accessible
             {
                 SHFILEINFO fi;
                 if (SHGetFileInfoAux(UNCPath, 0, &fi, sizeof(fi), SHGFI_ATTRIBUTES))
@@ -1153,7 +1153,7 @@ unsigned ReadCDVolNameThreadFBody(void* param) // directory accessibility test
             GetDisplayNameFromSystem(root, buf, MAX_PATH);
 
         HANDLES(EnterCriticalSection(&ReadCDVolNameCS));
-        if (uid == ReadCDVolNameReqUID) // someone is still waiting for an answer
+        if (uid == ReadCDVolNameReqUID) // someone is still waiting for the response
             lstrcpyn(ReadCDVolNameBuffer, buf, MAX_PATH);
         HANDLES(LeaveCriticalSection(&ReadCDVolNameCS));
     }
@@ -1490,12 +1490,12 @@ void InitOneDrivePath()
 
     HKEY hKey;
     char path[MAX_PATH];
-    for (int i = 0; !done && i < 2; i++) // theoretically only needed for Windows 8 and earlier (since 8.1 we have FOLDERID_SkyDrive)
+    for (int i = 0; !done && i < 2; i++) // theoretically only needed for Windows 8 and earlier (from 8.1 onward we have FOLDERID_SkyDrive)
     {
         if (HANDLES_Q(RegOpenKeyEx(HKEY_CURRENT_USER,
-                                   Windows8_1AndLater && !Windows10AndLater ? (i == 0 ? "Software\\Microsoft\\Windows\\CurrentVersion\\OneDrive" : // jen Win 8.1
+                                   Windows8_1AndLater && !Windows10AndLater ? (i == 0 ? "Software\\Microsoft\\Windows\\CurrentVersion\\OneDrive" : // Windows 8.1 only
                                                                                    "Software\\Microsoft\\Windows\\CurrentVersion\\SkyDrive")
-                                                                            : (i == 0 ? "Software\\Microsoft\\OneDrive" : "Software\\Microsoft\\SkyDrive"), // krom Win 8.1
+                                                                            : (i == 0 ? "Software\\Microsoft\\OneDrive" : "Software\\Microsoft\\SkyDrive"), // except Windows 8.1
                                    0, KEY_READ, &hKey)) == ERROR_SUCCESS)
         {
             DWORD size = sizeof(path); // size in bytes
@@ -1536,7 +1536,7 @@ void InitOneDrivePath()
                         size = sizeof(path); // size in bytes
                         if (SalRegQueryValueEx(hAccount, "UserFolder", 0, &type, (BYTE*)path, &size) == ERROR_SUCCESS &&
                             type == REG_SZ && size > 1)
-                        { // Collect everything that has DisplayName and UserFolder and offer it to the user under "OneDrive"
+                        { // Collect every item that has DisplayName and UserFolder and offer it to the user as "OneDrive"
                             //TRACE_I("OneDrive Business: DisplayName: " << disp << ", UserFolder: " << path);
                             OneDriveBusinessStorages.SortIn(new COneDriveBusinessStorage(DupStr(disp), DupStr(path)));
                         }
@@ -2196,7 +2196,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
     if (Drives->Count > 0 && IsLastItemSeparator())
         Drives->Delete(Drives->Count - 1);
 
-    if (drv.DestroyIcon) // not a hot path, so we have to destroy the icon here
+    if (drv.DestroyIcon) // not a hot path, so we must destroy the icon here
     {
         HANDLES(DestroyIcon(drv.HIcon));
     }
@@ -2892,7 +2892,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                             *FromContextMenu = TRUE;
                             return TRUE;
                         }
-                        else // just closing Change Drive menu
+                        else // just closing the Change Drive menu
                         {
                             *PostCmd = 0; // not needed (set from constructor), just for clarity
                             *FromContextMenu = TRUE;
@@ -2998,7 +2998,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
                 for (i = 0; i < 2; i++)
                 {
                     win = i == 0 ? MainWindow->LeftPanel : MainWindow->RightPanel;
-                    if (HasTheSameRootPath(win->GetPath(), path)) // same drive (local and UNC)
+                    if (HasTheSameRootPath(win->GetPath(), path)) // same drive (local or UNC)
                     {
                         if (i == 0)
                             releaseLeft = TRUE;
@@ -3058,9 +3058,9 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
 
             DisplayMenuAux(MainWindow->ContextMenuChngDrv, (CMINVOKECOMMANDINFO*)&ici);
 
-            // the context menu can change the clipboard, so we will check it ...
+            // the context menu can change the clipboard, so we will verify it ...
             IdleRefreshStates = TRUE;  // we will force the check of the state variables at the next Idle
-            IdleCheckClipboard = TRUE; // we will the clipboard to be checked as well
+            IdleCheckClipboard = TRUE; // we will force the clipboard check as well
 
             UpdateWindow(MainWindow->HWindow);
             if (releaseLeft && !changeToFixedDrv)
