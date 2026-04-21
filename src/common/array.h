@@ -48,26 +48,25 @@ std::ostream& operator<<(std::ostream& out, const CErrorType& err);
 
 // ****************************************************************************
 // TDirectArray:
-//  -behaves like classic array, in addition it can pre-allocate to bigger or
-//   smaller (look at constructor 'base' and 'delta' values).
-//  -when adding item to array, copy-constructor is called
-//  -when deleting item, item destructor is called, you can change this behaviour,
-//   see CallDestructor method
-//  -you can use this array for simple types and also for objects which does not
-//   contain pointers to its own data, reason:
-//     objects are moved in array (e.g. when reallocating array or when inserting
-//     item to the beginning of array) simply by using memmove, so during these
-//     moves contructors/destructors are not called, example:
-//       char Path[MAX_PATH];  // full file name
-//       char *Name;           // points to 'Path' to file name (without path)
-//     SOLUTION: store only offsets instead of complete pointers
+//  - behaves like a classic array but can pre-allocate either more or less
+//    space (see the constructor parameters 'base' and 'delta')
+//  - calls the copy constructor when an item is added
+//  - calls the destructor when an item is removed; use CallDestructor to adjust
+//    that behavior if necessary
+//  - suitable for simple types and objects that do not hold pointers to their
+//    own data; items are shifted within the array (for example, when the
+//    array is reallocated or an item is inserted at the beginning) with
+//    memmove, so constructors and destructors are not invoked. Example:
+//      char Path[MAX_PATH];  // full file name
+//      char* Name;           // points within 'Path' to the file name (without the path)
+//    Solution: store only offsets instead of raw pointers
 
 template <class DATA_TYPE>
 class TDirectArray
 {
 public:
-    CErrorType State; // etNone if array is OK, otherwise some error occured
-    int Count;        // current count of items in array
+    CErrorType State; // etNone if array is OK, otherwise an error occurred
+    int Count;        // current number of items in the array
 
     TDirectArray<DATA_TYPE>(int base, int delta);
     virtual ~TDirectArray() { Destroy(); }
@@ -97,12 +96,12 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // compiler workaround: return a possibly invalid item
+            return Data[0]; // return an (invalid) item to satisfy the compiler
         }
 #endif
     }
 
-    DATA_TYPE& operator[](int index) // returns a reference to the item at 'index'
+    DATA_TYPE& operator[](int index) // returns a reference to the item at position 'index'
     {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
@@ -114,7 +113,7 @@ public:
             TRACE_C("Index is out of range (index = " << index
                                                       << ", Count = " << Count << ").");
             Error(etUnknownIndex);
-            return Data[0]; // compiler workaround: return a possibly invalid item
+            return Data[0]; // return an (invalid) item to satisfy the compiler
         }
 #endif
     }
@@ -131,12 +130,12 @@ public:
     void DestroyMembers();             // release items from memory (calling destructors), keep array
     void DetachMembers();              // detach all items (destructors are NOT called), keep array
     void Destroy();                    // complete array destruction (calling destructors)
-    void Delete(int index);            // deletes the item at 'index' (calling the destructor), moves remaining items
-    void Delete(int index, int count); // delete 'count' items at 'index' position (calling destructors), move remaining items
-    void Detach(int index);            // detach item at 'index' position (destructor is NOT called), move remaining items
-    void Detach(int index, int count); // detach 'count' items at 'index' position (destructors are NOT called), move remaining items
+    void Delete(int index);            // delete the item at position 'index' (calls the destructor) and shift the rest
+    void Delete(int index, int count); // delete 'count' items at position 'index' (calls destructors) and shift the rest
+    void Detach(int index);            // detach the item at position 'index' (does NOT call the destructor) and shift the rest
+    void Detach(int index, int count); // detach 'count' items at position 'index' (does NOT call destructors) and shift the rest
 
-    int SetDelta(int delta); // change 'Delta', return the actual value used; NOTE: can be used only for an empty array
+    int SetDelta(int delta); // change 'Delta', return real used value; NOTE: can be used only for empty array
 
 protected:
     DATA_TYPE* Data; // pointer to array
@@ -332,7 +331,7 @@ public:
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
     CErrorType State; // if not etNone, an error has occurred
 #endif
-    DATA_TYPE* Data; // ukazatel na pole, public nutne misto etDestructed
+    DATA_TYPE* Data; // pointer to the array; stays public because we do not track etDestructed here
     WORD Count;      // current item count in the collection
 
     TSmallerDirectArray<DATA_TYPE, Base, Delta>();
@@ -436,19 +435,18 @@ private: // prevent calls to the following methods
 
 // ****************************************************************************
 // TClassArray:
-//  -suitable for storing many small objects; element indexes do not change
-//  -allocates CLASS_TYPE objects directly in the array,
-//   calling the constructors and destructors of those objects
-//  -no element-shifting operations are performed on the array, so an element
-//   always stays at the same index
-//  -valid array element: (index_prvku < Count && !At(index_prvku).IsEmpty())
+//  - suitable for storing many small objects; element indexes do not change
+//  - allocates CLASS_TYPE objects directly in the array and calls their
+//    constructors and destructors
+//  - never shifts entries within the array, so each item remains at the same index
+//  - an array slot is valid if (item_index < Count && !At(item_index).IsEmpty())
 //
-// requirements for CLASS_TYPE:
-//  1) an IsEmpty() method that returns whether the object's
-//     destructor has already been called
-//  2) operator 'new' defined using the DEFINE_NEW(CLASS_TYPE) macro
+// requirements on CLASS_TYPE:
+//  1) provide the IsEmpty() method that returns whether the destructor has
+//     already been called
+//  2) define the 'new' operator using the DEFINE_NEW(CLASS_TYPE) macro
 //
-// example:
+// Example:
 //  class CSimpleObject
 //  {
 //    public:
@@ -464,10 +462,10 @@ private: // prevent calls to the following methods
 //
 //  TClassArray<CSimpleObject> Simples(10, 5);
 //
-// adding an element to the array:
-//  int index_prvku = Simples.FirstFreeIndex;  // prvni volny index v poli
-//  new (&Simples)CSimpleObject();   // returns the address of the object, NULL on error,
-//                                   // the element was added and has index index_prvku
+// Adding an item to the array:
+//  int item_index = Simples.FirstFreeIndex;  // first free index in the array
+//  new (&Simples)CSimpleObject();   // returns the object address, NULL on error,
+//                                   // item was added and has index item_index
 
 template <class CLASS_TYPE>
 class TClassArray : public TDirectArray<CLASS_TYPE>
