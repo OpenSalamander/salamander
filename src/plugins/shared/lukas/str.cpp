@@ -10,7 +10,7 @@ WORD CType[256];
 
 // ****************************************************************************
 //
-// automaticka inicializace modulu
+// automatic module initialization
 //
 
 class CSTR
