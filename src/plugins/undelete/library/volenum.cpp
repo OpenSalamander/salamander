@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "..\undelete.rh2"
@@ -73,7 +74,7 @@ BOOL GetDiskFreeSpace95(const char* path, LPDWORD lpSectorsPerCluster,
             memset(&gdfs, 0, sizeof(gdfs));
             gdfs.ExtFree_Level = 0; // required
 
-            reg.reg_EBX = 0;                      // jen tak pro formu
+            reg.reg_EBX = 0;                      // just for completeness
             reg.reg_EDX = (DWORD)(DWORD_PTR)path; // type cast is OK, we will not run it on x64
             reg.reg_ECX = sizeof(gdfs);
             reg.reg_EDI = (DWORD)(DWORD_PTR)&gdfs; // type cast is OK, we will not run it on x64
