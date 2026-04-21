@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-IBM AS/400 (Valentín Lacko <lacko@phoenix-zz.sk>, Gary Kuznitz <docfxit@theoffice.la>)
+IBM AS/400 (ValentÃ­n Lacko <lacko@phoenix-zz.sk>, Gary Kuznitz <docfxit@theoffice.la>)
 --------------------------------------------------------------------------
 Autodetect: syst_contains(" OS/400 ")
 
@@ -46,7 +46,7 @@ Autodetect: syst_contains(" OS/400 ")
 
 # skip empty lines anywhere
 * skip_white_spaces();
----  CESKE datumy  -------------------------------------------------------
+---  CZECH dates  --------------------------------------------------------
 QPGMR          475136 29.09.09 17:08:12 *FILE      
 VBR               205 03.02.06 11:26:55 *DOC       O0000579.TXT
 QSYS                                    *MEM       /QSYS.LIB/QACJINFO.FILE/QACJINFO.MBR
@@ -97,7 +97,7 @@ Autodetect: syst_contains(" OS/400 ")
 
 # skip empty lines anywhere
 * skip_white_spaces();
----  ANGLICKE datumy  ----------------------------------------------------
+---  ENGLISH dates  ------------------------------------------------------
 QPGMR          475136 09/29/09 17:08:12 *FILE      
 QSYS            45056 11/04/99 19:50:02 *FILE      /QSYS.LIB/QACJINFO.FILE
 QSYS                                    *MEM       /QSYS.LIB/QACJINFO.FILE/QACJINFO.MBR
@@ -116,7 +116,7 @@ QDFTOWN    2147483647 12/31/69 16:00:00 *DDIR      QOPT/
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-VxWorks: pomuze Eran Gluska <Eran_Gluska@packetlight.com>
+VxWorks: helped by Eran Gluska <Eran_Gluska@packetlight.com>
 --------------------------------------------------------------------------
 Autodetect: welcome_contains(" VxWorks ")
 
@@ -162,7 +162,7 @@ Autodetect: welcome_contains(" VxWorks ")
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-OS/2: pomuze Krzysztof Bytnerowicz <kbytner@telpacific.com.au>
+OS/2: helped by Krzysztof Bytnerowicz <kbytner@telpacific.com.au>
 --------------------------------------------------------------------------
 # parse lines with files and directories
 * skip_white_spaces(), positive_number(<size>), white_spaces(1), all(<attrs>, 9),
@@ -223,9 +223,9 @@ drwxr-xr-x               folder        3 Mar 22 10:06 Upcoming Events_files
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-IBM z/VM (CMS): (jmena souboru jsou ze dvou casti - nutne doplnit '.' => napr.
-                soubor "WELCOME.README")
-help: Format: Fixed (F) or Variable (V) + "DIR" pro adresar
+IBM z/VM (CMS): (file names are made of two parts - a '.' must be inserted, e.g.
+                file "WELCOME.README")
+help: Format: Fixed (F) or Variable (V) + "DIR" for a directory
       lrecl = file's logical record length
 --------------------------------------------------------------------------
 # parse lines with directories
@@ -253,7 +253,7 @@ VMNNTP            DIR        -          -          - 2002-08-27 14:59:51 -
 WELCNVT  EXEC     V         72          9          1 1999-09-20 17:16:18 -
 WELCOME  EREADME  F         80         21          1 1999-12-27 16:19:00 -
 WELCOME  README   V         82         21          1 1999-12-27 16:19:04 -
-----------  DRUHA VARIANTA: "DISK" oznacuje adresar (pro oznaceni adresare se nepouziva DIR)
+----------  SECOND VARIANT: "DISK" marks a directory (DIR is not used to mark directories)
 # parse lines with directories
 * word(<name>), all_to(" DISK"), assign(<is_dir>, true), white_spaces(),
   word(<format>), white_spaces(), number(<lrecl>), white_spaces(),
@@ -271,12 +271,12 @@ WELCOME  README   V         82         21          1 1999-12-27 16:19:04 -
 
 # skip empty lines anywhere
 * skip_white_spaces();
-----------  NEMAME PRISTUP, test casem --------------------------------
+----------  NO ACCESS, test case --------------------------------------
 README   FIRST    F         80         37          1  1/22/91 11:22:50 ANONYM
 RFC1118  TXT      V         73       1347         16 10/09/89  9:51:07 ANONYM
 ROOTS-L  DISK     F         80          5          1  8/31/90 14:22:14 ANONYM
 WRITERS  DISK     F         80          8          1 12/18/90 16:51:15 ANONYM
---------------  TRETI VARIANTA  ------------------------------------------
+--------------  THIRD VARIANT  -------------------------------------------
 Autodetect: syst_contains("z/VM")
 
 # parse lines with directories
@@ -301,7 +301,7 @@ Autodetect: syst_contains("z/VM")
 
 # skip empty lines anywhere
 * skip_white_spaces();
-----------  NEMAME PRISTUP, test casem --------------------------------
+----------  NO ACCESS, test case --------------------------------------
 Filename FileType  Fm Format Lrecl  Records Blocks Date      Time
 LASTING  GLOBALV   A1 V      41     21     1       9/16/91   15:10:32
 J43401   NETLOG    A0 V      77     1      1       9/12/91   12:36:04
@@ -317,13 +317,13 @@ AUTHORS            A1 DIR    -      -      -       9/20/99   10:31:11
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-MVS: pomuze Michael Knigge <mk@set-software.de> nebo
+MVS: helped by Michael Knigge <mk@set-software.de> or
             Krzysztof Bytnerowicz <kbytner@telpacific.com.au>
 help: Ext = Extents, Dsorg = Data Set Organization (PO = partitioned organized
-      (library, brat jako archiv=soubor), PS = physical sequential (obycejny file)),
+      (library, treat as archive=file), PS = physical sequential (ordinary file)),
       Dsname = Data Set Name, Recfm=Record Format, Lrecl=Logical Record Length,
       BlkSz=Physical Block Length
-"Pseudo Directory" se objevuje jen, pokud je zapnuty pseudo-directory mode FTP serveru
+"Pseudo Directory" appears only when pseudo-directory mode is enabled on the FTP server
 --------------------------------------------------------------------------
 Autodetect: syst_contains(" MVS ")
 
@@ -436,7 +436,7 @@ TSO61A Error determining attributes                     CSNM18.BKP.XE61
 VGSA03 Tape                                             BOOL.IMF.SA03.SVCDUMP
                                                    PATH CAPRI.CSD.PATHA
 
------------ DRUHA VARIANTA LISTINGU (jiny datum) --------------------
+----------- SECOND LISTING VARIANT (different date) ------------------
 Autodetect: syst_contains(" MVS ")
 
 # data sets
@@ -530,8 +530,8 @@ MVXE61 Not Mounted                                    CSNM2.BKP.XE61
 VGSA03 Tape                                           BOOL.IMF.SA03.SVCDUMP
                                                 PATH  CAPRI.CSD.PATHA
 
------------------------- TRETI VARIANTA LISTINGU ---------------------
-help: Init=Initial Size, Id=User, Mod=???? (zeptat se Michaela !!!)
+------------------------ THIRD LISTING VARIANT -----------------------
+help: Init=Initial Size, Id=User, Mod=???? (ask Michael!!!)
 --------------------------------------------------------------------------
 Autodetect: syst_contains(" MVS ")
 
@@ -560,7 +560,7 @@ OMCSIRAU  01.01 1992/06/03 1992/06/03 14:46   349   349     0 ASEPMD
 OMCSIRBF
 ASCIITAB  01.00 1998/06/08 1998/06/08 13:32   526   526     0 VEA0013 
 
------------------------- CTVRTA VARIANTA LISTINGU (jiny datum) -------
+------------------------ FOURTH LISTING VARIANT (different date) -----
 Autodetect: syst_contains(" MVS ")
 
 # members
@@ -590,7 +590,7 @@ GREETING   01:00  12/08/93   12/09/93    6:19   12   12  0 MVS
 OMCSIRBF
 GREE       01:00  12/08/93   12/09/93    6:19   12   12  0 MVS 
 
------------------------- PATA VARIANTA LISTINGU (chybi created) -----
+------------------------ FIFTH LISTING VARIANT (created missing) ----
 Autodetect: syst_contains(" MVS ")
 
 # members
@@ -619,7 +619,7 @@ NAME                 VV.MM     CHANGED     SIZE  INIT   MOD   ID
 OMCSIRBF
 #PDEX                 01.00 95/09/29 16:29    47    47     0 USER01 
 
------------------------- SESTA VARIANTA LISTINGU -------------------------
+------------------------ SIXTH LISTING VARIANT -----------------------
 Autodetect: syst_contains(" MVS ")
 
 #datasets
@@ -657,7 +657,7 @@ BIB1      0010F8 000124             DC                              24    24
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 VMS:  (ubvms.cc.buffalo.edu)
---------------  PRVNI VARIANTA  ------------------------------------------
+--------------  FIRST VARIANT  -------------------------------------------
 Autodetect: syst_contains(" VMS ")
 
 # parse lines with directories
@@ -741,8 +741,8 @@ PLILP28D.DIR;1              1  3-APR-1997 17:51  [UCX$NOBO,UCX$NOBODY (RWED,RWED
 Total of 7 blocks in 7 files.
 
 
------------------------- DRUHA VARIANTA - CS.FELK.CVUT.CZ ---------------------
-(petr.DIR;2 je soubor - aspon VMS na CS se k nemu tak chova)
+------------------------ SECOND VARIANT - CS.FELK.CVUT.CZ ---------------------
+(petr.DIR;2 is a file - at least VMS at CS behaves that way)
 -------------------------------------------------------------------------------
 Autodetect: syst_contains(" VMS ")
 
@@ -831,7 +831,7 @@ PLILP28D.DIR;1           1/3           3-APR-1997 17:51:01  [UCX$NOBO,UCX$NOBODY
 
 Total of 527 files, 22268/24048 blocks
 
------------------------- TRETI VARIANTA - web (byty/bloky) ---------------------
+------------------------ THIRD VARIANT - web (bytes/blocks) --------------------
 Autodetect: syst_contains(" VMS ")
 
 # parse lines with directories
@@ -893,7 +893,7 @@ TMP.DIR;1             9-OCT-1991 10:29:53      512/1      (RWE,RE,RE,RWE)
 EA95_0PS.GZ;1	No privilege for attempted operation
 EA95_0PSD.DIR;1	No privilege for attempted operation
 
------ CTVRTA VARIANTA - ftp.process.com (cas na ms, chybi prava a bloky) -----
+----- FOURTH VARIANT - ftp.process.com (time in ms, rights and blocks missing) ----
 Autodetect: syst_contains(" VMS ")
 
 # parse lines with directories
@@ -998,7 +998,7 @@ total 0
 d [RWCEAFMS] Patera                            512 Jun 24 13:59 Windows NT 5.0 Workstation Profile.03.17
 - [RWCEAFMS] Patera                         124275 Mar 24  2000 pv193cz.zip
 
-------------- DRUHA VARIANTA - Hellsoft (kod parseru viz vyse) -----------
+------------- SECOND VARIANT - Hellsoft (parser code see above) ----------
 
 -------------- listing --------------
 -[RWCEMFA]  1 xpatera1     1140 Jun 22  2001 euro50.pcx
@@ -1013,10 +1013,10 @@ d[R----F-]  1 supervis      512 Nov 30 08:02 limpouch
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
-UNIX: PRVNI VARIANTA (IBM AIX, Filezilla a dalsi)
+UNIX: FIRST VARIANT (IBM AIX, Filezilla, and others)
 --------------------------------------------------------------------------
-(odlisnost od druhe varianty: maji dve mezery po roce pred jmenem)
-(ma prioritu, protoze pravdepodobnejsi jsou jmena bez mezer na zacatku)
+(difference from the second variant: they have two spaces after the year before the name)
+(has priority because names without leading spaces are more likely)
 Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
 
@@ -1154,9 +1154,9 @@ lrwx------    1 root name     root            0 Oct 16 14:08 cwd
 lrwx------    1 solin name    users           0 Oct 16 14:15 cwd -> /proc/20493
 pr--r--r--    1 root name    root            0 Oct 16 14:08 maps
 
------------------------- DRUHA VARIANTA - ProFTPD a dalsi ----------
-(funguje korektne pro servery, ktere maji po roce pred jmenem jedinou mezeru;
-prvni varianta parseru totiz nekorektne orezava prvni mezeru ve jmene)
+------------------------ SECOND VARIANT - ProFTPD and others --------
+(works correctly for servers that have a single space after the year before the name;
+the first parser variant incorrectly trims the first space in the name)
 Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
 
@@ -1252,7 +1252,7 @@ lrwx------    1 root name     root            0 Oct 16 14:08 cwd
 lrwx------    1 solin name    users           0 Oct 16 14:15 cwd -> /proc/20493
 pr--r--r--    1 root name    root            0 Oct 16 14:08 maps
 
------------------------- TRETI VARIANTA - Sun (nejen) ---------------------
+------------------------ THIRD VARIANT - Sun (and others) ----------------
 Autodetect: (not welcome_contains(" NW ") or not welcome_contains(" HellSoft.")) and
             not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
@@ -1327,7 +1327,7 @@ drwxr-x---   2 other name        2048 Apr  7  1999 advpanel
 lrwxrwxrwx   1 other name          7 Mar 22  2000 bin -> usr/bin
 lrwxrwxrwx   1 other name         7 Jul 29 18:06 ccm -> pub/ccm
 
------------------------- CTVRTA VARIANTA - HP-UNIX (nemecky) --------------
+------------------------ FOURTH VARIANT - HP-UNIX (German) ---------------
 Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
 
@@ -1388,15 +1388,15 @@ Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
 insgesamt 611176
 drwxrwxr-x   5 ftp        ftp           4096  4. Jan., 14:00 .
 drwxrwxr-x   3 ftp        ftp           4096  4. Jan., 14:00 ..
-lrwxrwxrwx   1 solin      users            4 23. März 2004 file_link -> file
+lrwxrwxrwx   1 solin      users            4 23. MÃ¤rz 2004 file_link -> file
 crw-r-----   1 root       disk       27,  24  5. Feb. 2004 zqft0
 brw-rw----   1 root       disk       13, 121 19. Mai 2004 xdb57
 lrwx------   1 root       root             0 24. Juni 2004 cwd
 -rw-rw-rw-   1 catusr     catia           81  4. Jan., 14:00 CATDXF.in
 -rwxrwxrwx   1 catusr     catia       100403  5. Feb. 2004 CATOLER.out
--rwxr-xr-x   1 catusr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 catusr     catia          545 23. MÃ¤rz 2004 catcust
 -rwxr-xr-x   1 catusr     catia          545 14. Apr. 2004 Acrobat_Reader
--rw-rw-r--   1 catusr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-rw-r--   1 catusr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKRÂ±30_40___030702_PJW.model
 -rw-r-----   1 catusr     catia        60640 24. Juni 2004 PECIATKA_STN.model
 -rwxrwxrwx   1 catusr     catia         2558  2. Juli 2003 MECENV.dcls
 -rw-rw-r--   1 catusr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
@@ -1406,15 +1406,15 @@ drwxr--r--   2 catusr     catia           96 31. Okt. 2003 CATSettings
 -rw-r-----   1 catusr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls
 drwxrwxr-x   5 ftp name        ftp           4096  4. Jan., 14:00 .
 drwxrwxr-x   3 ftp name        ftp           4096  4. Jan., 14:00 ..
-lrwxrwxrwx   1 solin name      users            4 23. März 2004 file_link -> file
+lrwxrwxrwx   1 solin name      users            4 23. MÃ¤rz 2004 file_link -> file
 crw-r-----   1 root name       disk       27,  24  5. Feb. 2004 zqft0
 brw-rw----   1 root name       disk       13, 121 19. Mai 2004 xdb57
 lrwx------   1 root name      root             0 24. Juni 2004 cwd
 -rw-rw-rw-   1 cat usr     catia           81  4. Jan., 14:00 CATDXF.in
 -rwxrwxrwx   1 cat usr     catia       100403  5. Feb. 2004 CATOLER.out
--rwxr-xr-x   1 cat usr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 cat usr     catia          545 23. MÃ¤rz 2004 catcust
 -rwxr-xr-x   1 cat usr     catia          545 14. Apr. 2004 Acrobat_Reader
--rw-rw-r--   1 cat usr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-rw-r--   1 cat usr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKRÂ±30_40___030702_PJW.model
 -rw-r-----   1 cat usr     catia        60640 24. Juni 2004 PECIATKA_STN.model
 -rwxrwxrwx   1 cat usr     catia         2558  2. Juli 2003 MECENV.dcls
 -rw-rw-r--   1 cat usr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
@@ -1423,8 +1423,8 @@ drwxr--r--   2 cat usr     catia           96 31. Okt. 2003 CATSettings
 -rw-rw-rw-   1 cat usr     catia          358 19. Nov., 11:12 DXFCAT.out
 -rw-r-----   1 cat usr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls
 
------------------------- PATA VARIANTA - nemecky AIX ----------
-(kopie prvni varianty UNIX parseru, jen maji prohozeny mesic a den)
+------------------------ FIFTH VARIANT - German AIX -----------------
+(copy of the first UNIX parser variant, only the month and day are swapped)
 Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
 
@@ -1521,7 +1521,7 @@ Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
 
 # skip empty lines anywhere
 * skip_white_spaces();
------------  (pouzity testovaci listing s anglickyma mesicema)  ----------------
+-----------  (test listing with English month names used)  --------------------
 total 80
 lrwxrwxrwx   1 biaf     iplus         11 14 Dec 2004  BIAF_Wetter -> biaf_wetter
 drwxrwxr-x   5 ftp      ftp          4096  2 Aug 13:39 .
@@ -1563,8 +1563,8 @@ lrwx------    1 root name     root            0 16 Oct 14:08 cwd
 lrwx------    1 solin name    users           0 16 Oct 14:15 cwd -> /proc/20493
 pr--r--r--    1 root name    root            0 16 Oct 14:08 maps
 
------------------------- SESTA VARIANTA - MOXA (inetutils, Linux 2.6.9-MoXaRt) ----------
-(chybi casy + datumy)
+------------------------ SIXTH VARIANT - MOXA (inetutils, Linux 2.6.9-MoXaRt) ----------
+(times and dates are missing)
 Autodetect: not syst_contains("z/VM ") and not syst_contains("OS/2 ") and
             not syst_contains(" MACOS ") and not syst_contains("Windows_NT")
 
@@ -1745,8 +1745,8 @@ pk_cal.fil           532
 
 
 --------------------------------------------------------------------------
-PC-NFSD: (WinCmd) - delene nazvy/pripony souboru, carky ve velikosti,
-                    adresarum chybi velikost, a.m./p.m. v casech
+PC-NFSD: (WinCmd) - split file names/extensions, commas in sizes,
+                    directories have no size, a.m./p.m. in times
 --------------------------------------------------------------------------
 prog1    exe     2,563,136 06-10-99  10:00a
 temp         <dir>         01-27-97   3:41p
@@ -1755,7 +1755,7 @@ temp         <dir>         01-27-97   3:41p
 
 
 --------------------------------------------------------------------------
-VOS (Stratus): (WinCmd) - adresare maji o sloupec mene
+VOS (Stratus): (WinCmd) - directories have one fewer column
 --------------------------------------------------------------------------
  w     10  seq       99-04-20 11:15:42  abbreviations
  m      4  99-07-02 10:11:25  arsffs32
