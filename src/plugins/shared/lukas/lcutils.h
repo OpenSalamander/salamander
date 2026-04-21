@@ -4,7 +4,7 @@
 
 #pragma once
 
-// menu item skill level ALL (zahrnuje beginned, intermediate a advanced)
+// menu item skill level ALL (includes beginner, intermediate, and advanced)
 #define MNTS_ALL (MNTS_B | MNTS_I | MNTS_A)
 
 #ifndef QWORD
@@ -115,8 +115,8 @@ public:
 
 // ****************************************************************************
 //
-// CDialogEx -- automaticky centrovany dialog, automaticky pridava a odebira
-// HWND do/z DialogStack
+// CDialogEx -- automatically centered dialog, automatically adds and removes
+// HWND to/from DialogStack
 //
 
 class CDialogEx : public CDialog
