@@ -1,1 +1,2 @@
-Jen pro vytvoreni tohoto adresare.
+CommentsTranslationProject: TRANSLATED
+Only used to keep this directory present.
