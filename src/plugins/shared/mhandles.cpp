@@ -704,7 +704,7 @@ C__Handles::~C__Handles()
         {
             if (CanUseTrace)
             {
-                SalamanderDebug->TraceConnectToServer(); // v pripade, ze nebyl nahozeny server
+                SalamanderDebug->TraceConnectToServer(); // in case the server has not been started
                 TRACE_I("List of opened handles:");
                 for (int i = 0; i < Handles.Count; i++)
                 {
@@ -723,7 +723,7 @@ C__Handles::~C__Handles()
         {
             if (CanUseTrace)
             {
-                SalamanderDebug->TraceConnectToServer(); // v pripade, ze nebyl nahozeny server
+                SalamanderDebug->TraceConnectToServer(); // in case the server has not been started
                 TRACE_I(__HandlesMessageNumberOpened << Handles.Count);
             }
         }
