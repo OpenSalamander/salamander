@@ -1,53 +1,55 @@
-Popis formatu prihlasovaciho skriptu (pro proxy-servery a firewally):
-=====================================================================
+CommentsTranslationProject: TRANSLATED
 
-Prvni radek skriptu je vzdy "Connect to:" nasledovany dvojici host:port - jde
-o hostitele (server) a port kam se mame pripojit. Hostitel musi byt definovany,
-neni-li definovany port, predpoklada se 21.
+Description of the login script format (for proxy servers and firewalls):
+=========================================================================
 
-Vsechny dalsi radky obsahuji prikazy posilane na server po pripojeni (co radek,
-to jeden prikaz). Radky muzou obsahovat promenne, ktere se pred poslanim
-prikazu nahradi obsahem techto promennych.
+The first line of the script is always "Connect to:" followed by a host:port
+pair - this is the host (server) and port we should connect to. The host must
+be defined; if the port is not defined, 21 is assumed.
 
-Mame promenne dvou typu, lisi se podle toho co se deje kdyz promenna neni
-definovana (zadana uzivatelem) - prvni typ (rikejme mu "nepovinny") vede
-k preskoceni celeho radku (neposle se zadny prikaz), druhy (rikejme mu
-"povinny") vede k otevreni okna, kam uzivatel musi zadat hodnotu (nebo
-prerusit celou prihlasovani sekvenci). Promenne se pisou do zavorek a
-predchazi jim znak "$": napr. "$(Password)". "$$" je escape sekvence pro
-znak "$".
+All following lines contain commands sent to the server after connecting (one
+line, one command). The lines may contain variables that are replaced with
+their contents before the command is sent.
 
-Radky zacinajici na "3xx:" se preskakuji pokud byl prikaz z predchoziho radku
-preskocen nebo vratil jinou odpoved nez 3xx (3xx="posli dalsi prikaz, jde
-o sekvenci prikazu" - zde jde o user+password sekvence).
+There are two types of variables; they differ in what happens when the variable
+is not defined (entered by the user) - the first type (let us call it
+"optional") causes the entire line to be skipped (no command is sent), while
+the second type (let us call it "required") opens a window where the user must
+enter a value (or cancel the entire login sequence). Variables are written in
+parentheses and are preceded by the "$" character, for example "$(Password)".
+"$$" is an escape sequence for the "$" character.
 
-Omezeni parametru na prvnim radku skriptu (za "Connect to:"): hostitele je
-mozne definovat jen jako text nebo text obsahujici promennou $(ProxyHost)
-nebo $(Host), port je mozne definovat jen jako cislo nebo promennou $(ProxyPort)
-nebo promennou $(Port).
+Lines starting with "3xx:" are skipped if the command on the previous line was
+skipped or returned a reply other than 3xx (3xx = "send the next command, this
+is a command sequence" - here this is a user+password sequence).
 
-Prihlasovaci sekvence se povazuje za uspesnou (uzivatel je prihlasen na FTP
-serveru) pokud zadny spousteny prikaz nevrati odpoved 4xx ani 5xx (4xx="docasna
-chyba", 5xx="stala chyba") a posledni poslany prikaz vrati odpoved 2xx
-(2xx="uspech").
+Restrictions for parameters on the first script line (after "Connect to:"):
+the host may be defined only as text or text containing the $(ProxyHost) or
+$(Host) variable, and the port may be defined only as a number or the
+$(ProxyPort) or $(Port) variable.
 
-
-Promenne:
-=========
-
-$(ProxyHost) - povinny - jmena adresa nebo IP proxy-serveru/firewallu
-$(ProxyPort) - vzdy definovany (nezada-li ho uzivatel, nastavi se na 21)
-$(ProxyUser) - nepovinny - uzivatelske jmeno pro proxy-server/firewall
-$(ProxyPassword) - povinny - heslo pro proxy-server/firewall
-$(Host) - vzdy definovany - hostitel (FTP server)
-$(Port) - vzdy definovany (nezada-li ho uzivatel, nastavi se na 21)
-$(User) - povinny - uzivatelske jmeno pro hostitele (FTP server)
-$(Password) - povinny - heslo pro hostitele (FTP server)
-$(Account) - povinny - ucet pro hostitele (FTP server)
+The login sequence is considered successful (the user is logged in to the FTP
+server) if no executed command returns a 4xx or 5xx reply (4xx = "temporary
+error", 5xx = "permanent error") and the last sent command returns a 2xx reply
+(2xx = "success").
 
 
-Skripty pro zname typy proxy-serveru/firewallu:
-===============================================
+Variables:
+==========
+
+$(ProxyHost) - required - domain name or IP address of the proxy server/firewall
+$(ProxyPort) - always defined (if the user does not enter it, it is set to 21)
+$(ProxyUser) - optional - user name for the proxy server/firewall
+$(ProxyPassword) - required - password for the proxy server/firewall
+$(Host) - always defined - host (FTP server)
+$(Port) - always defined (if the user does not enter it, it is set to 21)
+$(User) - required - user name for the host (FTP server)
+$(Password) - required - password for the host (FTP server)
+$(Account) - required - account for the host (FTP server)
+
+
+Scripts for known proxy server/firewall types:
+==============================================
 
 "direct connection"
 Connect to: $(Host):$(Port)
