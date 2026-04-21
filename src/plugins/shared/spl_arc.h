@@ -119,7 +119,7 @@ public:
                                            CDynamicString* archiveVolumes) = 0;
 
     // Function for 'panel archiver view/edit'; called before the panel with the archive is closed
-    // POZOR: pokud se nepodari otevrit novou cestu, archiv muze v panelu zustat (nezavisle na tom,
+    // WARNING: if opening the new path fails, the archive may remain in the panel (regardless of
     //        whatever CanCloseArchive returns); this method therefore cannot be used to destroy the context;
     //        it is intended, for example, to optimize Delete from an archive, when leaving it may
     //        offer to 'shake' the archive
@@ -128,7 +128,7 @@ public:
     // 'fileName' is the archive name; 'salamander' is a set of useful methods exported by Salamander;
     // 'panel' identifies the panel in which the archive is open (PANEL_LEFT or PANEL_RIGHT);
     // returns TRUE if closing is possible; if 'force' is TRUE, it always returns TRUE; if
-    // critical shutdown (vice viz CSalamanderGeneralAbstract::IsCriticalShutdown), nema
+    // critical shutdown (for more details see CSalamanderGeneralAbstract::IsCriticalShutdown), there is
     // there is no point in prompting the user about anything
     virtual BOOL WINAPI CanCloseArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
                                         BOOL force, int panel) = 0;
@@ -158,10 +158,10 @@ public:
     // their attributes must be changed before they can be deleted); if possible,
     // it should not display any windows (the user did not invoke this directly and it may disturb them
     // during other work); for longer actions it is useful to use a wait window (see
-    // CSalamanderGeneralAbstract::CreateSafeWaitWindow); 'fileName' je jmeno souboru
+    // CSalamanderGeneralAbstract::CreateSafeWaitWindow); 'fileName' is the file name
     // for the copy; if several files are deleted at once (this can happen, for example, after an
     // edited archive is closed), 'firstFile' is TRUE for the first file and FALSE for the remaining
-    // soubory (pouziva se ke korektnimu zobrazeni wait-okenka - viz DEMOPLUG)
+    // files (used to display the wait window correctly; see DEMOPLUG)
     //
     // WARNING: it is called in the main thread when a message from the disk cache is delivered to the main window -
     // a message is sent requesting that a temporary copy be released (typically when a viewer or an
