@@ -1779,7 +1779,7 @@ void DoCreateFile(CFTPDiskWork& localWork, char* fullName, BOOL& workDone, BOOL&
             // break;  // resume or overwrite - if resume fails we try overwrite as well
         }
         // case 3:  // resume or overwrite - if resume fails we try overwrite as well
-        case 4: // overwrite (pri already exists, transfer failed i force action)
+        case 4: // overwrite (for already exists, transfer failed, and force action)
         {
             if (action == 4) // check whether it is read-only (via the attribute only), but only if we have not done so already
             {
