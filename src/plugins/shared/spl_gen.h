@@ -263,8 +263,8 @@ URLText
 #define BUTTONS_YESNOCANCEL 0x00000005      // Yes / No / Cancel
 #define BUTTONS_YESALLCANCEL 0x00000006     // Yes / All / Cancel
 #define BUTTONS_MASK 0x000000FF             // Internal mask, do not use
-// detekci zda kombinace ma tlacitko SKIP nebo YES nechavam zde ve forme inline, aby
-// v pripade zavadeni novych kombinaci byla dobre na ocich a nezapomeli jsme ji doplnit
+// The detection of whether a combination contains the SKIP or YES button is kept inline here
+// so that when new combinations are introduced, it stays visible and we do not forget to add it.
 inline BOOL ButtonsContainsSkip(DWORD btn)
 {
     return (btn & BUTTONS_MASK) == BUTTONS_SKIPCANCEL ||
@@ -403,7 +403,7 @@ struct CSalamanderPluginViewerData
 // extension of the CSalamanderPluginViewerData structure for the internal text/hex viewer
 struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 {
-    int Mode;            // 0 - textovy mod, 1 - hexa mod
+    int Mode;            // 0 - text mode, 1 - hex mode
     const char* Caption; // NULL -> the window caption contains FileName, otherwise Caption
     BOOL WholeCaption;   // Meaningful only if Caption != NULL. TRUE ->
                          // only the Caption string is shown in the viewer title; FALSE ->
@@ -606,9 +606,9 @@ public:
 // (WARNING: only the range <0, 499> is reserved for command numbers)
 #define SALCMD_VIEW 0     // view (F3 in the panel)
 #define SALCMD_ALTVIEW 1  // alternate view (Alt+F3 in the panel)
-#define SALCMD_VIEWWITH 2 // view with (klavesa Ctrl+Shift+F3 v panelu)
+#define SALCMD_VIEWWITH 2 // view with (Ctrl+Shift+F3 in the panel)
 #define SALCMD_EDIT 3     // edit (F4 in the panel)
-#define SALCMD_EDITWITH 4 // edit with (klavesa Ctrl+Shift+F4 v panelu)
+#define SALCMD_EDITWITH 4 // edit with (Ctrl+Shift+F4 in the panel)
 
 #define SALCMD_OPEN 20        // open (Enter key in the panel)
 #define SALCMD_QUICKRENAME 21 // quick rename (F2 in the panel)
@@ -620,15 +620,15 @@ public:
 #define SALCMD_PROPERTIES 44    // show properties (Alt+Enter in the panel)
 #define SALCMD_CHANGECASE 45    // change case (Ctrl+F7 in the panel)
 #define SALCMD_CHANGEATTRS 46   // change attributes (Ctrl+F2 in the panel)
-#define SALCMD_OCCUPIEDSPACE 47 // calculate occupied space (klavesa Alt+F10 v panelu)
+#define SALCMD_OCCUPIEDSPACE 47 // calculate occupied space (Alt+F10 in the panel)
 
-#define SALCMD_EDITNEWFILE 70     // edit new file (klavesa Shift+F4 v panelu)
+#define SALCMD_EDITNEWFILE 70     // edit new file (Shift+F4 in the panel)
 #define SALCMD_REFRESH 71         // refresh (Ctrl+R in a panel)
 #define SALCMD_CREATEDIRECTORY 72 // create directory (F7 in a panel)
 #define SALCMD_DRIVEINFO 73       // drive info (Ctrl+F1 in a panel)
-#define SALCMD_CALCDIRSIZES 74    // calculate directory sizes (klavesa Ctrl+Shift+F10 v panelu)
+#define SALCMD_CALCDIRSIZES 74    // calculate directory sizes (Ctrl+Shift+F10 in the panel)
 
-#define SALCMD_DISCONNECT 90 // disconnect (network drive or plugin-fs) (klavesa F12 v panelu)
+#define SALCMD_DISCONNECT 90 // disconnect (network drive or plugin-fs) (F12 in the panel)
 
 #define MAX_GROUPMASK 1001 // maximum number of characters (including the terminating null) in a group mask
 
@@ -708,13 +708,13 @@ public:
 //
 // Object lifetime:
 //
-//   1) Alokujeme metodou CSalamanderGeneralAbstract::AllocSalamanderMD5
+//   1) Allocate it using CSalamanderGeneralAbstract::AllocSalamanderMD5
 //   2) Call Update() repeatedly for the data whose MD5 should be computed
 //   3) Call Finalize()
 //   4) Retrieve the computed MD5 with GetDigest()
 //   5) If you want to reuse the object, call Init()
 //      (it is called automatically in step (1)) and continue with step (2)
-//   6) Destrukce objektu metodou CSalamanderGeneralAbstract::FreeSalamanderMD5
+//   6) Destroy the object using CSalamanderGeneralAbstract::FreeSalamanderMD5
 //
 class CSalamanderMD5
 {
@@ -763,7 +763,7 @@ public:
     //         with 8 bits per channel
 };
 
-// vsechny metody je mozne volat pouze z hlavniho threadu
+// all methods may be called only from the main thread
 class CSalamanderPasswordManagerAbstract
 {
 public:
@@ -806,10 +806,10 @@ public:
 // commands for HTML help: see CSalamanderGeneralAbstract::OpenHtmlHelp
 enum CHtmlHelpCommand
 {
-    HHCDisplayTOC,     // viz HH_DISPLAY_TOC: dwData = 0 (zadny topic) nebo: pointer to a topic within a compiled help file
+    HHCDisplayTOC,     // see HH_DISPLAY_TOC: dwData = 0 (no topic) or: pointer to a topic within a compiled help file
     HHCDisplayIndex,   // see HH_DISPLAY_INDEX: dwData = 0 (no keyword) or: keyword to select in the index (.hhk) file
-    HHCDisplaySearch,  // viz HH_DISPLAY_SEARCH: dwData = 0 (prazdne hledani) nebo: pointer to an HH_FTS_QUERY structure
-    HHCDisplayContext, // viz HH_HELP_CONTEXT: dwData = numeric ID of the topic to display
+    HHCDisplaySearch,  // see HH_DISPLAY_SEARCH: dwData = 0 (empty search) or: pointer to an HH_FTS_QUERY structure
+    HHCDisplayContext, // see HH_HELP_CONTEXT: dwData = numeric ID of the topic to display
 };
 
 // used as a parameter of OpenHtmlHelpForSalamander when command==HHCDisplayContext
@@ -902,7 +902,7 @@ public:
     // FlashWindow(mainwnd, TRUE) is called before the dialog is shown and
     // FlashWindow(mainwnd, FALSE) is called after it is closed; mainwnd is the parent of 'parent'
     // that no longer has a parent (typically the Salamander main window)
-    // ERROR: filename+error+title (pokud 'title' == NULL, jde o std. titulek "Error")
+    // ERROR: filename+error+title (if 'title' == NULL, the standard title "Error" is used)
     //
     // The 'flags' variable specifies the displayed buttons; DialogError accepts one of:
     // BUTTONS_OK               // OK                                    (old DialogError3)
@@ -920,7 +920,7 @@ public:
     virtual int WINAPI DialogOverwrite(HWND parent, DWORD flags, const char* fileName1, const char* fileData1,
                                        const char* fileName2, const char* fileData2) = 0;
 
-    // QUESTION: filename+question+title (pokud 'title' == NULL, jde o std. titulek "Question")
+    // QUESTION: filename+question+title (if 'title' == NULL, the standard title "Question" is used)
     // The 'flags' variable specifies the displayed buttons; DialogQuestion accepts one of:
     // BUTTONS_YESALLSKIPCANCEL // Yes / All / Skip / Skip all / Cancel  (old DialogQuestion)
     // BUTTONS_YESNOCANCEL      // Yes / No / Cancel                     (old DialogQuestion2)
@@ -1400,9 +1400,9 @@ public:
     // main thread only (otherwise the panel contents may change)
     virtual BOOL WINAPI GetPanelWithPluginFS(CPluginFSInterfaceAbstract* pluginFS, int& panel) = 0;
 
-    // aktivuje druhy panel (ala klavesa TAB); panely oznacene pres PANEL_SOURCE a PANEL_TARGET
-    // se tim prirozene prohazuji
-    // omezeni: hlavni thread
+    // Activates the other panel (like the TAB key); the panels designated by PANEL_SOURCE and
+    // PANEL_TARGET naturally swap as a result.
+    // Restriction: main thread
     virtual void WINAPI ChangePanel() = 0;
 
     // Converts a number to a more readable string (a space after every three digits), writes the string to
@@ -1651,9 +1651,9 @@ public:
     // marks the calling plugin to be unloaded at the next possible opportunity
     // (once all posted menu commands have been processed (see PostMenuExtCommand), there are no
     // messages in the main-thread message queue, and Salamander is not "busy");
-    // POZOR: pokud se vola z jineho nez hlavniho threadu, muze dojit k zadosti o unload (probiha
-    // in the main thread) even before PostUnloadThisPlugin returns (for more information about
-    // unloadu - viz CPluginInterfaceAbstract::Release)
+    // WARNING: if this is called from a thread other than the main thread, the unload request
+    // (processed in the main thread) may be posted even before PostUnloadThisPlugin returns
+    // (for more information about unloading, see CPluginInterfaceAbstract::Release)
     // callable from any thread, but only after the plugin entry point has finished; while the
     // entry point is running, the method may be called only from the main thread
     virtual void WINAPI PostUnloadThisPlugin() = 0;
@@ -1693,7 +1693,7 @@ public:
     // WARNING: if called from a thread other than the main thread, the menu command may run
     // (in the main thread) even before PostMenuExtCommand returns
     // callable from any thread, and if 'waitForSalIdle' is FALSE, it is necessary to wait until after calling
-    // CPluginInterfaceAbstract::GetInterfaceForMenuExt (vola se po entry-pointu z hlavniho threadu)
+    // CPluginInterfaceAbstract::GetInterfaceForMenuExt (called after the entry point from the main thread)
     virtual void WINAPI PostMenuExtCommand(int id, BOOL waitForSalIdle) = 0;
 
     // Determines whether there is a high chance, though this cannot be known with certainty, that Salamander will not be "busy" during the next few moments (no modal dialog open and no message being processed); in that case it returns TRUE, otherwise FALSE. If 'lastIdleTime' is not NULL, it receives the GetTickCount() value from the last transition from the "idle" state to the "busy" state. This can be used, for example, as a prediction for the delivery of a command posted with CSalamanderGeneralAbstract::PostMenuExtCommand and 'waitForSalIdle'==TRUE. Callable from any thread.
@@ -1954,21 +1954,21 @@ public:
     // Can be called from any thread
     virtual BYTE WINAPI GetUserDefaultCharset() = 0;
 
-    // alokuje novy objekt Boyer-Moorova vyhledavaciho algoritmu
-    // mozne volat z libovolneho threadu
+    // Allocates a new object for the Boyer-Moore search algorithm.
+    // Can be called from any thread.
     virtual CSalamanderBMSearchData* WINAPI AllocSalamanderBMSearchData() = 0;
 
-    // uvolni objekt Boyer-Moorova vyhledavaciho algoritmu (ziskany metodou AllocSalamanderBMSearchData)
-    // mozne volat z libovolneho threadu
+    // Releases the Boyer-Moore search object obtained by AllocSalamanderBMSearchData.
+    // Can be called from any thread.
     virtual void WINAPI FreeSalamanderBMSearchData(CSalamanderBMSearchData* data) = 0;
 
-    // alokuje novy objekt algoritmu pro vyhledavani pomoci regularnich vyrazu
-    // mozne volat z libovolneho threadu
+    // Allocates a new object for regular-expression searching.
+    // Can be called from any thread.
     virtual CSalamanderREGEXPSearchData* WINAPI AllocSalamanderREGEXPSearchData() = 0;
 
-    // uvolni objekt algoritmu pro vyhledavani pomoci regularnich vyrazu (ziskany metodou
-    // AllocSalamanderREGEXPSearchData)
-    // mozne volat z libovolneho threadu
+    // Releases the regular-expression search object obtained by
+    // AllocSalamanderREGEXPSearchData.
+    // Can be called from any thread.
     virtual void WINAPI FreeSalamanderREGEXPSearchData(CSalamanderREGEXPSearchData* data) = 0;
 
     // Returns Salamander commands one by one (in the definition order of SALCMD_XXX constants);
@@ -2043,12 +2043,12 @@ public:
     //
     virtual DWORD WINAPI UpdateCrc32(const void* buffer, DWORD count, DWORD crcVal) = 0;
 
-    // alokuje novy objekt pro vypocet MD5
-    // mozne volat z libovolneho threadu
+    // Allocates a new object for MD5 calculation.
+    // Can be called from any thread.
     virtual CSalamanderMD5* WINAPI AllocSalamanderMD5() = 0;
 
-    // uvolni objekt pro vypocet MD5 (ziskany metodou AllocSalamanderMD5)
-    // mozne volat z libovolneho threadu
+    // Releases the MD5 object obtained by AllocSalamanderMD5.
+    // Can be called from any thread.
     virtual void WINAPI FreeSalamanderMD5(CSalamanderMD5* md5) = 0;
 
     // Finds '<' and '>' pairs in the text, removes them from the buffer, and adds references to
@@ -3109,7 +3109,7 @@ public:
     // valid icons from the array; when system colors change, the plugin should reload the icon-overlays and
     // set them again with this function; the ideal reaction is to handle PLUGINEVENT_COLORSCHANGED in
     // CPluginInterfaceAbstract::Event()
-    // POZOR: pred Windows XP (ve W2K) je velikost ikony SALICONSIZE_48 jen 32 bodu!
+    // WARNING: before Windows XP (on W2K), the SALICONSIZE_48 icon is only 32 pixels in size!
     // limitation: main thread
     virtual void WINAPI SetPluginIconOverlays(int iconOverlaysCount, HICON* iconOverlays) = 0;
 
