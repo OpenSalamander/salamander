@@ -1,32 +1,35 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include <windows.h>
 
 #include "salbreak.h"
 #include "tasklist.h"
 
-#define NOHANDLES(function) function // obrana proti zanaseni maker HANDLES do zdrojaku pomoci CheckHnd
+#define NOHANDLES(function) function // protects against polluting the source with HANDLES macros via CheckHnd
 
 CTaskList TaskList;
 
-// process list je sdileny skrz vsechny salamander v lokani session
-// od AS 3.0 menime pojeti "Break" udalosti - vyvola v cili exception, takze mame "plnotucny" bug reprot, ale zaroven tim cil konci
-// proto menim nasledujici konstanty "AltapSalamander*" -> "AltapSalamander3*", abychom byli oddeleni od starsich verzi
-const char* AS_PROCESSLIST_NAME = "AltapSalamander3bProcessList";                               // sdilena pamet CProcessList
-const char* AS_PROCESSLIST_MUTEX_NAME = "AltapSalamander3bProcessListMutex";                    // synchronizace pro pristup do sdilene pameti
-const char* AS_PROCESSLIST_EVENT_NAME = "AltapSalamander3bProcessListEvent";                    // odpaleni udalosti (co se ma delat je ulozeno ve sdilene pameti)
-const char* AS_PROCESSLIST_EVENT_PROCESSED_NAME = "AltapSalamander3bProcessListEventProcessed"; // odpalena udalost byla zpracovana
+// the process list is shared across all Salamander instances in the local session
+// since AS 3.0 we changed the meaning of the "Break" event: it triggers an exception
+// in the target, so we get a full bug report, but the target also terminates
+// therefore I changed the following constants from "AltapSalamander*" to
+// "AltapSalamander3*" so that we stay separated from older versions
+const char* AS_PROCESSLIST_NAME = "AltapSalamander3bProcessList";                               // shared memory for CProcessList
+const char* AS_PROCESSLIST_MUTEX_NAME = "AltapSalamander3bProcessListMutex";                    // synchronization for access to shared memory
+const char* AS_PROCESSLIST_EVENT_NAME = "AltapSalamander3bProcessListEvent";                    // event trigger (what to do is stored in shared memory)
+const char* AS_PROCESSLIST_EVENT_PROCESSED_NAME = "AltapSalamander3bProcessListEventProcessed"; // the triggered event was processed
 
-const char* FIRST_SALAMANDER_MUTEX_NAME = "AltapSalamanderFirstInstance";     // zavedeno od AS 2.52 beta 1
-const char* LOADSAVE_REGISTRY_MUTEX_NAME = "AltapSalamanderLoadSaveRegistry"; // zavedeno od AS 2.52 beta 1
+const char* FIRST_SALAMANDER_MUTEX_NAME = "AltapSalamanderFirstInstance";     // introduced in AS 2.52 beta 1
+const char* LOADSAVE_REGISTRY_MUTEX_NAME = "AltapSalamanderLoadSaveRegistry"; // introduced in AS 2.52 beta 1
 
 //
 // ****************************************************************************
 // CTaskList
 //
 
-// Chceme se dozvedet o SEH Exceptions i na x64 Windows 7 SP1 a dal
+// We want to receive SEH exceptions even on x64 Windows 7 SP1 and later
 // http://blog.paulbetts.org/index.php/2010/07/20/the-case-of-the-disappearing-onload-exception-user-mode-callback-exceptions-in-x64/
 // http://connect.microsoft.com/VisualStudio/feedback/details/550944/hardware-exceptions-on-x64-machines-are-silently-caught-in-wndproc-messages
 // http://support.microsoft.com/kb/976038
@@ -73,27 +76,28 @@ BOOL CTaskList::Init()
 {
     OK = FALSE;
 
-    //---  pokusime se pripojit na FMO-mutex - zaroven test jestli uz nejaky Salamander bezi
+    //---  try to connect to the FMO mutex; this also tests whether some Salamander is already running
     FMOMutex = NOHANDLES(OpenMutex(SYNCHRONIZE, FALSE, AS_PROCESSLIST_MUTEX_NAME));
-    if (FMOMutex == NULL) // zadny Salamander 3.0 nebo novejsi v lokalni sessione = koncime
+    if (FMOMutex == NULL) // no Salamander 3.0 or newer in the local session; we are done
     {
         return FALSE;
     }
-    else // dalsi instance, jen se pripojime ...
+    else // another instance; just connect to it ...
     {
-        //---  zabereme FMO
+        //---  take the FMO
         DWORD waitRet = WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT);
         if (waitRet == WAIT_TIMEOUT)
             return FALSE; // fail
 
-        //---  pripojime se na ostatni systemove objekty pro komunikaci
+        //---  connect to the other system objects used for communication
         FMO = NOHANDLES(OpenFileMapping(FILE_MAP_WRITE, FALSE, AS_PROCESSLIST_NAME));
         if (FMO == NULL)
             return FALSE;                                                                    // fail
-        ProcessList = (CProcessList*)NOHANDLES(MapViewOfFile(FMO, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 nepredavame x86/x64 nekompatibilni data?
+        ProcessList = (CProcessList*)NOHANDLES(MapViewOfFile(FMO, FILE_MAP_WRITE, 0, 0, 0)); // FIXME_X64 we do not pass x86/x64-incompatible data, do we?
         if (ProcessList == NULL)
             return FALSE; // fail
-        // aby na event bylo mozne volat SetEvent(), musi mit nahozeny EVENT_MODIFY_STATE, pro Wait* potrebuje SYNCHRONIZE
+        // to be able to call SetEvent on the event, it must have EVENT_MODIFY_STATE;
+        // Wait* needs SYNCHRONIZE
         Event = NOHANDLES(OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, AS_PROCESSLIST_EVENT_NAME));
         if (Event == NULL)
             return FALSE; // fail
@@ -101,10 +105,10 @@ BOOL CTaskList::Init()
         if (EventProcessed == NULL)
             return FALSE; // fail
 
-        //---  pridame zaznam do sdilene pameti
-        // my nejsme Salamander, nic nepridavame
+        //---  add a record to shared memory
+        // we are not Salamander, so we do not add anything
 
-        //---  uvolnime FMO
+        //---  release the FMO
         ReleaseMutex(FMOMutex);
     }
 
@@ -133,7 +137,7 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
     if (OK)
     {
         BOOL changed = FALSE;
-        //---  zabereme FMO
+        //---  take the FMO
         if (WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT) == WAIT_TIMEOUT)
         {
             if (timeouted != NULL)
@@ -143,10 +147,10 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
 
         CProcessListItem* ptr = ProcessList->Items;
 
-        //---  vyhodime killnute procesy
+        //---  remove terminated processes
         RemoveKilledItems(&changed);
 
-        //---  navratove hodnoty
+        //---  return values
         if (items != NULL)
             memcpy(items, ptr, ProcessList->ItemsCount * sizeof(CProcessListItem));
         if (changed)
@@ -155,7 +159,7 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
             *itemsStateUID = ProcessList->ItemsStateUID;
 
         int count = ProcessList->ItemsCount;
-        //---  uvolnime FMO
+        //---  release the FMO
         ReleaseMutex(FMOMutex);
         return count;
     }
@@ -169,7 +173,7 @@ BOOL CTaskList::FireEvent(DWORD todo, DWORD pid, BOOL* timeouted)
         *timeouted = FALSE;
     if (OK)
     {
-        // zabereme ProcessList
+        // take ProcessList
         DWORD waitRet = WaitForSingleObject(FMOMutex, 2000);
         if (waitRet == WAIT_FAILED)
             return FALSE;
@@ -180,44 +184,44 @@ BOOL CTaskList::FireEvent(DWORD todo, DWORD pid, BOOL* timeouted)
             return FALSE; // fail
         }
 
-        // nastavime predavane parametry
+        // set the transferred parameters
         ProcessList->Todo = todo;
         ProcessList->TodoUID++;
         ProcessList->TodoTimestamp = GetTickCount();
         ProcessList->PID = pid;
 
-        // pri breaknuti jine instance Salamandera pustime jeho Salmon nad nas
+        // when breaking another Salamander instance, allow its Salmon to come to the foreground
         if (todo == TASKLIST_TODO_BREAK)
         {
             for (DWORD i = 0; i < ProcessList->ItemsCount; i++)
             {
                 if (ProcessList->Items[i].PID == pid)
                 {
-                    AllowSetForegroundWindow(ProcessList->Items[i].PID);       // radeji povolime i vlastniho Salamandera, i kdyz to je asi zbytecne...
-                    AllowSetForegroundWindow(ProcessList->Items[i].SalmonPID); // rozhodne musime pustit nad nas jeho Salmon
+                    AllowSetForegroundWindow(ProcessList->Items[i].PID);       // better allow its Salamander too, even though that is probably unnecessary...
+                    AllowSetForegroundWindow(ProcessList->Items[i].SalmonPID); // we definitely have to allow its Salmon to come in front of us
                     break;
                 }
             }
         }
 
-        // uvolnime ProcessList
+        // release ProcessList
         ReleaseMutex(FMOMutex);
 
-        // spustime kontrolu ve vsech Salamanderech
+        // start the check in all Salamanders
         ResetEvent(EventProcessed);
         SetEvent(Event);
 
-        //---  dame chvilku na reakci (behem teto doby by se nekdo mel "chytnout" a ukol splnit)
+        //---  give it a moment to react (during this time someone should "catch" the task and complete it)
         BOOL ret = (WaitForSingleObject(EventProcessed, 1000) == WAIT_OBJECT_0);
 
-        //---  rekneme vsem Salamanderum, at se pripravi na dalsi command
+        //---  tell all Salamanders to get ready for the next command
         ResetEvent(Event);
 
-        //---  nastavime zpatky break-PID
+        //---  restore break-PID back
         //    ProcessList->Todo = 0;
         //    ProcessList->PID = 0;
 
-        //---  uvolnime FMO
+        //---  release the FMO
 
         return ret;
     }
@@ -246,14 +250,14 @@ BOOL CTaskList::RemoveKilledItems(BOOL* changed)
                 cont = TRUE;
             NOHANDLES(CloseHandle(h));
             if (cont)
-                continue; // nechame proces v seznamu
+                continue; // keep the process in the list
         }
         else
         {
             DWORD lastError = GetLastError();
             if (lastError == ERROR_ACCESS_DENIED)
             {
-                continue; // nechame proces v seznamu
+                continue; // keep the process in the list
             }
         }
         memmove(ptr + i, ptr + i + 1, (c - i - 1) * sizeof(CProcessListItem));
@@ -265,9 +269,9 @@ BOOL CTaskList::RemoveKilledItems(BOOL* changed)
     ProcessList->ItemsCount = c;
 
     /*
-// neslape pod XP pokud jsou procesy v ramci jedne session spusteny pod ruznymi uzivateli
-// nemame pravo otevrit hande jineho procesu
-//---  vyhodime killnuty procesy
+// does not work on XP if the processes in one session are started under different users
+// we do not have the right to open a handle to another process
+//---  remove terminated processes
 int i;
     for (i = 0; i < c; i++)
     {
@@ -278,9 +282,9 @@ int i;
         DWORD exitcode;
         if (!GetExitCodeProcess(h, &exitcode) || exitcode == STILL_ACTIVE) cont = TRUE;
         NOHANDLES(CloseHandle(h));
-        if (cont) continue;  // nechame proces v seznamu
+        if (cont) continue;  // keep the process in the list
       }
-//---  vykopneme proces ze seznamu
+//---  remove the process from the list
       memmove(ptr + i, ptr + i + 1, (c - i - 1) * sizeof(CTLItem));
       c--;
       i--;
