@@ -93,7 +93,7 @@ try_again:
         if (lastError == ERROR_INVALID_HANDLE && ++num_of_retries <= 10)
         {
             CloseHandle(File);
-            Sleep(100); // cekame 10x 100ms na "zvalidneni" handlu (asi do toho zasahuje antivir?)
+            Sleep(100); // Wait up to 10 x 100 ms for the handle to "become valid" (perhaps the antivirus is interfering?)
             goto try_again;
         }
         TRACE_E("Error reading headers.");
