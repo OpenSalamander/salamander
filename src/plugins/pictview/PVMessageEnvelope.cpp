@@ -835,7 +835,7 @@ bool PVMessage_SimplifyImageSequence::HandleRequest()
         // GIF Construction Set help say dispMethod should be applied AFTER
         // MSIE, NN, Irfan do apply it AFTER
         // XnView (and PictView until 2004.05.24) applies it BEFORE
-        // 2009.12.08: odrazka.gif: fill only the area of the subimage
+        // 2009.12.08: bullet-image GIF: fill only the area of the subimage
         if ((dispMethod == PVDM_BACKGROUND) || (dispMethod == PVDM_PREVIOUS) /*|| (dispMethod == PVDM_UNDEFINED)*/)
         {
             FillRect(hMemDC, &rct, hBr);
