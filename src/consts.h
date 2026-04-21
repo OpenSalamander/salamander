@@ -838,6 +838,8 @@ WCHAR* LoadStrW(int resID, HINSTANCE hInstance = NULL); // loads wide-string fro
 //   - "{!}director{y|1|ies}" for parameter values from 0 to 1 (inclusive) will
 //     be "directory", and for values from 2 to "infinity" (2^64-1) will be
 //     "directories"
+//   - keep the following Czech example unchanged: it documents the original
+//     plural grammar encoding and is intentionally not translated
 //   - "{!}soubo{rů|0|r|1|ry|4|rů}" for parameter value 0 will be "souborů", for
 //     1 will be "soubor", for 2 to 4 (inclusive) will be "soubory", and from 5
 //     to "infinity" will be "souborů"
