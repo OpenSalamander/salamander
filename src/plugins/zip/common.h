@@ -168,7 +168,7 @@ public:
     CEOCentrDirRecordEx EOCentrDir; //end of central directory record
     QWORD CentrDirSize;
     QWORD CentrDirOffs;
-    int CentrDirStartDisk; //jen pro list a extract
+    int CentrDirStartDisk; //only for list and extract
                            // number of the disk with the start of the central directory
     bool Zip64;
     QWORD ExtraBytes;
