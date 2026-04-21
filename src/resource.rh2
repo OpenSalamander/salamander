@@ -1,4 +1,5 @@
 ﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+// CommentsTranslationProject: TRANSLATED
 #ifndef __RESOURCE_RH2
 #define __RESOURCE_RH2
 
@@ -9,7 +10,7 @@
 #define IDC_STATIC_1 1150
 #include "plugins\shared\statics.rh2"
 
-// virtualni IDcka - pouze pro vazbu mezi dialogem a helpem
+// virtual IDs - used only to link dialogs with help
 #define IDD_COPYDIALOG      105
 #define IDD_MOVEDIALOG      106
 #define IDD_EDITNEWDIALOG   107
@@ -41,18 +42,18 @@
 #define IDH_VIEWERINTRO     140
 #define IDH_GROUPPOLICY     141
 #define IDH_PWDMANAGER      142
-// virtualni IDcka - END
+// virtual IDs - END
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
 
-#define IDS_ZIPLINE1        491      // IDS_ZIPLINE1 .. IDS_ZIPLINE5 musi byt zasebou
+#define IDS_ZIPLINE1        491      // IDS_ZIPLINE1 .. IDS_ZIPLINE5 must stay consecutive
 #define IDS_ZIPLINE2        492
 #define IDS_ZIPLINE3        493
 #define IDS_ZIPLINE4        494
 #define IDS_ZIPLINE5        495
 
 // commands
-#define CM_AUTOCONFIG       685      // KICKER - zatim jen pro ladeni...
+#define CM_AUTOCONFIG       685      // KICKER - currently only for debugging...
 #define CM_CONFIGURATION    686
 #define CM_SAVECONFIG       687
 
@@ -256,10 +257,10 @@
 
 #define CM_TASKLIST            856
 
-#define CM_MENU                857    // vstoupi do MenuLoop (F10 || Alt || BottomTooblar)
-#define CM_CONTEXTMENU         858    // otevre context menu k focusu/selectu (Shift+F10 || VK_APPS)
+#define CM_MENU                857    // enters MenuLoop (F10 || Alt || BottomToolbar)
+#define CM_CONTEXTMENU         858    // opens the context menu for the focus/selection (Shift+F10 || VK_APPS)
 
-#define CM_SHARES              859    // zobrazi seznam sdilenych adresaru
+#define CM_SHARES              859    // shows the list of shared directories
 
 #define CM_TOGGLEMIDDLETOOLBAR 860
 #define CM_CUSTOMIZEMIDDLE     861
@@ -277,12 +278,12 @@
 
 // characters coding
 #define CM_CODING_MIN          871
-// rezervovat az do 920 (vcetne)
+// reserve up to 920 (inclusive)
 #define CM_CODING_MAX          920
 
 #define CM_SEC_PERMISSIONS     921
 
-#define CM_DIRMENU             924        // otevre CtxMenu pro aktualni adresar aktivniho panelu
+#define CM_DIRMENU             924        // opens CtxMenu for the current directory of the active panel
 
 #define CM_CUSTOMIZE_HOTPATHS  925
 #define CM_CUSTOMIZE_USERMENU  926
@@ -351,7 +352,7 @@
 #define IDB_BOTTOMTOOLBAR   993
 #define IDB_HEADER          994        // header: Up/Down
 #define IDB_MENU            995        // menu:   Dot/Up/Down
-#define IDB_EDTLBTB         996        // EditListBox - bitmapy pro toolbaru JRYFIXME: TOOLBARHDR_USE_SVG
+#define IDB_EDTLBTB         996        // EditListBox - toolbar bitmaps JRYFIXME: TOOLBARHDR_USE_SVG
 #define IDB_FILTER          997
 #define IDB_UPDOWN          999        // Menu popup/Up Down arrow
 #define IDB_ZOOM           1000        // Zoom Panel
@@ -371,7 +372,7 @@
 #define IDV_ARROW_MORE     1030
 #define IDV_ARROW_LESS     1031
 
-#define CM_NEWMENU_MIN          1200     // interval vyhrazeny pro prikazy menu New
+#define CM_NEWMENU_MIN          1200     // range reserved for New menu commands
 #define CM_NEWMENU_MAX          2200
 
 #define CM_HELP_CONTENTS       2210
@@ -382,7 +383,7 @@
 //#define CM_HELP_TIP            2215
 #define CM_HELP_ABOUT          2216
 
-// commands pro find dialog
+// commands for the Find dialog
 #define CM_FIND_EXIT             2220
 #define CM_FIND_VIEW             2221
 #define CM_FIND_ALTVIEW          2222
@@ -407,7 +408,7 @@
 #define CM_FIND_ADD_CURRENT      2247
 #define CM_FIND_MANAGE           2248
 #define CM_FIND_PROPERTIES       2249
-#define CM_FIND_OPTIONS_FIRST    2250   // prvnich tricet polozek z options
+#define CM_FIND_OPTIONS_FIRST    2250   // the first thirty items from options
 #define CM_FIND_OPTIONS_LAST     2280
 #define CM_FIND_HIDESEL          2281
 #define CM_FIND_DELETE           2282
@@ -424,23 +425,23 @@
 #define CM_FIND_IGNORE           2293
 #define CM_FIND_FULLROWSEL       2294
 
-#define CM_ACTIVEHOTPATH_MIN     2400    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_ACTIVEHOTPATH_MIN     2400    // goto hot path X (reservation for HOT_PATHS_COUNT)
 #define CM_ACTIVEHOTPATH_MAX     2429
-#define CM_LEFTHOTPATH_MIN       2430    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_LEFTHOTPATH_MIN       2430    // goto hot path X (reservation for HOT_PATHS_COUNT)
 #define CM_LEFTHOTPATH_MAX       2469
-#define CM_RIGHTHOTPATH_MIN      2470    // goto hot path X (rezervace pro HOT_PATHS_COUNT)
+#define CM_RIGHTHOTPATH_MIN      2470    // goto hot path X (reservation for HOT_PATHS_COUNT)
 #define CM_RIGHTHOTPATH_MAX      2499
 
 //#define IDD_TIPOFTHEDAY            2720
 
-#define CM_LEFTHISTORYPATH_MIN     2840    // historie adresaru pro menu Go To
+#define CM_LEFTHISTORYPATH_MIN     2840    // directory history for the Go To menu
 #define CM_LEFTHISTORYPATH_MAX     2849
-#define CM_RIGHTHISTORYPATH_MIN    2850    // historie adresaru pro menu Go To
+#define CM_RIGHTHISTORYPATH_MIN    2850    // directory history for the Go To menu
 #define CM_RIGHTHISTORYPATH_MAX    2859
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FREESPACE
 
-// vyhrazene intervaly pro SortBy a FixedWidth po 20 polozkach; vic proste nezobrazime
+// ranges reserved for SortBy and FixedWidth, 20 items each; we simply do not show more
 #define CM_LEFTSORTBY_MIN          2890
 #define CM_LEFTSORTBY_MAX          2909
 #define CM_RIGHTSORTBY_MIN         2910
@@ -452,23 +453,23 @@
 #define CM_LEFTVIEWMODE            2932
 #define CM_RIGHTVIEWMODE           2933
 
-#define CM_ACTIVEZOOMPANEL         2934  // maximalizuje aktivni panel nebo ho vraci zpet
+#define CM_ACTIVEZOOMPANEL         2934  // maximizes the active panel or restores it
 #define CM_LEFTZOOMPANEL           2935
 #define CM_RIGHTZOOMPANEL          2936
 
-#define CM_FULLSCREEN              2937  // maximalizuje hlavni okno a vraci ho zpet
+#define CM_FULLSCREEN              2937  // maximizes the main window or restores it
 
 #define CM_GOTO_PREV_SEL           2938
 #define CM_GOTO_NEXT_SEL           2939
 
-#define CM_OPEN_IN_OTHER_PANEL     2940  // otevre focusene jmeno v druhem panelu
-#define CM_OPEN_IN_OTHER_PANEL_ACT 2941  // zaroven aktivuje druhy panel
+#define CM_OPEN_IN_OTHER_PANEL     2940  // opens the focused name in the other panel
+#define CM_OPEN_IN_OTHER_PANEL_ACT 2941  // also activates the other panel
 
-// nechat rezervu
+// keep some reserve
 
-#define CM_HIDE_SELECTED_NAMES     2945  // schova z panelu oznacena jmena
-#define CM_HIDE_UNSELECTED_NAMES   2946  // schova z panelu neoznacena jmena
-#define CM_SHOW_ALL_NAME           2947  // zobrazi v panelu vsechna jmena
+#define CM_HIDE_SELECTED_NAMES     2945  // hides selected names from the panel
+#define CM_HIDE_UNSELECTED_NAMES   2946  // hides unselected names from the panel
+#define CM_SHOW_ALL_NAME           2947  // shows all names in the panel
 
 #define CM_TOGGLEPLUGINSBAR      2950
 
@@ -476,40 +477,40 @@
 #define CM_LEFT_SMARTMODE          2952
 #define CM_RIGHT_SMARTMODE         2953
 
-#define CM_ACTIVEMODE_1            2970  // Alt+1..0 pro volbu rezimu aktivniho pohledu
+#define CM_ACTIVEMODE_1            2970  // Alt+1..0 to select the active view mode
 #define CM_ACTIVEMODE_2            2971
 #define CM_ACTIVEMODE_3            2972
 #define CM_ACTIVEMODE_10           2979
-#define CM_LEFTMODE_1              2980  // volba rezimu leveho pohledu
+#define CM_LEFTMODE_1              2980  // select the left view mode
 #define CM_LEFTMODE_2              2981
 #define CM_LEFTMODE_3              2982
 #define CM_LEFTMODE_10             2989
-#define CM_RIGHTMODE_1             2990  // volba rezimu praveho pohledu
+#define CM_RIGHTMODE_1             2990  // select the right view mode
 #define CM_RIGHTMODE_2             2991
 #define CM_RIGHTMODE_3             2992
 #define CM_RIGHTMODE_10            2999
 
-#define CM_USERMENU_MIN         3000     // interval vyhrazeny pro prikazy user-menu
+#define CM_USERMENU_MIN         3000     // range reserved for user-menu commands
 #define CM_USERMENU_MAX         3499
 
-#define CM_DRIVEBAR_MIN         3500     // interval vyhrazeny pro drive bar
+#define CM_DRIVEBAR_MIN         3500     // range reserved for the drive bar
 #define CM_DRIVEBAR_MAX         3749
 
-#define CM_DRIVEBAR2_MIN        3750     // interval vyhrazeny pro drive bar 2
+#define CM_DRIVEBAR2_MIN        3750     // range reserved for drive bar 2
 #define CM_DRIVEBAR2_MAX        4000
 
-#define CM_PLUGINCMD_MIN        4001     // interval vyhrazeny pro prikazy z plug-inu
+#define CM_PLUGINCMD_MIN        4001     // range reserved for plug-in commands
 #define CM_PLUGINCMD_MAX        4700
 
-#define CM_VIEWWITH_MIN         4701     // interval vyhrazeny pro prikazy view-with
+#define CM_VIEWWITH_MIN         4701     // range reserved for view-with commands
 #define CM_VIEWWITH_MAX         5000
 
-#define CM_PLUGINABOUT_MIN      5001     // interval vyhrazeny pro abouty plug-inu
+#define CM_PLUGINABOUT_MIN      5001     // range reserved for plug-in about dialogs
 #define CM_PLUGINABOUT_MAX      5500
 
-// command labels CML_xxx - nejde o normalni commandy, ale o pomocne identifikatory
-// separatoru a popup menu, pomoci kterych lze snadno identifikovat a lokalizovat
-// polozku menu
+// command labels CML_xxx - these are not normal commands, but helper identifiers
+// for separators and popup menus, which make it easy to identify and localize
+// a menu item
 #define CML_LEFT                5501
 #define CML_LEFT_CHANGEDRIVE    5502
 #define CML_LEFT_VIEWS1         5503
@@ -559,13 +560,13 @@
 
 #define CML_LAST                5999
 
-#define CM_PLUGINCFG_MIN      7001     // interval vyhrazeny pro konfiguraci plug-inu
+#define CM_PLUGINCFG_MIN      7001     // range reserved for plug-in configuration
 #define CM_PLUGINCFG_MAX      7500
 
-#define CM_EDITWITH_MIN       7501     // interval vyhrazeny pro prikazy edit-with
+#define CM_EDITWITH_MIN       7501     // range reserved for edit-with commands
 #define CM_EDITWITH_MAX       7800
 
-//#define CM_INTERNALVIEWER_MIN      6000     // interval vyhrazeny pro internal viewer
+//#define CM_INTERNALVIEWER_MIN      6000     // range reserved for the internal viewer
 //#define CM_INTERNALVIEWER_MAX      6300
 
 // icons
@@ -591,8 +592,8 @@
 #define CM_FILEEND            6057
 #define CM_LEFT               6058
 #define CM_RIGHT              6059
-#define CM_TO_HEX             6060   // pozor - musi byt o 1 mensi nez CM_TO_TEXT
-#define CM_TO_TEXT            6061   // pozor - musi byt o 1 vetsi nez CM_TO_HEX
+#define CM_TO_HEX             6060   // warning - must be 1 less than CM_TO_TEXT
+#define CM_TO_TEXT            6061   // warning - must be 1 greater than CM_TO_HEX
 #define CM_COPYTOCLIP         6062
 #define CM_FINDSET            6063
 #define CM_FINDNEXT           6064
@@ -635,7 +636,7 @@
 #define IDT_AUTOSCROLL        6200
 #define IDT_THUMBSCROLL       6201
 
-//#define CM_TEXTS_MIN               10000    // interval vyhrazeny pro texty
+//#define CM_TEXTS_MIN               10000    // range reserved for texts
 //#define CM_TEXTS_MAX               18000
 
 #endif // __RESOURCE_RH2
