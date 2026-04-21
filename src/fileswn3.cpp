@@ -820,7 +820,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         memmove(iconData.NameAndData, file.Name, len);
                         memset(iconData.NameAndData + len, 0, size - len); // end of name is zeroed
                         iconData.SetFlag(0);                               // icon not loaded yet
-// bitmap storage must be allocated here; it cannot be done in the worker thread
+                                                                           // bitmap storage must be allocated here; it cannot be done in the worker thread
                         iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                         if (iconData.GetIndex() != -1)
                         {
@@ -1166,7 +1166,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                 memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
                                 iconData.SetFlag(3); // icon not loaded yet; only the icon location is known
-// we need to allocate space for the bitmaps, which cannot be done in this thread
+                                                     // we need to allocate space for the bitmaps, which cannot be done in this thread
                                 iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                 if (iconData.GetIndex() != -1)
                                 {
@@ -1427,7 +1427,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     memcpy(iconData.NameAndData + nameLen, s, len + 1);                 // icon-location + '\0'
 
                                     iconData.SetFlag(3); // icon not yet loaded, specified only by icon-location
-// we need to allocate space for the bitmaps; this cannot be done in the worker thread
+                                                         // we need to allocate space for the bitmaps; this cannot be done in the worker thread
                                     iconData.SetIndex(IconCache->AllocIcon(NULL, NULL));
                                     if (iconData.GetIndex() != -1)
                                     {
