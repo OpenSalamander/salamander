@@ -1,50 +1,50 @@
+CommentsTranslationProject: TRANSLATED
+
 OS/2:
 NOVELL/WINDOWS-NT:
 UNIX:
-/pub/d/dir ("/pub/d/dir" musi byt cesta a musi existovat)
-/pub/d/*.* ("/pub/d" musi byt cesta a musi existovat, "*.*" je maska)
-/pub/d/newname ("/pub/d" musi byt cesta a musi existovat, "/pub/d/newname"
-                neexistuje nebo jde o soubor (v tomto pripade musi byt oznaceny
-                soubor, u adresare nesmysl), "newname" je
-                novy nazev jedineho zdrojoveho souboru/adresare)
+/pub/d/dir ("/pub/d/dir" must be a path and it must exist)
+/pub/d/*.* ("/pub/d" must be a path and it must exist, "*.*" is a mask)
+/pub/d/newname ("/pub/d" must be a path and it must exist, "/pub/d/newname"
+                does not exist or it is a file (in this case a file must be selected;
+                for a directory this would make no sense), "newname" is
+                the new name of the single source file/directory)
 
 VMS:
-PUB$DEVICE:[PUB.VMS] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat)
+PUB$DEVICE:[PUB.VMS] ("PUB$DEVICE:[PUB.VMS]" must be a path and it must exist)
 
-oznacene jen soubory:
-PUB$DEVICE:[PUB.VMS]*.* ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat, "*.*" je maska)
+only files selected:
+PUB$DEVICE:[PUB.VMS]*.* ("PUB$DEVICE:[PUB.VMS]" must be a path and it must exist, "*.*" is a mask)
 
-oznaceny jeden soubor:
-PUB$DEVICE:[PUB.VMS]newname ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat,
-                             "PUB$DEVICE:[PUB.VMS]newname" neexistuje nebo jde o soubor,
-                             "newname" je novy nazev jedineho zdrojoveho souboru)
+one file selected:
+PUB$DEVICE:[PUB.VMS]newname ("PUB$DEVICE:[PUB.VMS]" must be a path and it must exist,
+                             "PUB$DEVICE:[PUB.VMS]newname" does not exist or it is a file,
+                             "newname" is the new name of the single source file)
 
-oznacene jen adresare:
-PUB$DEVICE:[PUB.VMS.*] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat, "*" je maska)
+only directories selected:
+PUB$DEVICE:[PUB.VMS.*] ("PUB$DEVICE:[PUB.VMS]" must be a path and it must exist, "*" is a mask)
 
-oznaceny jeden adresar:
-PUB$DEVICE:[PUB.VMS.newname] ("PUB$DEVICE:[PUB.VMS]" musi byt cesta a musi existovat,
-                             "PUB$DEVICE:[PUB.VMS.newname]" neexistuje,
-                             "newname" je novy nazev jedineho zdrojoveho adresare)
+one directory selected:
+PUB$DEVICE:[PUB.VMS.newname] ("PUB$DEVICE:[PUB.VMS]" must be a path and it must exist,
+                             "PUB$DEVICE:[PUB.VMS.newname]" does not exist,
+                             "newname" is the new name of the single source directory)
 
 MVS:
-'VEA0016.MAIN.CLIST' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat)
-'VEA0016.MAIN.CLIST.*' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat, "*" je maska)
-'VEA0016.MAIN.CLIST.newname' ("'VEA0016.MAIN.CLIST'" musi byt cesta a musi existovat,
-                              'VEA0016.MAIN.CLIST.newname' neexistuje nebo je soubor,
-                              (v tomto pripade musi byt oznaceny soubor, u adresare nesmysl),
-                              "newname" je novy nazev jedineho zdrojoveho souboru/adresare)
+'VEA0016.MAIN.CLIST' ("'VEA0016.MAIN.CLIST'" must be a path and it must exist)
+'VEA0016.MAIN.CLIST.*' ("'VEA0016.MAIN.CLIST'" must be a path and it must exist, "*" is a mask)
+'VEA0016.MAIN.CLIST.newname' ("'VEA0016.MAIN.CLIST'" must be a path and it must exist,
+                              'VEA0016.MAIN.CLIST.newname' does not exist or it is a file,
+                              (in this case a file must be selected; for a directory this would make no sense),
+                              "newname" is the new name of the single source file/directory)
 
 
 IBM z/VM (CMS):
-ACADEM:ANONYMOU.PICS ("ACADEM:ANONYMOU.PICS" musi byt cesta a musi existovat)
+ACADEM:ANONYMOU.PICS ("ACADEM:ANONYMOU.PICS" must be a path and it must exist)
 
-oznacene jen soubory:
-ACADEM:ANONYMOU.PICS.*.* (maska je formatu: filename '.' filetype; "ACADEM:ANONYMOU.PICS"
-                          musi byt cesta a musi existovat)
+only files selected:
+ACADEM:ANONYMOU.PICS.*.* (the mask format is: filename '.' filetype; "ACADEM:ANONYMOU.PICS"
+                          must be a path and it must exist)
 
-oznacene jen adresare:
-ACADEM:ANONYMOU.PICS.* (maska je formatu: dirname; "ACADEM:ANONYMOU.PICS" musi byt cesta
-                        a musi existovat)
-
-
+only directories selected:
+ACADEM:ANONYMOU.PICS.* (the mask format is: dirname; "ACADEM:ANONYMOU.PICS" must be a path
+                        and it must exist)
