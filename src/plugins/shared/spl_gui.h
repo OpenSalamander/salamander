@@ -1149,11 +1149,11 @@ public:
     //
     virtual BOOL WINAPI GetItemRect(int index, RECT& r) = 0;
 
-    // prepne menu do Menu mode (jako by user stisknul a pustil Alt)
+    // switches the menu to Menu mode (as if the user pressed and released Alt)
     virtual void WINAPI EnterMenu() = 0;
     // returns TRUE if the menu is in Menu mode
     virtual BOOL WINAPI IsInMenuLoop() = 0;
-    // prepina menu do Help mode (Shift + F1)
+    // switches the menu to Help mode (Shift + F1)
     virtual void WINAPI SetHelpMode(BOOL helpMode) = 0;
 
     //
@@ -1847,7 +1847,7 @@ public:
 // ****************************************************************************
 // CGUIIconListAbstract
 //
-// Nas interni 32-bitovy image list. 8 bitu na kazdy RGB kanal a 8 bitu alfa transparence.
+// Our internal 32-bit image list: 8 bits for each RGB channel and 8 bits for alpha transparency.
 
 class CGUIIconListAbstract
 {
