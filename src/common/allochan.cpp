@@ -57,7 +57,7 @@ public:
     C__AllocHandlerInit()
     {
         InitializeCriticalSection(&CriticalSection);
-        OldNewHandler = _set_new_handler(AltapNewHandler); // Have operator new call our new-handler on out-of-memory.
+        OldNewHandler = _set_new_handler(AltapNewHandler); // Route operator new failures through our new-handler.
         OldNewMode = _set_new_mode(1);                     // Have malloc call our new-handler on out-of-memory.
     }
     ~C__AllocHandlerInit()
