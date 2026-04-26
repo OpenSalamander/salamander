@@ -134,7 +134,7 @@ IStream* ConvertMarkdownToHTML(const char* name)
     sprintf_s(buff, "</article></body></html>\n");
     oStream->Write(buff, (ULONG)strlen(buff), &written);
 
-    // set the pointer to the start of the stream; IE will read from it
+    // Reset the stream pointer so IE can read from the beginning.
     LARGE_INTEGER seek;
     seek.QuadPart = 0;
     oStream->Seek(seek, STREAM_SEEK_SET, NULL);
