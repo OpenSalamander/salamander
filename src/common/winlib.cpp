@@ -72,7 +72,7 @@ BOOL InitializeWinLib()
 
 void ReleaseWinLib()
 {
-    // we must detach open windows from WinLib because WinLib is shutting down ...
+    // Detach open windows from WinLib because WinLib is shutting down ...
     int c = WindowsManager.GetCount();
     if (c > 0)
         TRACE_ET(_T("ReleaseWinLib(): WindowsManager still contains opened windows: ") << c);
