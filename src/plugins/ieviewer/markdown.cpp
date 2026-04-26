@@ -116,7 +116,7 @@ IStream* ConvertMarkdownToHTML(const char* name)
     sprintf_s(buff, "<!DOCTYPE html><html lang=\"cs\" dir=\"ltr\"><head><meta charset=\"utf-8\"><style>\n");
     oStream->Write(buff, (ULONG)strlen(buff), &written);
 
-    // if we find CSS, inline it
+    // Inline CSS when the markdown contains a stylesheet.
     FILE* fpCSS = OpenMarkdownCSS();
     if (fpCSS != NULL)
     {
