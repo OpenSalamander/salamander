@@ -14,7 +14,7 @@
 <h1>Directories Tab (Login Dialog)</h1>
 
 <p>
-<em>Directories tab</em> allows user to configure initial session directory and the way how directory
+The <em>Directories tab</em> allows the user to configure the initial session directory and the way directory
 content is read.
 </p>
 
@@ -30,8 +30,8 @@ session close.
 </p>
 
 <p>
-The <em>Remote directory</em> box defines the initial remote directory opened in panel. When <em>Remember
-last used directory</em> is ticked the path is updated whenever the session is closed. When the initial
+The <em>Remote directory</em> box defines the initial remote directory opened in the panel. When <em>Remember
+last used directory</em> is ticked, the path is updated whenever the session is closed. When the initial
 directory is not specified the user home directory is usually opened on startup. Note that this may not be
 true particularly for <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers.
 </p>
@@ -49,8 +49,8 @@ checkboxes control <a href="directory_cache.htm">directory cache</a>.
 </p>
 
 <p>
-When WinSCP reads directory content, it by default also resolves any symbolic links (symlinks) it finds. Particularly
-to learn if they point to file or directory. If a directory contains too many symbolic links, it can slow down
+When WinSCP reads directory content, it by default also resolves any symbolic links (symlinks) it finds, particularly
+to learn whether they point to a file or directory. If a directory contains too many symbolic links, it can slow down
 opening the directory. You may disable the feature by unticking <em>Resolve symbolic links</em> to speed it
 up. You may also use the option when WinSCP hangs when resolving cyclic links. While WinSCP detects most cyclic
 links, it can still hang when it encounters more complex symbolic link &quot;systems&quot;.
