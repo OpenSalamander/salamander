@@ -24,7 +24,7 @@ of the specific protocol itself and features that are caused by the implementati
 
 <p>
 The default mode of operation is to use <acronym title="SSH File Transfer Protocol">SFTP</acronym> and fall back to
-<acronym title="Secure Copy Protocol">SCP</acronym>. Select your preferred protocol on
+<acronym title="Secure Copy Protocol">SCP</acronym>. Select your preferred protocol in the
 <a href="ui_login_session.htm#protocol_group">Login dialog</a>.
 </p>
 
@@ -48,8 +48,8 @@ take advantage of the advanced features yet.
 </p>
 
 <p>
-Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, for connection with an
-<acronym title="SSH File Transfer Protocol">SFTP</acronym> server you do not need access to a shell
+Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, to connect to an
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server, you do not need shell access
 (although some implementations may still require that).
 </p>
 
@@ -90,7 +90,7 @@ The list below shows only those features that differ between the protocols, so i
   </tr>
   <tr>
     <th>Speed </th>
-    <td>Generally the slowest (necessity to wait for packet confirmations).</td>
+    <td>Generally slower (because it must wait for packet confirmations).</td>
     <td>Faster (efficient file transfer, yet it does not allow the transfer to be interrupted).</td>
   </tr>
   <tr>

@@ -39,7 +39,7 @@ what server type should be used. See the <i>Server type</i> option in the
 
 <p>The specified server type is used to parse the plain text listing. If parsing
 is successful, the list of files and directories is its result. If not, the
-plugin displays warning and only the plain text listing is displayed in panel
+plugin displays a warning and only the plain text listing is displayed in the panel
 (such listing is unusable for any operation).</p>
 
 <p>A directory "." (if it is in the listing) and a directory ".." (if it is
@@ -63,8 +63,8 @@ Each such server type is used to parse the plain text listing. If parsing is
 successful, the list of files and directories is its result. If not, the
 server type is skipped (and next one is tried).</p>
 
-<p>If all defined server types failed in parsing, the plugin displays warning
-and only the plain text listing is displayed in panel (such listing is
+<p>If all defined server types failed in parsing, the plugin displays a warning
+and only the plain text listing is displayed in the panel (such listing is
 unusable for any operation).</p>
 
 <p>The server type is autodetected only for the first listing from the server.
@@ -348,7 +348,7 @@ the column default empty value in the expression).</p>
  <tr><td>month_3(&lt;column&gt;)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by three letters
 	 at the pointer position to the column; works with month names in several languages
-	 (currently supported languages: English, German, Norweigan, and Swedish);
+	 (currently supported languages: English, German, Norwegian, and Swedish);
 	 the month name must be followed by some common delimiter (',', '.', ';', ':', etc.),
 	 whitespace, or end of line character (not by a letter); moves the pointer behind the
 	 month name; the function is successful only if month name is known and all month

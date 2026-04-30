@@ -42,10 +42,10 @@ executed for each selected file). See the List of Variables below for details.</
 and directories. You can use special variables in the <i>Arguments</i> box (see
 the List of Variables below for details) to pass two files or two directories to
 the compare/merge utility. For example, enter <i>"$(FileOrDirToCompareLeft)"
-"$(FileOrDirToCompareRight)"</i> to the <i>Arguments</i> box and two full names
-of two files or directories specified in the panels are used as arguments for the
+"$(FileOrDirToCompareRight)"</i> in the <i>Arguments</i> box to use the two full names
+of the two files or directories specified in the panels as arguments for the
 compare/merge utility (specify its .exe file in the <i>Command</i> box).
-See the following list to learn how to specify two files or directories directly in the panels for
+See the following list to learn how to specify them directly in the panels for
 the compare/merge utility:</p>
     <ol>
     <li>select both files or directories in one panel,</li>
@@ -60,7 +60,7 @@ the compare/merge utility:</p>
 
 <p>The list of selected files and directories can be used in command arguments in the
 User Menu. In this case, only one User Menu command is executed for all selected files and directories.
-See the $(ListOfSelectedNames) and $(ListOfSelectedFullNames) variables in the List of Variables below.</p>
+See the $(ListOfSelectedNames) and $(ListOfSelectedFullNames) variables in the list below.</p>
 
 <h4>List of Variables</h4>
 
@@ -70,7 +70,7 @@ the <i>Command</i>, <i>Arguments</i>, and <i>Initial directory</i> boxes.</p>
 <p>The User Menu command is executed for each selected file and directory or for
 the focused file or directory (if there is no selection). The file or directory
 for which the User Menu command is executed is called <i>the current file or
-directory</i> in the following table. Exception to this rule: if you use variables
+directory</i> in the following table. Exception: if you use variables
 for compare/merge utilities or lists of selected files and directories, only one
 User Menu command is executed for all selected files and directories.</p>
 
@@ -258,7 +258,7 @@ User Menu command is executed for all selected files and directories.</p>
      separated by space character. Names containing spaces are surrounded by double quotes
      (e.g. dir1 file.txt "my first document.html"). The order of names in the list is the same
      as in the panel or Find window. The maximum length of the list is 32771 characters (see
-     <i>Command Line Length Limits</i> later on this page for limits overview).</td>
+     <i>Command Line Length Limits</i> later on this page for an overview of the limits).</td>
 </tr>
 <tr>
  <td>$(ListOfSelectedFullNames)</td>
@@ -267,7 +267,7 @@ User Menu command is executed for all selected files and directories.</p>
      by double quotes (e.g. C:\test\dir1 C:\test\file.txt "C:\test\my first document.html").
      The order of names in the list is the same as in the panel or Find window. The maximum
      length of the list is 32771 characters (see <i>Command Line Length Limits</i> later on
-     this page for limits overview).</td>
+     this page for an overview of the limits).</td>
 </tr>
 
 </table>
@@ -280,7 +280,7 @@ check box in <a href="configuration_usrmn.htm">User Menu dialog box</a>).
 </p>
 
 <p>Maximum length of a command with arguments when executing through the system command
-shell (more precisely using batch file):</p>
+shell (more precisely, by using a batch file):</p>
 
 <table>
 
