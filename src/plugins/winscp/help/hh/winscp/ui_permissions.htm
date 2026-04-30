@@ -54,7 +54,7 @@ owner of a file can remove or delete the file or directory.
 
 <p>
 Note that while non-Unix systems are usually able to map the 9 simple Unix-style permissions to their own
-style, they probably won't be able to handle the 3 special permissions.
+style, they probably cannot handle the 3 special permissions.
 </p>
 
 <p>
@@ -112,12 +112,12 @@ for subdirectories of selected directories.
 
 <p>
 The checkbox is disabled if you check "execute" permissions explicitly
-for all permission groups, as this makes it effectively useless.
+for all permission groups, as that makes it redundant.
 </p>
 
 <p>
-The checkbox is disabled if you check &quot;execute&quot; permissions explicitly for all permission groups,
-as this makes it effectively useless.
+It remains useful when some &quot;execute&quot; permissions are left unset,
+so WinSCP can add them automatically to directories that already have read permission.
 </p>
 
 <h4>Notes:</h4>

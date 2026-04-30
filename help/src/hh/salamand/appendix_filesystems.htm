@@ -24,7 +24,7 @@ as the way each file system organizes data on the disk, are significantly
 different.</p>
 
 <h5>FAT</h5>
-<p>The FAT file system locates the file allocation table near the beginning of
+<p>The FAT file system stores the file allocation table near the beginning of
 the volume. FAT12 is the original implementation of FAT and is intended for very
 small media (floppy disks). FAT16 was designed for small disks and simple directory
 structures. FAT32 allowed users to create large volumes on large disks.</p>
@@ -36,13 +36,13 @@ can be located.</p>
 
 <h5>NTFS</h5>
 <p>NTFS, the preferred native file system for Windows 2000/XP/Vista/7, is
-a much more sophisticated, robust, and secure file system than any of the FAT
-file systems. The NTFS data structures allow you to take advantage of new
-features, such as:
+a much more sophisticated, robust, and secure file system than the FAT
+file systems. The NTFS data structures allow you to take advantage of features
+such as:
 </p>
 
-<p><b>Recoverability</b> NTFS is a recoverable file system. A user seldom needs to
-run a disk repair program on an NTFS volume. NTFS guarantees the consistency of
+<p><b>Recoverability</b> NTFS is a recoverable file system. Users seldom need to
+run a disk repair program on an NTFS volume. NTFS ensures the consistency of
 the volume by using standard transaction logging and recovery techniques. In the
 event of a system failure, NTFS uses its log file and checkpoint information to
 automatically restore the consistency of the file system.</p>

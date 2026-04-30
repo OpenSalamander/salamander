@@ -14,7 +14,7 @@
 <h1>Masks</h1>
 
 <p>
-To use the following features of WinSCP you need to specify a mask (wildcard) to select files (or other things):
+To use the following WinSCP features, you need to specify a mask (wildcard) to select files (or other things):
 </p>
 
 <ul>
@@ -94,7 +94,7 @@ To make an operation non-recursive, use the exclude mask <code>*/</code>.
 <h4>Path Mask</h4>
 
 <p>
-When the mask selects files and it makes sense to select them based on directory, you can extend the mask
+When a mask selects files and it makes sense to select them by directory, you can extend it
 with a path mask. You should separate the path mask from the filename mask with a slash. For example,
 the mask <code>/home/martinp/*.txt</code> matches all text files within the directory, but not in subdirectories.
 To match all text files within the subtree, use the mask <code>/home/martinp/*.txt; /home/martinp/*/*.txt</code>
@@ -110,7 +110,7 @@ of the mask.
 </p>
 
 <p>
-You can also specify the full path to a specific file or directory, both local and remote.
+You can also specify the full path to a specific local or remote file or directory.
 For example, if you want to match only a specific <code>.csv</code> directory and not all of them,
 use <code>/home/martinp/data/.csv/</code> instead of <code>.csv/</code>.
 </p>
