@@ -14,7 +14,7 @@
 
 <h1>GetFullPath Method</h1>
 
-<p>The <b>GetFullPath</b> method returns an absolute path for the specified path string.
+<p>The <b>GetFullPath</b> method returns an absolute path for the specified path.
 </p>
 
 <h2>Syntax</h2>
@@ -32,12 +32,12 @@ for the target (inactive) panel. When this parameter is not specified or is <b><
 the path parameter must be an absolute path.</p>
 
 <h2>Return Values</h2>
-<p>Returns the absolute fully qualified path.</p>
+<p>Returns the fully qualified absolute path.</p>
 
 <h2>Remarks</h2>
 <p>This method uses the current directories to resolve the absolute path, so the path can be specified in a form such as "c:test".</p>
 <p>Redundant path parts such as "." and ".." will be resolved.</p>
-<p>This method will throw exceptions when the specified path is invalid.</p>
+<p>This method throws an exception if the specified path is invalid.</p>
 
 <h2>See Also</h2>
 <p><a href="ref_panel.htm">Panel Object</a></p>

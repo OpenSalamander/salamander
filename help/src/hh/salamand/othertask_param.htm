@@ -40,7 +40,7 @@ to open, a configuration file to import, and more.</p>
   This parameter is ignored when the -L or -R parameter is specified.</td></tr>
 <tr><td><b>-C</b> reg_file</td><td>Specifies the <a href="customize_configuration.htm">exported
   configuration</a> that will be imported to the registry before loading configuration from the
-  registry. If you do not specify the full path to the configuration file, it is searched for in the
+  registry. If you do not specify the full path to the configuration file, Open Salamander searches for it in the
   installation directory and, in Vista or later, also in the application data directory (typically
   <i>C:\Users\&lt;user&gt;\AppData\Roaming\Open Salamander</i>)</td></tr>
 <tr><td><b>-I</b> icon_index</td><td>Specifies the icon color that will be used
@@ -48,14 +48,14 @@ to open, a configuration file to import, and more.</p>
   You can also change the icon color in <a href="configuration_mainwnd.htm">configuration of main window</a>.</td></tr>
 <tr><td><b>-T</b> title_prefix</td><td>Specifies the text prefix displayed in the title bar of the main window.
   To suppress the text prefix, use the "" parameter. You can also change the prefix in <a href="configuration_mainwnd.htm">configuration of main window</a>.</td></tr>
-<tr><td><b>-O</b></td><td>Salamander will behave as if the <a href="configuration_gener.htm">Allow only one instance of Salamander at one time</a> option is checked. The option value in the configuration will not be affected.</td></tr>
+<tr><td><b>-O</b></td><td>Salamander will behave as if the <a href="configuration_gener.htm">Allow only one instance of Salamander at one time</a> option is checked. This does not change the stored configuration value.</td></tr>
 <tr><td><b>-P</b>&nbsp;panel_index</td><td>Specifies the panel that will be activated. 0 means the default panel, 1 means the left panel, and 2 means the right panel.</td></tr>
 </table>
 
 <h4>Examples</h4>
 
 <ul> 
-<li>To open Open Salamander with "C:\Program Files" directory in the left panel:
+<li>To open Open Salamander with the "C:\Program Files" directory in the left panel:
 <dl><dt></dt><dd>
 <br />
 salamand.exe -L "C:\Program Files"
