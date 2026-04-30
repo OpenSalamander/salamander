@@ -15,30 +15,30 @@
 <h1>Customizing User Menu</h1>
 
 <p>The User Menu allows you to execute external programs or open documents. The User Menu
-is list of individual commands ("items") you have defined. Each item contains an
-item name and executed command. Moreover, icon, additional arguments, initial
-directory, and executing flags can be specified.</p>
+is a list of individual commands ("items") you have defined. Each item contains an
+item name and the command to execute. Moreover, an icon, additional arguments, the initial
+directory, and execution flags can be specified.</p>
 
 <p>You can use additional arguments to specify command-line arguments that are
 passed to the application each time you start it. For example you can use
 $(FullName) to pass the filenames of selected files (one User Menu command is
 executed for each selected file). See the List of Variables below for details.</p>
 
-<h3>To add new command to the User Menu:</h3>
+<h3>To add a new command to the User Menu:</h3>
 <ol>
 <li>In the Options menu, select Configuration..., and then choose the 
     <a href="configuration_usrmn.htm">User Menu dialog box</a>.</li>
-<li>In the <i>Menu Contents</i> select the last empty row.</li>
-<li>Type the name of the created item.</li>
+<li>In <i>Menu Contents</i>, select the last empty row.</li>
+<li>Type the name of the new item.</li>
 <li>Press the Enter key.</li>
-<li>In the <i>Command</i> box, type path and filename of the file you want to
+<li>In the <i>Command</i> box, type the path and filename of the file you want to
     execute.</li>
 <li>Choose the OK button.</li>
 </ol>
 
 <h4>Advanced Features</h4>
 
-<p>The User Menu supports executing of utilities for comparing/merging of files
+<p>The User Menu supports utilities for comparing/merging files
 and directories. You can use special variables in the <i>Arguments</i> box (see
 the List of Variables below for details) to pass two files or two directories to
 the compare/merge utility. For example, enter <i>"$(FileOrDirToCompareLeft)"
@@ -59,17 +59,17 @@ the compare/merge utility directly in panels:</p>
 
 
 <p>The list of selected files and directories can be used in command arguments in the
-User Menu. In this case only one User Menu command is executed for all selected files and directories.
-See $(ListOfSelectedNames) and $(ListOfSelectedNames) variables in the List of Variables below.</p>
+User Menu. In this case, only one User Menu command is executed for all selected files and directories.
+See the $(ListOfSelectedNames) and $(ListOfSelectedFullNames) variables in the List of Variables below.</p>
 
 <h4>List of Variables</h4>
 
-<p>All variables are available from context menus on buttons on the right sides of
+<p>All variables are available from context menus on the buttons on the right side of
 the <i>Command</i>, <i>Arguments</i>, and <i>Initial directory</i> boxes.</p>
 
 <p>The User Menu command is executed for each selected file and directory or for
 the focused file or directory (if there is no selection). The file or directory
-for which is executed the User Menu command is called <i>the current file or
+for which the User Menu command is executed is called <i>the current file or
 directory</i> in the following table. Exception from this rule: if you use variables
 for compare/merge utilities or lists of selected files and directories, only one
 User Menu command is executed for all selected files and directories.</p>
@@ -274,8 +274,8 @@ User Menu command is executed for all selected files and directories.</p>
 
 
 <h4>Command Line Length Limits</h4>
-<p>The maximal length of command with arguments depends on Windows version and
-if you are executing command through shell or not (see <i>Execute through shell</i>
+<p>The maximal length of a command with arguments depends on the Windows version and
+on whether you are executing the command through the shell (see the <i>Execute through shell</i>
 check box in <a href="configuration_usrmn.htm">User Menu dialog box</a>).
 </p>
 
@@ -344,7 +344,7 @@ shell (more precisely using batch file):</p>
 <h4>Remarks</h4>
 <p>When <a href="windows_usrmenu.htm">User Menu Bar</a> is visible, you can
 add new User Menu item using drag &amp; drop operation. Simply drag the application
-or document to the User Menu bar.</p>
+or document to the User Menu Bar.</p>
 
 
 <h4>See also</h4>

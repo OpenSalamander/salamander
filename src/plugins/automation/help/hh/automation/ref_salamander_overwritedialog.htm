@@ -13,7 +13,7 @@
 <div class="page">
 
 <h1>OverwriteDialog Method</h1>
-<p>The <b>OverwriteDialog</b> method displays file overwrite confirmation dialog box.</p>
+<p>The <b>OverwriteDialog</b> method displays a file overwrite confirmation dialog box.</p>
 
 <h2>Syntax</h2>
 <pre><code>OverwriteDialog(<i>file1</i>, <i>file2</i>, <i>buttons</i>)</code></pre>
@@ -21,15 +21,15 @@
 <h2>Parameters</h2>
 
 <h3>file1</h3>
-<p>Required. File that is supposed to be overwritten with the second file. For more
-information see the following Remarks section.</p>
+<p>Required. File that is to be overwritten by the second file. For more
+information, see the following Remarks section.</p>
 
 <h3>file2</h3>
-<p>Required. File that is supposed to overwrite the first file. For more information see
+<p>Required. File that is to overwrite the first file. For more information, see
 the following Remarks section.</p>
 
 <h3>buttons</h3>
-<p>Required. Number specifying the type of buttons to display. </p><table><tr>
+<p>Required. Number specifying the type of buttons to display.</p><table><tr>
 <td class="hdr">Constant</td><td class="hdr">Description</td></tr>
 <tr>
 <td>4</td><td>Display Yes, All, Skip, Skip All and Cancel buttons.</td></tr>
@@ -55,14 +55,13 @@ the following Remarks section.</p>
 </table>
 
 <h2>Remarks</h2>
-<p>The <b><i>file</i></b> parameters can be either the <b>File</b> objects
-obtained from the <b>FileSystemObject</b> or the Salamander panel
-<a href="ref_item.htm">Item</a> objects. If you can retrieve neither of
-these object types you can use multiline string in place of these parameters.
-The first line of the text should specify the full file path. The second line
-should specify additional information like file size and date and time when the
-file was last modified. The lines of text should be separated with the new line
-(CR) character.</p>
+<p>The <b><i>file</i></b> parameters can be either <b>File</b> objects obtained
+from the <b>FileSystemObject</b> or Salamander panel <a href="ref_item.htm">Item</a>
+objects. If you can retrieve neither of these object types, you can use a
+multiline string instead. The first line of the text should specify the full file
+path. The second line should specify additional information such as the file size
+and the date and time when the file was last modified. The lines of text should
+be separated with the new line (CR) character.</p>
 
 <h2>See Also</h2>
 <p><a href="ref_item.htm">Item Object</a></p>

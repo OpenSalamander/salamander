@@ -27,7 +27,7 @@ formats of listings.</p>
 used to autodetect server type (autodetect condition), a list of available data columns
 (including their visibility in panel), and a parser for plain text listing.
 All defined server types are displayed in <a href="config_servers.htm">Configuration/Servers</a>.
-You can add new or edit existing in <a href="dlgboxes_editsrvtype.htm">Edit Server Type
+You can add new or edit existing server types in <a href="dlgboxes_editsrvtype.htm">Edit Server Type
 dialog box</a>.</p>
 
 <p>You can choose if the server type should be autodetected or not. If not, choose
@@ -137,8 +137,8 @@ types are always visible in panel. Columns are defined in the
    <col />
  </colgroup>
  <tr><th>Type</th><th>Description</th></tr>
- <tr><td>Name</td><td>string; file or directory name; exacly one column of this type is
-         neccessary; it cannot be hidden; the definition of the empty value for
+ <tr><td>Name</td><td>string; file or directory name; exactly one column of this type is
+         necessary; it cannot be hidden; the definition of the empty value for
 	 this column has no sense; parser must assign a value to this column for
 	 each file and directory; if no value is assigned, parsing using the current
 	 rule does not add any file nor directory (it is used for skipping empty lines and other
@@ -172,7 +172,7 @@ types are always visible in panel. Columns are defined in the
 a &lt;is_link&gt;. We assign boolean values to these columns. Their meanings are: "is
 item a directory?" (false means that it is a file), "is item hidden?" (false means that
 it has not hidden attribute), and "is item a link?" (false means that it is not a link).
-It is not neccessary to assign values to these columns, their empty values are: "is a file",
+It is not necessary to assign values to these columns, their empty values are: "is a file",
 "is not hidden", and "is not a link".</p>
 
 
@@ -227,12 +227,12 @@ values in columns.</p>
 the order of their definition. In other words, always the first usable rule
 is used.</p>
 
-<p>The listing can be incomplete if user cancels its getting or due to some
+<p>The listing can be incomplete if the user cancels the listing transfer or due to some
 network failure. The incomplete listing is trimmed to contain only the
 complete text lines.</p>
 
 <p>The parsing of the incomplete listing is handled at the level of using
-rules. In simple case the pointer is moved (by using rules) to the end
+rules. In a simple case the pointer is moved (by using rules) to the end
 of the incomplete listing and it means the successful end of parsing.
 Otherwise during evaluation of some function from currently used rule,
 the pointer should be moved to the next line. But this is not possible
@@ -259,7 +259,7 @@ move the pointer, and does not assign any value to any column. If the function
 moves the pointer and if not explicitly stated, it is assumed that the pointer
 cannot move behind the end of line (to the next line).</p>
 
-<p>Before using the column identifier in the expression, it is neccessary to
+<p>Before using the column identifier in the expression, it is necessary to
 assign a value to this column. Otherwise the expression has no sense (such
 expression can be replaced by the boolean constant which is calculated using
 the column default empty value in the expression).</p>
@@ -438,21 +438,21 @@ the column default empty value in the expression).</p>
 	 parameter) to the column; moves the pointer behind this string; the function is
 	 successful only if such string exists</td></tr>
 
- <tr><td>all_to(string)</td><td>finds the first occurence (searching is case
+ <tr><td>all_to(string)</td><td>finds the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) and moves the pointer
-	 behind this occurence; the function is successful only if the specified string
+	 behind this occurrence; the function is successful only if the specified string
 	 was found</td></tr>
 
  <tr><td>all_to(&lt;column&gt;, string)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
-	 the pointer position and ending behind the first occurence (searching is case
+	 the pointer position and ending behind the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) to the column;
 	 moves the pointer behind the found string; the function is successful only if the
 	 specified string was found</td></tr>
 
  <tr><td>all_up_to(&lt;column&gt;, string)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
-	 the pointer position and ending before the first occurence (searching is case
+	 the pointer position and ending before the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) to the column;
 	 moves the pointer behind the found string; the function is successful only if the
 	 specified string was found</td></tr>
@@ -543,7 +543,7 @@ the column default empty value in the expression).</p>
 
 <h4>Operators Used in Parsing</h4>
 
-<p>Before using the column identifier in the expression, it is neccessary to
+<p>Before using the column identifier in the expression, it is necessary to
 assign a value to this column. Otherwise the expression has no sense (such
 expression can be replaced by the boolean constant which is calculated using
 the column default empty value in the expression).</p>
