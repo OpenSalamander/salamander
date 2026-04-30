@@ -165,11 +165,11 @@ be prompted if you want to open new connection.
 </p>
 
 <p>You can use more connections for any operation. It can save a lot of time especially when
-the operation copies many small files, changes attributes to many files and directories,
-or delete many files and directories. The reason is that while the connection is negotiating
-(it sends FTP command and then waits for server reply and then send next FTP command and
-again waits for reply, etc.), it cannot use the full bandwidth, so other connections can try
-to use the rest of bandwidth.
+the operation copies many small files, changes attributes on many files and directories,
+or deletes many files and directories. The reason is that while the connection is negotiating
+(it sends an FTP command and then waits for the server reply and then sends the next FTP command and
+again waits for the reply, etc.), it cannot use the full bandwidth, so other connections can try
+to use the rest of the bandwidth.
 </p>
 
 <p>The plugin always tries to finish the largest possible part of the operation. For example:

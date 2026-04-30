@@ -15,7 +15,7 @@
 <h1>Regular Expressions Syntax</h1>
 
 <p>
-The following description of regular expressions is based in part on the documentation for
+The following description of regular expressions is based in part on documentation for
 the REGEXP library, which was created by Henry Spencer. Open Salamander uses
 this library to match regular expressions.</p>
 
@@ -37,7 +37,7 @@ this library to match regular expressions.</p>
            followed by optional 'd')</li>
 <li>'|' - between expressions matches the first expression, the second expression, etc.
         (for example, 'red|blue|black' matches 'red', 'blue', and 'black'
-         - in other words, any of mentioned words)</li>
+         - in other words, any of the mentioned words)</li>
 <li>'[ ]' - characters in brackets match any one character that appears in the
           brackets, but no others (for example, 'a[dts]' matches 'ad', 'at',
           and 'as' - in other words, 'a' followed by 'd', 't', or 's')</li>
@@ -60,16 +60,16 @@ A regular expression is zero or more branches, separated by '|'.  It matches
 anything that matches one of the branches.</p>
 
 <p>
-A branch is zero or more pieces, concatenated.  It matches a match for the first,
-followed by a match for the second, etc.</p>
+A branch is zero or more pieces, concatenated. It matches the first piece,
+followed by the second, and so on.</p>
 <p>
 A piece is an atom possibly followed by '*', '+', or '?'. An atom followed by
 '*' matches a sequence of 0 or more matches of the atom.  An atom followed by
 '+' matches a sequence of 1 or more matches of the atom.  An atom followed by
 '?' matches a match of the atom, or the null string.</p>
 <p>
-An atom is a regular expression in parentheses (matching a match for the regular
-expression), a range (see below), '.' (matching any single character), '^'
+An atom is a regular expression in parentheses (matching whatever the regular
+expression matches), a range (see below), '.' (matching any single character), '^'
 (matching the null string at the beginning of line), '$' (matching the null
 string at the end of line), a '\' followed by a single character (matching that
 character), or a single character with no other significance (matching that
