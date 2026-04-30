@@ -21,9 +21,9 @@ the following options:</p>
 <dd><p>Specify the directory you want to be preset in the <i>Extract to</i>
 edit box in the main dialog of the self-extracting archive. You can enter either
 an absolute or a relative path. A relative path is relative to the current directory of
-the opened self-extracting archive. If <i>Extract to</i> specifies a non-existing
+the opened self-extracting archive. If <i>Extract to</i> specifies a nonexistent
 directory, the user will be prompted whether to create it. To extract files to the
-current directory leave this field blank.
+current directory, leave this field blank.
 </p>
 
 <p>Samples of relative paths:<br/>
@@ -81,8 +81,8 @@ Sample: $&lt;SOFTWARE\Microsoft\Windows\CurrentVersion\ProgramFilesDir&gt;\Outlo
 
 <dt><i>Execute command or open document</i></dt>
 <dd><p>Here you can enter a command (with optional parameters), a document name, or an HTTP link (must start
-with http://). It is executed (opened) when unpacking of the self-extracting archive
-finishes. In the case of a command or document name, you can enter an absolute or a relative path
+with http://). It is executed (or opened) when unpacking of the self-extracting archive
+finishes. In the case of a command or document name, you can enter an absolute or relative path
 (relative to the current directory of the opened self-extracting archive).</p>
 <p>Samples:<br/>
    setup.exe -x<br/>
@@ -91,13 +91,13 @@ finishes. In the case of a command or document name, you can enter an absolute o
 </dd>
 
 <dt><i>Remove extracted files</i></dt>
-<dd>Removes files extracted to the temporary directory when application
-(e.g. installer) specified in <i>Execute command or open document</i> finishes. This option
-is enabled only when unpacking to temporary directory (<i>Extract to</i> is set to $(Temp)) and
+<dd>Removes files extracted to the temporary directory when the application
+(e.g., installer) specified in <i>Execute command or open document</i> finishes. This option
+is enabled only when unpacking to a temporary directory (<i>Extract to</i> is set to $(Temp)) and
 is useful for installation software.</dd>
 
 <dt><i>Wait for</i></dt>
-<dd>Self-extractor can also wait for other application than the one specified
+<dd>The Self-Extractor can also wait for a different application than the one specified
 in <i>Execute command or open document</i>. See <a href="sfxset_waiting.htm">Waiting
 for Another Application</a> for details.</dd>
 
@@ -107,48 +107,48 @@ See <a href="sfxset_texts.htm">Self-Extractor Texts</a> dialog for details.</dd>
 
 <dt><i><a id="language">Language</a></i></dt>
 <dd>Lets you choose the language version of the created self-extracting archive.
-If custom texts (texts specified in <a href="sfxset_texts.htm">Self-Extractor Texts</a>
-dialog) were not changed and you change the language, the texts are changed
+If custom texts (texts specified in the <a href="sfxset_texts.htm">Self-Extractor Texts</a>
+dialog) have not been changed and you change the language, the texts are changed
 to the defaults of the currently selected language.
-If custom texts were changed and you change the language, the following action depends on
+If custom texts have been changed and you change the language, the following action depends on
 <i>When SFX language changes</i> in the <a href="usingzip_config.htm">ZIP Configuration</a>.
 There are three variants: texts are changed to their default values,
 texts are left unchanged, or you are prompted whether to change their values to
 defaults or not.<br/>
 
-Note: You can set values of custom texts to their defaults in <i>Options</i> menu or in the
+Note: You can set the values of custom texts to their defaults in the <i>Options</i> menu or in the
 Self-Extractor Texts dialog.</dd>
 
 <dt><i>Icon</i></dt>
-<dd>Icon of the self-extracting archive. This icon appears also in the main dialog.
+<dd>Icon for the self-extracting archive. This icon also appears in the main dialog.
 Only an icon from an ICO file or from a Win32 executable can be loaded. Loading
-icons from 16-bit (e.g. Win 3.11 and older) executables is not supported.</dd>
+icons from 16-bit (e.g., Win 3.11 and older) executables is not supported.</dd>
 
 <dt><i>Start extraction automatically</i></dt>
-<dd>Starts extraction immediately after the self-extracting archive is opened.
-It does not display any user prompt.</dd>
+<dd>Starts extraction immediately after the self-extracting archive is opened,
+without displaying any user prompt.</dd>
 
 <dt><i>Hide main self-extractor's dialog</i></dt>
 <dd>Does not show the main self-extractor dialog and unpacks silently in the background.
-Error messages or overwrite prompts are still displayed. This option makes sense only
-if 'Start extraction automatically' is turned on.</dd>
+Error messages and overwrite prompts are still displayed. This option makes sense only
+when 'Start extraction automatically' is turned on.</dd>
 
 <dt><i>Automatically create target directory</i></dt>
 <dd>Creates the target directory (if it does not exist) without any user prompt.
 </dd>
 
 <dt><i>Show operation summary dialog</i></dt>
-<dd>Shows a message box informing whether the extraction finished successfully and
+<dd>Shows a message box reporting whether the extraction finished successfully and
 how many files were extracted in case of success.</dd>
 
 <dt><i>Overwrite files automatically</i></dt>
 <dd>Overwrites existing files in the <i>Extract to</i> directory without any
-user prompt. Attention: it overwrites also readonly/hidden/system files.</dd>
+user prompt. Caution: this also overwrites readonly/hidden/system files.</dd>
 
 <dt><i>Requires administrative privileges</i></dt>
-<dd>Starts self-extracting archive with administrative privileges on Windows Vista
-(this will trigger UAC - User Account Control), so it can unpack files
-also to write-protected folders (e.g. Program Files).</dd>
+<dd>Starts the self-extracting archive with administrative privileges on Windows Vista
+and later (this will trigger UAC - User Account Control), so it can unpack files
+to write-protected folders (e.g., Program Files).</dd>
 
 </dl>
 

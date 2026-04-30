@@ -39,19 +39,19 @@ If there are no alternate volumes on your computer usable for the recovery, remo
 
 <p>On FAT partitions, it is unfortunately not possible to reliably identify
 all clusters of a deleted file, especially if the file was very large. A heuristic
-algorithm must be used, and its results may be incorrect. Note that this applies to all undelete
+algorithm must be used, and its results may be incorrect. This applies to all undelete
 programs.</p>
 
 <p>In general, successful recovery of deleted files is not guaranteed, and the recovered
-data may be damaged. You should always check whether the obtained data are valid.</p>
+data may be damaged. Always verify that the recovered data is valid.</p>
 
 <p>The probability of recovering a deleted file is displayed in the Condition column (switch the panel to Detailed view):</p>
 
 <table>
- <tr><td class="hdr">Good</td><td>File is not deleted, or is MFT-resident, or is deleted but no collision with other deleted or existing files was detected.</td><td>There is a good chance to recover the entire file.</td></tr>
- <tr><td class="hdr">Fair</td><td>Some clusters of the deleted file conflict with clusters of other deleted files.</td><td>There is a smaller chance to recover the entire file.</td></tr>
+ <tr><td class="hdr">Good</td><td>File is not deleted, or is MFT-resident, or is deleted but no collision with other deleted or existing files was detected.</td><td>Good chance of recovering the entire file.</td></tr>
+ <tr><td class="hdr">Fair</td><td>Some clusters of the deleted file conflict with clusters of other deleted files.</td><td>Smaller chance of recovering the entire file.</td></tr>
  <tr><td class="hdr">Poor</td><td>Some clusters of the deleted file conflict with existing files.</td><td>Some parts of the file are certainly damaged.</td></tr>
- <tr><td class="hdr">Lost</td><td>All clusters of the deleted file are used again by existing files.</td><td>There is zero chance to even partially recover such a file.</td></tr>
+ <tr><td class="hdr">Lost</td><td>All clusters of the deleted file are used again by existing files.</td><td>Zero chance of even partially recovering the file.</td></tr>
  <tr><td class="hdr">Unknown</td><td>Damage estimation failed or was not performed at all.</td><td></td></tr>
 </table>
 

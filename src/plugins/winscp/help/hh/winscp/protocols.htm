@@ -35,12 +35,12 @@ The default mode of operation is to use <acronym title="SSH File Transfer Protoc
 <p>
 Despite <acronym title="Secure Shell">SSH</acronym> in its name,
 it is designed to work over any reliable data stream,
-but WinSCP supports only operation over <acronym title="Secure Shell">SSH</acronym>,
+but WinSCP supports it only over <acronym title="Secure Shell">SSH</acronym>,
 which is also by far its most common use.
 </p>
 
 <p>
-Being operated over <acronym title="Secure Shell">SSH</acronym>, it is a secure protocol.
+Because it operates over <acronym title="Secure Shell">SSH</acronym>, it is a secure protocol.
 In its basic functionality, it is similar to the old <acronym title="File Transfer Protocol">FTP</acronym>
 while having better-designed advanced functionality.
 Unfortunately, not all <acronym title="SSH File Transfer Protocol">SFTP</acronym> server implementations
@@ -49,7 +49,7 @@ take advantage of the advanced features yet.
 
 <p>
 Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, for connection with an
-<acronym title="SSH File Transfer Protocol">SFTP</acronym> server you do not need access to shell
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server you do not need access to a shell
 (although some implementations may still require that).
 </p>
 
@@ -70,9 +70,9 @@ WinSCP is able to offer other features implemented using common shell commands l
 <code>ls</code>, <code>pwd</code>, <code>rm</code>, <code>ln</code>, etc. For this, WinSCP—unlike command-line
 <acronym title="Secure Copy Protocol">SCP</acronym> clients (which allow only file transfers)—requires full
 shell access and permission to execute other commands in addition to <code>scp</code> (see
-<a href="requirements.htm">requirements</a>). For access to non-Unix servers, it is necessary that the server
-have at least a Unix-like shell, such as that which is available with
-<a href="http://sshwindows.sourceforge.net/" target="_blank">OpenSSH for Windows</a>, for example.
+<a href="requirements.htm">requirements</a>). For access to non-Unix servers, the server must
+have at least a Unix-like shell, such as the one available with
+<a href="http://sshwindows.sourceforge.net/" target="_blank">OpenSSH for Windows</a>.
 </p>
 
 <a name="protocol_comparison"></a>

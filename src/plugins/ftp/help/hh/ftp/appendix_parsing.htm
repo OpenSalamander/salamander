@@ -13,21 +13,21 @@
 <div class="page">
 <h1>Getting Lists of Files and Directories from FTP Servers</h1>
 
-<p>FTP client needs to get the list of files and directories in the current directory
-on the FTP server. It should contain as many information about files and directories
+<p>The FTP client needs to get the list of files and directories in the current directory
+on the FTP server. It should contain as much information about files and directories
 as possible (date, size, user, group, access rights, etc.). These files and directories
-are listed in panel where you can work with them. The list of files and directories is
-got from the plain text listing received from the FTP server. This listing is designed
-only for reading by a human, not for automatic parsing. It means that nearly each FTP
-server software has its own format of this listing (format depends on the server
-operating system, its language version, etc.). So the FTP client must handle many
-formats of listings.</p>
+are listed in the panel, where you can work with them. The list of files and directories
+comes from the plain-text listing received from the FTP server. This listing is designed
+for human reading, not for automatic parsing. That means almost every FTP
+server has its own listing format (depending on the server operating system,
+its language version, etc.), so the FTP client must handle many
+listing formats.</p>
 
-<p>For each format of listing we define one server type. It contains a condition
-used to autodetect server type (autodetect condition), a list of available data columns
-(including their visibility in panel), and a parser for plain text listing.
+<p>For each listing format, one server type is defined. It contains a condition
+used to autodetect the server type (the autodetect condition), a list of available data columns
+(including whether they are visible in the panel), and a parser for the plain-text listing.
 All defined server types are displayed in <a href="config_servers.htm">Configuration/Servers</a>.
-You can add new or edit existing server types in <a href="dlgboxes_editsrvtype.htm">Edit Server Type
+You can add new server types or edit existing ones in the <a href="dlgboxes_editsrvtype.htm">Edit Server Type
 dialog box</a>.</p>
 
 <p>You can choose if the server type should be autodetected or not. If not, choose
@@ -168,11 +168,11 @@ types are always visible in panel. Columns are defined in the
 	 nothing is shown in panel</td></tr>
 </table>
 
-<p>Moreover we have three virtual columns with identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;
-a &lt;is_link&gt;. We assign boolean values to these columns. Their meanings are: "is
-item a directory?" (false means that it is a file), "is item hidden?" (false means that
-it has not hidden attribute), and "is item a link?" (false means that it is not a link).
-It is not necessary to assign values to these columns, their empty values are: "is a file",
+<p>In addition, there are three virtual columns with the identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;,
+and &lt;is_link&gt;. Boolean values are assigned to these columns. Their meanings are: "is
+this item a directory?" (false means it is a file), "is this item hidden?" (false means that
+it does not have the hidden attribute), and "is this item a link?" (false means it is not a link).
+It is not necessary to assign values to these columns; their empty values are: "is a file",
 "is not hidden", and "is not a link".</p>
 
 
@@ -211,8 +211,8 @@ that are used as operands:</p>
 <p>The parsing is successful if the plain text listing is completely traversed
 by using defined rules.</p>
 
-<p>The current position in the listing will be mentioned as a pointer. The pointer
-is moved from the beginning to the end of the listing during parsing.</p>
+<p>The current position in the listing is referred to as the pointer. During parsing,
+the pointer moves from the beginning to the end of the listing.</p>
 
 <p>The rule can be used only if all its functions are successfully evaluated,
 the empty string is not assigned to the column of the Name type (in other

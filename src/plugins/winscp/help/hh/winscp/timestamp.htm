@@ -15,8 +15,8 @@
 <h1>Timestamps</h1>
 
 <p>
-Particularly when you want to use some of the <a href="task_synchronize.htm">synchronization</a> features,
-first, make sure that WinSCP will be able to convert timestamps from local conventions to remote server
+Particularly when you want to use one of the <a href="task_synchronize.htm">synchronization</a> features,
+first make sure that WinSCP can convert timestamps from local conventions to remote server
 conventions and vice versa.
 </p>
 
@@ -71,7 +71,7 @@ of ALL files by one hour when Daylight Saving Time starts and/or finishes <a hre
 For example, for a file created on 2005-02-25 14:00, Windows applications (like Windows Explorer or
 WinSCP) will show the modification time as 2005-02-25 15:00 when <acronym title="Daylight Savings Time">DST</acronym>
 is in effect. Unfortunately, to allow <a href="task_synchronize.htm">synchronization</a> functions to
-work, WinSCP has to apply the same correction to timestamps of remote files as Windows apply to
+work, WinSCP has to apply the same correction to timestamps of remote files as Windows applies to
 timestamps of local files. As the remote operating system, being typically Unix-style, usually does
 not perform the Windows NT-style correction, you will see different timestamps in the directory listing
 of WinSCP than you see in the directory listing on the server (for example, in <code>ls</code> listing).

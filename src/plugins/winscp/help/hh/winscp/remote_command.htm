@@ -14,16 +14,16 @@
 <h1>Remote Commands</h1>
 
 <p>
-WinSCP offers a unique feature to execute commands on a remote server as with a regular
+WinSCP offers a unique feature for executing commands on a remote server, much like a regular
 terminal client. However, as it cannot implement the
 terminal fully, there are some limitations. In particular, you cannot execute commands that
 require terminal emulation or user input. See <a href="#limitations">below</a> for technical details.
 </p>
 
 <p>
-Basically, the feature is supported only for the <a href="protocols.htm#scp">SCP protocol</a>. With
+Basically, the feature is supported only by the <a href="protocols.htm#scp">SCP protocol</a>. With
 <a href="protocols.htm#sftp">SFTP</a>, you can still use the feature by opening a
-<a href="shell_session.htm">separate shell session</a>, which in fact takes place automatically for you.
+<a href="shell_session.htm">separate shell session</a>, which happens automatically for you.
 </p>
 
 <a name="how_to_enter_the_remote_command"></a>
@@ -60,7 +60,7 @@ message like "Error opening terminal," "No TTY available,"
 </p>
 
 <p>
-The plugin may possibly support user input. However, most
+The plugin may support user input in some cases. However, most
 commands requiring user input do so via terminal
 emulation features. If your command needs plain input 
 without terminal emulation, you can use input redirection

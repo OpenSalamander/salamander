@@ -31,8 +31,8 @@ You can also run both protocols on the later <acronym title="Secure Shell">SSH</
 WinSCP supports both <acronym title="Secure Shell">SSH</acronym>-1 and <acronym title="Secure Shell">SSH</acronym>-2.
 For authentication, users can use their username and password or a <a href="public_key.htm">public key</a>
 (<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> or
-<acronym title="Digital Signature Algorithm">DSA</acronym>). Other supported means of authorization
-include TIS, Cryptocard, Keyboard-interactive, and Kerberos.
+<acronym title="Digital Signature Algorithm">DSA</acronym>). Other supported authentication methods
+include TIS, Cryptocard, keyboard-interactive, and Kerberos.
 </p>
 
 <a name="sftp_requirements"></a>
@@ -91,8 +91,8 @@ server settings, it may be necessary to change this before WinSCP can be used.
 </p>
 
 <p>
-The last necessary condition is the proper output of the <code>ls -la</code> command.
-Particularly, the standard number and ordering of columns.
+The last necessary condition is proper output from the <code>ls -la</code> command,
+particularly the standard number and ordering of columns.
 If the default output does not satisfy WinSCP's needs, you can use the
 <em><a href="ui_login_scp.htm#directory_listing">Listing command</a></em> option
 on the <em>SCP/Shell tab</em> in the Login dialog to modify it.
@@ -107,9 +107,8 @@ If the detection causes you problems, you can <a href="ui_login_scp.htm#director
 <h4>Using WinSCP with Restricted Shell Environments</h4>
 
 <p>
-A number of restricted shell environments exist for supporting
-<acronym title="SSH File Transfer Protocol">SFTP</acronym>/<acronym title="Secure Copy Protocol">SCP</acronym>
-only accounts. These systems restrict the user to a small subset of commands needed to manipulate files
+A number of restricted shell environments exist to support
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>/<acronym title="Secure Copy Protocol">SCP</acronym>-only accounts. These systems restrict the user to a small subset of commands needed to manipulate files
 while denying the ability to execute arbitrary commands. Some of these environments create incompatibilities
 with WinSCP, particularly if using <acronym title="Secure Copy Protocol">SCP</acronym> instead of
 <acronym title="SSH File Transfer Protocol">SFTP</acronym>.

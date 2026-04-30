@@ -14,9 +14,9 @@
 
 <h1>Finding Files and Directories</h1>
 
-<p>You can search for files and directories using various criteria for name, size,
-date &amp; time, attributes, containing text, and so on. After searching, you can work
-with the found files and directories (view, edit, copy, move, delete them, etc.).</p>
+<p>You can search for files and directories using various criteria such as name, size,
+date &amp; time, attributes, and containing text. After the search, you can work
+with the found files and directories (view, edit, copy, move, delete them, and so on).</p>
 
 <h3>To search for files and directories:</h3>
 
@@ -33,11 +33,11 @@ with the found files and directories (view, edit, copy, move, delete them, etc.)
 
 <li>In the <i>Named</i> box, type the name of the file or directory you want to find. Use
     <a href="appendix_filemasks.htm">file masks</a> to search for a group of
-    files or directories with similar names or extensions. Important note: when you specify a
-    mask without an asterisk (*), question mark (?), or dot (.), you will find all files
-    and directories whose names contain this mask (e.g. when you specify "dog", you
-    will find "dogs.txt", "hotdog.jpg", etc.). You can prevent this by adding a dot (.)
-    to the end of the mask (e.g. when you specify "dog.", you will find only "dog").</li>
+    files or directories with similar names or extensions. Important: when you specify a
+    mask without an asterisk (*), question mark (?), or dot (.), Open Salamander finds all files
+    and directories whose names contain that mask (for example, when you specify "dog", you
+    will find "dogs.txt", "hotdog.jpg", and so on). You can prevent this by adding a dot (.)
+    to the end of the mask (for example, when you specify "dog.", you will find only "dog").</li>
 
 <li>Specify the directories from which you want to start the search in the <i>Look in</i>
     box. This box is preset to the current directory in the panel. Use the <i>Add</i>
@@ -52,19 +52,19 @@ with the found files and directories (view, edit, copy, move, delete them, etc.)
     See the <a href="finddlg_main.htm">Find dialog box</a> for details on search options.</li>
 
 <li>If you need to specify additional criteria for file size, attributes, or date &amp; time,
-    click on the Advanced button to open the <a href="finddlg_advan.htm">Advanced Options
+    click the Advanced button to open the <a href="finddlg_advan.htm">Advanced Options
     dialog box</a>.</li>
 
-<li>You may want to ignore some directories (exclude them from the search). For example,
-    System Volume Information in root directories or a directory with your temporary files.
+<li>You may want to ignore some directories (exclude them from the search), for example,
+    System Volume Information in root directories or directories that contain your temporary files.
     Specify such directories in the <a href="finddlg_findign.htm">Ignore Directory
     List dialog box</a>. Open it from the Options/Ignore Directory List menu item
     in the Find dialog box (Ctrl+G).</li>
 
-<li>All errors that occur during the search and all ignored directories are added
+<li>All errors that occur during the search, as well as all ignored directories, are added
     to the <a href="finddlg_log.htm">Find Log dialog box</a>. Select the Show Error Messages
-    After Finding item in the Options menu if you want to see this log when
-    the search finishes and some error occurs. Use the Show Find Log command (Ctrl+L)
+    After Finding item on the Options menu if you want to see this log when
+    the search finishes and an error occurs. Use the Show Find Log command (Ctrl+L)
     from the Commands menu or the Find Log button on the right side of the
     <i>Found Items</i> listview header to show this log manually.</li>
 
@@ -78,12 +78,12 @@ Open Salamander while the search continues in the background. You can open
 another Find dialog box and begin a new search simultaneously.</p>
 
 <p>Found files and directories are displayed in the <i>Found Items</i> listview.
-Click column headers to sort this list by name, size, path, or time. Or
-use sort commands from the View menu.
+Click the column headers to sort this list by name, size, path, or time. You can also
+use sort commands on the View menu.
 </p>
 
-<p>When you find files and directories, you can work with them. Go to the <i>Found Items</i>
-listview and use the Files menu commands:</p>
+<p>After files and directories are found, you can work with them. Go to the <i>Found Items</i>
+listview and use the commands on the Files menu:</p>
 
 <ul>
 <li>Open (the Enter key): open the focused file or directory,</li>
@@ -104,8 +104,8 @@ listview and use the Files menu commands:</p>
 </ul>
 
 <p>You can use drag and drop to copy or move found files and directories
-from the <i>Found Items</i> listview to any desired location. Another option is to use
-the clipboard; you can Cut or Copy (see the Edit menu) found files and directories from the <i>Found
+from the <i>Found Items</i> listview to any destination. Another option is to use
+the clipboard: you can Cut or Copy (see the Edit menu) found files and directories from the <i>Found
 Items</i> listview to the clipboard and later paste them wherever you need.</p>
 
 <p>If you need to copy the name of a found file or directory, use one of the following
@@ -122,23 +122,23 @@ commands from the Edit menu:</p>
     file or directory to the clipboard.</li>
 </ul>
 
-<p>In some special situations you may appreciate that you can search in already
+<p>In some special situations, it is useful that you can search within already
 found files (values in the <i>Named</i> and <i>Look in</i> boxes are ignored).
 Use the Refine - Intersect with Found Items (the Ctrl+I key) command from
 the Commands menu or from the drop-down menu on the Find Now button to keep only found
-files and directories which fulfill criteria given in the Find dialog box.
-For example, you can find all files containing a word "car" (using the Find Now command)
-and then refine found files only to files containing a word "John" (using the
-Refine - Intersect with Found Items command), so you will get all files containing
-both words. Similarly you can use the Refine - Subtract from Found Items (the Ctrl+S key)
-command to hide found files and directories which fulfill criteria given in the Find
-dialog box. If used in previous example, the result will be all files containing "car"
+files and directories that meet the criteria given in the Find dialog box.
+For example, you can find all files containing the word "car" (using the Find Now command)
+and then refine the found files to keep only files containing the word "John" (using the
+Refine - Intersect with Found Items command), so you get all files containing
+both words. Similarly, you can use the Refine - Subtract from Found Items (the Ctrl+S key)
+command to hide found files and directories that meet the criteria given in the Find
+dialog box. In the previous example, the result would be all files containing "car"
 but not containing "John".</p>
 
-<p>Another special command is Append to Found Items (the Ctrl+W key) in the Commands menu
-or in the drop-down menu on the Find Now button. The only difference when compared with
+<p>Another special command is Append to Found Items (the Ctrl+W key) on the Commands menu
+or in the drop-down menu on the Find Now button. The only difference compared with
 the Find Now command is that it does not clear the <i>Found Items</i> listview before searching.
-It allows you to simply merge search results. When using this command, you may find some
+It lets you merge search results easily. When you use this command, you may find some
 files or directories several times. Use the Hide Duplicate Names command to remove such
 redundant items.</p>
 
@@ -146,9 +146,9 @@ redundant items.</p>
 <a href="advwork_finddup.htm">Finding Duplicate Files</a> for details.</p>
 
 <p>You can save the current settings in the Find dialog box by using the Add Current (Ctrl+N)
-command from the Options menu. It opens the <a href="finddlg_setts.htm">Settings Manager
-dialog box</a>. You can use these settings next time; just choose the name from the Options
-menu. To view or remove these settings, use the Manage (Ctrl+M) command from the
+command on the Options menu. It opens the <a href="finddlg_setts.htm">Settings Manager
+dialog box</a>. You can use these settings next time by choosing the name on the Options
+menu. To view or remove these settings, use the Manage (Ctrl+M) command on the
 Options menu.</p>
 
 <h4>See Also</h4>

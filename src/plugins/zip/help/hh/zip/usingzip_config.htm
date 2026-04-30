@@ -14,7 +14,7 @@
 <h1>ZIP Configuration</h1>
 
 <p>Here you can set general options for the ZIP plugin. Configuration is accessible either
-from the Open Salamander Plugins Manager dialog (menu Plugins/Plugins Manager) or
+from the Open Salamander Plugins Manager dialog (menu Plugins/Plugins Manager), or
 from the <a href="usingzip_packdlg.htm">Create New Archive</a> dialog.
 See <a href="ms-its:salamand.chm::/hh/salamand/plugins_config.htm">Configuring Plugins</a>
 for general information on configuration.</p>
@@ -23,8 +23,8 @@ for general information on configuration.</p>
 
 <dl>
 <dt><i>Automatically expand multi-volume archives stored on fixed disk</i></dt>
-<dd>Automatically finds the last archive volume file (which contains information about files
-in the archive) without prompting the user to locate it. When the last archive is
+<dd>Automatically finds the last archive volume file (which contains information about the files
+in the archive) without prompting the user to locate it. When the last volume is
 found, it lists or unpacks files without prompting for other archive volumes. This option
 applies only to multi-volume archives stored on fixed disks, not to archives on
 removable media (e.g., floppy disks, CD-ROMs).</dd>
@@ -35,11 +35,11 @@ first creates a backup copy of the archive and performs the desired action on th
 backup copy. When the action completes successfully, the original archive is replaced by
 the updated archive. In case of an error, the original is left unchanged. This approach
 causes a slight slowdown due to the backup operation, but it is strongly recommended
-to have the ZIP plugin keep backup copies while modifying archives.</dd>
+to have the ZIP plugin create backup copies while modifying archives.</dd>
 
 <dt><i>Don't store empty directories in ZIP archive</i></dt>
 <dd>Ignores empty directories when packing. This option does not
-affect empty directories already stored in the archive.</dd>
+affect empty directories that are already stored in the archive.</dd>
 
 <dt><i>Set archive time to the newest file time when modifying archive</i></dt>
 <dd>After any action that modifies an archive (packing or deleting files), the ZIP plugin
@@ -48,7 +48,7 @@ can be useful for purposes such as backup management.</dd>
 
 <dt><i>Use WinZip compatible file names for multi-volume archives</i></dt>
 <dd>Names of multi-volume archive parts are created using WinZip naming
-conventions, except for self-extracting archives, which are created using
+conventions, except for self-extracting archives, which use
 Open Salamander naming conventions.</dd>
 
 <dt><i>Compression level</i></dt>
@@ -57,7 +57,7 @@ no compression. Level <i>9</i> is the best possible (and slowest) compression th
 can be achieved with the current ZIP compression algorithm (deflate).</dd>
 
 <dt><i>Default self-extractor language</i></dt>
-<dd>The default language for self-extracting archives. If you invoked the ZIP Configuration
+<dd>The default language for self-extracting archives. If you opened the ZIP Configuration
 dialog from the Create New Archive dialog, changing the default language will not affect
 the current pack operation (use the <i>Advanced</i> button from the Create New Archive dialog to change
 the language for the current pack operation).</dd>
@@ -74,7 +74,7 @@ self-extracting archive. Options are: <i>Always ask before changing texts</i>,
 
 <dt><i>Display dialog with extended options before packing</i></dt>
 <dd>Displays the Create New Archive/Add File to Archive dialog before each pack operation to ZIP archives.
-This lets you specify many options for packing ZIP archives that the ZIP plugin offers
+This allows you to specify many options for packing ZIP archives that the ZIP plugin offers
 (such as archive spanning, self-extracting archives, or encryption).</dd>
 
 <dt><i>Show column Packed when listing archive</i></dt>

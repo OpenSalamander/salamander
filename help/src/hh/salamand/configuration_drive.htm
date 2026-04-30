@@ -13,15 +13,15 @@
 <div class="page">
 <h1>Drives</h1>
     
-<p>Specifies how Open Salamander reads icons and catches refresh events.</p>
+<p>Specifies how Open Salamander reads icons and responds to refresh events.</p>
 
 <h4>Dialog Box Options</h4>
 <dl>
 <dt><i>Use automatic refresh</i></dt>
-<dd>When checked, refresh of panel depends on change notifications from Windows.
-Otherwise refreshing of panel will be forced after each panel operation and
-main window activation (when you return from other application).
-Monitoring of change notifications is overall better option.</dd>
+<dd>When checked, panel refresh depends on change notifications from Windows.
+Otherwise, the panel is forcibly refreshed after each panel operation and when the
+main window is activated (when you return from another application). Overall,
+monitoring change notifications is the better option.</dd>
 
 <dt><i>Use simple icons</i></dt>
 <dd>When checked, only the simple symbols instead of default icons provided by
@@ -30,24 +30,24 @@ such as floppy disks, where obtaining default icons can slow down browsing.</dd>
 
 <dt><i>Network drives: Use automatic refresh</i></dt>
 <dd>When checked, panels are refreshed when they receive change notifications
-from Windows (you will see all changes on network drive made from other computer).
-But always they are also refreshed after each panel operation and main window activation
-(this can be suppressed, see next option). This is because some network drives
-(e.g. Samba on Linux, unfortunately it's not possible to distinguish it from common
-Windows network drive) do not send change notifications properly, so panel contents
-were not updated properly.
+from Windows (so you will see all changes on a network drive made from another
+computer). They are also always refreshed after each panel operation and when the
+main window is activated (this can be suppressed; see the next option). This is
+because some network drives (e.g. Samba on Linux; unfortunately, it is not possible
+to distinguish it from a common Windows network drive) do not send change notifications
+properly, so panel contents would not otherwise be updated correctly.
 </dd>
 
 <dt><i>Network drives: Do not refresh on activation of Salamander</i></dt>
-<dd>When checked, network drives are not refreshed on main window activation
-(when you return from other application). On some network drives (e.g. Samba
-on Linux) you will have to refresh panel content manually if you turn on this
+<dd>When checked, network drives are not refreshed when the main window is activated
+(when you return from another application). On some network drives (e.g. Samba
+on Linux), you will have to refresh panel contents manually if you turn on this
 option.</dd>
 
 <dt><i>If path in panel is inaccessible, go to</i></dt>
-<dd>Specify the path where to go if path in panel becomes inaccessible (you
-remove medium from CD/DVD drive, the network is not available, USB stick is
-unplugged, etc.).</dd>
+<dd>Specifies the path to switch to if the path in the panel becomes inaccessible
+(for example, when you remove media from a CD/DVD drive, the network becomes unavailable,
+or a USB stick is unplugged).</dd>
 
 </dl>
 

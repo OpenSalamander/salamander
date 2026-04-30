@@ -52,17 +52,17 @@ should compare them as text or binary files.
 
 <dd>You can let File Comparator automatically detect the encoding (or code page) of the compared files
 when comparing text files, or you can choose from several encodings and conversions.<br/>
-There are 2 groups of available options:
+There are two groups of available options:
 <ul>
 <li>ASCII-8: Conversions between various encodings (code pages) in one of 3&nbsp;groups of languages:
 Central European, Cyrillic, and Western European. Only 1&nbsp;group is available at a time.
 This is the same group used in the Internal Viewer of Open Salamander. You can select a different group
 in the <a href="ms-its:salamand.chm::/hh/salamand/configuration_reg.htm">Language page in Configuration</a>
 of Open Salamander under <i>Code page conversion tables</i>.<br/>
-When a conversion is selected, the entire file is first converted in memory and then compared with the other file.<br/>
-Choosing a conversion is useful when comparing files in different encodings. Otherwise, usually
+When a conversion is selected, the entire file is first converted in memory, then compared with the other file.<br/>
+Choosing a conversion is useful when comparing files with different encodings. Otherwise, usually
 no conversion is needed. For better (or correct) display, it is advisable to convert both files
-to either CP12xx or ASCII codepage.
+to either a CP12xx or ASCII code page.
 <li>Unicode: Various Unicode encodings
 </ul>
 </dd>
@@ -75,12 +75,12 @@ to either CP12xx or ASCII codepage.
 <dt><i>Combine diacritic marks to precomposed characters</i></dt>
 
 <dd>Many accented characters can be represented in several ways in Unicode: either as a pair (or triple)
-of characters (the unaccented version of the character plus the accent(s); this is called a decomposed or composite character)
-or as a single character (precomposed character). While on Windows the precomposed form is the usual
-form, files from other operating systems may use the decomposed form. Both forms are equivalent for
-rendering, but are stored differently.<br/> When this option is checked, File Comparator attempts to convert
-decomposed characters to precomposed ones on Unicode input files to achieve the so-called <i>Normalization Form C</i> of Unicode.
-Form C allows comparison of content rather than the way the text is stored.<br/>
+of characters (the unaccented version of the character plus the accent(s); this is called a decomposed or composite character),
+or as a single character (precomposed character). While on Windows the precomposed form is typical,
+files from other operating systems may use the decomposed form. Both forms are equivalent for
+rendering but are stored differently.<br/> When this option is checked, File Comparator attempts to convert
+decomposed characters to precomposed ones in Unicode input files to achieve the so-called <i>Normalization Form C</i> of Unicode.
+Form C allows comparison of content rather than how the text is stored.<br/>
 NOTE: Not every decomposed pair or triple has a precomposed equivalent.<br/>
 NOTE: This function is available only on systems that contain the system library <i>normaliz.dll</i>.
 This library is part of Windows Vista and later OS versions, and is also included in MSIE 7 and Windows Media Player 11 when
