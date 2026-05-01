@@ -1630,7 +1630,7 @@ int CZipPack::PackFiles()
                 if (Options.Action & PA_MULTIVOL)
                 {
                     TempFile->FilePointer = file.LocHeaderOffs;
-                    // Pleasee the comment for encrypted archives 35 lines above, it applies also here
+                    // See the comment for encrypted archives 35 lines above; it applies here as well
                     if (Config.Level <= 2)
                     {
                         next->Flag |= FAST;
