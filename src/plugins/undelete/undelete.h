@@ -344,8 +344,8 @@ public:
     virtual void WINAPI ShowSecurityInfo(HWND parent) {}
 
     BOOL GetTempDirOutsideRoot(HWND parent, char* buffer, char** ret);
-#if defined(_DEBUG) && _WIN32_WINNT >= 0x0501 // some debug feauters works from Windows XP (NTFS 5.0)
-    // NOTE: following functions are just quitch, dirty, and minimal tests (no error handling, etc)
+#if defined(_DEBUG) && _WIN32_WINNT >= 0x0501 // some debug features work on Windows XP and later (NTFS 5.0)
+    // NOTE: the following functions are quick, dirty, minimal tests (no error handling, etc.)
     // included only in debug build
     void DumpSpecifiedFiles(FILE* file, FILE_RECORD_I<char>* dir, char* path, int pathSize);
     void DumpDirItemInfo(FILE* file, const DIR_ITEM_I<char>* di);
