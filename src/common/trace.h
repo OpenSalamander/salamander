@@ -522,10 +522,10 @@ uintptr_t __TRACE_beginthreadex(void* security, unsigned stack_size,
 #define TRACE_E(str) TRACE_ME(__FILE__, __LINE__, str)
 #define TRACE_EW(str) TRACE_MEW(__WFILE__, __LINE__, str)
 
-// fatal-error-trace (CRASHING TRACE), manually specified file location;
-// stop the program in the debugger to make the problem that just occurred easier to debug;
+// fatal-error-trace (CRASHING TRACE), manually specified source location;
+// stop the program in the debugger so the problem that just occurred is easier to debug;
 // the release build crashes, and the problem will hopefully be clear from the call stack in the bug report;
-// we do not use DebugBreak(), because when the program crashes through DebugBreak(), it is impossible to trace where
+// we do not use DebugBreak(), because when the program crashes that way, it is impossible to tell where
 // TRACE_C/MC was called: the exception address ends up somewhere in ntdll.dll,
 // and the Stack Back Trace section of the bug report may contain nonsense if
 // the function that calls TRACE_C/MC does not use the old simple model for
