@@ -31,7 +31,7 @@ BOOL CPFirstFree = FALSE;      // is it possible to use the first check-path thr
 BOOL CPFirstTerminate = FALSE; // should the first check-path thread be terminated?
 HANDLE CPFirstStart = NULL;    // event for starting the first check-path thread
 HANDLE CPFirstEnd = NULL;      // event for testing the termination of the first check-path thread
-DWORD CPFirstExit;             // replacement for theexit code of the first check-path thread (it is not terminated)
+DWORD CPFirstExit;             // replacement for the exit code of the first check-path thread (it is not terminated)
 
 char CheckPathRootWithRetryMsgBox[MAX_PATH] = ""; // root of the drive (including UNC) for which the "drive not ready" message box with Retry+Cancel buttons is displayed (used for automatic Retry after inserting media into the drive)
 HWND LastDriveSelectErrDlgHWnd = NULL;            // "drive not ready" dialog with Retry+Cancel buttons (used for automatic Retry after inserting media into the drive)
