@@ -83,7 +83,7 @@ void CTransferSpeedMeter::GetSpeed(CQuadWord* speed)
                 }
                 totalTime = lastPacketTime - LastPacketsTime[firstPacket];
             }
-            UINT64 totalSize = 0; // sum of all packet sizes except the first one (from whitch we use only the time)
+            UINT64 totalSize = 0; // sum of all packet sizes except the first one (from which we use only the time)
             do
             {
                 if (++firstPacket >= TRSPMETER_NUMOFSTOREDPACKETS + 1)
@@ -335,7 +335,7 @@ void CProgressSpeedMeter::GetSpeed(CQuadWord* speed)
                 }
                 totalTime = lastPacketTime - LastPacketsTime[firstPacket];
             }
-            UINT64 totalSize = 0; // sum of all packet sizes except the first one (from whitch we use only the time)
+            UINT64 totalSize = 0; // sum of all packet sizes except the first one (from which we use only the time)
             do
             {
                 if (++firstPacket >= PRSPMETER_NUMOFSTOREDPACKETS + 1)
