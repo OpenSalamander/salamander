@@ -325,8 +325,8 @@ int CZipCommon::Read(CFile* file, void* buffer, unsigned bytesToRead,
 {
     CALL_STACK_MESSAGE_NONE // performance-critical method
                             //  CALL_STACK_MESSAGE3("CZipCommon::Read(, , 0x%X, , ) file: %s", bytesToRead, file->FileName);
-        unsigned long read; //number of butes read by ReadFile()
-    unsigned long toRead;   //number of butes read by ReadFile()
+        unsigned long read; // number of bytes read by ReadFile()
+    unsigned long toRead;   // number of bytes requested from ReadFile()
     int result;             //temp variable
     int errorID;            // error message identifier
     int lastError;          //value returned by GetLastError()
@@ -511,7 +511,7 @@ int CZipCommon::Flush(CFile* file, const void* buffer, unsigned bytesToWrite,
                       bool* skipAll)
 {
     CALL_STACK_MESSAGE3("CZipCommon::Flush(, , 0x%X, ) file: %s", bytesToWrite, file->FileName);
-    unsigned long bytesWritten; //number of butes read by ReadFile()
+    unsigned long bytesWritten; // number of bytes written by WriteFile()
     int result;                 //temp variable
     int errorID = 0;            //error string identifier
 
@@ -1083,7 +1083,7 @@ int CZipCommon::FindZip64EOCentrDirLocator()
         // and refuse to modify it; so far we have encountered only one file
         // like this, and deleting files inside the archive caused
         // the archive data to become corrupted
-        // TODO: save manison.zip in a repository of weird ZIPs and add a correct reference here
+        // TODO: save mansion.zip in a repository of weird ZIPs and add a correct reference here
         //EOCentrDir.DiskNum = __UINT16(zip64Record.DiskNum);
     }
     if (EOCentrDir.StartDisk == 0xFFFF)
