@@ -25,7 +25,7 @@ protected:
     TIndirectArray<CCodeTablesData> Data;
     char WinCodePage[101];            // Windows code page name (for Czech CP1250 - regional encoding)
     DWORD WinCodePageIdentifier;      // 1250, 1251, 1252, ...
-    char WinCodePageDescription[101]; // human - readable description (Central Europe, West Europe & U.S.)
+    char WinCodePageDescription[101]; // human-readable description (Central Europe, West Europe & U.S.)
     char DirectoryName[MAX_PATH];     // directory name XXX: convert\XXX\convert.cfg
     CCodeTableStateEnum State;
 
