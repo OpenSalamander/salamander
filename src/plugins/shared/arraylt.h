@@ -48,25 +48,25 @@ enum CErrorType
 
 // ****************************************************************************
 // TDirectArray:
-//  -behaves like classic array, in addition it can pre-allocate to bigger or
-//   smaller (look at constructor 'base' and 'delta' values).
-//  -when adding item to array, copy-constructor is called
-//  -when deleting item, item destructor is called, you can change this behaviour,
-//   see CallDestructor method
-//  -you can use this array for simple types and also for objects which does not
-//   contain pointers to its own data, reason:
-//     objects are moved in array (e.g. when reallocating array or when inserting
-//     item to the beginning of array) simply by using memmove, so during these
-//     moves contructors/destructors are not called, example:
-//       char Path[MAX_PATH];  // full file name
-//       char *Name;           // points to 'Path' to file name (without path)
-//     SOLUTION: store only offsets instead of complete pointers
+//  - behaves like a classic array; it can also pre-allocate to a larger or
+//    smaller size (see constructor 'base' and 'delta' parameters).
+//  - when adding an item, the copy constructor is called.
+//  - when deleting an item, the item's destructor is called. You can change
+//    this behavior using the CallDestructor method.
+//  - suitable for simple types and for objects that do not contain pointers to
+//    their own data. Reason:
+//      objects are moved inside the array (e.g. when reallocating or when
+//      inserting an item at the beginning) using memmove, so constructors and
+//      destructors are not invoked during these moves. Example:
+//        char Path[MAX_PATH];  // full file name
+//        char *Name;           // points into 'Path' to the file name (no path)
+//      SOLUTION: store only offsets instead of full pointers
 
 template <class DATA_TYPE>
 class TDirectArray
 {
 public:
-    CErrorType State; // etNone if array is OK, otherwise some error occured
+    CErrorType State; // etNone if array is OK, otherwise some error occurred
     int Count;        // current count of items in array
 
     TDirectArray<DATA_TYPE>(int base, int delta);
@@ -85,7 +85,7 @@ public:
     void Insert(int index, const DATA_TYPE* members, int count); // insert 'count' items from 'members'
     int Add(const DATA_TYPE* members, int count);                // adds 'count' items from 'members'
 
-    DATA_TYPE& At(int index) // returns pointer to item at 'index' possition
+    DATA_TYPE& At(int index) // returns reference to item at 'index' position
     {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
@@ -102,7 +102,7 @@ public:
 #endif
     }
 
-    DATA_TYPE& operator[](int index) // returns pointer to item at 'index' possition
+    DATA_TYPE& operator[](int index) // returns reference to item at 'index' position
     {
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
