@@ -8,17 +8,17 @@
 //
 // 20.1.2003
 //
-// Note on optimizations by converting to ASM: the benefit shows up mainly
+// Note on optimization by rewriting in ASM: the benefit shows up mainly
 // when comparing identical strings, that is, when the functions get a chance to scan
-// entire strings. The optimization is also more noticeable on older processors,
-//where the ASM variants can run up to 8x faster (old Pentiums).
+// whole strings. The optimization is also more noticeable on older processors,
+// where the ASM variants can run up to 8x faster (old Pentiums).
 //
 // Modern processors (AMD Athlon, Pentium Pro) can execute the optimized C++
-// variant almost as fast as its ASM variant. Because the optimized C++ variants
-// are not faster yet, and ASM is much faster than the debug C++ variant, we use
-//the ASM variants.
+// variant almost as fast as its ASM variant. Since the optimized C++ variants
+// are not any faster, and ASM is much faster than the debug C++ variant, we use
+// the ASM variants.
 //
-//The C++ version of StrNICmp runs faster on Pentium Pro than the ASM variant.
+// The C++ version of StrNICmp runs faster on Pentium Pro than the ASM variant.
 
 extern BYTE LowerCase[256]; // maps all characters to lowercase; generated using the CharLower API
 extern BYTE UpperCase[256]; // maps all characters to uppercase; generated using the CharUpper API
@@ -143,26 +143,26 @@ int StrNICmp(const char* s1, const char* s2, int n);
 //
 int MemICmp(const void* buf1, const void* buf2, int n);
 
-// faster strlen; processes four characters at a time
-// the string is accessed four bytes at a time -> requires a larger buffer
+// faster strlen; checks four characters at a time
+// accesses the string four bytes at a time -> requires a larger buffer
 // int StrLen(const char *str);    // only 2x faster; unnecessary risk of unaligned memory access
 
-// copies the text into newly allocated memory; returns NULL on out-of-memory
+// copies the string into newly allocated memory; returns NULL on out-of-memory
 char* DupStr(const char* txt);
 
-// copies the text into newly allocated memory; returns NULL on out-of-memory,
-// and also sets 'err' to TRUE on out-of-memory
+// copies the string into newly allocated memory; returns NULL on out-of-memory,
+// and also sets 'err' to TRUE if allocation fails
 char* DupStrEx(const char* str, BOOL& err);
 
-// returns the first case-insensitive occurrence of 'pattern' in 'txt', or NULL
+// returns the first case-insensitive match of 'pattern' in 'txt', or NULL
 const char* StrIStr(const char* txt, const char* pattern);
 
-// returns the first case-insensitive occurrence of 'pattern' in 'txt', or NULL
+// returns the first case-insensitive match of 'pattern' in 'txt', or NULL
 const char* StrIStr(const char* txtStart, const char* txtEnd,
                     const char* patternStart, const char* patternEnd);
 
-// appends 'src' to 'dst', but does not exceed 'dstSize'
-// null-terminates the string within 'dstSize'
+// appends 'src' to 'dst' without exceeding 'dstSize'
+// null-terminates within 'dstSize'
 // returns 'dst'
 char* StrNCat(char* dst, const char* src, int dstSize);
 
@@ -189,7 +189,7 @@ extern CConvertTab ConvertTab;
 // SWPrintFToEnd_s
 //
 // The only difference from swprintf_s is that it writes after the text already
-// stored in the buffer
+// in the buffer
 
 template <size_t _Size>
 inline int SWPrintFToEnd_s(WCHAR (&_Dst)[_Size], const WCHAR* _Format, ...)
@@ -213,7 +213,7 @@ inline int SWPrintFToEnd_s(WCHAR* _Dst, size_t _SizeInWords, const WCHAR* _Forma
 // SPrintFToEnd_s
 //
 // The only difference from sprintf_s is that it writes after the text already
-// stored in the buffer
+// in the buffer
 
 template <size_t _Size>
 inline int SPrintFToEnd_s(char (&_Dst)[_Size], const char* _Format, ...)
