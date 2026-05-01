@@ -186,7 +186,7 @@
 			<param name="Local" value="hh\salamand\viewerdlg_gotooffset.htm">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Master Password Required">
+			<param name="Name" value="Enter Master Password">
 			<param name="Local" value="hh\salamand\dlgboxes_masterpwd_enter.htm">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
