@@ -4,7 +4,7 @@
 
 #pragma once
 
-// __DEBUG_WINLIB enables several checks for tricky WinLib bugs
+// The __DEBUG_WINLIB macro enables several checks for subtle WinLib bugs
 
 // WinLib string constants (for internal WinLib use only)
 enum CWLS
@@ -15,7 +15,7 @@ enum CWLS
     WLS_COUNT
 };
 
-// set custom WinLib strings
+// Set custom strings used by WinLib
 void SetWinLibStrings(const TCHAR* invalidNumber, // "not a number" (for numeric transfer buffers)
                       const TCHAR* error);        // title "error" (for numeric transfer buffers)
 
@@ -30,11 +30,11 @@ extern const WCHAR* CWINDOW_CLASSNAME2W; // Unicode universal window class name 
 
 class CWinLibHelp;
 
-// must be called before using WinLib
+// Must be called before WinLib is used
 BOOL InitializeWinLib();
-// must be called after using WinLib
+// Must be called after WinLib is no longer used
 void ReleaseWinLib();
-// must be called before using help
+// Must be called before help is used
 BOOL SetupWinLibHelp(CWinLibHelp* winLibHelp);
 
 class CWinLibHelp
