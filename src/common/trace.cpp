@@ -380,12 +380,12 @@ C__Trace::C__Trace() : TraceStrStream(&TraceStringBuf), TraceStrStreamW(&TraceSt
     // program exit with compiler priority, i.e. after our memory-leak check.
     // So if someone uses a stream to print anything localizable,
     // our debug heap starts reporting memory leaks even though there are none. To prevent
-    // that, we force the locales to create all "facets" now, while
-    // we are not watching the heap yet.
+    // that, we force the locales to create all "facets" now, before
+    // heap tracking starts.
     // For now we use only output streams, and only with strings (without conversion)
-    // and numbers. So sending a number to stringstream should be enough. If
+    // and numbers. So writing a number to a stringstream should be enough. If
     // we start using streams more in the future and the debug heap starts reporting
-    // leaks, we will have to add more input/output here.
+    // leaks, we will have to cover more stream operations here.
     std::stringstream s;
     s << 1;
     std::wstringstream s2;
