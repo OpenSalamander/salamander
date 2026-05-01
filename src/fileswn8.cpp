@@ -71,7 +71,7 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
         char textBuf[2 * MAX_PATH + 200];
         sprintf(textBuf, LoadStr(IDS_RECYCLEBINERROR), path);
         SalMessageBox(MainWindow->HWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
-        return FALSE; // quick dirty bloody hack - Recycle Bin simply cannot handle names ending with a space or dot (it deletes a different name created by trimming those characters, which we definitely don't want)
+        return FALSE; // temporary workaround - Recycle Bin cannot handle names ending with a space or dot (it deletes a different name created by trimming those characters, which we definitely do not want)
     }
     CDynamicStringImp names;
     do
@@ -86,7 +86,7 @@ BOOL CFilesWindow::DeleteThroughRecycleBin(int* selection, int selCount, CFileDa
             char textBuf[2 * MAX_PATH + 200];
             sprintf(textBuf, LoadStr(IDS_RECYCLEBINERROR), oneFile->Name);
             SalMessageBox(MainWindow->HWindow, textBuf, LoadStr(IDS_ERRORTITLE), MB_OK | MB_ICONEXCLAMATION);
-            return FALSE; // quick dirty bloody hack - Recycle Bin simply cannot handle names ending with a space or dot (it deletes a different name created by trimming those characters, which we definitely do not want)
+            return FALSE; // temporary workaround - Recycle Bin cannot handle names ending with a space or dot (it deletes a different name created by trimming those characters, which we definitely do not want)
         }
         // oneFile points to the selected item or the caret item in the filebox
         if (!names.Add(path, pathLen) ||
