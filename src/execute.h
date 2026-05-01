@@ -189,7 +189,7 @@ BOOL ExpandInfoLineItems(HWND msgParent, const char* varText, CPluginDataInterfa
                          int* varPlacementsCount, DWORD validFileData, BOOL isDisk);
 
 // validates varText containing variables from the MakeFileListItems array
-// msgParent - parent of themessage box for errors; if NULL, errors are not shown
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateMakeFileList(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
 // expands varText containing variables from MakeFileListItems and stores the result in buffer
