@@ -40,7 +40,7 @@
 
 #pragma warning(3 : 4706) // warning C4706: assignment within conditional expression
 
-//needed so this can also be built for plugins; there is no TRACE here yet
+// Needed so this can also be built for plugins; TRACE isn't available here yet.
 #include "str.h"
 #include "regexp.h"
 
@@ -311,7 +311,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
     while (start <= LineLength && regexec(Expression, Line, start) == 1 &&
            Expression->endp[0] - Expression->startp[0] > 0 /* Ignore zero-length matches. */)
     {
-        //Copy the unchanged text before the match.
+        // Copy the unchanged text before the match.
         len = (int)((Expression->startp[0] - Line) - start);
         if (len + 1 > bufSize)
         {
@@ -320,7 +320,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
         memcpy(output, OrigLineStart + start, len);
         output += len;
         bufSize -= len;
-        //Replace the matched text.
+        // Replace the matched text.
         if (!ExpandVariables(pattern, output, bufSize, &len))
         {
             return FALSE;
@@ -335,7 +335,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
 
     if (ret && start < LineLength)
     {
-        //Copy the text after the match.
+        // Copy the text after the match.
         if (LineLength - start + 1 > bufSize)
         {
             return FALSE;
