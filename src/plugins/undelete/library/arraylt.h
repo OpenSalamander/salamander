@@ -58,7 +58,7 @@ enum CErrorType
 //   contain pointers to its own data, reason:
 //     objects are moved in array (e.g. when reallocating array or when inserting
 //     item to the beginning of array) simply by using memmove, so during these
-//     moves contructors/destructors are not called, example:
+//     moves constructors/destructors are not called; for example:
 //       char Path[MAX_PATH];  // full file name
 //       char *Name;           // points to 'Path' to file name (without path)
 //     SOLUTION: store only offsets instead of complete pointers
@@ -67,7 +67,7 @@ template <class DATA_TYPE>
 class TDirectArray
 {
 public:
-    CErrorType State; // etNone if array is OK, otherwise some error occured
+    CErrorType State; // etNone if array is OK, otherwise some error occurred
     int Count;        // current count of items in array
 
     TDirectArray<DATA_TYPE>(int base, int delta);
