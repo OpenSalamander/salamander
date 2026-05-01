@@ -779,8 +779,8 @@ BOOL CPluginFSInterface::CopyFile(FILE_RECORD_I<char>* record, char* filename, c
     // extract all streams
     char* pathend = path + strlen(path);
 
-    // we want to copy file stream (no ADS streams) first
-    // otherwise file overwrite test will be broken beacuse with ADS will be also created base file
+    // we want to copy the file stream (without ADS streams) first
+    // otherwise the overwrite check would fail because ADS would also create the base file
     TDirectArray<DATA_STREAM_I<char>*> copyStreams(10, 10);
     DATA_STREAM_I<char>* stream = record->Streams;
     while (stream != NULL)
