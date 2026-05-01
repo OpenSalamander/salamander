@@ -24,12 +24,12 @@
 #include "structs.h"
 
 #ifndef FILE_ATTRIBUTE_UNIX_EXTENSION
-// Transfered from p7zip (portable 7zip)
+// Transferred from p7zip (portable 7zip)
 #define FILE_ATTRIBUTE_UNIX_EXTENSION 0x8000 /* trick for Unix */
 #endif
 
 #ifndef S_ISLNK
-// Transfered from sys/stat.h on Mac (and other Unix systems)
+// Transferred from sys/stat.h on Mac (and other Unix systems)
 #define S_ISLNK(m) (((m) & 0170000) == 0120000) /* symbolic link */
 #endif
 
