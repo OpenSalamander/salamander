@@ -17,7 +17,7 @@
 #endif // _MSC_VER
 #include <limits.h>
 #include <stdio.h>
-//needed for HIMAGELIST
+// Needed for HIMAGELIST support
 #include <ostream>
 #ifdef __BORLANDC__
 #include <stdlib.h>
