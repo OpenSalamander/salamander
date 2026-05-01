@@ -78,7 +78,7 @@ WCHAR __MessagesTitleBufW[200];
 
 #ifdef MULTITHREADED_MESSAGES_ENABLE
 
-// module-wide critical section - monitor
+// module-wide critical section
 CRITICAL_SECTION __MessagesCriticalSection;
 // ID of the current owning thread
 DWORD __MessagesOwnerThreadID = 0;
@@ -142,8 +142,8 @@ C__Messages::C__Messages() : MessagesStrStream(&MessagesStringBuf)
 #ifdef _DEBUG
     // New streams use internal locales whose individual "facets" are created lazily and allocated on the heap only when needed, for example when something with locale-dependent formatting such as a number, date, or boolean is sent to the stream.
     // These "facets" are then deallocated at program exit with compiler priority, i.e. after our memory leak check.
-    // So if someone uses a stream to output anything locale-dependent, the debug heap starts reporting memory leaks even though there are none. To prevent that, force the locales to create all "facets" now, while we are not tracking the heap yet.
-    // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more in the future and the debug heap starts reporting leaks again, we will have to add more input/output here.
+    // So if someone uses a stream to output anything locale-dependent, the debug heap starts reporting memory leaks even though there are none. To prevent that, force the locales to create all "facets" now, before we start tracking heap allocations.
+    // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more heavily in the future and the debug heap reports leaks again, we will have to add more input/output here.
     std::stringstream s;
     s << 1;
 #endif // _DEBUG
@@ -166,8 +166,8 @@ struct C__MessageBoxData
 };
 
 int CALLBACK __MessagesMessageBoxThreadF(C__MessageBoxData* data)
-{ // must not wait for a response from the calling thread, because it will not respond
-    // therefore parent == NULL -> no disabling of windows, etc.
+{ // must not wait for the calling thread to respond, because it will not respond
+    // therefore parent == NULL; no window disabling, etc.
     data->Return = MessageBoxA(NULL, data->Text, data->Caption, data->Type | MB_SETFOREGROUND);
     return 0;
 }
@@ -260,8 +260,8 @@ C__MessagesW::C__MessagesW() : MessagesStrStream(&MessagesStringBuf)
 #ifdef _DEBUG
     // New streams use internal locales whose individual "facets" are created lazily and allocated on the heap only when needed, for example when something with locale-dependent formatting such as a number, date, or boolean is sent to the stream.
     // These "facets" are then deallocated at program exit with compiler priority, i.e. after our memory leak check.
-    // So if someone uses a stream to output anything locale-dependent, the debug heap starts reporting memory leaks even though there are none. To prevent that, force the locales to create all "facets" now, while we are not tracking the heap yet.
-    // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more in the future and the debug heap starts reporting leaks again, we will have to add more input/output here.
+    // So if someone uses a stream to output anything locale-dependent, the debug heap starts reporting memory leaks even though there are none. To prevent that, force the locales to create all "facets" now, before we start tracking heap allocations.
+    // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more heavily in the future and the debug heap reports leaks again, we will have to add more input/output here.
     std::wstringstream s;
     s << 1;
 #endif // MULTITHREADED_MESSAGES_ENABLE
@@ -277,7 +277,7 @@ struct C__MessageBoxDataW
 
 int CALLBACK __MessagesWMessageBoxThreadF(C__MessageBoxDataW* data)
 { // must not wait for the calling thread to respond, because it will not respond
-    // therefore parent == NULL -> no window disabling, etc.
+    // therefore parent == NULL; no window disabling, etc.
     data->Return = MessageBoxW(NULL, data->Text, data->Caption, data->Type | MB_SETFOREGROUND);
     return 0;
 }
