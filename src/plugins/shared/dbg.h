@@ -12,22 +12,20 @@
 
 #pragma once
 
-// Definitions of the TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW, and CALL_STACK_MESSAGEXXX macros for plugins.
-// In a plugin, you must define the SalamanderDebug variable (type shown below) and
-// initialize it in SalamanderPluginEntry:
-// SalamanderDebug = salamander->GetSalamanderDebug();
+// Definitions of TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW and CALL_STACK_MESSAGE... macros for plugins.
+// In a plugin, define the SalamanderDebug variable (type shown below) and initialize it in SalamanderPluginEntry:
+//   SalamanderDebug = salamander->GetSalamanderDebug();
 //
-// TRACE is enabled by defining the TRACE_ENABLE macro.
-// CALL-STACK is disabled by defining the CALLSTK_DISABLE macro.
+// Enable tracing by defining the TRACE_ENABLE macro.
+// Disable call-stack reporting by defining the CALLSTK_DISABLE macro.
 
-// WARNING: TRACE_C must not be used in DllMain, or in any code
-//        called from DllMain, otherwise a deadlock will occur; see
-//        C__Trace::SendMessageToServer for details
+// WARNING: TRACE_C must not be used in DllMain or in any code called from DllMain; otherwise a deadlock may occur.
+// See C__Trace::SendMessageToServer for details.
 
-// macro CALLSTK_MEASURETIMES - enables measurement of time spent preparing
-//                              call-stack reports (measured as a ratio to the
-//                              total function run time); it must also be enabled separately for each plugin
-// macro CALLSTK_DISABLEMEASURETIMES - suppresses measurement of time spent preparing call-stack reports in DEBUG builds
+// macro CALLSTK_MEASURETIMES - enables measurement of the time spent preparing
+//                              call-stack reports (measured as a ratio of the
+//                              total function run time); it must also be enabled separately in each plugin
+// macro CALLSTK_DISABLEMEASURETIMES - suppresses measurement of the time spent preparing call-stack reports in DEBUG builds
 
 // overview of macro types: (all are non-empty only if CALLSTK_DISABLE is not defined)
 // CALL_STACK_MESSAGE - regular call-stack macro
@@ -105,7 +103,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -134,7 +132,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate the old buffer, if necessary
             if (pbase())
             {
 #ifdef __BORLANDC__
@@ -214,7 +212,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -243,7 +241,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate the old buffer, if necessary
             if (pbase())
             {
 #ifdef __BORLANDC__
