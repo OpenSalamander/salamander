@@ -417,8 +417,8 @@ void CTextFileReader::EstimateFileType()
     if (Type == ftBinary)
         return;
 
-    // in case of unknown file type or know file type but unknown encoding we do
-    // a dest for a Unicode
+    // If the file type is unknown, or the file type is known but the encoding is
+    // unknown, test whether the file is Unicode
     if (Type == ftUnknown || Encoding == encUnknown)
     {
         // ensure we have file prefix in the buffer
