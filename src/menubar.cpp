@@ -584,7 +584,7 @@ void CMenuBar::EnterMenuInternal(int index, BOOL openWidthSelect, BOOL byMouse)
         PostMessage(hWndUnderCursor, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
     }
 
-    // we willdeliver the delayed message
+    // we will deliver the delayed message
     if (DispatchDelayedMsg)
     {
         TranslateMessage(&DelayedMsg);
