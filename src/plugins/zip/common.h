@@ -33,14 +33,14 @@ public:
     CZIPFileData(QWORD qwPackedSize, int nItem, BOOL bUnix) : PackedSize(qwPackedSize), ItemNumber(nItem), Unix(bUnix) {}
 
     QWORD PackedSize;
-    int ItemNumber; // # of item in Cetral Directory, not offset
+    int ItemNumber; // item index in Central Directory, not offset
     BOOL Unix;
 };
 
 struct CExtInfo
 {
     LPTSTR Name;
-    int ItemNumber; // # of item in Cetral Directory, not offset
+    int ItemNumber; // item index in Central Directory, not offset
     bool IsDir;
 
     CExtInfo(LPCTSTR pName, bool isDir, int nItem);
