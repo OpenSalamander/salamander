@@ -49,7 +49,7 @@ int CCachedFile::SetFile(HANDLE file)
     {
         return 1;
     }
-    // Allocate slightly more to accomodate aligned seeking in ReadBuffer
+    // Allocate slightly more to accommodate aligned seeking in ReadBuffer
     Buffer = (LPBYTE)malloc(BUFFER_SIZE + SECTOR_SIZE);
     if (!Buffer)
     {
