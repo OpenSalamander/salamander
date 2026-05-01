@@ -51,7 +51,7 @@ public:
     void SetFlags(WORD flags);
     void Set(const char* pattern, WORD flags);
     // for patterns containing '\0'
-    // the pattern buffer must be (length + 1) characters long (for string compatibility)
+    // the pattern buffer must be (length + 1) characters long (for compatibility with C strings)
     void Set(const char* pattern, const int length, WORD flags);
 
     inline int SearchForward(const char* text, int length, int start);
