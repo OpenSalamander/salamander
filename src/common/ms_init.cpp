@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
-// MS_INIT ensures that constructors of static objects are called in the correct order
-// and at the "lib" level (before "user")
+// MS_INIT ensures that static-object constructors run in the correct order
+// and in the "lib" init segment (before "user")
 
 #pragma warning(3 : 4706) // warning C4706: assignment within conditional expression
 
