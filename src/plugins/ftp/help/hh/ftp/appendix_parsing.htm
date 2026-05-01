@@ -68,7 +68,7 @@ and only the plain text listing is displayed in the panel (such listing is
 unusable for any operation).</p>
 
 <p>The server type is autodetected only for the first listing from the server.
-The same server type is used for all other listings (it allows to display
+The same server type is used for all other listings (this allows the plugin to display
 the same columns also for empty listings, etc.). If the listing
 cannot be parsed with the same server type, the plugin tries to
 autodetect another server type.</p>
@@ -139,14 +139,14 @@ types are always visible in panel. Columns are defined in the
  <tr><th>Type</th><th>Description</th></tr>
  <tr><td>Name</td><td>string; file or directory name; exactly one column of this type is
          necessary; it cannot be hidden; the definition of the empty value for
-	 this column has no sense; parser must assign a value to this column for
+	 this column makes no sense; the parser must assign a value to this column for
 	 each file and directory; if no value is assigned, parsing using the current
 	 rule does not add any file nor directory (it is used for skipping empty lines and other
-	 not important parts of the plain text listing); assigning of the empty string ("") is
-	 considered to be an error in parsing</td></tr>
+	 not important parts of the plain text listing); assigning the empty string ("") is
+	 considered an error in parsing</td></tr>
  <tr><td>Extension</td><td>string; file extension; values are automatically generated from
          values in the column of the Name type; it cannot be hidden; the definition of the
-	 empty value for this column has no sense</td></tr>
+	 empty value for this column makes no sense</td></tr>
  <tr><td>File Size in Bytes</td><td>64-bit unsigned integer; file size in bytes; the value is zero
          and is displayed as "DIR" in panel for all directories; the default empty
 	 value is zero</td></tr>
@@ -156,7 +156,7 @@ types are always visible in panel. Columns are defined in the
  <tr><td>Last Write Time</td><td>time; last write (modification) time; the default empty value is 0:00:00</td></tr>
  <tr><td>File Type</td><td>string; file type description (defined by Windows for file extensions);
          values are automatically generated from values in the column of the Name type;
-	 the definition of the empty value for this column has no sense</td></tr>
+	 the definition of the empty value for this column makes no sense</td></tr>
  <tr><td>Any Text</td><td>string; general purpose; the default empty value is the empty string ("")</td></tr>
  <tr><td>Any Date</td><td>date; general purpose; a date value must be valid (if not,
          it is replaced by the value January 1, 1602); the default empty value is the empty
@@ -233,7 +233,7 @@ complete text lines.</p>
 
 <p>The parsing of the incomplete listing is handled at the level of using
 rules. In a simple case the pointer is moved (by using rules) to the end
-of the incomplete listing and it means the successful end of parsing.
+of the incomplete listing, which means the successful end of parsing.
 Otherwise during evaluation of some function from currently used rule,
 the pointer should be moved to the next line. But this is not possible
 because the listing is incomplete, so parsing is successfully ended
@@ -260,8 +260,8 @@ moves the pointer and if not explicitly stated, it is assumed that the pointer
 cannot move behind the end of line (to the next line).</p>
 
 <p>Before using the column identifier in the expression, it is necessary to
-assign a value to this column. Otherwise the expression has no sense (such
-expression can be replaced by the boolean constant which is calculated using
+assign a value to this column. Otherwise the expression makes no sense (such
+an expression can be replaced by the boolean constant that is calculated using
 the column default empty value in the expression).</p>
 
 <p>Note: in the following table, the whitespace is the space or tab character.</p>
@@ -544,8 +544,8 @@ the column default empty value in the expression).</p>
 <h4>Operators Used in Parsing</h4>
 
 <p>Before using the column identifier in the expression, it is necessary to
-assign a value to this column. Otherwise the expression has no sense (such
-expression can be replaced by the boolean constant which is calculated using
+assign a value to this column. Otherwise the expression makes no sense (such
+an expression can be replaced by the boolean constant that is calculated using
 the column default empty value in the expression).</p>
 
 <p>We have the following operators:</p>
