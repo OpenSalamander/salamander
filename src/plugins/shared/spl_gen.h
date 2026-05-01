@@ -64,8 +64,8 @@ class CPluginDataInterfaceAbstract;
 
 // altap specific
 #define MSGBOXEX_SILENT 0x10000000 // The message box does not play any sound when opened (bit mask)
-// For an MB_YESNO message box, Escape is allowed (generates IDNO); for an MB_ABORTRETRYIGNORE message box,
-// Escape is allowed (generates IDCANCEL) (bit mask)
+// For MB_YESNO message boxes, pressing Escape is allowed and returns IDNO;
+// for MB_ABORTRETRYIGNORE message boxes, pressing Escape is allowed and returns IDCANCEL. (bit mask)
 #define MSGBOXEX_ESCAPEENABLED 0x20000000
 #define MSGBOXEX_HINT 0x40000000 // If CheckBoxText is used, a \t separator is searched for in it and displayed as a hint
 // Vista: the default button will require elevation (an elevated icon is displayed)
@@ -79,7 +79,7 @@ class CPluginDataInterfaceAbstract;
 #define MSGBOXEX_EXMASK 0xF0000000
 
 // Message box return values
-#define DIALOG_FAIL 0x00000000 // The dialog could not be opened
+#define DIALOG_FAIL 0x00000000 // The dialog could not be opened.
 // Individual buttons
 #define DIALOG_OK 0x00000001       // IDOK
 #define DIALOG_CANCEL 0x00000002   // IDCANCEL
@@ -115,7 +115,7 @@ struct MSGBOXEX_PARAMS
 
 /*
 HParent
-  Handle to the owner window. Message box is centered to this window.
+  Handle to the owner window. The message box is centered on this window.
   If this parameter is NULL, the message box has no owner window.
 
 Text
@@ -132,19 +132,17 @@ Flags
    To indicate the buttons displayed in the message box, specify one of the following values.
     MSGBOXEX_OK                   (MB_OK)
       The message box contains one push button: OK. This is the default.
-      Message box can be closed using Escape and return value will be DIALOG_OK (IDOK).
+      The message box can be closed using Escape; the return value will be DIALOG_OK (IDOK).
     MSGBOXEX_OKCANCEL             (MB_OKCANCEL)
       The message box contains two push buttons: OK and Cancel.
     MSGBOXEX_ABORTRETRYIGNORE     (MB_ABORTRETRYIGNORE)
       The message box contains three push buttons: Abort, Retry, and Ignore.
-      Message box can be closed using Escape when MSGBOXEX_ESCAPEENABLED flag is specified.
-      In that case return value will be DIALOG_CANCEL (IDCANCEL).
+      The message box can be closed using Escape when the MSGBOXEX_ESCAPEENABLED flag is specified; in that case the return value will be DIALOG_CANCEL (IDCANCEL).
     MSGBOXEX_YESNOCANCEL          (MB_YESNOCANCEL)
       The message box contains three push buttons: Yes, No, and Cancel.
     MSGBOXEX_YESNO                (MB_YESNO)
       The message box contains two push buttons: Yes and No.
-      Message box can be closed using Escape when MSGBOXEX_ESCAPEENABLED flag is specified.
-      In that case return value will be DIALOG_NO (IDNO).
+      The message box can be closed using Escape when the MSGBOXEX_ESCAPEENABLED flag is specified; in that case the return value will be DIALOG_NO (IDNO).
     MSGBOXEX_RETRYCANCEL          (MB_RETRYCANCEL)
       The message box contains two push buttons: Retry and Cancel.
     MSGBOXEX_CANCELTRYCONTINUE    (MB_CANCELTRYCONTINUE)
