@@ -4,17 +4,21 @@
 
 #pragma once
 
-// Installs a handler for out-of-memory conditions during calls to operator new or malloc (also used by calloc, realloc, and others; see help). It guarantees that neither operator new nor malloc returns NULL without notifying the user. It displays an "insufficient memory" message box, and after closing other applications the user can retry the allocation. The user can also terminate the process or let the allocation failure propagate to the application (operator new or malloc then returns NULL; allocations of large memory blocks should be prepared for this, otherwise the application may crash, and the user is warned about that).
+// Installs a handler for out-of-memory failures in operator new and malloc
+// (and in calloc, realloc, and related functions). It ensures those calls never
+// return NULL silently: the user sees an "Insufficient memory" message box and
+// can retry after closing other applications. The user may also terminate the
+// process or let the allocation failure propagate back to the application.
 
-// Sets the localized text of the out-of-memory message and warning messages
-// (use NULL if a string should remain unchanged); expected contents:
+// Sets localized text for the out-of-memory and warning messages
+// (pass NULL to leave a string unchanged); expected contents:
 // message:
 // Insufficient memory to allocate %u bytes. Try to release some memory (e.g.
 // close some running application) and click Retry. If it does not help, you can
 // click Ignore to pass memory allocation error to this application or click Abort
 // to terminate this application.
 // title: (used for both "message" and "warning")
-// We recommend using the application name so the user knows which application is reporting the problem
+// We recommend using the application name so the user knows which program reported the problem.
 // warningIgnore:
 // Do you really want to pass memory allocation error to this application?\n\n
 // WARNING: Application may crash and then all unsaved data will be lost!\n
