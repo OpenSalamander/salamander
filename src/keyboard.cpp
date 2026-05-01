@@ -74,7 +74,7 @@ BOOL IsSalHotKey(WORD hotKey)
         {
         case NONE:          // select + calculate directory size
         case CONTROL:       // brings current dir to command line
-        case ALT:           // window mwnu
+        case ALT:           // window menu
         case SHIFT:         // quick search
         case CONTROL_SHIFT: // brings current dir to command line (8.3)
             found = TRUE;
