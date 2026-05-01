@@ -28,8 +28,8 @@ class CPluginDataInterfaceAbstract;
 // ****************************************************************************
 // CSalamanderForViewFileOnFSAbstract
 //
-// set of methods from Salamander for supporting ViewFile in CPluginFSInterfaceAbstract,
-// the interface is valid only within the method to which it is passed as a parameter
+// methods provided by Salamander to support ViewFile in CPluginFSInterfaceAbstract,
+// this interface is valid only for the duration of the method that receives it
 
 class CSalamanderForViewFileOnFSAbstract
 {
@@ -50,11 +50,11 @@ public:
     // the FTP download has already been performed), or FALSE if the file still needs to be prepared
     // (for example by downloading it); 'parent' is the parent of error message boxes (for example, an overly long
     // file name)
-    // WARNING: if it did not return NULL (no system error occurred), it is necessary to later call
-    //          FreeFileNameInCache (for the same 'uniqueFileName')
+    // WARNING: if it returns non-NULL (no system error occurred), you must later call
+    //          FreeFileNameInCache (with the same 'uniqueFileName')
     // NOTE: if the FS uses the disk cache, it should at least call
-    //       CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:") when the plugin is unloaded, otherwise
-    //       its file copies will needlessly clutter the disk cache
+    //       CSalamanderGeneralAbstract::RemoveFilesFromCache("fs-name:") when the plugin is unloaded; otherwise,
+    //       its file copies will unnecessarily clutter the disk cache
     virtual const char* WINAPI AllocFileNameInCache(HWND parent, const char* uniqueFileName, const char* nameInCache,
                                                     const char* rootTmpPath, BOOL& fileExists) = 0;
 
