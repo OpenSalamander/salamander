@@ -122,10 +122,10 @@ public:
     virtual void WINAPI TraceSetThreadName(const char* name) = 0;
     virtual void WINAPI TraceSetThreadNameW(const WCHAR* name) = 0;
 
-    // initializes the thread with the things needed for CALL-STACK methods (see Push and Pop below);
-    // in all called plugin methods, CALL_STACK methods can then be used directly;
+    // initializes the thread state required by the CALL-STACK methods (see Push and Pop below);
+    // all called plugin methods can then use the CALL_STACK methods directly;
     // this method is used only for new plugin threads;
-    // it runs 'threadBody' with the 'param' parameter and returns the result of 'threadBody'
+    // runs 'threadBody' with the 'param' parameter and returns its result
     virtual unsigned WINAPI CallWithCallStack(unsigned(WINAPI* threadBody)(void*), void* param) = 0;
 
     // stores a message on the CALL-STACK ('format'+'args', see vsprintf); if the application crashes,
