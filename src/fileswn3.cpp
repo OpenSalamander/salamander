@@ -461,7 +461,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     while (--ext >= fileData.cFileName && *ext != '.')
                         ;
                     if (ext < fileData.cFileName)
-                        ext = fileData.cFileName + len; // ".cvspass" in Windows is an extension ...
+                        ext = fileData.cFileName + len; // ".cvspass" is treated as an extension in Windows...
                     else
                         ext++;
                     if (!Filter.AgreeMasks(fileData.cFileName, ext))
@@ -472,7 +472,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     }
                 }
 
-                //--- if the name is occupied in the array HiddenNames, we will discard it
+                //--- if the name is already present in the HiddenNames array, we discard it
                 if (HiddenNames.Contains(isDir, fileData.cFileName))
                 {
                     if (isDir)
@@ -517,7 +517,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                     while (--s >= st && *s != '.')
                         ;
                     if (s >= st)
-                        file.Ext = file.Name + (s - st + 1); // ".cvspass" in Windows is an extension ...
+                        file.Ext = file.Name + (s - st + 1); // ".cvspass" is treated as an extension in Windows...
                                                              //          if (s > st) file.Ext = file.Name + (s - st + 1);
                     else
                         file.Ext = file.Name + file.NameLen;
@@ -926,7 +926,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                 goto FIND_NEXT_WIN64_REDIRECTEDDIR;
             }
 
-            //--- if the name is occupied in the array HiddenNames, we will discard it
+            //--- if the name is already present in the HiddenNames array, we discard it
             if (HiddenNames.Contains(TRUE, fileData.cFileName))
             {
                 if (!dirWithSameNameExists)
@@ -1013,7 +1013,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         continue;
                     }
 
-                    //--- if the name is occupied in the array HiddenNames, we will discard it
+                    //--- if the name is already present in the HiddenNames array, we discard it
                     if (HiddenNames.Contains(FALSE, f->Name))
                     {
                         HiddenFilesCount++;
@@ -1062,7 +1062,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                         continue;
                     }
 
-                    //--- if the name is occupied in the array HiddenNames, we will discard it
+                    //--- if the name is already present in the HiddenNames array, we discard it
                     if (HiddenNames.Contains(TRUE, f->Name))
                     {
                         HiddenDirsCount++;
@@ -1280,7 +1280,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             continue;
                         }
 
-                        //--- if the name is occupied in the array HiddenNames, we will discard it
+                        //--- if the name is already present in the HiddenNames array, we discard it
                         if (HiddenNames.Contains(FALSE, f->Name))
                         {
                             HiddenFilesCount++;
@@ -1303,7 +1303,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                             continue;
                         }
 
-                        //--- if the name is occupied in the array HiddenNames, we will discard it
+                        //--- if the name is already present in the HiddenNames array, we discard it
                         if (HiddenNames.Contains(TRUE, f->Name))
                         {
                             HiddenDirsCount++;
@@ -1545,7 +1545,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                         if (FilterEnabled && !Filter.AgreeMasks(f->Name, f->Ext))
                                             continue;
                                     }
-                                    //--- if the name is occupied in the array HiddenNames, we will discard it
+                                    //--- if the name is already present in the HiddenNames array, we discard it
                                     if (HiddenNames.Contains(isDir, f->Name))
                                         continue;
                                     debugCount++;
