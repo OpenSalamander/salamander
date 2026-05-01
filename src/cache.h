@@ -7,9 +7,9 @@
 // initializes the disk cache, returns success
 BOOL InitializeDiskCache();
 
-// how long time to wait between checking the state of watched objects
+// how long to wait between checks of watched objects
 #define CACHE_HANDLES_WAIT 500
-// (100 MB) max . size of disk-cache in bytes, should be moved to configuration
+// (100 MB) maximum size of the disk cache in bytes; should be moved to configuration
 #define MAX_CACHE_SIZE CQuadWord(104857600, 0)
 
 // error state codes for method CDiskCache::GetName()
