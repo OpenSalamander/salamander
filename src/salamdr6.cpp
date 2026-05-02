@@ -1990,7 +1990,7 @@ BOOL GetSidMD5(BYTE* sidMD5)
 // Bertrand Lauret
 //
 // Dr. GUI replies:
-// Your English is jus fine. (Dr, GUI is just glad you didn't ask to get my reply in French.) Most people do not know this, but the good doctor is bilingual. He speaks English and C++.
+// Your English is just fine. (Dr, GUI is just glad you didn't ask to get my reply in French.) Most people do not know this, but the good doctor is bilingual. He speaks English and C++.
 // It is certainly possible to have problems with thread synchronization due to differing priorities of threads. However, it is very unlikely that you would receive an ERROR_ACCESS_DENIED when trying to obtain a handle to an existing mutex because of the priority class of the creating process.
 // Typically, ERROR_ACCESS_DENIED is returned as a result of failure because of the security implications of the function being called. Let me describe a scenario where this could happen with Microsoft Windows NT? or Windows 2000:
 // Process A is running as a service (perhaps in real time, perhaps not) and creates a named mutex passing NULL as the first parameter indicating default security for the object.
