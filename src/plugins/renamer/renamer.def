@@ -1,4 +1,0 @@
-LIBRARY renamer.spl
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer

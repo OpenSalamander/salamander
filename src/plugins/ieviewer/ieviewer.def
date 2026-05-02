@@ -1,4 +1,0 @@
-LIBRARY IEVIEWER.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer
