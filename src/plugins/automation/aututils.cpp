@@ -8,7 +8,7 @@
 	Copyright (c) 2010-2023 Open Salamander Authors
 	
 	aututils.cpp
-	Miscelaneous utility routines.
+	Miscellaneous utility routines.
 */
 
 #include "precomp.h"
