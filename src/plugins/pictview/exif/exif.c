@@ -263,7 +263,7 @@ BOOL WINAPI EXIFReplaceThumbnail(char* fileName, char* newFile, unsigned char* p
                     pSect->content.generic.size = (6 + size);
                     pSect->content.generic.data = malloc(6 + size);
                     *(DWORD*)pSect->content.generic.data = 'XXFJ';
-                    // NULL temrination of JFXX, version number
+                    // NULL termination of JFXX, version number
                     ((WORD*)pSect->content.generic.data)[2] = 0x1000;
                     memcpy((char*)pSect->content.generic.data + 6, pData, size);
                     ret = jpeg_data_save_file(pJpeg, newFile);
