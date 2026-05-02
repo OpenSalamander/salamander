@@ -2334,7 +2334,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                         __try
                         {
                             // *(ebp) is the frame pointer of the calling function
-                            // *(ebp + 4) is the return adress (the place in the calling function where
+                            // *(ebp + 4) is the return address (the place in the calling function where
                             //            execution will resume after we return from this function)
                             DWORD* ebp = (DWORD*)ctx.Ebp;
 
