@@ -315,7 +315,7 @@ LRESULT STDMETHODCALLTYPE CSalamanderGuiComponentBase::OnMessage(
             reinterpret_cast<LONG_PTR>(m_pfnPrevWndProc)));
 
         // If this assertion fails, it means that the component
-        // was sublassed more than once and that the subclass
+        // was subclassed more than once and that the subclass
         // chain was corrupted.
         _ASSERTE(pfnWndProc == SubclassWndProc);
 
@@ -350,7 +350,7 @@ void STDMETHODCALLTYPE CSalamanderGuiComponentBase::RecalcBounds(
     HWND hWnd,
     HDC hDC)
 {
-    // Should be overriden in inherited class.
+    // Should be overridden in inherited class.
     _ASSERTE(0);
 }
 
