@@ -53,7 +53,7 @@ typedef int (*FFlushOutput)(unsigned, CDecompressionObject*);
 
 typedef struct
 {
-    //public fields, should be intialized before calling Inflate()
+    //public fields, should be initialized before calling Inflate()
     uch* SlideWin;    //circular buffer
     unsigned WinSize; //size of sliding window,
                       //should be at least 32K
