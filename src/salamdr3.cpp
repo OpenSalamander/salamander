@@ -505,7 +505,7 @@ BOOL SalGetFullName(char* name, int* errTextID, const char* curDir, char* nextFo
                 if (curDir != NULL)
                 {
                     // for relative paths without a leading '\\', do not treat spaces as mistakes when 'allowRelPathWithSpaces' is enabled
-                    // (a directory or file name can start with a space even though Windows and other softwares,
+                    // (a directory or file name can start with a space even though Windows and other software,
                     // Salamander included, try to prevent it)
                     if (allowRelPathWithSpaces && *s != '\\')
                         s = name;
