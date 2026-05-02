@@ -44,7 +44,7 @@ const CConfiguration DefConfig =
         EM_ZIP20,                     // Encryption Method
         false,                        // Do not add empty directories to the ZIP archive.
         true,                         //create temporary backup of zip
-        true,                         //display exteded pack options dialog
+        true,                         //display extended pack options dialog
         false,                        //set zip file time to the newest file time
         {"1423", {0}, {0}, {0}, {0}}, //volume sizes
         {0, 0, 0, 0, 0},              //volume size units
