@@ -607,7 +607,7 @@ BOOL CTextFileViewWindowBase::RebuildScript(
             // context before
             size_t line;
             if (Script[0][*change].IsBlank())
-            { // find first real line preceeding change
+            { // find first real line preceding change
                 size_t si = *change;
                 while (Script[0][si].IsBlank() && si > 0)
                     --si;
