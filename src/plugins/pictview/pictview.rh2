@@ -432,7 +432,7 @@
 #define IDS_TWCC_BADDEST           2240 /* Unknown destination Application/Source in DSM_Entry */
 #define IDS_TWCC_CAPUNSUPPORTED    2241 /* Capability not supported by source            */
 #define IDS_TWCC_CAPBADOPERATION   2242 /* Operation not supported by capability         */
-#define IDS_TWCC_CAPSEQERROR       2243 /* Capability has dependancy on other capability */
+#define IDS_TWCC_CAPSEQERROR       2243 /* Capability has dependency on other capability */
 #define IDS_TWCC_DENIED            2244 /* File System operation is denied (file is protected) */
 #define IDS_TWCC_FILEEXISTS        2245 /* Operation failed because file already exists. */
 #define IDS_TWCC_FILENOTFOUND      2246 /* File not found */
