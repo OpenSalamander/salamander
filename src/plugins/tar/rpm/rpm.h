@@ -106,7 +106,7 @@ enum rpmtagSignature
     RPMSIGTAG_PGP5 = 1006,    /*!< PGP5 signature @deprecated legacy. */
 
     /* Signature tags by Public Key Algorithm (RFC 2440) */
-    /* N.B.: These tags are tenative, the values may change */
+    /* N.B.: These tags are tentative, the values may change */
     RPMTAG_PK_BASE = 512,                       /*!< @todo Implement. */
     RPMTAG_PK_RSA_ES = RPMTAG_PK_BASE + 1,      /*!< (unused */
     RPMTAG_PK_RSA_E = RPMTAG_PK_BASE + 2,       /*!< (unused) */
@@ -157,7 +157,7 @@ typedef enum rpmTag_e
     RPMTAG_VERSION = 1001,
     RPMTAG_RELEASE = 1002,
     RPMTAG_EPOCH = 1003,
-#define RPMTAG_SERIAL RPMTAG_EPOCH /* backward comaptibility */
+#define RPMTAG_SERIAL RPMTAG_EPOCH /* backward compatibility */
     RPMTAG_SUMMARY = 1004,
     RPMTAG_DESCRIPTION = 1005,
     RPMTAG_BUILDTIME = 1006,
