@@ -29,7 +29,7 @@ struct DAOX
     BYTE LastTrack;
 };
 
-// swaping macros
+// swapping macros
 
 #define SWAPWORD(d) \
     (((d) & 0x00FF) << 8) | \
