@@ -2028,7 +2028,7 @@ void CPluginFSInterface::FragmentFile(HWND parent, const DIR_ITEM_I<char>* di, c
         goto exit;
     }
 
-    // find free cluster, use returned re-alligned starting LCN
+    // find free cluster, use returned realigned starting LCN
     for (int i = 0; freeLCN == -1 && i < BITMAP_BUFFER_SIZE - sizeof(VOLUME_BITMAP_BUFFER) - 32; i++)
     {
         if (bitmap->Buffer[i] != 0xFF)
