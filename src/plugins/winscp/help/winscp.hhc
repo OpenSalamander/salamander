@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+    <OBJECT type="text/site properties">
+        <param name="Window Styles" value="0x800027">
+    </OBJECT>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Introduction">
+    </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Introducing WinSCP Plugin">
+            <param name="Local" value="hh\winscp\introduction_intro.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="WinSCP Technical Requirements">
+            <param name="Local" value="hh\winscp\requirements.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Understanding SSH">
+            <param name="Local" value="hh\winscp\ssh.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Supported Transfer Protocols">
+            <param name="Local" value="hh\winscp\protocols.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Security">
+            <param name="Local" value="hh\winscp\security.htm">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Features">
+    </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Settings">
+            <param name="Local" value="hh\winscp\transfer_settings.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Resume">
+            <param name="Local" value="hh\winscp\resume.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Connection tunneling (port forwarding)">
+            <param name="Local" value="hh\winscp\tunneling.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Directory Caching">
+            <param name="Local" value="hh\winscp\directory_cache.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Remote Commands">
+            <param name="Local" value="hh\winscp\remote_command.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Queue/Background Transfers">
+            <param name="Local" value="hh\winscp\transfer_queue.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Separate Shell Session">
+            <param name="Local" value="hh\winscp\shell_session.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Finalizing Operation">
+            <param name="Local" value="hh\winscp\once_done.htm">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Using WinSCP Plugin">
+    </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Synchronizing">
+            </OBJECT>
+        <UL>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Synchronizing">
+                <param name="Local" value="hh\winscp\task_synchronize.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Directory Synchronization">
+                <param name="Local" value="hh\winscp\task_synchronize_full.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Keep Remote Directory Up To Date">
+                <param name="Local" value="hh\winscp\task_keep_up_to_date.htm">
+                </OBJECT>
+        </UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Uploading">
+            <param name="Local" value="hh\winscp\task_upload.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Downloading">
+            <param name="Local" value="hh\winscp\task_download.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Changing Properties">
+            <param name="Local" value="hh\winscp\task_properties.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Moving and Duplicating Remote Files">
+            <param name="Local" value="hh\winscp\task_move_duplicate.htm">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Dialog Boxes">
+    </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Configuring Session">
+            </OBJECT>
+        <UL>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Configuring Session (Login Dialog)">
+                <param name="Local" value="hh\winscp\ui_login.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Session Tab">
+                <param name="Local" value="hh\winscp\ui_login_session.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Stored Sessions Tab">
+                <param name="Local" value="hh\winscp\ui_login_stored_sessions.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Logging Tab">
+                <param name="Local" value="hh\winscp\ui_login_logging.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Environment Tab">
+                <param name="Local" value="hh\winscp\ui_login_environment.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Directories Tab">
+                <param name="Local" value="hh\winscp\ui_login_directories.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Recycle Bin Tab">
+                <param name="Local" value="hh\winscp\ui_login_recycle_bin.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="SCP Tab">
+                <param name="Local" value="hh\winscp\ui_login_scp.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="SFTP Tab">
+                <param name="Local" value="hh\winscp\ui_login_sftp.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Connection Tab">
+                <param name="Local" value="hh\winscp\ui_login_connection.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Proxy Tab">
+                <param name="Local" value="hh\winscp\ui_login_proxy.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Tunnel Tab">
+                <param name="Local" value="hh\winscp\ui_login_tunnel.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="SSH Tab">
+                <param name="Local" value="hh\winscp\ui_login_ssh.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Key Exchange Tab">
+                <param name="Local" value="hh\winscp\ui_login_kex.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Authentication Tab">
+                <param name="Local" value="hh\winscp\ui_login_authentication.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Bugs Tab">
+                <param name="Local" value="hh\winscp\ui_login_bugs.htm">
+                </OBJECT>
+        </UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Configuration">
+            </OBJECT>
+        <UL>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Configuring Interface/Behaviour (Preferences Dialog)">
+                <param name="Local" value="hh\winscp\ui_sal_preferences.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Confirmations Tab">
+                <param name="Local" value="hh\winscp\ui_sal_pref_confirmations.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Transfer Tab">
+                <param name="Local" value="hh\winscp\ui_sal_pref_transfer.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Background &amp; Resume Tab">
+                <param name="Local" value="hh\winscp\ui_sal_pref_queue.htm">
+                </OBJECT>
+            <LI> <OBJECT type="text/sitemap">
+                <param name="Name" value="Panel Tab">
+                <param name="Local" value="hh\winscp\ui_sal_pref_panel.htm">
+                </OBJECT>
+        </UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="About">
+            <param name="Local" value="hh\winscp\ui_about.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Authentication Progress">
+            <param name="Local" value="hh\winscp\ui_authenticate.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Console Window">
+            <param name="Local" value="hh\winscp\ui_console.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Options Dialog">
+            <param name="Local" value="hh\winscp\ui_copy.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Server and Protocol Information Dialog">
+            <param name="Local" value="hh\winscp\ui_fsinfo.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Keep Remote Directory Up To Date Dialog">
+            <param name="Local" value="hh\winscp\ui_keepuptodate.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Permissions">
+            <param name="Local" value="hh\winscp\ui_permissions.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Progress Window">
+            <param name="Local" value="hh\winscp\ui_progress.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Properties Dialog">
+            <param name="Local" value="hh\winscp\ui_properties.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Synchronize Dialog">
+            <param name="Local" value="hh\winscp\ui_synchronize.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Synchronization Checklist">
+            <param name="Local" value="hh\winscp\ui_synchronize_checklist.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Settings">
+            <param name="Local" value="hh\winscp\ui_transfer.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Custom Transfer Settings Dialog">
+            <param name="Local" value="hh\winscp\ui_transfer_custom.htm">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Appendix">
+    </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Transfer Modes">
+            <param name="Local" value="hh\winscp\transfer_mode.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Interoperability">
+            <param name="Local" value="hh\winscp\interoperability.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Administration Tasks">
+            <param name="Local" value="hh\winscp\administration.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Using Public Keys for Authentication">
+            <param name="Local" value="hh\winscp\public_key.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="File Masks">
+            <param name="Local" value="hh\winscp\file_mask.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Operation Mask">
+            <param name="Local" value="hh\winscp\operation_mask.htm">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Timestamps">
+            <param name="Local" value="hh\winscp\timestamp.htm">
+            </OBJECT>
+    </UL>
+</BODY>
+</HTML>

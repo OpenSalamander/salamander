@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 101]
+251,111,1,"Configurare UnMIME"
+2000,7,7,42,8,1,"Lista optiuni"
+2001,51,11,194,1,1,""
+1000,18,20,74,10,1,"&Lista mail headers"
+1001,18,35,80,10,1,"Lista mesaje &corpuri"
+1003,31,50,210,10,1,"A&dauga charset info la nume fisier de e diferit de US-ASCII"
+1002,18,65,82,10,1,"Listeaza &atasamente"
+2002,6,82,239,1,1,""
+1,137,90,50,14,1,"OK"
+2,194,90,50,14,1,"Anuleaza"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"Nu pot deschide fisierul."
+3,1,"Memorie insuficienta."
+4,1,"Nu pot adauga intrare arhiva la lista fisierelor."
+5,1,"Acest fisier contine unul sau mai multe blocuri cu codare necunoscuta.\nAceste blocuri nu vor fi decodate."
+6,1,"Eroare la scriere"
+7,1,"Dezarhivare Fisier Mail - %s"
+8,1,"dezarhivare: "
+9,1,"Parcurg fisierul..."
+10,1,"Unul sau mai multe %s blocuri sunt stricate sau au\nformat necunoscut si nu vor mai decodate."
+11,1,"CRC rau in unul sau mai multe %s blocuri.\nAceste blocuri nu vor fi decodate."
+12,1,"Rasfoieste si extrage fisierele MIME/Base64, UU/XXEncode, yEncode si BinHex."
+13,1,"Despre Plugin"
+14,1,"Atentie: acest fisier contine Mac resource fork.\nAceasta fork nu va fi dezarhivata."
+15,1,"&Nu mai arata acest lucru din nou"
+

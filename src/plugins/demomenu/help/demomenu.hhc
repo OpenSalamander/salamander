@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing DemoMenu Plugin">
+			<param name="Local" value="hh\demomenu\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using DemoMenu Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Basic Features">
+		</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Trying Test Command">
+				<param name="Local" value="hh\demomenu\basic_testcmd.htm">
+				</OBJECT>
+		</UL>
+	</UL>
+</BODY>
+</HTML>

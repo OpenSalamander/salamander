@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="lib\SalamandForms.lib"/>
+    <OBJFILES value="windows\VCLCommon.obj forms\InputDlg.obj
+      forms\MessageDlg.obj forms\About.obj forms\Authenticate.obj
+      forms\Console.obj forms\Copy.obj forms\CopyParams.obj
+      forms\CopyParamCustom.obj forms\Custom.obj forms\FileSystemInfo.obj
+      forms\FullSynchronize.obj forms\GeneralSettings.obj forms\License.obj
+      forms\Login.obj forms\LogSettings.obj forms\Progress.obj
+      forms\Properties.obj forms\Rights.obj forms\RightsExt.obj
+      forms\Synchronize.obj forms\SynchronizeChecklist.obj
+      forms\SynchronizeProgress.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) forms\About.dfm forms\Authenticate.dfm forms\Console.dfm
+      forms\Copy.dfm forms\CopyParams.dfm forms\CopyParamCustom.dfm
+      forms\Custom.dfm forms\FileSystemInfo.dfm forms\FullSynchronize.dfm
+      forms\GeneralSettings.dfm forms\License.dfm forms\Login.dfm
+      forms\LogSettings.dfm forms\Progress.dfm forms\Properties.dfm
+      forms\Rights.dfm forms\RightsExt.dfm forms\Synchronize.dfm
+      forms\SynchronizeChecklist.dfm forms\SynchronizeProgress.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <PACKAGES value=""/>
+    <PATHCPP value=".;windows;forms"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <LINKER value="TLib"/>
+    <USERDEFINES value="LOCALINTERFACE;NO_RESOURCES;NO_COMPONENTS"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="SalamandForms.bpf"/>
+    <INCLUDEPATH value="forms;windows;core;resource;salamander;packages\my;packages\theme;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="forms;windows;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <LISTFILE value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -w -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="/P256"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="$(OBJFILES)"/>
+    <ALLLIB value=""/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="SalamandForms.bpf" FORMNAME="" UNITNAME="SalamandForms" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="windows\VCLCommon.cpp" FORMNAME="" UNITNAME="VCLCommon" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\InputDlg.cpp" FORMNAME="" UNITNAME="InputDlg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\MessageDlg.cpp" FORMNAME="" UNITNAME="MessageDlg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\About.cpp" FORMNAME="AboutDialog" UNITNAME="About" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Authenticate.cpp" FORMNAME="AuthenticateForm" UNITNAME="Authenticate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Console.cpp" FORMNAME="ConsoleDialog" UNITNAME="Console" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Copy.cpp" FORMNAME="CopyDialog" UNITNAME="Copy" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\CopyParams.cpp" FORMNAME="CopyParamsFrame" UNITNAME="CopyParams" CONTAINERID="CCompiler" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\CopyParamCustom.cpp" FORMNAME="CopyParamCustomDialog" UNITNAME="CopyParamCustom" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Custom.cpp" FORMNAME="CustomDialog" UNITNAME="Custom" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\FileSystemInfo.cpp" FORMNAME="FileSystemInfoDialog" UNITNAME="FileSystemInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\FullSynchronize.cpp" FORMNAME="FullSynchronizeDialog" UNITNAME="FullSynchronize" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\GeneralSettings.cpp" FORMNAME="GeneralSettingsFrame" UNITNAME="GeneralSettings" CONTAINERID="CCompiler" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\License.cpp" FORMNAME="LicenseDialog" UNITNAME="License" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Login.cpp" FORMNAME="LoginDialog" UNITNAME="Login" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\LogSettings.cpp" FORMNAME="LoggingFrame" UNITNAME="LogSettings" CONTAINERID="CCompiler" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Progress.cpp" FORMNAME="ProgressForm" UNITNAME="Progress" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Properties.cpp" FORMNAME="PropertiesDialog" UNITNAME="Properties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Rights.cpp" FORMNAME="RightsFrame" UNITNAME="Rights" CONTAINERID="CCompiler" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\RightsExt.cpp" FORMNAME="RightsExtFrame" UNITNAME="RightsExt" CONTAINERID="CCompiler" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\Synchronize.cpp" FORMNAME="SynchronizeDialog" UNITNAME="Synchronize" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\SynchronizeChecklist.cpp" FORMNAME="SynchronizeChecklistDialog" UNITNAME="SynchronizeChecklist" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="forms\SynchronizeProgress.cpp" FORMNAME="SynchronizeProgressForm" UNITNAME="SynchronizeProgress" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+  </IDEOPTIONS>
+</PROJECT>

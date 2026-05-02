@@ -1,0 +1,32 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME, "UnMIME"
+ IDS_OPENERROR, "Could not open the file."
+ IDS_LOWMEM, "Insufficient memory."
+ IDS_LIST, "Could not add archive entry to the files list."
+ IDS_UNKNOWN, "This file contains one or more blocks with unknown encoding.\nThese blocks will not be decoded."
+ IDS_WRITEERROR, "Write error"
+ IDS_EXTRTITLE, "Unpacking Mail File - %s"
+ IDS_UNPACKING, "unpacking: "
+ IDS_PARSE, "Parsing file..."
+ IDS_BADBLOCK_DAMAGED, "One or more %s blocks are damaged or have\nunknown format and will not be decoded."
+ IDS_BADBLOCK_CRC, "Bad CRC in one or more %s blocks.\nThese blocks will not be decoded."
+ IDS_PLUGIN_DESCRIPTION, "Browse and extract MIME/Base64, UU/XXEncode, yEncode and BinHex files."
+ IDS_ABOUT_TITLE, "About Plugin"
+ IDS_RESOURCE_FORK_LOST, "Warning: this file contains a Mac resource fork.\nThis fork will not be unpacked."
+ IDS_DONT_SHOW_AGAIN, "&Don't show this again"
+}

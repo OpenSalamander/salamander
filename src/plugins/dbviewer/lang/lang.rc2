@@ -1,0 +1,151 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME, "Database Viewer"
+ IDS_PLUGIN_DESCRIPTION, "Display dBase, FoxPro and CSV database files."
+ IDS_ABOUT, "About Plugin"
+ IDS_OPENED_WINDOWS, "Some Database Viewer windows are opened. Do you want to close them?"
+
+ IDS_DBFE_OOM, "Out of memory."
+ IDS_DBFE_NOT_XBASE, "File has unrecognized database format."
+ IDS_DBFE_FILE_NOT_FOUND, "File was not found."
+ IDS_DBFE_READ_ERROR, "Error reading the database file. It may have been truncated."
+ IDS_DBFE_WRITE_ERROR, "Error writing the database file."
+ IDS_DBFE_SEEK_ERROR, "Error seeking the database file."
+ IDS_DBFE_NO_MEMO_FILE, "Memo file is not available."
+ IDS_DBFE_INVALID_BLOCK, "Memo file is corrupted."
+ 
+ IDS_USEDEFAULTFONT, "Use &default font"
+ IDS_USECUSTOMFONT, "Use &custom font..."
+ IDS_DEFAULTFONT, "default font"
+ IDS_CUSTOMFONT, "custom font"
+
+ IDS_VIEWERFILTER, "Database files (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|All Files (*.*)|*.*|"
+ IDS_FONTDESCRIPTION, "%d pt. %s (%s)"
+ IDS_CFG_CONFLICT, "The configuration is already opened."
+ IDS_COLUMNS_NAME, "Name"
+ IDS_COLUMNS_TYPE, "Type"
+ IDS_COLUMNS_LENGTH, "Width"
+ IDS_COLUMNS_DECIMALS, "Decimals"
+
+ IDS_FILEVER_DBASE2, "dBase II"
+ IDS_FILEVER_DBASE3, "dBase III"
+ IDS_FILEVER_DBASE4, "dBase IV"
+ IDS_FILEVER_DBASE5, "dBase V"
+ IDS_FILEVER_VISUALDBASE7, "Visual dBase 7"
+ IDS_FILEVER_FOXPRO, "FoxPro"
+ IDS_FILEVER_UNKNOWN, "Unknown"
+
+ IDS_FTYPE_CHAR, "Character"
+ IDS_FTYPE_NUM, "Number"
+ IDS_FTYPE_LOGICAL, "Logical"
+ IDS_FTYPE_DATE, "Date"
+ IDS_FTYPE_MEMO, "Memo"
+ IDS_FTYPE_FLOAT, "Floating point"
+ IDS_FTYPE_BIN, "Binary"
+ IDS_FTYPE_GEN, "General"
+ IDS_FTYPE_PIC, "Picture"
+ IDS_FTYPE_CUR, "Currency"
+ IDS_FTYPE_DTIME, "Date/Time"
+ IDS_FTYPE_INT, "Integer"
+ IDS_FTYPE_UNKOWN, "Unknown"
+ IDS_FTYPE_DOUBLE, "Double"
+ IDS_FTYPE_TSTAMP, "Timestamp"
+ IDS_FTYPE_AUTOINC, "AutoIncrement"
+
+ IDS_NOVISIBLE_FIELD, "At least one field must be visible."
+ IDS_NOVALIDCOLUMN, "There are no valid fields in this database."
+
+ IDS_TRUE, "True"
+ IDS_FALSE, "False"
+
+ IDS_FINFO_MODIFIED, "Modified"
+ IDS_FINFO_SIZE, "Size"
+ IDS_FINFO_VERSION, "Version"
+ IDS_FINFO_RECCOUNT, "Record count"
+ IDS_FINFO_FIELDCOUNT, "Field count"
+ IDS_FINFO_MEMOCOUNT, "Memo-field count"
+ IDS_FINFO_HDRSIZE, "Header size"
+ IDS_FINFO_RECSIZE, "Record size"
+ IDS_FINFO_CODEPAGE, "Code page"
+
+ IDS_REGEXP_ERROR, "Regular Expression Error"
+ IDS_FIND, "Find"
+ IDS_FIND_NOMATCH, "Cannot find the string '%s'."
+ IDS_FIND_NOREGEXPMATCH, "Cannot find a match for the regular expression '%s'."
+
+ // Menu
+
+ // File
+ IDS_MENU_FILE, "&File"
+ IDS_MENU_FILE_OPEN, "&Open...\tCtr+O"
+ IDS_MENU_FILE_REFRESH, "&Refresh\tCtr+R"
+ IDS_MENU_FILE_PROPERTIES, "Prop&erties...\tCtrl+F1"
+ IDS_MENU_FILE_OTHER, "O&ther Files"
+ IDS_MENU_FILE_PREV, "&Previous\tBackspace"
+ IDS_MENU_FILE_NEXT, "&Next\tSpace"
+ IDS_MENU_FILE_PREVSEL, "P&revious Selected\tCtrl+Backspace"
+ IDS_MENU_FILE_NEXTSEL, "N&ext Selected\tCtrl+Space"
+ IDS_MENU_FILE_FIRST, "&First\tShift+Backspace"
+ IDS_MENU_FILE_LAST, "&Last\tShift+Space"
+ IDS_MENU_FILE_EXIT, "E&xit\tAlt+F4"
+
+ // Edit
+ IDS_MENU_EDIT, "&Edit"
+ IDS_MENU_EDIT_COPY, "&Copy\tCtrl+C"
+ IDS_MENU_EDIT_SELECT_ALL, "&Select All\tCtrl+A"
+ IDS_MENU_EDIT_FIND, "&Find...\tCtrl+F"
+ IDS_MENU_EDIT_FIND_NEXT, "Find &Next\tCtrl+N"
+ IDS_MENU_EDIT_FIND_PREV, "Find &Previous\tCtrl+P"
+ IDS_MENU_EDIT_TOGGLE_BM, "&Toggle Bookmark\tCtrl+F2"
+ IDS_MENU_EDIT_NEXT_BM, "N&ext Bookmark\tF2"
+ IDS_MENU_EDIT_PREV_BM, "P&revious Bookmark\tShift+F2"
+ IDS_MENU_EDIT_CLEAR_ALL_BM, "Clear &All Bookmarks\tCtrl+Shift+F2"
+
+ // View
+ IDS_MENU_VIEW, "&View"
+ IDS_MENU_VIEW_GOTO "&Go to Record...\tG"
+ IDS_MENU_VIEW_FIELDS, "Fi&elds...\tI"
+ IDS_MENU_VIEW_FULLSCREEN, "&Full Screen\tF11"
+
+ // Convert
+ IDS_MENU_CONVERT, "&Convert"
+ IDS_MENU_CONVERT_RECOGNIZE, "&Auto-Select"
+ IDS_MENU_CONVERT_CODING_FIRST, "&Don't Convert"
+ IDS_MENU_CONVERT_CODING_DEF, "Set as Default"
+ IDS_MENU_CONVERT_CODING_NEXT, "Next\tF8"
+ IDS_MENU_CONVERT_CODING_PREV, "Previous\tShift+F8"
+
+ // Options
+ IDS_MENU_OPTIONS, "&Options"
+ IDS_MENU_OPTIONS_CSV_OPTIONS, "C&SV Options..."
+ IDS_MENU_OPTIONS_CONFIG, "&Configuration..."
+
+ // Help
+ IDS_MENU_HELP, "&Help"
+ IDS_MENU_HELP_CONTENTS, "&Contents\tF1"
+ IDS_MENU_HELP_INDEX, "&Index..."
+ IDS_MENU_HELP_SEARCH, "&Search..."
+ IDS_MENU_HELP_ABOUT, "&About..."
+
+ // Toolbar Tooltips
+ IDS_TBTT_COPY, "Copy\tCtrl+C"
+ IDS_TBTT_OPEN, "Open\tCtrl+O"
+ IDS_TBTT_FIND, "Find\tCtrl+F"
+ IDS_TBTT_PROPERTIES, "Properties\tCtrl+F1"
+ IDS_TBTT_FULLSCREEN, "Full Screen\tF11"
+ IDS_TBTT_GOTO, "Current Record/Record Count\tG"
+}

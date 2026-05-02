@@ -1,0 +1,953 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{FA82995C-2137-4A0B-96ED-404B08EFC0DD}</ProjectGuid>
+    <RootNamespace>salamand</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\plugins\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="sal_base.props">
+    </Import>
+    <Import Project="sal_release.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\plugins\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="sal_base.props">
+    </Import>
+    <Import Project="sal_debug.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\plugins\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="sal_base.props">
+    </Import>
+    <Import Project="sal_release.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\plugins\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="sal_base.props">
+    </Import>
+    <Import Project="sal_debug.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\bitmap.cpp">
+    </ClCompile>
+    <ClCompile Include="..\bugreprt.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\blocksort.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\bzlib.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\compress.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)bzip2_compress.obj</ObjectFileName>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)bzip2_compress.obj</ObjectFileName>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)bzip2_compress.obj</ObjectFileName>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)bzip2_compress.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\crctable.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\decompress.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\huffman.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\internal_e.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\dep\bzip2\randtable.c">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BZ_NO_STDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\cache.cpp">
+    </ClCompile>
+    <ClCompile Include="..\callstk.cpp">
+    </ClCompile>
+    <ClCompile Include="..\codetbl.cpp">
+    </ClCompile>
+    <ClCompile Include="..\color.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\allochan.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\array.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\handles.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\heap.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\messages.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\moore.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\multimon.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\regexp.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\sheets.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\str.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\strutils.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\trace.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\winlib.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aescrypt.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aeskey.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\aestab.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\fileenc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\hmac.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\pwd2key.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\crypt\sha1.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs6.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogse.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogsp.cpp">
+    </ClCompile>
+    <ClCompile Include="..\drivelst.cpp">
+    </ClCompile>
+    <ClCompile Include="..\editwnd.cpp">
+    </ClCompile>
+    <ClCompile Include="..\edtlbwnd.cpp">
+    </ClCompile>
+    <ClCompile Include="..\execute.cpp">
+    </ClCompile>
+    <ClCompile Include="..\filesbx1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\filesbx2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\filesmap.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn0.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn6.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn7.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn8.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswn9.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswna.cpp">
+    </ClCompile>
+    <ClCompile Include="..\fileswnb.cpp">
+    </ClCompile>
+    <ClCompile Include="..\filter.cpp">
+    </ClCompile>
+    <ClCompile Include="..\find.cpp">
+    </ClCompile>
+    <ClCompile Include="..\finddlg1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\finddlg2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\geticon.cpp">
+    </ClCompile>
+    <ClCompile Include="..\gui.cpp">
+    </ClCompile>
+    <ClCompile Include="..\icncache.cpp">
+    </ClCompile>
+    <ClCompile Include="..\iconlist.cpp">
+    </ClCompile>
+    <ClCompile Include="..\jumplist.cpp">
+    </ClCompile>
+    <ClCompile Include="..\keyboard.cpp">
+    </ClCompile>
+    <ClCompile Include="..\logo.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mainwnd1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mainwnd2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mainwnd3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mainwnd4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mainwnd5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mapi.cpp">
+    </ClCompile>
+    <ClCompile Include="..\masks.cpp">
+    </ClCompile>
+    <ClCompile Include="..\md5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\menu1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\menu2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\menu3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\menu4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\menubar.cpp">
+    </ClCompile>
+    <ClCompile Include="..\msgbox.cpp">
+    </ClCompile>
+    <ClCompile Include="..\ms_init.cpp">
+    </ClCompile>
+    <ClCompile Include="..\olespy.cpp">
+    </ClCompile>
+    <ClCompile Include="..\pack1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\pack2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\pack3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\packac.cpp">
+    </ClCompile>
+    <ClCompile Include="..\packers.cpp">
+    </ClCompile>
+    <ClCompile Include="..\plugins1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\plugins2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\plugins3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\plugins4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\plugins\shared\dbg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\dep\pnglite\pnglite.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\pwdmngr.cpp">
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\regcopy.cpp">
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\reginmem.cpp">
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\registry.cpp">
+    </ClCompile>
+    <ClCompile Include="..\reglib\src\regparse.cpp">
+    </ClCompile>
+    <ClCompile Include="..\regwork.cpp">
+    </ClCompile>
+    <ClCompile Include="..\safefile.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr6.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salamdr7.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salbzip2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salinflt.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salmoncl.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salshlib.cpp">
+    </ClCompile>
+    <ClCompile Include="..\salzlib.cpp">
+    </ClCompile>
+    <ClCompile Include="..\shares.cpp">
+    </ClCompile>
+    <ClCompile Include="..\shellib.cpp">
+    </ClCompile>
+    <ClCompile Include="..\shellsup.cpp">
+    </ClCompile>
+    <ClCompile Include="..\shexreg.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\shiconov.cpp">
+    </ClCompile>
+    <ClCompile Include="..\snooper.cpp">
+    </ClCompile>
+    <ClCompile Include="..\sort.cpp">
+    </ClCompile>
+    <ClCompile Include="..\stswnd.cpp">
+    </ClCompile>
+    <ClCompile Include="..\svg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\tabwnd.cpp">
+    </ClCompile>
+    <ClCompile Include="..\tasklist.cpp">
+    </ClCompile>
+    <ClCompile Include="..\thumbnl.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar4.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar5.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar6.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar7.cpp">
+    </ClCompile>
+    <ClCompile Include="..\toolbar8.cpp">
+    </ClCompile>
+    <ClCompile Include="..\tooltip.cpp">
+    </ClCompile>
+    <ClCompile Include="..\versinfo.cpp">
+    </ClCompile>
+    <ClCompile Include="..\viewer.cpp">
+    </ClCompile>
+    <ClCompile Include="..\viewer2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\viewer3.cpp">
+    </ClCompile>
+    <ClCompile Include="..\worker.cpp">
+    </ClCompile>
+    <ClCompile Include="..\zip.cpp">
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\adler32.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\compress.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\crc32.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\deflate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inffast.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inflate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\inftrees.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\trees.c">
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SmallerTypeCheck>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SmallerTypeCheck>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\dep\zlib\zutil.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\bitmap.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\bzip2\bzlib.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\bzip2\bzlib_private.h">
+    </ClInclude>
+    <ClInclude Include="..\cache.h">
+    </ClInclude>
+    <ClInclude Include="..\callstk.h">
+    </ClInclude>
+    <ClInclude Include="..\cfgdlg.h">
+    </ClInclude>
+    <ClInclude Include="..\codetbl.h">
+    </ClInclude>
+    <ClInclude Include="..\color.h">
+    </ClInclude>
+    <ClInclude Include="..\common\allochan.h">
+    </ClInclude>
+    <ClInclude Include="..\common\array.h">
+    </ClInclude>
+    <ClInclude Include="..\common\handles.h">
+    </ClInclude>
+    <ClInclude Include="..\common\heap.h">
+    </ClInclude>
+    <ClInclude Include="..\common\messages.h">
+    </ClInclude>
+    <ClInclude Include="..\common\moore.h">
+    </ClInclude>
+    <ClInclude Include="..\common\multimon.h">
+    </ClInclude>
+    <ClInclude Include="..\common\regexp.h">
+    </ClInclude>
+    <ClInclude Include="..\common\sheets.h">
+    </ClInclude>
+    <ClInclude Include="..\common\str.h">
+    </ClInclude>
+    <ClInclude Include="..\common\strutils.h">
+    </ClInclude>
+    <ClInclude Include="..\common\trace.h">
+    </ClInclude>
+    <ClInclude Include="..\common\winlib.h">
+    </ClInclude>
+    <ClInclude Include="..\consts.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\aes.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\aesopt.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\fileenc.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\hmac.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\pwd2key.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\crypt\sha1.h">
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+    </ClInclude>
+    <ClInclude Include="..\drivelst.h">
+    </ClInclude>
+    <ClInclude Include="..\editwnd.h">
+    </ClInclude>
+    <ClInclude Include="..\edtlbwnd.h">
+    </ClInclude>
+    <ClInclude Include="..\execute.h">
+    </ClInclude>
+    <ClInclude Include="..\filesbox.h">
+    </ClInclude>
+    <ClInclude Include="..\fileswnd.h">
+    </ClInclude>
+    <ClInclude Include="..\filter.h">
+    </ClInclude>
+    <ClInclude Include="..\find.h">
+    </ClInclude>
+    <ClInclude Include="..\geticon.h">
+    </ClInclude>
+    <ClInclude Include="..\gui.h">
+    </ClInclude>
+    <ClInclude Include="..\icncache.h">
+    </ClInclude>
+    <ClInclude Include="..\iconlist.h">
+    </ClInclude>
+    <ClInclude Include="..\jumplist.h">
+    </ClInclude>
+    <ClInclude Include="..\logo.h">
+    </ClInclude>
+    <ClInclude Include="..\mainwnd.h">
+    </ClInclude>
+    <ClInclude Include="..\mapi.h">
+    </ClInclude>
+    <ClInclude Include="..\masks.h">
+    </ClInclude>
+    <ClInclude Include="..\md5.h">
+    </ClInclude>
+    <ClInclude Include="..\menu.h">
+    </ClInclude>
+    <ClInclude Include="..\olespy.h">
+    </ClInclude>
+    <ClInclude Include="..\pack.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_arc.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_base.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_com.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_file.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_fs.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_gen.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_gui.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_menu.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_thum.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_vers.h">
+    </ClInclude>
+    <ClInclude Include="..\plugins\shared\spl_view.h">
+    </ClInclude>
+    <ClInclude Include="..\common\dep\pnglite\pnglite.h">
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\pwdmngr.h">
+    </ClInclude>
+    <ClInclude Include="..\reglib\src\regparse.h">
+    </ClInclude>
+    <ClInclude Include="..\regwork.h">
+    </ClInclude>
+    <ClInclude Include="..\salamand.h">
+    </ClInclude>
+    <ClInclude Include="..\salinflt.h">
+    </ClInclude>
+    <ClInclude Include="..\salmoncl.h">
+    </ClInclude>
+    <ClInclude Include="..\salshlib.h">
+    </ClInclude>
+    <ClInclude Include="..\shellib.h">
+    </ClInclude>
+    <ClInclude Include="..\shexreg.h">
+    </ClInclude>
+    <ClInclude Include="..\shiconov.h">
+    </ClInclude>
+    <ClInclude Include="..\snooper.h">
+    </ClInclude>
+    <ClInclude Include="..\sort.h">
+    </ClInclude>
+    <ClInclude Include="..\stswnd.h">
+    </ClInclude>
+    <ClInclude Include="..\svg.h">
+    </ClInclude>
+    <ClInclude Include="..\tabwnd.h">
+    </ClInclude>
+    <ClInclude Include="..\tasklist.h">
+    </ClInclude>
+    <ClInclude Include="..\thumbnl.h">
+    </ClInclude>
+    <ClInclude Include="..\toolbar.h">
+    </ClInclude>
+    <ClInclude Include="..\tooltip.h">
+    </ClInclude>
+    <ClInclude Include="..\usermenu.h">
+    </ClInclude>
+    <ClInclude Include="..\versinfo.h">
+    </ClInclude>
+    <ClInclude Include="..\viewer.h">
+    </ClInclude>
+    <ClInclude Include="..\worker.h">
+    </ClInclude>
+    <ClInclude Include="..\zip.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\archive.ico">
+    </Image>
+    <Image Include="..\res\bottomtb.bmp">
+    </Image>
+    <Image Include="..\res\directory.ico">
+    </Image>
+    <Image Include="..\res\empty.ico">
+    </Image>
+    <Image Include="..\res\filter.bmp">
+    </Image>
+    <Image Include="..\res\find.ico">
+    </Image>
+    <Image Include="..\res\hdrwnd.bmp">
+    </Image>
+    <Image Include="..\res\lock.png">
+    </Image>
+    <Image Include="..\res\menuchck.bmp">
+    </Image>
+    <Image Include="..\res\menuitms.bmp">
+    </Image>
+    <Image Include="..\res\plugin.ico">
+    </Image>
+    <Image Include="..\res\pluginfs.ico">
+    </Image>
+    <Image Include="..\res\salamand.ico">
+    </Image>
+    <Image Include="..\res\sal_b.ico">
+    </Image>
+    <Image Include="..\res\sal_g.ico">
+    </Image>
+    <Image Include="..\res\sal_r.ico">
+    </Image>
+    <Image Include="..\res\throbber.png">
+    </Image>
+    <Image Include="..\res\toolbar.bmp">
+    </Image>
+    <Image Include="..\res\toolbar2.png">
+    </Image>
+    <Image Include="..\res\updir.ico">
+    </Image>
+    <Image Include="..\res\updown.bmp">
+    </Image>
+    <Image Include="..\res\viewer.ico">
+    </Image>
+    <Image Include="..\res\zoom.bmp">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh">
+    </None>
+    <None Include="..\lang\texts.rc2">
+    </None>
+    <None Include="..\plugins\shared\clrtable.dat">
+    </None>
+    <None Include="..\plugins\shared\statics.rh2">
+    </None>
+    <None Include="..\plugins\shared\versinfo.rc2">
+    </None>
+    <None Include="..\resource.rh2">
+    </None>
+    <None Include="..\res\copyeff.cur">
+    </None>
+    <None Include="..\res\hand.cur">
+    </None>
+    <None Include="..\res\split.cur">
+    </None>
+    <None Include="..\res\toolbar1.cur">
+    </None>
+    <None Include="..\res\toolbar2.cur">
+    </None>
+    <None Include="..\res\toolbar3.cur">
+    </None>
+    <None Include="..\salamand.rc2">
+    </None>
+    <None Include="..\salamand.rh">
+    </None>
+    <None Include="..\texts.rh2">
+    </None>
+    <None Include="..\versinfo.rh2">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\salamand.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lang.vcxproj">
+      <Project>{7c7059ba-1fce-4c36-b0b3-d095779cf89f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

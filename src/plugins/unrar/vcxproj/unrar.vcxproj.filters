@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{878a2363-3825-492e-84fe-2361bc2daad4}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{7cc02dda-8cbf-43af-bdab-1be463f2e9f5}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{f6ab1988-3274-4ea2-b866-2e359e88fc7f}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\unrar.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_file.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unrar.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unrardll.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\unrar.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\unrar.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unrar.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unrar.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unrar.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\lock.ico" />
+  </ItemGroup>
+</Project>

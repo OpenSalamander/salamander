@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 100]
+194,95,1,"Urmatorul volum disk"
+117,12,9,170,32,1,"Va rugam introduceti disk cu urmatorul volum disk sau localizati fisierul corect pe disk.\n\nApasati OK cand sunteti gata."
+300,12,48,42,8,1,"Nume &fiser:"
+101,12,58,155,12,1,""
+102,170,58,13,12,1,"..."
+1,39,76,50,14,1,"OK"
+2,102,76,50,14,1,"Anuleaza"
+
+[DIALOG 103]
+352,85,1,"Eroare"
+300,6,10,26,8,1,"Nume:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Eroare:"
+302,36,23,309,16,1,"Fisierul nu poate fi extras pentru ca este continuat de pe un volum anterior. Pentru a extrage acest fisier, trebuie sa incepeti cu volumul de unde incepe fisierul."
+105,36,44,183,12,1,"&Nu mai arata acest mesaj in viitor."
+1,121,63,50,14,1,"OK"
+2,181,63,50,14,1,"Anuleaza"
+
+[DIALOG 106]
+220,115,1,"Configurare UnRAR"
+107,12,10,195,12,1,"Sari a&utomat peste fisierele continuate din volumele"
+116,12,32,189,12,1,"&Nu arata atentionare cand tot continutul arhivei"
+300,23,22,154,8,1,"anterioare cand dezarhivezi."
+301,23,44,111,8,1,"nu poate fi listat."
+302,6,60,208,1,1,""
+117,12,70,200,12,1,"Arata coloana "A&rhivat" cand listezi arhiva"
+303,6,90,208,1,1,""
+1,57,96,50,14,1,"OK"
+2,112,96,50,14,1,"Anuleaza"
+
+[DIALOG 108]
+350,80,1,"Introdu Parola"
+113,18,18,18,20,1,""
+300,57,10,230,8,1,"Acest fisier e criptat. Va rugam introduceti parola pentru decriptare."
+301,57,25,22,8,1,"Fisier:"
+104,87,25,250,8,1,""
+302,57,38,25,8,1,"&Parola:"
+110,87,36,167,12,1,""
+1,15,58,60,14,1,"O&K"
+112,80,58,60,14,1,"Tot &z"
+109,145,58,60,14,1,"S&ari Peste"
+111,210,58,60,14,1,"Sari Peste &Tot"
+2,275,58,60,14,1,"Anuleaza"
+
+[DIALOG 115]
+213,105,1,"Atentie - UnRAR"
+300,11,8,194,24,1,"Nu toate fisierele in o arhiva multi-volum pot fi listate (si aratate in panou), pentru ca cateva din volumele arhivei nu pot fi gasite."
+301,11,39,194,16,1,"Pentru a lista tot continutul arhivei copie toate volumele arhivei in acelasi director."
+105,11,64,157,12,1,"&Nu mai arata acest mesaj pe viitor"
+302,5,81,202,1,1,""
+1,155,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Memorie insuficienta."
+1002,1,"Nu pot obtine nume fisier modul."
+1003,1,"Nu pot incarca libraria '%s'."
+1004,1,"Nu pot obtine adresa procedurii."
+1005,1,"Arhiva e corupta. (Parola gresita?)"
+1006,1,"Fisierul este de un format necunoscut sau nu este o ahiva valida RAR. (Parola gresita?)"
+1007,1,"Nu pot deschide fisierul arhiva."
+
+[STRINGTABLE 1]
+1008,1,"O eroare necunoscuta a avut loc."
+1009,1,"Nu pot deschide volumul arhivei."
+1010,1,"Nu pot citi fisierul arhiva."
+1011,1,"Fisiere Arhiva RAR (*.R*)"
+1012,1,"Selecteaza Fisierul Arhiva"
+1013,1,"Eroare in data comprimata. CRC nu se potriveste. (Parola gresita?)"
+1014,1,"Nu pot adauga intrare arhiva la lista fisier."
+1015,1,"Dezarhivez Arhiva RAR - %s"
+1016,1,"pregatesc data si creez directoarele..."
+1017,1,"dezarhivez..."
+1018,1,"dezarhivez: "
+1019,1,"Nu pot obtine pointer de fisier: "
+1020,1,"Nu pot scrie in fisierul:"
+1021,1,"Nu pot seta pointerul de fisier: "
+1022,1,"Nu pot termina operatiunea pentru ca nume calea prea lung."
+1023,1,"Nu pot termina opeartiunea pentru ca masca prea lunga."
+
+[STRINGTABLE 2]
+1024,1,"Va rugam introduceti cel putin un caracter."
+1027,1,"Toate Fisierele (*.*)"
+1028,1,"Eroare"
+1029,1,"Fisier negasit"
+1030,1,"Versiune incorecta a unrar.dll. Va rugam reinstalati plugin UnRAR."
+1031,1,"Se pare ca aceasta este o arhiva multi-volum. Daca e asa, va rugam selectati primul volum din arhiva si apasati OK.\n\nDaca nu e arhiva multi-volum, apasati Anuleazal."
+1032,1,"Selectati Primul Volum"
+1033,1,"Rasfoiti si extrageti arhivele RAR."
+1034,1,"Despre Plugin"
+1035,1,"Fisier negasit in arhiva."
+1036,1,"Parola e incorecta. Literele din parola trebuie sa fie tastate folosind exact aceleasi caractere. Asigurati-va ca CapsLock nu e aprins (ON) din greseala."
+
+[STRINGTABLE 3]
+1040,1,"Arhivat"
+1041,1,"Arhivat masrimea fisierului"
+

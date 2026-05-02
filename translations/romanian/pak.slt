@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 100]
+212,73,1,"Optimizeaza Arhiva PAK"
+300,8,9,69,8,1,"Marime valida data:"
+101,82,9,118,8,1,""
+301,8,20,73,8,1,"Marimea totala fisier:"
+102,82,20,118,8,1,""
+302,8,31,53,8,1,"Spatiu pierdut:"
+103,82,31,118,8,1,""
+303,8,44,196,1,1,""
+1,46,53,55,14,1,"Optimizeaza"
+2,111,53,55,14,1,"Anuleaza"
+
+[STRINGTABLE 0]
+500,1,"Nu pot deschide fisierul: %s"
+501,1,"Nu pot initializa interfata paklib. Este deja un fisier deschis."
+502,1,"Nu pot deschide fisierul. Este un fisier deja deschis."
+503,1,"Nu pot obtine marimea fisierului: %s"
+504,1,"Data format e invalida."
+505,1,"Memorie insuficienta."
+506,1,"directorul curent central PAK"
+507,1,"Nu pot seta pointer de fisier: %s"
+508,1,"Nu pot citi din fisierul: %s"
+509,1,"Nu pot obtine pointerul de fisier: %s"
+510,1,"Nu pot scrie in fisierul: %s"
+511,1,"Nu pot adauga fisierul, nume prea lung."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Memorie insuficienta."
+1002,1,"Nu pot adauga fisierul la lista."
+1003,1,"Nu pot incarca paklib.dll sau sa obtin adresa procedurii: "
+1004,1,"Dezarhivez Arhiva PAK - %s"
+1005,1,"pregatesc data..."
+1006,1,"dezarhivez..."
+1007,1,"dezarhivez: "
+
+[STRINGTABLE 2]
+1008,1,"Nu pot termina operatiunea, nume prea lung."
+1009,1,"Nu pot seta pointerul de fisier: "
+1010,1,"Nu pot obtine pointerul de fisier: "
+1011,1,"Nu pot scrie in fisier:"
+1013,1,"Nu pot deschide fisierul: "
+1014,1,"Nu pot termina operatiunea, masca prea lunga."
+1015,1,"Sterg din Arhiva PAK - %s"
+1016,1,"sterg..."
+1017,1,"sterg: "
+1018,1,"anulez operatiunea, va rugam asteptati..."
+1019,1,"Arhivez in Arhiva PAK - %s"
+1020,1,"Nu pot adauga fisierul: Fisierul e prea mare."
+1021,1,"arhivez..."
+1022,1,"Nu pot adauga fisierul, nume prea lung."
+1023,1,"arhivez: "
+
+[STRINGTABLE 3]
+1024,1,"Nu pot citi din fisier: "
+1025,1,"Nu pot conecta plugin la Open Salamander."
+1026,1,"optimizez, va rugam asteptati..."
+1027,1,"Optimizez Arhiva PAK - %s"
+1028,1,"Stergerea fisierelor nu a fost terminata cu succes. Va trebui sa rulezi optimizare PAK din meniul de Plugin al PAK pentru a pastra risipirea spatiului discului."
+1029,1,"&Optimizeaza PAK"
+1030,1,"Ne pare rau, plugin-ul a expirat. Va rugam verificati pe web site-ul nostru pentru o noua versiune."
+1031,1,"Rasfoieste si extrage arhive Quake Pak."
+1032,1,"Despre Plugin"
+

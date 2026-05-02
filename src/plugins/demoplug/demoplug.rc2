@@ -1,0 +1,28 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+//
+// demoplug.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_FILE ICON "res\\file.ico"
+IDI_DIR ICON "res\\dir.ico"
+IDI_FS ICON "res\\fs.ico"
+IDB_TOOLBAR16_PNG RCDATA "res\\tb16.png"
+IDB_TOOLBAR256_PNG RCDATA "res\\tb256.png"
+IDB_GRAYALPHA_PNG RCDATA "res\\grayalph.png"

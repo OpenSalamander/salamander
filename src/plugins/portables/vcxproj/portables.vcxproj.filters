@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{fca60546-50be-4543-959b-31871a48be15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{8026bbeb-7cef-401f-9576-faf17fd495f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp\shared">
+      <UniqueIdentifier>{4a3a15a1-96a9-4761-9e60-45b1d25a70de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\shared">
+      <UniqueIdentifier>{33d35887-058a-450e-8dfa-246d83c9ca8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="h\fx">
+      <UniqueIdentifier>{8beedec5-09a2-418c-8eb8-7a076cb79947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp\fx">
+      <UniqueIdentifier>{4db6c2bc-f2e0-4687-8508-60c208ff1032}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\entry.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>cpp\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+      <Filter>cpp\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\globals.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp">
+      <Filter>cpp\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wpdplug.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifier.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wpdfs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fx.cpp">
+      <Filter>cpp\fx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fxfs.cpp">
+      <Filter>cpp\fx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wpdfsdevicelevel.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wpddeviceicons.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\device.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wpdfscontentlevel.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\config.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\globals.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\mhandles.h">
+      <Filter>h\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpdplug.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpdplugfs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifier.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpdfs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fx.h">
+      <Filter>h\fx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fxfs.h">
+      <Filter>h\fx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpdfsdevicelevel.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpddeviceicons.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\device.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wpdfscontentlevel.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh" />
+    <None Include="..\portables.def" />
+    <None Include="..\wpd.rh" />
+    <None Include="..\wpd.rh2" />
+    <None Include="..\versinfo.rh2" />
+    <None Include="..\fx.rh">
+      <Filter>h\fx</Filter>
+    </None>
+    <None Include="..\fx_lang.rh">
+      <Filter>h\fx</Filter>
+    </None>
+    <None Include="..\wpd.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\wpd.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\portables.png" />
+  </ItemGroup>
+</Project>

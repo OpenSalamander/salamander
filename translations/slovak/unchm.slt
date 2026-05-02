@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"Nie je možné otvoriť súbor."
+1002,1,"Nešpecifikovaná chyba."
+1003,1,"Extrahovanie CHM archívu"
+1004,1,"Chyba extrahovania súboru."
+1005,1,"Nie je možné pracovať s týmto súborom."
+1006,1,"Nedostatok pamäti."
+1007,1,"O plugine"
+
+[STRINGTABLE 1]
+1009,1,"Prehliada a extrahuje CHM súbory."
+1010,1,"Nie je možné vytvoriť dočasný adresár."
+1011,1,"Nie je možné odstrániť dočasný súbor."
+1012,1,"Neznámy formát súboru alebo neplatný CHM obraz.\n\nAk ste si istý, že je to platný CHM obraz, prosím kontaktujte support@altap.cz a pomôžete nám s podporou tohto formátu."
+1013,1,"Nie je možné otvoriť tento súbor."
+1014,1,"Vytvorenie dočasného súboru zlyhalo."
+1015,1,"Nie je možné nastaviť atribúty súboru."
+1016,1,"Nie je možné vytvoriť adresár '%s'."
+1020,1,"Áno"
+1021,1,"Nie"
+1022,1,"Chyba"
+1023,1,"Upozornenie"
+
+[STRINGTABLE 2]
+1032,1,"Interná chyba pluginu."
+
+[STRINGTABLE 3]
+1100,1,"Chyba čítania"
+1101,1,"Chyba zápisu"
+
+[STRINGTABLE 4]
+1105,1,"Neplatné číslo."
+1106,1,"zrušenie operácie, čakajte prosím..."
+1107,1,"CHMLIB knižnica Copyright © 2001-2010 Jed Wing"
+

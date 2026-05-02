@@ -1,0 +1,72 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+#include "..\library\texts.rc2"
+
+STRINGTABLE
+{
+  IDS_UNDELETE, "Undelete"
+  IDS_DESCRIPTION, "Recovers files deleted from FAT or NTFS partitions."
+  IDS_ABOUTTITLE, "About Plugin"
+  //IDS_ERRORMETADAMAGED, "Error reading MFT: one or more of the metafile records are damaged."
+  IDS_METAFILES, "{Metafiles}"
+  IDS_PATHDISK, "Path must contain disk."
+  IDS_PATHFILE, "The path leads to a file. Unable to open file."
+  IDS_PATHNOTFOUND, "Path not found."
+  IDS_IMAGENOTFOUND, "The file specified was not found."
+  IDS_ERROROPENINGPROGRESS, "Error opening progress dialog."
+  IDS_VOLENUMERATE, "Error enumerating system volumes."
+  IDS_OPENINGVOLUME, "Opening volume..."
+  IDS_SCANNINGFOUND, "{!}Scanning vacant clusters... (%d directory cluster{|1|s} found)"
+  IDS_ALWAYSCHOOSEYES, "Always choose Yes (if needed, you can reset this in the Configuration dialog)"
+  IDS_PATHTOOLONG, "Target path is too long"
+  IDS_QUESTION, "Question"
+  IDS_WANTCANCEL, "Do you want to cancel this operation?"
+  IDS_BADPATH, "Undeleting to archives or plugin file systems is not supported."
+  IDS_ERROR, "Error" // title of error messages
+  IDS_VIEW, "View" // the function "F3"
+  IDS_TEMPDIR, "To view files on %c: you need to specify an alternative temporary directory on a different logical disk than %c:"
+  IDS_WAIT, "Undeleting file to a temporary directory, please wait"
+  IDS_ENCRYPTEDWARNING, "The target volume does not support Encrypting File System (EFS).\n\nEncrypted files will be undeleted in backup format, which can be used to restore the files later to an NTFS partition using the command ""Plugins/Undelete/Restore Encrypted Files from Backup""."
+  IDS_DONTSHOWAGAIN, "Don't show this again"
+  IDS_CHOOSETEMPDIR, "Choose alternative temporary directory:"
+  IDS_SAMEPARTITION, "It seems you are undeleting to the same logical disk where the deleted file(s) are located. You should always undelete to a different partition, otherwise the files you are undeleting can get overwritten by themselves or you can lose other deleted files.\n\nTip: if you don't have multiple partitions, you can also undelete to a floppy or a USB disk."
+  IDS_UNDELETECMD, "&Recover Deleted Files and Directories..."
+  IDS_ERRORENCRYPTED, "Could not undelete encrypted file: "
+  IDS_RESTORECMD, "Restore &Encrypted Files from Backup..."
+  IDS_CANNOTVIEW, "Cannot view file - the temporary directory does not support Encrypting File System (EFS)"
+  IDS_CHOOSETARGET, "Choose target directory"
+  IDS_RESTORE, "Restore" // title of Restore Encrypted Files progress dialog
+  IDS_RESTORING, "Restoring" // label inside the progress dialog
+  IDS_READINGTREE, "Reading directory tree..." //, press the ESC key to cancel..."
+  IDS_NOEFS, "The target volume does not support Encrypting File System (EFS)."
+  IDS_VOLUME_MOUNT, "Mount Point"
+  IDS_VOLUME_NAME, "Name"
+  IDS_VOLUME_FORMAT, "Format"
+  IDS_VOLUME_SIZE, "Size"
+  IDS_VOLUME_FREE, "Free"
+  IDS_VOLUME_FREEPROC, "% Free"
+  IDS_VOLUME_VOLID, "GUID Path"
+  IDS_CONDITION, "Condition"
+  IDS_CONDITIONDESC, "File damage estimation"
+  IDS_CONDITION_GOOD, "Good"
+  IDS_CONDITION_FAIR, "Fair"
+  IDS_CONDITION_POOR, "Poor"
+  IDS_CONDITION_LOST, "Lost"
+  IDS_CONDITION_UNKNOWN, "Unknown"
+  IDS_UNDELETEINCHDRVMENU, "\tUndelete"
+  IDS_PARTIALRECOVER, "Following file could not be entirely recovered: %s\n\nDo you want to recover only part of the file?"
+  IDS_PARTIALRECOVER_DONTASK, "Choose the same answer next time"
+  IDS_ERRORRECOVER, "Error recovering file %s"
+}

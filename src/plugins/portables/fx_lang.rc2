@@ -1,0 +1,42 @@
+﻿/*
+	Salamander Plugin Development Framework
+	
+	Copyright (c) 2015 Milan Kase <manison@manison.cz>
+	Copyright (c) 2015 Open Salamander Authors
+	
+	fx_lang.rc2
+	Language dependent resources.
+*/
+
+
+#ifdef APSTUDIO_INVOKED
+#	error this file is not editable by Microsoft Visual C++
+#endif // APSTUDIO_INVOKED
+
+
+#include "fx_lang.rh"
+#include "fx_errcodes.h"
+
+
+// Common strings.
+STRINGTABLE
+BEGIN
+	IDS_FX_ABOUT			"About Plugin"
+END
+
+
+// Error descriptions.
+// (It would be better to use message resources but they are not supported by
+// Translator.)
+STRINGTABLE
+BEGIN
+	IDS_FX_ERRDESCRIPTION_BASE+_FX_HRCODE_PATH_IS_FILE	"The path specified contains path to a file."
+END
+
+
+// File system strings.
+STRINGTABLE
+BEGIN
+	IDS_FX_CHANGEPATHERRORTITLE	"Error Changing Directory"
+	IDS_FX_CHANGEPATHERRORFMT	"Path: ""%s""\r\nError: %s"
+END

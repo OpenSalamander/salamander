@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 101]
+266,111,1,"UnMIME - Konfiguration"
+2000,7,7,69,8,1,"Auflisten - Optionen"
+2001,78,11,182,1,1,""
+1000,18,20,98,10,1,"&Nachrichtenkopf auflisten"
+1001,18,35,100,10,1,"Nachrichten&texte auflisten"
+1003,31,50,228,10,1,"&Zeichensatzinfo zum Dateinamen hinzufügen falls kein US-ASCII"
+1002,18,65,73,10,1,"&Anhänge auflisten"
+2002,6,82,254,1,1,""
+1,152,90,50,14,1,"OK"
+2,209,90,50,14,1,"Abbrechen"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"Kann die Datei nicht öffnen."
+3,1,"Nicht genügend Speicher."
+4,1,"Kann den Archiveintrag nicht zur Dateiliste hinzufügen."
+5,1,"Diese Datei enthält einen oder mehrere Blöcke mit unbekannter Kodierung.\nDiese Blöcke werden nicht dekodiert."
+6,1,"Schreibfehler"
+7,1,"Entpacke Nachrichtendatei - %s"
+8,1,"Entpacke: "
+9,1,"Analysiere Datei..."
+10,1,"Ein oder mehrere %s Blöcke sind beschädigt oder haben\nein unbekanntes Format und werden nicht dekodiert."
+11,1,"Falsche CRC in einem oder mehreren %s Blöcken.\nDiese Blöcke werden nicht dekodiert."
+12,1,"Durchsucht und entpackt MIME/Base64, UU/XX-/yEncode und BinHex Dateien."
+13,1,"Über Plugin"
+14,1,"Warnung: Diese Datei enthält eine Mac Ressourceverzweigung.\nDiese Verzweigung wird nicht entpackt."
+15,1,"&Nicht wieder anzeigen"
+

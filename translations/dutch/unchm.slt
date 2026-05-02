@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"Kan bestand niet openen."
+1002,1,"Niet gespecificeerde fout."
+1003,1,"Uitpakken CHM archief"
+1004,1,"Fout uitpakken bestand."
+1005,1,"Kan niet overweg met dit bestand."
+1006,1,"Onvoldoende geheugen."
+1007,1,"Omtrent plugin"
+
+[STRINGTABLE 1]
+1009,1,"Blader en CHM bestanden uitpakken."
+1010,1,"Kan tijdelijke map niet aanmaken."
+1011,1,"Kan tijdelijke bestand niet verwijderen."
+1012,1,"Onbekend bestandsformaat of ongeldige CHM image.\n\nIndien u zeker bent dat het een geldige CHM image is, neem contact op met support@altap.cz en help ons dit formaat te ondersteunen."
+1013,1,"Kan bestand niet openen."
+1014,1,"Aanmaken van tijdelijke bestand is mislukt."
+1015,1,"Kan bestand attributen niet plaatsen."
+1016,1,"Kan map '%s' niet aanmaken."
+1020,1,"Ja"
+1021,1,"Nee"
+1022,1,"Fout"
+1023,1,"Waarschuwing"
+
+[STRINGTABLE 2]
+1032,1,"Interne plugin fout."
+
+[STRINGTABLE 3]
+1100,1,"Leesfout"
+1101,1,"Schrijffout"
+
+[STRINGTABLE 4]
+1105,1,"Ongeldig nummer."
+1106,1,"operatie annuleren, geduld alstublief..."
+1107,1,"CHMLIB Library Copyright © 2001-2010 Jed Wing"
+

@@ -1,0 +1,67 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+  IDS_PLUGINNAME, "Windows Mobile"
+  IDS_PLUGIN_DESCRIPTION, "Access files on your Windows Mobile device."
+  IDS_ABOUT, "About Plugin"
+}
+
+STRINGTABLE
+BEGIN
+  IDS_WMPLUGINTITLE          "Windows Mobile Plugin"
+  IDS_WMPLUGINTITLE_ERROR    "Windows Mobile Plugin Error"
+  IDS_WMPLUGINTITLE_QUESTION "Windows Mobile Plugin Question"
+  IDS_ERR_CONNECTION         "Unable to connect to the device.\n\nPlease make sure you have installed the underlying transport (e.g., ActiveSync) and have a device connected."
+  IDS_CONNECTING             "Connecting to device, please wait..."
+  IDS_PATH_ERROR             "Path: %s\nError: %s"
+  IDS_YESNO_CANCEL           "Do you want to cancel this operation?"
+  IDS_ERR_MEMORYLOW          "Out of memory."
+  IDS_ERR_PATHTOOLONG        "Unable to finish operation because of too long path."
+  IDS_ERR_CREATEDIR          "Unable to create the directory ""%s""."
+  IDS_YESNO_CREATEDIR        "The directory ""%s"" doesn't exist.\n\nDo you want to create it?"
+  IDS_ERR_DIRNAMEISFILE      "The name ""%s"" has already been used for a file."
+  IDS_ERR_INVALIDDATEFORMAT  "Date has invalid format."
+  IDS_ERR_NAMETOOLONG        "Can't finish operation because of too long name."
+  IDS_ERR_FILEINPATH         "The path specified contains path to a file. Unable to open file."
+  IDS_YESNO_CONNETCLOSEPLUGIN "Cannot connect to the device.\r\n\r\nDo you want to close the plugin?"
+  IDS_SORRY_CREATEDIR1        "Sorry, but this plugin is not able to create directory on disk or archive path."
+  IDS_SORRY_CREATEDIR2        "Sorry, but this plugin is not able to create directory on specified file-system."
+  IDS_SORRY_CREATEDIR3        "Sorry, but this plugin is not able to create directory outside of currently opened drive."
+  IDS_ERR_INVALIDPATH         "The path specified is invalid."
+  IDS_READ                    "Read"
+  IDS_READING                 "Reading"
+  IDS_WAIT_READINGDIRTREE     "Reading directory tree, please wait..."
+  IDS_DELETE                  "Delete"
+  IDS_DELETING                "Deleting"
+  IDS_YESNO_DELETENOEMPTYDIR  "The directory ""%s"" is not empty\nDo you want to delete it?"
+  IDS_YESNO_DELETEHIDDENFILE  "Do you want to delete the file with SYSTEM or HIDDEN attribute?"
+  IDS_YESNO_DELETEHIDDENDIR   "Do you want to delete the directory with SYSTEM or HIDDEN attribute?"
+  IDS_ERR_TARGETPATHNOEXISTS  "Target path doesn't exist. Windows Mobile plugin doesn't support creating of target path."
+  IDS_ERR_COPYTOOTHERFS       "Windows Mobile plugin doesn't support copying nor moving to other plugin file-systems."
+  IDS_ERR_COPYTOARCHIVES      "Windows Mobile plugin doesn't support copying nor moving to archives."
+  IDS_COPY                    "Copy"
+  IDS_COPYING                 "Copying"
+  IDS_MOVE                    "Move"
+  IDS_MOVING                  "Moving"
+  IDS_TO                      "to"
+  IDS_ERR_COPYDIRTOITSELF     "Can't copy a directory to itself."
+  IDS_ERR_COPYFILETOITSELF    "Can't copy a file to itself."
+  IDS_YESNO_OVERWRITEHIDDENFILE "Do you want to overwrite the file with SYSTEM or HIDDEN attribute?"
+  IDS_ERR_MOVEDIRTOITSELF     "Can't move a directory to itself."
+  IDS_ERR_MOVEFILETOITSELF    "Can't move a file to itself."
+  IDS_ATTRIBUTES              "Attributes"
+  IDS_CHANGING                "Changing"
+END

@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="c">
+      <UniqueIdentifier>{0698053a-dfde-4507-8e58-65a91040579f}</UniqueIdentifier>
+      <Extensions>c</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{ac1bafb1-1ea2-42f3-a62e-72e9250c8636}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shellext\copyhook.c">
+      <Filter>c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shellext\ctxmenu.c">
+      <Filter>c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\lstrfix.c">
+      <Filter>c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shellext\shellext.c">
+      <Filter>c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shellext\shexinit.c">
+      <Filter>c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shexreg.c">
+      <Filter>c</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\lstrfix.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shellext\shellext.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shexreg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shellext\shellext.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\shellext\shellext.rc" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"Acerca del Plugin"
+1003,1,"Hojear y extraer imágenes de disco FAT 12, 16, y 32."
+
+[STRINGTABLE 1]
+1100,1,"Error abriendo fichero "%s"."
+1101,1,"Error leyendo fichero "%s"."
+1102,1,"Error analizando fichero "%s".\n\n%s"
+1103,1,"El sector de arranque está corrupto o este fichero no es una imagen FAT 12, 16, o 32."
+
+[STRINGTABLE 2]
+1104,1,"Error leyendo directorio del fichero "%s".\n%s\nSector: %d, Offset: 0x%s\n\nEl fichero no es una imagen válida FAT 12, 16, o 32."
+1106,1,"Error leyendo fichero desde el fichero "%s".\n%s\nCluster: %d\n\nEl fichero no es una imagen válida FAT 12, 16, o 32."
+1107,1,"Error escribiendo fichero"
+1108,1,"El fichero "%s" parece ser una imagen de todo un disco duro.\nTales imágenes no son admitidas por el plugin UnFAT."
+1109,1,"Extrayendo imagen FAT - %s"
+1110,1,"extrayendo: %s"
+

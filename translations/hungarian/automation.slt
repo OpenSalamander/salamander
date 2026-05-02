@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 100]
+205,64,1,"Beviteli ablak"
+1150,8,8,189,8,1,"Parancs:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Mégse"
+
+[DIALOG 101]
+332,143,1,"Automatizálási beállítás"
+375,8,9,67,8,1,"&Szkript mappák:"
+371,8,19,316,73,1,""
+1001,8,102,105,10,1,"Sz&kript hibakeresés"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Mégse"
+9,207,121,50,14,1,"Sú&gó"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Tallóz…"
+40014,1,"Salamander mappa"
+40015,1,"Környezeti változó"
+
+[STRINGTABLE 0]
+1,1,"Automation"
+2,1,"Általános feladatok szkriptes automatizálása."
+3,1,"Plugin névjegy"
+
+[STRINGTABLE 1]
+128,1,"Automation szkript hiba"
+129,1,"Sor:\t%u\r\n"
+130,1,"Oszlop:\t%u\r\n"
+131,1,"Hiba:\t%s"
+132,1,"Kijelölt szkript futtatása"
+134,1,"Művelet folyamata"
+135,1,"Forrás:\t%s\r\n"
+136,1,"Szkript menü megnyitása"
+137,1,"(nincs szkript)"
+138,1,"Szkript futtatása sikertelen: '%s'.\r\n%s"
+139,1,"Ismeretlen hiba."
+140,1,"1\tMegsz&akít"
+141,1,"1\tHi&bakeresés\t2\tMegsz&akít"
+142,1,"Szkript mappa"
+143,1,"Válassza ki a szkripteket tároló mappát."
+
+[STRINGTABLE 2]
+144,1,"Szkript megszakítása"
+145,1,"Szkript futásának megszakítása\tCtrl+Break"
+146,1,"Az Open Salamander ablakot lezárta az Automation plugin. Fejezze be a szkript futtatását."
+147,1,"A parancsértelmező inicializálása sikertelen."
+
+[STRINGTABLE 3]
+256,1,"Érvénytelen archívum."
+257,1,"Az elérési út nem zárható le."
+258,1,"Az elérési út csonka."
+259,1,"A tulajdonság és a(z) %s  mód nem módosítható, amíg az ablak látszik."
+260,1,"A tulajdonság és a(z) %s  mód nem módosítható, amíg az ablak rejtett."
+261,1,"A plugin betöltése sikertelen."
+262,1,"Plugin hiba."
+263,1,"Nem sikerült a fájlt a lemez cache-be helyezni."
+264,1,"Fájl-maszk szintaktikai hiba."
+265,1,"Csak komponensek adhatóak a tárolóhoz."
+266,1,"Form-ok nem adhatóak a tárolóhoz."
+267,1,"A szkript futtatását megszakította a felhasználó."
+

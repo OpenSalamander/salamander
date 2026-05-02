@@ -1,0 +1,14 @@
+/* Cascading Style Sheet for Open Salamander Help */
+/* Basic part used for CHM only, not for WEB */
+
+body
+{
+  margin: 0px;	  
+  padding: 0px;
+  background: #ffffff; 
+  color: #000000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 70%;
+  width: 100%;
+}
+

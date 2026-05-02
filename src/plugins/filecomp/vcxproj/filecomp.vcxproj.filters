@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{ecfbc7b9-74d1-4d7e-9643-dc1cc6427931}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{74b5dee7-4305-4497-9e2b-9b605b36f4fe}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{59d48b93-f2c1-49ce-acf3-ca5dac88e557}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{ad5d44ff-421d-4a37-a09d-b6270e4f472d}</UniqueIdentifier>
+      <Extensions>cpp;h</Extensions>
+    </Filter>
+    <Filter Include="lukas-shared">
+      <UniqueIdentifier>{50934dc8-2cc7-44b7-bfe5-e1594689efd0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\controls.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cwbase.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cwoptim.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cwstrict.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dlg_com.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filecache.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filecomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filemap.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mainwnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mtxtout.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\remote.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\textio.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewtext.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewwnd.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewwnd2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\viewwnd3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\worker.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\worker2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xunicode.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\messages.cpp">
+      <Filter>lukas-shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\str.cpp">
+      <Filter>lukas-shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\utilaux.cpp">
+      <Filter>lukas-shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\utilbase.cpp">
+      <Filter>lukas-shared</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\controls.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cwbase.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cwoptim.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cwstrict.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dlg_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filecache.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filecomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filemap.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mainwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mtxtout.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\remote.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\remotmsg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\textio.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\viewtext.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\viewwnd.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\worker.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xunicode.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\arraylt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\auxtools.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gui.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\diff.h">
+      <Filter>lukas-shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\lcutils.h">
+      <Filter>lukas-shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\messages.h">
+      <Filter>lukas-shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\str.h">
+      <Filter>lukas-shared</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\filecomp.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\filecomp.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\filecomp.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\filecomp.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\filecomp.def" />
+    <None Include="..\split2.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\browse.ico" />
+    <Image Include="..\icon.ico" />
+  </ItemGroup>
+</Project>

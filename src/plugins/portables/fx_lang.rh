@@ -1,0 +1,31 @@
+﻿/*
+	Salamander Plugin Development Framework
+	
+	Copyright (c) 2015 Milan Kase <manison@manison.cz>
+	Copyright (c) 2015 Open Salamander Authors
+	
+	fx_lang.rh
+	Symbols for language dependent resources.
+*/
+
+
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __PORTABLES_FX_LANG_RH
+#define __PORTABLES_FX_LANG_RH
+
+// These strings must be provided by the plugin author.
+#define IDS_FX_PLUGIN_NAME		8192
+#define IDS_FX_PLUGIN_DESCRIPTION	8193
+
+// These strings are provided by the framework.
+#define IDS_FX_ABOUT			9216
+
+// These strings are required for file system plugins and are provided by the 
+// framework by default.
+#define IDS_FX_CHANGEPATHERRORTITLE	10240
+#define IDS_FX_CHANGEPATHERRORFMT	10241
+
+// Base identifier for error descriptions.
+#define IDS_FX_ERRDESCRIPTION_BASE	11264
+
+#endif // __PORTABLES_FX_LANG_RH

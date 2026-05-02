@@ -1,0 +1,26 @@
+[project]
+name = "salamander-tools"
+version = "0.1.0"
+description = "Python utilities for Salamander sources"
+requires-python = ">=3.13"
+dependencies = [
+    "wordfreq>=3.1",
+    "Unidecode>=1.3.8",
+    "plotly>=5.22",
+    "tree-sitter>=0.22",
+    "tree-sitter-c>=0.22",
+    "tree-sitter-cpp>=0.22",
+]
+
+[project.scripts]
+comment-translation-status = "comments.translation_status:main"
+comment-find-czech-words = "comments.find_czech_words:main"
+comment-word-counter = "comments.word_counter:main"
+comment-code-guard = "comments.code_guard:main"
+
+[tool.setuptools]
+packages = ["comments"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

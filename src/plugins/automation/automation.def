@@ -1,0 +1,16 @@
+;
+;	Automation Plugin for Open Salamander
+;	
+;	Copyright (c) 2009-2023 Milan Kase <manison@manison.cz>
+;	Copyright (c) 2010-2023 Open Salamander Authors
+;	
+;	salamander.def
+;	Module definition file.
+;
+EXPORTS
+	SalamanderPluginEntry		@1	PRIVATE
+	SalamanderPluginGetReqVer	@2	PRIVATE
+; Since Automation is now bundled with the Salamander setup pack, we need not
+; to be backward compatible with previous versions and don't need to export
+; SDK version.
+;	SalamanderPluginGetSDKVer	@3	PRIVATE

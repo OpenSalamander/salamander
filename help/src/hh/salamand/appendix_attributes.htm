@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>File and Directory Attributes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Appendix: File and Directory Concepts</div>
+<div class="page">
+
+<h1>File and Directory Attributes</h1>
+<p>Several characteristics called attributes may be associated with a file or directory.
+The attributes can be one or more of the following values.</p>
+
+<table>
+
+<tr>
+<th>Attribute</th><th>Symbol</th><th>Meaning</th>
+</tr>
+
+<tr>
+ <td>Archive</td>
+ <td>A</td>
+ <td>The file or directory is an archive file. Applications use this attribute
+     to mark files for backup or removal.</td>
+</tr>
+<tr>
+ <td>Compressed</td>
+ <td>C</td>
+ <td>The file or directory is compressed (only on NTFS volumes). For a file, this means that all of the
+     data in the file is compressed. For a directory, this means that compression
+     is the default for newly created files and subdirectories.</td>
+</tr>
+<tr>
+ <td>Encrypted</td>
+ <td>E</td>
+ <td>The file or directory is encrypted (only on NTFS volumes). For a file, this means that all of the
+     data in the file is encrypted. For a directory, this means that all newly
+     created files and subdirectories will be encrypted.</td>
+</tr>
+<tr>
+ <td>Hidden</td>
+ <td>H</td>                                  
+ <td>The file or directory is hidden. It is not included in an ordinary directory
+     listing.</td>
+</tr>
+<tr>
+ <td>Offline</td>
+ <td>O</td>
+ <td>The data of the file is not immediately available. This attribute indicates that the file data 
+     has been physically moved to offline storage. This attribute is used by Remote Storage, the 
+     hierarchical storage management software.</td>
+</tr>
+<tr>
+ <td>Read-only</td>
+ <td>R</td>
+ <td>The file or directory is read-only. Applications can read the file but cannot
+     write to it or delete it. In the case of a directory, applications cannot
+     delete it.</td>
+</tr>
+<tr>
+ <td>System</td>
+ <td>S</td>
+ <td>The file or directory is part of the operating system or is used exclusively
+     by the operating system.</td>
+</tr>
+<tr>
+ <td>Temporary</td>
+ <td>T</td>
+ <td>The file is being used for temporary storage. File systems attempt to keep all 
+     of the data in memory for quicker access rather than flushing the data back to 
+     mass storage.</td>
+</tr>
+
+</table>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNDELETE_RH2
+#define __UNDELETE_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDC_STATIC_1 3000
+#include "statics.rh2"   // 3000 to 3039 are occupied!
+
+#include "library\texts.rh2"
+
+#define IDS_UNDELETE                1
+#define IDS_DESCRIPTION             3
+#define IDS_ABOUTTITLE              4
+//#define IDS_ERRORMETADAMAGED        8
+#define IDS_PATHDISK                18
+#define IDS_PATHNOTFOUND            19
+#define IDS_PATHFILE                20
+#define IDS_ERROROPENINGPROGRESS    22
+#define IDS_OPENINGVOLUME           23
+#define IDS_SCANNINGFOUND           32
+#define IDS_ALWAYSCHOOSEYES         34
+#define IDS_PATHTOOLONG             42
+#define IDS_QUESTION                43
+#define IDS_WANTCANCEL              44
+#define IDS_BADPATH                 45
+#define IDS_ERROR                   46
+#define IDS_VIEW                    47
+#define IDS_TEMPDIR                 48
+#define IDS_VOLENUMERATE            49
+#define IDS_IMAGENOTFOUND           50
+#define IDS_WAIT                    59
+#define IDS_ENCRYPTEDWARNING        60
+#define IDS_DONTSHOWAGAIN           61
+#define IDS_CHOOSETEMPDIR           62
+#define IDS_SAMEPARTITION           63
+#define IDS_UNDELETECMD             65
+#define IDS_ERRORENCRYPTED          66
+#define IDS_RESTORECMD              67
+#define IDS_CANNOTVIEW              68
+#define IDS_CHOOSETARGET            69
+#define IDS_READINGTREE             70
+#define IDS_RESTORE                 71
+#define IDS_RESTORING               72
+#define IDS_NOEFS                   73
+#define IDS_VOLUME_MOUNT            80
+#define IDS_VOLUME_NAME             81
+#define IDS_VOLUME_FORMAT           82
+#define IDS_VOLUME_SIZE             83
+#define IDS_VOLUME_FREE             84
+#define IDS_VOLUME_FREEPROC         85
+#define IDS_VOLUME_VOLID            86
+//#define IDS_VOLUME_          87, 88, 89, 90
+#define IDS_CONDITION               95
+#define IDS_CONDITIONDESC           96
+#define IDS_CONDITION_GOOD          97
+#define IDS_CONDITION_FAIR          98
+#define IDS_CONDITION_POOR          99
+#define IDS_CONDITION_LOST          100
+#define IDS_CONDITION_UNKNOWN       101
+#define IDS_UNDELETEINCHDRVMENU     102
+#define IDS_PARTIALRECOVER          103
+#define IDS_PARTIALRECOVER_DONTASK  104
+#define IDS_ERRORRECOVER            105
+
+#define IDH_UNDELETE             2000
+#define IDH_RESTOREENCRFILES     2001
+
+#define IDI_FS                   30000
+#define IDB_FS                   30001
+#define IDI_DELETED              30002
+
+#endif // __UNDELETE_RH2

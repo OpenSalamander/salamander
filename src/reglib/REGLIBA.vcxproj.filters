@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="CPP">
+      <UniqueIdentifier>{95d91a3d-1bf8-4da4-b8c9-0fa180621ec7}</UniqueIdentifier>
+      <Extensions>CPP</Extensions>
+    </Filter>
+    <Filter Include="H">
+      <UniqueIdentifier>{4531b38d-f131-4ad4-9379-fee0c623963f}</UniqueIdentifier>
+      <Extensions>H</Extensions>
+    </Filter>
+    <Filter Include="RC">
+      <UniqueIdentifier>{392b7344-c65d-404a-a25f-524254641250}</UniqueIdentifier>
+      <Extensions>RC;ICO;BMP</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SRC\PRECOMP.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\REGCOPY.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\REGINMEM.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\REGISTRY.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\REGPARSE.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\TESTER.CPP">
+      <Filter>CPP</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SRC\PRECOMP.H">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="SRC\REGPARSE.H">
+      <Filter>H</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SRC\REGPARSER.RC">
+      <Filter>RC</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

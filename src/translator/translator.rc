@@ -1,0 +1,641 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Czech (Czech Republic) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CSY)
+LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+1                       RT_MANIFEST             "manifest.xml"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON                    "translator.ico"
+IDI_DUMMY               ICON                    "dummy.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TREE                BITMAP                  "tree.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_MAINMENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open Project...\tCtrl+O",    CM_OPEN
+        POPUP "Open &Recent"
+        BEGIN
+            MENUITEM "Empty",                       CM_OPEN_RECENT_FIRST
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Open MUI &Packages...\tCtrl+P", ID_FILE_OPENMUI
+        MENUITEM SEPARATOR
+        MENUITEM "Sa&ve All\tCtrl+S",           CM_SAVE
+        MENUITEM "&Close Project",              CM_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Import Translation from Old Project...\tCtrl+I", CM_IMPORT
+        MENUITEM SEPARATOR
+        MENUITEM "I&mport Translation from Text Archive...\tCtrl+M", ID_FILE_IMPORTTEXT
+        MENUITEM "Export Tr&anslation as Text Archive...\tCtrl+D", ID_FILE_EXPORTTEXT
+        MENUITEM SEPARATOR
+        MENUITEM "&Export Translated Texts for Spell Check...\tCtrl+E", CM_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "&Translation Properties...\tCtrl+T", CM_PROPERTIES
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       CM_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Find Text...\tCtrl+F",       CM_EDIT_FIND
+        MENUITEM "Find &Untranslated Texts\tCtrl+U", ID_EDIT_FINDUNTRANSLATED
+        MENUITEM "Find Dialogs Needing &Relayout\tCtrl+R", ID_EDIT_FINDRELAYOUT
+        MENUITEM "Find Dialogs With &Outer Controls", ID_EDIT_FINDOUTER
+        MENUITEM SEPARATOR
+        MENUITEM "&Next Output Row\tF4",        CM_GOTO_NEXT
+        MENUITEM "&Previous Output Row\tShift+F4", CM_GOTO_PREV
+        MENUITEM SEPARATOR
+        MENUITEM "&Toggle Bookmark\tCtrl+F2",   ID_EDIT_TOGGLEBOOKMARK
+        MENUITEM "Ne&xt Bookmark\tF2",          ID_EDIT_NEXTBOOKMARK
+        MENUITEM "Pre&vious Bookmark\tShift+F2", ID_EDIT_PREVIOUSEBOOKMARK
+        MENUITEM "&Clear Bookmarks\tCtrl+Shift+F2", ID_EDIT_CLEARBOOKMARKS
+        MENUITEM SEPARATOR
+        MENUITEM "&Edit Item Text\tF3",         ID_EDIT_TRANSLATED
+    END
+    POPUP "&Preview"
+    BEGIN
+        MENUITEM "&Extend Dialog Box To Clipped Controls", ID_PREVIEW_EXTENDDLG
+        MENUITEM "&Outline Controls",           ID_PREVIEW_OUTLINECTRLS
+        MENUITEM "&Fill Controls With Dummy Values", ID_PREVIEW_FILLCTRLS
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Validate Translation...\tCtrl+Q", CM_HOTKEY_CONFLICTS
+        MENUITEM "&Edit Dialog Layout...\tCtrl+L", ID_TOOLS_EDITLAYOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Save All and Restart Open Salamander\tF5", ID_TOOLS_RESTART
+        MENUITEM "&Kill Open Salamander\tShift+F5", ID_TOOLS_KILL
+        MENUITEM SEPARATOR
+        MENUITEM "&Mark Changed Strings as Translated\tCtrl+K", ID_TOOLS_MARKASTR
+        MENUITEM "&Reset Dialogs Layouts to Original\tCtrl+N", ID_TOOLS_RESETDLGSTOORIG
+        MENUITEM "&Clear Dialog Relayout Flag\tCtrl+J", ID_TOOLS_CLEARDLGRELAYOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Options...",                 CM_TOOLS_OPTIONS
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "Ne&xt\tCtrl+Tab",             CM_WND_NEXT
+        MENUITEM "Pre&vious\tCtrl+Shift+Tab",   CM_WND_PREVIOUS
+        MENUITEM SEPARATOR
+        MENUITEM "&Cascade",                    CM_WND_CASCADE
+        MENUITEM "T&itle",                      CM_WND_TITLE
+        MENUITEM SEPARATOR
+        MENUITEM "&Navigator\tAlt+1",           CM_WND_TREE
+        MENUITEM "&Texts\tAlt+2",               CM_WND_TEXT
+        MENUITEM "&Resource Symbols\tAlt+3",    CM_WND_RH
+        MENUITEM "&Output\tAlt+4",              CM_WND_OUTPUT
+        MENUITEM "&Preview\tAlt+5",             CM_WND_PREVIEW
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Show &Readme...",             ID_HELP_SHOWREADME
+        MENUITEM SEPARATOR
+        MENUITEM "&About...",                   CM_ABOUT
+    END
+END
+
+IDM_LAYOUTMENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       ID_LAYOUT_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_LAYOUT_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               ID_LAYOUT_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_LAYOUT_EDIT_SELECTALL
+        MENUITEM "&Deselect All\tCtrl+D",       ID_LAYOUT_EDIT_DESELECTALL
+    END
+    POPUP "&Position"
+    BEGIN
+        MENUITEM "Align &Left\tCtrl+Left",      ID_LAYOUT_ALIGN_LEFT
+        MENUITEM "Align &Right\tCtrl+Right",    ID_LAYOUT_ALIGN_RIGHT
+        MENUITEM "Align &Top\tCtrl+Top",        ID_LAYOUT_ALIGN_TOP
+        MENUITEM "Align &Bottom\t Ctrl+Down",   ID_LAYOUT_ALIGN_BOTTOM
+        MENUITEM SEPARATOR
+        MENUITEM "Equal &Horizontal Spacing\tH", ID_EQUAL_H_SPACING
+        MENUITEM "Equal &Vertical Spacing\tV",  ID_EQUAL_V_SPACING
+        MENUITEM SEPARATOR
+        MENUITEM "Center Horizontal",           ID_LAYOUT_CENTER_H
+        MENUITEM "Center Vertical",             ID_LAYOUT_CENTER_V
+        MENUITEM SEPARATOR
+        MENUITEM "Center Horizontal To Dialog\tC", ID_LAYOUT_CENTER_H2D
+        MENUITEM "Center Vertical To Dialog",   ID_LAYOUT_CENTER_V2D
+    END
+    POPUP "&Resize"
+    BEGIN
+        MENUITEM "Width To &Largest",           ID_LAYOUT_RESIZE_WIDTHLARGE
+        MENUITEM "Width To &Smallest",          ID_LAYOUT_RESIZE_WIDTHSMALL
+        MENUITEM SEPARATOR
+        MENUITEM "H&eight To Largest",          ID_LAYOUT_RESIZE_HEIGHTLARGE
+        MENUITEM "He&ight To Smallest",         ID_LAYOUT_RESIZE_HEIGHTSMALL
+        MENUITEM SEPARATOR
+        MENUITEM "Se&t Size...\tE",             ID_LAYOUT_RESIZE_SETSIZE
+        MENUITEM SEPARATOR
+        MENUITEM "Si&ze to Content\tS",         ID_LAYOUT_RESIZE_SIZETOCONTENT
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Outline Controls\tO",        ID_LAYOUT_TOOLS_OUTLINE
+        MENUITEM SEPARATOR
+        MENUITEM "&Preview Original Layout\tP", ID_LAYOUT_TOOLS_PREVIEWORIGINAL
+        MENUITEM "Preview &Unchanged Layout\tU", ID_LAYOUT_TOOLS_PREVIEWUNCHANGED
+        MENUITEM SEPARATOR
+        MENUITEM "&Test Dialog Box\tT",         ID_LAYOUT_TOOLS_TESTDLGBOX
+        MENUITEM SEPARATOR
+        MENUITEM "Ali&gn To\tG",                ID_LAYOUT_ALIGN_EDGE_TO
+        MENUITEM SEPARATOR
+        MENUITEM "&Normalize Standard Layout\tN", ID_LAYOUT_TOOLS_NORMALIZE_STD
+        MENUITEM "Normalize &Wide Layout\tShift+N", ID_LAYOUT_TOOLS_NORMALIZE_WIDE
+        MENUITEM "&Reset To Original Layout\tR", ID_LAYOUT_TOOLS_RESET
+    END
+    POPUP "Pr&ojects"
+    BEGIN
+        MENUITEM "&Open Layout Editor For Next Project\tQ", ID_LAYOUT_PROJECT_NEXT
+        MENUITEM SEPARATOR
+        MENUITEM "dummy",                       ID_LAYOUT_PROJECT_0
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Show &Readme...",             ID_HELP_SHOWREADME
+        MENUITEM SEPARATOR
+        MENUITEM "&About...",                   CM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_MAINACCELS ACCELERATORS
+BEGIN
+    "F",            CM_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "E",            CM_EXPORT,              VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          CM_GOTO_NEXT,           VIRTKEY, NOINVERT
+    VK_F4,          CM_GOTO_PREV,           VIRTKEY, SHIFT, NOINVERT
+    "Q",            CM_HOTKEY_CONFLICTS,    VIRTKEY, CONTROL, NOINVERT
+    "I",            CM_IMPORT,              VIRTKEY, CONTROL, NOINVERT
+    "O",            CM_OPEN,                VIRTKEY, CONTROL, NOINVERT
+    "T",            CM_PROPERTIES,          VIRTKEY, CONTROL, NOINVERT
+    "S",            CM_SAVE,                VIRTKEY, CONTROL, NOINVERT
+    "4",            CM_WND_OUTPUT,          VIRTKEY, ALT, NOINVERT
+    "5",            CM_WND_PREVIEW,         VIRTKEY, ALT, NOINVERT
+    "3",            CM_WND_RH,              VIRTKEY, ALT, NOINVERT
+    "2",            CM_WND_TEXT,            VIRTKEY, ALT, NOINVERT
+    "1",            CM_WND_TREE,            VIRTKEY, ALT, NOINVERT
+    VK_F2,          ID_EDIT_CLEARBOOKMARKS, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "R",            ID_EDIT_FINDRELAYOUT,   VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_EDIT_FINDUNTRANSLATED, VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_EDIT_NEXTBOOKMARK,   VIRTKEY, NOINVERT
+    VK_F2,          ID_EDIT_PREVIOUSEBOOKMARK, VIRTKEY, SHIFT, NOINVERT
+    VK_F2,          ID_EDIT_TOGGLEBOOKMARK, VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_EDIT_TRANSLATED,     VIRTKEY, NOINVERT
+    "D",            ID_FILE_EXPORTTEXT,     VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_FILE_IMPORTTEXT,     VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_OPENMUI,        VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_TOOLS_EDITLAYOUT,    VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_TOOLS_KILL,          VIRTKEY, SHIFT, NOINVERT
+    "J",            ID_TOOLS_CLEARDLGRELAYOUT, VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_TOOLS_MARKASTR,      VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_TOOLS_RESETDLGSTOORIG, VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_TOOLS_RESTART,       VIRTKEY, NOINVERT
+END
+
+IDA_LAYOUTACCELS ACCELERATORS
+BEGIN
+    "H",            ID_EQUAL_H_SPACING,     VIRTKEY, NOINVERT
+    "V",            ID_EQUAL_V_SPACING,     VIRTKEY, NOINVERT
+    VK_DOWN,        ID_LAYOUT_ALIGN_BOTTOM, VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        ID_LAYOUT_ALIGN_LEFT,   VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_LAYOUT_ALIGN_RIGHT,  VIRTKEY, CONTROL, NOINVERT
+    VK_UP,          ID_LAYOUT_ALIGN_TOP,    VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_LAYOUT_CENTER_H2D,   VIRTKEY, NOINVERT
+    "D",            ID_LAYOUT_EDIT_DESELECTALL, VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_LAYOUT_EDIT_REDO,    VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_LAYOUT_EDIT_SELECTALL, VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_LAYOUT_EDIT_UNDO,    VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         ID_LAYOUT_NEXTCTRL,     VIRTKEY, NOINVERT
+    VK_TAB,         ID_LAYOUT_PREVCTRL,     VIRTKEY, SHIFT, NOINVERT
+    "O",            ID_LAYOUT_TOOLS_OUTLINE, VIRTKEY, NOINVERT
+    "N",            ID_LAYOUT_TOOLS_NORMALIZE_STD, VIRTKEY, NOINVERT
+    "N",            ID_LAYOUT_TOOLS_NORMALIZE_WIDE, VIRTKEY, SHIFT, NOINVERT
+    "G",            ID_LAYOUT_ALIGN_EDGE_TO, VIRTKEY, NOINVERT
+    "R",            ID_LAYOUT_TOOLS_RESET,  VIRTKEY, NOINVERT
+    "E",            ID_LAYOUT_RESIZE_SETSIZE, VIRTKEY, NOINVERT
+    "S",            ID_LAYOUT_RESIZE_SIZETOCONTENT, VIRTKEY, NOINVERT
+    "P",            ID_LAYOUT_TOOLS_PREVIEWORIGINAL, VIRTKEY, NOINVERT
+    "U",            ID_LAYOUT_TOOLS_PREVIEWUNCHANGED, VIRTKEY, NOINVERT
+    "Q",            ID_LAYOUT_PROJECT_NEXT, VIRTKEY, NOINVERT
+    "T",            ID_LAYOUT_TOOLS_TESTDLGBOX, VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_NEW DIALOGEX 0, 0, 323, 113
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "New Project"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Project:",-1,7,8,60,8
+    EDITTEXT        IDC_NEW_PROJECT,81,7,218,12
+    PUSHBUTTON      "...",IDC_NEW_PROJECT_BROWSE,300,7,14,12
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,5,26,311,1
+    LTEXT           "&Original:",-1,7,35,60,8
+    EDITTEXT        IDC_NEW_ORIGINAL,81,34,218,12
+    PUSHBUTTON      "...",IDC_NEW_ORIGINAL_BROWSE,300,34,14,12
+    LTEXT           "&Translated:",-1,7,52,71,8
+    EDITTEXT        IDC_NEW_DESTINATION,81,50,218,12
+    PUSHBUTTON      "...",IDC_NEW_DESTINATION_BROWSE,300,50,14,12
+    LTEXT           "&Resource Symbols:",-1,7,68,71,8
+    EDITTEXT        IDC_NEW_INCLUDE,81,66,218,12
+    PUSHBUTTON      "...",IDC_NEW_INCLUDE_BROWSE,300,66,14,12
+    DEFPUSHBUTTON   "OK",IDOK,207,93,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,264,92,50,14
+END
+
+IDD_PROPERTIES DIALOGEX 0, 0, 252, 139
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Translation Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Language:",-1,9,12,35,8
+    COMBOBOX        IDC_PRP_LOCALE,62,11,180,161,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Authors:",-1,9,31,29,8
+    EDITTEXT        IDC_PRP_AUTHOR,62,29,180,12,ES_AUTOHSCROLL
+    LTEXT           "&Web:",-1,9,48,25,8
+    EDITTEXT        IDC_PRP_WEB,62,46,180,12,ES_AUTOHSCROLL
+    LTEXT           "&Comment:",-1,9,65,33,8
+    EDITTEXT        IDC_PRP_COMMENT,62,63,180,12,ES_AUTOHSCROLL
+    LTEXT           "&HelpDir:",-1,9,82,33,8
+    EDITTEXT        IDC_PRP_HELPDIR,62,80,180,12,ES_AUTOHSCROLL
+    LTEXT           "&SLGIncomplete:",-1,9,99,51,8
+    EDITTEXT        IDC_PRP_SLGINCOMPLETE,62,97,180,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,134,117,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,192,117,50,14
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 150, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "About Translator"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,50,53,50,14
+    LTEXT           "Translator 1.24",IDC_STATIC,16,10,114,8
+    LTEXT           "Copyright © 2010-2023 Open Salamander Authors",IDC_STATIC,15,22,107,8
+END
+
+IDD_FIND DIALOGEX 0, 0, 223, 139
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Find"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Find what",-1,6,6,33,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,40,10,176,1
+    COMBOBOX        IDC_FIND_FIND,11,20,203,148,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_TABSTOP
+    LTEXT           "Options",-1,6,40,27,8
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,33,44,183,1
+    CONTROL         "Look in &Translated Texts",IDC_FIND_TEXTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,55,95,12
+    CONTROL         "Look in &Original Texts",IDC_FIND_ORIGINAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,67,97,12
+    CONTROL         "Look in &Resource Symbols",IDC_FIND_SYMBOLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,80,97,12
+    CONTROL         "&Whole Words",IDC_FIND_WORDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,55,57,12
+    CONTROL         "&Case sensitive",IDC_FIND_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,67,57,12
+    CONTROL         "&Ignore '&&' characters",IDC_FIND_IGNOREAMPERSAND,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,80,80,12
+    CONTROL         "Ig&nore '-' characters",IDC_FIND_IGNOREDASH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,93,76,12
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,6,112,210,1
+    DEFPUSHBUTTON   "OK",IDOK,108,118,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,164,118,50,14
+END
+
+IDD_OPTIONS DIALOGEX 0, 0, 197, 53
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "&Reload last project at startup",IDC_OPTIONS_RELOAD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,7,125,12
+    CONTROL         "",-1,"Static",SS_ETCHEDHORZ | WS_GROUP,5,24,187,1
+    DEFPUSHBUTTON   "OK",IDOK,85,31,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,139,31,50,14
+END
+
+IDD_IMPORT DIALOGEX 0, 0, 323, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Import Old Translation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Old project",-1,10,9,42,8
+    EDITTEXT        IDC_IMPORT_PROJECT,10,19,289,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_IMPORT_PROJECT_BROWSE,300,19,14,12
+    DEFPUSHBUTTON   "OK",IDOK,207,40,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,264,40,50,14
+END
+
+IDD_VALIDATE DIALOGEX 20, 57, 257, 331
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Validate Translation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        " Test translated texts for ",-1,9,8,238,124,WS_GROUP
+    CONTROL         "&Duplicated hotkeys in dialogs",IDC_VAL_DLGHOTKEYSCONFLICT,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,18,22,167,12
+    CONTROL         "Duplicated hotkeys in &menus",IDC_VAL_MENUHOTKEYSCONFLICT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,35,167,12
+    CONTROL         "Inconsistent &format specifier (%d, %s, etc.)",IDC_VAL_PRINTFSPECIFIER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,48,198,12
+    CONTROL         "Inconsistent &control characters (\\r, \\n, \\t, etc.)",IDC_VAL_CONTROLCHARS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,61,168,12
+    CONTROL         "Inconsistent &strings with CSV (comma separated values)",IDC_VAL_STRINGSWITHCSV,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,74,195,12
+    CONTROL         "Inconsistent &plural strings (signature {!})",IDC_VAL_PLURALSTR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,87,168,12
+    CONTROL         "Inconsistent text &beginning and ending (space, point, colon)",IDC_VAL_TEXTENDING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,100,215,12
+    CONTROL         "Inconsistent &hot keys (&&a, &&b, &&c, etc.)",IDC_VAL_HOTKEYS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,113,168,12
+    GROUPBOX        " Check dialog boxes layout ",-1,9,138,238,151,WS_GROUP
+    CONTROL         "Check dialog controls &layout for overlap",IDC_VAL_LAYOUT,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,18,153,182,12
+    CONTROL         "Check dialog texts cl&ipping",IDC_VAL_CLIPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,166,182,12
+    CONTROL         "Check controls spacing from dialog box frame",IDC_VAL_CONTROLTODLG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,179,170,12
+    CONTROL         "Check slightly misaligned controls",IDC_VAL_MISALIGNED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,192,128,12
+    CONTROL         "Check slightly different sized controls",IDC_VAL_DIFSIZED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,205,140,12
+    CONTROL         "Check slightly different spacing between controls",IDC_VAL_DIFSPACING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,218,176,12
+    CONTROL         "Check standard controls size",IDC_VAL_STANDARDSIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,231,176,12
+    CONTROL         "Check labels to controls spacing",IDC_VAL_LABELSSPACING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,244,123,12
+    CONTROL         "Check sizes of property pages",IDC_VAL_SIZESOFPROPPAGES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,257,113,12
+    CONTROL         "Check standard horizontal button spacing",IDC_VAL_HBUTTONSPACING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,270,168,12
+    CONTROL         "Check dialog controls ID",IDC_VAL_DIALOGCONTROLSID,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,293,94,12
+    PUSHBUTTON      "Ch&eck All",IDC_CHECKALL,10,312,50,14
+    PUSHBUTTON      "&Uncheck All",IDC_UNCHECKALL,67,312,50,14
+    DEFPUSHBUTTON   "OK",IDOK,142,312,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,199,312,50,14
+END
+
+IDD_IMPORTMUI DIALOGEX 0, 0, 323, 69
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Import MUI Packages"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Original:",-1,7,10,42,8
+    EDITTEXT        IDC_IMPORTMUI_ORIGINAL,50,9,249,12
+    PUSHBUTTON      "...",IDC_IMPORTMUI_ORIGINAL_BROWSE,300,9,14,12
+    LTEXT           "&Translated:",-1,7,27,42,8
+    EDITTEXT        IDC_IMPORTMUI_TRANSLATED,50,25,249,12
+    PUSHBUTTON      "...",IDC_IMPORTMUI_TRANSLATED_BROWSE,300,25,14,12
+    DEFPUSHBUTTON   "OK",IDOK,207,46,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,264,46,50,14
+END
+
+IDD_AGREEMENT DIALOGEX 0, 0, 499, 379
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Translator License Agreement"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "I agree with this license agreement",IDC_I_AGREE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,362,129,10
+    DEFPUSHBUTTON   "OK",IDOK,388,358,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,442,358,50,14
+    EDITTEXT        IDC_LICENSE,7,7,485,347,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
+END
+
+IDD_ALIGNTO DIALOGEX 0, 0, 198, 104
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Align To"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Selected items",IDC_STATIC,7,8,46,8
+    CONTROL         "&T",IDC_AT_SEL_TOP,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,18,26,10
+    CONTROL         "&R",IDC_AT_SEL_RIGHT,"Button",BS_AUTORADIOBUTTON,37,31,17,10
+    CONTROL         "&B",IDC_AT_SEL_BOTTOM,"Button",BS_AUTORADIOBUTTON,22,44,37,10
+    CONTROL         "&L",IDC_AT_SEL_LEFT,"Button",BS_AUTORADIOBUTTON,7,31,27,10
+    CONTROL         "&VC",IDC_AT_SEL_VC,"Button",BS_AUTORADIOBUTTON,55,31,27,10
+    CONTROL         "&HC",IDC_AT_SEL_HC,"Button",BS_AUTORADIOBUTTON,22,56,27,10
+    LTEXT           "Reference item",IDC_STATIC,97,8,48,8
+    CONTROL         "&1(T)",IDC_AT_REF_TOP,"Button",BS_AUTORADIOBUTTON | WS_GROUP,113,18,26,10
+    CONTROL         "&2(R)",IDC_AT_REF_RIGHT,"Button",BS_AUTORADIOBUTTON,130,31,26,10
+    CONTROL         "&3(B)",IDC_AT_REF_BOTTOM,"Button",BS_AUTORADIOBUTTON,113,44,37,10
+    CONTROL         "&4(L)",IDC_AT_REF_LEFT,"Button",BS_AUTORADIOBUTTON,97,31,27,10
+    CONTROL         "&5(VC)",IDC_AT_REF_VC,"Button",BS_AUTORADIOBUTTON,158,31,33,10
+    CONTROL         "&6(HC)",IDC_AT_REF_HC,"Button",BS_AUTORADIOBUTTON,113,56,33,10
+    CONTROL         "&Move",IDC_AT_SEL_MOVE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,74,32,10
+    CONTROL         "Re&size",IDC_AT_SEL_RESIZE,"Button",BS_AUTORADIOBUTTON,41,74,36,10
+    DEFPUSHBUTTON   "OK",IDOK,86,83,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,140,83,50,14
+    CONTROL         "Move as &group",IDC_AT_SEL_GROUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,62,10
+END
+
+IDD_SETSIZE DIALOGEX 0, 0, 118, 69
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Size"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "&Width",IDC_SETSIZE_WIDTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,8,32,10
+    EDITTEXT        IDC_SETSIZE_WIDTH_EL,43,7,40,14,ES_AUTOHSCROLL
+    CONTROL         "&Height",IDC_SETSIZE_HEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,26,34,10
+    EDITTEXT        IDC_SETSIZE_HEIGHT_EL,43,25,40,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,7,48,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,61,48,50,14
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_FIND, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 137
+    END
+
+    IDD_OPTIONS, DIALOG
+    BEGIN
+    END
+
+    IDD_IMPORT, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 54
+    END
+
+    IDD_VALIDATE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 326
+    END
+
+    IDD_AGREEMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 492
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 372
+    END
+
+    IDD_ALIGNTO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 191
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 97
+    END
+
+    IDD_SETSIZE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 111
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 62
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_VALIDATE AFX_DIALOG_LAYOUT 
+BEGIN
+    0
+END
+
+IDD_OPTIONS AFX_DIALOG_LAYOUT 
+BEGIN
+    0
+END
+
+IDD_ALIGNTO AFX_DIALOG_LAYOUT 
+BEGIN
+    0
+END
+
+IDD_SETSIZE AFX_DIALOG_LAYOUT 
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_LAYOUTEXPECTED  "Function name has not been found."
+    IDS_ERR_MISSINGFUNCPARS "Missing function parameters."
+    IDS_ERR_MISSINGBLOCKBEGIN "Missing block begin (symbol '{')."
+    IDS_ERR_MISSINGBLOCKEND "Missing block end (symbol '}')."
+    IDS_ERR_UNEXPECTEDSYMBOL "Unexpected symbol."
+    IDS_ERR_MISSINGFUNCORVAR "Missing variable name or function name."
+    IDS_ERR_MISSINGFUNC     "Missing function name."
+    IDS_ERR_UNKNOWNFUNC     "Unknown function has been found."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERR_MISSINGFUNCPAR  "Missing function parameter."
+    IDS_ERR_UNKNOWNIDENTIFIER "Unknown identifier."
+END
+
+#endif    // Czech (Czech Republic) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

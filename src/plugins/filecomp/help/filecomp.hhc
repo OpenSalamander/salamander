@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+		</OBJECT>
+	<LI><OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing File Comparator Plugin">
+			<param name="Local" value="hh\filecomp\introduction_intro.htm">
+			</OBJECT>
+	</UL>
+	<LI><OBJECT type="text/sitemap">
+		<param name="Name" value="Using File Comparator Plugin">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Comparing Files">
+			<param name="Local" value="hh\filecomp\using_comparefiles.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Comparing Files from Other Applications">
+			<param name="Local" value="hh\filecomp\using_cmpfilesfromotherapps.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Browsing Differences">
+			<param name="Local" value="hh\filecomp\using_browsediffs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Detailed Differences">
+			<param name="Local" value="hh\filecomp\using_detaileddiffs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Recomparing Files">
+			<param name="Local" value="hh\filecomp\using_recompare.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Caret">
+			<param name="Local" value="hh\filecomp\using_caretmode.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing Only Differences">
+			<param name="Local" value="hh\filecomp\using_showonlydiffs.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Showing White Spaces">
+			<param name="Local" value="hh\filecomp\using_showwhitespaces.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Resizing File Views">
+			<param name="Local" value="hh\filecomp\using_resizefileviews.htm">
+			</OBJECT>
+	</UL>
+	<LI><OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+		</OBJECT>
+	<UL>
+		<LI><OBJECT type="text/sitemap">
+			<param name="Name" value="Configuration">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="General">
+				<param name="Local" value="hh\filecomp\config_general.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Colors">
+				<param name="Local" value="hh\filecomp\config_colors.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Default Compare Options">
+				<param name="Local" value="hh\filecomp\config_defcompopts.htm">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Advanced Options">
+			<param name="Local" value="hh\filecomp\dlgboxes_advoptions.htm">
+			</OBJECT>
+	</UL>
+	<LI><OBJECT type="text/sitemap">
+		<param name="Name" value="Shortcuts">
+		</OBJECT>
+	<UL>
+		<LI><OBJECT type="text/sitemap">
+			<param name="Name" value="Keyboard Shortcuts">
+			<param name="Local" value="hh\filecomp\shortcuts_keyboard.htm">
+			</OBJECT>
+		<LI><OBJECT type="text/sitemap">
+			<param name="Name" value="Mouse Shortcuts">
+			<param name="Local" value="hh\filecomp\shortcuts_mouse.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

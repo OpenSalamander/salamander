@@ -1,0 +1,55 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME,             "DemoPlug"
+ IDS_ABOUT,                  "About Plugin"
+ IDS_PLUGIN_DESCRIPTION,     "This plugin should help you to make your own plugins."
+ IDS_PLUGIN_HOME,            "www.altap.cz"
+ IDS_PLUGIN_BUGREP,          "An exception in DemoPlug has occured, please inform authors!\nIf you have worked with some .dop file when exception has occured,\nplease try to reproduce the bug with this .dop file and if exception\noccurs again, send us this .dop file (we will reproduce and fix the bug).\nThanks!"
+ IDS_PLUGIN_EMAIL,           "petr.solin@altap.cz"
+ IDS_CFG_ALREADY_OPENED,     "The configuration is already opened."
+ IDS_VIEWER_OPENWNDS,        "Some DemoPlug viewer windows are opened. Do you want to close them?"
+ IDS_CFG_TITLE,              "DemoPlug Configuration"
+ IDS_INVALID_NUM,            "Invalid number!"
+ IDS_DOP_FILES_FILTER,       "DemoPlug Files (*.dop)|*.dop|All Files (*.*)|*.*|"
+ 
+ IDS_MENU_FILES,             "&Files"
+ IDS_MENU_FILES_OPEN,        "&Open\tCtrl+O"
+ IDS_MENU_FILES_EXIT,        "E&xit"
+ IDS_MENU_EDIT,              "&Edit"
+ IDS_MENU_EDIT_CUT,          "&Cut\tCtrl+X"
+ IDS_MENU_EDIT_COPY,         "&Copy\tCtrl+C"
+ IDS_MENU_EDIT_PASTE,        "&Paste\tCtrl+V"
+ IDS_MENU_VIEW,              "&View"
+ IDS_MENU_FILTER,            "&Filter"
+ IDS_MENU_OPTIONS,           "&Options"
+ IDS_MENU_OPTIONS_CFG,       "&Configuration..."
+ IDS_MENU_HELP,              "&Help"
+ IDS_MENU_HELP_ABOUT,        "&About"
+ IDS_TBTT_CUT,               "Cut\tCtrl+X"
+ IDS_TBTT_COPY,              "Copy\tCtrl+C"
+ IDS_TBTT_PASTE,             "Paste\tCtrl+V"
+ IDS_TBTT_FILTER,            "Filter\tCtrl+U"
+ IDS_FILTER,                 "Filter"
+}

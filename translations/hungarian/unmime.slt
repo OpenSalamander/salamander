@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 101]
+241,111,1,"UnMIME beállítás"
+2000,7,7,68,8,1,"Listázási beállítások"
+2001,77,11,158,1,1,""
+1000,18,20,82,10,1,"&Levél fejléc listázása"
+1001,18,35,92,10,1,"Ü&zenettörzsek listázása"
+1003,31,50,190,10,1,"Karakter infó &csatolás a fájlnévhez, ha nem US-ASCII"
+1002,18,65,82,10,1,"Mellékletek listázás&a"
+2002,6,82,229,1,1,""
+1,127,90,50,14,1,"OK"
+2,184,90,50,14,1,"Mégse"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"Nem nyitható meg a fájl."
+3,1,"Kevés memória."
+4,1,"Nem adható archívum bejegyzés a fájl listához."
+5,1,"A fájl, egy vagy több ismeretlen kódolású blokkot tartalmaz.\nEzen blokkok nem dekódolhatók."
+6,1,"Írási hiba"
+7,1,"Levél fájl kibontása - %s"
+8,1,"kibontás: "
+9,1,"Fájl elemzése..."
+10,1,"Egy vagy több %s blokk sérült vagy\nismeretlen formátumú és nem dekódolható."
+11,1,"Egy vagy több %s blokk hibás CRC-s.\nEzen blokkok nem dekódolhatók."
+12,1,"MIME/Base64, UU/XXEncode, yEncode és BinHex fájlok böngészése és kibontása."
+13,1,"Plugin névjegy"
+14,1,"Figyelem: a fájl Mac forrás elágazást tartalmaz.\nEz az elágazás nem bontható ki."
+15,1,"&Ne mutassa újból"
+

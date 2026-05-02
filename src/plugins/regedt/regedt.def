@@ -1,0 +1,4 @@
+LIBRARY regedt.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

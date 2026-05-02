@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\chinesesimplified\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,2052
+AUTHOR,"Michael Lu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6958"
+COMMENT,"简体中文版"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"关于插件"
+1003,1,"浏览并提取 FAT 12, 16, 和 32 磁盘镜像。"
+
+[STRINGTABLE 1]
+1100,1,"打开文件错误 "%s"."
+1101,1,"读取文件错误 "%s"."
+1102,1,"解析文件错误 "%s".\n\n%s"
+1103,1,"引导扇区被破坏，或这个文件不是FAT12, 16, 或 32 镜像。"
+
+[STRINGTABLE 2]
+1104,1,"从文件 "%s" 读取目录出错。\n%s\n扇区: %d, 位移: 0x%s\n\n文件不是有效的 FAT 12, 16, 或 32 镜像。"
+1106,1,"从文件 "%s" 读取文件出错。\n%s\n簇: %d\n\n文件不是有效的 FAT 12, 16, 或 32 镜像。"
+1107,1,"写入文件出错"
+1108,1,"文件 "%s" 似乎是整个硬盘的镜像。\nUnFAT 插件不支持这样的镜像。"
+1109,1,"正在提取 FAT 镜像 - %s"
+1110,1,"正在提取: %s"
+
