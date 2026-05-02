@@ -110,7 +110,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -139,7 +139,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate old buffer, if necessary
             if (pbase())
             {
                 traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
@@ -215,7 +215,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -244,7 +244,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate old buffer, if necessary
             if (pbase())
             {
                 traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
