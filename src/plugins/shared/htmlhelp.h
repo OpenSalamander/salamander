@@ -224,15 +224,15 @@ extern "C"
         int cbStruct;            // size of this structure
         int iType;               // the type of the information type ie. Inclusive, Exclusive, or Hidden
         LPCSTR pszCatName;       // Set to the name of the Category to enumerate the info types in a category; else NULL
-        LPCSTR pszITName;        // volitile pointer to the name of the infotype. Allocated by call. Caller responsible for freeing
+        LPCSTR pszITName;        // volatile pointer to the name of the info type. Allocated by call. Caller responsible for freeing
         LPCSTR pszITDescription; // Pointer to the info type description.
     } HH_ENUM_IT, *PHH_ENUM_IT;
 
     typedef struct tagHH_ENUM_CAT
     {
         int cbStruct;             // size of this structure
-        LPCSTR pszCatName;        // volitile pointer to the category name
-        LPCSTR pszCatDescription; // volitile pointer to the category description
+        LPCSTR pszCatName;        // volatile pointer to the category name
+        LPCSTR pszCatDescription; // volatile pointer to the category description
     } HH_ENUM_CAT, *PHH_ENUM_CAT;
 
     typedef struct tagHH_SET_INFOTYPE
@@ -318,7 +318,7 @@ extern "C"
         LPCTSTR pszIndex;               // IN: Location of the index file
         LPCTSTR pszFile;                // IN: Default location of the html file
         LPCTSTR pszHome;                // IN/OUT: html file to display when Home button is clicked
-        DWORD fsToolBarFlags;           // IN: flags controling the appearance of the toolbar
+        DWORD fsToolBarFlags;           // IN: flags controlling the appearance of the toolbar
         BOOL fNotExpanded;              // IN: TRUE/FALSE to contract or expand, OUT: current state
         int curNavType;                 // IN/OUT: UI to display in the navigational pane
         int tabpos;                     // IN/OUT: HHWIN_NAVTAB_TOP, HHWIN_NAVTAB_LEFT, or HHWIN_NAVTAB_BOTTOM
