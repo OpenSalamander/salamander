@@ -85,7 +85,7 @@ BOOL CISO9660::Open(BOOL quiet)
                 memcpy(&PVD, sector, SECTOR_SIZE);
                 break;
 
-            case 0x02: // suplementary/enhanced volume descriptor
+            case 0x02: // supplementary/enhanced volume descriptor
                 memcpy(&SVD, sector, SECTOR_SIZE);
 
                 // Joliet has FileStructureVersion = 1
