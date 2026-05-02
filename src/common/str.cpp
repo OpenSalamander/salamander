@@ -175,7 +175,7 @@ chk_null:
     mov     bl,[edi] // bl = *s1
     inc     edi
 
-    cmp     al,bl // first try case-sensitive comparision
+    cmp     al,bl // first try case-sensitive comparison
     je      short chk_null // match
 
     mov     al,[edx + eax] // convert *s2 char to lower case
