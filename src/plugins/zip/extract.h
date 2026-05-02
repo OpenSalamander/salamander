@@ -32,7 +32,7 @@ public:
     char* SlideWindow;
     unsigned WinSize;
     //unsigned                InputPos;       //read position in zip file
-    QWORD BytesLeft;   //number of copressed bytes remainig
+    QWORD BytesLeft;   //number of compressed bytes remaining
                        //to read from zipfile
     CFile* OutputFile; //current output file
     int OutputError;
