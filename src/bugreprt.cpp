@@ -2189,7 +2189,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                                 __try
                                 {
                                     // *(ebp) is the frame pointer of the calling function
-                                    // *(ebp + 4) is the return adress (the place in the calling function where
+                                    // *(ebp + 4) is the return address (the place in the calling function where
                                     //            execution will resume after we return from this function)
                                     DWORD* ebp = (DWORD*)ctx.Ebp;
 
@@ -2452,7 +2452,7 @@ void CCallStack::PrintBugReport(EXCEPTION_POINTERS* Exception, DWORD ThreadID, D
                         int drv = drive - 'A' + 1;
                         DWORD medium = GetDriveFormFactor(drv);
                         if (medium == 350 || medium == 525 || medium == 800 || medium == 1)
-                            getMoreInfo = FALSE; // avoid unnecesary floppy disk operations during MyGetVolumeInformation()
+                            getMoreInfo = FALSE; // avoid unnecessary floppy disk operations during MyGetVolumeInformation()
                     }
 
                     if (getMoreInfo)
