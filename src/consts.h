@@ -1110,7 +1110,7 @@ struct COpenViewerData
 #define WM_USER_DROPFROMFS WM_APP + 144    // [allocatedTgtPath, operation] - drag&drop from FS: target path and operation determined, perform copy/move from FS
 #define WM_USER_DROPTOARCORFS WM_APP + 145 // [CTmpDragDropOperData *, 0]
 
-#define WM_USER_SHCHANGENOTIFY WM_APP + 146 // message for SHChangeNotifyRegister [pidlList, SHCNE_xxx (event that occured)]
+#define WM_USER_SHCHANGENOTIFY WM_APP + 146 // message for SHChangeNotifyRegister [pidlList, SHCNE_xxx (event that occurred)]
 
 #define WM_USER_REFRESH_DIR_EX WM_APP + 147 // [long_wait, time] - after (long_wait ? 5000 : 200) ms sends WM_USER_REFRESH_DIR_EX_DELAYED
 
@@ -2024,7 +2024,7 @@ extern DWORD EnablerPermissions;          // focus/selection is on files/directo
 #define IDX_TB_CLIPBOARDPASTE 34 // Clipboard Paste
 #define IDX_TB_PERMISSIONS 35    // Permissions
 #define IDX_TB_PROPERTIES 36     // Properties
-#define IDX_TB_COMPAREDIR 37     // Comapare Directories
+#define IDX_TB_COMPAREDIR 37     // Compare Directories
 #define IDX_TB_DRIVEINFO 38      // Drive Information
 #define IDX_TB_RESELECT 39       // Reselect
 #define IDX_TB_HELP 40           // Help
