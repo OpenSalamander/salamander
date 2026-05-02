@@ -1948,7 +1948,7 @@ CPlugins::GetPluginDataFromSuffix(const char* dllSuffix)
             CPluginData* data = Data[i];
             char* s = data->DLLName;
             if ((*s != '\\' || *(s + 1) != '\\') && // not UNC
-                (*s == 0 || *(s + 1) != ':'))       // not "c:" -> realtive path to plugins
+                (*s == 0 || *(s + 1) != ':'))       // not "c:" -> relative path to plugins
             {
                 strcpy(name, data->DLLName);
                 s = fullDLLName;
