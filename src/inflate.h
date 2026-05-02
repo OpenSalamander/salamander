@@ -41,7 +41,7 @@ struct CDecompressionObject
     char* OutputMemPtr;  // current position in the buffer for unpacked data
     DWORD OutputMemSize; // size of buffer for unpacked data
 
-    //public fields, should be intialized before calling Inflate()
+    //public fields, should be initialized before calling Inflate()
     uch* SlideWin;    //circular buffer
     unsigned WinSize; //size of sliding window, should be at least 32K
 
