@@ -13,7 +13,7 @@
 
 // overview of macro types (all are non-empty unless CALLSTK_DISABLE is defined)
 // CALL_STACK_MESSAGE - standard call-stack macro
-// SLOW_CALL_STACK_MESSAGE - call-stack macro that ignores any peformance slowdown (Use at
+// SLOW_CALL_STACK_MESSAGE - call-stack macro that ignores any performance slowdown (Use at
 //                           points where we know it significantly slows down execution but we
 //                           still need it there.)
 // DEBUG_SLOW_CALL_STACK_MESSAGE - call-stack macro that is empty in release builds; behaves like
@@ -30,7 +30,7 @@ typedef void (*FPrintLine)(void* param, const char* txt, BOOL tab);
 BOOL StartSalmonProcess(BOOL enableRestartAS);
 
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-#define CALLSTACK_MONITORINGPERIOD 100    // in miliseconds: how long to monitor how many times a single call-stack macro was called
+#define CALLSTACK_MONITORINGPERIOD 100    // in milliseconds: how long to monitor how many times a single call-stack macro was called
 #define CALLSTACK_MONITOREDITEMS_BASE 30  // initial number of items to allocate for the queue of monitored call-stack macro calls
 #define CALLSTACK_MONITOREDITEMS_DELTA 20 // how many items to increase the monitored call queue by when more space is needed
 struct CCallStackMonitoredItem
@@ -87,7 +87,7 @@ public:
     LARGE_INTEGER IgnoredPushPerfTimeCounter; // total time spent in unmeasured (ignored) Push calls invoked in this object (in one thread)
     static LARGE_INTEGER SavedPerfFreq;       // nonzero result of QueryPerformanceFrequency
 #define CALLSTK_BENCHMARKTIME 100             // time in milliseconds during which the call-stack speed is measured
-    static DWORD SpeedBenchmark;              // how many measured call-stack macros can be pushed+poped within CALLSTK_BENCHMARKTIME milliseconds
+    static DWORD SpeedBenchmark;              // how many measured call-stack macros can be pushed+popped within CALLSTK_BENCHMARKTIME milliseconds
 #endif                                        // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
 public:
