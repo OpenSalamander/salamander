@@ -8,7 +8,7 @@
 	Copyright (c) 2010-2023 Open Salamander Authors
 	
 	guidefs.h
-	Miscelaneous definitions for the GUI.
+	Miscellaneous definitions for the GUI.
 */
 
 #pragma once
