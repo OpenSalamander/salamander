@@ -708,7 +708,7 @@ UINT CNethoodCache::GetPathStatus(
     int cTokens;
     int iToken = 0;
 
-    // Consumer cannot be specified without also returning ther node.
+    // Consumer cannot be specified without also returning the node.
     assert(node || !pEventConsumer);
 
     if (node)
