@@ -3,7 +3,7 @@
 
 #pragma once
 
-//disable not finished source, which is yet under costruction
+//disable not finished source, which is yet under construction
 //#define DITRIBUTABLE_VERSION
 
 //definitions for inflate module
