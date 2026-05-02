@@ -658,7 +658,7 @@ private:
     /// Cache tree data structure.
     typedef TTree<CNethoodCacheNode> CNethoodCacheTree;
 
-    /// Miscelaneous constants that affects cache behavior and performance.
+    /// Miscellaneous constants that affect cache behavior and performance.
     enum
     {
         /// Delay (in milliseconds) before the re-enumeration of the
@@ -1426,7 +1426,7 @@ private:
         WPARAM wParam,
         LPARAM lParam);
 
-    /// Helper routine to supress compiler warnings.
+    /// Helper routine to suppress compiler warnings.
     static inline void SetInstanceToHwnd(
         HWND hwnd,
         CNethoodCacheManagementThread* pInstance)
