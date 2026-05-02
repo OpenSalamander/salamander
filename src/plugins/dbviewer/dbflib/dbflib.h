@@ -3,7 +3,7 @@
 
 #pragma once
 
-/* Define some usefull types */
+/* Define some useful types */
 #ifndef U8
 #define U8 unsigned char
 #endif
