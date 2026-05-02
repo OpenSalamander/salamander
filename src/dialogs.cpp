@@ -1270,7 +1270,7 @@ MENU_TEMPLATE_ITEM ProgressDialogMenu2[] =
         {
             // Prior to Windows Vista we only called GetNextWindow(), which was enough to reach the next window in the Z-order.
             // Vista introduced new hidden helper windows such as "MSCTFIME UI" and "Default IME" that sit between us and
-            // our window (main, viver, ect.). So we skip hidden windows here.
+            // our window (main, viewer, etc.). So we skip hidden windows here.
             BOOL valid;
             HWND hNext = HWindow;
             do
