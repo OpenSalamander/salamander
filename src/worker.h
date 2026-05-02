@@ -182,7 +182,7 @@ public:
     // may be called from any thread
     void JustConnected();
 
-    // call after some of the data are transfered; report a data chunk: 'count' bytes
+    // call after some of the data are transferred; report a data chunk: 'count' bytes
     // transferred in 'time'; 'maxPacketSize' is the largest amount expected
     // before the next BytesReceived() call
     void BytesReceived(DWORD count, DWORD time, DWORD maxPacketSize);
