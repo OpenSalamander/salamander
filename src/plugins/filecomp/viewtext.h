@@ -18,7 +18,7 @@ protected:
     typedef typename std::vector<CChar*> CLineBuffer;
     // CChar * Buffer;
     // CChar const ** Linbuf;
-    CChar* LineBuffer; // buffer for one formatted line
+// buffer for one formatted line
     CChar* Text;
     CLineBuffer Lines;
     CIntIndexes LineChanges;
