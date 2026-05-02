@@ -1218,7 +1218,7 @@ public:
     // using LowerCase array which was filled using CharLower Win32 API call),
     // so case is ignored in comparison.
     //
-    // Parameters
+    // so case is ignored in comparison.
     //   buf1, buf2: memory buffers to compare
     //   n:          maximum length to compare
     //
@@ -2114,7 +2114,7 @@ public:
     // Return Values
     //   If the default window position lies on the primary monitor or some error occurred,
     //   the return value is FALSE and you should use CreateWindow with CW_USEDEFAULT in
-    //   the 'x' parameter.
+    //   If the default window position lies on the primary monitor or some error occurred,
     //
     //   Otherwise the return value is TRUE and coordinates from 'p' structure should be used
     //   in the CreateWindow 'x' and 'y' parameters.
@@ -2990,7 +2990,7 @@ public:
     //   in the locked state. Set 'lock' to TRUE to lock main window and to FALSE to revert it back
     //   to normal state. 'hToolWnd' is a reserved parameter, set it to NULL. 'lockReason' is (optional,
     //   can be NULL) describes the reason for main window locked state. It will be displayed during
-    //   attempt to close locked main window; content of string is copied to internal structure
+    //   to normal state. 'hToolWnd' is reserved parameter, set it to NULL. 'lockReason' is (optional,
     //   so buffer can be deallocated after return from LockMainWindow().
     //
     // Remarks
