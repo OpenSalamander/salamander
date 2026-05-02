@@ -343,22 +343,22 @@
 // error message: copy/move operations: target path is invalid
 #define IDS_PATHISINVALID          10132
 
-// copy operation: title of error boxs
+// copy operation: title of error boxes
 #define IDS_ERRORCOPY              10133
 
-// move operation: title of error boxs
+// move operation: title of error boxes
 #define IDS_ERRORMOVE              10134
 
 // error message: file operation would produce too long full name
 #define IDS_NAMEISTOOLONG          10135
 
-// title of error box: some error during building subsidary script fop copy/move/...
+// title of error box: some error during building subsidiary script for copy/move/...
 #define IDS_ERRORBUILDINGSCRIPT    10136
 
-// error message: error during building subsidary script: cannot open dir for reading
+// error message: error during building subsidiary script: cannot open dir for reading
 #define IDS_CANNOTREADDIR          10137
 
-// error message: error during building subsidary script: cannot copy file to itself
+// error message: error during building subsidiary script: cannot copy file to itself
 #define IDS_CANNOTCOPYFILETOITSELF 10138
 
 // error message: internal viewer/Find Files dialog: invalid hex pattern (find)
@@ -433,10 +433,10 @@
 #define IDS_REGEXPERROR12          10177
 #define IDS_REGEXPERROR13          10178
 
-// error message: error during building subsidary script: cannot move file to itself
+// error message: error during building subsidiary script: cannot move file to itself
 #define IDS_CANNOTMOVEFILETOITSELF 10179
 
-// error message: error during building subsidary script: cannot move dir to itself
+// error message: error during building subsidiary script: cannot move dir to itself
 #define IDS_CANNOTMOVEDIRTOITSELF  10180
 
 // error message: before copy or move: probably not enough space on target drive
@@ -718,7 +718,7 @@
 #define IDS_TBTT_CLIPBOARDPASTE      10454   // Clipboard Paste
 #define IDS_TBTT_PERMISSIONS         10455   // Permissions
 #define IDS_TBTT_PROPERTIES          10456   // Properties
-#define IDS_TBTT_COMPAREDIR          10457   // Comapare Directories
+#define IDS_TBTT_COMPAREDIR          10457   // Compare Directories
 #define IDS_TBTT_DRIVEINFO           10458   // Drive Information
 #define IDS_TBTT_HELP                10460   // Help
 #define IDS_TBTT_CONTEXTHELP         10461   // Context Help
@@ -1059,7 +1059,7 @@
 // Options/Plugin Configuration when no plugin with configuration is available (text for one disabled menu item)
 #define IDS_EMPTYPLUGINSMENU2         10831
 
-// cannot conver local path to UNC format
+// cannot convert local path to UNC format
 #define IDS_CANNOT_CREATE_UNC_NAME    10832
 
 // strings for Shared Directories dialog
@@ -1166,7 +1166,7 @@
 // Change Drive window: text of Documents item
 #define IDS_MYDOCUMENTS               10927
 
-// strings for Diconnect Network Drives dialog
+// strings for Disconnect Network Drives dialog
 #define IDS_DISCONNECT_NAME           10930
 #define IDS_DISCONNECT_PATH           10931
 #define IDS_DISCONNECT_NODRIVES       10932
@@ -1279,11 +1279,11 @@
 #define IDS_PACKRET_FOPEN            11032
 // User error - bad parameters
 #define IDS_PACKRET_PARAMS           11033
-// Not enough memmory
+// Not enough memory
 #define IDS_PACKRET_MEMORY           11034
 // File is not an archive file
 #define IDS_PACKRET_NOTARC           11035
-// XMS memmory error
+// XMS memory error
 #define IDS_PACKRET_XMSMEM           11036
 // User break
 #define IDS_PACKRET_BREAK            11037
@@ -1499,7 +1499,7 @@
 // internal text/hex viewer: menu 'Convert': 'ANSI' code page name
 #define IDS_VIEWERANSICODEPAGE       12056
 
-// general file name input: empty file name has no sence here ...
+// general file name input: empty file name has no sense here ...
 #define IDS_EMPTYNAMENOTALLOWED      12060
 // general file name input: incomplete path, please specify full path
 #define IDS_INCOMLETEFILENAME        12061
@@ -1814,7 +1814,7 @@
 #define IDS_DELETETMPSALDIRS_NO     12362
 #define IDS_DELETETMPSALDIRS_FOCUS    12363
 
-// Unpack dialog: description for progress-bar showing progress on each file separatelly (no total progress)
+// Unpack dialog: description for progress-bar showing progress on each file separately (no total progress)
 #define IDS_UNPACKFILEPROGRESS        12365
 
 // Copy&Paste from archive: specified files and directories (names are placed in clipboard) were not found in archive
@@ -1854,9 +1854,9 @@
 // drag&drop or Paste to archive or FS: Some files or directories specified in drag&drop or clipboard operation were not found.\n\nDo you want to continue?
 #define IDS_SRCFILESNOTFOUND          12401
 
-// plugin tryies to open Pack dialog for its packer, but its packer is not found: Unable to found packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)
+// plugin tries to open Pack dialog for its packer, but its packer is not found: Unable to find packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)
 #define IDS_PLUGINPACKERNOTFOUND      12405
-// plugin tryies to open Unpack dialog for its unpacker, but its unpacker is not found: Unable to found unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)
+// plugin tries to open Unpack dialog for its unpacker, but its unpacker is not found: Unable to find unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)
 #define IDS_PLUGINUNPACKERNOTFOUND    12406
 
 // dialog Confirm ADS Loss: when working with file (instead of directory): "File:"
@@ -2270,7 +2270,7 @@
 #define IDS_FFMENU_FIND_DUPLICATES      13359
 
 //
-// archiv context menu
+// archive context menu
 //
 
 #define IDS_ARCHIVEMENU_OPEN            13360
