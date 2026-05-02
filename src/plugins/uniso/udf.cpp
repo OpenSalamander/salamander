@@ -37,7 +37,7 @@ typedef wchar_t unicode_t;
 //		  | ((Uint32)data[(p) + 2] << 16))
 #define GET_DWORD(data, p) ((Uint32)data[p] | ((Uint32)data[(p) + 1] << 8) | ((Uint32)data[(p) + 2] << 16) | ((Uint32)data[(p) + 3] << 24))
 #define GET_QWORD(data, p) ((Uint64)data[p] | ((Uint64)data[(p) + 1] << 8) | ((Uint64)data[(p) + 2] << 16) | ((Uint64)data[(p) + 3] << 24) | ((Uint64)data[(p) + 4] << 32) | ((Uint64)data[(p) + 5] << 40) | ((Uint64)data[(p) + 6] << 48) | ((Uint64)data[(p) + 7] << 56))
-/* This is wrong with regard to endianess */
+/* This is wrong with regard to endianness */
 #define GETN(data, p, n, target) memcpy(target, &data[p], n)
 
 static void
