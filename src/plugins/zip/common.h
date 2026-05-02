@@ -65,7 +65,7 @@ struct CConfiguration
     bool NoEmptyDirs;                  //don't add empty directories to zip
     bool BackupZip;                    //create temporary backup of zip before
                                        //any modification of it
-    bool ShowExOptions;                //display exteded pack options dialog
+    bool ShowExOptions;                //display extended pack options dialog
     bool TimeToNewestFile;             //set zip file time to the newest file time
     char VolSizeCache[5][MAX_VOL_STR]; //volume sizes
     unsigned VolSizeUnits[5];          //MB if nozero
