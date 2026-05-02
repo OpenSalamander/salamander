@@ -73,9 +73,9 @@ struct CChange
         struct
         {
             size_t Deleted;   // Length of subsequence deleted from the first sequence.
-            size_t Inserted;  // Length of subsequence inserted to the seccond sequence.
+            size_t Inserted;  // Length of subsequence inserted to the second sequence.
             size_t DeletePos; // Position in the first sequence.
-            size_t InsertPos; // Position in the seccond sequence.
+            size_t InsertPos; // Position in the second sequence.
         };
         struct
         {
