@@ -358,7 +358,7 @@ BOOL IsAdminShareExtraLogonFailureErr(DWORD err, const char* root)
         root++;
         while (*++root != 0 && *root != '\\' && CharIsAllowedInServerName(*root))
             ;             // skip the server name and do a simple check (incomplete; for example, it also rejects dots in IPv4 and IPv6) whether this is really an invalid name (in that case, we will not ask for a username and password)
-        if (*root == '.') // we will take care of IPv4 adresses (let's ignore IPv6)
+        if (*root == '.') // we will take care of IPv4 addresses (let's ignore IPv6)
         {
             const char* r = root;
             while (*++r != 0 && *r != '\\')
@@ -1518,7 +1518,7 @@ void InitOneDrivePath()
     {
         DWORD i = 0;
         while (1)
-        { // enumarate all extensions one by one
+        { // enumerate all extensions one by one
             char keyName[300];
             DWORD keyNameLen = _countof(keyName);
             if (RegEnumKeyEx(hKey, i, keyName, &keyNameLen, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
