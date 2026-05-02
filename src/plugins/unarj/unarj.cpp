@@ -664,7 +664,7 @@ void Read(void* buffer, DWORD size)
         while (1)
         {
             if (ReadFile(ArcFile, (char*)buffer + i, size, &read, NULL) && size == read)
-                break; //success
+                break; //sucess
             if (!ErrorProc(AE_ACCESS, EF_RETRY))
                 throw 0;
             SafeSeek(ArcFilePos);
