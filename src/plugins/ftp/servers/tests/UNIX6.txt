@@ -1,0 +1,23 @@
+drwxr-xr-x   13 0        0               0 .
+drwxr-xr-x   13 0        0               0 ..
+drwxrwxrwx    2 500      500             0 ramdisk
+lrwxrwxrwx    1 0        0               4 sbin -> /bin
+dr-xr-xr-x   29 0        0               0 proc
+lrwxrwxrwx    1 0        0               8 tmp -> /var/tmp
+drwxr-xr-x    2 0        0           16384 mnt
+-rw-r--r--    1 solin    users        2336 readme.txt
+-r--r--r--   1 100      50         589722 265058a.exe
+lrwxrwxrwx    1 solin    users          10 readme_link -> ../solin/readme.txt
+crw-r-----   1 root     disk      27,  24 zqft0
+brw-rw----    1 root     disk      29,   0 aztcd
+pr--r--r--    1 root     root            0 maps
+drwxrwxr-x   5 ftp name      ftp          4096 .
+drwxrwxr-x   3 ftp name      ftp          4096 ..
+drwx------    2 solin name    users        4096  mail
+dr-xr-xr-x   1 owner name    group               0  KBHelp
+-rw-r--r--    1 solin name    users        2336  readme.txt
+lrwxrwxrwx    1 solin name    users           4 file_link -> file
+crw-r-----   1 root name     disk      27,  24  zqft0
+brw-rw----    1 root name     disk      29,   0  aztcd
+lrwx------    1 root name     root            0 root
+pr--r--r--    1 root name    root            0 maps

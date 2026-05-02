@@ -1,0 +1,16 @@
+﻿#ifndef __ZIP2SFX_RH
+#define __ZIP2SFX_RH
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+#define IDI_SFXICON 101
+
+//data
+#define ID_SFX_MANIFEST_REGULAR	550
+#define ID_SFX_MANIFEST_ADMIN	551
+
+#endif //__ZIP2SFX_RH
+
+

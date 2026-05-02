@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"Über Plugin"
+1003,1,"Durchsucht und entpackt FAT12, FAT16, und FAT32-Datenträgerimages."
+
+[STRINGTABLE 1]
+1100,1,"Fehler beim Öffnen der Datei "%s"."
+1101,1,"Fehler beim Lesen der Datei "%s"."
+1102,1,"Fehler beim Analysieren der Datei "%s".\n\n%s"
+1103,1,"Der Bootsektor ist beschädigt oder diese Datei enthält kein FAT12, FAT16, oder FAT32 Image."
+
+[STRINGTABLE 2]
+1104,1,"Fehler beim Lesen des Verzeichnisses aus der Datei "%s".\n%s\nSektor: %d, Offset: 0x%s\n\nDie Datei ist kein gültiges FAT12, FAT16, oder FAT32-Image."
+1106,1,"Fehler beim Lesen der Datei aus der Datei "%s".\n%s\nCluster: %d\n\nDatei ist kein gültiges FAT12, FAT16, oder FAT32-Image."
+1107,1,"Fehler beim Schreiben der Datei"
+1108,1,"Die Datei "%s" scheint ein Image einer gesamten Festplatte zu sein.\nSolche Images werden durch das UnFAT-Plugin nicht unterstützt."
+1109,1,"Extrahiere FAT-Image - %s"
+1110,1,"Extrahiere: %s"
+

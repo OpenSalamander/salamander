@@ -1,0 +1,99 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=ftp.chm
+Contents file=ftp.hhc
+Default Window=$global_ssdefault
+Default topic=hh\ftp\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=ftp.hhk
+Language=0x409 English (United States)
+Title=FTP Client Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","ftp.hhk","hh\ftp\introduction_intro.htm","hh\ftp\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_DISCONNECT_F12=ms-its:salamand.chm::/hh\salamand\disk_net.htm
+IDH_CONNECTFTPSERVER=hh\ftp\using_connect.htm
+IDH_ORGANIZEBOOKMARKS=hh\ftp\using_orgbookmarks.htm
+IDH_SHOWLOGS=hh\ftp\using_showlogs.htm
+IDH_TRMODESUBMENU=hh\ftp\using_transfermode.htm
+IDH_REFRESHPATH=hh\ftp\using_refresh.htm
+IDH_ADDBOOKMARK=hh\ftp\using_addbookmark.htm
+IDH_SENDFTPCOMMAND=hh\ftp\using_sendftpcmd.htm
+IDH_SHOWRAWLISTING=hh\ftp\using_showrawlisting.htm
+IDH_LISTHIDDENFILES=hh\ftp\using_listhiddenonunix.htm
+IDH_SHOWCERT=hh\ftp\using_showcert.htm
+IDD_CFGGENERAL=hh\ftp\config_general.htm
+IDD_CFGDEFAULTS=hh\ftp\config_defaults.htm
+IDD_CFGCONFIRMATIONS=hh\ftp\config_confirmations.htm
+IDD_CFGADVANCED=hh\ftp\config_advanced.htm
+IDD_CFGLOGS=hh\ftp\config_logs.htm
+IDD_CFGSERVERTYPES=hh\ftp\config_servers.htm
+IDD_CFGOPERATIONS=hh\ftp\config_operation1.htm
+IDD_CFGOPERATIONS2=hh\ftp\config_operation2.htm
+IDD_CONNECT=hh\ftp\dlgboxes_connect.htm
+IDH_ORGBOOKMARKSDLG=hh\ftp\dlgboxes_orgbookmarks.htm
+IDD_CONNECTADVANCED=hh\ftp\dlgboxes_connectadv.htm
+IDD_SENDCOMMANDDLG=hh\ftp\dlgboxes_sendftpcmd.htm
+IDD_EDITSERVERTYPE=hh\ftp\dlgboxes_editsrvtype.htm
+IDD_EDITSRVTYCOLUMN=hh\ftp\dlgboxes_editcolumn.htm
+IDD_SRVTYPETESTPARSER=hh\ftp\dlgboxes_testparser.htm
+IDD_OPERATIONDLG=hh\ftp\dlgboxes_operationdlg.htm
+IDD_COPYMOVEDLG=hh\ftp\dlgboxes_copy.htm
+IDH_MOVEDLG=hh\ftp\dlgboxes_move.htm
+IDD_CHANGEATTRSDLG=hh\ftp\dlgboxes_chattrs.htm
+IDD_PROXYSERVER=hh\ftp\dlgboxes_proxyserver.htm
+IDD_SOLVEITEMSETNEWATTR=hh\ftp\dlgboxes_setnewattrs.htm
+IDH_FTPLOGSWINDOW=hh\ftp\dlgboxes_ftplogswindow.htm
+IDH_SOLVEERROR=hh\ftp\dlgboxes_solveerror.htm
+
+[MAP]
+#include "..\ftp.rh"
+#include "..\ftp.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

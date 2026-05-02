@@ -1,0 +1,35 @@
+How to Test DemoPlug
+====================
+
+Archiver (Packer/Unpacker):
+DemoPlug is associated with *.dop archives. We have prepared one sample
+dop archive, it's this file (content of this file is ignored, it's not
+a real archive file). You can focus it and press Enter key to open it
+and try to work with it as with any other archive file.
+
+File Viewer:
+Use View command (F3 key) on this file (*.dop is associated with DemoPlug).
+
+Menu Extension:
+Go to menu Plugins > DemoPlug. You can notice that some items are
+disabled, this is test of menu item enablers (e.g. "File on Disk" item
+is enabled only if focus in active panel is on some file on disk). See
+also "Controls provided by Open Salamander" item, there are some special
+dialog controls that we have implemented and you can use them in plugins.
+
+File System:
+You can open DemoPlug file system from Change Drive menu (Alt+F1 or Alt+F2
+key), choose "DemoPlug FS" item. Or simply use Change Directory (Shift+F7
+key) command. The name of DemoPlug file system is "DFS" (name is not
+case-sensitive). You can try e.g. "dfs:c:\" to show path "c:\" in DFS.
+WARNING: some operations in DFS are partially implemented (e.g. Copy), so
+test DFS only on some not important files and directories.
+
+Thumbnail Loader:
+Switch to Thumbnails view mode (Alt+5 key). DemoPlug can make thumbnails
+only for BMP files (you can test it on supplied sample.bmp file). You
+should remove PictView from Plugins Manager because it makes thumbnails
+for almost all picture files (including BMP), so DemoPlug's thumbnail
+loader can be ignored (because BMP thumbnails are made by PictView). To
+be sure that it is really DemoPlug what makes thumbnails you can try to
+remove it from Plugins Manager (then thumbnails should disappear).

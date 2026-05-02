@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 1200]
+240,83,1,"UnISO - Konfigurácia"
+1201,8,11,198,10,1,"&Odstrániť atribút Len na čítanie pri kopírovaní z archívu"
+1202,8,23,226,10,1,"Zobraziť &sekcie ako adresár (povolí prístup ku všetkým sekciám)"
+1203,8,35,134,10,1,"Zobraziť &boot image disku ako súbor"
+3000,2,58,236,1,1,""
+1,128,64,50,14,1,"OK"
+2,183,64,50,14,1,"Zrušiť"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Nie je možné otvoriť súbor."
+1002,1,"Neznáma chyba."
+1003,1,"Extrahovanie ISO archívu"
+1004,1,"Chyba extrahovania archívu."
+1005,1,"Nie je možné pracovať s týmto súborom."
+1006,1,"Nedostatok pamäti."
+1007,1,"O plugine"
+
+[STRINGTABLE 1]
+1009,1,"Prehliada a extrahuje CD/DVD ISO obrazy."
+1010,1,"Nie je možné vytvoriť dočasný adresár."
+1011,1,"Nie je možné vymazať dočasný súbor."
+1012,1,"Neznámy formát súboru alebo neplatný ISO obraz.\n\nAk ste si jistý, že je to platný ISO obraz, prosím kontaktujte support@altap.cz a pomôžete nám s podporou tohto formátu."
+1013,1,"Nie je možné otvoriť súbor '%s'."
+1014,1,"Vytváranie dočasného súboru zlyhalo."
+1015,1,"Nie je možné nastaviť atribúty súboru."
+1016,1,"Nie je možné vytvoriť adresár '%s'."
+1020,1,"Áno"
+1021,1,"Nie"
+1022,1,"Chyba"
+1023,1,"Upozornenie"
+
+[STRINGTABLE 2]
+1024,1,"Pri načítaní viacsekciového obrazu vznikla neznáma chyba.\n\nZobrazujem len správne načítané sekcie."
+1025,1,"Neznámy typ stopy."
+1026,1,"Neznáma alokačná stratégia (%d).\n\nProsím kontaktujte support@altap.cz a pomôžete nám opraviť tento problém."
+1027,1,"Neplatný formát .CCD súboru.\n\nZobraziť aj nekompletný obraz."
+1028,1,"Chýba .CCD súbor.\n\nZobraziť aj nekompletný obraz."
+1029,1,"Nie je možné načítať sektor #%08X."
+1030,1,"Neplatný UDF Tag ID."
+1031,1,"Chyba načítania štruktúry adresára v sektore #%08X.\n\nNekompletný obsah ISO obrazu."
+1032,1,"Interná chyba pluginu."
+1033,1,"Chyba načítania virtuálnej alokačnej tabuľky v sektore #%08X."
+1034,1,"Chýba virtuálna alokačná tabuľka."
+1035,1,"Neplatný koreň ICB.\n\nNie je možné načítať štruktúru adresára."
+1036,1,"Nie je možné extrahovať súbor "%s".\n\nNezhoda medzi veľkosťou súboru a ICB bloky."
+1037,1,"Nie je možné otvoriť stopu #%d."
+1038,1,"Tento súbor sa zdá byť disketa alebo pevný disk alebo obraz oddielu pevného disku.\nSkúste premenovať súbor na .ima a spustite UnFAT plugin."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Nie je možné načítať hlavičku oddielu. Súbor je malý."
+1051,1,"Poškodená štruktúra manažéra oddielov."
+1052,1,"Tento obraz disku neobsahuje HFS Plus oddiel."
+1053,1,"Tento obraz disku obsahuje HFS ale nie HFS Plus systém súborov.\nHFS nie je podporované."
+1054,1,"Nie je možné nájsť blok #%08X.\nSúbor %s nebude extrahovaný."
+1055,1,"Nie je možné nájsť blok #%08X."
+
+[STRINGTABLE 4]
+1056,1,"Nepodporovaný BTree root node typ v súbore katalógu."
+1057,1,"Súbor katalógu je rozdelený na viac ako 8 častí, ktoré nie sú podporované."
+1058,1,"Súbor '%s' je rozdelený na viac ako 8 častí, ktoré nie sú podporované.\nSúbor nebude extrahovaný."
+1059,1,"Tento obraz disku obsahuje príliš dlhú cestu, ktorú Open Salamander nevie spracovať."
+1060,1,"Nie je možné dokončiť operáciu kvôli príliš dlhému názvu."
+1070,1,"Nie je možné načítať hlavičku zväzku. Súbor je malý."
+1071,1,"Tento zväzok je zašifrovaný.\nZašifrované zväzky nie sú podporované."
+
+[STRINGTABLE 5]
+1072,1,"Tento súbor sa nezdá byť DMG zväzok alebo je nekompletný.\nNeobsahuje platný DMG footer."
+1073,1,"Tento súbor sa nezdá byť platný DMG zväzok nebo je nekompletný.\nNeobsahuje platný Property List."
+1074,1,"Tento zväzok neobsahuje dátový blok HFS Plus oddielov začínajúci na %I64u.\nTento blok je potrebný na správne zaobchádzanie so zväzkom."
+1075,1,"Nie je možné čítať dáta z obrazu disku na pozícii %I64u."
+1076,1,"Nie je možné prechádzať v obraze disku na pozícii %I64u."
+1077,1,"Interná chyba: Nepodporovaná metóda hľadania."
+1078,1,"Tento obraz disku obsahuje blok skomprimovaný neznámou metódou.\nTaké obrazy diskov nie sú podporované."
+1079,1,"Extrahovanie ZLIB-komprimovaného bloku zlyhalo. Tento obraz disku je poškodený."
+1080,1,"Extrahovanie SZIP2-komprimovaného bloku zlyhalo. Tento obraz disku je poškodený."
+1085,1,"Tento súbor sa nezdá byť komprimovaný ISZ obraz alebo je nekompletný.\nNeobsahuje platnú ISZ hlavičku."
+1086,1,"Nie je možné čítať hlavičku komprimovaného obrazu. Súbor je malý."
+1087,1,"Tento obraz je rozdelený.\nRozdelené obrazy nie sú podporované."
+
+[STRINGTABLE 6]
+1088,1,"Tento obraz je zašifrovaný.\nZašifrované obrazy nie sú podporované."
+1100,1,"Chyba čítania"
+1101,1,"Chyba zápisu"
+1102,1,"Nie je možné extrahovať audio stopy."
+1103,1,"Rušenie operácie, čakajte prosím..."
+
+[STRINGTABLE 7]
+1150,1,"Informácie o obraze\n\n"
+1151,1,"Informácie o obraze "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Počet sekcií: %d"
+1153,1,"\nSekcia %d\n"
+1154,1,"  Počet stôp: %d\n"
+1155,1,"  Stopa: %d, %s, Veľkosť: %d KBajtov\n"
+1156,1,"  Stopa: %d, %s, Veľkosť: %d KBajtov - "%s"\n"
+

@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 8501]
+355,154,1,"PE Dateibetrachter - Konfiguration"
+1300,7,7,75,8,1,"&Verfügbare Bereiche:"
+8700,7,17,105,130,1,""
+8702,119,17,59,14,1,"Hin&zufügen ->"
+8703,119,35,59,14,1,"<- Entfe&rnen"
+1301,185,7,75,8,1,"&Sichtbare Bereiche:"
+8701,185,17,105,130,1,""
+8704,298,17,50,14,1,"Nach &oben"
+8705,298,35,50,14,1,"Nach &unten"
+1,298,97,50,14,1,"OK"
+2,298,115,50,14,1,"Abbrechen"
+8706,298,133,50,14,1,"Stan&dard"
+
+[STRINGTABLE 0]
+1016,1,"Über Plugin"
+
+[STRINGTABLE 1]
+10100,1,"PE Dateibetrachter"
+10101,1,"Fehler beim Öffnen der Datei %s."
+10102,1,"Fehler beim Erzeugen der temporären Datei."
+10103,1,"Ausnahmefehler aufgetreten.\n\nAngesehene Datei: %s\n\nWenn die angezeigte Datei nach Ihrer Meinung nicht defekt ist, senden Sie uns bitte die Datei an support@altap.cz.\nWir werden den Fehler im Betrachter beseitigen. Vielen Dank für die Kooperation!"
+10104,1,"Zeigt Informationen über ausführbare Dateien an (EXE, DLL, usw.)."
+
+[STRINGTABLE 2]
+10118,1,"Es wurde kein ausgewählter PE Bereich in der Pluginkonfiguration gefunden.\nGehe zu Optionen > Pluginkonfiguration > PE Dateibetrachter\nim Open Salamander Hauptfenster, um sichtbare Bereiche einzurichten."
+

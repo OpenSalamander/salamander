@@ -1,0 +1,16 @@
+Editing resources for the Czech version
+=======================================
+
+Manually copy the contents of ZIP\selfextr\language\czech\main.rc
+into ZIP\selfextr\edit_in_vs.rc. Leave out only two lines:
+"#ifdef EXT_VER" and "#endif //EXT_VER". Check ZIP\selfextr\SELFEXTR.RC
+for the code page of language\czech\main.rc (1250) and record it in
+ZIP\selfextr\edit_in_vs.rc (see "#pragma code_page").
+
+Open zip\vcproj\selfextr\selfextr.sln. Edit the resources by opening
+the EditInVS project (edit_in_vs.vcproj). Copy the changes back from
+ZIP\selfextr\edit_in_vs.rc to ZIP\selfextr\language\czech\main.rc.
+Do not delete the original "#ifdef EXT_VER" and "#endif //EXT_VER".
+
+Remove all dialogs from ZIP\selfextr\edit_in_vs.rc so we do not keep
+redundant copies in Hg.

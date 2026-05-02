@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\russian\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,1049
+AUTHOR,"Ален Хайруллин, Vasiliy, Игорь Полякофф, Neutron16"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6166"
+COMMENT,"Русская версия"
+
+[STRINGTABLE 0]
+10100,1,"Средство просмотра Internet Explorer"
+10101,0,"Unable to open Internet Explorer Viewer.\nPlease report this problem to support@altap.cz."
+10102,1,"Ошибка"
+10103,1,"Облегченное средство просмотра HTML и XML, использующее Internet Explorer."
+10105,1,"О модуле"
+

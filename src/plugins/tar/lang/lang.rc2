@@ -1,0 +1,58 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME, "TAR"
+ IDS_PLUGIN_DESCRIPTION, "Browse and extract Unix archives."
+ IDS_ABOUT, "About Plugin"
+ IDS_TARERR_TITLE, "TAR Plugin Error"
+ IDS_TARERR_UNKNOWN, "Archive format not recognised or not supported."
+ IDS_TARERR_HEADER, "Invalid data in TAR header - archive corrupted."
+ IDS_TARERR_CHECKSUM, "Bad file or header checksum - archive corrupted."
+ IDS_TARERR_FDATA, "Internal error: file data structure corrupted."
+ IDS_TARERR_BADSIG, "Unknown block signature - skipping."
+ IDS_TARERR_NOTFOUND, "Required file not found in the archive."
+ IDS_TARERR_MEMORY, "Memory allocation error."
+ IDS_UNPACKPROGRESS_TITLE, "Unpack"
+ IDS_UNPACKPROGRESS_TEXT, "Extracting "
+ IDS_SKIPPROGRESS_TEXT, "Skipping "
+ IDS_GZERR_TITLE, "GZip Error"
+ IDS_GZERR_BADMETHOD, "Unknown compression method used, can't extract."
+ IDS_GZERR_ENCRYPTED, "This file is encrypted. Encryption is not supported in GZip archives."
+ IDS_GZERR_MULTIPART, "This file is a part of a multipart archive. Multipart GZip archives are not supported."
+ IDS_GZERR_BADFLAGS, "Unknown flags in GZip header encountered, can't extract."
+ IDS_GZERR_FOPEN, "Error opening archive file: "
+ IDS_ERR_FREAD, "Error reading archive file: "
+ IDS_TARERR_FWRITE, "Error writing to output file: "
+ IDS_TARERR_WRSIZE, "The WriteFile function refused to write all the data requested."
+ IDS_GZERR_BADBLOCKTYPE, "Invalid block in GZip stream encountered, unable to extract."
+ IDS_ERR_INTERNAL, "Internal error in TAR plugin, please let us know on email support@altap.cz."
+ IDS_ERR_MEMORY, "Memory allocation error."
+ IDS_GZERR_CRC, "CRC error."
+ IDS_ERR_CORRUPT, "Unexpected data in compressed stream, archive corrupted."
+ IDS_ERR_EOF, "Premature end of file encountered."
+ IDS_GZERR_SEEK, "Error seeking in archive file: "
+ IDS_RPM_VIEWTITLE, "RPM Viewer"
+ IDS_ERR_RPMTITLE, "RPM Error"
+ IDS_RPMERR_TMPNAME, "Error creating temporary file name."
+ IDS_RPMERR_TMPFILE, "Error creating temporary file."
+ IDS_ERR_NORPM, "The file was not recognised as an RPM archive."
+ IDS_ERR_BADRPMVERSION, "The version of RPM requested by this archive is not supported."
+ IDS_ERR_BADSIGNATURE, "Unknown RPM archive signature encountered."
+ IDS_CPIOERR_BADSIG, "File record have a bad signature."
+ IDS_CPIOERR_HEADER, "Corrupted file header record."
+ IDS_CPIOERR_FORMAT, "Unknown format of cpio header."
+ IDS_LZH_NOT_IMPLEMENTED, "LZH archives not yet supported."
+}

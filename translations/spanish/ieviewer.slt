@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[STRINGTABLE 0]
+10100,1,"Visor de Internet Explorer"
+10101,0,"Unable to open Internet Explorer Viewer.\nPlease report this problem to support@altap.cz."
+10102,1,"Error"
+10103,1,"Visor ligero para HTML y XML basado en Internet Explorer."
+10105,1,"Acerca del Plugin"
+

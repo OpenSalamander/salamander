@@ -1,0 +1,277 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\mmviewer.atp"
+TEXTVERSION,"1.16 (x86)"
+VERSION,"1,1,6,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 10500]
+388,132,1,"O plugine"
+2,331,113,50,14,1,"Zatvoriť"
+10506,11,9,20,20,1,""
+10501,46,9,337,8,1,"MMViewer %s - Multimediálny prehliadač pre Open Salamander"
+10505,46,19,177,8,1,"dummy"
+10507,11,42,20,20,1,""
+13000,46,41,233,8,1,"MPEG, ID3 Tag verzia 1 a 2, OGG, WMA, VQF a Tracker parsers"
+13001,46,51,65,8,1,"sú licencované pre"
+10504,112,51,201,8,1,"Disk Explorer Professional"
+13002,46,67,82,8,1,"Copyright 2003-2016 by"
+13003,129,67,60,8,1,"Tomas Jelinek"
+13004,46,78,30,8,1,"E-mail:"
+10502,129,78,119,8,1,"tomas@tjelinek.com"
+13005,46,89,66,8,1,"Domovská stránka:"
+10503,129,89,118,8,1,"www.tjelinek.com"
+13006,2,107,380,1,1,""
+
+[STRINGTABLE 0]
+11100,1,"Nedostatok pamäti"
+11101,1,"Neznámy súbor"
+11102,1,"Chyba otvárania"
+11103,1,"Chyba čítania"
+
+[STRINGTABLE 1]
+11104,1,"Chyba zápisu"
+11105,1,"Chyba hľadania"
+11106,1,"Poškodený súbor"
+11107,1,"Nie je možné inicializovať Windows prípony"
+11110,1,"Multimediálny prehliadač"
+11111,1,"Multimediálny prehliadač má otvorené najmenej jedno okno. Chcete ho zatvoriť?"
+
+[STRINGTABLE 2]
+11120,1,"Multimediálne súbory (*.mp3;*.mp2;*.ogg;*.vqf;*.wma;*.wav;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm)|*.mp3;*.mp2;*.ogg;*.wma;*.wav;*.wave;*.vqf;*.669;*.it;*.mod;*.mtm;*s3m;*.stm;*.xm|Všetky súbory (*.*)|*.*||"
+11123,1,"Chyba otvárania %s.\nTento formát Multimediálny prehliadač nepodporuje."
+11124,1,"HTML súbory (*.htm;*.html)|*.htm;*.html|Všetky súbory (*.*)|*.*||"
+11125,1,"Chcete otvoriť exportované dáta?"
+11126,1,"Exportovať Info do &HTML..."
+11127,1,"Audio vlastnosti"
+11128,1,".html"
+11129,1,"Spracovanie súborov, čakajte prosím..."
+11130,1,"%lu z %lu súborov bolo úspešne spracovaných."
+11131,1,"Zobrazí informácie o multimediálnych súboroch ako napr.: MP3, OGG, WAV, atď."
+11132,1,"O plugine"
+
+[STRINGTABLE 3]
+11200,1,"&Súbor"
+11201,1,"&Otvoriť...\tCtr+O"
+11202,1,"&Vlastnosti...\tCtrl+F1"
+11204,1,"&Koniec\tAlt+F4"
+11205,1,"&Ďalšie súbory"
+11206,1,"&Prvý\tShift+Backspace"
+11207,1,"Pos&ledný\tShift+Space"
+11208,1,"Pr&edchádzajúci\tBackspace"
+11209,1,"&Nasledujúci\tSpace"
+11210,1,"Úpr&avy"
+11211,1,"&Kopírovať všetko\tCtrl+A"
+
+[STRINGTABLE 4]
+11230,1,"&Zobrazenie"
+
+[STRINGTABLE 5]
+11232,1,"&Celá obrazovka\tF11"
+
+[STRINGTABLE 6]
+11270,1,"Nas&tavenie"
+11271,1,"&Konfigurácia..."
+
+[STRINGTABLE 7]
+11280,1,"&Nápoveda"
+11281,1,"&O plugine..."
+11290,1,"Exportovať do &HTML...\tCtr+H"
+
+[STRINGTABLE 8]
+11500,1,"Kopírovať všetko\tCtrl+A"
+11501,1,"Otvoriť\tCtrl+O"
+11502,1,"Nájsť\tCtrl+F"
+11503,1,"Vlastnosti\tCtrl+F1"
+
+[STRINGTABLE 9]
+11504,1,"Celá obrazovka\tF11"
+11505,1,"Otvoriť predchádzajúci\tBackspace"
+11506,1,"Otvoriť ďalší\tSpace"
+11507,1,"Exportovať do HTML\tCtrl+H"
+
+[STRINGTABLE 10]
+12001,1,"Áno"
+12002,1,"Nie"
+12009,1,"VQF informácia"
+12010,1,"Copyright"
+12011,1,"Autor"
+12012,1,"Názov"
+12013,1,"Poznámky"
+12014,1,"Rok"
+12015,1,"Album"
+
+[STRINGTABLE 11]
+12016,1,"Stopa"
+12017,1,"Orig. názov"
+12018,1,"LYRC"
+12019,1,"WORD"
+12020,1,"MUSC"
+12021,1,"ARNG"
+12022,1,"PROD"
+12023,1,"REMX"
+12024,1,"CDCT"
+12025,1,"SING"
+12026,1,"LABL"
+12027,1,"NOTE"
+12028,1,"PRSN"
+12029,1,"BAND"
+
+[STRINGTABLE 12]
+12100,1,"Windows Media Audio informácia"
+12101,1,"binárny (%luB)"
+12102,1,"Dĺžka"
+12103,1,"Bitrate (kbps)"
+12104,1,"Seekable"
+12105,1,"Stridable"
+12106,1,"Broadcast"
+12107,1,"Chránený"
+12108,1,"Trusted"
+12109,1,"Názov podpisu"
+12110,1,"Názov"
+12111,1,"Autor"
+
+[STRINGTABLE 13]
+12112,1,"Popis"
+12113,1,"Hodnotenie"
+12114,1,"Copyright"
+12115,1,"Album"
+12116,1,"Stopa"
+12117,1,"URL propagácie"
+12118,1,"URL obalu albumu"
+12119,1,"Žáner"
+12120,1,"Rok"
+12121,1,"MCDI"
+12122,1,"Typ reklamy"
+12123,1,"Dáta reklamy"
+12124,1,"URL reklamy"
+12125,1,"Copyright URL"
+12126,1,"NSC názov"
+12127,1,"NSC adresa"
+
+[STRINGTABLE 14]
+12128,1,"NSC telefón"
+12129,1,"NSC e-mail"
+12130,1,"NSC popis"
+
+[STRINGTABLE 15]
+12200,1,"Informácie Tracker Modulu"
+12201,1,"Patterns"
+12202,1,"Samples"
+12203,1,"Instruments"
+12204,1,"Titul"
+
+[STRINGTABLE 16]
+12300,1,"OGG Vorbis informácie"
+12301,1,"Verzia"
+12302,1,"Nominálny bitrate (kbps)"
+12303,1,"Vzorkovacia frekvencia (Hz)"
+
+[STRINGTABLE 17]
+12304,1,"Kanály"
+12305,1,"Copyright"
+12306,1,"Verzia"
+12307,1,"Kontakt"
+12308,1,"ISRC"
+12309,1,"Autor"
+12310,1,"Názov"
+12311,1,"Žáner"
+12312,1,"Poznámky"
+12313,1,"Dátum"
+12314,1,"Album"
+12315,1,"Stopa"
+12316,1,"Umelec"
+12317,1,"Organizácia"
+12318,1,"Popis"
+12319,1,"Detaily"
+
+[STRINGTABLE 18]
+12320,1,"Umiestnenie"
+12321,1,"Vzorky"
+12322,1,"Dĺžka"
+12323,1,"Dodatočné informácie"
+12324,1,"ID disku"
+12325,1,"Predajca"
+12326,1,"Štandardné tagy"
+12327,1,"Iný tag"
+
+[STRINGTABLE 19]
+12400,1,"WAVE informácia"
+12401,1,"Bitrate (bps)"
+12402,1,"Vzorkovacia frekvencia (Hz)"
+12403,1,"Režim"
+12404,1,"Komprimácia"
+12405,1,"Stereo"
+12406,1,"Mono"
+12407,1,"Dĺžka"
+
+[STRINGTABLE 20]
+12501,1,"Verzia"
+12502,1,"MPEG %u.%u Layer %s"
+12503,1,"Bitrate (kbps)"
+12504,1,"Vzorkovacia frekvencia (Hz)"
+12505,1,"Režim"
+12506,1,"Copyright (c)"
+12507,1,"Originál"
+12508,1,"Autor"
+12509,1,"Názov"
+12510,1,"Žáner"
+12511,1,"Poznámky"
+
+[STRINGTABLE 21]
+12512,1,"Rok"
+12513,1,"Album"
+12514,1,"Emphasis"
+12515,1,"ID3 Tag v%u.%u"
+12516,1,"MPEG Audio informácia"
+12517,1,"Frames"
+12518,1,"Dĺžka"
+12519,1,"Variabilný, priemer "
+12520,1,"Stopa"
+12521,1,"-"
+12522,1,"50/15 microsek"
+12523,1,"CCITT J 17"
+12524,1,"?"
+12525,1,"Stereo"
+12526,1,"Joint Stereo"
+12527,1,"Dual kanál"
+
+[STRINGTABLE 22]
+12528,1,"Jeden kanál"
+12529,1,"Skladateľ"
+12530,1,"Orig. umelec"
+12531,1,"Zakódované"
+12532,1,"URL reklamnej informácie"
+12533,1,"URL Copyright/Právnych informácií"
+12534,1,"Oficiálne URL audio súboru"
+12535,1,"Oficiálne URL umelca/skladateľa"
+12536,1,"Oficiálne URL audio zdroja"
+12537,1,"Oficiálne URL internetového rádia"
+12538,1,"Platobné URL"
+12539,1,"Oficiálne URL vydavateľa"
+12540,1,"Vydavateľ"
+12541,1,"Vlastné URL"
+12542,1,"Vlastný text"
+
+[STRINGTABLE 23]
+12600,1,"AAC informácia"
+12601,1,"Bitrate (bps)"
+12602,1,"Vzorkovacia frekvencia (Hz)"
+12603,1,"Kanály"
+12604,1,"Dĺžka"
+12605,1,"Typ hlavičky"
+12606,1,"MPEG verzia"
+12607,1,"MAIN"
+
+[STRINGTABLE 24]
+12608,1,"LC"
+12609,1,"SSR"
+12610,1,"LTP"
+12611,1,"RAW"
+12612,1,"ADIF"
+12613,1,"ADTS"
+

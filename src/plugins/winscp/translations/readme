@@ -1,0 +1,32 @@
+Pridani noveho jazyka (na prikladu nemciny [DE])
+
+1) Vybalit preklad z translations440.zip
+(døíve: Stahnout preklad WinSCP z http://winscp.net/cache/translations/DE.ini)
+
+2) Ulozit do
+plugins\winscp\translations\coredata\DE.ini
+
+3) Zkopirovat
+plugins\winscp\translations\salamdata\translate.ini do
+plugins\winscp\translations\salamdata\DE.ini
+
+4) Na zacatek toho souboru pridat:
+[Include]
+1=coredata\DE.ini
+
+5) Poslat k prelozeni
+
+6) V souboru
+plugins\winscp\translations\translate.salamander.base.ini
+doplnit sekce [Languages]:
+DE=jmeno,windowsova kodova sada,windosovy kod,0,url,popisek
+(jmeno se pro salamander nepouziva)
+seznam kodovych sad je treba zde: http://msdn.microsoft.com/en-us/library/aa226047%28SQL.80%29.aspx
+seznam windowsovych kodu je treba zde: http://msdn.microsoft.com/en-us/library/dd318693%28v=VS.85%29.aspx
+a [Author]
+
+7) v plugins\winscp\makefile pridat do targetu translations
+translate.bat DE
+
+8) pridat radek do copy-to-petr-pc.bat:
+@call :langcopy_bat german

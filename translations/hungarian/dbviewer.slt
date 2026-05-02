@@ -1,0 +1,228 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\dbviewer.atp"
+TEXTVERSION,"1.23 (x86)"
+VERSION,"1,2,3,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 12200]
+235,181,1,"Tulajdonságok"
+1,179,162,50,14,1,"OK"
+13000,4,155,227,1,1,""
+12201,5,5,224,143,1,""
+
+[DIALOG 12220]
+282,105,1,"Adatbázis Néző beállítások"
+13000,6,10,270,35,1,"Betűtípus"
+12221,13,23,50,14,1,"&Betűtípus"
+12222,69,23,200,14,1,""
+13001,6,48,270,27,1,"Ablak pozíció"
+12223,14,58,76,12,1,"Menté&s bezáráskor"
+12224,114,58,156,12,1,"A Salamand&er fő ablakához igazítás"
+12225,13,85,70,14,1,"CSV beállítások..."
+1,113,85,50,14,1,"OK"
+2,168,85,50,14,1,"Mégse"
+9,223,85,50,14,1,"Súgó"
+
+[DIALOG 12240]
+282,178,1,"Mezők"
+12241,6,6,270,142,1,""
+13000,4,153,273,1,1,""
+12242,6,159,69,14,1,"Visszaállítá&s"
+1,115,159,50,14,1,"OK"
+2,170,159,50,14,1,"Mégse"
+9,225,159,50,14,1,"Súgó"
+
+[DIALOG 12250]
+288,137,1,"CSV beállítások"
+13000,6,6,85,101,1,"Elvála&sztó"
+12264,15,18,60,12,1,"Auto-kijelölés"
+12261,15,32,60,12,1,"Tabulátor"
+12260,15,46,69,12,1,"Pontosvessző (;)"
+12259,15,60,60,12,1,"Vessző (,)"
+12258,15,74,60,12,1,"Szünet ( )"
+12257,15,88,33,12,1,"Egyéb"
+12256,49,88,16,12,1,""
+13001,101,6,85,101,1,"S&zöveg határoló"
+12262,110,18,60,12,1,"Auto-kijelölés"
+12255,110,32,72,12,1,"Dupla időzőjel (")"
+12254,110,46,60,12,1,"Idézőjel (')"
+12253,110,60,60,12,1,"Nincs"
+13002,196,6,85,101,1,"&Első sor"
+12263,205,18,60,12,1,"Auto-kijelölés"
+12265,205,32,70,12,1,"Oszlop nevekként"
+12266,205,46,60,12,1,"Adatként"
+1,121,118,50,14,1,"OK"
+2,176,118,50,14,1,"Mégse"
+9,231,118,50,14,1,"Súgó"
+12252,6,118,70,14,1,"Ez &legyen az alap"
+
+[DIALOG 12300]
+210,131,1,"Keresés"
+13000,30,11,172,1,1,""
+13001,9,7,20,8,1,"Ke&res"
+12301,16,17,182,64,1,""
+13002,49,47,153,1,1,""
+13003,9,43,38,8,1,"Beállítások"
+12302,16,53,66,12,1,"Keresés &előre"
+12303,16,65,72,12,1,"Keresés &vissza"
+12304,113,53,57,12,1,"&Teljes szavak"
+12305,113,65,76,12,1,"&Nagybetű érzékeny"
+12306,113,77,77,12,1,"&Szabályos kifejezés"
+13004,8,102,194,1,1,""
+1,20,110,50,14,1,"OK"
+2,80,110,50,14,1,"Mégse"
+9,140,110,50,14,1,"Súgó"
+
+[DIALOG 12400]
+123,54,1,"Rekordra ugrás"
+13000,8,9,29,8,1,"&Rekord:"
+100,40,7,74,12,1,""
+1,8,32,50,14,1,"OK"
+2,65,32,50,14,1,"Mégse"
+
+[STRINGTABLE 0]
+11089,1,"Adatbázis néző"
+11090,1,"dBase, FoxPro és CSV adatbázis fájlok megjelenítése."
+11092,1,"Plugin névjegy"
+11101,1,"Néhány Adatbázis Néző ablak meg van nyitva. Bezárja őket?"
+
+[STRINGTABLE 1]
+11110,1,"Kevés memória."
+11111,1,"A fájl ismeretlen adatbázis formátumú."
+11112,1,"A fájl nem található."
+11113,1,"Adatbázis fájl olvasási hiba. Talán csonka."
+11114,1,"Adatbázis fájl írási hiba."
+11115,1,"Adatbázis fájl keresési hiba."
+11116,1,"Memo fájl nem érhető el."
+11117,1,"Memo fájl sérült."
+
+[STRINGTABLE 2]
+11120,1,"Adatbázis fájlok (*.csv;*.dbf;*.txt)|*.csv;*.dbf;*.txt|Minden fájl (*.*)|*.*|"
+11121,1,"%d pt. %s (%s)"
+11122,1,"A beállítás már megnyitva."
+11123,1,"Név"
+11124,1,"Típus"
+11125,1,"Szélesség"
+11126,1,"Decimális"
+11130,1,"dBase II"
+11131,1,"dBase III"
+11132,1,"dBase IV"
+11133,1,"dBase V"
+11134,1,"Visual dBase 7"
+11135,1,"FoxPro"
+
+[STRINGTABLE 3]
+11136,1,"Ismeretlen"
+11140,1,"Karakter"
+11141,1,"Szám"
+11142,1,"Logikai"
+11143,1,"Dátum"
+11144,1,"Memo"
+11145,1,"Lebegőpont"
+11146,1,"Bináris"
+11147,1,"Általános"
+11148,1,"Kép"
+11149,1,"Pénznem"
+11150,1,"Dátum/Idő"
+11151,1,"Egész szám"
+
+[STRINGTABLE 4]
+11152,1,"Ismeretlen"
+11153,1,"Dupla"
+11154,1,"Időjelzés"
+11155,1,"AutoNövelés"
+11160,1,"Legalább egy mezőnek látszódnia kell."
+11162,1,"Nincs érvényes mező az adatbázisban."
+11163,1,"Igaz"
+11164,1,"Hamis"
+11165,1,"Módosítva"
+11166,1,"Méret"
+11167,1,"Verzió"
+
+[STRINGTABLE 5]
+11168,1,"Rekordszám"
+11169,1,"Mezőszám"
+11170,1,"Memo-mezőszám"
+11171,1,"Fejléc méret"
+11172,1,"Rekord méret"
+11173,1,"Kódlap"
+
+[STRINGTABLE 6]
+11194,1,"Szabványos kifejezés hiba"
+11195,1,"Keresés"
+11196,1,"Nem található a következő szöveg: '%s'."
+11197,1,"Nem található a következő szabványos kifejezés: '%s'."
+
+[STRINGTABLE 7]
+11200,1,"&Fájl"
+11201,1,"&Megnyitás...\tCtr+O"
+11202,1,"F&rissítés\tCtr+R"
+11203,1,"&Tulajdonságok...\tCtrl+F1"
+11204,1,"&Egyéb fájlok"
+11205,1,"Elő&ző\tBackspace"
+11206,1,"&Következő\tSpace"
+11207,1,"Előző k&ijelölt\tCtrl+Backspace"
+11208,1,"Kö&vetkező kijelölt\tCtrl+Space"
+11209,1,"&Első\tShift+Backspace"
+11210,1,"Uto&lsó\tShift+Space"
+11211,1,"&Kilépés\tAlt+F4"
+
+[STRINGTABLE 8]
+11217,1,"Sz&erkesztés"
+11218,1,"&Másolás\tCtrl+C"
+11219,1,"M&ind kijelöl\tCtrl+A"
+11220,1,"Ke&resés...\tCtrl+F"
+11221,1,"Kö&vetkező keresése\tCtrl+N"
+11222,1,"E&lőző keresése\tCtrl+P"
+11223,1,"&Könyvjelző kapcsoló\tCtrl+F2"
+11224,1,"Köv&etkező könyvjelző\tF2"
+11225,1,"Elő&ző könyvjelző\tShift+F2"
+11226,1,"Mi&nden könyvjelző törlése\tCtrl+Shift+F2"
+11230,1,"&Nézet"
+11231,1,"Rekordra u&grás...\tG"
+
+[STRINGTABLE 9]
+11232,1,"Me&zők...\tI"
+11233,1,"&Teljes képernyő\tF11"
+
+[STRINGTABLE 10]
+11250,1,"&Konvertálás"
+11251,1,"&Auto-kijelölés"
+11252,1,"&Ne konvertáljon"
+11253,1,"Alapértelmezés"
+11254,1,"Következő\tF8"
+11255,1,"Előző\tShift+F8"
+
+[STRINGTABLE 11]
+11270,1,"Beállítás&ok"
+11271,1,"C&SV beállítások..."
+11272,1,"&Beállítás..."
+
+[STRINGTABLE 12]
+11280,1,"&Súgó"
+11281,1,"&Névjegy..."
+11282,1,"&Tartalomjegyzék\tF1"
+11283,1,"&Index..."
+11284,1,"Kere&s..."
+
+[STRINGTABLE 13]
+11500,1,"Másolás\tCtrl+C"
+11501,1,"Megnyitás\tCtrl+O"
+11502,1,"Keresés\tCtrl+F"
+11503,1,"Tulajdonságok\tCtrl+F1"
+
+[STRINGTABLE 14]
+11504,1,"Teljes képernyő\tF11"
+11505,1,"Aktuális rekord/Rekordszám\tG"
+
+[STRINGTABLE 15]
+11520,0,"Use &default font"
+11521,1,"&Egyéni betűtípus..."
+11522,0,"default font"
+11523,1,"egyéni betűtípus"
+

@@ -1,0 +1,507 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\zip.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\zip.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EXPACKOPTIONS DIALOGEX 41, 41, 308, 201
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Extended Pack Options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Archive:",IDC_STATIC_1,17,9,30,8
+    CONTROL         "",IDC_ARCHIVE,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,50,9,250,8
+    LTEXT           "",IDC_STATIC_2,8,24,292,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "Create &multi-volume archive",IDC_MULTIVOL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,17,31,106,12
+    LTEXT           "&Volume Size:",IDC_STATIC_3,167,33,46,8,NOT WS_GROUP
+    COMBOBOX        IDC_VOLSIZE,216,31,51,110,CBS_DROPDOWN | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_UNITS,272,31,27,34,CBS_DROPDOWNLIST | WS_DISABLED | WS_TABSTOP
+    CONTROL         "&Name files sequentially",IDC_SEQNAME,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,17,45,90,12
+    LTEXT           "",IDC_STATIC_4,8,63,292,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "Create &self-extracting archive",IDC_SELFEXTR,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,17,70,110,12
+    PUSHBUTTON      "&Advanced...",IDC_ADVANCED,244,70,55,14,WS_DISABLED
+    LTEXT           "",IDC_STATIC_5,8,90,292,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "&Encrypt files",IDC_ENCRYPT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,17,97,53,12
+    LTEXT           "&Password:",IDC_STATIC_6,28,113,60,8,NOT WS_GROUP
+    EDITTEXT        IDC_PASSWORD1,94,111,85,12,ES_PASSWORD | ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "C&onfirm Password:",IDC_STATIC_7,28,129,65,8,NOT WS_GROUP
+    EDITTEXT        IDC_PASSWORD2,94,127,85,12,ES_PASSWORD | ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        " Encryption Method ",IDC_STATIC_8,188,97,111,50
+    CONTROL         "&ZIP 2.0 compatible (weak)",IDC_ENC_ZIP20,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,193,108,101,12
+    CONTROL         "&128-bit AES",IDC_ENC_AES128,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,193,120,53,12
+    CONTROL         "&256-bit AES",IDC_ENC_AES256,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,193,132,55,12
+    LTEXT           "",IDC_STATIC_9,8,154,292,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "&Don't show this dialog box again (you can change it later in config dialog)",IDC_DONTSHOW,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,17,161,260,12
+    DEFPUSHBUTTON   "OK",IDOK,32,180,55,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,95,180,55,14
+    PUSHBUTTON      "&Configure...",IDC_CONFIG,158,180,55,14
+    PUSHBUTTON      "Help",IDHELP,221,180,55,14
+END
+
+IDD_CONFIG DIALOGEX 50, 37, 312, 277
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "ZIP Configuration"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Unpacking",IDC_STATIC_1,7,6,38,8
+    LTEXT           "",IDC_STATIC_2,46,10,261,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "&Automatically expand multi-volume archives stored on fixed disk",IDC_AUTOEXPANDMV,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,17,232,12
+    LTEXT           "Packing",IDC_STATIC_3,7,35,28,8
+    LTEXT           "",IDC_STATIC_4,36,39,271,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "Use &temporary copy of archive for its modifications (recommended, crash immune)",IDC_BACKUP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,46,290,12
+    CONTROL         "Don't store &empty directories in ZIP archive",IDC_NOEMPTYDIRS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,58,157,12
+    CONTROL         "Set archive time to the &newest file time when modifying archive",IDC_SETFILETIME,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,70,240,12
+    CONTROL         "Use WinZip compatible file names for multi-volume archives (except for self-",IDC_WINZIPNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,82,279,12
+    LTEXT           "extracting archives, which always use Open Salamander naming conventions)",IDC_STATIC_5,26,94,262,8
+    LTEXT           "Compression &level (0 - 9, 9 best compression, longest time):",IDC_STATIC_6,14,107,203,8
+    EDITTEXT        IDC_LEVEL,218,105,16,12
+    LTEXT           "Default &self-extractor language:",IDC_STATIC_7,14,120,109,8
+    COMBOBOX        IDC_LANGUAGE,124,118,64,57,CBS_DROPDOWNLIST | CBS_SORT | WS_TABSTOP
+    LTEXT           "Confirmations",IDC_STATIC_8,7,136,48,8
+    LTEXT           "",IDC_STATIC_9,55,140,252,1,SS_ETCHEDHORZ | WS_GROUP
+    GROUPBOX        "When SFX language changes",IDC_STATIC_10,14,148,259,49
+    CONTROL         "Al&ways ask before changing texts",IDC_ASK,"Button",BS_AUTORADIOBUTTON | WS_GROUP,20,158,171,12
+    CONTROL         "Automatically &replace texts with their default values",IDC_REPLACE,
+                    "Button",BS_AUTORADIOBUTTON,20,170,212,12
+    CONTROL         "Don't ask and leave always texts &unchanged",IDC_LEAVE,
+                    "Button",BS_AUTORADIOBUTTON,20,182,200,12
+    CONTROL         "Display dialog box with extended &options before packing",IDC_SHOWEXOPTIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,14,200,202,12
+    LTEXT           "Panel settings",IDC_STATIC_11,7,217,49,8
+    LTEXT           "",IDC_STATIC_12,56,221,251,1,SS_ETCHEDHORZ | WS_GROUP
+    CONTROL         "Show column ""&Packed"" when listing archive",IDC_CFG_LISTINFOPACKEDSIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,228,220,12
+    LTEXT           "",IDC_STATIC_13,6,247,301,1,SS_ETCHEDHORZ | WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,42,256,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,101,256,50,14
+    PUSHBUTTON      "Set &Defaults",IDC_DEFAULT,160,256,50,14
+    PUSHBUTTON      "Help",IDHELP,219,256,50,14
+END
+
+IDD_PASSWORD DIALOGEX 6, 15, 271, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter ZIP Password"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            "",IDC_LOCK,21,10,18,20
+    LTEXT           "This file is encrypted. Please enter password for decryption.",IDC_STATIC_1,57,10,202,8
+    LTEXT           "File:",IDC_STATIC_2,57,23,17,8
+    CONTROL         "",IDC_FILE,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,77,23,182,8
+    LTEXT           "&Password:",IDC_STATIC_3,57,36,37,8
+    EDITTEXT        IDC_PASSWORD,97,34,162,12,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,20,55,50,14,WS_GROUP
+    PUSHBUTTON      "&Skip",IDC_SKIP,80,55,50,14
+    PUSHBUTTON      "S&kip All",IDC_SKIPALL,140,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,200,55,50,14
+END
+
+IDD_LOWFREESPACE DIALOGEX 13, 54, 355, 94
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Low Disk Free Space"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Warning: Free space on the disk is smaller than the volume size you have specified.",IDC_TEXT,58,9,283,8
+    RTEXT           "Path:",IDC_STATIC_1,6,26,47,8
+    LTEXT           "",IDC_PATH,58,26,284,8
+    RTEXT           "Free Space:",IDC_STATIC_2,6,39,47,8
+    LTEXT           "",IDC_FREESPACE,58,39,284,8
+    RTEXT           "Volume Size:",IDC_STATIC_3,6,52,47,8
+    LTEXT           "",IDC_VOLUMESIZE,58,52,284,8
+    DEFPUSHBUTTON   "&Ignore",IDC_IGNORE,58,73,50,14
+    PUSHBUTTON      "Ignore &All",IDC_ALL,121,73,50,14
+    PUSHBUTTON      "&Retry",IDC_RETRY,184,73,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,247,73,50,14
+END
+
+IDD_CHANGEDISK DIALOGEX 24, 40, 199, 77
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Disk"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_CHDISKTEXT,13,8,173,24
+    LTEXT           "Press OK when ready.",IDC_STATIC_1,13,39,173,8
+    DEFPUSHBUTTON   "OK",IDOK,44,57,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,104,57,50,14
+END
+
+IDD_OVERWRITE DIALOGEX 6, 15, 350, 79
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Confirm File Overwrite"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Overwrite file:",IDC_STATIC_1,6,14,50,8
+    LTEXT           "",IDC_FILE,61,14,269,8
+    LTEXT           "",IDC_FILEATTR,61,24,269,8
+    LTEXT           "File already exists on the disk. Overwrite?",IDC_STATIC_2,61,39,174,8
+    DEFPUSHBUTTON   "&Yes",IDC_YES,63,56,50,14
+    PUSHBUTTON      "&All",IDC_ALL,121,56,50,14
+    PUSHBUTTON      "&Retry",IDC_RETRY,179,56,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,237,56,50,14
+END
+
+IDD_CHANGEDISK2 DIALOGEX 24, 40, 210, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "ZIP"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "This file is either a part of the multi-volume archive or is corrupted.",IDC_STATIC_1,13,8,184,16
+    LTEXT           "If you believe, it should be a multi-volume archive, please insert a disk with the last part of the archive or locate the file on the fixed disk. Press OK when ready.",IDC_STATIC_2,13,31,184,24
+    LTEXT           "&Last part of the archive:",IDC_STATIC_3,13,61,89,8
+    EDITTEXT        IDC_FILENAME,13,71,168,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,185,71,13,12
+    DEFPUSHBUTTON   "OK",IDOK,50,89,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,110,89,50,14
+END
+
+IDD_CHANGEDISK3 DIALOGEX 24, 40, 210, 132
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Disk"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_CHDISKTEXT,13,8,184,16
+    LTEXT           "Press OK when ready.",IDC_STATIC_1,13,31,184,8
+    CONTROL         "Files are named &sequentially",IDC_SEQNAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,43,135,12
+    CONTROL         "Disk numbers in &extension",IDC_WINZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,55,114,12
+    CONTROL         "Proceed &all volumes without asking",IDC_PROCEEDALL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,67,129,12
+    LTEXT           "&File name:",IDC_STATIC_2,13,84,60,8
+    EDITTEXT        IDC_FILENAME,13,94,168,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BROWSE,185,94,13,12
+    DEFPUSHBUTTON   "OK",IDOK,49,112,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,111,112,50,14
+END
+
+IDD_ADVANCEDSE DIALOGEX 37, 14, 305, 303
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Self-Extractor Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_STATIC_1,0,0,305,1,SS_ETCHEDHORZ | WS_GROUP
+    GROUPBOX        "Directory to extract files to",IDC_STATIC_2,7,7,292,89,WS_GROUP
+    LTEXT           "E&xtract to:",IDC_STATIC_3,20,19,38,8,NOT WS_GROUP
+    EDITTEXT        IDC_TARGETDIR,20,29,249,12,ES_AUTOHSCROLL | ES_NOHIDESEL
+    PUSHBUTTON      ">",IDC_SPECDIR,272,29,12,12
+    LTEXT           "Note: You can enter a relative path, which will be combined with the current directory when the self-extractor is run, or a full path. Leave the field blank for extraction to the current directory.",IDC_STATIC_4,20,47,252,24,NOT WS_GROUP
+    CONTROL         "Allow &user to change the directory",IDC_ALLOWUSER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,77,146,12
+    LTEXT           "&Execute command or open document:",IDC_STATIC_5,20,113,132,8,NOT WS_GROUP
+    EDITTEXT        IDC_EXECUTE,20,123,264,12,ES_AUTOHSCROLL
+    CONTROL         "&Remove extracted files",IDC_REMOVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,139,131,12
+    PUSHBUTTON      "&Wait For...",IDC_WAITFOR,234,138,50,14
+    GROUPBOX        "Interface",IDC_STATIC_6,7,163,292,53,WS_GROUP
+    PUSHBUTTON      "&Texts...",IDC_TEXTS,20,177,50,14
+    LTEXT           "&Language:",IDC_STATIC_7,20,198,38,8,NOT WS_GROUP
+    COMBOBOX        IDC_LANGUAGE,74,196,64,57,CBS_DROPDOWNLIST | CBS_SORT | WS_TABSTOP
+    LTEXT           "Icon:",IDC_STATIC_8,170,198,20,8,NOT WS_GROUP
+    LTEXT           "",IDC_EXEICON,193,194,19,18,NOT WS_GROUP
+    PUSHBUTTON      "Change &Icon...",IDC_CHANGEICON,220,196,64,14
+    GROUPBOX        "Confirmations and other options",IDC_STATIC_9,7,221,292,57
+    CONTROL         "Start extracti&on automatically",IDC_AUTO,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,20,234,111,12
+    CONTROL         "&Hide main self-extractor's dialog box",IDC_HIDEMAINDLG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,246,134,12
+    CONTROL         "Automatically &create target directory",IDC_AUTODIR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,258,135,12
+    CONTROL         "Show operation &summary dialog box",IDC_SUMDLG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,234,135,12
+    CONTROL         "Overwrite files &automatically",IDC_OVEWRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,246,108,12
+    CONTROL         "Requires administrative &privileges ",IDC_REQSADMIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,258,127,12
+    DEFPUSHBUTTON   "OK",IDOK,66,283,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,127,283,50,14
+    PUSHBUTTON      "Help",IDHELP,188,283,50,14
+    GROUPBOX        "After extraction is finished",IDC_STATIC_10,7,101,292,57,WS_GROUP
+END
+
+IDD_OVERWRITE2 DIALOGEX 6, 15, 350, 79
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Confirm File Overwrite"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Overwrite file:",IDC_STATIC_1,6,14,50,8
+    LTEXT           "",IDC_FILE,61,14,269,8
+    LTEXT           "",IDC_FILEATTR,61,24,269,8
+    LTEXT           "File already exists on the disk. Overwrite?",IDC_STATIC_2,61,39,174,8
+    DEFPUSHBUTTON   "&Yes",IDC_YES,89,56,50,14
+    PUSHBUTTON      "&No",IDC_NO_,150,56,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,211,56,50,14
+END
+
+IDD_RENAMEFAVSET DIALOGEX 100, 37, 194, 99
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "New Favorite Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Name:",IDC_STATIC_1,14,8,60,8
+    EDITTEXT        IDC_NAME,14,18,164,12,ES_AUTOHSCROLL
+    LTEXT           "Note: To define menu hot-key for this favorite settings type ampersand (&&) just before the character you want to be the hot-key.",IDC_STATIC_2,14,41,161,24
+    LTEXT           "",IDC_STATIC_3,7,74,181,1,SS_ETCHEDHORZ | WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,39,80,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,99,80,50,14
+END
+
+IDD_CREATESFX DIALOGEX 6, 15, 204, 113
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Self-Extracting Archive"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Create a self-extracting archive from the archive:",IDC_SOURCE,16,11,167,8
+    EDITTEXT        IDC_ARCHIVE,16,21,172,12,ES_AUTOHSCROLL
+    LTEXT           "&File name of the new self-extracting archive:",IDC_TARGET,16,39,152,8
+    EDITTEXT        IDC_NEWARCHIVE,16,49,172,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Advanced...",IDC_ADVANCED,128,68,60,14
+    LTEXT           "",IDC_STATIC_1,7,87,191,1,SS_ETCHEDHORZ | WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,18,94,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,77,94,50,14
+    PUSHBUTTON      "Help",IDHELP,136,94,50,14
+END
+
+IDD_COMMENT DIALOGEX 9, 34, 340, 180
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "ZIP Archive Comment"
+MENU IDM_COMMENTMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_COMMENT,0,0,340,180,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+END
+
+IDD_SFXTEXTS DIALOGEX 94, 18, 260, 352
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Self-Extractor Texts"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Message Box ",IDC_STATIC_1,8,5,245,158
+    LTEXT           "This message box is displayed before the main dialog box and before unpacking begins.",IDC_STATIC_2,20,18,221,16,NOT WS_GROUP
+    LTEXT           "Leave the fields 'Title' and 'Message' empty if you don't want to display any message.",IDC_STATIC_3,20,38,221,16,NOT WS_GROUP
+    LTEXT           "&Buttons:",IDC_STATIC_4,20,61,30,8
+    COMBOBOX        IDC_MBOXBUTTONS,53,59,94,70,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "&Type:",IDC_STATIC_5,20,77,22,8,NOT WS_GROUP
+    COMBOBOX        IDC_MBOXICON,53,75,94,70,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Tit&le:",IDC_STATIC_6,20,92,145,8,NOT WS_GROUP
+    EDITTEXT        IDC_MBOXTITLE,20,102,221,12,ES_AUTOHSCROLL
+    LTEXT           "&Message:",IDC_STATIC_7,20,117,34,8,NOT WS_GROUP
+    EDITTEXT        IDC_MBOXTEXT,20,127,221,29,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    GROUPBOX        "Main Dialog Box",IDC_STATIC_8,8,169,245,158
+    LTEXT           "Titl&e:",IDC_STATIC_9,20,179,28,8
+    EDITTEXT        IDC_TITLE,20,189,221,12,ES_AUTOHSCROLL
+    LTEXT           "Text &displayed in the dialog box:",IDC_STATIC_10,20,205,112,8,NOT WS_GROUP
+    EDITTEXT        IDC_TEXT,20,215,221,29,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    LTEXT           "Text in the 'E&xtract' button:",IDC_STATIC_11,20,247,94,8,NOT WS_GROUP
+    EDITTEXT        IDC_BUTTONTEXT,20,257,68,12,ES_AUTOHSCROLL
+    LTEXT           "&Vendor name:",IDS_VENDOR,20,272,174,8
+    EDITTEXT        IDE_VENDOR,20,282,184,12,ES_AUTOHSCROLL
+    LTEXT           "&WWW link:",IDS_WWW,20,297,174,8
+    EDITTEXT        IDE_WWW,20,307,108,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,24,333,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,78,333,50,14
+    PUSHBUTTON      "&Reset",IDC_RESET,132,333,50,14
+    PUSHBUTTON      "Help",IDHELP,186,333,50,14
+END
+
+IDD_MANFAVS DIALOGEX 59, 61, 220, 123
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Manage Favorites"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Favorites:",IDC_STATIC_1,9,4,60,8
+    LISTBOX         IDC_FAVORITIES,9,14,142,100,LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Re&name",IDC_RENAME,161,13,50,14,WS_GROUP
+    PUSHBUTTON      "&Remove",IDC_REMOVE,161,32,50,14
+    PUSHBUTTON      "Remove &All",IDC_REMOVEALL,161,51,50,14
+    DEFPUSHBUTTON   "Close",IDOK,161,100,50,14
+END
+
+IDD_WAITFOR DIALOGEX 15, 24, 227, 147
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Wait For"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "This option enables you to wait for another process than the process you specified in the field 'Command'. After this process is finished the self-extractor remove temporary files and finish itself.",IDC_STATIC_1,12,9,200,32
+    LTEXT           "It is necessary only if the installation program launch another executable which continues installation while the original installation program is finished.\nIn this manner behaves e.g some versions of Install Shield.",IDC_STATIC_2,12,49,200,32
+    LTEXT           "&Filename of the executable:",IDC_STATIC_3,12,89,103,8
+    EDITTEXT        IDC_FILENAME,12,99,200,12,ES_AUTOHSCROLL
+    LTEXT           "",IDC_STATIC_4,3,121,221,1,SS_ETCHEDHORZ | WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,28,128,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,88,128,50,14
+    PUSHBUTTON      "Help",IDHELP,148,128,50,14
+END
+
+IDD_CHANGELANG DIALOGEX 6, 15, 248, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Self-Extractor Texts"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "You have changed the self-extractor language, do you wish the custom texts you entered in the 'Self-Extractor Texts' dialog box to be changed to their default values corresponding with the language you selected?",IDC_STATIC_1,11,8,214,32
+    DEFPUSHBUTTON   "Yes",IDOK,40,48,50,14
+    PUSHBUTTON      "No",IDCANCEL,99,48,50,14
+    PUSHBUTTON      "Help",IDHELP,158,48,50,14
+    CONTROL         "",IDC_STATIC_2,"Static",SS_ETCHEDHORZ | WS_GROUP,3,70,242,1
+    CONTROL         "Always &ask before changing texts",IDC_ASK,"Button",BS_AUTORADIOBUTTON,11,74,127,12
+    CONTROL         "Automatically &replace texts with their default values in the future",IDC_REPLACE,
+                    "Button",BS_AUTORADIOBUTTON,11,86,228,12
+    CONTROL         "Don't ask in the future and leave always texts &unchanged",IDC_LEAVE,
+                    "Button",BS_AUTORADIOBUTTON,11,98,205,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_SFXMENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Export Settings...\tCtrl+E", CM_SFX_EXPORT
+        MENUITEM "&Import Settings...\tCtrl+I", CM_SFX_IMPORT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Pre&view SFX Dialog Box...\tCtr+V", CM_SFX_PREVIEW
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Reset All\tCtrl+Shift+R",    CM_SFX_RESETALL
+        MENUITEM "Reset &Values\tCtrl+R",       CM_SFX_RESETVALUES
+        MENUITEM "Reset &Texts\tCtrl+T",        CM_SFX_RESETTEXTS
+        MENUITEM SEPARATOR
+        MENUITEM "&Add to Favorites...\tCtrl+A", CM_SFX_ADD
+        MENUITEM "&Favorites\tCtrl+F",          CM_SFX_FAVORITIES
+        MENUITEM SEPARATOR
+        MENUITEM "&Last Used\tCtrl+L",          CM_SFX_LASTUSED
+    END
+END
+
+IDM_FAVMANMENU MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Rename",                     CM_FAVRENAME
+        MENUITEM "&Delete",                     CM_FAVDELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Remove &All",                 CM_FAVREMOVEALL
+    END
+END
+
+IDM_COMMENTMENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Save",                       CM_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "&Close\tAlt+F4",              CM_CLOSE
+    END
+END
+
+IDM_SPECDIR MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Temporary Directory",        CM_TEMP
+        MENUITEM "&Program Files",              CM_PROGFILES
+        MENUITEM "&Windows Directory",          CM_WINDIR
+        MENUITEM "&System Directory",           CM_SYSDIR
+        MENUITEM SEPARATOR
+        MENUITEM "&Environment Variable",       CM_ENVVAR
+        MENUITEM "&Registry Entry",             CM_REGENTRY
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ADVANCEDSE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 285
+    END
+
+    IDD_CHANGELANG, DIALOG
+    BEGIN
+        RIGHTMARGIN, 230
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

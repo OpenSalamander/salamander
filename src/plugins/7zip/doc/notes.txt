@@ -1,0 +1,133 @@
+As of v4.62, 7za.dll can't really be built as truly single-threaded.
+It still launches new threads, when a new type of encoder is needed
+(namely brancher for executables). As a result, the callback to 7zip.spl
+can get invoked from the original thread used to call 7za.dll but
+also from threads launched by 7za.dll itself. Because Windows GUI and many
+Salamander's functions are not thread-safe or can only be called
+from the main Salamander's thread, the following environment is used.
+
+Here "main thread" means the thread of Salamander that calls the methods
+of CPluginInterfaceForArchiver in 7zip.spl.
+1) ProgressBar dialog is subclassed by the main thread.
+2) The main thread calls LaunchAndDo7ZipTask that launches a new worker
+  thread. The main thread processes message loop as long as the worker
+  thread exists.
+3) The worker thread calls a function in 7za.dll giving it a pointer
+  to a callback class.
+4) The callback class can get called from several threads. Whenever
+ a GUI update or user interaction is needed, it sends a message
+ to the ProgressBar dialog for doing so. It gets handled there by the
+ subclassed dialog proc.
+
+
+The original text written probably by David Andrs and timestamped 2004.08.30 follows.
+
+Jan Patera 2008.12.16 - END
+
+Notes on the 7zip implementation
+-------------------------------
+
+- Progress during extraction
+  The SetTotal and SetCompleted methods get called with parameters describing
+  how the process is progressing, and so on. In those places I call Salamander's
+  ProgressSetTotalSize and ProgressAddSize. For reasons I do not understand, the
+  total progress does not work at all even though the calculated total size is
+  correct.
+
+  It might be possible to solve this by having only a single progress bar (no
+  total progress, which would be a shame).
+
+  [SOLVED]
+  Progress is implemented in a very strange way. To understand it we have to take
+  a broader look. The original author extracts by creating an array of indices
+  (an index uniquely identifies an item in the archive) and passes it to Extract.
+  I call Extract for each file (with a single-element array where the index is the
+  file I want to extract).
+
+  Author's approach to the progress bar: pass the array to Extract. SetTotal is
+  called once. During extraction SetCompleted gets called and the progress matches
+  what is happening.
+
+  My approach: SetTotal is called for every file, but I have no idea what the
+  value passed into the method represents—it is definitely not the file size,
+  either packed or unpacked. So I can update the progress before and after
+  extracting every file. Therefore I use only one progress bar. I cannot (and
+  mainly not easily) obtain the total size that should be passed to SetTotal to
+  update the file progress continuously.
+
+  My approach is slower because each call creates some object (no more than five)
+  and then skips through the archive until it reaches the file that should be
+  extracted. These skips are less frequent if you pass the entire array (the
+  author's method). However, then there is the "minor" problem of extracting empty
+  directories.
+
+  [EDITED]
+  I now do it like the author: pass the array and call the progress-bar methods,
+  so the progress matches and it should be faster with fewer skips in the archive.
+  ProgressAddText and others still do not work, see the sections below on
+  Progress and Handling error states.
+
+- Handling error states
+  I do not understand how to handle the case where a file already exists while
+  extracting and we need to ask the user what to do. I tried calling Salamander's
+  SalamanderSafeFile->SafeFileCreate before creating the file, but it failed with
+  the TRACE SERVER message: Wrong call, this thread does not have a defined
+  call-stack object.
+  What now?
+
+  EDITED:
+  Checking if a file exists and passing control to the user happens in the
+  GetStream method (callbackimp), but SafeFileCreate still does not work.
+
+- Switching to a version where his sources are linked into our SPL does not look
+  useful because it probably would not help much. We would keep having the same
+  problems, maybe even bigger ones (no documentation, no comments). We could
+  interfere more with what is going on, but we would have to redo everything for
+  every new release.
+
+  A possible solution is to rip out the compression and decompression routines
+  from his sources and wrap them in our SPL. We would have to write the surrounding
+  code though: creating archives, opening archives, listing the archive contents,
+  and who knows what else...
+
+
+Progress
+--------
+
+- Calling ProgressAddText(...., TRUE) does not work (delayedPaint == TRUE) ⇒ it
+  freezes. It works with FALSE.
+
+
+Passwords
+---------
+
+- CExtractCallbackImp::GetPassword — when asking for a password we do not know
+  which file it applies to :(
+
+
+OperationResults
+----------------
+
+- There are four operation results (kOK, kUnSupportedMethod, kCRCError,
+  kDataError), plus an unknown error if it is none of the above.
+
+  If the password is wrong, the file is extracted but obviously corrupted and
+  the result of the operation is kDataError. So I can either add "delete badly
+  extracted files" to the configuration or react with a message box saying
+  "File extracted incorrectly" offering delete/keep.
+  The problem is what happens if no password is provided—will that also throw a
+  data error? Since I have not seen anything like "bad pwd" anywhere, it probably
+  is not possible to recognize a wrong password...
+
+  We should probably react to a CRC error with the same delete/keep dialog.
+
+
+DOES NOT WORK (at all)
+----------------------
+
+- deleting a password-protected file from an archive (not implemented in
+  7za.dll—maybe in 7zip overall)
+- skip/skip all while entering a password
+- detecting that a wrong password was entered
+- some files cannot be deleted from an archive (probably depends on the
+  compression method)

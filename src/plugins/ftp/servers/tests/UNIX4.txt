@@ -1,0 +1,37 @@
+insgesamt 611176
+drwxrwxr-x   5 ftp        ftp           4096  4. Jan., 14:00 .
+drwxrwxr-x   3 ftp        ftp           4096  4. Jan., 14:00 ..
+lrwxrwxrwx   1 solin      users            4 23. März 2004 file_link -> file
+crw-r-----   1 root       disk       27,  24  5. Feb. 2004 zqft0
+brw-rw----   1 root       disk       13, 121 19. Mai 2004 xdb57
+lrwx------   1 root       root             0 24. Juni 2004 cwd
+-rw-rw-rw-   1 catusr     catia           81  4. Jan., 14:00 CATDXF.in
+-rwxrwxrwx   1 catusr     catia       100403  5. Feb. 2004 CATOLER.out
+-rwxr-xr-x   1 catusr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 catusr     catia          545 14. Apr. 2004 Acrobat_Reader
+-rw-rw-r--   1 catusr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-r-----   1 catusr     catia        60640 24. Juni 2004 PECIATKA_STN.model
+-rwxrwxrwx   1 catusr     catia         2558  2. Juli 2003 MECENV.dcls
+-rw-rw-r--   1 catusr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
+-rw-rw-r--   1 catusr     catia        25682 13. Sept., 15:48 catracecatusr3287.log
+drwxr--r--   2 catusr     catia           96 31. Okt. 2003 CATSettings
+-rw-rw-rw-   1 catusr     catia          358 19. Nov., 11:12 DXFCAT.out
+-rw-r-----   1 catusr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls
+drwxrwxr-x   5 ftp name        ftp           4096  4. Jan., 14:00 .
+drwxrwxr-x   3 ftp name        ftp           4096  4. Jan., 14:00 ..
+lrwxrwxrwx   1 solin name      users            4 23. März 2004 file_link -> file
+crw-r-----   1 root name       disk       27,  24  5. Feb. 2004 zqft0
+brw-rw----   1 root name       disk       13, 121 19. Mai 2004 xdb57
+lrwx------   1 root name      root             0 24. Juni 2004 cwd
+-rw-rw-rw-   1 cat usr     catia           81  4. Jan., 14:00 CATDXF.in
+-rwxrwxrwx   1 cat usr     catia       100403  5. Feb. 2004 CATOLER.out
+-rwxr-xr-x   1 cat usr     catia          545 23. März 2004 catcust
+-rwxr-xr-x   1 cat usr     catia          545 14. Apr. 2004 Acrobat_Reader
+-rw-rw-r--   1 cat usr     catia      1640480 19. Mai 2004 11-59D_323326_BM_V00_ROB_SCHNELLWECHSELKUPPLUNG_VKR±30_40___030702_PJW.model
+-rw-r-----   1 cat usr     catia        60640 24. Juni 2004 PECIATKA_STN.model
+-rwxrwxrwx   1 cat usr     catia         2558  2. Juli 2003 MECENV.dcls
+-rw-rw-r--   1 cat usr     catia         2916 18. Aug., 09:06 USRENV_1.dcls
+-rw-rw-r--   1 cat usr     catia        25682 13. Sept., 15:48 catracecatusr3287.log
+drwxr--r--   2 cat usr     catia           96 31. Okt. 2003 CATSettings
+-rw-rw-rw-   1 cat usr     catia          358 19. Nov., 11:12 DXFCAT.out
+-rw-r-----   1 cat usr     catia        11417 30. Dez., 11:10 ema_KG_update_rollmenu.dcls

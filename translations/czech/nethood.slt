@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[DIALOG 102]
+220,127,1,"Network - Konfigurace"
+1201,7,7,114,10,1,"Zobrazit &administrative shares"
+1203,13,22,178,10,1,"Zobrazit administrative shares jako s&kryté položky"
+1202,7,37,203,10,1,"Zobrazit položky z &Místa v síti na nejvyšší úrovni adresáře"
+1204,7,52,185,10,1,"Zobrazit síťové počítače na &nejvyšší úrovni adresáře"
+1206,7,67,170,10,1,"Zobrazit &disky připojené přes Vzdálenou plochu"
+1205,7,82,161,10,1,"&Skenovat síť při spuštění Open Salamanderu"
+3000,7,99,206,1,1,""
+1,30,106,50,14,1,"OK"
+2,85,106,50,14,1,"Storno"
+9,140,106,50,14,1,"Nápověda"
+
+[STRINGTABLE 0]
+128,1,"Síť"
+129,1,"Poskytuje přístup k počítačům na síti."
+
+[STRINGTABLE 1]
+1024,1,"Poznámka"
+1025,1,"{!}<%d> vybran{ý objekt|1|é objekty|4|ých objektů}"
+1026,1,"Síť"
+1027,1,"Skenuji síť…"
+1028,1,"Síť není dostupná."
+1029,1,"O pluginu"
+1030,1,"%1 na %2"
+1031,1,"Místní počítač"
+1032,1,"Vzdálený počítač"
+1033,1,"Disky z %s"
+

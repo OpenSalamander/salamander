@@ -1,0 +1,13 @@
+09
+
+"Self-Extracting ZIP Archive"
+
+"This will extract ZIP archive."
+
+"Version 1.40"
+
+"&Extract"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

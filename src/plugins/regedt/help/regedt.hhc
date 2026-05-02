@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing Registry Editor Plugin">
+			<param name="Local" value="hh\regedt\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using Registry Editor Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Searching in Windows Registry">
+			<param name="Local" value="hh\regedt\using_searchreg.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Creating New Key">
+			<param name="Local" value="hh\regedt\using_newkey.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Creating New Value">
+			<param name="Local" value="hh\regedt\using_newvalue.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Editing Value">
+			<param name="Local" value="hh\regedt\using_editvalue.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Exporting Registry Key">
+			<param name="Local" value="hh\regedt\using_export.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Windows Registry Search">
+			<param name="Local" value="hh\regedt\dlgboxes_search.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

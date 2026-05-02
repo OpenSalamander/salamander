@@ -1,0 +1,30 @@
+﻿//
+// DiskMap.Global.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//
+// Icon
+//
+// Icon with lowest ID value placed first to ensure application icon remains consistent on all systems.
+
+IDI_ZAREVAKDISKMAP ICON                    "..\\DiskMap\\Resources\\DiskMap.ico"
+
+
+
+//
+// CUSHIONDATA
+//
+
+IDR_CUSHIONDATA_GLASS   CUSHIONDATA             "..\\DiskMap\\Resources\\glass_rect.ztc"
+
+#ifdef _DEBUG
+IDR_CUSHIONDATA_LEGACY  CUSHIONDATA             "..\\DiskMap\\Resources\\plastic_mask.ztc"
+IDR_CUSHIONDATA_SLEEK   CUSHIONDATA             "..\\DiskMap\\Resources\\sleek2_mask.ztc"
+IDR_CUSHIONDATA_TEST    CUSHIONDATA             "..\\DiskMap\\Resources\\test_rgba.ztc"
+#endif
+
+

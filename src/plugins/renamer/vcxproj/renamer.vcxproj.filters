@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{b88068de-f882-4284-8a31-45bdfac1ad98}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{f671f16b-3cc5-4d04-b88f-37d810779045}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{2a761d2a-edcf-42ac-a2f7-4d679679a3c4}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{89c22e90-3aa8-4189-9490-c3f647dff7cf}</UniqueIdentifier>
+      <Extensions>cpp;h</Extensions>
+    </Filter>
+    <Filter Include="lukas-shared">
+      <UniqueIdentifier>{9090f98a-124a-4390-b450-a884ed6241ff}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\crename2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\crenamer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\editor.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\menu.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\preview.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\regexp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renamer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rendlg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rendlg2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rendlg3.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rendlg4.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utils.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\varstr.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\lukas\str.cpp">
+      <Filter>lukas-shared</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\crenamer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editor.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\preview.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\regexp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\regiface.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renamer.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rendlg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\utils.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\varstr.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\arraylt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\auxtools.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gui.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\str.h">
+      <Filter>lukas-shared</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\renamer.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\renamer.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\renamer.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\renamer.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\renamer.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\renamer.ico" />
+  </ItemGroup>
+</Project>

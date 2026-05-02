@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 100]
+239,95,1,"Nächstes Teilarchiv"
+117,12,9,216,32,1,"Legen Sie bitte den Datenträger mit dem nächsten Teilarchiv ein oder wählen Sie die entsprechende Datei auf der Festplatte.\n\nDrücken Sie OK, wenn Sie bereit sind."
+300,12,48,42,8,1,"&Dateiname:"
+101,12,58,200,12,1,""
+102,215,58,13,12,1,"..."
+1,63,76,50,14,1,"OK"
+2,126,76,50,14,1,"Abbrechen"
+
+[DIALOG 103]
+350,85,1,"Fehler"
+300,4,10,26,8,1,"Name:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Fehler:"
+302,34,23,309,16,1,"Die Datei kann nicht entpackt werden, da es sich um die Fortsetzung eines vorangehenden Teilarchivs handelt. Beginnen Sie mit dem ersten Teilarchiv, um die Datei zu entpacken."
+105,34,44,183,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Abbrechen"
+
+[DIALOG 106]
+232,115,1,"UnRAR - Konfiguration"
+107,12,10,199,12,1,"&Beim Entpacken Dateien automatisch überspringen, die"
+116,12,32,189,12,1,"Keinen &Warnhinweis zeigen, wenn der gesamte"
+300,23,22,202,8,1,"von einem vorangegangenen Teilarchiv fortgesetzt werden."
+301,23,44,146,8,1,"Archivinhalt nicht aufgelistet werden kann."
+302,6,60,220,1,1,""
+117,12,70,200,12,1,"Beim Auflisten des Archivs die Spalte "&Gepackt" zeigen"
+303,6,90,220,1,1,""
+1,63,96,50,14,1,"OK"
+2,118,96,50,14,1,"Abbrechen"
+
+[DIALOG 108]
+359,80,1,"Passwort eingeben"
+113,18,18,18,20,1,""
+300,57,10,211,8,1,"Diese Datei ist verschlüsselt. Bitte geben Sie das Passwort ein."
+301,57,25,22,8,1,"Datei:"
+104,97,25,249,8,1,""
+302,57,38,35,8,1,"&Passwort:"
+110,97,36,166,12,1,""
+1,27,58,50,14,1,"&OK"
+112,82,58,50,14,1,"&Alle"
+109,137,58,67,14,1,"&Überspringen"
+111,209,58,67,14,1,"Alle üb&erspringen"
+2,281,58,50,14,1,"Abbrechen"
+
+[DIALOG 115]
+213,105,1,"UnRAR - Achtung"
+300,11,8,194,24,1,"Es können nicht alle Dateien des mehrteiligen Archivs aufgelistet (und im Dateifenster gezeigt) werden, da einige Teilarchive nicht gefunden wurden."
+301,11,39,194,16,1,"Um den gesamten Archivinhalt aufzulisten, kopieren Sie bitte alle Teilarchive in dasselbe Verzeichnis."
+105,11,64,171,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen"
+302,5,81,202,1,1,""
+1,155,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Nicht genügend Speicher."
+1002,1,"Kann den Modul-Dateinamen nicht ermitteln."
+1003,1,"Kann die Bibliothek '%s' nicht laden."
+1004,1,"Kann die Prozeduradresse nicht ermitteln."
+1005,1,"Das Archiv ist beschädigt. (Falsches Passwort?)"
+1006,1,"Die Datei hat ein unbekanntes Format oder ist kein gültiges RAR-Archiv. (Falsches Passwort?)"
+1007,1,"Fehler beim Öffnen der Archivdatei."
+
+[STRINGTABLE 1]
+1008,1,"Unbekannter Fehler aufgetreten."
+1009,1,"Fehler beim Öffnen des Teilarchivs."
+1010,1,"Fehler beim Lesen der Archivdatei."
+1011,1,"RAR-Archivdateien (*.R*)"
+1012,1,"Archivdatei auswählen"
+1013,1,"Fehler in den komprimierten Daten. CRC stimmt nicht überein. (Falsches Passwort?)"
+1014,1,"Kann den Archiveintrag nicht zur Dateiliste hinzufügen."
+1015,1,"Entpacke RAR-Archiv - %s"
+1016,1,"Daten werden vorbereitet und Verzeichnisse erstellt..."
+1017,1,"Entpacke..."
+1018,1,"Entpacke: "
+1019,1,"Kann den Dateizeiger nicht ermitteln: "
+1020,1,"Fehler beim Schreiben der Datei:"
+1021,1,"Kann den Dateizeiger nicht setzen: "
+1022,1,"Kann den Vorgang nicht beenden da der Pfadname zu lang ist."
+1023,1,"Kann den Vorgang nicht beenden da die Maske zu lang ist."
+
+[STRINGTABLE 2]
+1024,1,"Bitte mindestens ein Zeichen eingeben."
+1027,1,"Alle Dateien (*.*)"
+1028,1,"Fehler"
+1029,1,"Datei nicht gefunden"
+1030,1,"Falsche Version von unrar.dll. Bitte UnRAR-Plugin neu installieren."
+1031,1,"Es scheint sich um ein mehrteiliges Archiv zu handeln. Bitte wählen Sie in diesem Fall das erste Teilarchiv und drücken Sie 'OK'.\n\nSollte kein mehrteiliges Archiv vorliegen, drücken Sie 'Abbrechen'."
+1032,1,"Wählen Sie das erste Teilarchiv"
+1033,1,"Durchsucht und entpackt RAR-Archive."
+1034,1,"Über Plugin"
+1035,1,"Die Datei wurde in dem Archiv nicht gefunden."
+1036,1,"Das Passwort ist falsch. Versuchen Sie es noch einmal und beachten Sie die korrekte Groß-/Kleinschreibung. Stellen Sie sicher das die Feststell-Taste nicht gedrückt ist."
+
+[STRINGTABLE 3]
+1040,1,"Gepackt"
+1041,1,"Packgröße der Datei"
+

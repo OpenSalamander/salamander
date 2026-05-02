@@ -1,0 +1,190 @@
+This file contains a report about bug fixes and new features
+in ZIP. Plus sign means new feature addition, minus sign means
+a bug fix. The latest news are at the top.
+
+
+-sfx: do not show the license owner's address
+
+-added association for PK4 (DOOM3)
+
+-sfx: process the command line for the post-extraction command through
+ ExpandEnvironmentStrings before handling it
+
+-help updated and grammar fixed
+
+-use the new SafeFileCreate parameter to preallocate files in order to reduce
+ fragmentation
+
+-set the target file size before extraction to avoid disk fragmentation;
+ hopefully the final tweak :)
+
+-fixed export/import of the "automatically create target directory" option in
+ the SFX settings
+
+Sal 2.5 beta 4-----------------------------------------------------------------
+
+-fixed grammar in the sample configuration file for zip2sfx (com_cz.set)
+-zip2sfx: added support for new SFX packages
+
+-sfx: option to create the target directory automatically
+-sfx: ability to set a custom web link in the bottom right corner of the dialog
+-sfx: ability to set a custom company name in the bottom left corner of the dialog
+-if the CRC does not match the central header we also compare it with the local
+ header (unless the GPF_DATADESCR flag is set, which explicitly states that the
+ contents of the local header are garbage)
+
+-fixed grammar of Czech comments in the exported configuration file for zip2sfx
+
+-fixed crash introduced by adding cache support for file reading during listing;
+ happened when opening a file in a multi-volume archive failed and the user
+ chose retry
+
+-fixed the order of validations in some dialogs
+
+-adjusted the message shown when loading a damaged ZIP comment
+
+-added a check box to the Change Disk dialog during extraction allowing the use
+ of WinZip naming conventions (Disk numbers in extension)
+-improved detection of WinZip naming for multi-volume archives
+-set the ES_AUTOHSCROLL flag on edit boxes that were missing it
+-can extract archives that contain multiple consecutive backslashes in paths
+-optimized preparation of data for extraction; complexity in the number of
+ selected files reduced from n-squared to n log n
+
+-can delete a directory with the read-only flag when moving it into the archive
+
+-set the target file size before extraction to avoid disk fragmentation
+-zip2sfx: refuse to create an SFX from a zip64 archive
+-refuse to create an SFX from a zip64 archive
+-fixed a bug in the deflate routines—the counter for compressed data size was
+ limited to 512 MB (the length was counted in bits and stored in an unsigned
+ long)
+-support for reading zip64 (large archives)
+-when running unpack-whole-archive on a zero-sized ZIP it no longer reports a
+ meaningless error message
+-fixed searching for the AES extra header
+
+-support for extracting files encrypted with AES according to the WinZip
+ specification (supported by WinZip 9.0)
+
+-support for extracting files compressed with the Deflate64(tm) method (e.g.
+ PKZip 6.0 and WinZip 9.0)
+
+-corrected return value checks in some CreateFile calls
+-stretched check boxes containing the text 'dialog box', which someone recently
+ fixed (they originally contained only 'dialog')
+
+-sfx: replaced some dynamically allocated buffers with static ones
+-sfx: fixed a bug when extracting an encrypted ZIP created by other software
+ than the ZIP plugin and containing 'stored' files
+
+-sfx: ignore errors from MyGetDiskFreeSpace
+
+-when overwriting a file in a subdirectory of a Unix archive memory was
+ overwritten while processing the file name
+-sfx: the command executed after unpacking the archive is no longer expanded to
+ a full path automatically; ShellExecuteEx finds it in the current directory
+ (target dir) itself
+
+-progress now works correctly even when working with zero-length files
+-if an error occurs while listing, show everything read so far, allow the user
+ to extract it, and report the error at the same time
+-if the packing operation produces an archive containing 65535 files, warn the
+ user that the ZIP will not comply with the specification and some archivers may
+ not be able to extract it
++support for working with archives that contain more than 65535 files (unpack
+ and pack)
++support for WinZip-style multi-volume archive naming when packing
++support for WinZip-style multi-volume archive naming when unpacking
+
+-fixed German translations in the SFX
+
+-renamed "dialog" to "dialog box"
+-fixed incorrect behaviour when overwriting files in a Unix archive; it behaved
+ oddly when there were multiple files differing only in timestamp
+
+-use CSalamanderGeneral::UpdateCrc32
+-if a ZIP file name contained multiple slashes in the path, replace them with a
+ single slash
++support for UNIX archives:
+ -case-sensitive CSalamanderDirectory
+ -extraction (full names and root path) is case-sensitive
+ -packing: root path case-sensitive, names (without root path) case-insensitive
+  (we are on Win32)
+ -deletion case-sensitive
+
+-sfx can now unpack a multi-volume archive whose name contains diacritics
++the value 'none' of the 'mbox_type' variable in the SFX configuration file has
+ been renamed to 'simple'
++added an option to the SFX configuration file to create message boxes with long
+ text (useful for license agreements); added the new 'agree_disagree' value for
+ the 'mbox_buttons' variable and the 'long_message' value for the 'mbox_type'
+ variable
++renamed the 'mbox_icon' variable to 'mbox_type' in the SFX configuration file;
+ the original name still works, but using the new name is preferred
++in SFX text settings it is possible to choose the "agree disagree" buttons for
+ a long message box
++in SFX text settings it is possible to choose a new message box type for long
+ texts (useful for license agreements)
+-bad link (backslash instead of slash) in the About dialog
+-added a test to the 'NextVolume' dialog to check whether the specified file
+ exists
+-case-insensitive CSalamanderDirectory (directories are merged)
+-extraction: file names (without path) case-sensitive (so F3 works), paths
+ case-insensitive (all combined into the first one encountered)
+-packing: root path case-insensitive, names (without root path) case-insensitive
+ (we are on Win32)
+-deletion: file names (without path) case-sensitive, path case-insensitive
+-warning about a damaged ZIP archive appeared when packing into a newly created
+ archive failed to finish successfully
++send notifications about path changes when exporting SFX configuration
++raised the SFX version to 1.12
++Slovak SFX package
+-fixed grammar in zip2sfx\sample.set and in the comments in the exported
+ configuration file for zip2sfx
++handling zip files greater than 2GB
+
+version 1.11
++Improved handling of custom self-extractor text when changing self-extractor language
++HTML help for ZIP Plugin accesible from the most dialog boxes and from the plugins menu.
+
+version 1.1 (sal 2.0)
++in some cases self-extractor didn't cleaned unsucessfully extracted files
++zip configuration invoked from pack dialog wasn't saved if you canceled pack dialog
+
+version 1.0 beta 3 (sal 1.6 beta 7)
++self-extracting multi-volume archives are now extracting sequentialy (no need to switch
+ to a last volume when extraction begins)
++self-extractor settings are exported with comments
++ability to wait for another process than the process specified by the 'command' field
++menu command in SFX setting for managing stored favorit settings
+-"Set archive time to newest file time" used also directory time not only file time
+-ZIP crashed when any directory was selected outside archive and menu command was invoked
++improved specification of target directory in sfx settings
++self-extractor is able to display user defined message boxes when launched
++new settings dialog for self-extracting archives
+
+version 1.0 beta 2 (sal 1.6 beta 6)
+-error in filenames coding, some unpackers used to extract files with wrong filenames
+-infinite loop in menu commands if there were some files selected in the archive
++new option "Set archive time to newest file time" in ZIP configuration
+
+version 1.0 beta 1 (sal 1.6 beta 5)
+-on some archives were displayed directories as files
+-self-extractor didn't preserve file times when unpacking
+-the sfx archive wasn't named correctly if it's name contained more than one '.' character
+-on some archives didn't file attributes displayed correctly
++added command in Salamander's 'Command' menu for archive comment viewing and editing
++added command in Salamander's 'Command' menu for archive testing
++added command in Salamander's 'Command' menu for self-extracting archive creating
++strongly improved support for creating self-extracting archives
+-when extracting files from a zipfile under W95/98, the file dates wasn't set to the archive
+ dates, but to the current date and time.
++changing selextractor's icon also under W95/98
+
+version 0.9 beta 2 (sal 1.6 beta 5)
+-plugin cannot load under W95 with IE30 or older (there were some functions imported
+ from shlwapi.dll)
+-bug when extracting files from a zipfile to drive root (double-backslash after drive letter)
+
+version 0.9 beta 1 (sal 1.6 beta 5) (4.6.2000)

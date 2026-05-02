@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 1000]
+362,84,1,"Berekenen controlesom"
+1001,5,5,352,54,1,"Lijst1"
+1007,5,68,41,8,1,"Berekenen:"
+1006,49,68,106,8,1,"Voortgang1"
+1002,162,65,61,14,1,"Con&figureren..."
+1003,229,65,61,14,1,"&Opslaan..."
+1004,296,65,61,14,1,"&Stoppen"
+1005,5,68,49,8,1,"klembord hint"
+
+[DIALOG 1001]
+189,109,1,"Controlesom configuratie"
+300,8,5,174,76,1," Berekenen controllesommen "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"OK"
+2,69,88,50,14,1,"Annuleren"
+9,124,88,50,14,1,"Help"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"Lijst1"
+1007,5,68,58,8,1,"Controleren van:"
+1006,67,68,76,8,1,"Voortgang1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Selectie"
+1004,205,65,50,14,1,"S&toppen"
+
+[STRINGTABLE 0]
+1,1,"Controlesom"
+2,1,"Over plugin"
+3,1,"Bereken en controleren van SFV, MD5, SHA-1, SHA-256, en SHA-512 checksum."
+4,1,"Onvoldoende geheugen"
+5,1,"Fout bij openen van bestand"
+6,1,"Lees fout"
+7,1,"Schrijf fout"
+
+[STRINGTABLE 1]
+40,1,"Overgeslagen"
+41,1,"Berekenen..."
+42,1,"Geannuleerd"
+43,1,"Klik met de rechtermuisknop op een item om de controlesom te kopiëren naar het klembord."
+44,1,"Kopieer &CRC waarde naar klembord\tCtrl+C"
+45,1,"Kopieer &MD5 controlesom naar klembord\tCtrl+M"
+46,1,"Kopieer SHA-&1 controlesom naar klembord\tCtrl+1"
+47,1,"Kopieer SHA-&256 controlesom naar klembord\tCtrl+2"
+
+[STRINGTABLE 2]
+48,1,"Kopieer SHA-&512 controlesom naar klembord\tCtrl+5"
+53,1,"&Verwijder item\tVerwijder"
+54,1,"Het bestand '%s' bestaat reeds.\nWilt u dit overschijven?"
+55,1,"Fout bij het maken van bestand."
+56,1,"Bestanden die tijdens de berekening zijn overgeslagen of geannuleerd zijn niet opgeslagen."
+57,1,"Fout bij openen van bestand '%s'."
+58,1,"Ontbreekt"
+59,1,"Het geselecteerde bestand heeft geen SFV, MD5, SHA1, SHA256 als SHA512 extensie. Wilt u toch doorgaan?"
+60,1,"Het geselecteerde bestand is geen geldig SFV, MD5, SHA-1, SHA-256, of SHA-512 bestand."
+61,1,"Controleren van..."
+62,1,"OK"
+63,1,"Beschadigd"
+
+[STRINGTABLE 3]
+65,1,"&Controleren van controlesommen..."
+66,1,"&Berekenen controlesommen..."
+67,1,"De configuratie is reeds geopend."
+68,1,"De wijzigingen zijn de eerst volgende keer van kracht wanneer u kiest voor 'Berekenen controllesommen'."
+70,1,"Alle bestanden zijn OK"
+71,1,"%d beschadigd, %d vermist, %d overgeslagen"
+72,1,"Open Salamander is bezig. Het gevraagde commando kan niet worden uitgevoerd, gelieve probeert u het later opnieuw."
+74,1,"&Sluiten"
+75,1,"Lezen van mapstructuur, een ongenblik geduld a.u.b..."
+76,1,"Fout bij het lezen van map"
+77,1,"Geen bestanden"
+78,1,"Controleren van controlesommen"
+79,1,"Bestand"
+
+[STRINGTABLE 4]
+80,1,"Grootte"
+81,1,"Status"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Controlesom bestand opslaan"
+91,1,"SFV bestanden (*.sfv)|*.sfv|"
+92,1,"MD5 bestanden (*.md5)|*.md5|"
+93,1,"SHA-1 bestanden (*.sha1)|*.sha1|"
+94,1,"SHA-256 bestanden (*.sha256)|*.sha256|"
+95,1,"SHA-512 bestanden (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"Controleren van CRC"
+101,1,"Controleren van MD5"
+102,1,"Controleren van SHA-1"
+103,1,"Controleren van SHA-256"
+104,1,"Controleren van SHA-512"
+
+[STRINGTABLE 6]
+120,1,"Kan bewerking niet afmaken omdat de naam te lang is."
+

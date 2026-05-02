@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\czech\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,1029
+AUTHOR,"Hynek Mikulič"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7008"
+COMMENT,"Česká verze"
+
+[STRINGTABLE 0]
+10100,1,"Prohlížeč Internet Explorer"
+10101,1,"Nelze otevřít Prohlížeč Internet Explorer.\nProsíme o nahlášení tohoto problému na support@altap.cz."
+10102,1,"Chyba"
+10103,1,"Jednoduchý HTML nebo XML prohlížeč založený na Internet Exploreru."
+10105,1,"O pluginu"
+

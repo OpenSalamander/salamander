@@ -1,0 +1,16 @@
+Volume Unit Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+Migrated                                              AUS6B1.BLKSIZE.ERROR
+Migrated                                              AUS6B1.BLKSIZE.ERROR
+ICS009 3390 03/19/96 1   1    VS    29389 29393 PS    VS
+Pseudo Directory V191
+Pseudo Directory V211
+Pseudo Directory V311
+Pseudo Directory V410
+                                                GDG   POSY.AW.ZWIDAT.GDG
+                                                GDG   POSY.AWTREFF8.ZWIDAT.GDG
+                                                VSAM  POSY.KLV.DATEN
+P30087 3390                                     VSAM  POSY.KLV.DATEN.D
+P30082 3390 **NONE** 1   1    VB      500 27998 PS    POSY.PA.J00682.A001R00.#021021
+Error determining attributes                          ASTEX.DISTLLIB
+VGSA03 Tape                                           BOOL.IMF.SA03.SVCDUMP
+                                                PATH  CAPRI.CSD.PATHA

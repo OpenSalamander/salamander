@@ -1,0 +1,35 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+  IDS_PLUGINNAME, "UnOLE2"
+  IDS_LOWMEM, "Insufficient memory."
+  IDS_CANNOT_OPEN, "Cannot open Compound File %s.\n"
+  IDS_MEMORY_ALLOCATOR, "Unable to obtain memory allocator.\n"
+  IDS_CANNOT_WRITE, "Cannot write to file.\n"
+  IDS_CANNOT_CREATE_FILE, "Cannot create file %s.\n"
+  IDS_CANNOT_OPEN_STREAM, "Cannot open stream %s.\n"
+  IDS_CANNOT_READ, "Cannot write to file.\n"
+  IDS_UNKNOWN, "Unknown error occurred."
+  IDS_LIST, "Unable to add archive entry to the files list."
+  IDS_EXTRPROGTITLE, "Unpacking Compound File"
+  IDS_EXTRACTFILES, "unpacking..."
+  IDS_EXTRACTING, "unpacking: "
+  IDS_EXPIRE, "Sorry, the plugin has expired. Please check our web site for newer version."
+  IDS_PLUGIN_DESCRIPTION, "Browse and extract OLE Compound files."
+  IDS_ABOUT, "About Plugin"
+
+  IDS_ERROR, "Error"
+}

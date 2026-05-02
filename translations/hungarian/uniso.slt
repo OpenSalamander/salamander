@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 1200]
+230,83,1,"UnISO beállítás"
+1201,8,11,190,10,1,"Í&rásvédett attribútum törlése archívumból másoláskor"
+1202,8,23,216,10,1,"Menetek mutatá&sa mappaként (minden menet hozzáférhető)"
+1203,8,35,110,10,1,"&Boot lemez mutatása fájlként"
+3000,2,58,226,1,1,""
+1,118,64,50,14,1,"OK"
+2,173,64,50,14,1,"Mégse"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"A fájl nem nyitható meg."
+1002,1,"Nem meghatározható hiba."
+1003,1,"ISO archívum kibontása"
+1004,1,"Hiba az archívum kibontásakor."
+1005,1,"A fájl nem kezelhető."
+1006,1,"Kevés memória."
+1007,1,"Plugin névjegy"
+
+[STRINGTABLE 1]
+1009,1,"CD/DVD ISO képfájlok böngészése és kibontása."
+1010,1,"Az ideiglenes mappa nem hozható létre."
+1011,1,"Az ideiglenes fájl nem törölhető."
+1012,1,"Ismeretlen fájl formátum vagy nem érvényes ISO kép.\n\nHa biztos benne, hogy ez érvényes ISO kép, lépjen velünk kapcsolatba a support@altap.cz címen és segítsen támogatni ezt a formátumot."
+1013,1,"A fájl nem nyitható meg: '%s'."
+1014,1,"Ideiglenes fájl létrehozása sikertelen."
+1015,1,"A fájl attribútum nem állítható be."
+1016,1,"A(z) '%s' mappa nem hozható létre."
+1020,1,"Igen"
+1021,1,"Nem"
+1022,1,"Hiba"
+1023,1,"Figyelem"
+
+[STRINGTABLE 2]
+1024,1,"Hiba lépett fel a többmenetes kép olvasásakor.\n\nCsak a helyesen olvasott menetek jelennek meg."
+1025,1,"Ismeretlen sáv típus."
+1026,1,"Ismeretlen kiosztási stratégia (%d).\n\nLépjen velünk kapcsolatba a support@altap.cz címen és segítsen kijavítani ezt a problémát."
+1027,1,"Rossz formátumú .CCD fájl.\n\nA megjelenített kép hiányos."
+1028,1,"Hiányzó .CCD fájl.\n\nA megjelenített kép hiányos."
+1029,1,"A szektor nem olvasható: #%08X."
+1030,1,"Érvénytelen UDF Tag ID."
+1031,1,"Mappa szerkezet olvasási hiba a szektorban: #%08X.\n\nHiányos tartalmú ISO kép."
+1032,1,"Belső plugin hiba."
+1033,1,"Virtuális kiosztási tábla olvasási hiba a szektorban: #%08X."
+1034,1,"Hiányzó virtuális kiosztási tábla."
+1035,1,"Rossz ICB gyökér.\n\nA mappa szerkezet nem olvasható."
+1036,1,"A(z) "%s" fájl nem bontható ki.\n\nEltérés van a fájlméret és az ICB blokkok között."
+1037,1,"A sáv nem nyitható meg: #%d."
+1038,1,"A fájl floppy lemez, merevlemez vagy merevlemez partíció képnek tűnik.\nPróbálja .ima kiterjesztésre átnevezni, hogy az UnFAT plugin bekapcsoljon."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Nem olvasható a partíciós fejléc. Túl kicsi a fájl."
+1051,1,"Sérült partíciókezelő szerkezetek."
+1052,1,"A lemezkép nem tartalmaz HFS Plus partíciót."
+1053,1,"A lemezkép HFS és nem HFS Plus fájlrendszert tartalmaz.\nHFS nem támogatott."
+1054,1,"Nem kereshető a blokk: #%08X.\n%s fájl nem bontható ki."
+1055,1,"Nem kereshető a blokk: #%08X."
+
+[STRINGTABLE 4]
+1056,1,"Nem támogatott BTree root node típus a katalógus fájlban."
+1057,1,"A katalógus fájl több, mint 8 darabba van töredezve, ami nem támogatott."
+1058,1,"A(z) '%s' fájl több, mint 8 darabba van töredezve, ami nem támogatott.\nA fájlt nem lehet kibontani."
+1059,1,"A lemezkép túl hosszú elérési utat tartalmaz, melyet az Open Salamander nem tud kezelni."
+1060,1,"A művelet nem fejezhető be, mert a fájlnév túl hosszú."
+1070,1,"Nem olvasható a csomag fejléce. A fájl túl kicsi."
+1071,1,"A csomag titkosítva van.\nA titkosított csomagok nem támogatottak."
+
+[STRINGTABLE 5]
+1072,1,"A fájl nem tűnik DMG csomagnak vagy hiányos.\nNem tartalmaz érvényes DMG láblécet."
+1073,1,"A fájl nem tűnik DMG csomagnak vagy hiányos.\nNem tartalmaz érvényes Tulajdonság listát."
+1074,1,"A csomag nem tartalmaz egy HFS Plus partíciós adatblokkot, mely itt kezdődne: %I64u.\nA blokk szükséges a csomag helyes kezeléséhez."
+1075,1,"Nem olvasható adat a lemezképből a következő pozíciónál: %I64u."
+1076,1,"Nem kereshető a lemezkép a következő pozíciónál: %I64u."
+1077,1,"Belső hiba: Nem támogatott keresési mód."
+1078,1,"A lemezkép ismeretlen tömörítésű blokkot tartalmaz.\nAz ilyen képek nem támogatottak."
+1079,1,"A ZLIB tömörítésű blokk kibontása sikertelen. A lemezkép sérültnek tűnik."
+1080,1,"A BZIP2 tömörítésű blokk kibontása sikertelen. A lemezkép sérültnek tűnik."
+1085,1,"A fájl nem tűnik ISZ tömörítésű csomagnak vagy hiányos.\nNem tartalmaz érvényes ISZ fejlécet."
+1086,1,"Nem olvasható a tömörített kép fejléce. Túl kicsi a fájl."
+1087,1,"A kép fel van darabolva.\nA darabolt képek nem támogatottak."
+
+[STRINGTABLE 6]
+1088,1,"A kép titkosítva van.\nA titkosított képek nem támogatottak."
+1100,1,"Olvasási hiba"
+1101,1,"Írási hiba"
+1102,1,"Audio-sáv nem bontható ki."
+1103,1,"Művelet megszakítása, kérem várjon..."
+
+[STRINGTABLE 7]
+1150,1,"Kép információi\n\n"
+1151,1,""%s" kép információi\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Menetek száma: %d"
+1153,1,"\n%d.menet\n"
+1154,1,"  Sávok száma: %d\n"
+1155,1,"  Sáv: %d, %s, Méret: %d Kbájt\n"
+1156,1,"  Sáv: %d, %s, Méret: %d Kbájt - "%s"\n"
+

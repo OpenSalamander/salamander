@@ -1,0 +1,36 @@
+{
+'!'                            (lexLogNegation)           
+'&&'                           (lexLogAnd)                
+'('                            (lexLeftParenthesis)       
+')'                            (lexRightParenthesis)      
+'||'                           (lexLogOr)                 
+
+'func'              (lexFunction)           
+'eos'     (lexEOS)
+
+begin
+exp-or
+exp-or-rest
+exp-and
+exp-and-rest
+exp-not
+term
+}
+
+:begin    exp-or   'eos'
+
+:exp-or      exp-and    exp-or-rest
+
+:exp-or-rest  '||'  exp-or
+              e
+
+:exp-and      exp-not    exp-and-rest
+
+:exp-and-rest  '&&'  exp-and
+              e
+
+:exp-not   '!'  term
+           term
+
+:term     'func'
+          '('  exp-or  ')'

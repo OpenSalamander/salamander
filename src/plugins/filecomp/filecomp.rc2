@@ -1,0 +1,23 @@
+﻿//
+// filecomp.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_FCICO ICON "icon.ico"
+
+IDC_SPLIT_VERT CURSOR "split2.cur"
+IDC_SPLIT_HOR  CURSOR "splitH.cur"
+
+IDB_TOOLBAR BITMAP "toolbar.bmp"
+IDB_FILECOMP BITMAP "filecomp.bmp"
+
+IDI_BROWSE ICON "browse.ico"

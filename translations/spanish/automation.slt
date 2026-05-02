@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 100]
+205,64,1,"Cuadro de entrada"
+1150,8,8,189,8,1,"Línea de comando:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"Aceptar"
+2,107,42,50,14,1,"Cancelar"
+
+[DIALOG 101]
+332,143,1,"Configuración de automatización"
+375,8,9,74,8,1,"Directorios del &script:"
+371,8,19,316,73,1,""
+1001,8,102,114,10,1,"Habilitar &depuración de scripts"
+1,75,121,50,14,1,"Aceptar"
+2,141,121,50,14,1,"Cancelar"
+9,207,121,50,14,1,"&Ayuda"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Hojear…"
+40014,1,"Directorio de Salamander"
+40015,1,"Variable de entorno"
+
+[STRINGTABLE 0]
+1,1,"Automatización"
+2,1,"Automatiza tareas comunes por medio de scripts."
+3,1,"Acerca del Plugin"
+
+[STRINGTABLE 1]
+128,1,"Error de script de automatización"
+129,1,"Línea:\t%u\r\n"
+130,1,"Columna:\t%u\r\n"
+131,1,"Error:\t%s"
+132,1,"Ejecutar script resaltado"
+134,1,"Progreso de la operación"
+135,1,"Fuente:\t%s\r\n"
+136,1,"Abrir menú de script"
+137,1,"(no hay script)"
+138,1,"Fallo al ejecutar script '%s'.\r\n%s"
+139,1,"Error desconocido."
+140,1,"1\t&Interrumpir"
+141,1,"1\t&Depurar\t2\t&Interrumpir"
+142,1,"Directorio de script"
+143,1,"Seleccione directorio de almacén de scripts."
+
+[STRINGTABLE 2]
+144,1,"Interrumpir script"
+145,1,"Interrumpir script en ejecución\tCtrl+Pausa"
+146,1,"La ventana de Open Salamander está bloqueada por el plugin de automatización. Finalice el script en ejecución."
+147,1,"No se pudo inicializar el motor de scripting."
+
+[STRINGTABLE 3]
+256,1,"Archivo incorrecto."
+257,1,"La ruta actual no puede ser cerrada."
+258,1,"La ruta fue truncada."
+259,1,"Imposible cambiar la propiedad o llamar al método %s mientras se muestra la pantalla."
+260,1,"Imposible cambiar la propiedad o llamar al método %s mientras la ventana está oculta."
+261,1,"Fallo al cargar el plugin."
+262,1,"Fallo del plugin."
+263,1,"Fallo al trasladar el fichero al caché de disco."
+264,1,"Error de sintaxis en la plantilla de ficheros."
+265,1,"Sólo pueden añadirse componentes al contenedor."
+266,1,"No pueden añadirse formularios al contenedor."
+267,1,"La ejecución del script fue interrumpida por el usuario."
+

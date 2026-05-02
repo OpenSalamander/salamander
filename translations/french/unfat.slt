@@ -1,0 +1,30 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\unfat.atp"
+TEXTVERSION,"1.1 (x86)"
+VERSION,"1,1,0,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[STRINGTABLE 0]
+1000,1,"UnFAT"
+1001,1,"A propos du module"
+1003,1,"Parcourt et extrait les images disque de FAT 12, 16, et 32."
+
+[STRINGTABLE 1]
+1100,1,"Erreur d'ouverture du fichier "%s"."
+1101,1,"Erreur de lecture du fichier "%s"."
+1102,1,"Erreur d'analyse du fichier "%s".\n\n%s"
+1103,1,"Le secteur d'amorçage est abîmé ou ce fichier n'est pas une image de FAT 12, 16, ou 32."
+
+[STRINGTABLE 2]
+1104,1,"Erreur de lecture du répertoire depuis le fichier "%s".\n%s\nSecteur: %d, Offset: 0x%s\n\nLe fichier n'est pas une image valide de FAT 12, 16, ou 32."
+1106,1,"Erreur de lecture du fichier depuis le fichier "%s".\n%s\nGroupe: %d\n\nLe fichier n'est pas une image valide de FAT 12, 16, ou 32."
+1107,1,"Erreur d'écriture du fichier"
+1108,1,"Le fichier "%s" semble être l'image de tout un disque dur.\nUne telle image n'est pas supportée par le module UnFAT."
+1109,1,"Extraction de l'image FAT - %s"
+1110,1,"extraction de: %s"
+

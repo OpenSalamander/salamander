@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{a99dcc5e-2d69-4cbf-8e16-496975f26337}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{86f3f83e-1605-4c8c-930e-e8cd9b033c02}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{af341b9c-6627-4a32-84fb-241682a5abdc}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+    <Filter Include="bzip">
+      <UniqueIdentifier>{7db7a446-fad2-4031-93bf-7cc005dc1732}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deb">
+      <UniqueIdentifier>{b0adedf3-ada1-4bcf-a8e6-fdaf984edfca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gzip">
+      <UniqueIdentifier>{1aca0433-2aa5-4c25-88d4-68ad7b280cb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpm">
+      <UniqueIdentifier>{9e36ef30-b4f5-46d3-8962-cf48333a6ece}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lzh">
+      <UniqueIdentifier>{02b1ac54-7237-48a8-874d-fa35ac72c832}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="compress">
+      <UniqueIdentifier>{5b4bdc5d-158e-4f64-b17b-561c7d20b293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shared">
+      <UniqueIdentifier>{d598a82c-4f20-4296-a42b-e27d8d25cbb6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fileio.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\names.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tardll.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\untar.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\bunzip.cpp">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\bzlib.c">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\crctable.c">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\decompress.c">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\huffman.c">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bzip\randtable.c">
+      <Filter>bzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deb\deb.cpp">
+      <Filter>deb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gzip\gunzip.cpp">
+      <Filter>gzip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rpm\rpm.cpp">
+      <Filter>rpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rpm\rpmview.cpp">
+      <Filter>rpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lzh\lzh.cpp">
+      <Filter>lzh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\compress\uncompress.cpp">
+      <Filter>compress</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\dbg.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dlldefs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fileio.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\names.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_file.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tar.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tardll.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bzip\bzip.h">
+      <Filter>bzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bzip\bzlib.h">
+      <Filter>bzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bzip\bzlib_private.h">
+      <Filter>bzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deb\deb.h">
+      <Filter>deb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gzip\gzip.h">
+      <Filter>gzip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rpm\rpm.h">
+      <Filter>rpm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lzh\lzh.h">
+      <Filter>lzh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\compress\compress.h">
+      <Filter>compress</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\arraylt.h">
+      <Filter>shared</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\tar.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\tar.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\tar.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\tardll.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\tar.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

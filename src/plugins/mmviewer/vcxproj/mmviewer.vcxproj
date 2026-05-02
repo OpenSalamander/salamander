@@ -1,0 +1,285 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{67386A47-6522-4F4B-8C7D-58D3DCD23813}</ProjectGuid>
+    <RootNamespace>mmviewer</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="mmviewer.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="mmviewer.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_release.props">
+    </Import>
+    <Import Project="mmviewer.props">
+    </Import>
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcxproj\plugin_debug.props">
+    </Import>
+    <Import Project="mmviewer.props">
+    </Import>
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\auxtools.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\mhandles.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\shared\winliblt.cpp">
+    </ClCompile>
+    <ClCompile Include="..\buffer.cpp">
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+    </ClCompile>
+    <ClCompile Include="..\exporthtml.cpp">
+    </ClCompile>
+    <ClCompile Include="..\exportxml.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mmviewer.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mod\modparser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp3\id3tagv1.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp3\id3tagv2.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp3\mpeghead.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp3\mpgparser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4head.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4parser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\mp4\mp4tag.cpp">
+    </ClCompile>
+    <ClCompile Include="..\ogg\oggparser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\output.cpp">
+    </ClCompile>
+    <ClCompile Include="..\parser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\renmain.cpp">
+    </ClCompile>
+    <ClCompile Include="..\renpaint.cpp">
+    </ClCompile>
+    <ClCompile Include="..\VQF\VQFPARSER.CPP">
+    </ClCompile>
+    <ClCompile Include="..\wav\wavparser.cpp">
+    </ClCompile>
+    <ClCompile Include="..\wma\wmaparser.cpp">
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\arraylt.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\auxtools.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\dbg.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\mhandles.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gui.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+    </ClInclude>
+    <ClInclude Include="..\..\shared\winliblt.h">
+    </ClInclude>
+    <ClInclude Include="..\buffer.h">
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+    </ClInclude>
+    <ClInclude Include="..\mmviewer.h">
+    </ClInclude>
+    <ClInclude Include="..\mod\modparser.h">
+    </ClInclude>
+    <ClInclude Include="..\mp3\id3tagv1.h">
+    </ClInclude>
+    <ClInclude Include="..\mp3\id3tagv2.h">
+    </ClInclude>
+    <ClInclude Include="..\mp3\mpeghead.h">
+    </ClInclude>
+    <ClInclude Include="..\mp3\mpgparser.h">
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4head.h">
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4parser.h">
+    </ClInclude>
+    <ClInclude Include="..\mp4\mp4tag.h">
+    </ClInclude>
+    <ClInclude Include="..\ogg\oggparser.h">
+    </ClInclude>
+    <ClInclude Include="..\output.h">
+    </ClInclude>
+    <ClInclude Include="..\parser.h">
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+    </ClInclude>
+    <ClInclude Include="..\renderer.h">
+    </ClInclude>
+    <ClInclude Include="..\VQF\VQFPARSER.H">
+    </ClInclude>
+    <ClInclude Include="..\wav\wavparser.h">
+    </ClInclude>
+    <ClInclude Include="..\wma\wmaparser.h">
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\diskexpl.ico">
+    </Image>
+    <Image Include="..\res\main.ico">
+    </Image>
+    <Image Include="..\res\tb.bmp">
+    </Image>
+    <Image Include="..\res\tb16.bmp">
+    </Image>
+    <Image Include="..\res\tb256.bmp">
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh">
+    </None>
+    <None Include="..\mmviewer.def">
+    </None>
+    <None Include="..\mmviewer.rc2">
+    </None>
+    <None Include="..\mmviewer.rh">
+    </None>
+    <None Include="..\mmviewer.rh2">
+    </None>
+    <None Include="..\versinfo.rh2">
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\mmviewer.rc">
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lang_mmviewer.vcxproj">
+      <Project>{0c16bff5-47ac-48c8-81ec-2788ffaa42bb}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

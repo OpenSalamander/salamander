@@ -1,0 +1,2 @@
+# Courtesy https://forum.altap.cz/viewtopic.php?f=2&t=6934
+Salamander.ViewFile(r"c:\temp\log.txt")

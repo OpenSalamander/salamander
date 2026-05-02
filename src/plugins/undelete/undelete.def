@@ -1,0 +1,4 @@
+LIBRARY undelete.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

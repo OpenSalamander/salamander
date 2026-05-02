@@ -1,0 +1,7 @@
+ Name     VV.MM   Created       Changed      Size  Init   Mod   Id
+FTPDEFAU   04.00  12/08/93   12/09/93    6:16   98   98  0 MVS
+FTPINTRO   01.00  12/09/93   12/09/93    6:18  134  134  0 MVS
+FTPNEWS    01:00  12/09/93   12/09/93   10:30   25   25  0 MVS
+GREETING   01:00  12/08/93   12/09/93    6:19   12   12  0 MVS
+OMCSIRBF
+GREE       01:00  12/08/93   12/09/93    6:19   12   12  0 MVS 

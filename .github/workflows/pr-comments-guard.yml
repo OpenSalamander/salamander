@@ -1,0 +1,347 @@
+name: PR Comment Guard
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  comment-only:
+    name: Ensure Only Comments Change (${{ matrix.mode }}) # Include active mode in job name for clearer logs.
+    strategy: # Expand the job to cover both evaluation modes.
+      fail-fast: false # Make sure the relaxed run completes even if the strict mode fails first.
+      matrix:
+        mode: [strict, ignore-whitespace] # Run the guard in strict mode and with whitespace ignored.
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Check for "comments translation" label
+        id: label_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $token = $env:GITHUB_TOKEN
+          if ([string]::IsNullOrWhiteSpace($token)) {
+            Write-Error 'GITHUB_TOKEN is not available.'
+          }
+
+          $issueUri = "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}"
+          $headers = @{
+            Authorization = "Bearer $token"
+            'User-Agent' = 'actions/pr-comments-guard'
+            Accept = 'application/vnd.github+json'
+          }
+
+          $response = Invoke-RestMethod -Method Get -Uri $issueUri -Headers $headers
+          $hasLabel = $false
+          foreach ($label in $response.labels) {
+            if ($label.name -eq 'comments translation') {
+              $hasLabel = $true
+              break
+            }
+          }
+
+          if (-not $hasLabel) {
+            'should-skip=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "Label 'comments translation' not present on PR; skipping verification."
+          } else {
+            Write-Host "Label 'comments translation' detected; continuing verification."
+          }
+
+      - name: Checkout PR
+        if: steps.label_check.outputs.should-skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify comment-only changes
+        if: steps.label_check.outputs.should-skip != 'true'
+        env:
+          COMMENT_GUARD_MODE: ${{ matrix.mode }} # Pass the selected mode down to the PowerShell script.
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $commentGuardMode = $env:COMMENT_GUARD_MODE # Read the chosen mode from the matrix.
+          if ([string]::IsNullOrWhiteSpace($commentGuardMode)) {
+            $commentGuardMode = 'strict' # Default to the historical strict behaviour when the env var is missing.
+          }
+
+          function Format-DiffLines {
+            param(
+              [string[]] $Lines,
+              [string] $File
+            )
+
+            $output = @()
+            $seenHeader = $false
+            $seenMinus = $false
+            $seenPlus = $false
+
+            foreach ($line in $Lines) {
+              if (-not $seenHeader -and $line -like 'diff --git*') {
+                $output += "diff --git a/$File b/$File"
+                $seenHeader = $true
+                continue
+              }
+
+              if (-not $seenMinus -and $line -like '--- *') {
+                $output += "--- a/$File"
+                $seenMinus = $true
+                continue
+              }
+
+              if (-not $seenPlus -and $line -like '+++ *') {
+                $output += "+++ b/$File"
+                $seenPlus = $true
+                continue
+              }
+
+              $output += $line
+            }
+
+            return $output
+          }
+
+          $baseSha = '${{ github.event.pull_request.base.sha }}'
+          $baseRef = '${{ github.event.pull_request.base.ref }}'
+          if ([string]::IsNullOrWhiteSpace($baseSha)) {
+            Write-Error 'Cannot resolve base commit SHA for the pull request.'
+          }
+
+          if (-not (Get-Command clang.exe -ErrorAction SilentlyContinue)) {
+            Write-Error 'clang.exe not found on PATH (expected on windows-2022 runner).'
+          }
+
+          if (-not [string]::IsNullOrWhiteSpace($baseRef)) {
+            git fetch --no-tags origin $baseRef --depth=0 | Out-Null
+          } else {
+            git fetch --no-tags origin $baseSha --depth=0 | Out-Null
+          }
+
+          git rev-parse --verify $baseSha | Out-Null
+
+          $worktreeRoot = Join-Path $env:RUNNER_TEMP "pr-comment-guard"
+          if (Test-Path $worktreeRoot) {
+            Remove-Item $worktreeRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $worktreeRoot | Out-Null
+
+          $baseWorktree = Join-Path $worktreeRoot 'base'
+          git worktree add --detach $baseWorktree $baseSha | Out-Null
+
+          try {
+            # Determine which files to check based on the PR action
+            $prAction = '${{ github.event.action }}'
+            $beforeSha = '${{ github.event.before }}'
+            $afterSha = '${{ github.event.after }}'
+            
+            $files = @()
+            if ($prAction -eq 'synchronize' -and -not [string]::IsNullOrWhiteSpace($beforeSha) -and -not [string]::IsNullOrWhiteSpace($afterSha)) {
+              # For synchronize with before/after, check only files changed in the push range
+              Write-Host "Checking files changed in push range: $beforeSha..$afterSha"
+              $files = git diff --name-only --diff-filter=ACMR $beforeSha $afterSha | Where-Object { $_ -ne '' }
+            } else {
+              # For opened/reopened or other cases, use merge-base approach
+              Write-Host "Checking files changed in entire PR using merge-base"
+              $mergeBase = git merge-base origin/$baseRef HEAD
+              if ([string]::IsNullOrWhiteSpace($mergeBase)) {
+                Write-Error "Could not determine merge-base between origin/$baseRef and HEAD"
+              }
+              Write-Host "Merge-base: $mergeBase"
+              $files = git diff --name-only --diff-filter=ACMR $mergeBase..HEAD | Where-Object { $_ -ne '' }
+            }
+            
+            if (-not $files) {
+              Write-Host 'No tracked changes detected.'
+              exit 0
+            }
+
+            $baseArgs = @(
+              '-E',
+              '-P',
+              '-DSAFE_ALLOC',
+              '-DFILE_ATTRIBUTE_ENCRYPTED=0x00004000',
+              '-Wno-deprecated',
+              '-Wno-comment',
+              '-Wno-nonportable-include-path',
+              '-Wno-extra-tokens',
+              '-Wno-invalid-token-paste',
+              '-Wno-macro-redefined',
+              '-Wno-microsoft-include',
+              '-Wno-#pragma-messages',
+              '-fkeep-system-includes',
+              '-fdiagnostics-color',
+              '-fansi-escape-codes',
+              '-w',
+              '-x',
+              'c++'
+            )
+            
+            $includeRoots = @(
+              '.',
+              'src',
+              'src/common',
+              'src/plugins/shared',
+              'src/common/dep',
+              'src/plugins/automation',
+              'src/plugins/7zip/7za/cpp/Common',
+              'src/plugins/7zip/7za/cpp',
+              'src/plugins/automation/generated',
+              'src/plugins/shared/lukas',
+              'src/plugins/ftp',
+              'src/plugins/ftp/openssl',
+              'src/plugins/ieviewer/cmark-gfm/build/src',
+              'src/plugins/ieviewer/cmark-gfm/build/extensions',
+              'src/plugins/ieviewer/cmark-gfm/extensions',
+              'src/plugins/ieviewer/cmark-gfm/src',
+              'src/plugins/pictview/exif',
+              'src/plugins/tar',
+              'src/plugins/undelete/library',
+              'src/plugins/zip',
+              'src/plugins/winscp/core',
+              'src/plugins/winscp/windows',
+              'src/plugins/winscp/resource',
+              'src/plugins/winscp/forms',
+              'src/plugins/wmobile/rapi',
+              'tools/comments/code_guard_stubs'
+            )
+            $headIncludeArgs = @()
+            foreach ($rel in $includeRoots) {
+              $candidate = Join-Path (Get-Location) $rel
+              if (Test-Path $candidate) {
+                $headIncludeArgs += '-isystem'
+                $headIncludeArgs += $candidate
+              }
+            }
+
+            $baseIncludeArgs = @()
+            foreach ($rel in $includeRoots) {
+              $candidate = Join-Path $baseWorktree $rel
+              if (Test-Path $candidate) {
+                $baseIncludeArgs += '-isystem'
+                $baseIncludeArgs += $candidate
+              }
+            }
+
+            $violations = @()
+
+            foreach ($file in $files) {
+              $extension = [System.IO.Path]::GetExtension($file)
+              $normalizedExt = $extension.ToLowerInvariant()
+              $trackedExtensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.ipp', '.inl')
+
+              if ($trackedExtensions -notcontains $normalizedExt) {
+                Write-Host "Skipping file '$file' (extension '$extension') for comment diff guard."
+                continue
+              }
+
+              $basePath = Join-Path $baseWorktree $file
+              $headPath = Join-Path (Get-Location) $file
+
+              if (-not (Test-Path $basePath)) {
+                $violations += [pscustomobject]@{ File = $file; Message = "File '$file' is new or deleted; only comment edits are allowed."; Diff = $null }
+                continue
+              }
+
+              if (-not (Test-Path $headPath)) {
+                $violations += [pscustomobject]@{ File = $file; Message = "File '$file' is missing in PR head; deletions are not allowed."; Diff = $null }
+                continue
+              }
+
+              $baseTmp = [System.IO.Path]::GetTempFileName()
+              $headTmp = [System.IO.Path]::GetTempFileName()
+
+              try {
+                $extraArgs = @()
+                # Apply plugin-specific preprocessor defines that clang needs to parse these sources.
+                if ($file -like 'src/plugins/renamer/*') {
+                  $extraArgs += '-D_CHAR_UNSIGNED'
+                }
+                if ($file -like 'src/plugins/zip/selfextr/*') {
+                  $extraArgs += '-DLANG_DEFINED'
+                  $extraArgs += '-DEXT_VER'
+                }
+
+                $clangArgsBase = $baseArgs + $baseIncludeArgs + $extraArgs + @('-o', $baseTmp, $basePath)
+                $clangArgsHead = $baseArgs + $headIncludeArgs + $extraArgs + @('-o', $headTmp, $headPath)
+
+                $clangBaseOutput = & clang.exe @clangArgsBase 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "clang failed to preprocess base version."; Diff = $clangBaseOutput }
+                  continue
+                }
+
+                $clangHeadOutput = & clang.exe @clangArgsHead 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "clang failed to preprocess head version."; Diff = $clangHeadOutput }
+                  continue
+                }
+
+                $diffFlags = @('--no-index', '--unified=6', '--exit-code') # Baseline diff arguments shared by both modes.
+                if ($commentGuardMode -eq 'ignore-whitespace') {
+                  $diffFlags = @('--ignore-all-space') + $diffFlags # Ignore whitespace-only changes in the relaxed mode.
+                }
+
+                $diffResult = git -c core.autocrlf=false -c core.safecrlf=false diff @diffFlags -- $baseTmp $headTmp 2>&1
+                if ($LASTEXITCODE -eq 1) {
+                  $diffLines = $diffResult -split [Environment]::NewLine
+                  $formattedLines = Format-DiffLines -Lines $diffLines -File $file
+                  $violations += [pscustomobject]@{ File = $file; Message = "Non-comment changes detected."; Diff = $formattedLines }
+                } elseif ($LASTEXITCODE -ne 0) {
+                  $violations += [pscustomobject]@{ File = $file; Message = "Diff command failed."; Diff = $diffResult }
+                }
+              } finally {
+                Remove-Item -Path $baseTmp, $headTmp -ErrorAction SilentlyContinue
+              }
+            }
+
+            if ($violations.Count -gt 0) {
+              foreach ($violation in $violations) {
+                $file = $violation.File
+                $message = $violation.Message
+                $diffText = $violation.Diff
+
+                if ([string]::IsNullOrEmpty($message)) {
+                  $message = 'Unknown error'
+                }
+
+                # Include the mode in the message for clarity
+                $modeLabel = if ($commentGuardMode -eq 'strict') { '[strict]' } else { '[ignore-whitespace]' }
+                $message = "$modeLabel $message"
+
+                $annotation = "::error"
+                if (-not [string]::IsNullOrEmpty($file)) {
+                  $annotation += " file=$file"
+                }
+                $annotation += "::$message"
+
+                Write-Host $annotation
+                if ($diffText) {
+                  Write-Host ("Diff for {0}:" -f $file)
+                  if ($diffText -is [System.Array]) {
+                    $joinedDiff = [string]::Join([Environment]::NewLine, $diffText)
+                    Write-Host $joinedDiff
+                  } else {
+                    Write-Host $diffText
+                  }
+                }
+              }
+              exit 1
+            }
+
+            Write-Host 'All checked files differ only in comments.'
+          } finally {
+            git worktree remove --force $baseWorktree | Out-Null
+            Remove-Item $worktreeRoot -Recurse -Force -ErrorAction SilentlyContinue
+          }

@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{701c5a05-f9fd-4049-9a6f-34e6090a5d38}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{83522881-de76-4bf0-ab29-61dcfa4d2b22}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{fffbf060-2248-4e9e-a60c-f54b1870b8d7}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\decode.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dialogs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\unarj.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\unarjspl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\lukas\array2.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dialogs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_file.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unarj.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unarjdll.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\unarjspl.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unarj.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unarj.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unarj.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\unarj.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\unarj.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

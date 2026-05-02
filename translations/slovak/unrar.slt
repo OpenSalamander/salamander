@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\slovak\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,1051
+AUTHOR,"Roman Paholík"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6167"
+COMMENT,"Slovenská verzia"
+
+[DIALOG 100]
+194,95,1,"Ďalší zväzok archívu"
+117,12,9,170,32,1,"Prosím vložte disketu s ďalším zväzkom archívu alebo nájdite príslušný súbor na disku.\n\nKliknite na OK, ak je pripravený."
+300,12,48,53,8,1,"&Názov súboru:"
+101,12,58,155,12,1,""
+102,170,58,13,12,1,"..."
+1,39,76,50,14,1,"OK"
+2,102,76,50,14,1,"Zrušiť"
+
+[DIALOG 103]
+350,85,1,"Chyba"
+300,4,10,26,8,1,"Názov:"
+104,34,10,309,8,1,""
+301,4,23,26,8,1,"Chyba:"
+302,34,23,309,16,1,"Súbor nemôže byť extrahovaný, pretože je pokračujúci z predchádzajúceho zväzku. Na extrahovanie tohto súboru musíte začať zväzkom, v ktorom súbor začína."
+105,34,44,183,12,1,"&Nabudúce nezobrazovať."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Zrušiť"
+
+[DIALOG 106]
+230,115,1,"UnRAR - Konfigurácia"
+107,12,10,206,12,1,"&Pri extrahovaní automaticky preskočiť súbory pokračujúce"
+116,12,32,203,12,1,"&Nezobrazovať upozornenie, ak nemôže byť vypísaný celý"
+300,23,22,154,8,1,"z predchádzajúcich zväzkov."
+301,23,44,111,8,1,"obsah archívu."
+302,6,60,218,1,1,""
+117,12,70,209,12,1,"Zobraziť stĺpec "&Komprimovaná veľkosť" pri výpise archívu"
+303,6,90,218,1,1,""
+1,62,96,50,14,1,"OK"
+2,117,96,50,14,1,"Zrušiť"
+
+[DIALOG 108]
+350,80,1,"Zadanie hesla"
+113,18,18,18,20,1,""
+300,57,10,212,8,1,"Tento súbor je šifrovaný. Prosím zadajte heslo na dešifrovanie."
+301,57,25,24,8,1,"Súbor:"
+104,84,25,253,8,1,""
+302,57,38,22,8,1,"&Heslo:"
+110,84,36,170,12,1,""
+1,20,58,55,14,1,"&OK"
+112,81,58,55,14,1,"&Všetko"
+109,142,58,55,14,1,"&Preskočiť"
+111,203,58,65,14,1,"Pres&kočiť všetko"
+2,274,58,55,14,1,"Zrušiť"
+
+[DIALOG 115]
+213,105,1,"UnRAR - Upozornenie"
+300,11,8,194,24,1,"Nie všetky súbory vo viaczväzkovom archíve môžu byť vypísané (a zobrazené v paneli), pretože nie je možné nájsť niektorý zväzok archívu."
+301,11,39,194,16,1,"Na výpis celého obsahu archívu skopírujte všetky zväzky archívu do jedného adresára."
+105,11,64,157,12,1,"&Nabudúce nezobrazovať"
+302,5,81,202,1,1,""
+1,155,87,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Nedostatok pamäti."
+1002,1,"Nie je možné získať modul názov súboru."
+1003,1,"Nie je možné načítať knižnicu '%s'."
+1004,1,"Nie je možné získať procesnú adresu."
+1005,1,"Archív je poškodený. (Neplatné heslo?)"
+1006,1,"Súbor má neznámy formát alebo nie je platným RAR archívom. (Neplatné heslo?)"
+1007,1,"Nie je možné otvoriť archív."
+
+[STRINGTABLE 1]
+1008,1,"Vyskytla sa neznáma chyba."
+1009,1,"Nie je možné otvoriť zväzok archívu."
+1010,1,"Nie je možné načítať archív."
+1011,1,"Súbory RAR archívu (*.R*)"
+1012,1,"Vyberte archív"
+1013,1,"Chyba v komprimovaných dátach. CRC nesúhlasí. (Neplatné heslo?)"
+1014,1,"Nie je možné pridať záznam archívu do súboru výpisu."
+1015,1,"Extrahovanie RAR archívu - %s"
+1016,1,"pripravujem dáta a vytváram adresáre..."
+1017,1,"extrahujem..."
+1018,1,"extrahujem: "
+1019,1,"Nie je možné získať ukazovateľ súboru: "
+1020,1,"Nie je možné zapísať súbor:"
+1021,1,"Nie je možné nastaviť ukazovateľ súboru: "
+1022,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhému názvu cesty."
+1023,1,"Nie je možné dokončiť operáciu, kvôli príliš dlhej maske."
+
+[STRINGTABLE 2]
+1024,1,"Prosím zadajte aspoň jeden znak."
+1027,1,"Všetky súbory (*.*)"
+1028,1,"Chyba"
+1029,1,"Súbor nenájdený"
+1030,1,"Neplatná verzia unrar.dll. Prosím preinštalujte UnRAR plugin."
+1031,1,"Zdá sa, že je to viaczväzkový archív. Ak je to tak, prosím vyberte prvý zväzok archívu a stlačte OK.\n\nAk to nie je viaczväzkový archív stlačte Zrušiť."
+1032,1,"Výber prvého zväzku"
+1033,1,"Prehliada a extrahuje RAR archívy."
+1034,1,"O plugine"
+1035,1,"Súbor nebol v archíve nájdený."
+1036,1,"Neplatné heslo. Písmená v hesle musia byť napísané správnou veľkosťou. Ubezpečte sa, že CapsLock nie je náhodne zapnutý."
+
+[STRINGTABLE 3]
+1040,1,"Komprimovaná"
+1041,1,"Komprimovaná veľkosť súboru"
+

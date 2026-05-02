@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 100]
+194,110,1,"Következő kötet"
+300,12,9,170,32,1,"Kérem helyezze be a következő kötet lemezét vagy keresse ki a következő fájlt.\n\nOK ha kész."
+301,12,48,60,8,1,"Előző kötet:"
+103,73,48,109,12,1,""
+302,12,62,57,8,1,"&Következő kötet:"
+101,12,72,155,12,1,""
+102,170,72,13,12,1,"..."
+1,39,91,50,14,1,"OK"
+2,102,91,50,14,1,"Mégse"
+
+[DIALOG 103]
+350,85,1,"Hiba"
+300,8,10,22,8,1,"Név:"
+104,34,10,309,8,1,""
+301,8,23,22,8,1,"Hiba:"
+302,34,23,309,16,1,"A fájl nem tömöríthető ki, mert egy előző kötet folytatása. A fájl kibontásához, azzal a kötettel kell indítania, ahol a fájl kezdődik."
+105,34,44,183,12,1,"&Ne mutassa ezt az üzenetet."
+1,120,63,50,14,1,"OK"
+2,180,63,50,14,1,"Mégse"
+
+[DIALOG 106]
+220,85,1,"UnARJ beállítás"
+300,23,22,154,8,1,"folytatandó fájlokat."
+107,12,10,195,12,1,"Kibontáskor &automatikusan hagyja ki az előző kötetből"
+301,23,44,111,8,1,"listázható ki."
+116,12,32,199,12,1,"&Ne figyelmeztessen, ha az archívum teljes tartalma nem"
+302,6,60,208,1,1,""
+1,57,66,50,14,1,"OK"
+2,112,66,50,14,1,"Mégse"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Figyelmeztetés"
+300,11,10,194,24,1,"A több-kötetes archívum nem minden fájlja listázható (és látható a panelben), mert néhány archívum kötet nem található."
+301,11,41,192,16,1,"A archívum teljes tartalmához, az archívum minden kötetét másoljon egy mappába."
+105,11,66,157,12,1,"&Ne mutassa ezt az üzenetet"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Kevés memória."
+1002,1,"Nem várt archívum vég."
+1005,1,"Az archívum sérült."
+1006,1,"A fájl ismeretlen formátumú vagy nem érvényes ARJ archívum."
+1007,1,"Az archívum nem nyitható meg."
+
+[STRINGTABLE 1]
+1008,1,"Ismeretlen hiba lépett fel."
+1010,1,"Az archívum nem érhető el."
+1011,1,"ARJ archívum (*.A*)"
+1012,1,"Válasszon archívumot"
+1013,1,"Hiba a tömörített adatban. A CRC nem egyezik."
+1014,1,"Nem adható archívum bejegyzés a fájl listához."
+1015,1,"ARJ archívum kibontása - %s"
+1016,1,"adat előkészítése és mappák létrehozása..."
+1017,1,"kibontás..."
+1018,1,"kibontás: "
+1019,1,"Nem szerezhető meg a fájlmutató: "
+1020,1,"Nem lehet a fájlba írni:"
+1021,1,"Nem állítható be a fájlmutató: "
+1022,1,"Nem fejezhető be a művelet, mert túl hosszú az elérési név."
+1023,1,"Nem fejezhető be a művelet, mert a maszk túl hosszú."
+
+[STRINGTABLE 2]
+1024,1,"Ismeretlen verziójú tömörített fájl."
+1025,1,"Ismeretlen tömörítési típusú fájl."
+1026,1,"Az UnARJ plugin által nem támogatott tömörítési módot használ a fájl."
+1027,1,"Sajnálom, a titkosított fájlok nem támogatottak."
+1028,1,"Érvénytelen kötet vagy ismeretlen archívum szerkezet."
+1029,1,"Sajnálom, a plugin lejárt. Látogassa meg weboldalunk az új verzióhoz."
+1030,1,"A fájl nem található."
+1031,1,"Hiba"
+1032,1,"Minden fájl (*.*)"
+1033,1,"ARJ archívumok böngészése és kibontása."
+1034,1,"Plugin névjegy"
+

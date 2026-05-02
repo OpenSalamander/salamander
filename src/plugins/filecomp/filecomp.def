@@ -1,0 +1,4 @@
+LIBRARY filecomp.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

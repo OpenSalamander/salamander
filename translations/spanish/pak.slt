@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 100]
+219,73,1,"Optimizar archivo PAK"
+300,8,9,78,8,1,"Tamaño datos válidos:"
+101,87,9,120,8,1,""
+301,8,20,78,8,1,"Tamaño total ficheros:"
+102,87,20,120,8,1,""
+302,8,31,71,8,1,"Espacio malgastado:"
+103,87,31,120,8,1,""
+303,8,44,203,1,1,""
+1,54,53,50,14,1,"Optimizar"
+2,114,53,50,14,1,"Cancelar"
+
+[STRINGTABLE 0]
+500,1,"Imposible abrir fichero: %s"
+501,1,"Imposible iniciar interfaz paklib. Ya hay un fichero abiierto."
+502,1,"Imposible abrir fichero. Ya hay un fichero abierto."
+503,1,"No es posible conseguir tamaño de fichero: %s"
+504,1,"Formato de datos incorrecto."
+505,1,"Memoria insuficiente."
+506,1,"directorio central PAK actual"
+507,1,"Imposible disponer puntero a fichero: %s"
+508,1,"Imposible leer desde fichero: %s"
+509,1,"Imposible conseguir puntero de fichero: %s"
+510,1,"Imposible grabar en fichero: %s"
+511,1,"Imposible añadir fichero por nombre demasiado largo."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Memoria insuficiente."
+1002,1,"Imposible añadir fichero a la lista."
+1003,1,"Imposible cargar paklib.dll o conseguir dirección del procedimiento: "
+1004,1,"Desempaquetando archivo PAK - %s"
+1005,1,"preparando los datos..."
+1006,1,"desempaquetando..."
+1007,1,"desempaquetando: "
+
+[STRINGTABLE 2]
+1008,1,"Imposible terminar la operación por nomnre de ruta muy largo."
+1009,1,"Imposible disponer puntero a fichero: "
+1010,1,"Imposible conseguir puntero de fichero: "
+1011,1,"Imposible grabar en fichero:"
+1013,1,"Imposible abrir fichero: "
+1014,1,"Imposible terminar la operación por plantilla muy larga."
+1015,1,"Borrando del archivo PAK - %s"
+1016,1,"borrando..."
+1017,1,"borrando: "
+1018,1,"cancelando la operación, espere..."
+1019,1,"Empaquetando en archivo PAK - %s"
+1020,1,"Imposible añadir fichero. Es demasiado grande."
+1021,1,"empaquetando..."
+1022,1,"Imposible añadir fichero por nombre demasiado largo."
+1023,1,"empaquetando: "
+
+[STRINGTABLE 3]
+1024,1,"Imposible leer desde fichero: "
+1025,1,"Imposible conectar plugin con Open Salamander."
+1026,1,"optimizando, espere..."
+1027,1,"Optimizando archivo PAK - %s"
+1028,1,"El borrado de ficheros no terminó bien. Puede que tenga que optimizar desde el menú del plugin PAK para evitar malgastar especio en el disco."
+1029,1,"&Optimizar PAK"
+1030,1,"Lo siento pero el plugin ha expirado. Compruebe nuestra página web para una versión más reciente."
+1031,1,"Hojear y extraer archivos PAK de Quake."
+1032,1,"Acerca del Plugin"
+

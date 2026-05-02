@@ -1,0 +1,252 @@
+FTP Commands
+
+The standard commands that an FTP client (such as WS_FTP Pro) issues to an FTP server are listed here with a brief explanation that has been adapted from RFC 959. The command syntax is presented using BNF (Backus-Naur Form) notation where applicable.
+
+FTP commands may be in any order except that a "rename from" command must be followed by a "rename to" command and the REST (restart) command must be followed by the interrupted service command
+(e.g., STOR or RETR).
+ABOR (ABORT)
+
+ABOR <CRLF>  
+
+This command tells the server to abort the previous FTP service command and any associated transfer of data.
+ACCT (ACCOUNT)
+
+ACCT <SP> <account-information> <CRLF>  
+
+The argument field is a Telnet string identifying the user's account. The command is not necessarily related to the USER command, as some sites may require an account for login and others only for specific access, such
+as storing files.
+ALLO (ALLOCATE)
+
+ALLO <SP> <decimal-integer> [<SP> R <SP> <decimal-integer>] <CRLF>  
+
+This command is required by some servers to reserve sufficient storage to accommodate the file to be transferred.
+APPE (APPEND) (with create)
+
+APPE <SP> <pathname> <CRLF>  
+
+This command causes the server's data transfer process to accept the data transferred and to store the data in a file at the server site. If the file specified in pathname exists at the server site, then the data is appended to that file; otherwise the file specified in pathname is created at the server site.
+CDUP (CHANGE TO PARENT DIRECTORY)
+
+CDUP <CRLF>  
+
+This command is a special case of CWD which allows the transfer of directory trees between operating systems having different syntaxes for naming the parent directory.
+CWD (CHANGE WORKING DIRECTORY)
+
+CWD <SP> <pathname> <CRLF>  
+
+This command allows the user to work with a different directory or dataset without altering his login or account information.
+DELE (DELETE)
+
+DELE <SP> <pathname> <CRLF>  
+
+This command causes the file specified in pathname to be deleted at the server site.
+FEAT
+
+FEAT <CRLF>  
+
+This command causes the FTP server to list all new FTP features that the server supports beyond those described in RFC 959. A typical example
+reply to the FEAT command might be a multi-line reply of the form:
+
+C>  FEAT  
+S>  211-Extensions supported  
+S>   SIZE  
+S>   MDTM  
+S>   MLST size*;type*;perm*;create*;modify*;  
+S>   LANG EN*  
+S>   REST STREAM  
+S>   TVFS  
+S>   UTF8  
+S>  211 end  
+ 
+
+HELP (HELP)
+
+HELP [<SP> <string>] <CRLF>  
+
+This command causes the server to send a list of supported commands and other helpful information.
+LIST (LIST)
+
+LIST [<SP> <pathname>] <CRLF>  
+
+This command causes a list of file names and file details to be sent from the FTP site to WS_FTP Pro.
+MDTM (MODIFICATION TIME)
+
+MDTM <SP> <pathname> <CRLF>  
+
+This command can be used to determine when a file in the server NVFS was last modified.
+MKD (MAKE DIRECTORY)
+
+MKD <SP> <pathname> <CRLF>  
+
+This command causes the directory specified in pathname to be created as a directory (if pathname is absolute) or as a subdirectory of the current working directory (if pathname is relative).
+MLSD
+
+MLSD [<SP> <pathname>] <CRLF>  
+
+If WS_FTP Pro detects that the server is an MLSD server, this command is sent to the server instead of the LIST command.
+MLST
+
+MLST [<SP> <pathname>] <CRLF>  
+
+This command causes the server to provide data about the single object named, whether a file or directory.
+MODE (TRANSFER MODE)
+
+MODE <SP> <mode-code> <CRLF>  
+
+The argument is a single Telnet character code specifying the data transfer mode. The following codes are assigned for transfer modes: S - Stream,
+B - Block, C - Compressed. The default transfer mode is Stream.
+
+Note: This "transfer mode" is not equivalent to the "transfer mode" of the WS_FTP Pro user interface. The "transfer mode" referred to in
+WS_FTP Pro and its documentation is handled by the TYPE command.
+NLST (NAME LIST)
+
+NLST [<SP> <pathname>] <CRLF>  
+
+This command causes a list of file names (with no other information) to be sent from the FTP site to WS_FTP Pro.
+NOOP (NOOP)
+
+NOOP <CRLF> 
+
+This command does not affect any parameters or previously entered commands. It specifies no action other than that the server send an OK reply.
+OPTS (OPTIONS)
+
+OPTS <SP> <parameter> <CRLF>  
+
+This command allows an FTP client to define a parameter that will be used by a subsequent command.
+PASS (PASSWORD)
+
+PASS <SP> <password> <CRLF>  
+
+The argument field is a Telnet string specifying the user's password. This command must be immediately preceded by the user name command, and, for some sites, completes the user's identification for access control.
+PASV (PASSIVE)
+
+PASV <CRLF>  
+
+This command requests the server's data transfer process to "listen" on a data port (which is not its default data port) and to wait for a connection rather than initiate one upon receipt of a transfer command. The response to this command includes the host and port address this server is listening on.
+PORT (DATA PORT)
+
+PORT <SP> <host-port> <CRLF>  
+
+This specifies an alternate data port. There are defaults for both the client
+and server data ports, and under normal circumstances this command and its reply are not needed.
+PWD (PRINT WORKING DIRECTORY)
+
+PWD <CRLF>  
+
+This command causes the name of the current working directory to be returned in the reply.
+QUIT (LOGOUT)
+
+QUIT <CRLF>  
+
+This command terminates a USER and, if file transfer is not in progress,
+closes the control connection. If file transfer is in progress, the connection will remain open for result response and the server will then close it.
+QUOTE
+
+QUOTE <string> <CRLF>  
+
+The QUOTE command lets you enter any standard FTP command. WS_FTP Pro sends it to the FTP site, unedited; it is up to you to determine the command syntax depending on the FTP site you are connected to.
+REIN (REINITIALIZE)
+
+REIN <CRLF>  
+
+This command terminates a USER, flushing all I/O and account information, except to allow any transfer in progress to be completed. A USER command may be expected to follow.
+REST (RESTART)
+
+REST <SP> <marker> <CRLF>  
+
+The argument field represents the server marker at which file transfer is to
+be restarted. This command does not cause file transfer but skips over
+the file to the specified data checkpoint. This command shall be immediately followed by the appropriate FTP service command which causes file transfer to resume.
+RETR (RETRIEVE)
+
+RETR <SP> <pathname> <CRLF>  
+
+This command causes the server to transfer a copy of the file specified in pathname to the client. The status and contents of the file at the server site are unaffected.
+RMD (REMOVE DIRECTORY)
+
+RMD <SP> <pathname> <CRLF>  
+
+This command causes the directory specified in pathname to be removed as a directory (if pathname is absolute) or as a subdirectory of the current working directory (if pathname is relative).
+RNFR (RENAME FROM)
+
+RNFR <SP> <pathname> <CRLF>  
+
+This command specifies the old pathname of the file which is to be renamed. This command must be immediately followed by a "rename to" command specifying the new file pathname.
+RNTO (RENAME TO)
+
+RNTO <SP> <pathname> <CRLF>  
+
+This command specifies the new pathname of the file specified in the immediately preceding "rename from" command. Together the two commands cause a file to be renamed.
+SITE (SITE PARAMETERS)
+
+SITE <SP> <string> <CRLF>  
+
+This allows you to enter a command that is specific to the current FTP site. WS_FTP Pro prefixes your entry with the word SITE. WS_FTP Pro sends it to the FTP site, unedited; it is up to you to determine the command syntax depending on the FTP site you are connected to.
+SITE CPWD
+
+SITE CPWD <SP> <string> <CRLF>  
+
+This is a special command you can enter using WS_FTP Pro when the FTP server is a WS_FTP Server from Ipswitch. It changes the user's password.
+SIZE (SIZE OF FILE)
+
+SIZE <SP> <pathname> <CRLF>  
+
+This command is used to obtain the transfer size of a file from the server: that is, the exact number of octets (8 bit bytes) which would be transmitted over the data connection should that file be transmitted. This value will change depending on the current STRUcture, MODE and TYPE of the data.
+SMNT (STRUCTURE MOUNT)
+
+SMNT <SP> <pathname> <CRLF>  
+
+This command allows the user to mount a different file system data structure without altering his login or accounting information.
+STAT (STATUS)
+
+STAT [<SP> <pathname>] <CRLF>  
+
+This command causes a status response to be sent over the control connection in the form of a reply.
+STOR (STORE)
+
+STOR <SP> <pathname> <CRLF>  
+
+This command causes the FTP server to accept the data transferred via the data connection and to store the data as a file at the FTP server. If the file specified in pathname exists at the server site, then its contents shall be replaced by the data being transferred. A new file is created at the FTP server if the file specified in pathname does not already exist.
+STOU (STORE UNIQUE)
+
+STOU <CRLF>  
+
+This command behaves like STOR except that the resultant file is to be created in the current directory under a name unique to that directory. The "250 Transfer Started" response must include the name generated.
+STRU (FILE STRUCTURE)
+
+STRU <SP> <structure-code> <CRLF>  
+
+The argument is a single Telnet character code specifying the file structure described in RFC 959. The following codes are assigned for structure: F - File (no record structure) R - Record structure P - Page structure. The default structure is File.
+SYST (SYSTEM)
+
+SYST <CRLF>  
+
+This command is used to find out the operating system of the server.
+TYPE (REPRESENTATION TYPE)
+
+TYPE <SP> <type-code> <CRLF>  
+
+The argument specifies the file type. The following codes are assigned:
+
+A = ASCII (text files)
+
+N = Non-print (files that have no vertical format controls such as carriage returns and line feeds)
+
+T = Telnet format effectors (files that have ASCII or EBCDIC vertical format controls)
+
+E = EBCDIC (files being transferred between systems that use EBCDIC for internal character representation)
+
+C = Carriage Control (ASA) (files that contain ASA [FORTRAN] vertical format controls)
+
+I = Image (binary files)
+
+L = Local byte size (files that need to be transferred using specific
+non-standard size bytes)
+
+The default representation type is ASCII Non-print.
+USER (USER NAME)
+
+USER <SP> <username> <CRLF>  
+
+The argument field is a Telnet string identifying the user. The user identification is that which is required by the server for access to its
+file system. 

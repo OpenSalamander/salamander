@@ -1,0 +1,90 @@
+Sekce bez vstupu do jinych sekci (primitivni):
+  CLogs::LogCritSect
+  CListingCache::CacheCritSect
+  CControlConnectionSocket::EventCritSect
+  CConfiguration::ConParamsCS
+  CUIDArray::UIDListCritSect
+  WorkerMayBeClosedStateCS
+  CReturningConnections::RetConsCritSect
+  CFTPDiskThread::DiskCritSect
+  CTransferSpeedMeter::TransferSpeedMeterCS
+  CSynchronizedDWORD::ValueCS
+  CFTPProxyServerList::ProxyServerListCS
+
+Ze sekce CClosedCtrlConChecker::DataSect se vstupuje do:
+  CControlConnectionSocket::EventCritSect
+  CSocket::SocketCritSect
+
+Ze sekce CSocketsThread::CritSect se vstupuje do:
+  CSocket::SocketCritSect
+  CControlConnectionSocket::EventCritSect
+  CLogs::LogCritSect
+  CFTPQueue::QueueCritSect
+  CFTPWorkersList::WorkersListCritSect
+  CFTPWorker::WorkerCritSect
+  CClosedCtrlConChecker::DataSect
+  CReturningConnections::RetConsCritSect
+  CFTPOperation::OperCritSect
+  CFTPDiskThread::DiskCritSect
+  CConfiguration::ConParamsCS
+  CTransferSpeedMeter::TransferSpeedMeterCS
+  CSynchronizedDWORD::ValueCS
+  CUploadListingCache::UploadLstCacheCritSect
+
+Ze sekce CSocket::SocketCritSect se vstupuje do:
+  CControlConnectionSocket::EventCritSect
+  CLogs::LogCritSect
+  CFTPQueue::QueueCritSect
+  CFTPWorkersList::WorkersListCritSect
+  CFTPWorker::WorkerCritSect
+  WorkerMayBeClosedStateCS
+  CReturningConnections::RetConsCritSect
+  CFTPOperation::OperCritSect
+  CFTPDiskThread::DiskCritSect
+  CConfiguration::ConParamsCS
+  CTransferSpeedMeter::TransferSpeedMeterCS
+  CSynchronizedDWORD::ValueCS
+  CUploadListingCache::UploadLstCacheCritSect
+  CFTPProxyServerList::ProxyServerListCS
+
+Ze sekce CFTPOperationsList::OpListCritSect se vstupuje do:
+  CFTPQueue::QueueCritSect
+  CFTPOperation::OperCritSect
+  CFTPWorkersList::WorkersListCritSect
+  CFTPWorker::WorkerCritSect
+  CLogs::LogCritSect
+  CFTPDiskThread::DiskCritSect
+  CUploadListingCache::UploadLstCacheCritSect
+
+Ze sekce CFTPWorkersList::WorkersListCritSect se vstupuje do:
+  CFTPQueue::QueueCritSect
+  CFTPWorker::WorkerCritSect
+  CFTPOperation::OperCritSect
+  CLogs::LogCritSect
+  CFTPDiskThread::DiskCritSect
+  CUploadListingCache::UploadLstCacheCritSect
+
+Ze sekce CFTPWorker::WorkerCritSect se vstupuje do:
+  CFTPQueue::QueueCritSect
+  CFTPOperation::OperCritSect
+  CLogs::LogCritSect
+  CFTPDiskThread::DiskCritSect
+  WorkerMayBeClosedStateCS
+  CConfiguration::ConParamsCS
+  CUploadListingCache::UploadLstCacheCritSect
+
+Ze sekce CFTPOperation::OperCritSect se vstupuje do:
+  CLogs::LogCritSect
+  CConfiguration::ConParamsCS
+  CTransferSpeedMeter::TransferSpeedMeterCS
+
+Ze sekce CFTPQueue::QueueCritSect se vstupuje do:
+  CFTPOperation::OperCritSect
+  CTransferSpeedMeter::TransferSpeedMeterCS
+  CUploadListingCache::UploadLstCacheCritSect
+
+Ze sekce CConfiguration::ServerTypeListCS se vstupuje do:
+  CFTPOperation::OperCritSect
+
+Ze sekce CUploadListingCache::UploadLstCacheCritSect se vstupuje do:
+  CConfiguration::ServerTypeListCS

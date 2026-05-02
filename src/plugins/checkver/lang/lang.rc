@@ -1,0 +1,151 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "lang.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "..\checkver.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "lang.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""..\\checkver.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""lang.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN DIALOGEX 30, 30, 338, 238
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+CAPTION "Check for New Versions"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Check &Now",IDC_MAIN_CHECK,161,220,50,14
+    PUSHBUTTON      "C&lose",IDCANCEL,220,220,50,14
+    PUSHBUTTON      "Help",IDHELP,279,220,50,14
+    CONTROL         "",IDC_MAIN_LOG,"CheckVerLogWindow",WS_VSCROLL | WS_GROUP,5,5,328,209
+    PUSHBUTTON      "&Configure...",IDC_MAIN_CFG,6,220,60,14,WS_GROUP
+END
+
+IDD_CONFIGURATION DIALOGEX 15, 39, 357, 245
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Configuration of Check Version"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Internet Connection Settings:",IDC_STATIC_1,5,7,101,8
+    LTEXT           "",IDC_CFG_INTERNET,107,7,190,8
+    PUSHBUTTON      "&Change",IDC_CFG_CHANGE,301,4,50,14,WS_GROUP
+    GROUPBOX        "&Open Check for New Versions window on Open Salamander start",IDC_STATIC_2,5,21,347,81,WS_GROUP
+    CONTROL         "Never",IDC_CFG_NEVER,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,32,60,12
+    CONTROL         "Every day",IDC_CFG_DAY,"Button",BS_AUTORADIOBUTTON,107,32,60,12
+    CONTROL         "Every week",IDC_CFG_WEEK,"Button",BS_AUTORADIOBUTTON,232,32,60,12
+    CONTROL         "Every month",IDC_CFG_MONTH,"Button",BS_AUTORADIOBUTTON,13,44,60,12
+    CONTROL         "Every three months",IDC_CFG_3MONTHS,"Button",BS_AUTORADIOBUTTON,107,44,104,12
+    CONTROL         "Every six months",IDC_CFG_6MONTHS,"Button",BS_AUTORADIOBUTTON,232,44,75,12
+    CONTROL         "&When Check for New Versions window is opened, hide it and perform auto-connect",IDC_CFG_AUTOCONNECT,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,62,325,12
+    CONTROL         "C&lose window if no new version is found, otherwise show window",IDC_CFG_AUTOCLOSE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,74,270,12
+    LTEXT           "Note: this window can be invoked from Open Salamander menu Plugins / Check Version.",IDC_STATIC_3,13,88,330,8
+    GROUPBOX        "&Filters",IDC_STATIC_4,5,109,347,110,WS_GROUP
+    LISTBOX         IDC_CFG_FILTER,13,122,191,54,WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Remove Selected Item From Filters",IDC_CFG_REMOVE,210,122,135,14
+    LTEXT           "Note: one or all versions of module can be added to Filters from the Check for New Versions window. Use right-click context menu on module name.",IDC_STATIC_5,210,138,135,40
+    CONTROL         "Check for r&elease versions of Open Salamander and plugins",IDC_CFG_RELEASE,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,178,270,12
+    CONTROL         "Check for &beta versions of Open Salamander and plugins",IDC_CFG_BETA,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,190,270,12
+    CONTROL         "Check for &preview build versions of Open Salamander and plugins",IDC_CFG_PB,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,202,270,12
+    PUSHBUTTON      "Set &Defaults",IDC_CFG_DEFAULTS,6,227,60,14,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,183,227,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,242,227,50,14
+    PUSHBUTTON      "Help",IDHELP,301,227,50,14
+END
+
+IDD_INTERNET DIALOGEX 50, 20, 258, 200
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "CheckVer Internet Connection Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            "",IDC_INTERNET_ICON,8,8,20,20,WS_GROUP
+    LTEXT           "CheckVer plugin lets you know about the latest versions of Open Salamander and plugins. Internet connection is needed for reading new versions information.",IDC_STATIC_1,39,7,202,24
+    GROUPBOX        "How do you connect to the Internet",IDC_STATIC_2,40,38,211,67,WS_GROUP
+    CONTROL         "I connect through a &phone line and a modem",IDC_INET_PHONE,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,47,51,166,12
+    CONTROL         "I connect through a &local area network (LAN)",IDC_INET_LAN,
+                    "Button",BS_AUTORADIOBUTTON,47,63,164,12
+    CONTROL         "I do &not connect to the Internet",IDC_INET_NONE,"Button",BS_AUTORADIOBUTTON,47,75,183,12
+    LTEXT           "(automatic starting of CheckVer plugin will be disabled)",IDC_STATIC_3,59,87,188,8
+    GROUPBOX        "Internet protocol",IDC_STATIC_4,40,109,211,55,WS_GROUP
+    CONTROL         "&HTTP (recommended)",IDC_INET_HTTP,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,47,121,158,12
+    CONTROL         "&FTP",IDC_INET_FTP,"Button",BS_AUTORADIOBUTTON,47,133,158,12
+    CONTROL         "F&TP in passive transfer mode (useful behind firewall)",IDC_INET_FTP_PASSIVE,
+                    "Button",BS_AUTORADIOBUTTON,47,145,188,12
+    CONTROL         "",IDC_STATIC_5,"Static",SS_ETCHEDHORZ | WS_GROUP,3,174,250,1
+    DEFPUSHBUTTON   "OK",IDOK,85,181,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,142,181,50,14
+    PUSHBUTTON      "Help",IDHELP,199,181,50,14
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "lang.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

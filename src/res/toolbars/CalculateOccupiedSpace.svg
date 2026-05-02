@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="16px" height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<g>
+	<rect x="2.5" y="3.5" fill="#FFFFFF" width="10" height="12"/>
+	<path d="M12,4v11H3V4H12 M13,3H2v13h11V3L13,3z"/>
+</g>
+<rect x="4" y="9" width="1" height="1"/>
+<rect x="6" y="9" width="1" height="1"/>
+<rect x="6" y="11" width="1" height="1"/>
+<rect x="6" y="13" width="1" height="1"/>
+<rect x="8" y="9" width="1" height="1"/>
+<rect x="8" y="11" width="1" height="1"/>
+<rect x="8" y="13" width="1" height="1"/>
+<rect x="10" y="9" width="1" height="1"/>
+<rect x="10" y="11" width="1" height="1"/>
+<rect x="10" y="13" width="1" height="1"/>
+<rect x="4" y="11" width="1" height="1"/>
+<rect x="4" y="13" width="1" height="1"/>
+<g>
+	<path d="M10.5,5.5v2h-6v-2H10.5 M11,5H4v3h7V5L11,5z"/>
+</g>
+</svg>
