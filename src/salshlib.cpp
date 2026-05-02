@@ -570,7 +570,7 @@ BOOL CSalShExtPastedData::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract*
         {
             // find out whether the unloaded plugin has anything to do with our archive;
             // the plugin could unload itself while the archiver is used (each archiver function
-            // loads the plugin itself), but better safe than sorry, so we cancel any pedning archive listing
+            // loads the plugin itself), but better safe than sorry, so we cancel any pending archive listing
             int format = PackerFormatConfig.PackIsArchive(ArchiveFileName);
             if (format != 0) // we found a supported archive
             {
