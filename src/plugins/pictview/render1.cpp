@@ -2024,7 +2024,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if ((XStretchedRange > 65535) && ((LOWORD(wParam) == SB_THUMBPOSITION) || (LOWORD(wParam) == SB_THUMBTRACK)))
         {
-            // We need 32-bit accurary
+            // We need 32-bit accuracy
             SCROLLINFO si;
 
             si.fMask = SIF_TRACKPOS;
