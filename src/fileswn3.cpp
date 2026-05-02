@@ -259,7 +259,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
         iconData.SetReadingDone(0); // just for the form
         BOOL addtoIconCache;
         CFileData file;
-        // inicialization of structure members which will not be changed later
+        // initialization of structure members which will not be changed later
         file.PluginData = -1; // -1 just like that, ignored
         file.Selected = 0;
         file.SizeValid = 0;
@@ -2320,7 +2320,7 @@ CHANGE_AGAIN:
                             else
                                 st += strlen(st);
 
-                            // copy containts the "translated" path
+                            // copy contains the "translated" path
                             if (!pathEndsWithSpaceOrDot)
                                 copyAttr = find.dwFileAttributes;
                             if ((copyAttr & FILE_ATTRIBUTE_DIRECTORY) == 0)
