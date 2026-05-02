@@ -67,7 +67,7 @@ var logToFile = true;                                             // set 'true' 
 //   This script can be easily adapted for other, typically conversion, operations with files. 
 //   Features: recursive directory walking, file masks matching, calling external application 
 //   ImageMagick convert command), progress dialog box, overwrite dialog box with Yes, All, Skip,
-//   Skip All and Cancel buttons, error states handling, output log with opearation summary.
+//   Skip All and Cancel buttons, error states handling, output log with operation summary.
 //
 // Installation and Requirements:
 //   Open Salamander: https://www.altap.cz/
