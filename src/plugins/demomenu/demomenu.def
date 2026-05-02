@@ -1,4 +1,0 @@
-LIBRARY DEMOMENU.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer
