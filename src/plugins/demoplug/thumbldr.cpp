@@ -224,7 +224,7 @@ CPluginInterfaceForThumbLoader::LoadThumbnail(const char* filename,
                                               BOOL fastThumbnail)
 {
     BOOL stopFurtherLoaders = TRUE; // don't try next parsers
-    // we must call thumbMaker->SetError() when error occures and stopFurtherLoaders is TRUE
+    // we must call thumbMaker->SetError() when error occurs and stopFurtherLoaders is TRUE
 
     // open the file
     HANDLE hFile = HANDLES_Q(CreateFile(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
