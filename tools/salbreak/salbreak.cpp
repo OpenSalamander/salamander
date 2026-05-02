@@ -24,7 +24,7 @@ HINSTANCE hInst;                     // current instance
 TCHAR szTitle[MAX_LOADSTRING];       // The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING]; // The title bar text
 
-// Foward declarations of functions included in this code module:
+// Forward declarations of functions included in this code module:
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -203,7 +203,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-// Mesage handler for about box.
+// Message handler for about box.
 LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
