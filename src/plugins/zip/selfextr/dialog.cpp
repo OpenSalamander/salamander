@@ -25,7 +25,7 @@ int ShortPathControlWidth;
 int ShortPathControlHeigth;
 int DlgWinWidth;
 int DlgWinHeigth;
-int DlgWinAboutHeigth; //heigth with the about showed
+int DlgWinAboutHeigth; //height with the About shown
 bool AboutShowed;
 
 //bool Started = false;
