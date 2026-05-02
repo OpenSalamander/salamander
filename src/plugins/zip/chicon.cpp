@@ -78,7 +78,7 @@ BOOL ChangeSfxIconAndAddManifest(const char* sfxFile, CIcon* icons, int iconsCou
                                       MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), manifest, manifestSize))
                 {
                     if (re.EndUpdateResource(FALSE))
-                        ret = TRUE; //sucess
+                        ret = TRUE; //success
                 }
                 else
                     re.EndUpdateResource(TRUE);
@@ -106,7 +106,7 @@ BOOL HasExtension(const char* filename, const char* extension)
 //
 // return values:
 //   0  success
-//   1  error openning file
+//   1  error opening file
 //   2  module is not valid win32 application
 //   3  unable to load module containing icon data
 //   4  unable to load icon from file
