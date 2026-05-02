@@ -621,7 +621,7 @@ BOOL CTextFileViewWindowBase::RebuildScript(
             {
                 size_t sline;
                 if (((CTextFileViewWindowBase*)Siblink)->Script[0][*change].IsBlank())
-                { // find first real line preceeding change
+                { // find first real line preceding change
                     size_t si = *change;
                     while (((CTextFileViewWindowBase*)Siblink)->Script[0][si].IsBlank() && si > 0)
                         --si;
