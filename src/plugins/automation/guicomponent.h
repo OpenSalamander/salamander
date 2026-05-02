@@ -27,7 +27,7 @@ private:
     /// Dispatch ID of the member.
     DISPID m_dispid;
 
-    /// Original window procedure before installation of the sublass hook.
+    /// Original window procedure before installation of the subclass hook.
     WNDPROC m_pfnPrevWndProc;
 
     /// Our subclass window procedure.
@@ -61,7 +61,7 @@ protected:
 
     virtual HWND CreateHwnd(HWND hWndParent)
     {
-        // Must be overriden.
+        // Must be overridden.
         _ASSERTE(0);
         return NULL;
     }
