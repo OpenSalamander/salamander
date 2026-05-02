@@ -21,7 +21,7 @@ typedef int BOOL;
 
 // ******************************************************************
 //
-// Error codes - errors can occur when compilig or matching expresion
+// Error codes - errors can occur when compiling or matching expression
 //
 
 enum CRegExpErrors
@@ -110,7 +110,7 @@ public:
     virtual BOOL RegComp(char* exp, unsigned options) = 0;
 
     // Match 'string' against previously compiled pattern. 'length'
-    // is leghth of string. Matching starts at 'offest' in subject
+    // is length of string. Matching starts at 'offset' in subject
     // string.
     // If 'separateThread' is TRUE, matching is executed in separate
     // thread, such matching is protected against stack overflow,
