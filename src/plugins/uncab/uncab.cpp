@@ -1221,7 +1221,7 @@ CPluginInterfaceForArchiver::Open(char* pszFile, int oflag, int pmode)
                 SafeSeek(ret, 0, FILE_BEGIN);
             }
 
-            return (INT_PTR)ret; //sucess
+            return (INT_PTR)ret; //success
         }
         char buf[1024];
         lstrcpy(buf, LoadStr(IDS_UNABLECREATE));
@@ -1394,7 +1394,7 @@ UINT CPluginInterfaceForArchiver::Write(INT_PTR hf, void* pv, UINT cb)
                 Abort = TRUE;
                 return -1;
             }
-            return written; // sucess
+            return written; // success
         }
 
         lstrcpy(buf, LoadStr(IDS_UNABLEWRITE));
