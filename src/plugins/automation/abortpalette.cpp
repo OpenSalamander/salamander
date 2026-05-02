@@ -280,7 +280,7 @@ unsigned CScriptAbortPaletteThread::Body()
     // Let everyone know that the palette window is now ready.
     SetEvent(m_hWindowCreatedEvt);
 
-    // Remove unneccessary items from the system menu.
+    // Remove unnecessary items from the system menu.
     HMENU hSysMenu = GetSystemMenu(hwndPalette, FALSE);
     if (hSysMenu != NULL)
     {
