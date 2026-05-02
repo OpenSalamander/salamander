@@ -8,7 +8,7 @@
 	Copyright (c) 2010-2023 Open Salamander Authors
 	
 	aututils.h
-	Miscelaneous utility routines.
+	Miscellaneous utility routines.
 */
 
 #pragma once
@@ -39,7 +39,7 @@ static inline bool IsArgumentPresent(const VARIANT* arg)
 /// \param bDebug If true, the message box will have the additional Debug
 ///        button that offers the user to debug the script.
 /// \return If the user pressed the Debug button, the return value is positive.
-///         If the user choosed not to debug the script, the return value is zero.
+///         If the user chose not to debug the script, the return value is zero.
 ///         If there was a hard error (e.g. stack overflow), the return value is negative.
 int DisplayException(IActiveScriptError* pError, class CScriptEngineShim* pShim, bool bDebug = false);
 
@@ -80,7 +80,7 @@ static const UINT MAX_EXIT_BUTTONS = 19;
 int ButtonToFriendlyNumber(int button);
 
 /// Releases Ctrl/Alt/Shift keys. This is used to workaround problems
-/// with script shortcut keys interferring with WshShell.SendKeys.
+/// with script shortcut keys interfering with WshShell.SendKeys.
 /// See CScriptInfo::ExecuteWorker for detailed explanation.
 void ResetKeyboardState();
 
