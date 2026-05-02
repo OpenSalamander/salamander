@@ -101,7 +101,7 @@ protected:
 
     /// Inserts temporary member.
     /// \param pszName Name of the member.
-    /// \return Returs DISPID assigned to the member.
+    /// \return Returns DISPID assigned to the member.
     DISPID InsertMember(LPCOLESTR pszName);
 
     HRESULT ContainerGetMember(
@@ -138,7 +138,7 @@ protected:
         return T::GetProgId();
     }
 
-    /// Implemented - overriden.
+    /// Implemented - overridden.
     virtual ISalamanderGuiComponentInternal* GetChildNoAddRef()
     {
         return this->m_pChild;
@@ -149,7 +149,7 @@ protected:
         this->AddComponent(pComponent);
     }
 
-    /// Overriden - inherited from CUnknownImpl.
+    /// Overridden - inherited from CUnknownImpl.
     void FinalRelease()
     {
         ISalamanderGuiComponentInternal* pChild = this->m_pChild;
