@@ -58,7 +58,7 @@ enum CErrorType
 //   contain pointers to its own data, reason:
 //     objects are moved in array (e.g. when reallocating array or when inserting
 //     item to the beginning of array) simply by using memmove, so during these
-//     moves constructors/destructors are not called; for example:
+//     move constructors/destructors are not called, example:
 //       char Path[MAX_PATH];  // full file name
 //       char *Name;           // points to 'Path' to file name (without path)
 //     SOLUTION: store only offsets instead of complete pointers
