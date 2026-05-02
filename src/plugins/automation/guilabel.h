@@ -18,7 +18,7 @@
 class CSalamanderGuiLabel : public CSalamanderGuiComponentImpl<CSalamanderGuiLabel, ISalamanderGuiComponent>
 {
 protected:
-    /// Overrriden.
+    /// Overridden.
     /// \see CSalamanderGuiComponentBase::CreateHwnd
     virtual HWND CreateHwnd(HWND hWndParent);
 
