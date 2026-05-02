@@ -222,7 +222,7 @@ public:
     /// \param buf Caller supplied buffer. The method should copy the
     ///        title to it.
     /// \param bufSize Size of the buffer, in characters.
-    /// \return If the method provides the title, it shoulld return
+    /// \return If the method provides the title, it should return
     ///         a nonzero value. If the return value is zero, Salamander
     ///         will use the GetNextDirectoryLineHotPath method
     ///         to create the title automatically.
