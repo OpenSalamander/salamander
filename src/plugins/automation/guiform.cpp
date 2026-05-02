@@ -64,7 +64,7 @@ CSalamanderGuiForm::~CSalamanderGuiForm()
 
     HwndNeeded();
 
-    // Resize form to accomodate all the child components.
+    // Resize form to accommodate all the child components.
     AutosizeComponent(this);
 
     cx = m_bounds.cx;
@@ -459,7 +459,7 @@ LRESULT CSalamanderGuiForm::WndProc(
             }
             else if (LOWORD(wParam) == IDCANCEL)
             {
-                // This is command synthetized by the
+                // This is a command synthesized by the
                 // dialog manager in reaction to the
                 // Esc key when there is no button.
                 if (m_nCloseCode != -1)
