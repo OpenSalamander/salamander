@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[DIALOG 100]
+205,64,1,"Boîte d'entrée"
+1150,8,8,189,8,1,"Invite:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Annuler"
+
+[DIALOG 101]
+332,143,1,"Configuration de l'automatisation"
+375,8,9,81,8,1,"Répertoires des &scripts:"
+371,8,19,316,73,1,""
+1001,8,102,110,10,1,"Activer le &débogage de script"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Annuler"
+9,207,121,50,14,1,"&Aide"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Parcourir…"
+40014,1,"Répertoire de Salamander"
+40015,1,"Variable d'environnement"
+
+[STRINGTABLE 0]
+1,1,"Automatisation"
+2,1,"Automatise les tâches régulières à l'aide de scripts."
+3,1,"A propos du module"
+
+[STRINGTABLE 1]
+128,1,"Erreur de script d'automatisation"
+129,1,"Ligne:\t%u\r\n"
+130,1,"Colonne:\t%u\r\n"
+131,1,"Erreur:\t%s"
+132,1,"Exécuter le script désigné"
+134,1,"Progression de l'opération"
+135,1,"Source:\t%s\r\n"
+136,1,"Ouvrir le menu de script"
+137,1,"(pas de script)"
+138,1,"Impossible d'exécuter le script '%s'.\r\n%s"
+139,1,"Erreur inconnue."
+140,1,"1\t&Interrompre"
+141,1,"1\t&Déboguer\t2\t&Annuler"
+142,1,"Répertoire du script"
+143,1,"Sélectionnez le répertoire d'enregistrement du script."
+
+[STRINGTABLE 2]
+144,1,"Interrompre le script"
+145,1,"Interrompre l'exécution du script\tCtrl+Break"
+146,1,"La fenêtre Open Salamander est bloquée par le module Automatisation. Veuillez terminer le script en, cours d'exécution."
+147,1,"Echec du lancement du moteur de scripting."
+
+[STRINGTABLE 3]
+256,1,"Archive invalide."
+257,1,"Impossible de fermer le chemin en cours."
+258,1,"Le chemin a été tronqué."
+259,1,"Modification de la propriété ou appel de la méthode %s impossible si la fenêtre est ouverte."
+260,1,"Modification de la propriété ou appel de la méthode %s impossible si la fenêtre est cachée."
+261,1,"Chargement du module impossible."
+262,1,"Echec du module."
+263,1,"Impossible de déplacer le fichier vers le cache disque."
+264,1,"Erreur de syntaxe dans le masque de fichier."
+265,1,"Seul des composants peuvent être ajoutés au conteneur."
+266,1,"Impossible d'ajouter des formulaires au conteneur."
+267,1,"L'exécution du script a été interrompue par l'utilisateur."
+

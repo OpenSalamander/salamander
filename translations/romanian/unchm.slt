@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"Nu pot deschide fisier."
+1002,1,"Eroare nespecificata."
+1003,1,"Dezarhivez Arhiva CHM"
+1004,1,"Eroare dezarhivare fisier."
+1005,1,"Nu pot deschide acest fisier."
+1006,1,"Memorie insuficienta."
+1007,1,"Despre Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Rasfoieste si extrage fisierele CHM."
+1010,1,"Nu pot crea director temporar."
+1011,1,"Nu pot sterge fisier temporar."
+1012,1,"Format fisier necunoscut sau imagine CHM invalida.\n\nDaca esti sigur ca este o imagine CHM valida, va rugam sa ne contactati la support@altap.cz si sa ne ajutati sa suportam acest format."
+1013,1,"Nu pot deschide acest fisier."
+1014,1,"Crearea fisierului temporar a esuat."
+1015,1,"Nu pot seta atribute fisier."
+1016,1,"Nu pot crea director '%s'."
+1020,1,"Da"
+1021,1,"Nu"
+1022,1,"Eroare"
+1023,1,"Atentie"
+
+[STRINGTABLE 2]
+1032,1,"Eroare interna plugin."
+
+[STRINGTABLE 3]
+1100,1,"Eroare citire"
+1101,1,"Eroare scriere"
+
+[STRINGTABLE 4]
+1105,1,"Numar invalid."
+1106,1,"anulez operatiunea, va rugam asteaptati..."
+1107,1,"CHMLIB Library Copyright © 2001-2010 Jed Wing"
+

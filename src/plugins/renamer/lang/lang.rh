@@ -1,0 +1,85 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDD_RENAME                      100
+#define IDC_MASK                        101
+#define IDE_START                       101
+#define IDE_SET                         101
+#define IDC_SUBDIRS                     102
+#define IDE_STEP                        102
+#define IDS_PREVIEW                     103
+#define IDE_MINWIDTH                    103
+#define IDL_PREVIEW                     104
+#define IDC_LEFT                        104
+#define IDC_MANUAL                      105
+#define IDC_NEWNAME                     106
+#define IDB_NEWNAME                     107
+#define IDC_SEARCH                      108
+#define IDC_REPLACE                     109
+#define IDB_SEARCH                      110
+#define IDB_REPLACE                     111
+#define IDC_CASESENSITIVE               112
+#define IDC_WHOLEWORDS                  113
+#define IDC_GLOBAL                      114
+#define IDC_REGEXP                      115
+#define IDC_NAMECASE                    116
+#define IDC_EXTCASE                     117
+#define IDC_PATHPART                    118
+#define IDS_CHANGECASESEP               119
+#define IDS_MANSEP                      120
+#define IDS_REPLACESEP                  121
+#define IDS_COUNT                       122
+#define IDS_RENAME                      122
+#define IDC_EXCLUDEEXT                  123
+#define IDS_VALIDATE                    123
+#define IDS_MENUSEP                     124
+#define IDE_MANUAL                      125
+#define IDS_LABELNEWNAME                126
+#define IDS_LABELREPLACE                127
+#define IDS_LABELSEARCHFOR              128
+#define IDS_LABELREPLACEWITH            129
+#define IDS_LABELCASE                   130
+#define IDS_LABELNAME                   131
+#define IDS_LABELEXT                    132
+#define IDD_CUT                         140
+#define IDC_CUTFROM                     141
+#define IDC_START                       143
+#define IDC_CASE                        143
+#define IDC_BASE                        143
+#define IDC_COMMAND                     144
+#define IDC_NUMBER                      144
+#define IDE_END                         144
+#define IDC_FILL                        144
+#define IDC_END                         145
+#define IDE_STDERR                      145
+#define IDC_PUSHBUTTON1                 146
+#define IDE_COMMAND                     146
+#define IDB_FONT                        147
+#define IDC_CONFIRMESCCLOSE             148
+#define IDD_COUNTER                     150
+#define IDD_DEFINESET                   160
+#define IDD_SUBEXPRESSION               170
+#define IDD_PROGRESS                    175
+#define IDS_PROGRESS                    176
+#define IDS_MESSAGE                     177
+#define IDD_COMMAND                     180
+#define IDD_ERROR                       185
+#define IDS_EXITCODE                    186
+#define IDD_CONFIG                      190
+#define IDB_BROWSE                      191
+#define IDE_ARGUMENTS                   192
+#define IDB_ARGHELP                     193
+#define IDE_INITDIR                     194
+#define IDB_INITDIRHELP                 195
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

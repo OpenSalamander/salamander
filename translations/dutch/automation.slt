@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\automation.atp"
+TEXTVERSION,"1.7 (x86)"
+VERSION,"1,7,0,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 100]
+205,64,1,"Invoervak"
+1150,8,8,189,8,1,"Prompt:"
+101,8,18,189,12,1,""
+1,48,42,50,14,1,"OK"
+2,107,42,50,14,1,"Annuleren"
+
+[DIALOG 101]
+332,143,1,"Automatisering configuratie"
+375,8,9,67,8,1,"&Script mappen:"
+371,8,19,316,73,1,""
+1001,8,102,122,10,1,"Inschakelen script &foutopsporing"
+1,75,121,50,14,1,"OK"
+2,141,121,50,14,1,"Annuleren"
+9,207,121,50,14,1,"&Help"
+
+[MENU 106]
+0,1,"[POPUP]"
+40013,1,"Bladeren…"
+40014,1,"Salamander map"
+40015,1,"Omgevingsvariabele"
+
+[STRINGTABLE 0]
+1,1,"Automatisering"
+2,1,"Automatiseert algemene taken door scripts."
+3,1,"Over plugin"
+
+[STRINGTABLE 1]
+128,1,"Automatisering script fout"
+129,1,"Regel:\t%u\r\n"
+130,1,"Kolom:\t%u\r\n"
+131,1,"Fout:\t%s"
+132,1,"Uitvoeren geselecteerde script"
+134,1,"Bewerkingsstatus"
+135,1,"Bron:\t%s\r\n"
+136,1,"Open script menu"
+137,1,"(geen script)"
+138,1,"Uitvoeren script '%s' mislukt.\r\n%s"
+139,1,"Onbekende fout."
+140,1,"1\t&Afbreken"
+141,1,"1\t&Foutopsporen\t2\t&Afbreken"
+142,1,"Script map"
+143,1,"Selecteer script bibiliotheekmap."
+
+[STRINGTABLE 2]
+144,1,"Script afbreken"
+145,1,"Uitgevoerd script afbreken\tCtrl+Break"
+146,1,"Open Salamander venster is vergrendeld door de Automatisering plugin. Laat de script uitvoering voltooien a.u.b."
+147,1,"Initialiseren van het scriptengine mislukt."
+
+[STRINGTABLE 3]
+256,1,"Ongeldig archief."
+257,1,"Huidige pad kan niet worden gesloten."
+258,1,"Het pad was afgekapt."
+259,1,"Kan de eigenschap niet wijzigen of methode %s aanroepen terwijl het venster wordt getoond."
+260,1,"Kan de eigenschap niet wijzigen of methode %s aanroepen terwijl het venster is verborgen."
+261,1,"Laden van plugin mislukt."
+262,1,"Plugin fout."
+263,1,"Verplaatsen van het bestand naar de schijfcache mislukt."
+264,1,"Bestandsmasker syntaxfout."
+265,1,"Alleen componenten kunnen worden toegevoegd aan de container."
+266,1,"Formulieren kunnen niet worden toegevoegd aan de container."
+267,1,"Script uitvoering werd afgebroken door de gebruiker."
+

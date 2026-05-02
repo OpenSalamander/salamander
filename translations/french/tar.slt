@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[STRINGTABLE 0]
+11200,1,"Erreur du module TAR"
+11201,1,"Format d'archive non reconnu."
+11202,1,"Données invalides dans l'en-tête du fichier TAR - archive altérée."
+11203,1,"Contrôle par redondance cyclique négatif du fichier ou de son en-tête - archive altérée."
+11204,1,"Erreur interne : la structure du fichier de données est altérée."
+11205,1,"Signature de bloc inconnue - je passe."
+11206,1,"Le fichier requis n'est pas dans le fichier d'archive."
+11207,1,"Erreur de réservation de mémoire."
+
+[STRINGTABLE 1]
+11240,1,"Impossible de traiter pour le moment les archives LZH."
+
+[STRINGTABLE 2]
+11250,1,"Décompresser"
+11251,1,"Extraction "
+11252,1,"On passe "
+11260,1,"Erreur GZip"
+11261,1,"Extraction impossible : méthode de compression inconnue."
+11262,1,"Ce fichier est chiffré. Or, le chiffrement n'est pas prévu dans les archives GZip."
+11263,1,"Ce fichier est l'un des fichiers d'une archive en comportant plusieurs. Or, les archives GZip n'en comportent qu'un seul."
+
+[STRINGTABLE 3]
+11264,1,"Extraction impossible : fanions inconnus dans l'en-tête GZip."
+11265,1,"Erreur lors de l'ouvertureor du fichier d'archive: "
+11266,1,"Fin de fichier prématurée."
+11267,1,"Erreur de lecture du fichier d'archive: "
+11268,1,"Erreur d'écriture dans le fichier de sortie: "
+11269,1,"Impossible à la fonction WriteFile d'écrire l'ensemble des données spécifées."
+11270,1,"Bloc altéré dans le flux GZip : impossible de l'extraire."
+11271,1,"Erreur interne dans le module TAR, veuillez nous le signaler par email à support@altap.cz."
+11272,1,"Erreur de réservation de mémoire."
+11273,1,"Erreur de CRC."
+11274,1,"Données non prévues dans le flux de décompression, archive altérée."
+11275,1,"Erreur lors de la recherche dans le fichier d'archive: "
+
+[STRINGTABLE 4]
+11280,1,"Visionneur RPM"
+11281,1,"Erreur RPM"
+11282,1,"Erreur à la création du nom de fichier temporaire."
+11283,1,"Erreur lors de la création du fichier temporaire."
+11284,1,"Il ne s'agit pas d'une archive RPM."
+11285,1,"Cette archive suppose une version de RPM qui n'est pas encore prise en charge."
+11286,1,"Signature inconnue de l'archive RPM."
+11291,1,"Mauvaise signature d'un enregistrement du fichier."
+11292,1,"En-tête du fichier altéré."
+11293,1,"Format inconnu de l'en-tête cpio."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Feuilleter et extraire les archives Unix."
+11301,1,"À propos du module"
+

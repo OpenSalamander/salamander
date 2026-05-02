@@ -1,0 +1,17 @@
+﻿//
+// checkver.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_CHECKVER ICON "res\\checkver.ico"
+IDI_INTERNET ICON "res\\internet.ico"
+IDB_CHECKVER BITMAP "res\\checkver.bmp"

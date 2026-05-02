@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{C5833A09-5056-4C59-9E53-721A4D011936}</ProjectGuid>
+    <RootNamespace>translator</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(OPENSAL_BUILD_DIR)translator\Release\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(OPENSAL_BUILD_DIR)translator\Debug\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\common;..\..\common\dep;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;SAFE_ALLOC;ARRAY_NODEBUG;MESSAGES_DISABLE;_MT;WIN32;_WINDOWS;WINVER=0x0601;_WIN32_WINNT=0x0601;_WIN32_IE=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)translator.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0405</Culture>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>Msimg32.lib;COMCTL32.LIB;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)translator.exe</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)translator.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>call ..\..\..\tools\codesign\sign_with_retry.cmd "$(TargetPath)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\common;..\..\common\dep;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;SAFE_ALLOC;__DEBUG_WINLIB;TRACE_ENABLE;HANDLES_ENABLE;MESSAGES_DEBUG;MULTITHREADED_TRACE_ENABLE;MULTITHREADED_MESSAGES_ENABLE;MULTITHREADED_HANDLES_ENABLE;_CRTDBG_MAP_ALLOC;_MT;WIN32;_WINDOWS;WINVER=0x0601;_WIN32_WINNT=0x0601;_WIN32_IE=0x0800;_ALLOW_RTCc_IN_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)translator.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>Msimg32.lib;COMCTL32.LIB;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)translator.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)translator.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\translator\translator.cpp" />
+    <ClCompile Include="..\..\translator\bitmap.cpp" />
+    <ClCompile Include="..\..\translator\checklst.cpp" />
+    <ClCompile Include="..\..\common\allochan.cpp" />
+    <ClCompile Include="..\..\common\array.cpp" />
+    <ClCompile Include="..\..\common\handles.cpp" />
+    <ClCompile Include="..\..\common\heap.cpp" />
+    <ClCompile Include="..\..\common\lstrfix.cpp" />
+    <ClCompile Include="..\..\common\messages.cpp" />
+    <ClCompile Include="..\..\common\str.cpp" />
+    <ClCompile Include="..\..\common\trace.cpp" />
+    <ClCompile Include="..\..\common\winlib.cpp" />
+    <ClCompile Include="..\..\translator\config.cpp" />
+    <ClCompile Include="..\..\translator\databook.cpp" />
+    <ClCompile Include="..\..\translator\datacnfl.cpp" />
+    <ClCompile Include="..\..\translator\datadlg.cpp" />
+    <ClCompile Include="..\..\translator\datafind.cpp" />
+    <ClCompile Include="..\..\translator\datamenu.cpp" />
+    <ClCompile Include="..\..\translator\datamui.cpp" />
+    <ClCompile Include="..\..\translator\dataprj.cpp" />
+    <ClCompile Include="..\..\translator\datarh.cpp" />
+    <ClCompile Include="..\..\translator\datasel.cpp" />
+    <ClCompile Include="..\..\translator\datastr.cpp" />
+    <ClCompile Include="..\..\translator\dataui.cpp" />
+    <ClCompile Include="..\..\translator\dialogs.cpp" />
+    <ClCompile Include="..\..\translator\dlgdummy.cpp" />
+    <ClCompile Include="..\..\translator\ignorelst.cpp" />
+    <ClCompile Include="..\..\translator\ms_init.cpp" />
+    <ClCompile Include="..\..\translator\precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\translator\restart.cpp" />
+    <ClCompile Include="..\..\translator\salmenu.cpp" />
+    <ClCompile Include="..\..\translator\transfrm.cpp" />
+    <ClCompile Include="..\..\translator\trldata.cpp" />
+    <ClCompile Include="..\..\translator\trlipc.cpp" />
+    <ClCompile Include="..\..\translator\versinfo.cpp" />
+    <ClCompile Include="..\..\translator\wndframe.cpp" />
+    <ClCompile Include="..\..\translator\wndlayt.cpp" />
+    <ClCompile Include="..\..\translator\wndout.cpp" />
+    <ClCompile Include="..\..\translator\wndprev.cpp" />
+    <ClCompile Include="..\..\translator\wndrh.cpp" />
+    <ClCompile Include="..\..\translator\wndtext.cpp" />
+    <ClCompile Include="..\..\translator\wndtree.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\translator\translator.h" />
+    <ClInclude Include="..\..\translator\bitmap.h" />
+    <ClInclude Include="..\..\common\allochan.h" />
+    <ClInclude Include="..\..\common\array.h" />
+    <ClInclude Include="..\..\common\handles.h" />
+    <ClInclude Include="..\..\common\lstrfix.h" />
+    <ClInclude Include="..\..\common\messages.h" />
+    <ClInclude Include="..\..\common\str.h" />
+    <ClInclude Include="..\..\common\trace.h" />
+    <ClInclude Include="..\..\common\winlib.h" />
+    <ClInclude Include="..\..\translator\config.h" />
+    <ClInclude Include="..\..\translator\consts.h" />
+    <ClInclude Include="..\..\translator\datarh.h" />
+    <ClInclude Include="..\..\translator\dialogs.h" />
+    <ClInclude Include="..\..\translator\oe_data.h" />
+    <ClInclude Include="..\..\translator\precomp.h" />
+    <ClInclude Include="..\..\translator\resource.h" />
+    <ClInclude Include="..\..\translator\trldata.h" />
+    <ClInclude Include="..\..\translator\trlipc.h" />
+    <ClInclude Include="..\..\translator\versinfo.h" />
+    <ClInclude Include="..\..\translator\wndframe.h" />
+    <ClInclude Include="..\..\translator\wndlayt.h" />
+    <ClInclude Include="..\..\translator\wndout.h" />
+    <ClInclude Include="..\..\translator\wndprev.h" />
+    <ClInclude Include="..\..\translator\wndrh.h" />
+    <ClInclude Include="..\..\translator\wndtext.h" />
+    <ClInclude Include="..\..\translator\wndtree.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\translator\translator.ico" />
+    <Image Include="..\..\translator\dummy.ico" />
+    <Image Include="..\..\translator\tree.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\translator\translator.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\translator\manifest.xml" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

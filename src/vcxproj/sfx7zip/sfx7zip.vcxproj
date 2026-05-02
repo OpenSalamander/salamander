@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{997B557B-4FB5-49FF-85AC-1FE66B9EBCFF}</ProjectGuid>
+    <RootNamespace>sfx7zip</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(OPENSAL_BUILD_DIR)sfx7zip\Release\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(OPENSAL_BUILD_DIR)sfx7zip\Debug\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;SFX7ZIP;WINVER=0x0601;_WIN32_IE=0x0800;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)sfx7zip.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>$(VCToolsInstallDir)lib\x86\chkstk.obj;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)sfx7zip.exe</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WINVER=0x0601;_WIN32_IE=0x0800;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)sfx7zip.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0405</Culture>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)sfx7zip.exe</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)sfx7zip.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\sfx7zip\7zip.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zAlloc.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zBuffer.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zCrc.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zDecode.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zExtract.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zHeader.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zIn.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zItem.c" />
+    <ClCompile Include="..\..\sfx7zip\7zip\archive\7zMethodID.c" />
+    <ClCompile Include="..\..\sfx7zip\Branch\BranchCoder.cpp" />
+    <ClCompile Include="..\..\sfx7zip\Branch\BranchX86.c" />
+    <ClCompile Include="..\..\sfx7zip\Branch\x86.cpp" />
+    <ClCompile Include="..\..\sfx7zip\extract.c" />
+    <ClCompile Include="..\..\sfx7zip\install.c" />
+    <ClCompile Include="..\..\sfx7zip\lzma\LzmaDecode.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\sfx7zip\7zip.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zAlloc.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zBuffer.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zCrc.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zDecode.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zExtract.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zHeader.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zIn.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zItem.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zMethodID.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\archive\7zTypes.h" />
+    <ClInclude Include="..\..\sfx7zip\7zip\ICoder.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\BranchCoder.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\BranchX86.h" />
+    <ClInclude Include="..\..\sfx7zip\Branch\x86.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyCom.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyGuidDef.h" />
+    <ClInclude Include="..\..\sfx7zip\common\MyUnknown.h" />
+    <ClInclude Include="..\..\sfx7zip\extract.h" />
+    <ClInclude Include="..\..\sfx7zip\lzma\LzmaDecode.h" />
+    <ClInclude Include="..\..\sfx7zip\resource.h" />
+    <ClInclude Include="..\..\sfx7zip\sfx7zip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\sfx7zip\resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\sfx7zip\setup.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\llshl.asm" />
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\ullshr.asm" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

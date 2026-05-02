@@ -1,0 +1,21 @@
+﻿//
+// splitcbn.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_SPLIT               ICON  "split.ico"
+IDI_FILE                ICON  "file.ico"
+IDI_WARN                ICON  "warn.ico"
+IDI_OK                  ICON  "ok.ico"
+IDB_SPLIT               BITMAP "splitcbn.bmp"
+
+IDC_DRAG CURSOR "drag.cur"

@@ -1,0 +1,24 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGIN_NAME, "Portable Executable Viewer"
+ IDS_PLUGIN_DESCRIPTION, "Display information about Portable Executable files such as EXE, DLL, etc."
+ IDS_ABOUT, "About Plugin"
+ IDS_ERR_OPEN_FILE, "Unable to open file %s."
+ IDS_ERR_TMP, "Creation of temporary file has failed."
+ IDS_EXCEPTION, "Exception has occured.\n\nViewed file: %s\n\nIf you think that viewed file is not corrupted, please send this file to support@altap.cz.\nWe will reproduce and fix the viewer bug. Thanks for cooperation!"
+ IDS_HIDDEN_SECTIONS, "No Portable Executable section selected in plugin configuration was found.\nUse menu Options > Plugin Configuration > Portable Executable Viewer\nin Open Salamander main window to setup visible sections."
+}

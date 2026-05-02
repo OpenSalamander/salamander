@@ -1,0 +1,65 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDD_CREATEKEY                   100
+#define IDE_NAME                        101
+#define IDS_TEXT                        102
+#define IDE_FILE                        102
+#define IDC_DIRECT                      103
+#define IDD_NEWVALUE                    110
+#define IDC_TYPE                        111
+#define IDD_EDITVAL                     120
+#define IDE_DATA                        121
+#define IDR_HEX                         122
+#define IDR_DEC                         123
+#define IDC_BASE                        124
+#define IDS_BASE                        124
+#define IDD_COPY                        130
+#define IDD_SEARCH                      135
+#define IDC_PATTERN                     136
+#define IDC_LOOKIN                      137
+#define IDC_OPTIONS                     139
+#define IDC_SUBDIRS                     140
+#define IDS_LOOKAT                      141
+#define IDC_KEYS                        142
+#define IDC_CASE                        143
+#define IDC_WHOLEWORDS                  144
+#define IDC_VALUES                      145
+#define IDC_DATA                        146
+#define IDC_HEX                         147
+#define IDC_FOUND_FILES                 148
+#define IDC_RESULTS                     149
+#define IDC_REGEXP                      150
+#define IDC_MINTIME                     152
+#define IDC_MAXTIME                     153
+#define IDS_OPTIONS                     154
+#define IDS_NEWER                       155
+#define IDS_OLDER                       156
+#define IDS_FORMAT1                     157
+#define IDS_FORMAT2                     158
+#define IDC_STATUS                      159
+#define IDD_RAWEDITVAL                  165
+#define IDS_MESSAGE                     166
+#define IDD_CONFIG                      166
+#define IDB_EDIT                        167
+#define IDE_INITDIR                     167
+#define IDB_INITDIRHELP                 168
+#define IDB_ARGHELP                     169
+#define IDE_ARGUMENTS                   170
+#define IDB_BROWSE                      171
+#define IDE_COMMAND                     172
+#define IDD_RENAME                      175
+#define IDS_NOTDWORD                    176
+#define IDD_EXPORT                      177
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

@@ -1,0 +1,8 @@
+VERSION 1.49
+
+EXPORTS DllCanUnloadNow private
+EXPORTS DllGetClassObject private
+EXPORTS DllUnregisterServer private
+EXPORTS DllCheckVersion private
+
+EXPORTS DllUnregisterServerOtherPlatform private

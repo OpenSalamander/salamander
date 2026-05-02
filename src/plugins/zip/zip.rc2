@@ -1,0 +1,22 @@
+﻿//
+// zip.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_SFXICON ICON "selfextr\icon.ico"
+IDI_LOCK ICON "lock.ico"
+IDI_COMMENT ICON "comment.ico"
+IDB_ZIP BITMAP "zip.bmp"
+
+// data
+ID_SFX_MANIFEST_REGULAR	RCDATA "sfxregul.xml"
+ID_SFX_MANIFEST_ADMIN	RCDATA "sfxadmin.xml"

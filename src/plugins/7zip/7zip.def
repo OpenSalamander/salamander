@@ -1,0 +1,5 @@
+LIBRARY 7zip.spl
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer
+EXPORTS AddCallStackObject

@@ -1,0 +1,20 @@
+﻿//
+// regedt.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "versinfo.rh2"
+#include "versinfo.rc2"
+
+IDI_REGEDT ICON "regedt.ico"
+IDI_SZ ICON "sz.ico"
+IDI_BIN ICON "bin.ico"
+IDI_UNKNOWN ICON "unknown.ico"
+IDI_FIND ICON "find.ico"
+IDB_REGEDT BITMAP "regedt.bmp"

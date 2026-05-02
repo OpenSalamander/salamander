@@ -1,0 +1,69 @@
+﻿//****************************************************************************
+//
+// Copyright (c) 2023 Open Salamander Authors
+//
+// This is a part of the Open Salamander SDK library.
+//
+//****************************************************************************
+
+//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+// String Table
+STRINGTABLE DISCARDABLE
+{
+    IDS_PLUGINNAME              "UnFAT"
+    IDS_ABOUT                   "About Plugin"
+    IDS_PLUGIN_DESCRIPTION      "Browse and extract FAT 12, 16, and 32 disk images."
+
+    IDS_ERROR_OPENING_FILE,     "Error opening file ""%s""."
+    IDS_ERROR_READING_FILE,     "Error reading file ""%s""."
+    IDS_ERROR_PARSING_FILE,     "Error parsing file ""%s"".\n\n%s"
+    IDS_ERROR_BS_CORRUPTED,     "The boot sector is corrupted or this file is not FAT 12, 16, or 32 image."
+    IDS_ERROR_READING_DIR,      "Error reading directory from file ""%s"".\n%s\nSector: %d, Offset: 0x%s\n\nFile is not valid FAT 12, 16, or 32 image."
+    IDS_ERROR_READING_FILE2,    "Error reading file from file ""%s"".\n%s\nCluster: %d\n\nFile is not valid FAT 12, 16, or 32 image."
+    IDS_ERROR_WRITE,            "Error writing file"
+    IDS_ERROR_MBR_UNSUPPORTED   "The file ""%s"" appears to be an image of entire harddisk.\nSuch images are not supported by the UnFAT plugin."
+    IDS_EXTRACTING_ARCHIVE,     "Extracting FAT image - %s"
+    IDS_EXTRACTING,             "extracting: %s"
+
+/*
+    IDS_CANT_OPEN               "Can not open file."
+    IDS_UNKNOW_ERROR            "Unspecified error."
+    IDS_UNPACKING_ARCHIVE       "Unpacking ISO Archive."
+    IDS_ERROR_UNPACKING         "Error unpacking archive."
+    IDS_CANT_HANDLE_FILE        "Can not handle this file."
+    IDS_INSUFFICIENT_MEMORY     "Insufficient memory."
+    IDS_CANT_CREATE_TEMP        "Can not create temporary directory."
+    IDS_CANT_DELETE_TEMP_FILE   "Can not delete temporary file."
+    IDS_UNKNOWN_FILE_FORMAT     "Unknown file format or not valid ISO image."
+    IDS_CANT_OPEN_FILE          "Can not open this file."
+    IDS_ERR_TMP,                "Creation of temporary file has failed."
+    IDS_CANT_SET_ATTRS,         "Can not set file attributes."
+    IDS_CANT_CREATE_DIR,        "Can not create directory '%s'."
+    IDS_MAKEISOHEAD,            "Create file sample for UnISO troubleshooting..."
+    IDS_MAKEISOHEAD_TITLE,      "UnISO troubleshooting"
+    IDS_MAKEISOHEAD_MSG,        "If you cannot open ISO image or content is incorrect, you can send us first 1MB of this file.\nWe will support this format in new version of UnISO plugin.\n\nPress OK to copy part of ISO image to the temporary directory and focus it in the panel.\nPack this file using Alt+F5 and email it to the support@altap.cz.\n\nThank you for helping us to make UnISO plugin better!"
+    IDS_YES,                    "Yes"
+    IDS_NO,                     "No"
+    IDS_PVD_NOT_FOUND,          "Primary Volume Descriptor not found."
+    IDS_PVD_CORRUPTED,          "Can not open, Primary Volume Descriptor corrupted."
+    IDS_CANT_GET_FILESIZE,      "Can not obtain file size\n\n%s."
+    IDS_ERROR,                  "Error"
+    IDS_WARNING,                "Warning"
+    IDS_CANT_READ,              "Reading problem\n\n"
+    IDS_CANT_SEEK_IN_FILE,      "Can not seek in file\n\n"
+    IDS_ERROR_OPENING_MULTISESSION, "Some error(s) occured while reading multisession image.\n\nShowing only correctly read sessions."
+*/
+}

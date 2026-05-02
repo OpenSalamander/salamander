@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"A fájl nem nyitható meg."
+1002,1,"Meghatározhatatlan hiba."
+1003,1,"CHM archívum kibontása"
+1004,1,"Fájl kibontási hiba."
+1005,1,"A fájl nem kezelhető."
+1006,1,"Kevés a memória."
+1007,1,"Plugin névjegy"
+
+[STRINGTABLE 1]
+1009,1,"CHM fájlok böngészése és kibontása."
+1010,1,"Ideiglenes mappa nem hozható létre."
+1011,1,"Ideiglenes fájl nem törölhető."
+1012,1,"Ismeretlen fájl formátum vagy nem érvényes CHM kép.\n\nHa biztos benne, hogy ez érvényes CHM kép, küldje el a support@altap.cz címre és segítsen ezt a formátumot támogathatóvá tenni."
+1013,1,"A fájl nem nyitható meg."
+1014,1,"Ideiglenes fájlok létrehozása nem sikerült."
+1015,1,"A fájl attribútuma nem állítható be."
+1016,1,"A mappa nem hozható létre: '%s'."
+1020,1,"Igen"
+1021,1,"Nem"
+1022,1,"Hiba"
+1023,1,"Figyelem"
+
+[STRINGTABLE 2]
+1032,1,"Belső plugin hiba."
+
+[STRINGTABLE 3]
+1100,1,"Olvasási hiba"
+1101,1,"Írási hiba"
+
+[STRINGTABLE 4]
+1105,1,"Érvénytelen szám."
+1106,1,"művelet megszakítása, kérem várjon..."
+1107,1,"CHMLIB Library Copyright © 2001-2010 Jed Wing"
+

@@ -1,0 +1,4 @@
+LIBRARY PEVIEWER.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer

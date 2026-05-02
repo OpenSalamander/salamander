@@ -1,0 +1,13 @@
+13
+
+"Zelf Uitpakkend ZIP Archief"
+
+"Dit zal het ZIP bestand uitpakken."
+
+"Versie 1.40"
+
+"&Uitpakken"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

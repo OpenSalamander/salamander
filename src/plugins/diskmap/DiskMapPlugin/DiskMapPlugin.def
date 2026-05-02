@@ -1,0 +1,5 @@
+LIBRARY DISKMAP.SPL
+
+EXPORTS SalamanderPluginEntry
+EXPORTS SalamanderPluginGetReqVer
+EXPORTS SalamanderPluginGetSDKVer

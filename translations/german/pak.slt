@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 100]
+216,73,1,"PAK Archiv optimieren"
+300,8,9,77,8,1,"Gültige Datengröße:"
+101,86,9,118,8,1,""
+301,8,20,77,8,1,"Gesamte Dateigröße:"
+102,86,20,118,8,1,""
+302,8,31,77,8,1,"Verschwendeter Platz:"
+103,86,31,118,8,1,""
+303,8,44,200,1,1,""
+1,53,53,50,14,1,"Optimieren"
+2,113,53,50,14,1,"Abbrechen"
+
+[STRINGTABLE 0]
+500,1,"Kann die Datei nicht öffnen: %s"
+501,1,"Kann die Paklib-Schnittstelle nicht initialisieren. Es ist bereits eine Datei geöffnet."
+502,1,"Kann die Datei nicht öffnen. Es ist bereits eine Datei geöffnet."
+503,1,"Kann die Dateigröße nicht ermitteln: %s"
+504,1,"Ungültiges Datenformat."
+505,1,"Nicht genügend Speicher."
+506,1,"Aktuelles PAK Hauptverzeichnis"
+507,1,"Kann den Datei-Zeiger nicht setzen: %s"
+508,1,"Kann die Datei nicht lesen: %s"
+509,1,"Kann den Datei-Zeiger nicht ermitteln: %s"
+510,1,"Kann die Datei nicht schreiben: %s"
+511,1,"Kann die Datei nicht hinzufügen, der Name ist zu lang."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Nicht genügend Speicher."
+1002,1,"Kann die Datei nicht zur Liste hinzufügen."
+1003,1,"Kann paklib.dll nicht laden oder die Prozeduradresse nicht ermitteln: "
+1004,1,"Entpacke PAK Archiv - %s"
+1005,1,"Bereite Daten vor..."
+1006,1,"Entpacke..."
+1007,1,"Entpacke: "
+
+[STRINGTABLE 2]
+1008,1,"Kann den Vorgang nicht beenden, der Pfadname ist zu lang."
+1009,1,"Setzen des Datei-Zeigers nicht möglich: "
+1010,1,"Kann den Datei-Zeiger nicht setzen: "
+1011,1,"Kann die Datei nicht schreiben:"
+1013,1,"Kann die Datei nicht öffnen: "
+1014,1,"Kann den Vorgang nicht beenden, die Maske ist zu lang."
+1015,1,"Lösche aus dem PAK-Archiv - %s"
+1016,1,"Lösche..."
+1017,1,"Lösche: "
+1018,1,"Breche den Vorgang ab, bitte warten..."
+1019,1,"Packe ins PAK-Archiv - %s"
+1020,1,"Kann die Datei nicht hinzufügen: Die Datei ist zu groß."
+1021,1,"Packe..."
+1022,1,"Kann die Datei nicht hinzufügen, der Dateiname ist zu lang."
+1023,1,"Packe: "
+
+[STRINGTABLE 3]
+1024,1,"Kann die Datei nicht lesen: "
+1025,1,"Kann das Plugin nicht mit dem Open Salamander verbinden."
+1026,1,"Optimiere, bitte warten..."
+1027,1,"Optimiere PAK-Archiv - %s"
+1028,1,"Das Löschen der Dateien wurde nicht erfolgreich beendet. Sie müssen die PAK-Optimierung u.U. nochmals vom PAK-Pluginmenü starten, um überflüssigen Plattenplatz frei zu machen."
+1029,1,"PAK &optimieren"
+1030,1,"Das PAK-Plugin ist abgelaufen. Bitte überprüfen Sie auf unserer Webseite, ob eine neue Version vorhanden ist."
+1031,1,"Durchsucht und entpackt Quake PAK-Archive."
+1032,1,"Über Plugin"
+

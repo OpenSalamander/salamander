@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[DIALOG 100]
+223,122,1,"Nächstes CAB-Teilarchiv"
+112,12,9,200,32,1,""
+300,12,48,46,8,1,"Datenträger:"
+110,59,48,153,8,1,""
+301,12,59,46,8,1,"CAB-Name:"
+111,59,59,153,8,1,""
+302,12,70,19,8,1,"&Pfad:"
+101,12,80,184,12,1,""
+102,199,80,13,12,1,"..."
+1,108,103,50,14,1,"OK"
+2,162,103,50,14,1,"Abbrechen"
+303,6,97,211,1,1,""
+
+[DIALOG 103]
+350,85,1,"Fehler"
+300,5,10,25,8,1,"Name:"
+104,34,10,309,8,1,""
+301,5,23,25,8,1,"Fehler:"
+302,34,23,309,16,1,"Die Datei kann nicht entpackt werden, da es sich um die Fortsetzung eines vorangehenden Teilarchivs handelt. Beginnen Sie mit dem erstem Teilarchiv, um die Datei zu entpacken."
+105,34,44,183,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen."
+108,66,63,69,14,1,"&Überspringen"
+109,140,63,69,14,1,"&Alle Überspringen"
+2,214,63,69,14,1,"Abbrechen"
+
+[DIALOG 106]
+232,85,1,"UnCAB - Konfiguration"
+300,23,22,202,8,1,"von einem vorangegangenen Teilarchiv fortgesetzt werden."
+107,12,10,199,12,1,"Beim Entpacken &Dateien automatisch überspringen, die"
+301,23,44,146,8,1,"Archivinhalt nicht aufgelistet werden kann."
+116,12,32,189,12,1,"Keinen &Warnhinweis zeigen, wenn der gesamte"
+302,6,60,220,1,1,""
+1,63,66,50,14,1,"OK"
+2,118,66,50,14,1,"Abbrechen"
+
+[DIALOG 115]
+248,108,1,"UnCAB - Achtung"
+300,11,9,229,24,1,"Es können nicht alle Dateien des mehrteiligen Archivs aufgelistet (und im Dateifenster gezeigt) werden, da einige Teilarchive nicht gefunden wurden."
+301,11,40,229,16,1,"Um den gesamten Archivinhalt aufzulisten, kopieren Sie bitte alle Teilarchive in dasselbe Verzeichnis und öffnen das erste Teilarchiv."
+105,11,65,171,12,1,"&Diesen Hinweis in Zukunft nicht mehr anzeigen"
+302,5,83,237,1,1,""
+1,189,90,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Nicht genügend Speicher."
+
+[STRINGTABLE 1]
+1008,1,"Unbekannter Fehler aufgetreten."
+1012,1,"Verzeichnis wählen"
+1014,1,"Kann den Archiveintrag nicht zur Dateiliste hinzufügen."
+1015,1,"Entpacke CAB-Archiv - %s"
+1016,1,"Daten werden vorbereitet und Verzeichnisse erstellt..."
+1017,1,"Entpacke..."
+1018,1,"Entpacke: "
+1019,1,"Kann den Dateizeiger nicht ermitteln: "
+1020,1,"Kann nicht in die Datei schreiben:"
+1021,1,"Kann den Dateizeiger nicht setzen: "
+1022,1,"Kann den Vorgang nicht beenden da der Pfadname zu lang ist."
+1023,1,"Kann den Vorgang nicht beenden da die Maske zu lang ist."
+
+[STRINGTABLE 2]
+1025,1,"Das Plugin ist abgelaufen. Bitte überprüfen Sie auf unserer Webseite, ob eine neuere Version vorhanden ist."
+1026,1,"Erstellen oder Öffnen der Datei nicht möglich."
+1027,1,"Lesen der Datei nicht möglich."
+1028,1,"CAB-Datei nicht gefunden."
+1029,1,"Die CAB-Datei hat nicht das richtige Format."
+1030,1,"Die CAB-Datei hat eine unbekannte Versionsnummer."
+1031,1,"Die CAB-Datei ist defekt."
+1032,1,"Unbekannter Kompressionstyp in einem CAB-Verzeichnis."
+1033,1,"Entpacken von Daten aus einer CAB-Datei fehlgeschlagen."
+1034,1,"In diesem Satz haben nicht alle Cabinets dieselbe RESERVE Größe."
+1035,1,"Benutzerabbruch."
+1036,1,"Wählen Sie das Verzeichnis, dass '%s' enthält."
+1037,1,"Falsche CAB-Datei."
+1038,1,"Datei nicht gefunden."
+1039,1,"Überspringe Datei"
+
+[STRINGTABLE 3]
+1040,1,"Bitte legen Sie den Datenträger mit dem %d. CAB-Teilarchiv ein oder wählen Sie die passende Datei auf der Festplatte.\n\nDrücken Sie 'OK', wenn Sie bereit sind."
+1041,1,"Fehler"
+1042,1,"Durchsucht und entpackt CAB-Archive."
+1043,1,"Über Plugin"
+

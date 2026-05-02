@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unmime.atp"
+TEXTVERSION,"1.14 (x86)"
+VERSION,"1,1,4,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[DIALOG 101]
+321,111,1,"UnMIME configuratie"
+2000,7,7,59,8,1,"Geef opties weer"
+2001,68,11,247,1,1,""
+1000,18,20,90,10,1,"Geef Mail-&koppen weer"
+1001,18,35,111,10,1,"Geef berichten&structuur weer"
+1003,31,50,282,10,1,"&Voeg tekenset informatie toe aan de bestandsnaam indien anders dan US-ASCII"
+1002,18,65,76,10,1,"Geef &bijlagen weer"
+2002,6,82,309,1,1,""
+1,207,90,50,14,1,"OK"
+2,264,90,50,14,1,"Annuleren"
+
+[STRINGTABLE 0]
+1,1,"UnMIME"
+2,1,"Kan het bestand niet openen."
+3,1,"Onvoldoende geheugen."
+4,1,"Kan geen toegang verkrijgen tot het achiefbestand om bestanden toe te voegen."
+5,1,"Dit bestand bevat één of meerdere blokken met een onbekende codering.\nDeze blokken zullen niet worden gedecodeerd."
+6,1,"Schrijf fout"
+7,1,"Uitpakken van Mail-bestand - %s"
+8,1,"uitpakken van: "
+9,1,"Ontleden van bestand..."
+10,1,"Één of meerdere %s blokken zijn beschadigd of van onbekend bestandsformaat\nen zal daardoor niet worden gedecodeerd."
+11,1,"Slecht CRC in één of meerdere %s blokken.\nDeze blokken zullen niet worden gedecodeerd."
+12,1,"Blader en extraheer MIME/Base64, UU/XXEncode, yEncode en BinHex bestanden."
+13,1,"Over deze plugin"
+14,1,"Waarschuwing: dit bestand bevat een Mac bronvertakking.\nDeze vertakking zal niet uitgepakt worden."
+15,1,"&Laat dit niet meer zien"
+

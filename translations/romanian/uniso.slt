@@ -1,0 +1,111 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\uniso.atp"
+TEXTVERSION,"1.37 (x86)"
+VERSION,"1,3,7,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 1200]
+230,83,1,"Configurare UnISO"
+1201,8,11,201,10,1,"&Sterge atributul de mod doar-citire cand copii din arhiva"
+1202,8,23,213,10,1,"&Arata sesiunea ca director (permite acces la toate sesiunile)"
+1203,8,35,124,10,1,"A&rata imaginea disk boot ca fisier"
+3000,2,58,226,1,1,""
+1,118,64,50,14,1,"OK"
+2,173,64,50,14,1,"Anuleaza"
+
+[STRINGTABLE 0]
+1000,1,"UnISO"
+1001,1,"Nu pot deschide fisierul."
+1002,1,"Eroare nespecificata."
+1003,1,"Dezarhivare Arhiva ISO"
+1004,1,"Eroare la dezarhivarea arhivei."
+1005,1,"Nu pot utiliza acest fisier."
+1006,1,"Memorie insuficienta."
+1007,1,"Despre Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Rasfoieste si extrage fisierele imagine CD/DVD ISO."
+1010,1,"Nu pot crea director temporar."
+1011,1,"Nu pot sterge fisierul temporar."
+1012,1,"Format de fisier necunoscut sau imagine invalida ISO.\n\nDaca sunteti sigur-a ca aceasta e o imagine valida ISO, va rugam contactati support@altap.cz si ajutati-ne sa suportam acest format."
+1013,1,"Nu pot deschide fisierul '%s'."
+1014,1,"Crearea fisierului temporar a esuat."
+1015,1,"Nu pot seta atributele fisierului."
+1016,1,"Nu pot crea directorul '%s'."
+1020,1,"Da"
+1021,1,"Nu"
+1022,1,"Eroare"
+1023,1,"Atentionare"
+
+[STRINGTABLE 2]
+1024,1,"Ceva erori au avut loc in timp ce citea imaginea multisesiune.\n\nArat doar sesiunile ce se pot citi corect."
+1025,1,"Track de tip necunoscut."
+1026,1,"Strategie de alocare necunoscuta (%d).\n\nVa rugam contactati support@altap.cz si ajutani-ne sa rezolvam aceasta problema."
+1027,1,"Format prost de fisier .CCD.\n\nImaginea aratata poate fi incompleta."
+1028,1,"Lipseste fisierul .CCD.\n\nImaginea aratata poate fi incompleta."
+1029,1,"Nu pot citi sectorul  #%08X."
+1030,1,"Tag ID UDF invalid."
+1031,1,"Eroare la citirea structurii directorului la sectorul #%08X.\n\nContinut incomplet al imaginii ISO."
+1032,1,"Eroare interna plugin."
+1033,1,"Eroare la citirea tabelului de alocare virtuala la sectorul #%08X."
+1034,1,"Tabelul de alocare virtuala lipseste."
+1035,1,"Root rau ICB.\n\nNu [pot citi structura directoare."
+1036,1,"Fisierul "%s" nu poate fi extras.\n\nNepotrivire intre marimea fisierului si blocurile ICB."
+1037,1,"Nu pot deschide track #%d."
+1038,1,"Acest fisier pare sa fie o unitate floppy sau un hard disk sau o imagine a partitiei unui hard disk.\nIncercati sa redenumiti fisierul in  .ima pentru a activa plugin UnFAT."
+1039,0,"This disk image contains the APFS file system.\nThis file system is not supported yet."
+
+[STRINGTABLE 3]
+1050,1,"Nu pot citi inceputul partitiei. Fisier prea mic."
+1051,1,"Structuri Corupte ale Managerului de Partitie."
+1052,1,"Aceasta imagine de disk nu contine o partitie HFS Plus."
+1053,1,"Aceasta imagine de disk contine HFS si nu contine fisier sistem HFS Plus.\nHFS nu e suportat."
+1054,1,"Nu pot cauta pana la blocul #%08X.\nFisierul %s nu va fi extras."
+1055,1,"Nu pot cauta pana la blocul #%08X."
+
+[STRINGTABLE 4]
+1056,1,"Tip nod root nesuportat BTree in fisierul Catalog."
+1057,1,"Fisierul Catalog e fragmentat in mai mult de 8 fragmente care nu sunt suportate."
+1058,1,"Fisierul '%s' e fragmentat in mai mult de 8 fragmente care nu e suportat.\nFisierul nu va fi extras."
+1059,1,"Aceasta imagine de disk contine o cale prea lunga pe care Open Salamander nu o poate rezolva."
+1060,1,"Nu pot termina operatiunea din cauza numelui prea lung."
+1070,1,"Nu pot citi inceputul pachetului. Fisier prea mic."
+1071,1,"Acest pachet e criptat.\nPachetele criptate nu sunt suportate."
+
+[STRINGTABLE 5]
+1072,1,"Acest fisier nu pare sa fie un pachet DMG sau e incomplet.\nNu contine un footer valid DMG."
+1073,1,"Acest fisier nu pare sa fie un pachet valid DMG sau e incomplet.\nNu contine o Lista Proprietate valida."
+1074,1,"Acest pachet nu contine un bloc de date din partitia HFS Plus care incepe la %I64u.\nBlocul e necesar pentru procesarea corecta a pachetului."
+1075,1,"Nu pot citi datele din imaginea disk la pozitia %I64u."
+1076,1,"Nu pot cauta in imaginea disk la pozitia %I64u."
+1077,1,"Eroare interna: Metoda de cautare nesuportata."
+1078,1,"Aceasta imagine disk contine un bloc comprimat cu o metoda necunoscuta.\nasemenea imagini disk nu sunt suportate."
+1079,1,"Dezarhivarea unui bloc comprimat ZLIB a esuat. Imaginea disk pare corupta."
+1080,1,"Dezarhivarea unui bloc comprimat BZIP2 a esuat. Imaginea disk pare corupta."
+1085,1,"Acest fisier nu pare sa fie o imagine comprimata ISZ sau e incomplet.\nNu contine un cap de fisier valid ISZ."
+1086,1,"Nu pot citi cap de imagine comprimat. Fisier prea mic."
+1087,1,"Aceasta imagine e segmentata.\nImaginile segmentate nu sunt suportate."
+
+[STRINGTABLE 6]
+1088,1,"Aceasta imagine e criptata.\nImagini criptate nu sunt suportate."
+1100,1,"Eroare de citire"
+1101,1,"Eroare de scriere"
+1102,1,"Track-urile audio nu pot fi extrase."
+1103,1,"Anulez operatiunea, va rugam asteptati..."
+
+[STRINGTABLE 7]
+1150,1,"Informatie despre imagine\n\n"
+1151,1,"Informatie despre imagine "%s"\n\n"
+
+[STRINGTABLE 8]
+1152,1,"Numar de sesiuni: %d"
+1153,1,"\nSesiune %d\n"
+1154,1,"  Numar de track-uri: %d\n"
+1155,1,"  Track: %d, %s, Marime: %d KBytes\n"
+1156,1,"  Track: %d, %s, Marime: %d KBytes - "%s"\n"
+

@@ -1,0 +1,6 @@
+
+-------------- listing --------------
+-[RWCEMFA]  1 xpatera1     1140 Jun 22  2001 euro50.pcx
+d[RWCEMFA]  1 xpatera1      512 Dec 01  2001 petr
+-[R----F-]  1 supervis     6998 Apr 26  1996 kjr.pmr
+d[R----F-]  1 supervis      512 Nov 30 08:02 limpouch

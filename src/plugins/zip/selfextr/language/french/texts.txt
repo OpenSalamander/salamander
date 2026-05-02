@@ -1,0 +1,13 @@
+0C
+
+"Archive ZIP à extraction automatique"
+
+"Cela va extraire l'archive ZIP."
+
+"Version 1.40"
+
+"&Extraire"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

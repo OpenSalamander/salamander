@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[STRINGTABLE 0]
+11200,1,"Fehler im TAR-Plugin"
+11201,1,"Archivformat wird nicht erkannt oder nicht unterstützt."
+11202,1,"Ungültige Daten im TAR-Kopf - Archiv beschädigt."
+11203,1,"Fehlerhafte Datei- oder Kopfprüfsumme - Archiv beschädigt."
+11204,1,"Interner Fehler: Dateidatenstruktur beschädigt."
+11205,1,"Unbekannte Blocksignatur - übersprungen."
+11206,1,"Angeforderte Datei nicht im Archiv gefunden."
+11207,1,"Speicherzuordnungsfehler."
+
+[STRINGTABLE 1]
+11240,1,"LZH-Archive werden zur Zeit nicht unterstützt."
+
+[STRINGTABLE 2]
+11250,1,"Entpacke TAR-Archiv"
+11251,1,"Entpacke "
+11252,1,"Überspringe "
+11260,1,"GZip Fehler"
+11261,1,"Unbekanntes Kompressionsverfahren, kann die Daten nicht entpacken."
+11262,1,"Diese Datei ist verschlüsselt. Verschlüsselung wird in GZip-Archiven nicht unterstützt."
+11263,1,"Diese Datei ist Teil eines mehrteiligen Archivs. Mehrteilige GZip-Archive werden nicht unterstützt."
+
+[STRINGTABLE 3]
+11264,1,"Unbekannte Kennung im GZip-Kopf gefunden, entpacken nicht möglich."
+11265,1,"Fehler beim Öffnen der Archivdatei: "
+11266,1,"Vorzeitiges Dateiende erreicht."
+11267,1,"Fehler beim Lesen der Archivdatei: "
+11268,1,"Fehler beim Schreiben der Ausgabedatei: "
+11269,1,"Die Funktion 'WriteFile' hat nicht alle angeforderten Daten geschrieben."
+11270,1,"Ungültiger Block im GZip-Strom gefunden, entpacken nicht möglich."
+11271,1,"Interner Fehler im TAR-Plugin, bitte teilen Sie uns diesen über E-Mail an support@altap.cz mit."
+11272,1,"Speicherzuordnungsfehler."
+11273,1,"CRC Fehler."
+11274,1,"Unerwartete Daten im Kompressionsstrom, Archiv beschädigt."
+11275,1,"Fehler beim Suchen in der Archivdatei: "
+
+[STRINGTABLE 4]
+11280,1,"RPM-Betrachter"
+11281,1,"RPM Fehler"
+11282,1,"Fehler beim Erstellen des temporären Dateinamens."
+11283,1,"Fehler beim Erstellen der temporären Datei."
+11284,1,"Die Datei wurde nicht als RPM-Archiv erkannt."
+11285,1,"Die von diesem Archiv verlangte RPM-Version wird nicht unterstützt."
+11286,1,"Unbekannte RPM-Archivsignatur gefunden."
+11291,1,"Ein Dateisatz hat eine falsche Signatur."
+11292,1,"Fehlerhafter Dateikopfsatz."
+11293,1,"Unbekanntes Format des Cpio-Kopfes."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Durchsucht und entpackt Unix Archive."
+11301,1,"Über Plugin"
+

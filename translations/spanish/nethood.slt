@@ -1,0 +1,40 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\nethood.atp"
+TEXTVERSION,"1.08 (x86)"
+VERSION,"1,0,8,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 102]
+230,127,1,"Configuración de red"
+1201,7,7,129,10,1,"Ver participaciones &administrativas"
+1203,13,22,211,10,1,"Ver participaciones administrativas como elementos &ocultos"
+1202,7,37,180,10,1,"Ver elementos de &Mis sitios de red a nivel superior"
+1204,7,52,146,10,1,"Ver ordenadores en &red a nivel superior"
+1206,7,67,159,10,1,"Ver &discos conectados por Escritorio remoto"
+1205,7,82,134,10,1,"&Explorar la red al iniciar Salamander"
+3000,7,99,216,1,1,""
+1,35,106,50,14,1,"Aceptar"
+2,90,106,50,14,1,"Cancelar"
+9,145,106,50,14,1,"Ayuda"
+
+[STRINGTABLE 0]
+128,1,"Red"
+129,1,"Proporciona acceso a los ordenadores de la red."
+
+[STRINGTABLE 1]
+1024,1,"Comentario"
+1025,1,"{!}<%d> objeto{|1|s} seleccionado{1:0|1|s}"
+1026,1,"Red"
+1027,1,"Explorando la red…"
+1028,1,"La red no está disponible."
+1029,1,"Acerca del Plugin"
+1030,1,"%1 en %2"
+1031,1,"Ordenador local"
+1032,1,"Ordenador huésped"
+1033,1,"Discos de %s"
+

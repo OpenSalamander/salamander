@@ -1,0 +1,216 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "salamand.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "resource.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "salamand.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""resource.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""salamand.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_MAINACCELS1 ACCELERATORS 
+BEGIN
+    VK_F1,          CM_LCHANGEDRIVE,        VIRTKEY, ALT
+    VK_F1,          CM_DRIVEINFO,           VIRTKEY, CONTROL
+    VK_F1,          CM_HELP_CONTEXT,        VIRTKEY, SHIFT
+    VK_F2,          CM_RCHANGEDRIVE,        VIRTKEY, ALT
+    VK_F2,          CM_RENAMEFILE,          VIRTKEY 
+    VK_F2,          CM_CHANGEATTR,          VIRTKEY, CONTROL
+    VK_F3,          CM_ACTIVENAME,          VIRTKEY, CONTROL
+    VK_F3,          CM_VIEW,                VIRTKEY 
+    VK_F3,          CM_ALTVIEW,             VIRTKEY, ALT
+    VK_F3,          CM_VIEW_WITH,           VIRTKEY, SHIFT, CONTROL
+    VK_F3,          CM_OPENACTUALFOLDER,    VIRTKEY, SHIFT
+    VK_F4,          CM_ACTIVEEXT,           VIRTKEY, CONTROL
+    VK_F4,          CM_EDIT,                VIRTKEY 
+    VK_F4,          CM_EDITNEW,             VIRTKEY, SHIFT
+    VK_F4,          CM_EDIT_WITH,           VIRTKEY, SHIFT, CONTROL
+    VK_F4,          SC_CLOSE,               VIRTKEY, ALT
+    VK_F5,          CM_COPYFILES,           VIRTKEY 
+    VK_F5,          CM_ACTIVETIME,          VIRTKEY, CONTROL
+    VK_F5,          CM_PACK,                VIRTKEY, ALT
+    VK_F6,          CM_MOVEFILES,           VIRTKEY 
+    VK_F6,          CM_ACTIVESIZE,          VIRTKEY, CONTROL
+    VK_F6,          CM_UNPACK,              VIRTKEY, ALT
+    VK_F7,          CM_CREATEDIR,           VIRTKEY 
+    VK_F7,          CM_FINDFILE,            VIRTKEY, ALT
+    VK_F7,          CM_CHANGECASE,          VIRTKEY, CONTROL
+    VK_F7,          CM_ACTIVE_CHANGEDIR,    VIRTKEY, SHIFT
+    VK_F8,          CM_DELETEFILES,         VIRTKEY 
+    VK_F8,          CM_DELETEFILES,         VIRTKEY, SHIFT
+    VK_F9,          CM_USERMENU,            VIRTKEY 
+    VK_F9,          CM_OPENHOTPATHS,        VIRTKEY, SHIFT
+    VK_F9,          CM_ACTIVEREFRESH,       VIRTKEY, CONTROL
+    VK_F9,          CM_UNPACK,              VIRTKEY, ALT
+    VK_F9,          CM_SHARES,              VIRTKEY, SHIFT, CONTROL
+    VK_F10,         CM_OCCUPIEDSPACE,       VIRTKEY, ALT
+    VK_F10,         CM_COMPAREDIRS,         VIRTKEY, CONTROL
+    VK_F10,         CM_CALCDIRSIZES,        VIRTKEY, SHIFT, CONTROL
+    VK_F10,         CM_DIRMENU,             VIRTKEY, SHIFT, ALT
+    VK_F11,         CM_CONNECTNET,          VIRTKEY 
+    VK_F11,         CM_FILEHISTORY,         VIRTKEY, ALT
+    VK_F11,         CM_ACTIVEZOOMPANEL,     VIRTKEY, CONTROL
+    VK_F11,         CM_FULLSCREEN,          VIRTKEY, SHIFT, CONTROL
+    VK_F12,         CM_DISCONNECTNET,       VIRTKEY 
+    VK_F12,         CM_CHANGEFILTER,        VIRTKEY, CONTROL
+    VK_F12,         CM_DIRHISTORY,          VIRTKEY, ALT
+    VK_ESCAPE,      CM_MINIMIZE,            VIRTKEY, SHIFT
+    VK_LEFT,        CM_ACTIVEBACK,          VIRTKEY, ALT
+    VK_RIGHT,       CM_ACTIVEFORWARD,       VIRTKEY, ALT
+    VK_ADD,         CM_ACTIVESELECTALL,     VIRTKEY, CONTROL
+    VK_SUBTRACT,    CM_ACTIVEUNSELECTALL,   VIRTKEY, CONTROL
+    VK_MULTIPLY,    CM_ACTIVEINVERTSELALL,  VIRTKEY, CONTROL
+    VK_ADD,         CM_SELECTBYFOCUSEDEXT,  VIRTKEY, SHIFT
+    VK_SUBTRACT,    CM_UNSELECTBYFOCUSEDEXT, VIRTKEY, SHIFT
+    VK_ADD,         CM_SELECTBYFOCUSEDNAME, VIRTKEY, SHIFT, CONTROL
+    VK_SUBTRACT,    CM_UNSELECTBYFOCUSEDNAME, VIRTKEY, SHIFT, CONTROL
+    VK_F5,          CM_STORESEL,            VIRTKEY, SHIFT, CONTROL
+    VK_F6,          CM_RESTORESEL,          VIRTKEY, SHIFT, CONTROL
+END
+
+IDA_MAINACCELS2 ACCELERATORS 
+BEGIN
+    VK_ADD,         CM_ACTIVESELECT,        VIRTKEY 
+    VK_SUBTRACT,    CM_ACTIVEUNSELECT,      VIRTKEY 
+    VK_MULTIPLY,    CM_ACTIVEINVERTSEL,     VIRTKEY 
+    VK_DIVIDE,      CM_DOSSHELL,            VIRTKEY 
+    VK_DELETE,      CM_DELETEFILES,         VIRTKEY 
+    VK_DELETE,      CM_DELETEFILES,         VIRTKEY, SHIFT
+    VK_TAB,         CM_EDITLINE,            VIRTKEY, CONTROL
+END
+
+IDA_FINDDIALOGACCELS ACCELERATORS 
+BEGIN
+    "D",            CM_FIND_DUPLICATES,     VIRTKEY, CONTROL
+    "I",            CM_FIND_INTERSECT,      VIRTKEY, CONTROL
+    "L",            CM_FIND_MESSAGES,       VIRTKEY, CONTROL
+    "F",            CM_FIND_NOW,            VIRTKEY, CONTROL
+    "H",            CM_FIND_HIDE_DUP,       VIRTKEY, SHIFT, CONTROL
+    "G",            CM_FIND_IGNORE,         VIRTKEY, CONTROL
+    "M",            CM_FIND_MANAGE,         VIRTKEY, CONTROL
+    "N",            CM_FIND_ADD_CURRENT,    VIRTKEY, CONTROL
+    "S",            CM_FIND_SUBTRACT,       VIRTKEY, CONTROL
+    "W",            CM_FIND_APPEND,         VIRTKEY, CONTROL
+END
+
+IDA_VIEWERACCELS ACCELERATORS 
+BEGIN
+    VK_F1,          CM_VIEWERHLP_INTRO,     VIRTKEY 
+    VK_F2,          CM_WRAPED,              VIRTKEY 
+    VK_F3,          CM_FINDNEXT,            VIRTKEY 
+    VK_F3,          CM_FINDPREV,            VIRTKEY, SHIFT
+    VK_F3,          CM_FINDSET,             VIRTKEY, CONTROL
+    VK_F4,          SC_CLOSE,               VIRTKEY, ALT
+    VK_ESCAPE,      CM_EXIT,                VIRTKEY 
+    VK_F4,          CM_TO_HEX,              VIRTKEY 
+    VK_F5,          CM_TO_TEXT,             VIRTKEY 
+    VK_F7,          CM_FINDSET,             VIRTKEY 
+    VK_F6,          CM_FINDNEXT,            VIRTKEY 
+    VK_F6,          CM_FINDPREV,            VIRTKEY, SHIFT
+    VK_F8,          CM_NEXTCODING,          VIRTKEY 
+    VK_F8,          CM_PREVCODING,          VIRTKEY, SHIFT
+    VK_F11,         CM_VIEW_FULLSCREEN,     VIRTKEY 
+    VK_INSERT,      CM_COPYTOCLIP,          VIRTKEY, CONTROL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MSGBOX DIALOGEX 23, 147, 227, 87
+STYLE DS_SETFONT | DS_MODALFRAME | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            "",IDI_MSGBOX_ICON,10,12,21,20,WS_GROUP
+    LTEXT           "",IDS_MSGBOX_TEXT,40,12,174,8,SS_NOPREFIX
+    LTEXT           "",IDS_MSGBOX_URL,40,21,174,8,SS_NOPREFIX | WS_TABSTOP
+    PUSHBUTTON      "",IDC_MSGBOX_1,7,46,50,14,WS_GROUP
+    PUSHBUTTON      "",IDC_MSGBOX_2,61,46,50,14
+    PUSHBUTTON      "",IDC_MSGBOX_3,115,46,50,14
+    PUSHBUTTON      "",IDC_MSGBOX_4,169,46,50,14
+    CONTROL         "",IDC_MSGBOX_LINE,"Static",SS_ETCHEDHORZ | WS_GROUP,3,67,221,1
+    CONTROL         "",IDS_MSGBOX_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,161,12
+    RTEXT           "",IDS_MSGBOX_HINT,184,73,35,8,WS_TABSTOP
+END
+
+IDD_SPLASH DIALOGEX 58, 50, 299, 94
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_BORDER
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_SPLASH_OPENSAL,8,7,143,41
+    LTEXT           "",IDC_SPLASH_VERSION,8,60,237,8
+    LTEXT           "",IDC_SPLASH_COPYRIGHT,8,73,237,8
+    LTEXT           "",IDC_SPLASH_STATUS,8,83,237,8
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "salamand.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

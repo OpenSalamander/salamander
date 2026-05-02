@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\dutch\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1043
+AUTHOR,"Cor van der Smissen, Marco Fung, Patrick Vijgeboom, S.V. (Stephan) Rietveld"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7009"
+COMMENT,"Nederlandse versie"
+
+[STRINGTABLE 0]
+1,1,"Ongeldig LZH bestand of onbekend bestandsformaat."
+2,1,"Fout in het controletotaal van dit bestand.\nHet archiefbestand is beschadigd - niet alle bestanden kunnen weergegeven worden."
+3,1,"Onvoldoende geheugen."
+4,1,"Schrijffout"
+5,1,"UnLHA"
+6,1,"Er is een fout bij het openen van het archief."
+7,1,"Niet is staat om toevoegingen aan het archiefbestand toe te voegen."
+8,1,"Archief bevat één of meerdere UNIX symbolische links die niet getoond worden."
+10,1,"Kan bestand niet uitpakken."
+11,1,"Fout in gecomprimeerde data. CRC komt niet overeen."
+12,1,"Er is een fout bij het in lezen van het archief."
+13,1,"Uitpakken LHA archief - %s"
+14,1,"voorbereiding data en mappen aanmaken..."
+15,1,"uitpakken: "
+
+[STRINGTABLE 1]
+16,1,"uitpakken..."
+17,1,"Kan operatie niet afmaken vanwege te lange padnaam."
+18,1,"Kan operatie niet afmaken vanwege te lange mask."
+19,1,"Onbekende compressie methode. Het bestand kan niet worden uitgepakt."
+20,1,"onbekende methode overgeslagen..."
+21,1,"Blader en LHA archieven uitpakken."
+22,1,"Over deze plugin"
+

@@ -1,0 +1,46 @@
+﻿#ifndef __UNDELETE_TEXTS_RH2
+#define __UNDELETE_TEXTS_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+// here are texts shared between Undelete plugin and DLL
+#define IDS_LOWMEM                  2
+#define IDS_ERRORREADINGMFT         6
+#define IDS_MFTRECORDDAMAGED        9
+#define IDS_ROOTNOTFOUND            10
+#define IDS_VDIRECTORY              11
+#define IDS_ERRORNOTNTFS            12
+#define IDS_ERRORNOTOPEN            13
+#define IDS_ERROROPENINGVOLUME      14
+#define IDS_ERRORREADINGBOOT        15
+#define IDS_ALLDELETEDFILES         17
+#define IDS_READINGMFT              21
+#define IDS_ERRORVOLUMETYPE         24
+#define IDS_ERRORREADINGFAT         25
+#define IDS_ERRORREADINGDIRCLUSTERS 26
+#define IDS_ERRORNOTFAT             27
+#define IDS_READINGEXISTINGDIRS     28
+#define IDS_LOADINGFAT              29
+#define IDS_READINGDELETEDDIRS      30
+#define IDS_SCANNINGVACANTCLUSTERS  31
+#define IDS_REUSESCANNEDINFO        33
+#define IDS_RELOADINGCLUSTERS       35
+#define IDS_FLOPPY350               36
+#define IDS_FLOPPY525               37
+#define IDS_FLOPPY800               38
+#define IDS_COMPACT_DISK            39
+#define IDS_LOCAL_DISK              40
+#define IDS_REMOVABLE_DISK          41
+#define IDS_ANALYZINGDIRS           64
+#define IDS_READINGDIRS             74
+#define IDS_METAFILES               75
+#define IDS_INCOMPLETEMFT           77
+#define IDS_BITMAPISEMPTY           90
+#define IDS_BITMAPNOTFOUND          91
+#define IDS_BITMAPNOSTREAM          92
+#define IDS_LOWMEMBITMAP            93
+#define IDS_ERRORREADINGBMP         94
+
+#endif // __UNDELETE_TEXTS_RH2

@@ -1,0 +1,13 @@
+How to Test DemoView
+====================
+
+File Viewer:
+Use View command (F3 key) on this file (*.DMV is associated with DemoView).
+
+Menu Extension:
+Go to menu Plugins > DemoView.
+
+Thumbnail Loader:
+Switch to Thumbnails view mode (Alt+5 key). DemoView can make thumbnails
+only for BMV files (just renamed BMP files). You can test it on supplied
+sample.bmv file.

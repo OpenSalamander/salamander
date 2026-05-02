@@ -1,0 +1,75 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=zip.chm
+Contents file=zip.hhc
+Default Window=$global_ssdefault
+Default topic=hh\zip\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=zip.hhk
+Language=0x409 English (United States)
+Title=ZIP Plugin Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","zip.hhk","hh\zip\introduction_intro.htm","hh\zip\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDD_WAITFOR=hh\zip\sfxset_waiting.htm
+IDD_SFXTEXTS=hh\zip\sfxset_texts.htm
+IDD_ADVANCEDSE=hh\zip\sfxset_settings.htm
+IDD_EXPACKOPTIONS=hh\zip\usingzip_packdlg.htm
+IDD_CONFIG=hh\zip\usingzip_config.htm
+IDD_CREATESFX=hh\zip\sfx_intro.htm
+IDD_CHANGELANG=hh\zip\sfxset_dlgitems.htm
+IDH_COMMENT=hh\zip\usingzip_comments.htm
+IDH_CREATESFX=hh\zip\sfx_creating.htm
+IDH_TEST=hh\zip\usingzip_test.htm
+
+[MAP]
+#include "..\zip.rh"
+#include "..\zip.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+filecomp.chm
+demoplug.chm
+demoview.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

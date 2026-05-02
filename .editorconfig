@@ -1,0 +1,18 @@
+# top-most EditorConfig file
+root = true
+
+# note: end_of_line works only for newly entered new lines, it doesn't convert whole file (VC 2019 v15.9.5)
+
+[*]
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+guidelines = 110
+guidelines_style = 1px dotted silver
+
+[*.{cpp,c,h}]
+insert_final_newline = true
+
+// WSL requires LF EOLs
+[*.sh]
+end_of_line = lf

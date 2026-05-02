@@ -1,0 +1,40 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDD_CONFIGURATION               1200
+#define IDD_NEWARCHIVE                  1201
+#define IDC_CFG_SHOWEXTENDEDOPTIONS     1201
+#define IDD_ENTERPASSWORD               1202
+#define IDC_CFG_EXTENDEDLISTINFO        1202
+#define IDC_CFG_LISTINFOPACKEDSIZE      1203
+#define IDC_CFG_LISTINFOMETHOD          1204
+#define IDC_CFG_COMPRESS_LEVEL          1205
+#define IDC_CFG_COMPRESS_METHOD         1206
+#define IDC_CFG_DICT_SIZE               1207
+#define IDC_CFG_WORD_SIZE               1208
+#define IDC_CFG_SOLID_ARCHIVE           1209
+#define IDC_NA_ARCHIVE                  1210
+#define IDC_NA_ENCRYPTFILES             1211
+#define IDC_NA_PASSWORD                 1212
+#define IDC_NA_CONFIRMPASSWORD          1213
+#define IDC_NA_NOTAGAIN                 1214
+#define IDC_NA_PASSWORD_TXT             1215
+#define IDC_NA_CONFIRMPASSWORD_TXT      1216
+#define IDC_SHOW_CONFIG                 1217
+#define IDC_PASSWORD                    1220
+#define IDC_SKIP                        1221
+#define IDC_SKIPALL                     1222
+#define IDC_FILE                        1223
+#define IDC_LOCK_ICON                   1224
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

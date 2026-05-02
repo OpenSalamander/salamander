@@ -1,0 +1,57 @@
+This file contains a report about bug fixes and new features
+in Tar plugin for Open Salamander. Plus sign means new
+feature addition, minus sign means a bug fix.
+
+version 3.0: (?/?/2001)
+  -fixed doubled backslash added to a target path, causing problems
+   on some network drives (reported by J.Patera)
+  -fixed nasty bug causing miss of eof in some archives, thus resulting
+   in unlimited growth of extracted file (reported by J.Patera)
+  -fixed invalid reading of file names in some tar archives
+   in old gnu format
+  -fixed missing overwrite confirmation when extracting
+   a file from compressed archive (no tar)
+  -fixed crash with corrupted gzip archives
+  +added support for incremental tar archives
+
+version 3.10: (3/3/2004-05/05/2004) J. Patera
+  -fixed extraction of zero-length files
+  +supported invalid TAR files ending exactly after data of last file
+   (i.e. without padding to block boundary and an empty block)
+  -when extracting subdir with "name", files with "name.ext" on the same
+   level no longer extracted as well
+  -empty directories now also get extracted
+  -fixed GNUTYPE_LONGNAME ('L') links
+  -compress-ed files with odd max bit-length not rejected as invalid
+  -no more complains about corrupted data on compress-ed files containing
+    CLEAR codes with certain max bit-lengths (e.g. 9 or 12, but not 16)
+
+version 3.11: (02/06/2004-30/06/2004) J. Patera
+  -don't complain about premature EOF if unpacked data less than 6 bytes
+  -e_Binary detected only if unpacked size >= 26 (was internal error)
+  -random rubbish fname if path starts with ".." and goes above the
+   subtree stored in the TAR file
+
+version 3.20: (24/11/2004) J.Patera
+  +support of BZIP2-compressed RPM packages
+
+version 3.21: (28/04/2005) J.Patera
+  +dummy implementation of LZH decoder saying it is not yet supported (bug #223)
+  -(packed) TARs used to be refused if w/o terminating block (bug #183)
+
+version 3.22: (23/01/2006) J.Patera
+  -GZIP: EXTRA_FIELD correctly split into EXTRA_FIELD & CONTINUATION,
+   see https://forum.altap.cz/viewtopic.php?t=187
+
+version 3.24: (15/05/2008) J.Patera
+  -GZIP: if original file name contains Unix path
+   (e.g. /var/mailman/archives/private/grass5/2005-July.txt), only the real
+   file name part is taken. The file would be unextractable otherwise
+
+version 3.30: (2009.02.28) J.Patera
+  +DEB: Added support for DEB packages
+  -GZIP: if original file name contains ':', it is replaced with '_'
+  -UnpackOneFile on non-TAR archive now honors newFileName
+  -CDecompressFile::Rewind() did not update StreamPos -> CPIO (e_OldASCII)
+   archives could not open
+  -GZIP: files longer than 4 GB before compression complained about premature EOF

@@ -1,0 +1,38 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\peviewer.atp"
+TEXTVERSION,"3.0 (x86)"
+VERSION,"3,0,0,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 8501]
+346,154,1,"Hordozható végrehajtható fájl-néző beállítás"
+1300,7,7,64,8,1,"&Elérhető szekciók:"
+8700,7,17,105,130,1,""
+8702,119,17,50,14,1,"Hozzá&ad ->"
+8703,119,35,50,14,1,"<- Tö&röl"
+1301,176,7,60,8,1,"Lát&ható szekciók:"
+8701,176,17,105,130,1,""
+8704,289,17,50,14,1,"&Fel"
+8705,289,35,50,14,1,"&Le"
+1,289,97,50,14,1,"OK"
+2,289,115,50,14,1,"Mégse"
+8706,289,133,50,14,1,"Ala&p"
+
+[STRINGTABLE 0]
+1016,1,"Plugin névjegy"
+
+[STRINGTABLE 1]
+10100,1,"Hordozható futtatható néző"
+10101,1,"A(z) %s nem nyitható meg."
+10102,1,"Ideiglenes fájl létrehozása sikertelen."
+10103,1,"Kivétel lépett fel.\n\nNézett fájl: %s\n\nHa biztos, hogy a megnézett fájl nem sérült, küldje el a fájlt a support@altap.cz címre.\nÚjra előidézzük és kijavítjuk a hibát. Köszönjük az együttműködését!"
+10104,1,"Olyan futtatható fájlok információinak megjelenítése, mint EXE, DLL, stb."
+
+[STRINGTABLE 2]
+10118,1,"Nincs Hordozható végrehajtható fájl szekció kijelölve a plugin beállításokban.\nBeállítások > Plugin beállítás > Hordozható végrehajtható fájl néző\naz Open Salamander főablakának menüjében, a látható szekciók megadásához."
+
