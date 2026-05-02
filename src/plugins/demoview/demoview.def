@@ -1,4 +1,0 @@
-LIBRARY DEMOVIEW.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer

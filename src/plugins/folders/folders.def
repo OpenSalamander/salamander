@@ -1,4 +1,0 @@
-LIBRARY folders.spl
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer

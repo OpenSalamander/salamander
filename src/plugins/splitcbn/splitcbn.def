@@ -1,4 +1,0 @@
-LIBRARY splitcbn.spl
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer
