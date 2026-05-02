@@ -50,7 +50,7 @@ var countWords = false;
 //   Counts lines of selected files (and files in selected directories).
 //   Features: recursive directory walking, file masks matching, progress dialog box, 
 //   error states handling with Retry, Skip, Skip All, and Cancel error dialog box,
-//   regular expressions, output log with opearation summary.
+//   regular expressions, output log with operation summary.
 //
 // Installation and Requirements:
 //   Install Open Salamander: https://www.altap.cz/
