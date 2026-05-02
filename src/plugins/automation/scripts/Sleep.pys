@@ -1,3 +1,0 @@
-# Script to verify that Automation combined with Python crashes on function calls
-# that do not have a return value.
-Salamander.Sleep(1)
