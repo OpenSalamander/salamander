@@ -237,7 +237,7 @@ void CProgressBar::Paint(HDC hDC)
         else
         {
             progress = buff;
-            progressLen = sprintf(progress, "%d %%", (int)((Progress /*+ 5*/) / 10)); // we do not round the progress, beacause otherwise 100% is visible from 99.5%-100%, which annoys some users (notable with FTP, where it can last half a minute)
+            progressLen = sprintf(progress, "%d %%", (int)((Progress /*+ 5*/) / 10)); // we do not round the progress, because otherwise 100% is visible from 99.5%-100%, which annoys some users (notable with FTP, where it can last half a minute)
         }
 
         SIZE sz;
