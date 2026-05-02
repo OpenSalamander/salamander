@@ -185,7 +185,7 @@ namespace Fx
 
         /// Returns information about attributes that are valid for
         /// the enumerated items.
-        /// \return Combinatation of VALID_DATA_xxx flags.
+        /// \return Combination of VALID_DATA_xxx flags.
         virtual DWORD WINAPI GetValidData() const;
     };
 
