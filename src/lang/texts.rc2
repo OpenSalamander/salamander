@@ -220,7 +220,7 @@ STRINGTABLE
  IDS_FFMENU_HELP,           "&Help"
 
 //
-// archiv context menu
+// archive context menu
 //
 
  IDS_ARCHIVEMENU_OPEN,      "&Open\tEnter"
