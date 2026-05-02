@@ -878,7 +878,7 @@ BOOL CPluginInterfaceForViewer::CanViewFile(const char* name)
 
 CPluginDataInterface::CPluginDataInterface()
 {
-    // initialy display the 'missing CCD file' warning
+    // initially display the 'missing CCD file' warning
     DisplayMissingCCDWarning = TRUE;
 }
 
