@@ -286,7 +286,7 @@ CConfigurationDialog::CConfigurationDialog(HWND parent, CConfiguration* configur
       Page3(options, changeFlag)
 {
     CALL_STACK_MESSAGE1("CConfigurationDialog::CConfigurationDialog(, , , , )");
-    Add(&Page1); // Genereal
+    Add(&Page1); // General
     Add(&Page2); // Default Compare Options
     Add(&Page3); // Colors
 
