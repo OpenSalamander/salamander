@@ -5,7 +5,7 @@
 
 #include "selfextr/comdefs.h"
 
-//types defintions
+//types definitions
 
 //basic types
 typedef unsigned __int8 __UINT8;
@@ -141,7 +141,7 @@ typedef struct
     // [variable size] zip64 extensible data sector
 } CZip64EOCentrDirRecord;
 
-typedef struct // May immediatelly follow (actually be included in) CZip64EOCentrDirRecord
+typedef struct // May immediately follow (actually be included in) CZip64EOCentrDirRecord
 {
     __UINT16 Method;     // compression method
     __UINT64 CompSize;   // compressed size
