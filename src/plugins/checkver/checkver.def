@@ -1,4 +1,0 @@
-LIBRARY CHECKVER.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer

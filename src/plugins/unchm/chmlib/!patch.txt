@@ -1,7 +1,0 @@
-Web: http://morte.jedrea.com/~jedwin/projects/chmlib/
-Zde pouzita verze CHLIB je 0.40
-
-Z CHMLIB jsou vyvezene typy do types.h + opravene warningy pretypovani + signed/unsigned
-mismatch + presunuty blok s include <window.h>.
-
-Petr
