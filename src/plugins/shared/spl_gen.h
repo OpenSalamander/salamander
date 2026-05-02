@@ -1216,7 +1216,7 @@ public:
     // Compares n bytes of the two blocks of memory stored at buf1 and buf2.
     // Characters are converted to lowercase before comparing (not permanently;
     // using LowerCase array which was filled using CharLower Win32 API call),
-    // so case is ignored in comparation.
+    // so case is ignored in comparison.
     //
     // Parameters
     //   buf1, buf2: memory buffers to compare
@@ -2112,7 +2112,7 @@ public:
     //      primary display monitor, some of the point's coordinates may be negative values.
     //
     // Return Values
-    //   If the default window position lies on the primary monitor or some error occured,
+    //   If the default window position lies on the primary monitor or some error occurred,
     //   the return value is FALSE and you should use CreateWindow with CW_USEDEFAULT in
     //   the 'x' parameter.
     //
@@ -2988,7 +2988,7 @@ public:
     // LockMainWindow
     //   Locks main window to pretend it is disabled. Main windows is still able to receive focus
     //   in the locked state. Set 'lock' to TRUE to lock main window and to FALSE to revert it back
-    //   to normal state. 'hToolWnd' is reserverd parameter, set it to NULL. 'lockReason' is (optional,
+    //   to normal state. 'hToolWnd' is a reserved parameter, set it to NULL. 'lockReason' is (optional,
     //   can be NULL) describes the reason for main window locked state. It will be displayed during
     //   attempt to close locked main window; content of string is copied to internal structure
     //   so buffer can be deallocated after return from LockMainWindow().
