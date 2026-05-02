@@ -1,3 +1,0 @@
-Salamander.TraceI("Python begin...")
-Salamander.Sleep(10000)
-Salamander.TraceE("Python end...")

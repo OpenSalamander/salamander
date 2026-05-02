@@ -1,6 +1,0 @@
-﻿#include "Salamander.rh"
-
-IDI_WINSCP ICON "..\\resource\\Icon32.ico"
-IDB_WINSCP BITMAP "WinSCP.bmp"
-
-LICENSE_PUTTY RCDATA "..\\resource\\LicensePuTTY.txt"

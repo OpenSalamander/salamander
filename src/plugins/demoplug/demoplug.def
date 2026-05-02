@@ -1,5 +1,0 @@
-LIBRARY DEMOPLUG.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer
-EXPORTS SalamanderPluginGetSDKVer

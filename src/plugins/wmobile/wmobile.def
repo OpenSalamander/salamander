@@ -1,4 +1,0 @@
-LIBRARY WMOBILE.SPL
-
-EXPORTS SalamanderPluginEntry
-EXPORTS SalamanderPluginGetReqVer
