@@ -1179,7 +1179,7 @@
 #define IDS_FINISHINGKEEPALIVECMD     10711
 // when keep alive command is processing and user press ESC: Do you want to cancel command sent to keep the connection alive? Connection to FTP server will be terminated.
 #define IDS_KEEPALIVECMDESC           10712
-// message to log: when keep alive command is processing and FTP client wants to send another command and when timeout occurs: Sending of command to keep the connection alive has timed out.\r\n
+// message to log: when keep alive command is processing and FTP client want to send another command and when timeout occurs: Sending of command to keep the connection alive has timed out.\r\n
 #define IDS_LOGMSGKEEPALIVECMDTIMEOUT 10713
 // message to log: NLST/LIST keep-alive command: error when trying to prepare active data connection (unable to listen on socket): Unable to prepare active data connection.\r\n
 #define IDS_LOGMSGOPENACTDATACONERROR 10714
