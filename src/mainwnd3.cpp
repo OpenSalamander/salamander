@@ -3119,7 +3119,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             RightPanel->GotoRoot();
             return 0;
         }
-            // enabling/disabling the left panel status line
+// enabling/disabling the left panel status line
         case CM_LEFTSTATUS:
         {
             LeftPanel->ToggleStatusLine();
