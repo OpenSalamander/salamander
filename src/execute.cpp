@@ -723,7 +723,7 @@ const char* WINAPI ExecuteExpNamePart(HWND msgParent, void* param)
     }
     strcpy(data->Buffer, s + 1);
     char* ss = strrchr(data->Buffer, '.');
-    //  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
+//  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
     if (ss != NULL) // An extension is present (".cvspass" is considered an extension in Windows)
         *ss = 0;
     return data->Buffer;
@@ -742,7 +742,7 @@ const char* WINAPI ExecuteExpExtPart(HWND msgParent, void* param)
     }
     strcpy(data->Buffer, s + 1);
     s = strrchr(data->Buffer, '.');
-    //  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
+//  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
     if (s != NULL) // An extension is present here (".cvspass" is considered an extension in Windows)
         return s + 1;
     return "";
@@ -761,7 +761,7 @@ const char* WINAPI ExecuteExpDOSNamePart(HWND msgParent, void* param)
     }
     strcpy(data->Buffer, s + 1);
     char* ss = strrchr(data->Buffer, '.');
-    //  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
+//  if (ss != NULL && ss != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
     if (ss != NULL) // An extension is present (".cvspass" is considered an extension in Windows)
         *ss = 0;
     return data->Buffer;
@@ -780,7 +780,7 @@ const char* WINAPI ExecuteExpDOSExtPart(HWND msgParent, void* param)
     }
     strcpy(data->Buffer, s + 1);
     s = strrchr(data->Buffer, '.');
-    //  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the begining of the name, e.g. ".cvspass")
+//  if (s != NULL && s != data->Buffer)   // extension is present ('.' not at the beginning of the name, e.g. ".cvspass")
     if (s != NULL) // extension present (".cvspass" is considered an extension in Windows)
         return s + 1;
     return "";
