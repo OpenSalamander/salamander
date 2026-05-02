@@ -155,7 +155,7 @@ BOOL GetGoogleDrivePath(char* gdPath, int gdPathMax, CSQLite3DynLoadBase** sqlit
                 }
             }
             if (sqlite3_Dyn_InOut != NULL)
-                *sqlite3_Dyn_InOut = sqlite3_Dyn; // return the loaded sqlite.dll for futher use (it may have been loaded before this function was called)
+                *sqlite3_Dyn_InOut = sqlite3_Dyn; // return the loaded sqlite.dll for further use (it may have been loaded before this function was called)
             else
                 delete sqlite3_Dyn; // release sqlite.dll, nobody is waiting for it
         }
