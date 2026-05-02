@@ -62,7 +62,7 @@ unsigned ThreadViewerMessageLoopBody(void* parameter)
     //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 2");
     //  CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 2");
     data->Success = /*CoInitialize(NULL) == S_OK &&*/ OleInitialize(NULL) == S_OK;
-    //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 3 succes="<<data->Success);
+    //  TRACE_I("MoresStanislav: ThreadViewerMessageLoopBody 3 success="<<data->Success);
     //  CALL_STACK_MESSAGE1("MoresStanislav: ThreadViewerMessageLoopBody 3");
 
     if (data->Success &&
