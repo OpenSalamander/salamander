@@ -419,7 +419,7 @@ namespace Fx
                 {
                     if (assignItemForFiles)
                     {
-                        // Tranfer ownership of the FSItem to the PluginData.
+                        // Transfer ownership of the FSItem to the PluginData.
                         fileData.PluginData = reinterpret_cast<DWORD_PTR>(item);
                         item->AddRef();
                     }
