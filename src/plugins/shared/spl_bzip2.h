@@ -23,7 +23,7 @@
 /***********************************************************************
  * Simplified interface to the BZIP2 library provided by Salamander.
  * To understand the action types and return values, it is recommended
- * to read ther documentation at www.bzip.org.
+ * to read the documentation at www.bzip.org.
  ***********************************************************************/
 
 /* Values for action argument of Compress() */
