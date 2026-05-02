@@ -1832,7 +1832,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
     }
 
-    if (uMsg == WM_MOUSEHWHEEL) // horizontall scroll, supported from Windows Vista
+    if (uMsg == WM_MOUSEHWHEEL) // horizontal scroll, supported from Windows Vista
     {
         short zDelta = (short)HIWORD(wParam);
         DWORD scrollChars = SalamanderGeneral->GetMouseWheelScrollChars(); // can be also WHEEL_PAGESCROLL (0xffffffff) for page scroll
@@ -1961,7 +1961,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             KillTimer(HWindow, IMGSEQ_TIMER_ID);
         }
         DragAcceptFiles(HWindow, FALSE);
-        if (Loading) //Ooops. Soneone is closing our window, but we are still decompresing!
+        if (Loading) //Ooops. Someone is closing our window, but we are still decompressing!
         {
             Canceled = TRUE;
             break; // j.r. verify this path
@@ -1999,7 +1999,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if ((YStretchedRange > 65535) && ((LOWORD(wParam) == SB_THUMBPOSITION) || (LOWORD(wParam) == SB_THUMBTRACK)))
         {
-            // We need 32-bit accurary
+            // We need 32-bit accuracy
             SCROLLINFO si;
 
             si.fMask = SIF_TRACKPOS;
