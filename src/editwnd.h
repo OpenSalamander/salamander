@@ -34,7 +34,7 @@ protected:
 // ****************************************************************************
 //
 
-// text in the combo box in command line; we cach it so it will not flicker
+// text in the combo box in command line; we cache it so it will not flicker
 // because it is handled from the main thread we can operate via ItemBitmap
 
 class CInnerText : public CWindow
