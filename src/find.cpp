@@ -705,7 +705,7 @@ protected:
 
     // compute MD5 from the file 'file'
     // 'progress' is the numeric value shown in the status bar (optimized so we do not
-    // update the same porgress repeatedly)
+    // update the same progress repeatedly)
     // 'readSize' holds the number of bytes read so far across all files
     // 'totalSize' is the total number of bytes of all files for which the MD5 digest
     // will be determined
@@ -895,7 +895,7 @@ BOOL CDuplicateCandidates::GetMD5Digest(CGrepData* data, CFoundFilesData* file,
     }
     else
     {
-        // error occured while opening the file
+        // error occurred while opening the file
         DWORD err = GetLastError();
 
         char buf[MAX_PATH + 100];
