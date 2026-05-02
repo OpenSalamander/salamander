@@ -568,7 +568,7 @@ LONG __stdcall MyUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
     //  DWORD written;
     //  WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),
-    //            "SALOPEN: An exception has occured!\n",
+    //            "SALOPEN: An exception has occurred!\n",
     //            34, &written, NULL);
     //  ExitProcess(666);
     TerminateProcess(GetCurrentProcess(), 666); // more forceful exit; this still makes one call
