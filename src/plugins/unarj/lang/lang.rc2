@@ -1,0 +1,49 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+  IDS_PLUGINNAME, "UnARJ"
+  IDS_PLUGIN_DESCRIPTION, "Browse and extract ARJ archives."
+  IDS_ABOUT, "About Plugin"
+  IDS_LOWMEM, "Insufficient memory."
+  IDS_ARCEOF, "Unexpected end of archive file."
+  IDS_BADDATA, "Archive is corrupted."
+  IDS_BADARC, "File is of an unknown format or not valid ARJ archive."
+  IDS_ERROPENARC, "Unable to open archive file."
+  IDS_UNKNOWN, "Unknown error occurred."
+  IDS_ERRACCESSARC, "Unable to access archive file."
+  IDS_ARJARCHIVES, "ARJ Archive Files (*.A*)"
+  IDS_ALLFILES, "All Files (*.*)"
+  IDS_BROWSEARCHIVETITLE, "Select Archive File"
+  IDS_CRC, "Error in compressed data. CRC doesn't match."
+  IDS_LIST, "Unable to add archive entry to the files list."
+  IDS_EXTRPROGTITLE, "Unpacking ARJ Archive - %s"
+  IDS_PREPAREDATA, "preparing data and creating directories..."
+  IDS_EXTRACTFILES, "unpacking..."
+  IDS_EXTRACTING, "unpacking: "
+  IDS_UNABLEGETFIELPOS, "Unable to get file pointer: "
+  IDS_UNABLEWRITE, "Unable to write to file:"
+  IDS_UNABLESEEK, "Unable to set file pointer: "
+  IDS_TOOLONGNAME, "Can't finish operation because of too long path name."
+  IDS_TOOLONGMASK, "Can't finish operation because of too long mask."
+  IDS_VERSION, "Unknown version of compressed file."
+  IDS_TYPE, "Unknown type of compressed file."
+  IDS_METHOD,  "File is compressed by method not supported by UnARJ plugin."
+  IDS_ENCRYPT, "Sorry, encrypted files are not supported."
+  IDS_BADVOL, "Invalid volume or unknown archive structure."
+  IDS_EXPIRE, "Sorry, the plugin has expired. Please check our web site for newer version."
+  IDS_NOTFOUND, "File not found."
+  IDS_ERROR, "Error"
+}

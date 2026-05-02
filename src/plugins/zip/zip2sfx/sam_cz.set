@@ -1,0 +1,171 @@
+;Volby pro Self-Extractor
+
+;Toto je ukázkový soubor s volbami pro Self-Extractor. Všechny
+;hodnoty zde uvedené, jsou implicitní hodnoty jednotlivých promìných.
+;
+;Syntaxe souboru:
+;
+;Øádky zaèínají støedníkem jsou považovány za komentáøe a jsou ignoro-
+;vány bìhem zpracování souboru.
+;
+;Všechny promìnné kromì promìnné version jsou nepovinné. Není-li
+;promìnná v souboru s volbami nalezena, je použita její implicitní
+;hodnota. Implicitní hodnoty pro jazykovì závislé promìnné (dlg_text,
+;dlg_title, button_text) jsou naèteny z použitého sfx balíèku.
+;
+;Všechny hodnoty reprezentované øetìzcem, vèetnì prázdných øetìzcù,
+;musejí být uzavøeny ve dvojitých uvozovkách. Pro zapsání uvozovek do
+;øetìzce použijte dvì po sobì jdoucí dvojité uvozovky.
+;
+;Èíselné hodnoty nesmìjí být uzavøeny v uvozovkách.
+
+
+;verze souboru s nastavením, souèasná verze je 2
+;toto je jediná povinná promìnná
+
+version=2
+
+;specifikace cílového adresáøe, mùže to být buï absolutní cesta
+;nebo relativní cesta; relativní cesta je relativní k aktuálnímu adre-
+;sáøi, když je samorozbalitelný archív spuštìn
+;na zaèátku (!) øetìzce 'target_dir' mùžete také použít pøeddefinované
+;promìnné:
+;
+;  $(Temp)      doèasný adresáø, nesmí být v promìnné target_dir nás-
+;               ledován žádným dalším textem
+;  $(ProgFiles) uživatelova složka 'Program Files'
+;  $(WinDir)    windows adresáø
+;  $(SysDir)    systémový adresáø
+;  $[variable]  hodnota systémové promìnné s názvem 'variable'
+;  $<regkey>    hodnota promìnné v registrech s názvem 'regkey'
+;  napø. SOFTWARE\Microsoft\Windows\CurrentVersion\ProgramFilesDir
+
+target_dir=""
+
+;urèuje zda je uživatelovy povoleno zmìnit cílový adresáø pro rozbalení
+;archivu
+;nastavte tuto hodnotu na 1, pøejete-li si zmìnu povolit
+
+allow_dir_change=1
+
+;urèuje zda se mají smazat soubory v doèasném adresáøi, když
+;program specifikovaný promìnnou 'command' skonèí
+;nastavte tuto hodnotu na 1, pøejete-li si smazat soubory v doèasném
+;adresáøi
+;použití této volby má smysl pouze tehdy, je-li 'target_dir' nastavena
+;na "$(Temp)", v ostatních pøípadech je hodnota ignorována
+
+remove_temp=0
+
+;Tato volba umožòuje èekat pøed smazáním souborù v doèasném adresáøi
+;na jiný program než program specifikovaný promìnnou 'Command'
+;Po zakonèeni tohoto programu self-extractor smaže soubory v doèasném
+;adresáøi a sám skonèí.
+;Tato volba je nutná pouze v pøípadì, že instalaèní program spustí
+;program, který pokraèuje v instalaci, zatímco pùvodní instalaèní
+;program skonèí
+;Takto se chovají napø. nìkteré verze programu Install Shield.
+;Tato volba je ignorována pokud 'remove_temp' není nastaven na 1.
+
+wait_for=""
+
+;urèuje zda zaèít rozbalování automaticky po spuštìní samorozba-
+;litelného archivu
+;nastavte tuto hodnotu na 1, pøejete-li si, aby rozbalování zaèalo
+;automaticky
+
+autostart=0
+
+;urèuje zda zobrazit dialogové okénko informující o úspìšnosti
+;rozbalování archivu
+;nastavte tuto hodnotu na 1, pøejete-li si zobrazit toto okénko
+
+show_summary=1
+
+;urèuje zda zobrazit dialogové okénko programu
+;nastavte tuto hodnotu na 1, pøejete-li si zobrazit toto okénko
+;použití této volby má smysl pouze tehdy, je-li 'autostart' nastavena
+;na 1, v ostatních pøípadech je hodnota ignorována
+
+hide_dlg=0
+
+;urèuje zda automaticky pøepisovat soubory v cílovém adresáøi
+;nastavte tuto hodnotu na 1, pøejete-li si automatické pøepisování
+;souborù
+
+ovewrite_all=0
+
+;urèuje zda automaticky vytvoøit cílový adresáø bez dotazování uživatele
+;nastavte tuto hodnotu na 1, pøejete-li si automatické vytváøení cílového
+;adresáøe
+
+create_target_dir=0
+
+;program, http link nebo dokument, který má být spuštìn/otevøen
+;když je archiv úspìšnì rozbalen, cesta je relativní k cílovému adre-
+;sáøi, do kterého je archiv rozbalován, u programu mùžete také uvést
+;jeho parametry pro spuštìní
+
+command=""
+
+;sfx balíèek, který má být použit pro tvorbu samorozbalitelného
+;archivu; relativní cesta je relativní k adresáøi se zip2sfx.exe
+
+sfxpackage="..\sfx\czech.sfx"
+
+;tlaèítka ve volitelném dialogovém okénku
+;mùže být jedna z následujících: "ok", "ok_cancel", "yes_no",
+;"agree_disagree"
+
+mbox_buttons="ok"
+
+;typ volitelného dialogového okénka
+;mùže být jedna z následujících: "simple", "exclamation", "information",
+;"question", "long_message"
+
+mbox_type="simple"
+
+;text and titulek volitelného dialogového okénka, které je zobrazeno
+;než zaène rozbalování archivu
+;nepøejete-li si zobrazit žádné okénko nechte hodnoty obou promìnných
+;prázdné("")
+
+mbox_text=""
+mbox_title=""
+
+;text, který bude zobrazen v hlavním dialogovém okénku
+
+dlg_text="Tento program rozbalí ZIP archiv."
+
+;titulek hlavního dialogového okénka
+
+dlg_title="Samorozbalitelný ZIP archiv"
+
+;text tlaèítka 'rozbalit' v hlavním dialogovém okénku
+
+button_text="&Rozbalit"
+
+;jméno firmy v levém dolním rohu dialogového okénka
+
+vendor="Self-Extractor © 2000-2023 Open Salamander Authors"
+
+;www odkaz v pravém dolním rohu dialogového okénka
+
+link="https://www.altap.cz"
+
+;soubor obsahující ikonu, mùže to být buï ICO soubor nebo PE spusti-
+;telný modul (jako jsou win32 EXE a DLL soubory) obsahující ikonu
+;relativní cesta je relativní k adresáøi se zip2sfx.exe
+
+icon_file="..\zip.spl"
+
+;kladná hodnota znamená index ikony (poøadové èíslo) ve spustitelném
+;souboru specifikovaném promìnnou 'icon_file'
+;záporná hodnota znamená resource ID ikony
+;pro ICO soubory je index vždy 0 a hodnota promìnné je ignorována
+
+icon_index=-500
+
+;požadovat práva administrátora na OS Windows Vista nebo pozdìjším
+
+requires_administrative_privileges=1

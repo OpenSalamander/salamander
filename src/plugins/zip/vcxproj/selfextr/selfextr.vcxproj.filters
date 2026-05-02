@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="CPP">
+      <UniqueIdentifier>{882c3e6d-fe3d-4c76-a323-97c69aca70a0}</UniqueIdentifier>
+      <Extensions>C;CPP</Extensions>
+    </Filter>
+    <Filter Include="H">
+      <UniqueIdentifier>{f9f70589-c4ed-4136-883b-db8ab0131cac}</UniqueIdentifier>
+      <Extensions>H</Extensions>
+    </Filter>
+    <Filter Include="RC">
+      <UniqueIdentifier>{9f192f61-91b9-45cb-91bb-0f2b20a4dbb1}</UniqueIdentifier>
+      <Extensions>rc</Extensions>
+    </Filter>
+    <Filter Include="ASM">
+      <UniqueIdentifier>{046a5760-6d25-4a7b-acd0-983ed6ebc01d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\selfextr\dialog.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\selfextr\extended.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\selfextr\extract.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\selfextr\inflate.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\selfextr\selfextr.cpp">
+      <Filter>CPP</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\selfextr\comdefs.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\dialog.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\extended.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\extract.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\inflate.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\resource.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\selfextr.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\strings.h">
+      <Filter>H</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\selfextr\language\english\texts.h">
+      <Filter>H</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\selfextr\hand.cur">
+      <Filter>RC</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\selfextr\icon.ico">
+      <Filter>RC</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\selfextr\selfextr.rc">
+      <Filter>RC</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\lldiv.asm">
+      <Filter>ASM</Filter>
+    </MASM>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\llmul.asm">
+      <Filter>ASM</Filter>
+    </MASM>
+    <MASM Include="$(VCToolsInstallDir)crt\src\i386\llrem.asm">
+      <Filter>ASM</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>

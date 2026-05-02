@@ -1,0 +1,11 @@
+CUTCP.DIR;1          18-DEC-1991 08:48:17      512/1      (RWE,RE,RE,RE)
+LIBRARY.DIR;1        30-APR-1991 11:13:06     1536/3      (RWE,RE,RE,RE)
+MAIL.MAI;1           13-OCT-1991 00:01:07    17408/34     (RW,RW,,)
+MICRO.DIR;1           3-FEB-1990 14:30:14      512/1      (RWED,RE,,R)
+NETINFO.DIR;1         3-FEB-1990 15:18:40     1536/3      (RWE,RE,,R)
+NETWORKS.HLP;45       8-JUN-1990 15:13:41   102788/201    (RWED,RE,,RE)
+TMP.DIR;1             9-OCT-1991 10:29:53      512/1      (RWE,RE,RE,RWE)
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation

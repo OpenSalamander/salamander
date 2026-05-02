@@ -1,0 +1,36 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\german\unlha.atp"
+TEXTVERSION,"1.13 (x86)"
+VERSION,"1,1,3,180"
+
+[TRANSLATION]
+LANGID,1031
+AUTHOR,"Dirk Bornhütter, Thomas Kelso, Thomas Pagels, Thomas Wölk, Marko Meister und Mick Weiss"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=7334"
+COMMENT,"Deutsche Version"
+
+[STRINGTABLE 0]
+1,1,"Ungültige LZH-Datei oder unbekanntes Dateiformat."
+2,1,"Dateikopf-Prüfsummenfehler.\nDas Archiv ist fehlerhaft - es können nicht alle Dateien aufgelistet werden."
+3,1,"Nicht genügend Speicher."
+4,1,"Schreibfehler"
+5,1,"UnLHA"
+6,1,"Fehler beim Öffnen des Archivs."
+7,1,"Kann den Archiveintrag nicht zur Dateiliste hinzufügen."
+8,1,"Das Archiv enthält eine oder mehr UNIX symbolische Verknüpfungen, diese können nicht angezeigt werden."
+10,1,"Fehler beim Entpacken der Datei."
+11,1,"Fehler in den komprimierten Daten. CRC stimmt nicht überein."
+12,1,"Fehler beim Lesen des Archivs."
+13,1,"Entpacke LHA Archiv - %s"
+14,1,"Bereite die Daten vor und erstelle Verzeichnisse..."
+15,1,"Entpacke: "
+
+[STRINGTABLE 1]
+16,1,"Entpacke..."
+17,1,"Kann den Vorgang wegen zu langem Pfadnamen nicht beenden."
+18,1,"Kann den Vorgang wegen zu langer Maske nicht beenden."
+19,1,"Unbekannte Kompressionsmethode. Die Datei kann nicht entpackt werden."
+20,1,"Unbekannte Methode übersprungen..."
+21,1,"Durchsucht und entpackt LHA Archive."
+22,1,"Über Plugin"
+

@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{8101213e-7a83-4e96-a024-eeefe9dc6c43}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{ac0a5332-6af0-40f7-842e-a3d3c417a7fc}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="rc">
+      <UniqueIdentifier>{c6634364-aff3-49aa-b0ab-c12fc20a4063}</UniqueIdentifier>
+      <Extensions>rc;rh</Extensions>
+    </Filter>
+    <Filter Include="pak_lib">
+      <UniqueIdentifier>{01d38339-5eaa-424a-9683-5a61b14c28f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pak_lib\cpp_">
+      <UniqueIdentifier>{59cb77bf-a9c9-4a09-b238-4280a8662803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pak_lib\h_">
+      <UniqueIdentifier>{575faffa-d51a-46ad-9cf2-5f47ff3610be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\dbg.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\spl\pak.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\spl\pak2.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\spl\precomp.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dll\add_del.cpp">
+      <Filter>pak_lib\cpp_</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dll\pak_dll.cpp">
+      <Filter>pak_lib\cpp_</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\lukas\array2.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\lukas\dumpmem.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\spl\pak.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\spl\precomp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_arc.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_base.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_com.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_fs.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_gen.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_menu.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_vers.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\spl_view.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dll\pak_dll.h">
+      <Filter>pak_lib\h_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dll\pakiface.h">
+      <Filter>pak_lib\h_</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\spl\lang\lang.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\spl\pak.rc2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\spl\pak.rh">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\spl\pak.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\dll\texts.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\spl\versinfo.rh2">
+      <Filter>rc</Filter>
+    </None>
+    <None Include="..\spl\pak.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\spl\pak.rc">
+      <Filter>rc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

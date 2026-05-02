@@ -1,0 +1,26 @@
+﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __FOLDERS_RH2
+#define __FOLDERS_RH2
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+//***********************************************************************************
+//
+// ikony, bitmapy, kurzory
+//
+
+#define IDB_FOLDERS                 100
+
+//***********************************************************************************
+//
+// texty
+//
+
+#define IDS_PLUGINNAME              1000
+#define IDS_ABOUT                   1001
+#define IDS_PLUGIN_DESCRIPTION      1003
+#define IDS_DRIVEMENUTEXT           1004
+
+#endif // __FOLDERS_RH2

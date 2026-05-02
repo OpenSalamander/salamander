@@ -1,0 +1,47 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unchm.atp"
+TEXTVERSION,"1.03 (x86)"
+VERSION,"1,0,3,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[STRINGTABLE 0]
+1000,1,"UnCHM"
+1001,1,"No se puede abrir el fichero."
+1002,1,"Error sin especificar."
+1003,1,"Desempaquetando archivo CHM"
+1004,1,"Error al desempaquetar el fichero."
+1005,1,"No es posible gestionar este fichero."
+1006,1,"Memoria insuficiente."
+1007,1,"Acerca del Plugin"
+
+[STRINGTABLE 1]
+1009,1,"Hojear y extraer ficheros CHM."
+1010,1,"Imposible crear directorio temporal."
+1011,1,"Imposible borrar fichero temporal."
+1012,1,"Formato de fichero desconocido o no es una imagen CHM válida.\n\nSi está seguro de que ésta es una imagen CHM válida, contacte con support@altap.cz y ayúdenos a incorporar este formato."
+1013,1,"No es posible abrir este fichero."
+1014,1,"Ha fallado la creación del fichero temporal."
+1015,1,"No es posible ajustar atributos del fichero."
+1016,1,"Imposible crear el directorio '%s'."
+1020,1,"Sí"
+1021,1,"No"
+1022,1,"Error"
+1023,1,"Aviso"
+
+[STRINGTABLE 2]
+1032,1,"Error interno del plugin."
+
+[STRINGTABLE 3]
+1100,1,"Error de lectura"
+1101,1,"Error de escritura"
+
+[STRINGTABLE 4]
+1105,1,"Número incorrecto."
+1106,1,"cancelando la operación, espere..."
+1107,1,"Biblioteca CHMLIB Copyright © 2001-2010 Jed Wing"
+

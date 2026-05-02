@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing 7-ZIP Plugin">
+			<param name="Local" value="hh\7zip\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using 7-ZIP Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Testing Archive">
+			<param name="Local" value="hh\7zip\using_testingarc.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="7-Zip Configuration">
+			<param name="Local" value="hh\7zip\dlgboxes_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Create New Archive">
+			<param name="Local" value="hh\7zip\dlgboxes_newarc.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>

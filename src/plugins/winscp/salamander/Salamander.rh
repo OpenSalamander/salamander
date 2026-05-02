@@ -1,0 +1,115 @@
+﻿#ifndef SalamanderRH
+#define SalamanderRH 1 // when set to "1" HTML help compiler does not report error on this line (..\help\compile.bat)
+
+#define IDI_WINSCP              1001
+#define IDB_WINSCP              1002
+
+#define SALAMAND_TEXTS          4000
+#define SAL_PLUGIN_NAME         4001
+#define SAL_PLUGIN_DESCRIPTION  4002
+#define SAL_FS_NAME             4003
+#define SAL_PATH_NOT_SUPPORTED  4004
+#define SAL_DISCONNECT          4005
+#define SAL_OWNER_COL           4006
+#define SAL_OWNER_DESC          4007
+#define SAL_GROUP_COL           4008
+#define SAL_GROUP_DESC          4009
+#define SAL_RIGHTS_COL          4010
+#define SAL_RIGHTS_DESC         4011
+#define SAL_CONNECT             4012
+#define SAL_CONFIRM_DETACH      4013
+#define SAL_FULL_SYNCHRONIZE    4014
+#define SAL_PENDING_QUEUE_ITEMS 4015
+#define SAL_CONFIGURE           4016
+#define SAL_MOVE_TO             4017
+#define SAL_DETACH_KEEP         4018
+#define SAL_DETACH_DISCONNECT   4019
+#define SAL_SYNCHRONIZE         4020
+#define SAL_COPY_TO             4021
+#define SAL_LINK_TO_COL         4022
+#define SAL_LINK_TO_DESC        4023
+#define SAL_CONFIRM_DETACH_NEVER 4025
+#define SAL_DISCONNECT_F12      4033
+#define SAL_SECURE              4035
+#define SAL_NO_HELP             4036
+
+#define SAL_PROGRESS_FILE_LABEL          3101
+#define SAL_PROGRESS_TARGET_PATH_LABEL   3102
+#define SAL_PROGRESS_TIME_LEFT_LABEL     3104
+#define SAL_PROGRESS_START_TIME_LABEL    3105
+#define SAL_PROGRESS_BYTES_TRANSFERRED_LABEL 3106
+#define SAL_PROGRESS_TIME_ELAPSED_LABEL  3108
+#define SAL_PROGRESS_SPEED_LABEL         3109
+
+#define SAL_HOMEPAGE            3201
+
+#define IDD_PROGRESS            3501
+#define IDC_PROGRESS_FILE_LABEL_LABEL           3502
+#define IDC_PROGRESS_FILE_LABEL                 3503
+#define IDC_PROGRESS_TARGET_PATH_LABEL_LABEL    3504
+#define IDC_PROGRESS_TARGET_PATH_LABEL          3505
+#define IDC_PROGRESS_OPERATION_PROGRESS         3506
+#define IDC_PROGRESS_TIME_LABEL_LABEL           3509
+#define IDC_PROGRESS_TIME_LABEL                 3510
+#define IDC_PROGRESS_BYTES_TRANSFERRED_LABEL_LABEL 3511
+#define IDC_PROGRESS_BYTES_TRANSFERRED_LABEL    3512
+#define IDC_PROGRESS_TIME_ELAPSED_LABEL_LABEL   3515
+#define IDC_PROGRESS_TIME_ELAPSED_LABEL         3516
+#define IDC_PROGRESS_CPS_LABEL_LABEL            3517
+#define IDC_PROGRESS_CPS_LABEL                  3518
+#define IDC_PROGRESS_FILE_PROGRESS              3519
+
+#define IDD_PASSWORD            3600
+#define IDC_PASSWORD_LABEL      3601
+#define IDC_PASSWORD_EDIT       3602
+
+#define IDH_WINSCP_BASE          1000
+#define IDH_UI_ABOUT             1002
+#define IDH_SESSION_SAVE         1004
+#define IDH_UI_COPY              1005
+#define IDH_UI_TRANSFER_CUSTOM   1006
+#define IDH_UI_FSINFO            1007
+#define IDH_UI_SYNCHRONIZE       1008
+#define IDH_UI_LOGIN             1009
+#define IDH_UI_LOGIN_SAVE        1010
+#define IDH_UI_LOGIN_STORED_SESSIONS 1011
+#define IDH_UI_LOGIN_SESSION     1012
+#define IDH_UI_LOGIN_SSH         1013
+#define IDH_UI_LOGIN_ENVIRONMENT 1014
+#define IDH_UI_LOGIN_DIRECTORIES 1015
+#define IDH_UI_LOGIN_SCP         1016
+#define IDH_UI_LOGIN_SFTP        1017
+#define IDH_UI_LOGIN_LOGGING     1018
+#define IDH_UI_LOGIN_CONNECTION  1020
+#define IDH_UI_LOGIN_PROXY       1021
+#define IDH_UI_LOGIN_BUGS        1022
+#define IDH_UI_LOGIN_AUTHENTICATION 1023
+#define IDH_UI_LOGIN_KEX         1024
+#define IDH_UI_LOGIN_TUNNEL      1025
+#define IDH_UI_PROGRESS          1026
+#define IDH_UI_PROPERTIES        1027
+#define IDH_UI_KEEPUPTODATE      1028
+#define IDH_START                1030
+#define IDH_SESSION_SAVE_OVERWRITE 1031
+#define IDH_SYNCHRONIZE_SAVE_MODE 1032
+#define IDH_SESSION_SAVE_PASSWORD 1033
+#define IDH_DELETE_SESSION       1034
+#define IDH_SESSION_SAVE_DEFAULT 1035
+#define IDH_LOGIN_KEY_TYPE       1036
+#define IDH_PROGRESS_CANCEL      1037
+#define IDH_KEEPUPTODATE_SYNCHRONIZE 1038
+#define IDH_REMOTE_TRANSFER      1039
+#define IDH_UI_SAL_PREF_CONFIRMATIONS 1040
+#define IDH_UI_SAL_PREF_TRANSFER 1041
+#define IDH_UI_SAL_PREF_QUEUE    1042
+#define IDH_UI_SAL_PREF_PANEL    1043
+#define IDH_DISCONNECT_F12       1044
+#define IDH_DIR_SYNCHRONIZE      1045
+#define IDH_UI_SAL_PREFERENCES   1047
+#define IDH_SHELL_SESSION        1049
+#define IDH_UI_AUTHENTICATE      1050
+#define IDH_UI_CONSOLE           1051
+#define IDH_UI_SYNCHRONIZE_CHECKLIST 1052
+#define IDH_UI_LOGIN_RECYCLE_BIN 1053
+
+#endif // SalamanderRH

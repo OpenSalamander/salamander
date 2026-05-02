@@ -1,0 +1,44 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+// String Table
+STRINGTABLE DISCARDABLE
+{
+    IDS_PLUGINNAME              "UnCHM"
+    IDS_CANT_OPEN               "Can not open file."
+    IDS_UNKNOW_ERROR            "Unspecified error."
+    IDS_UNPACKING_ARCHIVE       "Unpacking CHM Archive"
+    IDS_ERROR_UNPACKING         "Error unpacking file."
+    IDS_CANT_HANDLE_FILE        "Can not handle this file."
+    IDS_INSUFFICIENT_MEMORY     "Insufficient memory."
+    IDS_ABOUT                   "About Plugin"
+    IDS_PLUGIN_DESCRIPTION      "Browse and extract CHM files."
+    IDS_CANT_CREATE_TEMP        "Can not create temporary directory."
+    IDS_CANT_DELETE_TEMP_FILE   "Can not delete temporary file."
+    IDS_UNKNOWN_FILE_FORMAT     "Unknown file format or not valid CHM image.\n\nIf you are sure this is valid CHM image, please contact support@altap.cz and help us to support this format."
+    IDS_CANT_OPEN_FILE          "Can not open this file."
+    IDS_ERR_TMP                 "Creation of temporary file has failed."
+    IDS_CANT_SET_ATTRS          "Can not set file attributes."
+    IDS_CANT_CREATE_DIR         "Can not create directory '%s'."
+    IDS_YES                     "Yes"
+    IDS_NO                      "No"
+    IDS_ERROR                   "Error"
+    IDS_WARNING                 "Warning"
+    IDS_READERROR               "Read error"
+    IDS_WRITEERROR              "Write error"
+    IDS_INTERNAL_PLUGIN_ERROR   "Internal plugin error."
+    IDS_INVALIDNUMBER           "Invalid number."
+    IDS_CANCELOPER              "canceling operation, please wait..."
+    IDS_CHMLIBCOPYRIGHT         "CHMLIB Library Copyright © 2001-2010 Jed Wing"
+}

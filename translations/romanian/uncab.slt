@@ -1,0 +1,95 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\uncab.atp"
+TEXTVERSION,"1.27 (x86)"
+VERSION,"1,2,7,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 100]
+221,122,1,"Urmatorul volum cabinet"
+112,12,9,198,32,1,""
+300,12,48,40,8,1,"Nume disc:"
+110,54,48,156,8,1,""
+301,12,59,41,8,1,"Nume CAB:"
+111,54,59,156,8,1,""
+302,12,70,19,8,1,"&Cale:"
+101,12,80,182,12,1,""
+102,197,80,13,12,1,"..."
+1,106,103,50,14,1,"OK"
+2,160,103,50,14,1,"Anuleaza"
+303,6,97,209,1,1,""
+
+[DIALOG 103]
+352,85,1,"Eroare"
+300,6,10,26,8,1,"Nume:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Eroare:"
+302,36,23,309,16,1,"Fisierul nu poate fi extras deoarece continua din volumul precedent. Ca sa extragi acest fisier, trebuie sa pornesti cu volumul de unde incepe fisierul."
+105,36,44,183,12,1,"Nu mai afisa acest mesaj alta &data."
+108,78,63,60,14,1,"S&ari Peste"
+109,146,63,60,14,1,"Sari Peste &Tot"
+2,214,63,60,14,1,"Anuleaza"
+
+[DIALOG 106]
+210,85,1,"Configurare UnCAB"
+300,23,22,154,8,1,"precedent cand dezarhivezi."
+107,12,10,181,12,1,"&Automat sari peste fisierele continuate din volumul"
+301,23,44,111,8,1,"nu poate fi listat."
+116,12,32,170,12,1,"Nu afisa atentionare can&d tot continutul arhivei"
+302,6,60,198,1,1,""
+1,52,66,50,14,1,"OK"
+2,107,66,50,14,1,"Anuleaza"
+
+[DIALOG 115]
+213,108,1,"UnCAB - Atentie"
+300,11,9,193,24,1,"Nu toate fisierele din arhiva multi-volum pot fi listate (si vazute in panou), deoarece unele volume ale arhivei nu pot fi gasite."
+301,11,40,193,16,1,"Ca sa listezi tot continutul arhivei, copie toate volumele in acelasi director si deschide PRIMUL volum al archivei."
+105,11,65,157,12,1,"Nu mai afisa acest mesaj alta &data"
+302,5,83,202,1,1,""
+1,154,90,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnCAB"
+1001,1,"Memorie insuficienta."
+
+[STRINGTABLE 1]
+1008,1,"A aparut o eroare necunoscuta."
+1012,1,"Selecteaza Director"
+1014,1,"Nu pot adauga la lista de fisiere intrare arhiva."
+1015,1,"Dezarhivez Arhiva CAB - %s"
+1016,1,"pregatire date si creare directoare..."
+1017,1,"dezarhivez..."
+1018,1,"dezarhivez: "
+1019,1,"Nu pot obtine pointer fisier: "
+1020,1,"Nu pot scrie in fisier:"
+1021,1,"Nu pot seta pointer fisier: "
+1022,1,"Nu pot termina operatiuneadin cauza ca nume cale prea lung."
+1023,1,"Nu pot termina operatiunea, masca prea lunga."
+
+[STRINGTABLE 2]
+1025,1,"Ne pare rau, plugin a expirat. Va rugam cautati pe web site-ul nostru o versiune mai noua."
+1026,1,"Nu pot crea sau deschide fisier."
+1027,1,"Nu pot citi fisierul."
+1028,1,"Nu gasesc cabinet."
+1029,1,"Fisierul cabinet nu are format corect."
+1030,1,"Fisierul cabinet are un numar de versiune necunoscut."
+1031,1,"Fisierul cabinet este corupt."
+1032,1,"Tip de compresie necunoscut in directorul cabinet."
+1033,1,"Esec de decompresie date din fisierul cabinet."
+1034,1,"Cabinetele din set nu au aceasi marime RESERVE."
+1035,1,"Pauza utilizator."
+1036,1,"Selecteaza un director ce contine '%s'."
+1037,1,"Fisier cabinet incorect."
+1038,1,"Nu gasesc fisierul."
+1039,1,"sar peste fisier"
+
+[STRINGTABLE 3]
+1040,1,"Introdu discul cu numarul de volum cabinet %d sau localizeaza fisierul cabinet potrivit pe disc.\n\nApasa OK cand sunteti gata."
+1041,1,"Eroare"
+1042,1,"Rasfoieste si extrage archive CAB."
+1043,1,"Despre Plugin"
+

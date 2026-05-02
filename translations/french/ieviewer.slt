@@ -1,0 +1,18 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\french\ieviewer.atp"
+TEXTVERSION,"1.12 (x86)"
+VERSION,"1,1,2,180"
+
+[TRANSLATION]
+LANGID,1036
+AUTHOR,"Gérard Gréco, Arnaud Dupin de Beyssat, Jérémy Marc, Maxime Abbey"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6162"
+COMMENT,"Version française"
+
+[STRINGTABLE 0]
+10100,1,"Visualiseur Internet Explorer"
+10101,0,"Unable to open Internet Explorer Viewer.\nPlease report this problem to support@altap.cz."
+10102,1,"Erreur"
+10103,1,"Visualiseur rapide HTML et XML basé sur Internet Explorer."
+10105,1,"A propos du module"
+

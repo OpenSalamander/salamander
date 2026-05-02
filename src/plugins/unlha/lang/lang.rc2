@@ -1,0 +1,38 @@
+﻿//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGIN_DESCRIPTION, "Browse and extract LHA archives."
+ IDS_ABOUT, "About Plugin"
+ IDS_FILECORRUPT, "Invalid LZH file or unknown file format."
+ IDS_CHECKSUMERROR, "Header checksum error.\nThe archive is corrupt - not all files can be listed."
+ IDS_LOWMEM, "Out of memory."
+ IDS_WRITEERROR, "Write error"
+ IDS_PLUGINNAME, "UnLHA"
+ IDS_OPENERROR, "Error opening the archive."
+ IDS_LIST, "Unable to add archive entry to the files list."
+ IDS_SYMLINK, "The archive contains one or more UNIX symbolic links, which won't be displayed."
+ IDS_UNPACKERROR, "Cannot unpack the file."
+ IDS_CRCERROR, "Error in compressed data. CRC doesn't match."
+ IDS_READERROR, "Error reading the archive."
+ IDS_EXTRPROGTITLE, "Unpacking LHA Archive - %s"
+ IDS_PREPAREDATA, "preparing data and creating directories..."
+ IDS_UNPACKING, "unpacking: "
+ IDS_EXTRACTFILES, "unpacking..."
+ IDS_TOOLONGNAME, "Can't finish operation because of too long path name."
+ IDS_TOOLONGMASK, "Can't finish operation because of too long mask."
+ IDS_METHOD, "Unknown compression method. The file cannot be unpacked."
+ IDS_METHOD2, "unknown method skipped..."
+}

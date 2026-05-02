@@ -1,0 +1,64 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\tar.atp"
+TEXTVERSION,"3.34 (x86)"
+VERSION,"3,3,4,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[STRINGTABLE 0]
+11200,1,"TAR Plugin Hiba"
+11201,1,"Az archívum formátuma nem ismerhető fel vagy nem támogatott."
+11202,1,"Érvénytelen adat a TAR fejlécben - sérült archívum."
+11203,1,"Rossz fájl vagy fejléc összeg - sérült archívum."
+11204,1,"Belső hiba: sérült fájl adatszerkezet."
+11205,1,"Ismeretlen blokk jelzés - kihagyás."
+11206,1,"A szükséges fájl nincs az archívumban."
+11207,1,"Memóriakiosztási hiba."
+
+[STRINGTABLE 1]
+11240,1,"LZH archívumok még nem támogatottak."
+
+[STRINGTABLE 2]
+11250,1,"Kitömörítés"
+11251,1,"Kibontás "
+11252,1,"Kihagyás "
+11260,1,"GZip hiba"
+11261,1,"Ismeretlen tömörítési módot használ, nem tömöríthető ki."
+11262,1,"A fájl titkosított. A titkosítás nem támogatott GZip archívumokban."
+11263,1,"A fájl egy többrészes archívum része. A többrészes GZip archívumok nem támogatottak."
+
+[STRINGTABLE 3]
+11264,1,"Ismeretlen jelzés a GZip fejlécben, nem tömöríthető ki."
+11265,1,"Archívum megnyitási hiba: "
+11266,1,"Korán lett vége a fájlnak."
+11267,1,"Archívum olvasási hiba: "
+11268,1,"Kimeneti fájl írási hiba: "
+11269,1,"A WriteFile funkció visszautasított minden írást."
+11270,1,"Érvénytelen blokk a GZip folyamban, nem tömöríthető ki."
+11271,1,"Belső hiba a TAR pluginban, értesítsen minket az e-mail címünkön: support@altap.cz."
+11272,1,"Memóriakiosztási hiba."
+11273,1,"CRC hiba."
+11274,1,"Nem várt adat a tömörített folyamban, az archívum sérült."
+11275,1,"Keresési hiba az archívumban: "
+
+[STRINGTABLE 4]
+11280,1,"RPM Néző"
+11281,1,"RPM hiba"
+11282,1,"Ideiglenes fájlnév létrehozási hiba."
+11283,1,"Ideiglenes fájl létrehozási hiba."
+11284,1,"A fájl nem ismerhető fel RPM archívumként."
+11285,1,"Az archívum által kért  RPM verzió nem támogatott."
+11286,1,"Ismeretlen RPM archívum jelzés."
+11291,1,"Rossz jelzésű fájl."
+11292,1,"Sérült fejléc."
+11293,1,"Ismeretlen formátumú cpio fejléc."
+
+[STRINGTABLE 5]
+11299,1,"TAR"
+11300,1,"Unix archívumok böngészése és kibontása."
+11301,1,"Plugin névjegy"
+

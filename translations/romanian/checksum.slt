@@ -1,0 +1,115 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\checksum.atp"
+TEXTVERSION,"2.2 (x86)"
+VERSION,"2,2,0,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 1000]
+350,84,1,"Calculeaza Checksums"
+1001,5,5,340,54,1,"List1"
+1007,5,68,40,8,1,"Calculeaza:"
+1006,48,68,107,8,1,"Progres1"
+1002,162,65,63,14,1,"Con&figureaza..."
+1003,230,65,55,14,1,"&Salveaza..."
+1004,290,65,55,14,1,"S&top"
+1005,5,68,57,8,1,"indiciu clipboard"
+
+[DIALOG 1001]
+189,109,1,"Configurare Checksum"
+300,8,5,174,76,1," Calculeaza checksums "
+100,15,16,105,10,1,"&CRC/SFV"
+101,15,28,105,10,1,"&MD5"
+102,15,40,105,10,1,"SHA-&1"
+103,15,52,105,10,1,"SHA-&256"
+104,15,64,105,10,1,"SHA-&512"
+1,14,88,50,14,1,"OK"
+2,69,88,50,14,1,"Anuleaza"
+9,124,88,50,14,1,"Help"
+
+[DIALOG 2000]
+260,84,1,""
+1001,5,5,250,54,1,"List1"
+1007,5,68,37,8,1,"Verificare:"
+1006,45,68,98,8,1,"Progres1"
+2002,5,68,140,8,1,""
+2001,149,65,50,14,1,"&Focus"
+1004,205,65,50,14,1,"&Stop"
+
+[STRINGTABLE 0]
+1,1,"Checksum"
+2,1,"Despre Plugin"
+3,1,"SFV, MD5, SHA-1, SHA-256, si SHA-512 checksum verificator si calculator."
+4,1,"Fara memorie"
+5,1,"Eroare la deschiderea fisierului"
+6,1,"Eroare la citire"
+7,1,"Eroare la scriere"
+
+[STRINGTABLE 1]
+40,1,"Sarit Peste"
+41,1,"Calculez..."
+42,1,"Anulat"
+43,1,"Da click dreapta pe un obiect pentru a copia checksum in clipboard."
+44,1,"Copie valoare &CRC in Clipboard\tCtrl+C"
+45,1,"Copie &MD5 Checksum in Clipboard\tCtrl+M"
+46,1,"Copie SHA-&1 Checksum in Clipboard\tCtrl+1"
+47,1,"Copie SHA-&256 Checksum in Clipboard\tCtrl+2"
+
+[STRINGTABLE 2]
+48,1,"Copie SHA-&512 Checksum in Clipboard\tCtrl+5"
+53,1,"&Elimina obiect\tSterge"
+54,1,"Fisierul '%s' exista deja.\nDoriti sa-l suprascrieti?"
+55,1,"Eroare la crearea fisierului."
+56,1,"Fisierele peste care s-a sarit sau au fost anulate in timpul calcularii nu au fost salvate."
+57,1,"Eroare in deschiderea fisierului '%s'."
+58,1,"Lipsesc"
+59,1,"Fisierul selectat nu are extensie SFV, MD5, SHA1, SHA256, nici SHA512. Doriti sa continuati oricum?"
+60,1,"Fisierul selectat nu este un fisier valid SFV, MD5, SHA-1, SHA-256, sau SHA-512."
+61,1,"Verific..."
+62,1,"OK"
+63,1,"Corupt"
+
+[STRINGTABLE 3]
+65,1,"&Verific Checksums..."
+66,1,"&Calculez Checksums..."
+67,1,"Configurarea e deja deschisa."
+68,1,"Schimbarile vor avea efect cand fereastra "Calculeaza Checksums" este deschisa data viitoare."
+70,1,"Toate fisierele OK"
+71,1,"%d corupte, %d lipsa, %d sarite peste"
+72,1,"Open Salamander este ocupat. Comanda ceruta nu poate fi indeplinita, va rog incercati mai tarziu."
+74,1,"&Inchide"
+75,1,"Citesc arborele director, va rugam asteptati..."
+76,1,"Eroare in citirea directorului"
+77,1,"Nu sunt fisiere"
+78,1,"Verific Checksums"
+79,1,"Fisier"
+
+[STRINGTABLE 4]
+80,1,"Marime"
+81,1,"Status"
+82,1,"CRC"
+83,1,"MD5"
+84,1,"SHA-1"
+85,1,"SHA-256"
+86,1,"SHA-512"
+90,1,"Salveaza fisier Checksum"
+91,1,"Fisiere SFV (*.sfv)|*.sfv|"
+92,1,"Fisiere MD5 (*.md5)|*.md5|"
+93,1,"Fisiere SHA-1 (*.sha1)|*.sha1|"
+94,1,"Fisiere SHA-256 (*.sha256)|*.sha256|"
+95,1,"Fisiere SHA-512 (*.sha512)|*.sha512|"
+
+[STRINGTABLE 5]
+100,1,"Verific CRC"
+101,1,"Verific MD5"
+102,1,"Verific SHA-1"
+103,1,"Verific SHA-256"
+104,1,"Verific SHA-512"
+
+[STRINGTABLE 6]
+120,1,"Nu pot termina operatiunea din cauza numelui prea lung."
+

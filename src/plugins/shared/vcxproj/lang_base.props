@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros"></PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(OPENSAL_BUILD_DIR)salamander\$(Configuration)_$(ShortPlatform)\plugins\$(ShortProjectName)\lang\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <GenerateManifest>false</GenerateManifest>
+    <TargetName>english</TargetName>
+<TargetExt>.slg</TargetExt>
+<EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)english.slg</OutputFile>
+      <NoEntryPoint>true</NoEntryPoint>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>WINVER=0x0601;_LANG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+</Project>

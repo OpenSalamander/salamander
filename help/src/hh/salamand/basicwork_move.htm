@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Moving or Renaming Files and Directories</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="../salamander_help.css" />
+<link rel="stylesheet" type="text/css" href="../salamander_help_shared.css" />
+</head>
+
+<body>
+<div id="help_page">
+<div class="header">Open Salamander: Basic Working with Files and Directories</div>
+<div class="page">
+
+<h1>Moving or Renaming Files and Directories</h1>
+
+<p>You can move files and directories from any local or network path to a destination
+directory on any local or network path, in an archive, or in a plugin file system.
+Moving works in both directions except for archives (moving from an archive
+to disk is not supported; use Copy followed by Delete instead).
+Moving between archives and plugin file systems is not supported; use a temporary directory
+to complete such operations (for example, move from the plugin file system
+to a temporary directory and then from that directory to another plugin file system or archive).
+When you move a directory, all contained files and subdirectories are moved as well.</p>
+
+<h3>Moving or renaming files and directories using the Move/Rename command</h3>
+
+<ol> 
+<li><p>Select the files and directories you want to move.</p></li>
+<li>Open the <a href="dlgboxes_move.htm">Move/Rename dialog box</a>:
+ <table>
+ <tr><td class="hdr">Menu:</td><td>Files/Move/Rename...</td></tr>
+ <tr><td class="hdr">Shortcut key:</td><td>F6</td></tr>
+ <tr><td class="hdr">Toolbar:</td><td>Choose the Move/Rename button on the Top, Middle, or Bottom
+   toolbar.</td></tr>
+ </table></li>
+<li>In the <i>Move to</i> box, specify the destination directory.</li>
+<li>If you want to specify some options (see <a href="dlgboxes_move.htm">Move/Rename dialog box</a>), click the Options button.</li>
+<li>Choose the <i>OK</i> button.</li>
+</ol>
+
+<h3>Moving files and directories using drag and drop</h3>
+<p class="indent">Select the files and directories you want to move. Make sure the
+   destination is visible. When you drag a
+   selection to its new location, watch the mouse cursor shape. If it contains
+   the plus sign, you are copying files and directories. If it contains
+   the link (shortcut) sign, you are creating shortcuts to files and directories.
+   If it contains no sign, you are moving files and directories. You can
+   change this action by pressing and holding Shift (for moving), Ctrl (for copying),
+   or Shift+Ctrl (for creating shortcuts). While dragging, you can move the mouse
+   pointer near the edge of the panel to scroll the panel contents.</p>
+
+<h3>Moving files and directories using the clipboard</h3>
+<ol> 
+<li>Select the files and directories you want to move.</li>
+<li>Choose the Cut to Clipboard command:
+<table>
+<tr><td class="hdr">Menu:</td><td>Edit/Cut</td></tr>
+<tr><td class="hdr">Context menu:</td><td>Right-click selected files and
+  directories and select Cut.</td></tr>
+<tr><td class="hdr">Shortcut key:</td><td>Ctrl+X</td></tr>
+<tr><td class="hdr">Toolbar:</td><td>Choose the Clipboard Cut button on the
+  Top or Middle toolbar.</td></tr>
+</table></li>
+
+<li>Open the directory where you want to place the selected files and directories (it can also be
+    in an archive or plugin file system).</li>
+<li>Choose the Paste from Clipboard command:
+ <table>
+ <tr><td class="hdr">Menu:</td><td>Edit/Paste</td></tr>
+ <tr><td class="hdr">Context menu:</td><td>Right-click destination directory
+                     and select Paste.</td></tr>
+ <tr><td class="hdr">Shortcut key:</td><td>Ctrl+V or Shift+Insert</td></tr>
+ <tr><td class="hdr">Toolbar:</td><td>Choose the Clipboard Paste button on the Top or Middle 
+                     toolbar.</td></tr>
+ </table></li>
+</ol>
+
+<p class="indent">See <a href="advwork_clipboard.htm">Using Clipboard to Perform
+File and Directory Operations</a> for details.</p>
+
+
+<h4>Remarks</h4>
+<p>On drives formatted to use the Windows NT file system (NTFS), you must have
+   permissions to move or copy a file or directory.</p>
+
+<p>When you copy or move files or directories to a <a href="appendix_filesystems.htm">FAT</a>
+   disk, permissions are discarded. See the <i>Preserve owners and permissions (not inherited)
+   on NTFS drives</i> option in the <a href="dlgboxes_move.htm">Move/Rename dialog box</a>
+   for details on moving between <a href="appendix_filesystems.htm">NTFS</a> disks.
+</p>
+
+<h4>See Also</h4>
+<p>
+<a href="basicwork_select.htm">Selecting Files and Directories</a><br />
+<a href="basicwork_copy.htm">Copying Files and Directories</a><br />
+<a href="advwork_clipboard.htm">Using Clipboard to Perform File and Directory Operations</a><br />
+<a href="dlgboxes_move.htm">Move/Rename dialog box</a><br />
+</p>
+
+</div>
+<div class="footer">&#169; 2023 Open Salamander Authors</div>
+</div>
+</body>
+</html>

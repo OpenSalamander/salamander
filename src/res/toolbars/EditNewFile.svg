@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="16px" height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
+<path fill="#C27C19" d="M7,5H4.707l1.646-1.646L5.646,2.646L4,4.293V2H3v2.293L1.354,2.646L0.646,3.354L2.293,5H0v1h2.293
+	L0.646,7.646l0.707,0.707L3,6.707V9h1V6.707l1.646,1.646l0.707-0.707L4.707,6H7V5z M4,6H3V5h1V6z"/>
+<g>
+	<polygon fill="#444444" points="7,12 7,10 9,12 	"/>
+	
+		<rect x="9.586" y="5.172" transform="matrix(-0.7071 -0.7071 0.7071 -0.7071 13.1213 21.435)" fill="#444444" width="2.828" height="5.657"/>
+	
+		<rect x="13.793" y="3.086" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 27.935 -2.5711)" fill="#444444" width="1.414" height="2.828"/>
+</g>
+<g>
+	<polygon fill="#414141" points="12,9.707 12,14 6,14 6,9.414 5.646,9.768 5,9.121 5,10 5,15 13,15 13,8.707 	"/>
+	<polygon fill="#414141" points="10.293,6 11.293,5 8,5 8,6 10,6 	"/>
+	<polygon fill="#FFFFFF" points="12,14 12,9.707 9.207,12.5 6.5,12.5 6.5,9.793 10.293,6 10,6 8,6 8,7 7.121,7 7.768,7.646 
+		7.061,8.354 6.354,9.061 6,9.414 6,14 	"/>
+</g>
+</svg>

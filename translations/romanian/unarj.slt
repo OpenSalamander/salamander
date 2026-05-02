@@ -1,0 +1,88 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\romanian\unarj.atp"
+TEXTVERSION,"1.21 (x86)"
+VERSION,"1,2,1,180"
+
+[TRANSLATION]
+LANGID,1048
+AUTHOR,"Ioan Stefancu, Donca Radu"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6165"
+COMMENT,"Versiunea romana"
+
+[DIALOG 100]
+198,110,1,"Urmatorul volum arhiva"
+300,12,9,180,32,1,"Introdu discul cu urmatorul volum arhiva sau localizeaza fisierul potrivit pe disc.\n\nApasa OK cand sunteti gata."
+301,12,48,68,8,1,"Volumul precedent:"
+103,81,48,109,12,1,""
+302,12,62,61,8,1,"&Volumul urmator:"
+101,12,72,159,12,1,""
+102,174,72,13,12,1,"..."
+1,42,91,50,14,1,"OK"
+2,105,91,50,14,1,"Anuleaza"
+
+[DIALOG 103]
+352,85,1,"Eroare"
+300,6,10,26,8,1,"Nume:"
+104,36,10,309,8,1,""
+301,6,23,26,8,1,"Eroare:"
+302,36,23,309,16,1,"Fisierul nu poate fi extras deoarece se continua din volumul precedent. Ca sa extragi acest fisier, trebuie sa pornesti cu un volum unde fisierul incepe."
+105,36,44,183,12,1,"Nu mai afisa acest mesaj alta &data."
+1,121,63,50,14,1,"OK"
+2,181,63,50,14,1,"Anuleaza"
+
+[DIALOG 106]
+200,85,1,"Configurare UnARJ"
+300,23,22,154,8,1,"precedent cand dezarhivezi."
+107,12,10,181,12,1,"&Automat sari peste fisierele continuate din volumul"
+301,23,44,111,8,1,"nu poate fi listat."
+116,12,32,170,12,1,"Nu afisa atentionare can&d tot continutul arhivei"
+302,6,60,188,1,1,""
+1,47,66,50,14,1,"OK"
+2,102,66,50,14,1,"Anuleaza"
+
+[DIALOG 115]
+213,107,1,"UnARJ - Atentie"
+300,11,10,194,24,1,"Nu toate fisierele din arhiva multi-volum pot fi listate (si vazute in panou), deoarece unele volume ale arhivei nu pot fi gasite."
+301,11,41,192,16,1,"Ca sa listezi tot continutul arhivei, copie toate volumele in acelasi director."
+105,11,66,157,12,1,"Nu mai afisa acest mesaj alta &data"
+302,5,83,203,1,1,""
+1,153,89,50,14,1,"OK"
+
+[STRINGTABLE 0]
+1000,1,"UnARJ"
+1001,1,"Memorie insuficienta."
+1002,1,"Sfarsit neasteptat a fisierului arhiva."
+1005,1,"Arhiva este corupta."
+1006,1,"Fisier de format necunoscut sau arhiva ARJ invalida."
+1007,1,"Nu pot deschide fisier arhiva."
+
+[STRINGTABLE 1]
+1008,1,"A aparut o eroare necunoscuta."
+1010,1,"Nu pot accesa fisierul archiva."
+1011,1,"Fisiere arhiva ARJ (*.A*)"
+1012,1,"Selecteaza Fisier Arhiva"
+1013,1,"Eroare in compresie date. CRC nu se potriveste."
+1014,1,"Nu pot adauga la lista de fisiere intrare arhiva."
+1015,1,"Dezarhivez arhiva ARJ - %s"
+1016,1,"pregatire date si creare directoare..."
+1017,1,"dezarhivez..."
+1018,1,"dezarhivez: "
+1019,1,"Nu pot obtine pointer fisier: "
+1020,1,"Nu pot scrie in fisier:"
+1021,1,"Nu pot seta pointer fisier: "
+1022,1,"Nu pot termina operatiunea din cauza nume cale prea lung."
+1023,1,"Nu pot termina operatiuneadin cauza ca masca e prea lunga."
+
+[STRINGTABLE 2]
+1024,1,"Versiune necunoscuta de fisier comprimat."
+1025,1,"Tip necunoscut de fisier comprimat."
+1026,1,"Fisierul este comprimat de o metoda nesuportata de plugin UnARJ."
+1027,1,"Ne pare rau, fisierele criptate nu sunt suportate."
+1028,1,"Volum invalid sau structura arhiva necunoscuta."
+1029,1,"Ne pare rau, plugin a expirat. Va rugam cautati pe web site-ul nostru o versiune mai noua."
+1030,1,"Nu gasesc fisierul."
+1031,1,"Eroare"
+1032,1,"Toate fisierele (*.*)"
+1033,1,"Rasfoieste si extrage archivele ARJ."
+1034,1,"Despre Plugin"
+

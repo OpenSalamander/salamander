@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introducing Multimedia Viewer">
+		<param name="Local" value="hh\mmviewer\introduction_intro.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Exporting Information into HTML File">
+		<param name="Local" value="hh\mmviewer\using_export.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Opening Previous or Next File from Panel or Find Window">
+		<param name="Local" value="hh\mmviewer\using_openotherfiles.htm">
+		</OBJECT>
+</UL>
+</BODY>
+</HTML>

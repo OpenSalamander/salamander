@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\shared\auxtools.cpp" />
+    <ClCompile Include="..\..\shared\dbg.cpp" />
+    <ClCompile Include="..\ieviewer.cpp" />
+    <ClCompile Include="..\markdown.cpp" />
+    <ClCompile Include="..\precomp.cpp" />
+    <ClCompile Include="..\cmark-gfm\src\arena.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\blocks.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\buffer.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\cmark.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\cmark_ctype.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\commonmark.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\footnotes.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\houdini_href_e.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\houdini_html_e.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\houdini_html_u.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\html.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\inlines.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\iterator.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\latex.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\linked_list.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\main.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\man.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\map.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\node.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\plaintext.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\plugin.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\references.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\registry.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\render.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\scanners.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\syntax_extension.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\utf8.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\src\xml.c">
+      <Filter>cmark-gfm\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\autolink.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\core-extensions.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\ext_scanners.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\strikethrough.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\table.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\tagfilter.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cmark-gfm\extensions\tasklist.c">
+      <Filter>cmark-gfm\extensions</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\shared\auxtools.h" />
+    <ClInclude Include="..\..\shared\dbg.h" />
+    <ClInclude Include="..\..\shared\spl_arc.h" />
+    <ClInclude Include="..\..\shared\spl_base.h" />
+    <ClInclude Include="..\..\shared\spl_com.h" />
+    <ClInclude Include="..\..\shared\spl_fs.h" />
+    <ClInclude Include="..\..\shared\spl_gen.h" />
+    <ClInclude Include="..\..\shared\spl_menu.h" />
+    <ClInclude Include="..\..\shared\spl_vers.h" />
+    <ClInclude Include="..\..\shared\spl_view.h" />
+    <ClInclude Include="..\ieviewer.h" />
+    <ClInclude Include="..\markdown.h" />
+    <ClInclude Include="..\precomp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\ieviewer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\ieviewer.def" />
+    <None Include="..\ieviewer.rc2" />
+    <None Include="..\ieviewer.rh" />
+    <None Include="..\ieviewer.rh2" />
+    <None Include="..\lang\lang.rh" />
+    <None Include="..\versinfo.rh2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cmark-gfm">
+      <UniqueIdentifier>{f75dfdef-8063-4196-8762-866d79924c77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmark-gfm\src">
+      <UniqueIdentifier>{904ee05b-2232-4722-b34c-c038e8000f58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cmark-gfm\extensions">
+      <UniqueIdentifier>{c7a4c5d0-b07a-4bda-82e1-95f6223e9d66}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

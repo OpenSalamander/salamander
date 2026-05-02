@@ -1,0 +1,13 @@
+0E
+
+"Önkitömörítõ ZIP archívum"
+
+"Kitömöríti a ZIP archívumot."
+
+"Verzió 1.40"
+
+"Kitömörít"
+
+"Self-Extractor © 2000-2023 Open Salamander Authors"
+
+"https://www.altap.cz"

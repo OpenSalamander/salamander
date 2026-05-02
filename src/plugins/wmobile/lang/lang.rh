@@ -1,0 +1,36 @@
+﻿//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by lang.rc
+//
+#define IDD_PROGRESSDLG                 500
+#define IDT_OPERATION                   501
+#define IDT_FILENAME                    502
+#define IDP_PROGRESSBAR                 503
+#define IDD_PROGRESS2DLG                510
+#define IDT_OPERATION2                  511
+#define IDT_FILENAME2                   512
+#define IDP_PROGRESSBAR2                513
+#define IDD_ATTRIBUTES                  520
+#define IDC_ARCHIVE                     521
+#define IDC_HIDDEN                      522
+#define IDC_READONLY                    523
+#define IDC_SYSTEM                      524
+#define IDC_ATTR_MODIFIED_DATE          526
+#define IDC_ATTR_MODIFIED_TIME          527
+#define IDC_ATTR_CREATED_DATE           528
+#define IDC_ATTR_CREATED_TIME           529
+#define IDC_ATTR_ACCESSED_DATE          530
+#define IDC_ATTR_ACCESSED_TIME          531
+#define IDC_ATTR_CURRENT                532
+#define IDC_RECURSESUBDIRS              533
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NEXT_RESOURCE_VALUE        8500
+#define _APS_NEXT_COMMAND_VALUE         40001
+#define _APS_NEXT_CONTROL_VALUE         8700
+#define _APS_NEXT_SYMED_VALUE           101
+#endif
+#endif

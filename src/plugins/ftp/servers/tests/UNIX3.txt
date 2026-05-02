@@ -1,0 +1,19 @@
+total 640528
+-rw-r--r--   1 15          8334 Jun 10 05:09 2.3_MCAD_GFX.README
+-rw-r--r--   1 15       23291497 Jun 10 05:09 2.3_MCAD_GFX.tar.Z
+-rw-r--r--   1 15       18557069 Oct 12  1999 netra_ft_s26v1_Recommended.tar.Z
+lrwxrwxrwx   1 1             16 Oct  5  2001 downloads -> public/downloads
+crw-rw-rw-   1 3         42,  0 Oct  5  2001 tcp
+crw-rw-rw-   1 3        105,  1 Oct  5  2001 ticotsord
+drwxr-x---   2 1862        2048 Apr  7  1999 advpanel
+lrwxrwxrwx   1 other          7 Mar 22  2000 bin -> usr/bin
+lrwxrwxrwx   1 other          7 Jul 29 18:06 ccm -> pub/ccm
+-rw-r--r--   1 other name          8334 Jun 10 05:09 2.3_MCAD_GFX.README
+-rw-r--r--   1 other name       23291497 Jun 10 05:09 2.3_MCAD_GFX.tar.Z
+-rw-r--r--   1 other name       18557069 Oct 12  1999 netra_ft_s26v1_Recommended.tar.Z
+lrwxrwxrwx   1 other name             16 Oct  5  2001 downloads -> public/downloads
+crw-rw-rw-   1 other name         42,  0 Oct  5  2001 tcp
+crw-rw-rw-   1 other name        105,  1 Oct  5  2001 ticotsord
+drwxr-x---   2 other name        2048 Apr  7  1999 advpanel
+lrwxrwxrwx   1 other name          7 Mar 22  2000 bin -> usr/bin
+lrwxrwxrwx   1 other name         7 Jul 29 18:06 ccm -> pub/ccm

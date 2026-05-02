@@ -1,0 +1,67 @@
+﻿//
+// salamand.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+
+#define INSIDE_SALAMANDER
+#include "versinfo.rh2"
+
+#include "plugins\\shared\\versinfo.rc2"
+
+IDI_SALAMANDER ICON "res\\salamand.ico"
+IDI_SALAMANDER_RED ICON "res\\sal_r.ico"
+IDI_SALAMANDER_GREEN ICON "res\\sal_g.ico"
+IDI_SALAMANDER_BLUE ICON "res\\sal_b.ico"
+IDI_UPPERDIR ICON "res\\updir.ico"
+IDI_ARCHIVE ICON "res\\archive.ico"
+IDI_PLUGIN ICON "res\\plugin.ico"
+IDI_PLUGINFS ICON "res\\pluginfs.ico"
+IDI_FIND ICON "res\\find.ico"
+//IDI_TIPOFTHEDAY ICON "res\\tipofday.ico"
+IDI_DIRECTORY ICON "res\\directory.ico"
+IDI_EMPTY ICON "res\\empty.ico"
+IDI_VIEWER ICON "res\\viewer.ico"
+IDI_GOOGLEDRIVE ICON "res\\googledr.ico"
+IDI_DROPBOX ICON "res\\dropbox.ico"
+IDI_ONEDRIVE ICON "res\\onedrive.ico"
+
+IDB_TOOLBAR_16 BITMAP "res\\toolbar.bmp"
+IDB_TOOLBAR_256 RCDATA "res\\toolbar2.png"
+IDB_BOTTOMTOOLBAR BITMAP "res\\bottomtb.bmp"
+IDB_HEADER BITMAP "res\\hdrwnd.bmp"
+IDB_MENU BITMAP "res\\menuchck.bmp"
+IDB_EDTLBTB BITMAP "res\\edtlbtb.bmp" // JRYFIXME: TOOLBARHDR_USE_SVG
+IDB_FILTER BITMAP "res\\filter.bmp"
+IDB_UPDOWN BITMAP "res\\updown.bmp"
+IDB_ZOOM BITMAP "res\\zoom.bmp"
+//IDB_WORKER BITMAP "res\\worker.bmp"
+IDB_MENUITEMS BITMAP "res\\menuitms.bmp"
+
+IDB_LOGO_HAND RCDATA "res\\logo.svg"
+IDB_LOGO_GRAD RCDATA "res\\gradspl.svg"
+IDB_LOGO_TEXT RCDATA "res\\os.svg"
+IDB_ABOUT_GRAD RCDATA "res\\gradabt.svg"
+
+IDB_THROBBER RCDATA "res\\throbber.png"
+IDB_LOCK RCDATA "res\\lock.png"
+
+IDC_SPLIT CURSOR "res\\split.cur"
+IDC_TOOLBAR_MOVE CURSOR "res\\toolbar1.cur"
+IDC_TOOLBAR_DEL CURSOR "res\\toolbar2.cur"
+IDC_TOOLBAR_ADD CURSOR "res\\toolbar3.cur"
+IDC_DRAGCOPYEFFECT CURSOR "res\\copyeff.cur"
+
+IDC_COLORTABLE RCDATA "plugins\\shared\\clrtable.dat"
+
+IDV_ARROW_RIGHT RCDATA "res\\right.svg"
+IDV_ARROW_DOWN RCDATA "res\\down.svg"
+IDV_ARROW_MORE RCDATA "res\\more.svg"
+IDV_ARROW_LESS RCDATA "res\\less.svg"

@@ -1,0 +1,65 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=unchm.chm
+Contents file=unchm.hhc
+Default Window=$global_ssdefault
+Default topic=hh\unchm\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=unchm.hhk
+Language=0x409 English (United States)
+Title=UnCHM Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","unchm.hhk","hh\unchm\introduction_intro.htm","hh\unchm\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+
+[MAP]
+#include "..\unchm.rh"
+#include "..\unchm.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+7zip.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+uncab.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

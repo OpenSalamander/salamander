@@ -1,0 +1,75 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\hungarian\pak.atp"
+TEXTVERSION,"1.71 (x86)"
+VERSION,"1,7,1,180"
+
+[TRANSLATION]
+LANGID,1038
+AUTHOR,"Török József"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6164"
+COMMENT,"Magyar változat"
+
+[DIALOG 100]
+211,73,1,"PAK archívum optimalizálása"
+300,8,9,72,8,1,"Érvényes adatméret:"
+101,81,9,118,8,1,""
+301,8,20,57,8,1,"Teljes fájlméret:"
+102,81,20,118,8,1,""
+302,8,31,50,8,1,"Pazarolt hely:"
+103,81,31,118,8,1,""
+303,8,44,195,1,1,""
+1,50,53,50,14,1,"Optimalizál"
+2,110,53,50,14,1,"Mégse"
+
+[STRINGTABLE 0]
+500,1,"Nem nyitható meg: %s"
+501,1,"Nem inicializálható a paklib felület. Egy fájl már nyitva van."
+502,1,"A fájl nem nyitható meg. Egy fájl már nyitva van."
+503,1,"Nem lehet tudni a fájlméretet: %s"
+504,1,"Érvénytelen adatformátum."
+505,1,"Kevés memória."
+506,1,"aktuális PAK központi mappa"
+507,1,"Nem állítható be a mutató: %s"
+508,1,"Nem lehet a fájlból olvasni: %s"
+509,1,"Nincs meg a fájlmutató: %s"
+510,1,"Nem lehet a fájlba írni: %s"
+511,1,"A fájl nem adható hozzá, mert túl hosszú nevű."
+
+[STRINGTABLE 1]
+1000,1,"PAK"
+1001,1,"Kevés memória."
+1002,1,"Nem adható a fájl a listához."
+1003,1,"nem tölthető be a paklib.dll vagy nincs eljárási cím: "
+1004,1,"Kitömörítés PAK archívumból - %s"
+1005,1,"adat előkészítése..."
+1006,1,"kibontás..."
+1007,1,"kibontás: "
+
+[STRINGTABLE 2]
+1008,1,"A művelet nem fejezhető be, mert az elérési út neve túl hosszú."
+1009,1,"nem állítható be a fájl mutató: "
+1010,1,"Nem érhető el a fájl mutató: "
+1011,1,"Nem lehet a fájlba írni:"
+1013,1,"A fájl nem nyitható meg: "
+1014,1,"A művelet nem fejezhető be, mert a maszk túl hosszú."
+1015,1,"Törlés PAK archívumból - %s"
+1016,1,"törlés..."
+1017,1,"törlés: "
+1018,1,"művelet megszakítása, kérem várjon..."
+1019,1,"Tömörítés PAK archívumba - %s"
+1020,1,"A fájl nem adható hozzá: túl nagy."
+1021,1,"tömörítés..."
+1022,1,"A fájl nem adható hozzá, mert túl hosszú nevű."
+1023,1,"tömörítés: "
+
+[STRINGTABLE 3]
+1024,1,"Nem lehet a fájlból olvasni: "
+1025,1,"A plugin nem tud a Open Salamander-hez kapcsolódni."
+1026,1,"optimalizálás, kérem várjon..."
+1027,1,"PAK archívum optimalizálása - %s"
+1028,1,"A fájlok törlését nem sikerült befejezni. Talán futtatnia kellene a PAK optimalizálót a PAK Plugin menüjéből, a terület pazarlása miatt."
+1029,1,"PAK &optimalizálása"
+1030,1,"Sajnálom, a plugin lejárt. Keresse weboldalunkon az újabb verziót."
+1031,1,"Quake PAK archívumok böngészése és kibontása."
+1032,1,"Plugin névjegy"
+

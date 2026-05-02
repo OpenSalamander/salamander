@@ -1,0 +1,14 @@
+Directory ANONYMOUS_ROOT:[000000]
+
+.WELCOME;1                 2  13-FEB-2002 23:32:40.47
+DECUS.DIR;1                1   9-MAY-2001 22:18:51.69
+MOZILLA.DIR;1              2  21-JUN-2001 14:57:51.38
+README.TXT;4               2  18-APR-2000 10:40:39.90
+SSH.DIR;1                  1  22-JUN-2002 15:11:12.71
+VMS-FREEWARE.DIR;1         1   9-MAY-2001 23:58:31.39
+02AVMSLT.TXT;1      %RMS-E-PRV, insufficient privilege or file protection violation
+02AVMSLT.DIR;1      %RMS-E-PRV, insufficient privilege or file protection violation
+EA95_0PS.GZ;1	No privilege for attempted operation
+EA95_0PSD.DIR;1	No privilege for attempted operation
+
+Total of 10 files, 16 blocks.

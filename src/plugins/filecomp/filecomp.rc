@@ -1,0 +1,119 @@
+﻿// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "filecomp.rh"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+#include "filecomp.rh2"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "filecomp.rh\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winresrc.h""\r\n"
+    "\r\n"
+    "#include ""filecomp.rh2""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)\r\n"
+    "LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL\r\n"
+    "#include ""filecomp.rc2""   // non-Microsoft Visual C++ edited resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDA_ACCELS ACCELERATORS 
+BEGIN
+    VK_DOWN,        CM_ALTDOWN,             VIRTKEY, ALT, NOINVERT
+    VK_UP,          CM_ALTUP,               VIRTKEY, ALT, NOINVERT
+    VK_TAB,         CM_ANTICYCLEVIEW,       VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ESCAPE,      CM_CANCEL,              VIRTKEY, NOINVERT
+    "D",            CM_CBACTIVATE,          VIRTKEY, ALT, NOINVERT
+    "O",            CM_COMPARE,             VIRTKEY, NOINVERT
+    "O",            CM_COMPARE,             VIRTKEY, CONTROL, NOINVERT
+    "C",            CM_COPY,                VIRTKEY, NOINVERT
+    "C",            CM_COPY,                VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      CM_COPY,                VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         CM_CYCLEVIEW,           VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          CM_DETAILDIFF,          VIRTKEY, NOINVERT
+    VK_HOME,        CM_FIRSTDIFF,           VIRTKEY, ALT, NOINVERT
+    VK_END,         CM_LASTDIFF,            VIRTKEY, ALT, NOINVERT
+    "M",            CM_MAXIMIZE,            VIRTKEY, NOINVERT
+    VK_F11,         CM_MAXIMIZE,            VIRTKEY, NOINVERT
+    VK_OEM_COMMA,   CM_MAXLEFTVIEW,         VIRTKEY, NOINVERT
+    VK_OEM_COMMA,   CM_MAXLEFTVIEW,         VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PERIOD,  CM_MAXRIGHTVIEW,        VIRTKEY, NOINVERT
+    VK_OEM_PERIOD,  CM_MAXRIGHTVIEW,        VIRTKEY, CONTROL, NOINVERT
+    "J",            CM_NEXTDIFF,            VIRTKEY, ALT, NOINVERT
+    "N",            CM_NEXTDIFF,            VIRTKEY, NOINVERT
+    VK_RIGHT,       CM_NEXTDIFF,            VIRTKEY, ALT, NOINVERT
+    "D",            CM_ONLYDIFFERENCES,     VIRTKEY, NOINVERT
+    "D",            CM_ONLYDIFFERENCES,     VIRTKEY, CONTROL, NOINVERT
+    "K",            CM_PREVDIFF,            VIRTKEY, ALT, NOINVERT
+    "P",            CM_PREVDIFF,            VIRTKEY, NOINVERT
+    VK_LEFT,        CM_PREVDIFF,            VIRTKEY, ALT, NOINVERT
+    "R",            CM_RECOMPARE,           VIRTKEY, NOINVERT
+    "R",            CM_RECOMPARE,           VIRTKEY, CONTROL, NOINVERT
+    "E",            CM_SAMESIZEVIEW,        VIRTKEY, NOINVERT
+    "E",            CM_SAMESIZEVIEW,        VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          CM_SHOWCARET,           VIRTKEY, NOINVERT
+    "W",            CM_SHOWWHITESPACE,      VIRTKEY, NOINVERT
+    "W",            CM_SHOWWHITESPACE,      VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         CM_SWITCHWINDOW,        VIRTKEY, NOINVERT
+    "H",            CM_VIEW_HORIZONTAL,     VIRTKEY, CONTROL, NOINVERT
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+LANGUAGE LANG_NEUTRAL,SUBLANG_NEUTRAL
+#include "filecomp.rc2"   // non-Microsoft Visual C++ edited resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

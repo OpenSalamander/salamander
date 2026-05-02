@@ -1,0 +1,109 @@
+﻿[EXPORTINFO]
+PROJECTNAME,"translator\salamand 4.0\projects\spanish\unrar.atp"
+TEXTVERSION,"3.01 (x86)"
+VERSION,"3,0,1,180"
+
+[TRANSLATION]
+LANGID,3082
+AUTHOR,"Juan Pablo Barrio Lera"
+WEB,"forum.altap.cz/viewtopic.php?f=23&t=6168"
+COMMENT,"Versión en español"
+
+[DIALOG 100]
+202,95,1,"Siguiente volumen de archivo"
+117,12,9,182,32,1,"Por favor, inserte un disco con el siguiente volumen del archivo o localice el fichero apropiado en el disco.\n\nPulse Aceptar cuando esté preparado."
+300,12,48,68,8,1,"&Nombre de fichero:"
+101,12,58,163,12,1,""
+102,178,58,13,12,1,"..."
+1,44,76,50,14,1,"Aceptar"
+2,107,76,50,14,1,"Cancelar"
+
+[DIALOG 103]
+352,85,1,"Error"
+300,6,10,32,8,1,"Nombre:"
+104,42,10,303,8,1,""
+301,6,23,32,8,1,"Error:"
+302,42,23,303,16,1,"El fichero no puede ser extraido porque continúa desde un volumen anterior. Para extraer este fichero debe empezar con el volumen donde comienza el fichero."
+105,42,44,177,12,1,"&No mostrar este mensaje en lo sucesivo."
+1,121,63,50,14,1,"Aceptar"
+2,181,63,50,14,1,"Cancelar"
+
+[DIALOG 106]
+220,115,1,"Configuración de UnRAR"
+107,12,10,195,12,1,"&Automáticamente saltar ficheros que continúan desde"
+116,12,32,195,12,1,"&No mostrar aviso cuando todo el contenido del archivo"
+300,23,22,154,8,1,"volúmenes anteriores al desempaquetar."
+301,23,44,111,8,1,"no pueda ser listado."
+302,6,60,208,1,1,""
+117,12,70,200,12,1,"Mostrar columna "&Comprimido" al listar el archivo"
+303,6,90,208,1,1,""
+1,57,96,50,14,1,"Aceptar"
+2,112,96,50,14,1,"Cancelar"
+
+[DIALOG 108]
+350,80,1,"Escriba la contraseña"
+113,18,18,18,20,1,""
+300,57,10,256,8,1,"Este fichero está encriptado. Escriba la contraseña para su desencriptación."
+301,57,25,30,8,1,"Fichero:"
+104,100,25,240,8,1,""
+302,57,38,42,8,1,"&Contraseña:"
+110,100,36,157,12,1,""
+1,30,58,50,14,1,"C&orrecto"
+112,90,58,50,14,1,"&Todos"
+109,150,58,50,14,1,"&Saltar"
+111,210,58,50,14,1,"S&altar todos"
+2,270,58,50,14,1,"Cancelar"
+
+[DIALOG 115]
+213,105,1,"UnRAR - Aviso"
+300,11,8,194,24,1,"No todos los ficheros del archivo multivolumen pueden listarse (y verse en el panel), porque algunos de los volúmenes del archivo no se encontraron."
+301,11,39,194,16,1,"Para listar todo el contenido del archivo copie todos los volúmenes del archivo al mismo directorio."
+105,11,64,157,12,1,"&No mostrar este mensaje en lo sucesivo"
+302,5,81,202,1,1,""
+1,155,87,50,14,1,"Aceptar"
+
+[STRINGTABLE 0]
+1000,1,"UnRAR"
+1001,1,"Memoria insuficiente."
+1002,1,"Imposible conseguir nombre del módulo."
+1003,1,"Imposible cargar biblioteca '%s'."
+1004,1,"Imposible conseguir dirección de procedimiento."
+1005,1,"Archivo corrupto. (¿Contraseña equivocada?)"
+1006,1,"Fichero con formato desconocido o no es un archivo RAR válido. (¿Contraseña equivocada?)"
+1007,1,"Imposible abrir el fichero archivo."
+
+[STRINGTABLE 1]
+1008,1,"Ocurrió un error desconocido."
+1009,1,"Imposible abrir volumen del archivo."
+1010,1,"Imposible leer el fichero archivo."
+1011,1,"Archivos RAR (*.R*)"
+1012,1,"Seleccione fichero archivo"
+1013,1,"Error en datos comprimidos. No concuerda el CRC. (¿Contraseña equivocada?)"
+1014,1,"Imposible añadir entrada de archivo a la lista de ficheros."
+1015,1,"Desempaquetando archivo RAR - %s"
+1016,1,"preparando y creando directorios..."
+1017,1,"desempaquetando..."
+1018,1,"desempaquetando: "
+1019,1,"Imposible conseguir puntero de fichero: "
+1020,1,"Imposible escribir al fichero:"
+1021,1,"Imposible disponer puntero a fichero: "
+1022,1,"Imposible terminar la operación por nombre de ruta muy larga."
+1023,1,"Imposible terminar la operación por máscara muy larga."
+
+[STRINGTABLE 2]
+1024,1,"Escriba al menos un caracter."
+1027,1,"Todos los ficheros (*.*)"
+1028,1,"Error"
+1029,1,"Fichero no encontrado"
+1030,1,"Versión incorrecta de unrar.dll. Reinstale el plugin UnRAR."
+1031,1,"Parece que este es un archivo multivolumen. Si lo es, seleccione el primer volumen del archivo y pulse Aceptar.\n\nSi no es un archivo multivolumen, pulse Cancelar."
+1032,1,"Seleccione el primer volumen"
+1033,1,"Hojear y extraer archivos RAR."
+1034,1,"Acerca del Plugin"
+1035,1,"Fichero no encontrado en el archivo."
+1036,1,"La contraseña es incorrecta. Las letras de la contraseña deben teclearse respetando mayúsculas. Asegúrese de que BloqMayús no está activado por error."
+
+[STRINGTABLE 3]
+1040,1,"Comprimido"
+1041,1,"Tamaño comprimido del fichero"
+

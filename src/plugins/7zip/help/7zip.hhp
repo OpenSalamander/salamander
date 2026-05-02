@@ -1,0 +1,68 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=7zip.chm
+Contents file=7zip.hhc
+Default Window=$global_ssdefault
+Default topic=hh\7zip\introduction_intro.htm
+Display compile progress=No
+Full text search stop list file=..\..\shared\help\en\stop.stp
+Full-text search=Yes
+Index file=7zip.hhk
+Language=0x409 English (United States)
+Title=7-ZIP Help
+
+[WINDOWS]
+$global_ssdefault=,"salamand.chm::\salamand.hhc","7zip.hhk","hh\7zip\introduction_intro.htm","hh\7zip\introduction_intro.htm",,,,"Web Help",0x3520,,0x180e,,,,,,,,0
+
+[FILES]
+hh\salamander_help.css
+hh\salamander_help_shared.css
+
+[ALIAS]
+IDH_TESTARCHIVE=hh\7zip\using_testingarc.htm
+IDD_CONFIGURATION=hh\7zip\dlgboxes_config.htm
+IDD_NEWARCHIVE=hh\7zip\dlgboxes_newarc.htm
+
+[MAP]
+#include "..\7zip.rh"
+#include "..\7zip.rh2"
+#include "..\lang\lang.rh"
+
+[MERGE FILES]
+salamand.chm
+zip.chm
+demoplug.chm
+demoview.chm
+filecomp.chm
+dbviewer.chm
+ftp.chm
+checksum.chm
+checkver.chm
+ieviewer.chm
+mmviewer.chm
+pak.chm
+peviewer.chm
+pictview.chm
+regedt.chm
+renamer.chm
+splitcbn.chm
+tar.chm
+unarj.chm
+uncab.chm
+undelete.chm
+unfat.chm
+uniso.chm
+unlha.chm
+unmime.chm
+unrar.chm
+wmobile.chm
+winscp.chm
+nethood.chm
+unchm.chm
+automation.chm
+diskmap.chm
+demomenu.chm
+
+[INFOTYPES]
+

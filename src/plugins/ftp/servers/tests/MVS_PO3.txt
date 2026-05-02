@@ -1,0 +1,7 @@
+NAME                 VV.MM     CHANGED     SIZE  INIT   MOD   ID
+#PDF                  01.08 95/09/29 16:31    48    32     0 USER01
+#PDFB                 01.00 95/06/28 09:17    43    43     0 USER01
+#PDFRX                01.08 90/06/13 10:24    36    25     0 USER01
+#PDFX                 01.00 95/09/29 16:29    47    47     0 USER01
+OMCSIRBF
+#PDEX                 01.00 95/09/29 16:29    47    47     0 USER01 

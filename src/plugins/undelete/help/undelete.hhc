@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD>
+<BODY>
+	<OBJECT type="text/site properties">
+		<param name="Window Styles" value="0x800027">
+	</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Introducing Undelete Plugin">
+			<param name="Local" value="hh\undelete\introduction_intro.htm">
+		</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Using Undelete Plugin">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Recovering Deleted Files and Directories">
+			<param name="Local" value="hh\undelete\using_undelete.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Restoring Encrypted Files from Backup">
+			<param name="Local" value="hh\undelete\using_restoringencrfiles.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Dialog Boxes">
+	</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Undelete Configuration">
+			<param name="Local" value="hh\undelete\dlgboxes_config.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Undelete">
+			<param name="Local" value="hh\undelete\dlgboxes_undelete.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Restore Encrypted Files from Backup">
+			<param name="Local" value="hh\undelete\dlgboxes_restoreencrfiles.htm">
+			</OBJECT>
+	</UL>
+</BODY>
+</HTML>
