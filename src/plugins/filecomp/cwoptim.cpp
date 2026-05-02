@@ -150,7 +150,7 @@ void CFilecompCoWorkerOptimized<CChar>::IdentifyLines(CFilecompCoWorkerBase<CCha
     {
         // reserve space
         compareData[i].resize(files[i].Lines.size() - 1);
-        // indentify each line
+        // identify each line
         typename CLineBuffer::iterator line = files[i].Lines.begin();
         CIndexes::iterator eqvclass = compareData[i].begin();
         for (; line < files[i].Lines.end() - 1; ++line, ++eqvclass)
