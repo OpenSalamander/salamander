@@ -76,7 +76,7 @@ var archivesMask = "*";                        // only archives with name matchi
 //   Unpack selected archives (and archives in selected directories) using open source 7-Zip archiver. 
 //   This script can be easily adapted for other unpackers. Features: recursive directory walking, file 
 //   masks matching, calling external application (7-Zip archiver), error states handling, output log 
-//   with opearation summary.
+//   with operation summary.
 //
 // Installation and Requirements:
 //   Open Salamander: https://www.altap.cz/
