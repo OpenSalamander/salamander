@@ -609,7 +609,7 @@ void __fastcall FillInputBuffer()
     while (1)
     {
         if (ReadFile(ArcFile, InputBuffer, toRead, &read, NULL) && toRead == read)
-            break; //sucess
+            break; //success
         if (!ErrorProc(AE_ACCESS, EF_RETRY))
             throw 0;
         SafeSeek(ArcFilePos);
