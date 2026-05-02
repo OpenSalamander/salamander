@@ -1422,7 +1422,7 @@ BOOL CMFTSnapshot<CHAR>::GetLostClustersMap(CClusterBitmap* clusterBitmap, CLUST
     clusterMap->Free();
     QWORD clusterCount = clusterBitmap->GetClusterCount();
 
-    // pass 0: get size of arrays we shoud allocate, allocet them
+    // pass 0: get size of arrays we should allocate, allocate them
     // pass 1: fill these arrays
     for (int pass = 0; pass < 2; pass++)
     {
