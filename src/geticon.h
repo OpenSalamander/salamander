@@ -32,7 +32,7 @@
 //      hiword, ie MAKELONG(24, 48) would extract 24 and 48 size icons.
 //      yes, this is a hack; it allows IExtractIcon::Extract
 //      to be called by external callers with custom large/small
-//      icon sizes that differ from what the shell uses internally.
+//      sizes that are not what the shell uses internally.
 //
 UINT WINAPI ExtractIcons(LPCTSTR szFileName, int nIconIndex, int cxIcon, int cyIcon,
                          HICON* phicon, UINT* piconid, UINT nIcons, UINT flags);
