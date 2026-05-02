@@ -151,7 +151,7 @@ namespace sspack
 			placement = anchors[anchorIndex];
 
 			// Move the rectangle either to the left or to the top until it collides with
-			// a neightbouring rectangle. This is done to combat the effect of lining up
+			// a neighbouring rectangle. This is done to combat the effect of lining up
 			// rectangles with gaps to the left or top of them because the anchor that
 			// would allow placement there has been blocked by another rectangle
 			OptimizePlacement(ref placement, rectangleWidth, rectangleHeight);
