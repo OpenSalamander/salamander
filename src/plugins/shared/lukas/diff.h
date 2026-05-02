@@ -339,7 +339,7 @@ diff_t<equal_t, edit_t>::find_middle_snake(
                 x = xlo + 1;
             }
             y = x - k;
-            ms.x = x; // remember begining of the snake
+            ms.x = x; // remember beginning of the snake
 
             while (x < ptrdiff_t(n) && y < ptrdiff_t(m) && equal(aoff + x, boff + y))
             {
