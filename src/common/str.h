@@ -44,7 +44,7 @@ int StrICpy(char* dest, const char* src);
 //
 // StrICmp
 //
-// Function compares two strings. The comparsion is not case sensitive.
+// Function compares two strings. The comparison is not case sensitive.
 // For differences, upper case letters are mapped to lower case using LowerCase array.
 // Thus, "abc_" < "ABCD" since '_' < 'd'.
 //
@@ -62,8 +62,8 @@ int StrICmp(const char* s1, const char* s2);
 //
 // StrICmpEx
 //
-// Function compares two substrings. The comparsion is not case sensitive.
-// For the purposes of the comparsion, all characters are converted to lower case
+// Function compares two substrings. The comparison is not case sensitive.
+// For the purposes of the comparison, all characters are converted to lower case
 // using LowerCase array.
 // If the two substrings are of different lengths, they are compared up to the
 // length of the shortest one. If they are equal to that point, then the return
@@ -106,9 +106,9 @@ int StrCmpEx(const char* s1, int l1, const char* s2, int l2);
 //
 // StrNICmp
 //
-// Function compares two strings. The comparsion is not case sensitive.
-// For the purposes of the comparsion, all characters are converted to lower case
-// using LowerCase array. The comparsion stops after: (1) a difference between the
+// Function compares two strings. The comparison is not case sensitive.
+// For the purposes of the comparison, all characters are converted to lower case
+// using LowerCase array. The comparison stops after: (1) a difference between the
 // strings is found, (2) the end of the strings is reached, or (3) n characters
 // have been compared.
 //
