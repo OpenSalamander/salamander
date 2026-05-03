@@ -1809,7 +1809,7 @@ BOOL CFilesWindow::ChangePathToDisk(HWND parent, const char* path, int suggested
                 cannotList = !CommonRefresh(parent, suggestedTopIndex, suggestedFocusName, refreshListBox, TRUE, isRefresh); // repeat the listing; this one should fail
             }
             if (cannotList)
-            { // the selected path can't be listed ("access denied" or low_memory) or it was alreadydeleted
+            { // the selected path can't be listed ("access denied" or low_memory) or it was already deleted
 
             FIXED_DRIVE:
 

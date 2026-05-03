@@ -409,7 +409,7 @@ function ValidateFileMask(mask)
   }
   catch (err)
   {
-    Salamander.MsgBox("Specifed file mask \'" + mask + "\' is invalid.\nError: " + err.description, 16, scriptName);
+    Salamander.MsgBox("Specified file mask \'" + mask + "\' is invalid.\nError: " + err.description, 16, scriptName);
     return false;
   }
   return true;

@@ -24,7 +24,7 @@ We would like to thank [Fine company](https://www.finesoftware.eu/) for making t
 - [Git](https://git-scm.com/downloads)
 - [PowerShell 7.4](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows) or newer
 - [HTMLHelp Workshop 1.3](https://learn.microsoft.com/en-us/answers/questions/265752/htmlhelp-workshop-download-for-chm-compiler-instal)
-- Set the ```OPENSAL_BUILD_DIR``` environment variable to specify the build directory. Make sure the path has a trailing backslah, e.q. ```D:\Build\OpenSal\```
+- Set the ```OPENSAL_BUILD_DIR``` environment variable to specify the build directory. Make sure the path has a trailing backslash, e.g. ```D:\Build\OpenSal\```
 
 ### Building
 
