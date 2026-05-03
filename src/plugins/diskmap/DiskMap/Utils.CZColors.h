@@ -3,7 +3,7 @@
 
 #pragma once
 
-// precaution against runtime check failure in the debug version: the original macro casted RGB to WORD,
+// precaution against runtime check failure in the debug version: the original macro cast RGB to WORD,
 // so it reported data loss (RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))

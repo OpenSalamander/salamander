@@ -28,5 +28,5 @@ Q: Every time I open the self-extractor settings dialog I get error a message
 
 A: Download the correct SFX file from our web site and install it over the corrupted 
    one.
-   Or if you don't need it just remove the currupted *.sfx file from 
+   Or if you don't need it just remove the corrupted *.sfx file from 
    'plugins\zip\sfx' subdirectory of your Servant Salamander directory. 

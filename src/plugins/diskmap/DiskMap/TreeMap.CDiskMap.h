@@ -21,7 +21,7 @@
 //#define SELECTED_COLOR RGB(255, 192, 0)
 #define SELECTED_COLOR RGB(128, 192, 255) //TODO: COLOR_HIGHLIGHTED + some effect
 
-// precaution against runtime check failure in the debug version: the original macro casted RGB to WORD,
+// precaution against runtime check failure in the debug version: the original macro cast RGB to WORD,
 // so it reported data loss (RED component)
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))

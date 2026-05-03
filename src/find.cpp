@@ -683,7 +683,7 @@ public:
 
 protected:
     // compares two records using criteria byName, bySize and byMD5
-    // byPath is a criterium with the lowest priority and is used only for clearer output
+    // byPath is a criterion with the lowest priority and is used only for clearer output
     int CompareFunc(CFoundFilesData* f1, CFoundFilesData* f2, BOOL byName, BOOL bySize, BOOL byMD5, BOOL byPath);
 
     // sort stored files by byName, bySize and byMD5 criteria

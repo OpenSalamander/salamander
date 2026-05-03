@@ -2455,7 +2455,7 @@ CHANGE_AGAIN:
                 if (newDir != NULL)
                 {
                     if (useStopRefresh)
-                        EndStopRefresh(); // snopper will be started again
+                        EndStopRefresh(); // snooper will be started again
                     if (failReason != NULL)
                         *failReason = textFailReason;
                     return FALSE; // Stop here; cannot retry.
