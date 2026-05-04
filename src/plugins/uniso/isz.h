@@ -67,7 +67,7 @@ private:
         SInt32 num_chks;    // number of chunks in current file
         SInt32 first_chkno; // first chunk number in current file
         SInt32 chk_off;     // offset to first chunk in current file
-        SInt32 left_size;   // uncompltete chunk bytes in next file
+        SInt32 left_size;   // incomplete chunk bytes in next file
     };
 
 #pragma pack(pop)

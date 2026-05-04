@@ -76,7 +76,7 @@ struct CConfiguration
     int Version;                       //config version (0 - default; 1 - beta 3; 2 - beta 4)
     char DefSfxFile[MAX_PATH];         //default sfx package
     char LastExportPath[MAX_PATH];     //default path to export sfx settings to
-    int CurSalamanderVersion;          //current version of Altap Salamnder
+    int CurSalamanderVersion;          //current version of Altap Salamander
     int ChangeLangReaction;            //viz CLR_xxx
     BOOL WinZipNames;                  // winzip compatible multi-volume archive names
 
@@ -158,7 +158,7 @@ struct CFile
 class CZipCommon
 {
 public:
-    CFile* ZipFile;             //zip file hanndle
+    CFile* ZipFile;             //zip file handle
     char ZipName[MAX_PATH + 1]; //name of zip file
     const char* ZipRoot;
     int RootLen; //length of ZipRoot

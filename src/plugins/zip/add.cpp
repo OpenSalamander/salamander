@@ -2420,7 +2420,7 @@ int CZipPack::WriteSfxExecutable(const char* sfxFile, const char* sfxPackage, BO
     unsigned size;
     CSfxFileHeader sfxHead;
 
-    //copy exetutable
+    //copy executable
     char package[MAX_PATH];
     GetModuleFileName(DLLInstance, package, MAX_PATH);
     SalamanderGeneral->CutDirectory(package);

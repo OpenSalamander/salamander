@@ -800,7 +800,7 @@ BOOL CPluginFSInterface::CopyFile(FILE_RECORD_I<char>* record, char* filename, c
         stream = copyStreams[streamIndex];
         if (encrypted)
         {
-            // append .bak when backuping encrypted files
+            // append .bak when backing up encrypted files
             if (BackupEncryptedFiles)
             {
                 lstrcpyn(pathend, ".bak", MAX_PATH);

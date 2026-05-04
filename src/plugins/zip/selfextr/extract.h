@@ -80,7 +80,7 @@ typedef struct
 #define SIG_CENTRFH 0x02014b50    //central file header signature
 #define SIG_EOCENTRDIR 0x06054b50 //end of central dir signature
 
-//general purose bit flag masks
+//general purpose bit flag masks
 #define GPF_ENCRYPTED 0x01 //indicate that file is encrypted
 #define GPF_DATADESCR 0x08 //compressed data are followed by data descriptor
 

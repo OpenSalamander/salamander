@@ -303,7 +303,7 @@ CHECK_CERT_AGAIN:
         AddNewLine(buf, maxlen);
         lstrcpyn(buf, LoadStr((res < 0) ? IDS_SSL_ERR_NOTYETVALID : IDS_SSL_ERR_EXPIRED), maxlen);
     }
-    // Whatever flag is used, revokation check fails on most servers :-/
+    // Whatever flag is used, revocation check fails on most servers :-/
     /*int i;
   for (i = 0; i < pChainContext->cChain; i++)
   {

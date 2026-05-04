@@ -319,7 +319,7 @@
 #define IDS_QUICKCONNECT     10100
 
 // Connect to FTP Server dialog: texts for editline with short description of Advanced features
-// no advaced options
+// no advanced options
 #define IDS_ADVSTRNONE          10105
 // target path is set
 #define IDS_ADVSTRTARGETPATH    10106
@@ -708,7 +708,7 @@
 #define IDS_LOGMSGUNABLETOOPEN2       10391
 // Data connection was terminated on user demand...\r\n
 #define IDS_LOGMSGDATACONTERMINATED   10392
-// preliminar attempt to open passive data con. has failed, reconnecting (after sending of FTP transfer command): Reconnecting data connection...\r\n
+// preliminary attempt to open passive data con. has failed, reconnecting (after sending of FTP transfer command): Reconnecting data connection...\r\n
 #define IDS_LOGMSGDATACONRECON        10393
 // some error has occurred in data connection: Data connection error: %s\r\n
 #define IDS_LOGMSGDATCONERROR         10394
@@ -1923,7 +1923,7 @@
 // Type of your default proxy server is HTTP 1.1. It supports only passive transfer mode. Please change your default transfer mode to passive (or change your default proxy server).
 #define IDS_HTTPNEEDPASSIVETRMODE     11320
 // Connect FTP Server dialog: after click on Connect button:
-// You are connecting to FTP server through proxy server. Type of this proxy server is HTTP 1.1. It supports only passive transfer mode. Please change transfer mode to passive (click Advaced button, see Use passive transfer mode checkbox).
+// You are connecting to FTP server through proxy server. Type of this proxy server is HTTP 1.1. It supports only passive transfer mode. Please change transfer mode to passive (click Advanced button, see Use passive transfer mode checkbox).
 #define IDS_HTTPNEEDPASSIVETRMODE2    11321
 
 // Hint "How to list hidden files and directories (unix)": (to display it, go to menu Plugins > FTP Client > List Hidden Files and Directories (Unix))

@@ -11,7 +11,7 @@
 // IEViewer - plugin name and windows title
 #define IDS_PLUGINNAME             10100
 
-// Unable to open Interner Explore
+// Unable to open Internet Explorer
 #define IDS_UNABLETOOPENIE         10101
 
 // widely used title for error boxes

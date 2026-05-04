@@ -1,4 +1,4 @@
-; Altap Salamanader debug build has disabled base address randomization for simpler debugging.
+; Altap Salamander debug build has disabled base address randomization for simpler debugging.
 ; When memory leak occurs, unloaded modules are loaded to the same address, so proper CPP module names are displayed.
 ; This file contains base addresses for compiled modules. Note: module reallocation may still
 ; happen when address space is already allocated, for example by third party shell extension.

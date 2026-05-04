@@ -190,7 +190,7 @@ bool PVMessageWithProgress::Exec(TProgressProc Progress, void* AppSpecific)
         {
             if (pHdr->State == PVState_Progressing)
             {
-                // Forward progress update and check for cancellatiom
+                // Forward progress update and check for cancellation.
                 if (Progress(pHdr->ProgressValue, AppSpecific))
                 {
                     LONG state = InterlockedExchange(&pHdr->State, PVState_Cancelled);

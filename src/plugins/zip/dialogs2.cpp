@@ -911,7 +911,7 @@ BOOL CAdvancedSEDialog::CreateFavoritesMenu()
     MENUITEMINFO mi;
     if (FavoritiesMenu)
     {
-        // remove the submenu from the 'Favorities' item
+        // remove the submenu from the 'Favorites' item
         memset(&mi, 0, sizeof(mi));
         mi.cbSize = sizeof(mi);
         mi.fMask = MIIM_SUBMENU;
@@ -972,7 +972,7 @@ BOOL CAdvancedSEDialog::CreateFavoritesMenu()
         InsertMenuItem(FavoritiesMenu, Favorities.Count + 1 /*i*/, TRUE, &mi);
     }
 
-    // assign the submenu to the 'Favorities' item
+    // assign the submenu to the 'Favorites' item
     memset(&mi, 0, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.fMask = MIIM_SUBMENU;

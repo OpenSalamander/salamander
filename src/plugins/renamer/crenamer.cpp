@@ -753,7 +753,7 @@ void ChangeCase(CChangeCase change, char* dst, const char* src,
                         *d++ = *s;
                     s++;
                 }
-                // Convert back to MBCS, check for orther composite characters
+                // Convert back to MBCS and check for other composite characters.
                 WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, wstr, (int)(d - wstr), dst, (int)(end - start), NULL, NULL);
                 free(wstr);
             }
