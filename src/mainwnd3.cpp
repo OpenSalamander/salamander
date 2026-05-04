@@ -6727,7 +6727,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             TRACE_I("WM_QUERYENDSESSION: allowing shutdown...");
             // main window already closed - nobody to deliver WM_ENDSESSION to, neither WaitInEndSession
-            // and SaveCfgInEndSession needs to be set
+            // and SaveCfgInEndSession does not need to be set
             return TRUE; // if it gets this far, allow the shutdown
         }
         return 0; // return value for WM_USER_CLOSE_MAINWND, WM_USER_FORCECLOSE_MAINWND and WM_ENDSESSION
