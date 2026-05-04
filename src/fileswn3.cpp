@@ -2518,7 +2518,7 @@ BOOL CFilesWindow::ChangePathToDrvType(HWND parent, int driveType, const char* d
 void CFilesWindow::ChangeDrive(char drive)
 {
     CALL_STACK_MESSAGE2("CFilesWindow::ChangeDrive(%u)", drive);
-    //--- DefaultDire refresh
+    //--- DefaultDir refresh
     MainWindow->UpdateDefaultDir(MainWindow->GetActivePanel() != this);
     //---  possible disk selection from the dialog
     CFilesWindow* anotherPanel = (Parent->LeftPanel == this ? Parent->RightPanel : Parent->LeftPanel);
