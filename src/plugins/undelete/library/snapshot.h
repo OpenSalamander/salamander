@@ -52,7 +52,7 @@ struct DATA_STREAM_I
     };
     DATA_POINTERS* Ptrs;
     QWORD DSSize;      // stream size in bytes
-    QWORD DSValidSize; // valida data size in bytes; on NTFS and exFAT could be smaller than DSSize; on FAT it is same as DSSize
+    QWORD DSValidSize; // valid data size in bytes; on NTFS and exFAT it can be smaller than DSSize; on FAT it is the same as DSSize
     DATA_STREAM_I<CHAR>* DSNext;
 };
 

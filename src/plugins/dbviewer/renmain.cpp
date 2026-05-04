@@ -1257,7 +1257,7 @@ void CRendererWindow::CopySelectionToClipboard()
                                   LoadStr(IDS_PLUGINNAME), MB_OK | MB_ICONEXCLAMATION);
         return;
     }
-    // naladujeme do nej data
+    // Load data into it.
     char* iter = buff;
     LPWSTR iterW = (LPWSTR)buff;
     int k;

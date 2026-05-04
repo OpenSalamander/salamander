@@ -1768,7 +1768,7 @@ void GetInfo(char* buffer, FILETIME* lastWrite, CQuadWord& size)
 
 //***********************************************************************************
 //
-// Rutiny ze SHLWAPI.DLL
+// Routines from SHLWAPI.DLL
 //
 
 LPTSTR PathFindExtension(LPTSTR pszPath)

@@ -870,7 +870,7 @@ BOOL CNames::LoadFromClipboard(HWND hWindow)
                 const WCHAR* end = textW + size / sizeof(WCHAR);
                 while (s < end && *s != 0)
                     s++;
-                size = s - textW; // ted uz ve WCHARech
+                size = s - textW; // now counted in WCHARs
 
                 text = ConvertAllocU2A(textW, (int)size);
                 if (text != NULL)
@@ -1154,7 +1154,7 @@ CDirectorySizesHolder::Add(const char* path)
         // the array is full
         // drop the item at index zero
         delete Items[0];
-        // a pole setrepeme
+        // Shift the array.
         memmove(Items, Items + 1, sizeof(void*) * (DIRECOTRY_SIZES_COUNT - 1));
         // append the item at the end
         Items[ItemsCount] = item;

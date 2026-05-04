@@ -305,7 +305,7 @@ public:
 
     virtual BOOL WINAPI SetItemInfo(DWORD position, BOOL byPosition, const MENU_ITEM_INFO* mii);
     virtual BOOL WINAPI GetItemInfo(DWORD position, BOOL byPosition, MENU_ITEM_INFO* mii);
-    virtual BOOL WINAPI SetStyle(DWORD style); // rodina MENU_POPUP_xxxxx
+    virtual BOOL WINAPI SetStyle(DWORD style); // MENU_POPUP_xxxxx family
     virtual BOOL WINAPI CheckItem(DWORD position, BOOL byPosition, BOOL checked);
     virtual BOOL WINAPI CheckRadioItem(DWORD positionFirst, DWORD positionLast, DWORD positionCheck, BOOL byPosition);
     virtual BOOL WINAPI SetDefaultItem(DWORD position, BOOL byPosition);

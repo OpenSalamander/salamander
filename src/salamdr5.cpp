@@ -826,7 +826,7 @@ PARSE_AGAIN:
                         {
                             if (lastChar != 0 || backslashAtEnd || mustBePath) // is there a backslash after the archive name?
                             {
-                                if (PackerFormatConfig.PackIsArchive(path)) // je to archiv
+                                if (PackerFormatConfig.PackIsArchive(path)) // It is an archive.
                                 {
                                     *end = lastChar; // fix 'path'
                                     secondPart = end;

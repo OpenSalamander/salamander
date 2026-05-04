@@ -296,7 +296,7 @@ void CInputFile::RestorePosition()
 
 // ****************************************************************************
 //
-//  Metody CParserOutput
+// CParserOutput methods
 //
 
 void CParserOutput::StartBlock(int iType, int iLine)

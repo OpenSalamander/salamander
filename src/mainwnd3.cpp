@@ -836,7 +836,7 @@ BOOL CMainWindow::SHChangeNotifyInitialize()
                                                       WM_USER_SHCHANGENOTIFY,
                                                       1, &entry);
 
-    // dealokace pidl
+    // Deallocate the PIDL.
     IMalloc* alloc;
     if (SUCCEEDED(CoGetMalloc(1, &alloc)))
     {

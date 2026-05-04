@@ -3272,7 +3272,7 @@ BOOL CFilesWindow::ChangePathToDetachedFS(int fsIndex, int suggestedTopIndex,
         fsNameIndex = pluginFS->GetPluginFSNameIndex();
     }
     if (mode == -1)
-        mode = newUserPart == NULL ? 1 : 2 /* refresh nebo history */;
+        mode = newUserPart == NULL ? 1 : 2 /* refresh or history */;
 
     if (mode != 3 && canFocusFileName)
     {

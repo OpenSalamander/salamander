@@ -735,7 +735,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+        PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // safely close the window
         return 0;
     }
 
@@ -1391,7 +1391,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         Data.Save();
                         Data.SaveProject();
                     }
-                    PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+                    PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // safely close the window
                 }
             }
             return 0;
