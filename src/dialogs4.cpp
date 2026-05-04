@@ -1084,7 +1084,7 @@ void CCfgPageView::LoadControls()
     BOOL checked[CFGP2ItemsCount];
 
     BOOL empty = TRUE;
-    if (index >= 2 && index != 3 && index != 4 && index != 5) // tree a brief ma disabled checkboxy
+    if (index >= 2 && index != 3 && index != 4 && index != 5) // tree and brief view use disabled checkboxes
     {
         checked[0] = TRUE;
         int i;

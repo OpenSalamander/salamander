@@ -495,7 +495,7 @@ BOOL CMaskGroup::PrepareMasks(int& errorPos, const char* masksString)
                     flags->Optimize = MASK_OPTIMIZE_NONE;
                     // determine whether one of the optimizations can be used
                     if (lstrcmp(buf, "*") == 0 || lstrcmp(buf, "*.*") == 0)
-                        flags->Optimize = MASK_OPTIMIZE_ALL; // *.* nebo *
+                        flags->Optimize = MASK_OPTIMIZE_ALL; // *.* or *
                     else
                     {
                         if (l > 3 && buf[0] == '*' && buf[1] == '.') // *.xxxx

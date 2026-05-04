@@ -304,8 +304,8 @@
 #define CM_IMPORTCONFIG        934
 
 // accelerators
-#define IDA_MAINACCELS1        935        // pouzitelne i v editacnim modu
-#define IDA_MAINACCELS2        936        // zbytek
+#define IDA_MAINACCELS1        935        // also usable in edit mode
+#define IDA_MAINACCELS2        936        // the rest
 #define IDA_FINDDIALOGACCELS   937
 
 // cursors

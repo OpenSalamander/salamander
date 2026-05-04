@@ -2161,7 +2161,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
                 FTPGetErrorText(WinError, errBuf, 300);
             else
                 lstrcpyn(errBuf, LoadStr(IDS_UNKNOWNERROR), 300);
-            char* s = errBuf + strlen(errBuf); // orizneme EOL a '.'
+            char* s = errBuf + strlen(errBuf); // Trim the EOL and '.'.
             while (--s >= errBuf && (*s == '\r' || *s == '\n' || *s == '.'))
                 ;
             *(s + 1) = 0;
@@ -2277,7 +2277,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
                 FTPGetErrorText(WinError, errBuf, 300);
             else
                 lstrcpyn(errBuf, LoadStr(IDS_UNKNOWNERROR), 300);
-            char* s = errBuf + strlen(errBuf); // orizneme EOL a '.'
+            char* s = errBuf + strlen(errBuf); // Trim the EOL and '.'.
             while (--s >= errBuf && (*s == '\r' || *s == '\n' || *s == '.'))
                 ;
             *(s + 1) = 0;
@@ -2309,7 +2309,7 @@ void CFTPQueueItem::GetProblemDescr(char* buf, int bufSize)
                     else
                         lstrcpyn(errBuf, LoadStr(IDS_UNKNOWNERROR), 300);
                 }
-                char* s = errBuf + strlen(errBuf); // orizneme EOL a '.'
+                char* s = errBuf + strlen(errBuf); // Trim the EOL and '.'.
                 while (--s >= errBuf && (*s == '\r' || *s == '\n' || *s == '.'))
                     ;
                 *(s + 1) = 0;

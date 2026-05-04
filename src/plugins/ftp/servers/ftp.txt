@@ -1,23 +1,23 @@
 
 ----------------------------------------------------------------------
-UNIX - typ SUNOS:
+UNIX - SUNOS type:
 ftp://ftp.phon.ucl.ac.uk
 /pub/temp/..%20/.tagged/.by/%20/Ganja-For-Absolute/Photoshop-7-Cryotik/
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
-Adresare pristupne pro browseni pres HTTP:
+Directories accessible for browsing over HTTP:
 http://nongae.gsnu.ac.kr/~gsnucc/pub/telnet/TeraTerm/
 http://opensores.thebunker.net/pub/mirrors/ssh/
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
 cs.felk.cvut.cz - VMS
-mam Lukasovo konto (zapis), viz konta.txt
+Lukas's account is available with write access; see konta.txt
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
-VMS servery:
+VMS servers:
 ftp://ftp.process.com/vms-freeware/fileserv/
 ftp://ftp.tmk.com/vms-freeware/fileserv/
 ftp://mvb.saic.com/process/vms/fileserv/
@@ -32,7 +32,7 @@ ftp://ftp.qsl.net/pub/wb8tyw/
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
-troja.fjfi.cvut.cz - NOVELL / HellSoft (bohuzel neumi "passive mode")
+troja.fjfi.cvut.cz - NOVELL / HellSoft (unfortunately does not support passive mode)
 ----------------------------------------------------------------------
 Connected to troja.fjfi.cvut.cz.
 220  FTP Server for NW 3.1x, 4.xx  (v1.10), (c) 1994 HellSoft.
@@ -77,10 +77,10 @@ ftp>
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
-netlab2.usu.edu - NOVELL NETWARE pristupny
-tjn.fjfi.cvut.cz - NOVELL / FTP daemon na netware 5.x & 6.x - ma pristup Jan Patera
+netlab2.usu.edu - NOVELL NETWARE accessible
+tjn.fjfi.cvut.cz - NOVELL / FTP daemon on NetWare 5.x and 6.x - Jan Patera has access
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
-vm.marist.edu (nutny aktivni mod - NE "PASV") - IBM VM/CMS
+vm.marist.edu (active mode required - NOT "PASV") - IBM VM/CMS
 ----------------------------------------------------------------------

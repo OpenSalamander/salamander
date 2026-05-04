@@ -410,7 +410,7 @@ struct C__PipeDataHeader
 
 // Pro Type == __mtIgnoreAutoClear
 // C__MessageType Type;              // message type
-// DWORD      ThreadID;              // 0 = neignorovat, 1 = ignorovat auto-clear na Trace Serveru
+// DWORD      ThreadID;              // 0 = do not ignore, 1 = ignore auto-clear in Trace Server
 
 // current client version (compared with the server version)
 #define TRACE_CLIENT_VERSION 7

@@ -1419,7 +1419,7 @@
 #define IDS_OPERDOPPR_INCOMPLDOWNLOAD2  10866
 // Move operation: Unable to delete source file or link after successful transfer, server reply:
 #define IDS_OPERDOPPR_UNABLETODELSRCFILE 10867
-// dalsi viz IDS_OPERDOPPR_UPLCANTCRTGTDIR
+// For the rest, see IDS_OPERDOPPR_UPLCANTCRTGTDIR.
 
 // second column in Connections listview (Action) values:
 // Stopping

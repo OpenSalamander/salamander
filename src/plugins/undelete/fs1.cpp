@@ -16,7 +16,7 @@
 #include "dialogs.h"
 #include "undelete.h"
 
-// FS-name assigned by Salamanderem after plugin is loaded
+// FS name assigned by Salamander after the plugin is loaded.
 char AssignedFSName[MAX_PATH] = "";
 
 // image-list for simple FS icons

@@ -316,11 +316,11 @@ BOOL GetSidMD5(BYTE* sidMD5)
     return TRUE;
 }
 
-// Vice informaci viz:
+// For more information, see:
 //   http://www.codeguru.com/cpp/w-p/win32/tutorials/print.php/c4545 (A NotQuiteNullDacl Class)
-//   http://forums.microsoft.com/msdn/ShowPost.aspx?PostID=748596&SiteID=1 (uz resi vistu)
+//   http://forums.microsoft.com/msdn/ShowPost.aspx?PostID=748596&SiteID=1 (already handles Vista)
 //   Programming Server-Side Applications for Microsoft Windows 2000, Richter/Clark, Microsoft Press 2000, Chapter 10, pp 458-460
-//   Ask Dr. Gui #49 (nemuzu ho poradne najit online, tak radeji vkladam sem):
+//   Ask Dr. Gui #49 (I cannot reliably find it online, so I am keeping it here):
 // Mutex Madness
 // Dear Dr. GUI:
 // I'm a French engineer and my English isn't perfect so I hope that you understand my question.

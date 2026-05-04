@@ -1299,7 +1299,7 @@ void ShellAction(CFilesWindow* panel, CShellAction action, BOOL useSelection,
             BOOL dropDone = FALSE;
             int operation = SALSHEXT_NONE;
             DoDragFromArchiveOrFS(panel, dropDone, targetPath, operation, realDraggedPath,
-                                  DROPEFFECT_COPY, 1 /* archiv */, NULL, action == saLeftDragFiles);
+                                  DROPEFFECT_COPY, 1 /* archive */, NULL, action == saLeftDragFiles);
 
             if (indexes != NULL)
                 delete[] (indexes);
