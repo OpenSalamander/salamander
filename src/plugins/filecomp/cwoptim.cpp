@@ -329,7 +329,7 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
   }*/
 
     if (changesToLines.size() == 0) // all changes were ignorable
-    {                               // Check & remmber the # of changes. SendResults resets it to 0.
+    {                               // Check and remember the number of changes. SendResults resets it to 0.
         // d == 0 from above means no changes
         d = 0;
     }

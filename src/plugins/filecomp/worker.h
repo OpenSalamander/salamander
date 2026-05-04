@@ -13,7 +13,7 @@ struct CCompareOptions
     // Consider all files as text files.
     int ForceText;
 
-    // Consider all files as binaty files.
+    // Consider all files as binary files.
     int ForceBinary;
 
     // Ignore changes in horizontal white space.

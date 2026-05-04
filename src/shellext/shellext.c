@@ -402,7 +402,7 @@ HRESULT CreateShellExt(REFIID riid, LPVOID* ppvOut)
     if (se == NULL)
         return E_OUTOFMEMORY;
 
-    // Get interface, whichs calls AddRef
+    // Get interface, which calls AddRef
     hr = se->lpVtbl->QueryInterface((IShellExt*)se, riid, ppvOut);
     if (se->m_cRef == 0)
         SE_Destructor(se); // if QueryInterface failed, release the object

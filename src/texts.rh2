@@ -1576,9 +1576,9 @@
 // plugins manager: thumbnail extensions is empty string: "(none)"
 #define IDS_PLUGINTHUMBNONE          12114
 
-// pluing shortcuts dialog box: Command
+// plugin shortcuts dialog box: Command
 #define IDS_PLUGIN_COMMAND           12115
-// pluing shortcuts dialog box: Shortcut Keys
+// plugin shortcuts dialog box: Shortcut Keys
 #define IDS_PLUGIN_KEY               12116
 
 // command line parameters of Salamander: invalid parameters, usage: ...

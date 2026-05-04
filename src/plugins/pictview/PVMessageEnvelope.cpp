@@ -209,7 +209,7 @@ bool PVMessage_InitTexts::HandleRequest()
     {
         return false;
     }
-    // Duplioate the entire buffer
+    // Duplicate the entire buffer
     int size = pHdr->cbSize - sizeof(PVMessage) - sizeof(pHdr->TextsCount);
     StringsBuf = (char*)malloc(size);
     if (!StringsBuf)

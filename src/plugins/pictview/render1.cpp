@@ -1961,7 +1961,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             KillTimer(HWindow, IMGSEQ_TIMER_ID);
         }
         DragAcceptFiles(HWindow, FALSE);
-        if (Loading) //Ooops. Someone is closing our window, but we are still decompressing!
+        if (Loading) // Oops. Someone is closing our window, but we are still decompressing!
         {
             Canceled = TRUE;
             break; // j.r. verify this path

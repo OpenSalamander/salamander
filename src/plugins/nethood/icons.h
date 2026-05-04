@@ -185,7 +185,7 @@ private:
     /// \param nIdealBpp Ideal color depth.
     /// \return Returns the matching score for the icon. The smaller
     ///         the return value is, the better the icon properties
-    ///         match the ideal icon propertis. The return value of zero
+    ///         match the ideal icon properties. The return value of zero
     ///         is for exact match.
     static int GetScoreForIcon(
         __in int nWidth,

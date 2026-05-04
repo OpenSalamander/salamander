@@ -44,7 +44,7 @@ public:
     bool TestAllocateWholeFile;
 
     //inflate specifics
-    //fixed hufman trees
+    //fixed Huffman trees
     void* fixed_tl64; // !! must be NULL initialized
     void* fixed_td64; //before calling inflate
     int fixed_bl64,

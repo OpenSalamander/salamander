@@ -50,7 +50,7 @@ CWpdDevice::~CWpdDevice()
 
 void WINAPI CWpdDevice::FinalRelease()
 {
-    // Device must be closed whend releasing the object.
+    // Device must be closed when releasing the object.
     _ASSERTE(m_cOpen == 0);
 }
 

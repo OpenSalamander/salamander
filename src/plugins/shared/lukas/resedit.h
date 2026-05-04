@@ -58,7 +58,7 @@ public:
         Sections = NULL;
     }
 
-    // The BeginUpdateResource initilalize CResEdit class and begin resource update in
+    // BeginUpdateResource initializes the CResEdit class and begins a resource update in
     // an executable file.
     BOOL BeginUpdateResource(
         LPCSTR pFileName,             // executable file name
@@ -78,7 +78,7 @@ public:
     // The RemoveAllResources function deletes all resources from executable.
     BOOL RemoveAllResources();
 
-    // The GetResourceDirectory function obstain a copy of resource directory
+    // GetResourceDirectory obtains a copy of the resource directory
     // tree. Returns pointer to copy of resource directory tree or NULL in case
     // of error (low memory).
     CResDir* GetResourceDirectory();

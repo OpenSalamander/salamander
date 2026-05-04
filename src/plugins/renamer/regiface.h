@@ -87,8 +87,8 @@ const char* RegExpErrorText(CRegExpErrors err);
 class CRegExpAbstract
 {
 public:
-    // Number of subexpresions in regular expression + 1 for
-    // whole expression, not counting the non-capturing subexpresions
+    // Number of subexpressions in regular expression + 1 for
+    // whole expression, not counting the non-capturing subexpressions
     // specified with (?:pattern) instead of (pattern).
     // SubExpCount is computed at runtime when compiling expression
     // with RegComp().

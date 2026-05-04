@@ -260,7 +260,7 @@ AnsiString __fastcall TSalamandConfiguration::DecryptPassword(AnsiString Passwor
             if (!PasswordManager->AskForMasterPassword(FPlugin->ParentWindow()))
             {
                 // prompt for master password was either cancelled, then we abort
-                // below after decrupting fails.
+                // below after decrypting fails.
                 // or we are in process of clearing master password (AskForMasterPassword
                 // automatically fails) and decrypting below should succeed
                 HaveMasterPassword = false;

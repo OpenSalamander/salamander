@@ -70,7 +70,7 @@ typedef struct
     unsigned BufSize;
 } COutputManager;
 
-//decopmression object
+//decompression object
 
 typedef int (*FProgressMonitor)(CDecompressionObject*);
 // If zero is returned, decompression is aborted.
@@ -82,7 +82,7 @@ struct tagCDecompressionObject
     void* UserData; //pointer to a user data
     void* HeapInfo; //passed to memory functions
 
-    //inflate: fixed hufman trees
+    //inflate: fixed Huffman trees
     struct huft* fixed_tl64; // !! must be NULL initialized
     struct huft* fixed_td64; //before calling inflate
     int fixed_bl64,

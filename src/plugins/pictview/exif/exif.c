@@ -112,7 +112,7 @@ EXIFGetInfo(const char* fileName, int dataLen, EXIFENUMPROC enumFunc, LPARAM lPa
             {
                 // We need the tag number to let the user highlight tags
                 // he/she is interested in.
-                // 0x5678 is a proprierary shift that helps us to distinguish mnote from ordinary tags
+                // 0x5678 is a proprietary shift that helps us to distinguish mnote from ordinary tags
                 unsigned int id = exif_mnote_data_get_id(md, i) + 0x5678;
                 // There are multiple 'Settings (first part)' & 'Settings (second part)' values coming from Canon
                 // We attempt here to give a unique ID to each of them.
