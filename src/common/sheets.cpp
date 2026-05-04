@@ -1333,11 +1333,11 @@ int CTreePropDialog::Execute(const TCHAR* buttonOK,
                        DS_SETFONT | DS_MODALFRAME | DS_CENTER | DS_FIXEDSYS | WS_SIZEBOX;
         lpw += 2;
         *lpw++ = 8; // cDlgItems (number of controls)
-        *lpw++ = 0; // x
         *lpw++ = 0; // y
         *lpw++ = 0; // cx
         *lpw++ = 0; // cy
         *lpw++ = 0; // no menu
+        *lpw++ = 0; // predefined dialog box class (by default)
         *lpw++ = 0; // predefined dialog box class (by default)
         lpwsz = (LPWSTR)lpw;
         lpw += WinLibCopyText(lpwsz, Caption, 100); // title
