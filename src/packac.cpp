@@ -1659,7 +1659,7 @@ BOOL CPackACFound::Set(const char* fullName, const CQuadWord& size, FILETIME las
 // CPackACDrives
 //
 
-// dialog procedure for the disk selection dialog
+// dialog procedure for the disk selection dialog used for searching
 INT_PTR
 CPackACDrives::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
