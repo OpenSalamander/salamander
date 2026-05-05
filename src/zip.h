@@ -258,7 +258,7 @@ protected:
                                     const char* archivePath);
 };
 
-// checks the free space at path 'path' and, if it is >= totalSize, asks the user whether to continue
+// checks the free space at path 'path' and, if it is not >= totalSize, asks the user whether to continue
 BOOL TestFreeSpace(HWND parent, const char* path, const CQuadWord& totalSize, const char* messageTitle);
 
 //
