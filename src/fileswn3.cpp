@@ -784,7 +784,7 @@ BOOL CFilesWindow::ReadDirectory(HWND parent, BOOL isRefresh)
                                     *ifaces++ = foundThumbLoaderPlugins[i2]->GetPluginInterfaceForThumbLoader();
                                 }
                                 *ifaces = NULL;      // the end of list of plugin interfaces
-                                iconData.SetFlag(4); // so far no unread thumbnail
+                                iconData.SetFlag(4); // thumbnail not loaded yet
 
                                 // we must allocate space for the thumbnail here; it cannot be done in the thread
                                 iconData.SetIndex(IconCache->AllocThumbnail());
