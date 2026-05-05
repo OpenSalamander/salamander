@@ -1892,7 +1892,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             if (drawFocusFrame)
                 r.bottom--;
         }
-        // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+        // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
         ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out0, (drawFlags & DRAWFLAG_MASK) ? 0 : out0Len, NULL);
 
         // display the second line
@@ -1907,7 +1907,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
                 if (drawFocusFrame)
                     r.bottom--;
             }
-            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out1, (drawFlags & DRAWFLAG_MASK) ? 0 : out1Len, NULL);
         }
         // display the third line and clear the background of the area below it
@@ -1918,7 +1918,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             if (drawFocusFrame)
                 r.bottom--;
             textY += FontCharHeight;
-            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out2, (drawFlags & DRAWFLAG_MASK) ? 0 : out2Len, NULL);
         }
 
