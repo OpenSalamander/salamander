@@ -91,8 +91,8 @@ Notes on the 7zip implementation
   and who knows what else...
 
 
-Progress
---------
+Passwords
+---------
 
 - Calling ProgressAddText(...., TRUE) does not work (delayedPaint == TRUE) ⇒ it
   freezes. It works with FALSE.
