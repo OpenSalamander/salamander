@@ -567,7 +567,7 @@ int CHFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         if (!bFileComplete)
         {
             // because it was created with the read-only attribute, we must clear
-            // the read-only attribute so the file can be deleted
+            // it so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
