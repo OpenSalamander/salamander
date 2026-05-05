@@ -199,7 +199,7 @@ void CPropSheetPage::Init(const TCHAR* title, HINSTANCE modul, int resID,
     Flags = flags;
     Icon = icon;
 
-    ParentDialog = NULL; // set from CPropertyDialog::Execute()
+    ParentDialog = NULL; // set by CPropertyDialog::Execute()
     ParentPage = NULL;
     HTreeItem = NULL;
     Expanded = NULL;
