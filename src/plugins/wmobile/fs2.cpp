@@ -1537,7 +1537,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 userPart = secondPart;
                 if ((userPart - targetPath) - 1 == (int)strlen(fsName) &&
                     SalamanderGeneral->StrNICmp(targetPath, fsName, (int)(userPart - targetPath) - 1) == 0)
-                { // different FS, report only "not supported"
+                { // it is CEFS
                     diskPath = FALSE;
                     ok = TRUE;
                 }
