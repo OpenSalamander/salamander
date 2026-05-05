@@ -1852,7 +1852,7 @@ void CFTPWorker::ReceiveNetEvent(LPARAM lParam, int index)
                                 {
                                     BytesToWriteOffset = 0;
                                     BytesToWriteCount = 0;
-                                    break; // report the error
+                                    break; // return the error
                                 }
                             }
                         }
