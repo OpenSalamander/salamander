@@ -39,7 +39,7 @@ void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 BOOL InitFS()
 {
-#ifdef _DEBUG // must be 4 bytes because it is stored in LastWrite into the upper and lower DWORD
+#ifdef _DEBUG // must be 4 bytes because it is stored in LastWrite in the upper and lower DWORDs
     if (sizeof(CFTPTime) != 4 || sizeof(CFTPDate) != 4)
         TRACE_E("FATAL ERROR: sizeof(CFTPTime) or sizeof(CFTPDate) is not 4 bytes!");
 #endif
@@ -154,8 +154,8 @@ void ReleaseFS()
 
     // terminate operation workers (they should already be finished, this is just in case of an error)
     FTPOperationsList.StopWorkers(SalamanderGeneral->GetMsgBoxParent(),
-                                  -1 /* all operations */,
-                                  -1 /* all workers */);
+                                  -1 /* all workers */,
+                                  -1 /* all operations */);
 
     if (!UnregisterClass(SAVEBITS_CLASSNAME, DLLInstance))
         TRACE_E("UnregisterClass(SAVEBITS_CLASSNAME) has failed");
@@ -215,7 +215,7 @@ void ReleaseFS()
         SalamanderGeneral->DestroySafeWaitWindow();
     }
 
-    // kill auxiliary threads that did not finish "legally"
+// kill auxiliary threads that did not finish cleanly
     AuxThreadQueue.KillAll(TRUE, 0, 0);
 
     if (FTPIcon != NULL)
