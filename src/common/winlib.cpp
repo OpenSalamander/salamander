@@ -1107,7 +1107,7 @@ void CTransferInfo::EditLine(int ctrlID, double& value, TCHAR* format, BOOL sele
             BOOL decPoints = FALSE;
             BOOL expPart = FALSE;
             if (*s == _T('-') || *s == _T('+'))
-                s++;        // skip the digit
+                s++;        // skip the sign
             while (*s != 0) // convert comma to period
             {
                 if (!expPart && !decPoints && (*s == _T(',') || *s == _T('.')))
@@ -1173,7 +1173,7 @@ void CTransferInfo::EditLine(int ctrlID, int& value, BOOL select)
 
             TCHAR* s = buff;
             if (*s == _T('-') || *s == _T('+'))
-                s++;        // skip the digit
+                s++;        // skip the sign
             while (*s != 0) // validate the number
             {
                 if (*s < _T('0') || *s > _T('9'))
@@ -1227,7 +1227,7 @@ void CTransferInfo::EditLine(int ctrlID, __int64& value, BOOL select, BOOL unsig
             TCHAR* s = buff;
             BOOL minus = !unsignedNum && *s == _T('-');
             if (!unsignedNum && *s == _T('-') || *s == _T('+'))
-                s++; // skip the digit
+                s++; // skip the sign
             unsigned __int64 num = 0;
             BOOL overflow = FALSE;
             while (*s != 0) // validate the number
