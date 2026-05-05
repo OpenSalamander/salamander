@@ -221,7 +221,7 @@ void CPropPageColors::ChooseColor(int item, int colorFG, int colorBK, const RECT
                              btnRect->right, btnRect->top, HWindow, &tpmPar))
     {
     case CM_CUSTOMTEXT:
-        color = colorFG; // keep going...
+        color = colorFG; // fall through
     case CM_CUSTOMBACKGROUND:
     {
         CHOOSECOLOR cc;
@@ -563,7 +563,7 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         RECT r1; // line number
         r1.left = 0;
         r1.right = (2 + 1) * FontWidth + BORDER_WIDTH;
-        r1.bottom = 0; // have valid data later if the drawing loop never runs
+        r1.bottom = 0; // so we have valid data later even if the drawing loop never runs
         RECT r2;       // the actual text line
         r2.left = r1.right;
         r2.right = cr.right;
