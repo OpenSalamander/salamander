@@ -12,7 +12,7 @@
 
 // statics
 #define IDC_STATIC_1 3000
-#include "statics.rh2"   // 3000 to 3039 are occupied by this!!!
+#include "statics.rh2"   // 3000 to 3039 are reserved by this include.
 
 
 //Dialog:
