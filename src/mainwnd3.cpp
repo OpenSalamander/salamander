@@ -1840,7 +1840,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         BOOL oldPanelCaption = Configuration.ShowPanelCaption;
         BOOL oldPanelZoom = Configuration.ShowPanelZoom;
 
-        UserMenuIconBkgndReader.ResetSysColorsChanged(); // now, we start watching system color changes (icon reload required)
+        UserMenuIconBkgndReader.ResetSysColorsChanged(); // now, we start watching system color changes (user menu icon reload required)
         BOOL readingUMIcons = UserMenuIconBkgndReader.IsReadingIcons();
         if (readingUMIcons) // new icons are being loaded for the user menu; show them only after the configuration is finished (on OK, reload the icons so any newly added ones are loaded too)
             UserMenuIconBkgndReader.BeginUserMenuIconsInUse();
