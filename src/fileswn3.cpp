@@ -1834,7 +1834,7 @@ BOOL AddWin64RedirectedDirAux(const char* path, const char* subDir, const char* 
                 if (found)
                 {
                     if (deleteIndex != -1)
-                        dirs->Delete(deleteIndex); // there's is a directory here, we will delete it, redirected-dir has priority (redirector ignores this directory)
+                        dirs->Delete(deleteIndex); // there is a directory here, we will delete it; redirected-dir has priority (redirector ignores this directory)
                     lstrcpyn(fileData->cFileName, redirectedDirLastComp, MAX_PATH);
                     fileData->cAlternateFileName[0] = 0;
 
