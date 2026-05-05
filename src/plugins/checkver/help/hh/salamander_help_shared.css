@@ -213,7 +213,7 @@
   padding: 2px 4px;
   font-weight: bold;
   width: 10%;           /* narrow the left side of the table as much as possible */
-  padding-right :10px;  /* leave at least 10 points so it still looks reasonable */
+  padding-right :10px;  /* leave at least 10px so it still looks reasonable */
   white-space: nowrap;
 }
 
