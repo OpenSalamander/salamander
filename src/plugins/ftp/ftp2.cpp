@@ -316,8 +316,8 @@ BOOL CSrvTypeColumn::SaveToStr(char* buf, int bufSize, BOOL ignoreColWidths)
                SaveStrLen(DescrStr) + 1 +    // DescrStr
                3 +                           // Type
                SaveStrLen(EmptyValue) + 1 +  // EmptyValue
-               2 +                           // LeftAlignment
                2 +                           // FixedWidth
+               2 +                           // LeftAlignment
                (int)strlen(strWidth);        // Width
     if (bufSize >= size + 1)
     {
