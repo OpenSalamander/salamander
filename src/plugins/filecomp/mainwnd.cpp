@@ -1167,7 +1167,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             UINT state = GetMenuState(GetMenu(HWindow), CM_PREVDIFF, MF_BYCOMMAND);
             if (state & (MF_DISABLED | MF_GRAYED))
             {
-                if (DifferencesCount > 0) // Petr: if the view is scrolled elsewhere, Alt+Arrow should focus the difference; with only one difference this did not work at all, otherwise it worked only by switching to next/previous
+                if (DifferencesCount > 0) // Petr: when the view is scrolled away, Alt+Arrow should focus the difference (finding it manually is a pain); with only one difference, it did not work at all, otherwise it only worked by switching to previous/next
                     SelectDifference(SelectedDifference, CM_PREVDIFF);
                 return 0;
             }
@@ -1207,7 +1207,7 @@ CMainWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case CM_NEXTDIFF:
             if (DataValid)
-                SelectDifference(SelectedDifference + 1, CM_NEXTDIFF); // guard the DifferencesCount test later
+                SelectDifference(SelectedDifference + 1, CM_NEXTDIFF); // handle the DifferencesCount test later
             return 0;
 
         case CM_LASTDIFF:
