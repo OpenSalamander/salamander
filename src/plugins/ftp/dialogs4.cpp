@@ -219,8 +219,8 @@ void CEditSrvTypeColumnDlg::Transfer(CTransferInfo& ti)
                 }
                 if (add && GetColumnTypeName(buf, 100, (CSrvTypeColumnTypes)i))
                 {
-                    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)buf); // add the string and
-                    SendMessage(combo, CB_SETITEMDATA, count++, i);   // associate which column type it is
+                    SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)buf); // add the string
+                    SendMessage(combo, CB_SETITEMDATA, count++, i);   // associate the corresponding column type with it
                     if (Edit && (int)(ColumnsData->At(*EditedColumn)->Type) == i)
                     {
                         focus = count - 1; // when editing we focus our type
