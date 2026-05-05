@@ -156,7 +156,7 @@ COldMenuHookTlsAllocator::HookThread()
         hOldHookProc = SetWindowsHookEx(WH_CALLWNDPROC, // HANDLES can't do this!
                                         MenuMessageHookProc,
                                         NULL, threadID);
-        // it stores th handle to the procedure in TLS so that CallNextHookEx can be called
+        // it stores the handle to the procedure in TLS so that CallNextHookEx can be called
         TlsSetValue(OldMenuHookTlsIndexHOldHook, (LPVOID)hOldHookProc);
         return hOldHookProc;
     }
