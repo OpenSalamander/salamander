@@ -513,7 +513,7 @@ int CUDF::ReadFileEntry(Uint8* data, bool bEFE, Uint16 part, CICBTag* icbTag, CU
                 ad->Length = l_ad;
                 ad->Location = 0; // To be determined by the caller
                 ad->Partition = part;
-                return -1; // -1 tells the caller that Location is not set yet
+                return -1; // -1 tells the caller the data is inlined, but Location is not set
             }
         }
         else
