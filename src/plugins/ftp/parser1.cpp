@@ -1904,7 +1904,7 @@ CFTPParserParameter::GetNumberOperand(CFileData* file, CFTPListingPluginDataInte
             else
             {
                 __int64 num = dataIface->GetNumberFromColumn(*file, ColumnIndex);
-                // if (num == INT64_EMPTYNUMBER) num = 0;  // the "empty value" equals zero // cannot occur, the parser compilation fails: using the value before it is initialized
+// if (num == INT64_EMPTYNUMBER) num = 0;  // the "empty value" equals zero; this cannot occur because parser compilation fails if the value is used before it is initialized
                 *minus = num < 0;
                 return num;
             }
