@@ -133,7 +133,7 @@ LRESULT CCompareFilesDialog::DragDropEditProc(HWND hWnd, UINT uMsg, WPARAM wPara
     CCompareFilesDialog* pParent = (CCompareFilesDialog*)WindowsManager.GetWindowPtr(GetParent(hWnd));
 
     if (!pParent)
-        return NULL; // Parent dialog not found
+        return NULL; // What's wrong?
 
     if (WM_DROPFILES == uMsg)
     {
