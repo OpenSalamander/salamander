@@ -1958,7 +1958,7 @@ void CFindDialog::StartSearch(WORD command)
 
     case CM_FIND_SUBTRACT:
     {
-        // if this is a refine operation, copy data into the DataForRefine array
+        // if this is a refine operation, move the data to the DataForRefine array
         FoundFilesListView->TakeDataForRefine();
         GrepData.Refine = 2;
         break;
