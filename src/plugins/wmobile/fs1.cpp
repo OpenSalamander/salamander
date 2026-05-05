@@ -77,7 +77,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
 {
     CALL_STACK_MESSAGE7("CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(, %d, %d, %d, , %s, %d, %d, , , ,)",
                         panel, x, y, pluginFSName, pluginFSNameIndex, isDetachedFS);
-    // The Windows Mobile plugin has no context Change Drive menu
+    // The Windows Mobile plugin has no Change Drive context menu
     return FALSE;
 }
 
