@@ -395,7 +395,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
                     pFolders[nFolders++] = fi;
                     continue;
                 }
-                // AddDir failed (path too long?)
+                // AddDir failed (path too long?) -> continue
                 free(fi);
                 Error(IDS_ERR_TOO_LONG_PATH, FALSE);
             }
