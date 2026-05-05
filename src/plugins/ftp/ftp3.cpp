@@ -325,7 +325,7 @@ void CFTPServerList::CheckProxyServersUID(CFTPProxyServerList& ftpProxyServerLis
 
 BOOL CFTPServerList::ContainsUnsecuredPassword()
 {
-    // NOTE, the same method exists for CFTPProxyServerList
+    // NOTE: the same method exists for CFTPProxyServerList
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
     int i;
     for (i = 0; i < Count; i++)
@@ -411,7 +411,7 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
 
 BOOL CFTPServerList::EncryptPasswords(HWND hParent, BOOL encrypt)
 {
-    // NOTE, the same method exists for CFTPProxyServerList
+    // NOTE: the same method exists for CFTPProxyServerList
     BOOL ret = TRUE;
     int i;
     for (i = 0; i < Count; i++)
