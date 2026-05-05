@@ -71,7 +71,7 @@ CConfigurationDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
     {
-        // toggle the 'show boot disk as file' option
+        // enabler for 'show boot disk as file'
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CFG_SESSIONASDIR)
         {
             BOOL enable = IsDlgButtonChecked(HWindow, IDC_CFG_SESSIONASDIR) == BST_CHECKED;
