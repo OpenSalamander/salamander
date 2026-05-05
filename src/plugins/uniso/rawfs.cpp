@@ -164,7 +164,7 @@ int CRawFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char*
             ULONG written;
             if (!file.Write(sector, nbytes, &written, name, NULL))
             {
-                // The error message has already been displayed.
+                // The error message has already been displayed by SafeWriteFile().
                 ret = UNPACK_CANCEL;
                 bFileComplete = FALSE;
                 break;
