@@ -12,7 +12,7 @@
 
 // Register modules that may report memory leaks. If leaks are detected, all
 // registered modules are reloaded "as image" (without running initialization)
-// before the leak report is printed. That preserves .cpp module names instead
+// before the leak report is printed, because they are already unloaded then. That preserves .cpp module names instead
 // of "#File Error#" messages and avoids noisy MSVC-generated exceptions.
 // Safe to call from any thread.
 void AddModuleWithPossibleMemoryLeaks(const TCHAR* fileName);
