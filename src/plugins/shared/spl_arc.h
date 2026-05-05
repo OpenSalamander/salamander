@@ -129,7 +129,7 @@ public:
     // 'panel' identifies the panel in which the archive is open (PANEL_LEFT or PANEL_RIGHT);
     // returns TRUE if closing is possible; if 'force' is TRUE, it always returns TRUE; if
     // critical shutdown (for more details see CSalamanderGeneralAbstract::IsCriticalShutdown), there is
-    // there is no point in prompting the user about anything
+    // no point in prompting the user about anything
     virtual BOOL WINAPI CanCloseArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
                                         BOOL force, int panel) = 0;
 
