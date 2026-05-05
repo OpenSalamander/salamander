@@ -1,5 +1,5 @@
-/* CommentsTranslationProject: TRANSLATED */
 /* Cascading Style Sheet for Open Salamander Help */
+/* Shared part used for both CHM and WEB */
 /* Shared part used for both CHM and WEB */
 
 #help_page
@@ -214,7 +214,7 @@
   padding: 2px 4px;
   font-weight: bold;
   width: 10%;           /* narrow the left side of the table to the minimum */
-  padding-right :10px;  /* but keep at least 10 points there so it still looks decent */
+  padding-right :10px;  /* but keep at least 10 pixels there so it still looks decent */
   white-space: nowrap;
 }
 
