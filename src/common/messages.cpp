@@ -264,7 +264,7 @@ C__MessagesW::C__MessagesW() : MessagesStrStream(&MessagesStringBuf)
     // For now we use only output streams, and only with strings (without conversion) and numbers. So sending a number to the stringstream should be enough. If we start using streams more heavily in the future and the debug heap reports leaks again, we will have to add more input/output here.
     std::wstringstream s;
     s << 1;
-#endif // MULTITHREADED_MESSAGES_ENABLE
+#endif // _DEBUG
 }
 
 struct C__MessageBoxDataW
