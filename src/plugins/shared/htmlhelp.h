@@ -225,7 +225,7 @@ extern "C"
         int iType;               // the type of the information type ie. Inclusive, Exclusive, or Hidden
         LPCSTR pszCatName;       // Set to the name of the Category to enumerate the info types in a category; else NULL
         LPCSTR pszITName;        // volatile pointer to the name of the info type. Allocated by call. Caller responsible for freeing
-        LPCSTR pszITDescription; // Pointer to the info type description.
+        LPCSTR pszITDescription; // volatile pointer to the info type description.
     } HH_ENUM_IT, *PHH_ENUM_IT;
 
     typedef struct tagHH_ENUM_CAT
