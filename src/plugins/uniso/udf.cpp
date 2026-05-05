@@ -1181,7 +1181,7 @@ int CUDF::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
                 // picb->Offset is nonzero only for small (less than a sector) files inlined within File Entry
                 if (!file.Write(sector + picb->Offset, nbytes, &written, name, NULL))
                 {
-                    // The error message was already displayed.
+// The error message was already displayed by SafeWriteFile().
                     ret = UNPACK_CANCEL;
                     bFileComplete = FALSE;
                     break;
