@@ -1885,7 +1885,7 @@ BOOL CMainWindow::ProcessHelpMsg(MSG& msg, DWORD* pContext, HWND* hDirtyWindow)
             // Hit one of our apps windows (or desktop) -- dispatch the message.
             PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
 
-            // Dispatch mouse messages to the desktop.
+            // Dispatch mouse messages that hit the desktop.
             DispatchMessage(&msg);
         }
     }
