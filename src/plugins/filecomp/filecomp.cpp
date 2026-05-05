@@ -522,8 +522,8 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
 
             if (!fd2)
             {
-                // one item is selected and we take the other either from focus
-                // or from the selection in the target panel
+// one item is selected, and we take the other either from the focused item
+// or from the selection in the target panel
                 index = 0;
                 fd2 = SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir);
                 if (!tgtPanelIsDisk || !fd2 || SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir))
@@ -561,7 +561,7 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
         SG->SalPathAppend(file1, fd1->Name, MAX_PATH);
 
         if (fd2 &&
-            !isDir && fd2 != fd1) // in case we take the file from the focus
+            !isDir && fd2 != fd1) // in case we take the file from the focused item
         {
             // store the name of the second file
             SG->GetPanelPath(PANEL_SOURCE, file2, MAX_PATH, NULL, NULL);
