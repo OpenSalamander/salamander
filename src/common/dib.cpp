@@ -23,7 +23,7 @@
 #include "dib.h"
 
 // Workaround for a runtime check failure in the debug build: the original version of the macro casts rgb to WORD,
-//  so it reports data loss in the RED component.
+// so the runtime check reports data loss in the RED component.
 #undef GetGValue
 #define GetGValue(rgb) ((BYTE)(((rgb) >> 8) & 0xFF))
 
