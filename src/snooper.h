@@ -11,7 +11,7 @@
 
     void AddDirectory(CFilesWindow* win, const char* path, BOOL registerDevNotification);                           // add a new directory for the snooper
     void ChangeDirectory(CFilesWindow* win, const char* newPath, BOOL registerDevNotification);                     // change of the specified directory
-    void DetachDirectory(CFilesWindow* win, BOOL waitForHandleClosure = FALSE, BOOL closeDevNotifification = TRUE); // no need to search anymore
+    void DetachDirectory(CFilesWindow* win, BOOL waitForHandleClosure = FALSE, BOOL closeDevNotifification = TRUE); // no need to snoop anymore
 
     BOOL InitializeThread();
     void TerminateThread();
