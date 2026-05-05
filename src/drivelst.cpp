@@ -1258,7 +1258,7 @@ int GetIndexForDrvText(CPluginFSInterfaceEncapsulation** fsList, int count,
     return currentIndex;
 }
 
-// creates a grayscale version of the icon from 'hSrcIcon'
+// creates a black-and-white version of the icon from 'hSrcIcon'
 // WARNING: slow; use with caution
 HICON ConvertIcon16x16ToGray(HICON hSrcIcon)
 {
@@ -1414,7 +1414,7 @@ void InitDropboxPath()
 #define my_DEFINE_KNOWN_FOLDER(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     EXTERN_C const GUID DECLSPEC_SELECTANY name = {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 
-// {A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}  // OneDriver folder from the system, introduced only since Windows 8.1
+// {A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}  // OneDrive folder from the system, introduced only since Windows 8.1
 my_DEFINE_KNOWN_FOLDER(my_FOLDERID_SkyDrive, 0xa52bba46, 0xe9e1, 0x435f, 0xb3, 0xd9, 0x28, 0xda, 0xa6, 0x48, 0xc0, 0xf6);
 
 // the path to the local OneDrive folder - Personal (only for personal accounts, for business accounts we have OneDriveBusinessStorages)
