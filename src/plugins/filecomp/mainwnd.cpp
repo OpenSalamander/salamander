@@ -962,8 +962,8 @@ bool CMainWindow::TextFilesDiffer(CTextCompareResults<CChar>* res, char* message
     TTextFileViewWindow<CChar>* leftFileView = (TTextFileViewWindow<CChar>*)FileView[fviLeft];
     TTextFileViewWindow<CChar>* rightFileView = (TTextFileViewWindow<CChar>*)FileView[fviRight];
 
-    // take ownership of the data; from now on it must be deallocated here
-    // when passed in CTextCompareResults
+    // take ownership of the data; from now on, it must be deallocated here
+    // after it is passed via CTextCompareResults
     leftFileView->SetData(res->Files[0].Text, res->Files[0].Lines, res->Files[0].LineScript);
     rightFileView->SetData(res->Files[1].Text, res->Files[1].Lines, res->Files[1].LineScript);
 
