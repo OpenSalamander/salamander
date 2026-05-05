@@ -1259,7 +1259,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                 CFileData file;
                 pluginData = &SimpleListPluginDataInterface; // ATTENTION: the change may also affect obtaining the data interface in CPluginFSInterface::ChangeAttributes!
                 dir->SetValidData(VALID_DATA_NONE);
-                dir->SetFlags(SALDIRFLAG_CASESENSITIVE | SALDIRFLAG_IGNOREDUPDIRS); // probably unnecessary, but everything is treated as case-sensitive so this should be safe
+                dir->SetFlags(SALDIRFLAG_CASESENSITIVE | SALDIRFLAG_IGNOREDUPDIRS); // probably not pointless; in any case everything is treated as case-sensitive, so this should be safe
                 if (!PathListingIsBroken &&                                         // if the listing is not OK, use an empty listing instead
                     PathListingLen > 0)
                 {
