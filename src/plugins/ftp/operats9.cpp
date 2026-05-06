@@ -5,7 +5,7 @@
 #include "precomp.h"
 
 #ifdef _DEBUG
-int CUploadListingsOnServer::FoundPathIndexesInCache = 0; // how many searched paths the cache has caught
+int CUploadListingsOnServer::FoundPathIndexesInCache = 0; // how many searched paths were found in the cache
 int CUploadListingsOnServer::FoundPathIndexesTotal = 0;   // total number of searched paths
 #endif
 
@@ -1817,7 +1817,7 @@ CUploadListingChange::CUploadListingChange(DWORD changeTime, CUploadListingChang
     }
 }
 
-CUploadListingChange::~CUploadListingChange() // release the data, but WARNING: must not free NextChange
+CUploadListingChange::~CUploadListingChange() // release the data, but WARNING: do not free NextChange
 {
     if (Name != NULL)
         SalamanderGeneral->Free(Name);
