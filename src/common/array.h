@@ -376,7 +376,7 @@ public:
 #endif
     }
 
-    DATA_TYPE& operator[](int index) // returns a reference to the item at the given position
+    DATA_TYPE& operator[](int index) // returns a reference to the item at position 'index'
     {                                // int is used only to avoid warnings; range up to 65535
 #if defined(_DEBUG) || defined(__ARRAY_DEBUG)
         if (index >= 0 && index < Count)
