@@ -1446,7 +1446,7 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                     {
                         wchar_t crcTxt[50];
                         swprintf_s(crcTxt, L"%08X SLT", existingFileCRC);
-                        if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // CRC matches the SLT used for the last import/export—assume it is the same file and overwrite silently.
+                        if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // CRC matches the SLT used for the last import/export—assume it is the same file and overwrite silently; no changes are expected as the SLG has not been modified since the import/export.
                         {
                         }
                         else // Existing SLT differs from what we imported/exported—likely updated; warn before overwriting.
@@ -1496,7 +1496,7 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
                                     if (wcscmp(SLGSignature.CRCofImpSLT, crcTxt) == 0) // CRC matches the SLT used for the last import/export—overwrite silently.
                                     {
                                     }
-                                    else // Existing SLT differs from stored CRC—warn before overwriting.
+                                    else // Existing SLT differs from stored CRC—likely updated; warn before overwriting.
                                     {
                                         sprintf_s(buf, "Target file already exists and differs from the SLT file from which you "
                                                        "have imported translation or to which you have exported translation. It is likely to "
