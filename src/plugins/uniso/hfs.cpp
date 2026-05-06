@@ -395,7 +395,7 @@ BOOL CHFS::ListDirectory(char* rootPath, int session,
                     pFolders[nFolders++] = fi;
                     continue;
                 }
-                // AddDir failed (path too long?)
+                // AddDir failed (path too long?) -> continue
                 free(fi);
                 Error(IDS_ERR_TOO_LONG_PATH, FALSE);
             }
@@ -567,7 +567,7 @@ int CHFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char* s
         if (!bFileComplete)
         {
             // because it was created with the read-only attribute, we must clear
-            // the read-only attribute so the file can be deleted
+            // it so the file can be deleted
             attrs &= ~FILE_ATTRIBUTE_READONLY;
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
