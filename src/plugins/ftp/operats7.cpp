@@ -1534,8 +1534,8 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                                                         CFTPQueueItemDir* parentItem = (CFTPQueueItemDir*)(ftpQueueItems->At(ftpQueueItems->Count - 1)); // it must necessarily be a descendant of CFTPQueueItemDir (each "parent" item has the counts Skipped+Failed+NotDone)
                                                         parentItem->SetStateAndNotDoneSkippedFailed(childItemsNotDone, childItemsSkipped,
                                                                                                     childItemsFailed, childItemsUINeeded);
-                                                        // Now all new items are represented only by the "parent" item -> count the new
-                                                        // NotDone + Skipped + Failed + UINeeded apply only to this item
+// Now all new items are represented only by the "parent" item -> count
+// the new NotDone + Skipped + Failed + UINeeded only for this item
                                                         childItemsNotDone = 1;
                                                         childItemsFailed = 0;
                                                         childItemsSkipped = 0;
