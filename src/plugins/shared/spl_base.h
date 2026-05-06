@@ -298,8 +298,7 @@ public:
     // 'state_or'+'state_and' parameters have no meaning in that case); 'hotKey' is the item's hot key
     // obtained with the SALHOTKEY macro; 'name' may contain a hot-key hint,
     // separated by '\t'; in that case the 'hotKey' variable must be assigned the
-    // SALHOTKEY_HINT, for more details see the comment for SALHOTKEY_HINT; 'id' is the unique
-    // identifier
+    // SALHOTKEY_HINT, for more details see the comment for SALHOTKEY_HINT; 'id' is the
     // item's unique identifier within the plugin (for a separator it matters only if 'callGetState' is TRUE),
     // if 'callGetState' is TRUE, the item state is obtained by calling
     // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (for separators, only the
