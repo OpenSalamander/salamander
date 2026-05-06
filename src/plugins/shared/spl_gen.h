@@ -179,14 +179,14 @@ Flags
       The message box becomes the foreground window. Internally, the system calls the SetForegroundWindow
       function for the message box.
     MSGBOXEX_SILENT
-      No sound will be played when message box is displayed.
+      No sound will be played when the message box is displayed.
     MSGBOXEX_ESCAPEENABLED
-      When MSGBOXEX_YESNO is specified, user can close message box using Escape key and DIALOG_NO (IDNO)
-      will be returned. When MSGBOXEX_ABORTRETRYIGNORE is specified, user can close message box using
-      Escape key and DIALOG_CANCEL (IDCANCEL) will be returned. Otherwise this option is ignored.
+      When MSGBOXEX_YESNO is specified, the user can close the message box using the Escape key and DIALOG_NO (IDNO)
+      will be returned. When MSGBOXEX_ABORTRETRYIGNORE is specified, the user can close the message box using
+      the Escape key and DIALOG_CANCEL (IDCANCEL) will be returned. Otherwise this option is ignored.
 
 HIcon
-  Handle to the icon to be drawn in the message box. Icon will not be destroyed when messagebox is closed.
+  Handle to the icon to be drawn in the message box. The icon will not be destroyed when the message box is closed.
   If this parameter is NULL, MSGBOXEX_ICONxxx style will be used.
 
 ContextHelpId
@@ -204,14 +204,14 @@ CheckBoxText
   Pointer to a null-terminated string that contains the checkbox text.
   If the MSGBOXEX_HINT flag is specified in the Flags, this text must contain HINT.
   Hint is separated from string by the TAB character. Hint is divided by the second TAB character
-  on two parts. The first part is label, that will be displayed behind the check box.
-  The second part is the text displayed when user clicks the hint label.
+  into two parts. The first part is label, that will be displayed behind the check box.
+  The second part is the text displayed when the user clicks the hint label.
 
-  Example: "This is text for checkbox\tHint Label\tThis text will be displayed when user click the Hint Label."
+  Example: "This is text for checkbox\tHint Label\tThis text will be displayed when the user clicks the Hint Label."
   If this member is NULL, checkbox will not be displayed.
 
 CheckBoxValue
-  Pointer to a BOOL variable contains the checkbox initial and return state (TRUE: checked, FALSE: unchecked).
+  Pointer to a BOOL variable that contains the checkbox initial and return state (TRUE: checked, FALSE: unchecked).
   This parameter is ignored if CheckBoxText parameter is NULL. Otherwise this parameter must be set.
 
 AliasBtnNames
@@ -225,7 +225,7 @@ AliasBtnNames
   First and second string in each pair are separated by TAB character.
   Pairs are separated by TAB character too.
 
-  If this member is NULL, normal names of buttons will displayed.
+  If this member is NULL, normal names of buttons will be displayed.
 
   Example: sprintf(buffer, "%d\t%s\t%d\t%s", DIALOG_OK, "&Start", DIALOG_CANCEL, "E&xit");
            buffer: "1\t&Start\t2\tE&xit"
@@ -237,7 +237,6 @@ URL
 URLText
   Pointer to a null-terminated string that contains the URL text displayed below text.
   If this member is NULL, the URL is displayed instead.
-
 */
 
 // Panel identifiers
@@ -303,7 +302,7 @@ inline BOOL ButtonsContainsYes(DWORD btn)
 // has registered this name)
 #define SPP_NOTPLUGINFS 4
 // The path is relative, but the current path is unknown, or it is an FS path (there the root cannot be determined
-// and the structure of the fs-user-part path is unknown, so it cannot be converted to an absolute path)
+// and the structure of the fs-user-part path is unknown, so it cannot be converted to an absolute path).
 // If the current path is an FS path ('curPathIsDiskOrArchive' is FALSE), no error is reported
 // to the user in this case (further processing is expected on the FS side that called SalParsePath)
 #define SPP_INCOMLETEPATH 5
@@ -1098,7 +1097,7 @@ public:
     // can be called from any thread
     virtual void WINAPI GetLowerAndUpperCase(unsigned char** lowerCase, unsigned char** upperCase) = 0;
 
-    // converts string 'str' to lowercase/uppercase; unlike ANSI C tolower/toupper it works
+    // Converts string 'str' to lowercase/uppercase; unlike ANSI C tolower/toupper it works
     // directly on the string and supports more than just characters 'A' to 'Z' (conversion to lowercase is performed via
     // an array initialized by the Win32 API function CharLower)
     virtual void WINAPI ToLowerCase(char* str) = 0;
@@ -1234,16 +1233,16 @@ public:
     // if SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
     // otherwise they are compared the same way as CSalamanderGeneral::StrICmp; if SALCFG_SORTDETECTNUMBERS is
     // TRUE, numeric sorting is used for numbers contained in the strings
-    // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
+    // Returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
     virtual int WINAPI RegSetStrICmp(const char* s1, const char* s2) = 0;
 
     // Compares strings 's1' and 's2' (with lengths 'l1' and 'l2') case-insensitively.
     // If SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
     // otherwise it compares them the same way as CSalamanderGeneral::StrICmp;
     // if SALCFG_SORTDETECTNUMBERS is TRUE, numeric sorting is used for numbers contained
-    // in the strings; if 'numericalyEqual' is not NULL, it returns TRUE if the strings are
+    // in the strings; if 'numericalyEqual' is not NULL, it receives TRUE if the strings are
     // numerically equal (for example, "a01" and "a1"); it is automatically TRUE if the strings are equal
-    // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
+    // Returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
     virtual int WINAPI RegSetStrICmpEx(const char* s1, int l1, const char* s2, int l2,
                                        BOOL* numericalyEqual) = 0;
 
@@ -1251,16 +1250,16 @@ public:
     // Windows regional collation is used; otherwise they are compared the same way as the
     // standard C library function strcmp; if SALCFG_SORTDETECTNUMBERS is TRUE, numeric sorting is used
     // for numbers contained in the strings
-    // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
+    // Returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
     virtual int WINAPI RegSetStrCmp(const char* s1, const char* s2) = 0;
 
     // Case-sensitive comparison of strings 's1' and 's2' (with lengths 'l1' and 'l2'); if
     // SALCFG_SORTUSESLOCALE is TRUE, Windows regional collation is used,
     // otherwise it compares them the same way as the standard C library function strcmp; if
     // SALCFG_SORTDETECTNUMBERS is TRUE, numeric sorting is used for numbers contained in the strings;
-    // in 'numericalyEqual' (if not NULL), it returns TRUE if the strings are numerically equal
+    // in 'numericalyEqual' (if not NULL), it receives TRUE if the strings are numerically equal
     // (e.g. "a01" and "a1"); it is automatically TRUE if the strings are equal
-    // returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
+    // Returns <0 ('s1' < 's2'), ==0 ('s1' == 's2'), >0 ('s1' > 's2')
     virtual int WINAPI RegSetStrCmpEx(const char* s1, int l1, const char* s2, int l2,
                                       BOOL* numericalyEqual) = 0;
 
@@ -1580,7 +1579,7 @@ public:
                                                  const char* suggestedFocusName = NULL,
                                                  BOOL forceUpdate = FALSE) = 0;
 
-    // Changes the panel path to a plugin FS. 'fsName' is the FS name (see GetPluginFSName; it does not have to belong to this plugin), and 'fsUserPart' is the path within the FS. If the new FS path is not available, it tries shortened paths by repeated calls to ChangePath and ListCurrentPath (see CPluginFSInterfaceAbstract). If the path is being changed within the current FS (see CPluginFSInterfaceAbstract::IsOurPath) and no accessible path can be found starting from the new path, it also tries to find an accessible path starting from the old current path, and if that also fails, it changes the panel path to the root of the first local fixed drive so the panel does not stay empty. 'panel' is one of PANEL_XXX. If 'suggestedTopIndex' is not -1, it is used as the panel top index, but only for the new path, not for a shortened or changed path. If 'suggestedFocusName' is not NULL, an item with the same name is searched for case-insensitively and focused, again only for the new path, not for a shortened or changed path. If 'forceUpdate' is TRUE, the special case of changing to the current panel path is not optimized away; the path is listed normally even if the new path already matches the current path or was shortened to it by the first ChangePath call. If 'convertPathToInternal' is TRUE, the plugin identified by 'fsName' is found and its CPluginInterfaceForFSAbstract::ConvertPathToInternal() method is called for 'fsUserPart'. If 'failReason' is not NULL, it is set to one of the CHPPFR_XXX constants describing the result. Returns TRUE if the requested path was listed without shortening or other changes.
+    // Changes the panel path to a plugin FS. 'fsName' is the FS name (see GetPluginFSName; it does not have to belong to this plugin), and 'fsUserPart' is the path within the FS. If the new FS path is not available, it tries shortened paths by repeated calls to ChangePath and ListCurrentPath (see CPluginFSInterfaceAbstract). If the path is being changed within the current FS (see CPluginFSInterfaceAbstract::IsOurPath) and no accessible path can be found starting from the new path, it also tries to find an accessible path starting from the old current path, and if that also fails, it changes the panel path to the root of the first local fixed drive (high chance of success, so the panel does not stay empty). 'panel' is one of PANEL_XXX. If 'suggestedTopIndex' is not -1, it is used as the panel top index, but only for the new path, not for a shortened or changed path. If 'suggestedFocusName' is not NULL, an item with the same name is searched for case-insensitively and focused, again only for the new path, not for a shortened or changed path. If 'forceUpdate' is TRUE, the special case of changing to the current panel path is not optimized away; the path is listed normally even if the new path already matches the current path or was shortened to it by the first ChangePath call. If 'convertPathToInternal' is TRUE, the plugin identified by 'fsName' is found and its CPluginInterfaceForFSAbstract::ConvertPathToInternal() method is called for 'fsUserPart'. If 'failReason' is not NULL, it is set to one of the CHPPFR_XXX constants describing the result. Returns TRUE if the requested path was listed without shortening or other changes.
     // NOTE: If you need an FS path to be tried in detached FS instances as well, use ChangePanelPath; ChangePanelPathToPluginFS ignores detached FS instances and works only with an FS already open in a panel or opens a new FS.
     // Restriction: main thread + outside CPluginFSInterfaceAbstract and CPluginDataInterfaceAbstract methods (for example, an FS open in the panel could be closed and 'this' could cease to exist).
     virtual BOOL WINAPI ChangePanelPathToPluginFS(int panel, const char* fsName, const char* fsUserPart,
@@ -1674,8 +1673,8 @@ public:
     // Copies Unicode 'text' of length 'textLen' to the clipboard (-1 means "use wcslen") in both
     // Unicode and multibyte form (otherwise, for example, MSVC6.0 cannot handle Czech text correctly);
     // on success, if 'showEcho' is TRUE, it may display the message "Text was successfully copied to clipboard."
-    // ('echoParent' is the parent window of the message box); returns TRUE on success
-    // Can be called from any thread
+    // ('echoParent' is the parent window of the message box); returns TRUE on success.
+    // Can be called from any thread.
     virtual BOOL WINAPI CopyTextToClipboardW(const wchar_t* text, int textLen, BOOL showEcho, HWND echoParent) = 0;
 
     // executes the menu command identified by 'id' in the main thread (calls
@@ -1689,9 +1688,9 @@ public:
     // the command runs as soon as there are no messages in the main-thread message queue and Salamander
     // is not "busy" (no modal dialog is open and no message is being processed);
     // WARNING: if called from a thread other than the main thread, the menu command may run
-    // (in the main thread) even before PostMenuExtCommand returns
-    // callable from any thread, and if 'waitForSalIdle' is FALSE, it is necessary to wait until after calling
-    // CPluginInterfaceAbstract::GetInterfaceForMenuExt (called after the entry point from the main thread)
+    // (in the main thread) even before PostMenuExtCommand returns.
+    // Callable from any thread, and if 'waitForSalIdle' is FALSE, it is necessary to wait until after calling
+    // CPluginInterfaceAbstract::GetInterfaceForMenuExt (called after the entry point from the main thread).
     virtual void WINAPI PostMenuExtCommand(int id, BOOL waitForSalIdle) = 0;
 
     // Determines whether there is a high chance, though this cannot be known with certainty, that Salamander will not be "busy" during the next few moments (no modal dialog open and no message being processed); in that case it returns TRUE, otherwise FALSE. If 'lastIdleTime' is not NULL, it receives the GetTickCount() value from the last transition from the "idle" state to the "busy" state. This can be used, for example, as a prediction for the delivery of a command posted with CSalamanderGeneralAbstract::PostMenuExtCommand and 'waitForSalIdle'==TRUE. Callable from any thread.
@@ -1753,7 +1752,7 @@ public:
                                             BOOL backslashAtEnd, const char* dirName,
                                             const char* curDiskPath, char*& mask) = 0;
 
-    // Obtains the existing part and the operation mask from a target path and recognizes any missing part. On success it returns TRUE, the relative path to create in 'newDirs', the existing target path in 'path' (existing only under the assumption that the relative path 'newDirs' will be created), and the found operation mask in 'mask' (it points into the 'path' buffer, but path and mask are separated by a null character; if the path contains no mask, the method automatically creates "*.*"). 'parent' is the parent of any message boxes. 'title' and 'errorTitle' are the titles of the information and error message boxes. 'selCount' is the number of selected files and directories. 'path' on input is the target path to process; on output it must contain the existing target path and therefore must have room for at least 2 * MAX_PATH characters. 'afterRoot' points into 'path' just after the path root (after '\\' or at the end of the string). 'secondPart' points into 'path' to the position after the existing path (after '\\' or at the end of the string; if the path contains a file, it points after the path to that file). 'pathIsDir' is TRUE/FALSE depending on whether the existing part of the path is a directory/file. 'backslashAtEnd' is TRUE if 'path' ended with a backslash before parsing (for example, SalParsePath removes such a backslash). 'dirName' and 'curPath' are not NULL when at most one file/directory is selected (its name without path is in 'dirName'; its path is in 'curPath'; if nothing is selected, the focused item is used). 'mask' on output is a pointer to the operation mask inside the 'path' buffer. If 'newDirs' is not NULL, it is a buffer of at least MAX_PATH characters for the relative path, relative to the existing path in 'path', that must be created; the user has already agreed to create it, using the same prompt as for copying from disk to disk; an empty string means create nothing. If 'newDirs' is NULL and a relative path would need to be created, only an error is displayed. 'isTheSamePathF' is a function for comparing two paths, needed only if 'curPath' is not NULL; if it is NULL, IsTheSamePath is used. If the path contains an error, the method returns FALSE and the problem has already been reported to the user. Callable from any thread.
+    // Obtains the existing part and the operation mask from a target path and recognizes any missing part. On success it returns TRUE, the relative path to create in 'newDirs', the existing target path in 'path' (existing only under the assumption that the relative path 'newDirs' will be created), and the found operation mask in 'mask' (it points into the 'path' buffer, but path and mask are separated by a null character; if the path contains no mask, the method automatically creates "*.*"). 'parent' is the parent of any message boxes. 'title' and 'errorTitle' are the titles of the information and error message boxes. 'selCount' is the number of selected files and directories. 'path' on input is the target path to process; on output it must contain the existing target path (always ends with a backslash) and therefore must have room for at least 2 * MAX_PATH characters. 'afterRoot' points into 'path' just after the path root (after '\\' or at the end of the string). 'secondPart' points into 'path' to the position after the existing path (after '\\' or at the end of the string; if the path contains a file, it points after the path to that file). 'pathIsDir' is TRUE/FALSE depending on whether the existing part of the path is a directory/file. 'backslashAtEnd' is TRUE if 'path' ended with a backslash before parsing (for example, SalParsePath removes such a backslash). 'dirName' and 'curPath' are not NULL when at most one file/directory is selected (its name without path is in 'dirName'; its path is in 'curPath'; if nothing is selected, the focused item is used). 'mask' on output is a pointer to the operation mask inside the 'path' buffer. If 'newDirs' is not NULL, it is a buffer of at least MAX_PATH characters for the relative path, relative to the existing path in 'path', that must be created; the user has already agreed to create it, using the same prompt as for copying from disk to disk; an empty string means create nothing. If 'newDirs' is NULL and a relative path would need to be created, only an error is displayed. 'isTheSamePathF' is a function for comparing two paths, needed only if 'curPath' is not NULL; if it is NULL, IsTheSamePath is used. If the path contains an error, the method returns FALSE and the problem has already been reported to the user. Callable from any thread.
     virtual BOOL WINAPI SalSplitGeneralPath(HWND parent, const char* title, const char* errorTitle,
                                             int selCount, char* path, char* afterRoot, char* secondPart,
                                             BOOL pathIsDir, BOOL backslashAtEnd, const char* dirName,
@@ -2815,7 +2814,7 @@ public:
 
     // Registers the plugin as a replacement for the Network item in the Change Drive menu and in the drive bars.
     // The plugin must add a file system to Salamander that is then used to open incomplete UNC paths
-    // (the root-only and server-only forms) from the Change Directory command and that is entered
+    // ("\\\\" and "\\\\server") from the Change Directory command and that is entered
     // via the up-dir symbol ("..") from the root of UNC paths.
     // Limitation: call only from the plugin entry point and only after SetBasicPluginData.
     virtual void WINAPI SetPluginIsNethood() = 0;
@@ -2870,8 +2869,8 @@ public:
     // the padlock is locked (TRUE) or unlocked (FALSE); if 'tooltip' is not NULL, it is the text shown
     // when the mouse hovers over the icon (if it is NULL, no text is shown); if clicking the security icon should
     // perform an action (for example, FTPS displays a server certificate dialog), it must be added to the
-    // file-system's CPluginFSInterfaceAbstract::ShowSecurityInfo method
-    // shown for the file system displayed in the panel;
+    // CPluginFSInterfaceAbstract::ShowSecurityInfo method of the file system
+    // displayed in the panel;
     // NOTE: a suitable place to show the security icon for an FS is when handling
     // FSE_PATHCHANGED, once the FS is already in the panel (whether the icon should be shown or hidden can be determined
     // in ChangePath or ListCurrentPath)
@@ -2986,10 +2985,10 @@ public:
 
     //
     // LockMainWindow
-    //   Locks main window to pretend it is disabled. Main windows is still able to receive focus
+    //   Locks main window to pretend it is disabled. Main window is still able to receive focus
     //   in the locked state. Set 'lock' to TRUE to lock main window and to FALSE to revert it back
-    //   to normal state. 'hToolWnd' is a reserved parameter, set it to NULL. 'lockReason' is (optional,
-    //   can be NULL) describes the reason for main window locked state. It will be displayed during
+    //   to normal state. 'hToolWnd' is a reserved parameter, set it to NULL. 'lockReason'
+    //   (optional, can be NULL) describes the reason for main window locked state. It will be displayed during
     //   attempt to close locked main window; content of string is copied to internal structure
     //   so buffer can be deallocated after return from LockMainWindow().
     //
@@ -3058,22 +3057,23 @@ public:
     // Call only for paths 'path' whose root (after resolving SUBSTs) is DRIVE_FIXED; it makes no sense
     // to search for reparse points elsewhere. The function looks for a path without reparse points that
     // leads to the same volume as 'path'. For a path containing a symlink that leads to a network path
-    // (UNC or mapped), only the root of that network path is returned. If no such path exists because the
-    // current (last) local reparse point is a volume mount point (or an unknown reparse-point type), the
-    // path to that volume mount point (or unknown reparse point) is returned. If the path contains more
-    // than 50 reparse points (most likely an infinite loop), the original path is returned.
+    // (UNC or mapped), only the root of that network path is returned (even Vista cannot handle reparse
+    // points on network paths, so it's probably best not to provoke it). If no such path exists because
+    // the current (last) local reparse point is a volume mount point (or an unknown reparse-point type),
+    // the path to that volume mount point (or unknown reparse point) is returned. If the path contains
+    // more than 50 reparse points (most likely an infinite loop), the original path is returned.
     //
     //'resPath' is the output buffer of size MAX_PATH; 'path' is the original path; 'cutResPathIsPossible'
     // (must not be NULL) is set to FALSE if the resulting path in 'resPath' ends with a reparse point
-    // (a volume mount point or an unknown reparse-point type) and therefore must not be shortened.
-    // If 'rootOrCurReparsePointSet' is non-NULL and contains FALSE, and the original path contains at least
-    // one local reparse point (reparse points in the network part of the path are ignored), it is set to TRUE
-    // and 'rootOrCurReparsePoint' (if not NULL) receives the full path to the current (last) local reparse
-    // point (note: not the path it leads to). The target path of the current reparse point, but only for a
-    // junction or symlink, is returned in 'junctionOrSymlinkTgt' (if not NULL), and its type is returned in
-    // 'linkType': 2 (JUNCTION POINT), 3 (SYMBOLIC LINK). 'netPath' (if not NULL) receives the network path
-    // targeted by the current (last) local symlink in the path; in that case the root of the network path is
-    // returned in 'resPath'.
+    // (a volume mount point or an unknown reparse-point type) and therefore must not be shortened (it
+    // would likely lead to a different volume). If 'rootOrCurReparsePointSet' is non-NULL and contains
+    // FALSE, and the original path contains at least one local reparse point (reparse points in the
+    // network part of the path are ignored), it is set to TRUE and 'rootOrCurReparsePoint' (if not NULL)
+    // receives the full path to the current (last) local reparse point (note: not the path it leads to).
+    // The target path of the current reparse point, but only for a junction or symlink, is returned in
+    // 'junctionOrSymlinkTgt' (if not NULL), and its type is returned in 'linkType': 2 (JUNCTION POINT),
+    // 3 (SYMBOLIC LINK). 'netPath' (if not NULL) receives the network path targeted by the current
+    // (last) local symlink in the path; in that case the root of the network path is returned in 'resPath'.
     // Can be called from any thread.
     virtual void WINAPI ResolveLocalPathWithReparsePoints(char* resPath, const char* path,
                                                           BOOL* cutResPathIsPossible,
