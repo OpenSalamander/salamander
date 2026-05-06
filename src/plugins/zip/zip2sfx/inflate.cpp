@@ -473,7 +473,7 @@ int inflate_stored()
         return 1; // error in compressed data
     DUMPBITS(16)
 
-    ///* old copy routine; the new one should be faster
+    // old copy routine; the new one should be faster
     // read and output the uncompressed data
     while (n--)
     {
