@@ -576,8 +576,8 @@ BOOL QueryRetry(const char* sFileName, DWORD error, int* result)
 //
 
 // copies the file from sFileName into tFileName
-// if the target file already exists, the overwrite variable is set
-// and skip; if the overwrite variable is set, it does not ask about overwriting
+// if the target file already exists, the overwrite and skip variables are
+// checked; if the overwrite variable is set, it does not ask about overwriting
 // if the skip variable is set, the file is skipped
 // on error returns FALSE - options then have no meaning
 // on successful completion returns TRUE and the options variable
