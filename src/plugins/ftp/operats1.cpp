@@ -3177,7 +3177,7 @@ void CFTPQueue::GetCopyProgressInfo(CQuadWord* downloaded, int* unknownSizeCount
     if (oper->GetApproxByteSize(&size, DoneOrSkippedBlockSize))
         *downloaded += size;
     else
-        *unknownSizeCount += CopyUnknownSizeCountIfUnknownBlockSize; // block size is unknown, so add those with size in blocks to the unknown ones
+        *unknownSizeCount += CopyUnknownSizeCountIfUnknownBlockSize; // block size is unknown, so add those with sizes in blocks to the unknown count
     *totalWithoutErrors = WaitingOrProcessingOrDelayedByteSize;
     if (oper->GetApproxByteSize(&size, WaitingOrProcessingOrDelayedBlockSize))
         *totalWithoutErrors += size;
@@ -3226,7 +3226,7 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
     CALL_STACK_MESSAGE1("CFTPQueue::SearchItemWithNewError()");
     HANDLES(EnterCriticalSection(&QueueCritSect));
     BOOL res = FALSE;
-    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // +1 is here because -1 is used as the initial values
+    if (LastFoundErrorOccurenceTime + 1 < LastErrorOccurenceTime + 1) // the +1 is here because -1 is used for the initial values
     {                                                                 // it makes sense to search
         int foundUID = -1;
         int foundIndex = -1;
@@ -3240,7 +3240,7 @@ BOOL CFTPQueue::SearchItemWithNewError(int* itemUID, int* itemIndex)
                 itemErrorOccurenceTime = item->ErrorOccurenceTime;
             if (itemErrorOccurenceTime != -1 &&                                       // the item contains an error
                 itemErrorOccurenceTime >= LastFoundErrorOccurenceTime + 1 &&          // this is a "new" error
-                (foundUID == -1 || foundErrorOccurenceTime > itemErrorOccurenceTime)) // so far the first found or the "oldest" (we resolve errors in the order they occurred)
+                (foundUID == -1 || foundErrorOccurenceTime > itemErrorOccurenceTime)) // either the first one found so far or the "oldest" (we resolve errors in the order they occurred)
             {
                 foundErrorOccurenceTime = itemErrorOccurenceTime;
                 foundUID = item->UID;
