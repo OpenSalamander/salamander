@@ -447,7 +447,7 @@ class CDeflate
     /* Output buffer for compression to file */
 
     char *in_buf, *out_buf;
-    /* Current offsets in the input and output buffers. in_offset is used only for in-memory compression. On 16-bit machines, the buffer is limited to 64K. */
+    /* Current input and output buffers. in_buf is used only for in-memory compression. */
 
     unsigned in_offset, out_offset;
     /* Current positions in the input and output buffers. in_offset is used only for
@@ -586,7 +586,7 @@ class CDeflate
      */
 
     ct_data static_dtree[D_CODES];
-    /* The bit-length tree. */
+    /* The static distance tree. (Actually a trivial tree since all codes use 5 bits.) */
 
     ct_data bl_tree[2 * BL_CODES + 1];
     /* Huffman tree for the bit lengths */
@@ -596,7 +596,7 @@ class CDeflate
     tree_desc bl_desc;
 
     ush bl_count[MAX_BITS + 1];
-    /* order of bit length codes */
+    /* number of codes at each bit length for an optimal tree */
 
     uch bl_order[BL_CODES];
     /* The lengths of the bit length codes are sent in order of decreasing
@@ -611,7 +611,7 @@ class CDeflate
      */
 
     uch depth[2 * L_CODES + 1];
-    /* Length code for each match length */
+    /* Depth of each subtree used as tie breaker for trees of equal frequency */
 
     uch length_code[MAX_MATCH - MIN_MATCH + 1];
     /* length code for each normalized match length (0 == MIN_MATCH) */
@@ -658,7 +658,7 @@ class CDeflate
     ulg cmpr_len_bits; /* number of bits past 'cmpr_bytelen' */
 
     ulg input_len; /* total byte length of input file */
-    /* file_type points to UNKNOWN, BINARY, or ASCII. */
+    /* input_len is for debugging only since we can get it by other means. */
 
     ush* file_type;   /* pointer to UNKNOWN, BINARY or ASCII */
     int* file_method; /* pointer to DEFLATE or STORE */
