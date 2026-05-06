@@ -38,7 +38,7 @@ public:
 
     // Called when the viewer is requested to open and load file
     // 'name'; 'left'+'top'+'width'+'height'+'showCmd'+'alwaysOnTop' is the recommended window placement;
-    // window; if 'returnLock' is FALSE, 'lock'+'lockOwner' have no meaning; if 'returnLock' is
+    // if 'returnLock' is FALSE, 'lock'+'lockOwner' have no meaning; if 'returnLock' is
     // TRUE, the viewer should return system event 'lock' in the nonsignaled state; 'lock'
     // becomes signaled when viewing file 'name' ends (the file is removed from the temporary
     // directory at that moment); it should also return TRUE in 'lockOwner' if the 'lock' object is to be closed
