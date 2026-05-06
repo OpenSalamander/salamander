@@ -324,7 +324,7 @@ public:
     // if 'callGetState' is TRUE, the submenu state is obtained by calling
     // CPluginInterfaceForMenuExtAbstract::GetMenuItemState (only the
     // MENU_ITEM_STATE_ENABLED and MENU_ITEM_STATE_HIDDEN states matter; the others are ignored), otherwise
-    // the item state (enabled/disabled) is computed from 'state_or'+'state_and' - for the state calculation
+    // the item state (enabled/disabled) is computed from 'state_or'+'state_and' -
     // for the item state calculation, see CSalamanderConnectAbstract::AddMenuItem(); the
     // 'skillLevel' parameter
     // specifies for which user levels the submenu is displayed; the value contains one or more
