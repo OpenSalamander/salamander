@@ -1,5 +1,5 @@
-﻿// CommentsTranslationProject: TRANSLATED
-// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file, and the resource compiler does not seem to support "#pragma once".
+﻿// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file,
+// and the resource compiler does not seem to support "#pragma once".
 #ifndef __CHECKSUM_RH2
 #define __CHECKSUM_RH2
 
