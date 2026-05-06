@@ -154,8 +154,8 @@ void ReleaseFS()
 
     // terminate operation workers (they should already be finished, this is just in case of an error)
     FTPOperationsList.StopWorkers(SalamanderGeneral->GetMsgBoxParent(),
-                                  -1 /* all workers */,
-                                  -1 /* all operations */);
+                                  -1 /* all operations */,
+                                  -1 /* all workers */);
 
     if (!UnregisterClass(SAVEBITS_CLASSNAME, DLLInstance))
         TRACE_E("UnregisterClass(SAVEBITS_CLASSNAME) has failed");
