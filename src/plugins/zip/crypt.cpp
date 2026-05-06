@@ -49,7 +49,7 @@ __forceinline int update_keys(int c, __UINT32* keys)
     return c;
 }
 
-// Initialize the encryption keys from
+// Initialize the encryption keys and the random header according to
 // the given password.
 void init_keys(const char* password, __UINT32* keys)
 {
