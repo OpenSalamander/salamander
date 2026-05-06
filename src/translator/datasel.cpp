@@ -455,7 +455,7 @@ void CDialogData::SelCtrlsAlignTo(const CAlignToParams* params)
         if (!control->Selected)
             continue;
 
-        // when moving controls individually, keep their position
+        // when moving selected controls individually, retrieve their position
         if (!params->MoveAsGroup)
             control->GetTRect(&selR, FALSE);
 
