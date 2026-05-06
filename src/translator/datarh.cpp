@@ -765,7 +765,7 @@ static const char* FunctionNames[] =
         NULL // terminator!
 };
 
-// look up the function in FunctionNames and return its index plus TRUE
+// look up the function in FunctionNames and return its 'index' and TRUE
 // return FALSE when it is missing
 BOOL FindFunction(const char* name, int* index)
 {
