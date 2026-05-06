@@ -1470,7 +1470,7 @@ void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWN
                 HANDLES(EnterCriticalSection(&SocketCritSect));
                 HANDLES(EnterCriticalSection(&newWorker->SocketCritSect));
 
-                // pass the worker information about the connection and the socket data
+// pass the connection information and socket data to the worker
                 newWorker->ControlConnectionUID = UID;
                 if (HaveWorkingPath)
                 {
@@ -1537,7 +1537,7 @@ void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker* workerWithCon
             HANDLES(EnterCriticalSection(&SocketCritSect));
             HANDLES(EnterCriticalSection(&workerWithCon->SocketCritSect));
 
-            // take over from the worker the information about the connection and the socket data
+// take over the connection information and socket data from the worker
             workerWithCon->ControlConnectionUID = -1;
             if (workerWithCon->HaveWorkingPath)
             {
