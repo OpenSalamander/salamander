@@ -1412,11 +1412,11 @@ BOOL CData::ExportAsTextArchive(const char* fileName, BOOL withoutVerInfo)
          - After changes
            - SLT missing
              - No SLT import performed                 -> OK
-             - SLT imported previously                 -> ask (new SLT version should be archived; manual merge might be required)
+             - SLT imported previously                 -> ask (new SLT version should be archived; manual merge might be required to avoid data loss)
            - SLT exists
              - No SLT import performed                 -> ask (overwriting unknown file)
              - CRC matches last import source          -> OK
-             - CRC differs from last import source     -> ask (probably an updated SLT—rename, export to a new file, then merge)
+             - CRC differs from last import source     -> ask (probably an updated SLT that should not be overwritten—rename, export to a new file, then merge)
     */
     if (!withoutVerInfo)
     {
