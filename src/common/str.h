@@ -71,8 +71,8 @@ int StrICmp(const char* s1, const char* s2);
 //
 // Parameters
 //   s1, s2: strings to compare
-//   l1    : compared length of s1 (must be less or equal to strlen(s1))
-//   l2    : compared length of s2 (must be less or equal to strlen(s2))
+//   l1    : compared length of s1 (must be less than or equal to strlen(s1))
+//   l2    : compared length of s2 (must be less than or equal to strlen(s2))
 //
 // Return Values
 //   -1 if s1 < s2 (if substring pointed to by s1 is less than the substring pointed to by s2)
