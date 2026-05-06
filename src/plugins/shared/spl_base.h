@@ -484,7 +484,7 @@ public:
     // anything
     // (do not open any windows)
     // WARNING!!! All plugin threads must be terminated (if Release returns TRUE, Salamander calls
-    // FreeLibrary is called on the plugin .SPL, so the plugin code is unmapped from memory and the threads
+    // FreeLibrary on the plugin .SPL, so the plugin code is unmapped from memory and the threads
     // have nothing left to run; usually neither a bug report nor Windows exception info is generated)
     virtual BOOL WINAPI Release(HWND parent, BOOL force) = 0;
 
