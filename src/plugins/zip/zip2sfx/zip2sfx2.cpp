@@ -117,7 +117,7 @@ BOOL WriteSFXHeader()
     offs += (sdr - sdl) + 1;
     if (td == SE_REGVALUE)
     {
-        offs += sizeof(LONG); // prepend the HKEY value; even the 64-bit build stores only a 32-bit key for known roots (e.g. HKEY_CURRENT_USER)
+        offs += sizeof(LONG); // prepend the HKEY value; even the 64-bit build stores only a 32-bit key; known roots (e.g. HKEY_CURRENT_USER) are defined as 32-bit IDs
         const char* bs = StrNChr(sdl, sdr - sdl, '\\');
         if (!bs)
             offs += 1; // add a separator character between the subkey and value
