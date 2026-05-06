@@ -1146,7 +1146,7 @@ C__Trace::SendMessageToServer(C__MessageType type, BOOL crash)
             // after this method finishes
         }
         else // block other threads with TRACE_C until the message box opened by the first TRACE_C closes
-        {    // the first TRACE_C closes; then the first TRACE_C crashes there too, to avoid confusion
+        {    // then the first TRACE_C crashes there too, to avoid confusion
             if (msgBoxOpened)
             {
                 while (1)
