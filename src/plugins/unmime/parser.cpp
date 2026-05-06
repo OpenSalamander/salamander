@@ -1355,7 +1355,7 @@ BOOL ParseMailFile(LPCTSTR pszFileName, CParserOutput* pOutput, BOOL bAppendChar
                     goback = TRUE;
                 }
                 else // Handling the previous multipart case
-                {    // the previous multipart was not properly terminated, but we are at a boundary
+                {    // was not properly terminated, but we are at a boundary
                     int i;
                     for (i = STACKTOP - 1; i >= 0; i--) // one of the previous ones.
                         if (IsBoundary(cBoundaries[i], &bEnd2))
