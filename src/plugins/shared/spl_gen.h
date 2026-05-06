@@ -179,14 +179,14 @@ Flags
       The message box becomes the foreground window. Internally, the system calls the SetForegroundWindow
       function for the message box.
     MSGBOXEX_SILENT
-      No sound will be played when message box is displayed.
+      No sound will be played when the message box is displayed.
     MSGBOXEX_ESCAPEENABLED
-      When MSGBOXEX_YESNO is specified, user can close message box using Escape key and DIALOG_NO (IDNO)
-      will be returned. When MSGBOXEX_ABORTRETRYIGNORE is specified, user can close message box using
-      Escape key and DIALOG_CANCEL (IDCANCEL) will be returned. Otherwise this option is ignored.
+      When MSGBOXEX_YESNO is specified, the user can close the message box using the Escape key and DIALOG_NO (IDNO)
+      will be returned. When MSGBOXEX_ABORTRETRYIGNORE is specified, the user can close the message box using
+      the Escape key and DIALOG_CANCEL (IDCANCEL) will be returned. Otherwise this option is ignored.
 
 HIcon
-  Handle to the icon to be drawn in the message box. Icon will not be destroyed when messagebox is closed.
+  Handle to the icon to be drawn in the message box. The icon will not be destroyed when the message box is closed.
   If this parameter is NULL, MSGBOXEX_ICONxxx style will be used.
 
 ContextHelpId
@@ -204,14 +204,14 @@ CheckBoxText
   Pointer to a null-terminated string that contains the checkbox text.
   If the MSGBOXEX_HINT flag is specified in the Flags, this text must contain HINT.
   Hint is separated from string by the TAB character. Hint is divided by the second TAB character
-  on two parts. The first part is label, that will be displayed behind the check box.
-  The second part is the text displayed when user clicks the hint label.
+  into two parts. The first part is label, that will be displayed behind the check box.
+  The second part is the text displayed when the user clicks the hint label.
 
-  Example: "This is text for checkbox\tHint Label\tThis text will be displayed when user click the Hint Label."
+  Example: "This is text for checkbox\tHint Label\tThis text will be displayed when the user clicks the Hint Label."
   If this member is NULL, checkbox will not be displayed.
 
 CheckBoxValue
-  Pointer to a BOOL variable contains the checkbox initial and return state (TRUE: checked, FALSE: unchecked).
+  Pointer to a BOOL variable that contains the checkbox initial and return state (TRUE: checked, FALSE: unchecked).
   This parameter is ignored if CheckBoxText parameter is NULL. Otherwise this parameter must be set.
 
 AliasBtnNames
@@ -225,7 +225,7 @@ AliasBtnNames
   First and second string in each pair are separated by TAB character.
   Pairs are separated by TAB character too.
 
-  If this member is NULL, normal names of buttons will displayed.
+  If this member is NULL, normal names of buttons will be displayed.
 
   Example: sprintf(buffer, "%d\t%s\t%d\t%s", DIALOG_OK, "&Start", DIALOG_CANCEL, "E&xit");
            buffer: "1\t&Start\t2\tE&xit"
@@ -237,7 +237,6 @@ URL
 URLText
   Pointer to a null-terminated string that contains the URL text displayed below text.
   If this member is NULL, the URL is displayed instead.
-
 */
 
 // Panel identifiers
