@@ -215,7 +215,7 @@ void ReleaseFS()
         SalamanderGeneral->DestroySafeWaitWindow();
     }
 
-// kill auxiliary threads that did not finish cleanly
+    // kill auxiliary threads that did not finish cleanly
     AuxThreadQueue.KillAll(TRUE, 0, 0);
 
     if (FTPIcon != NULL)
