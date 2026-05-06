@@ -291,7 +291,7 @@ enum CTransformationEnum
     eloSelect,              // [] Modify the current selection.
     eloMove,                // [deltaX, deltaY] Move the control by the given offsets.
     eloResize,              // [edge, delta] Resize the control; 'edge' selects the side, 'delta' is the amount in dialog units.
-    eloResizeDlg,           // [horizontal, delta] Resize the dialog; when 'horizontal' is TRUE adjust the width, otherwise the height.
+    eloResizeDlg,           // [horizontal, delta] Resize the dialog; when 'horizontal' is TRUE adjust the width, otherwise the height; 'delta' is the amount in dialog units.
     eloResizeControls,      // [resize] Resize command adjusts control width or height according to 'resize'.
     eloSizeToContent,       // [] Size to Content command.
     eloSetSize,             // [width, height] Set explicit control size; -1 keeps the current dimension.
