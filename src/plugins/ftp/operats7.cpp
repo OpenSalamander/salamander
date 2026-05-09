@@ -835,7 +835,7 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     if (FTP_DIGIT_1(replyCode) != FTP_D1_SUCCESS ||
                         !WorkerDataCon->IsTransfering(&trFinished) && !trFinished)
-                    {   // the server returned a listing error or the connection was not established
+                    { // the server returned a listing error or the connection was not established
                         // Since we are already in CSocketsThread::CritSect, this call
                         // is allowed even from CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())
@@ -984,7 +984,7 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                     else
                     {
                         if (err != NO_ERROR && !IsConnected())
-                        {   // the LIST reply arrived, but while waiting for the transfer to finish over the data connection
+                        { // the LIST reply arrived, but while waiting for the transfer to finish over the data connection
                             // both connections were interrupted (data connection and control connection) -> RETRY
 
                             // Since we are already in CSocketsThread::CritSect, this call

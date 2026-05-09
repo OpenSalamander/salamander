@@ -130,7 +130,7 @@ BOOL CMainWindow::CloseDetachedFS(HWND parent, CPluginFSInterfaceEncapsulation* 
     BOOL dummy; // ignored return value
     if (!detachedFS->TryCloseOrDetach(CriticalShutdown, FALSE, dummy, FSTRYCLOSE_UNLOADCLOSEDETACHEDFS) &&
         !CriticalShutdown) // try closing; forceClose==TRUE only during a "critical shutdown"
-    {                      // ask the user whether to close it even against the FS wishes
+    {                      // ask the user whether to close it even if the FS refuses to close
         char path[2 * MAX_PATH];
         strcpy(path, detachedFS->GetPluginFSName());
         strcat(path, ":");
@@ -438,10 +438,10 @@ BOOL CheckIfCanBeExecuted(BOOL buildBat, int commandLen, int argumentsLen)
         Win7: 32764 including the executable name (without quotes), spaces, and parameters
     */
 
-    // WARNING: if a .bat file is executed that runs a .exe and passes all parameters (%*),
+    // WARNING: if a .bat file is executed that runs an .exe and passes all parameters (%*),
     // a longer .exe name than the .bat file name can still trigger a "too long name" error even when the
     // limit given here is respected. The limit is exceeded after the parameters are expanded for the .exe.
-    // This problem would not be addressed; it would require parsing .bat files, which is not worth it.
+    // We intentionally do not handle this case; it would require parsing .bat files, which is not worth it.
 
     int cmdLineLen = commandLen + argumentsLen + 1; // +1 for the space between command and arguments
     if (buildBat)                                   // launching via a .bat file

@@ -1614,7 +1614,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // e.g. 530 Not logged in (invalid password)
                                                     {
                                                         if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                                        {   // convenient handling of the "too many users" error - retry immediately without prompting
+                                                        { // convenient handling of the "too many users" error - retry immediately without prompting
                                                             // possible issue: this code may be followed by a message that requires changing the user/password
                                                             retryLoginWithoutAsking = TRUE;
                                                         }

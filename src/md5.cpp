@@ -66,7 +66,7 @@ void MD5::update(uint1* input, uint4 input_length)
 }
 
 // MD5 finalization. Ends an MD5 message-digest operation, writing the
-// the message digest and zeroizing the context.
+// message digest and zeroizing the context.
 
 void MD5::finalize()
 {
