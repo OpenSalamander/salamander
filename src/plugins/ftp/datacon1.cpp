@@ -720,7 +720,7 @@ void CDataConnectionSocket::DirectFlushData()
                         CloseSocketEx(NULL);       // close the "data connection", there is no point in continuing
                         FreeFlushData();
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // this should not be necessary here
                     }
                 }
@@ -827,7 +827,7 @@ void CDataConnectionSocket::ReceivePostMessage(DWORD id, void* param)
                 CloseSocketEx(NULL);                  // shutdown (we will not learn the result)
                 FreeFlushData();
                 // since we are already in the CSocketsThread::CritSect section, this call
-                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                 // DoPostMessageToWorker(WorkerMsgConnectionClosed);  // this should not be necessary here
             }
 
@@ -848,7 +848,7 @@ void CDataConnectionSocket::JustConnected()
     // is allowed even from CSocket::SocketCritSect (no deadlock risk)
     DoPostMessageToWorker(WorkerMsgConnectedToServer);
     // since we are already in the CSocketsThread::CritSect section, this call
-    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
     SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_TESTNODATATRTIMEOUT,
                             DATACON_TESTNODATATRTIMERID, NULL);
 }
@@ -1010,7 +1010,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                     if (FlushTimerAdded)
                                                     {
                                                         // since we are already in the CSocketsThread::CritSect section, this call
-                                                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                                         SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                                                         FlushTimerAdded = FALSE;
                                                     }
@@ -1018,7 +1018,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                     MoveReadBytesToFlushBuffer();
 
                                                     // since we are already in the CSocketsThread::CritSect section, this call
-                                                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                                     DoPostMessageToWorker(WorkerMsgFlushData);
 
                                                     // if this is direct flushing of data to a file from the data connection, perform it here
@@ -1049,7 +1049,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                                 if (!FlushTimerAdded && NeedFlushReadBuf == 0)
                                                 {
                                                     // since we are already in CSocketsThread::CritSect, this call
-                                                    // can also be made from CSocket::SocketCritSect (no deadlock risk)
+                                                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                                     FlushTimerAdded = SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_FLUSHTIMEOUT,
                                                                                               DATACON_FLUSHTIMERID, NULL);
                                                 }
@@ -1079,7 +1079,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                             logLastErr = TRUE;
                                             CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
                                             // since we are already in the CSocketsThread::CritSect section, this call
-                                            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                             DoPostMessageToWorker(WorkerMsgConnectionClosed);
                                         }
                                     }
@@ -1103,7 +1103,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                 ReadBytesLowMemory = TRUE; // stop reading due to insufficient memory
                                 CloseSocketEx(NULL);       // close the "data connection", there is no point keeping it any longer
                                 // since we are already in the CSocketsThread::CritSect section, this call
-                                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 DoPostMessageToWorker(WorkerMsgConnectionClosed);
                             }
                         }
@@ -1182,7 +1182,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                         logLastErr = TRUE;
                                         CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
                                         // since we are already in the CSocketsThread::CritSect section, this call
-                                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                         DoPostMessageToWorker(WorkerMsgConnectionClosed);
                                     }
                                 }
@@ -1192,7 +1192,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                                 ReadBytesLowMemory = TRUE; // stop reading due to insufficient memory
                                 CloseSocketEx(NULL);       // close the "data connection", there is no point keeping it any longer
                                 // since we are already in the CSocketsThread::CritSect section, this call
-                                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 DoPostMessageToWorker(WorkerMsgConnectionClosed);
                             }
                         }
@@ -1213,7 +1213,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
                     logLastErr = TRUE;
                     CloseSocketEx(NULL); // close the "data connection", there is no point keeping it any longer
                     // since we are already in the CSocketsThread::CritSect section, this call
-                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     DoPostMessageToWorker(WorkerMsgConnectionClosed);
                 }
             }
@@ -1255,7 +1255,7 @@ void CDataConnectionSocket::ReceiveNetEvent(LPARAM lParam, int index)
             logLastErr = TRUE;
             CloseSocketEx(NULL); // close the "data connection" socket, it can no longer be opened
             // since we are already in the CSocketsThread::CritSect section, this call
-            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
             DoPostMessageToWorker(WorkerMsgConnectionClosed);
         }
         HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -1674,7 +1674,7 @@ void CDataConnectionSocket::FlushDataFinished(char* flushBuffer, BOOL enterSocke
             if (FlushTimerAdded)
             {
                 // since we are already in the CSocketsThread::CritSect section, this call
-                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                 SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                 FlushTimerAdded = FALSE;
             }
@@ -1682,7 +1682,7 @@ void CDataConnectionSocket::FlushDataFinished(char* flushBuffer, BOOL enterSocke
             MoveReadBytesToFlushBuffer();
 
             // since we are already in the CSocketsThread::CritSect section, this call
-            // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
             DoPostMessageToWorker(WorkerMsgFlushData);
 
             // if this is direct flushing of data to a file from the data connection, perform it here
@@ -1726,7 +1726,7 @@ BOOL CDataConnectionSocket::AreAllDataFlushed(BOOL onlyTest)
                     if (FlushTimerAdded)
                     {
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         SocketsThread->DeleteTimer(UID, DATACON_FLUSHTIMERID);
                         FlushTimerAdded = FALSE;
                     }
@@ -1734,7 +1734,7 @@ BOOL CDataConnectionSocket::AreAllDataFlushed(BOOL onlyTest)
                     MoveReadBytesToFlushBuffer();
 
                     // since we are already in the CSocketsThread::CritSect section, this call
-                    // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     DoPostMessageToWorker(WorkerMsgFlushData);
 
                     // if this is direct flushing of data to a file from the data connection, perform it here
@@ -1786,7 +1786,7 @@ void CDataConnectionSocket::ReceiveTimer(DWORD id, void* param)
                 MoveReadBytesToFlushBuffer();
 
                 // since we are already in the CSocketsThread::CritSect section, this call
-                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                 DoPostMessageToWorker(WorkerMsgFlushData);
 
                 // if this is direct flushing of data to a file from the data connection, perform it here
@@ -1818,7 +1818,7 @@ void CDataConnectionSocket::ReceiveTimer(DWORD id, void* param)
             else // the timeout has not occurred yet, add a timer for the next test
             {
                 // since we are already in the CSocketsThread::CritSect section, this call
-                // can also be made from the CSocket::SocketCritSect section (no deadlock risk)
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                 SocketsThread->AddTimer(Msg, UID, GetTickCount() + DATACON_TESTNODATATRTIMEOUT,
                                         DATACON_TESTNODATATRTIMERID, NULL);
             }

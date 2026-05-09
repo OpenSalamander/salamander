@@ -1393,7 +1393,7 @@ BOOL CMFTSnapshot<CHAR>::EstimateFileDamage(CLUSTER_MAP_I** clusterMap)
         if (clusterMap != NULL)
         {
             // files with Condition FC_FAIR or FC_POOR render as "2 - there are more then one delete file in this place"
-            // because we should return map of clusters which are not used by existing files and files which could be recovered (FC_GOOD)
+            // because we should return map of clusters that are not used by existing files and files which could be recovered (FC_GOOD)
             for (i = 0; i < MFTItems; i++)
             {
                 if (MFT[i] != NULL && (MFT[i]->Flags & FR_FLAGS_DELETED) && !MFT[i]->IsDir)

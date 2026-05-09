@@ -456,7 +456,7 @@ BOOL CFATSnapshot<CHAR>::IgnoreEntry(DIR_ENTRY_SHORT* entry, BOOL deleteddir)
             return TRUE;
     }
 
-    // ignore also deleted files which has second and third character zero - such combination should not
+    // ignore also deleted files that have second and third character zero - such combination should not
     // exist for short nor long record, (it could exist in case the record was shredded)
     if (!entry->Name[1] && !entry->Name[2])
         return TRUE;
@@ -1755,7 +1755,7 @@ void CFATSnapshot<CHAR>::EstimateFileDamage(FILE_RECORD_I<CHAR>* dir, EstimateDa
             {
                 // third pass (optional)
                 // files with Condition FC_FAIR or FC_POOR render as "2 - there are more then one delete file in this place"
-                // because we should return map of clusters which are not used by existing files and files which could be recovered (FC_GOOD)
+                // because we should return map of clusters that are not used by existing files and files which could be recovered (FC_GOOD)
                 if (r->Flags & FR_FLAGS_DELETED)
                 {
                     DWORD condition = r->Flags & FR_FLAGS_CONDITION_MASK;
@@ -2041,7 +2041,7 @@ template <typename CHAR>
 BOOL CFATSnapshot<CHAR>::FilterExistingDirectories(FILE_RECORD_I<CHAR>* record)
 {
     CALL_STACK_MESSAGE1("CFATSnapshot::FilterExistingDirectories()");
-    // remove existing directories which contains only existing files and directories
+    // remove existing directories that contain only existing files and directories
     // (single deleted subdirectory of subfile means we cannot remove this directory)
     DWORD j = 0;
     for (DWORD i = 0; i < record->NumDirItems; i++)
@@ -2067,7 +2067,7 @@ BOOL CFATSnapshot<CHAR>::FilterEmptyDirectories(FILE_RECORD_I<CHAR>* record)
 {
     CALL_STACK_MESSAGE1("CFATSnapshot::FilterEmptyDirectories()");
 
-    // remove directories which contains only further directories (doesn't contain files)
+    // remove directories that contain only further directories (doesn't contain files)
     DWORD j = 0;
     for (DWORD i = 0; i < record->NumDirItems; i++)
     {
@@ -2534,7 +2534,7 @@ void CFATSnapshot<CHAR>::FreeRecord2(FILE_RECORD_I<CHAR>* record)
         DIR_ENTRY_SHORT* max = (DIR_ENTRY_SHORT*)((BYTE*)record->DirItems + record->NumDirItems * this->Volume->BytesPerCluster);
         while (1)
         {
-            // skip eventually loaded clusters
+            // skip any clusters loaded later
             while (entry < max && !entry->Name[0])
                 entry = (DIR_ENTRY_SHORT*)((BYTE*)entry + this->Volume->BytesPerCluster);
             if (entry >= max)

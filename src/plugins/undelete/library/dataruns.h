@@ -266,7 +266,7 @@ public:
 
         BOOL newPtrs = (StreamPtrs == CurrentPtrs) && (CurrentPtrs != NULL) && (CurrentRun == CurrentPtrs->Runs);
 
-        // read data run header, eventually move to next data pointers ($DATA)
+        // read the data-run header; if necessary, move to the next data pointers ($DATA)
         BYTE runHeader;
         do
         {

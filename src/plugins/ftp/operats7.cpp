@@ -268,7 +268,7 @@ void CFTPWorker::WaitForPASVRes(CFTPWorkerEvent event, char* reply, int replySiz
                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
 
                 // Since we are already in CSocketsThread::CritSect, these calls
-                // can also be made from CSocket::SocketCritSect (no deadlock risk).
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk).
                 if (WorkerDataCon != NULL)
                 {
                     WorkerDataCon->SetPassive(ip, port, logUID);
@@ -317,7 +317,7 @@ void CFTPWorker::WaitForPASVRes(CFTPWorkerEvent event, char* reply, int replySiz
         {
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
             // Since we are already in CSocketsThread::CritSect, this call
-            // can also be made from CSocket::SocketCritSect (no deadlock risk).
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk).
             DeleteSocket(WorkerDataCon); // no connection has been established yet; it will only be deallocated
             WorkerDataCon = NULL;
             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -971,7 +971,7 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                     if (lowMem) // the "data connection" reports out-of-memory ("always false")
                     {
                         // Since we are already inside CSocketsThread::CritSect, this call
-                        // can also be made from CSocket::SocketCritSect (no deadlock risk).
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk).
                         DeleteSocket(WorkerDataCon);
                         WorkerDataCon = NULL;
                         HANDLES(EnterCriticalSection(&WorkerCritSect));

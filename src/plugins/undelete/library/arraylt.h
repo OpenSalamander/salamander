@@ -54,7 +54,7 @@ enum CErrorType
 //  -when adding item to array, copy-constructor is called
 //  -when deleting item, item destructor is called, you can change this behavior,
 //   see CallDestructor method
-//  -you can use this array for simple types and also for objects which does not
+//  -you can use this array for simple types and also for objects that do not
 //   contain pointers to its own data, reason:
 //     objects are moved in array (e.g. when reallocating array or when inserting
 //     item to the beginning of array) simply by using memmove, so during these

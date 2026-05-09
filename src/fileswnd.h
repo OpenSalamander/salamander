@@ -74,7 +74,7 @@ class CCriteriaData // data for atCopy/atMove
 {
 public:
     BOOL OverwriteOlder;      // overwrite older, skip newer ones
-    BOOL StartOnIdle;         // start only when nothing else is running
+    BOOL StartOnIdle;         // start only when no other operation is running
     BOOL CopySecurity;        // preserve NTFS permissions, FALSE = don't care = no special handling, result doesn't matter
     BOOL CopyAttrs;           // preserve Archive, Encrypt and Compress attributes; FALSE = don't care = no special handling, result doesn't matter to us
     BOOL PreserveDirTime;     // preserve date and time of directories
@@ -146,7 +146,7 @@ extern CCopyMoveOptions CopyMoveOptions; // global variable holding the default 
 #define DRAWFLAG_IGNORE_CLIPBOX 0x00000100 // paint will be performed for all displayed items, \
                                            // ignoring the clip box (GetClipBox); \
                                            // it is used after repainting the panel that had a dialog with a stored \
-                                           // old background displayed over it; after it is closed, a full repaint is needed
+                                           // old background displayed on top of it; after it is closed, a full repaint is needed
 #define DRAWFLAG_DRAGDROP 0x00000200       // colors for the drag&drop image
 #define DRAWFLAG_SKIP_FRAME 0x00000400     // dirty hack for thumbnails: do not paint a frame around the thumbnail to avoid corrupting the alpha channel
 #define DRAWFLAG_OVERLAY_ONLY 0x00000800   // draw only the overlay (no icon); used for drawing overlay icons on thumbnails
