@@ -896,7 +896,7 @@ BOOL CControlConnectionSocket::SendChangeWorkingPath(BOOL notInPanel, BOOL leftP
             const char* p;
 
             BOOL needChangeDir = i == 0 && reconnected && startPath != NULL; // after reconnect try to set 'startPath' again
-            if (i == 0 && !reconnected && startPath != NULL) // we have been connected for a while; check whether the working directory matches 'startPath'
+            if (i == 0 && !reconnected && startPath != NULL)                 // we have been connected for a while; check whether the working directory matches 'startPath'
             {
                 // use the cache; under normal circumstances the path should be there
                 if (GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE, &canRetry, retryMsgBuf, 300))
@@ -1470,7 +1470,7 @@ void CControlConnectionSocket::GiveConnectionToWorker(CFTPWorker* newWorker, HWN
                 HANDLES(EnterCriticalSection(&SocketCritSect));
                 HANDLES(EnterCriticalSection(&newWorker->SocketCritSect));
 
-// pass the connection information and socket data to the worker
+                // pass the connection information and socket data to the worker
                 newWorker->ControlConnectionUID = UID;
                 if (HaveWorkingPath)
                 {
@@ -1537,7 +1537,7 @@ void CControlConnectionSocket::GetConnectionFromWorker(CFTPWorker* workerWithCon
             HANDLES(EnterCriticalSection(&SocketCritSect));
             HANDLES(EnterCriticalSection(&workerWithCon->SocketCritSect));
 
-// take over the connection information and socket data from the worker
+            // take over the connection information and socket data from the worker
             workerWithCon->ControlConnectionUID = -1;
             if (workerWithCon->HaveWorkingPath)
             {

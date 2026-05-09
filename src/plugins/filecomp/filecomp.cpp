@@ -522,8 +522,8 @@ BOOL CPluginInterfaceForMenu::ExecuteMenuItem(CSalamanderForOperationsAbstract* 
 
             if (!fd2)
             {
-// one item is selected, and we take the other either from the focused item
-// or from the selection in the target panel
+                // one item is selected, and we take the other either from the focused item
+                // or from the selection in the target panel
                 index = 0;
                 fd2 = SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir);
                 if (!tgtPanelIsDisk || !fd2 || SG->GetPanelSelectedItem(PANEL_TARGET, &index, &isDir))

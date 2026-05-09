@@ -1733,7 +1733,7 @@ CCfgPageConfirmations::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        // according to MSDN, TreeView does not destroy the image list, but the W2K checked build complains 
+        // according to MSDN, TreeView does not destroy the image list, but the W2K checked build complains
         // during the following ImageList_Destroy call, so remove the image list just to be safe
         if (HTreeView != NULL)
             TreeView_SetImageList(HTreeView, NULL, TVSIL_NORMAL);
@@ -2813,7 +2813,7 @@ BOOL CCfgPageMainWindow::InitIconCombobox()
                                     NULL);
     SetWindowLongPtr(hNewCombo, GWLP_ID, IDC_TITLEBAR_ICON_INDEX);
 
-    // since Vista, if font aliasing is set to Standard, the combobox had aliased font while the rest of the dialog 
+    // since Vista, if font aliasing is set to Standard, the combobox had aliased font while the rest of the dialog
     // had the classic non-aliased one; set the correct font
     HFONT hFont = (HFONT)SendMessage(hCombo, WM_GETFONT, 0, 0);
     SendMessage(hNewCombo, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));

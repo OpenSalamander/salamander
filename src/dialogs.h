@@ -257,12 +257,12 @@ public:
     void SetDlgData(CProgressDlgArrItem* dlg, HANDLE dlgThread, HWND dlgWindow);
 
     // removes the 'dlg' structure from the array; 'dlg->DlgThread' must be NULL;
-    // call only if starting the dialog for which 'dlg' was acquired via 
+    // call only if starting the dialog for which 'dlg' was acquired via
     // PrepareNewDlg() function failed
     void RemoveDlg(CProgressDlgArrItem* dlg);
 
     // removes all dialogs whose threads have already finished from the array (closes their handles);
-    // returns the number of still running operation dialog threads (so when it returns zero, 
+    // returns the number of still running operation dialog threads (so when it returns zero,
     // for example Salamander can be terminated)
     int RemoveFinishedDlgs();
 
@@ -271,8 +271,8 @@ public:
     void ClearDlgWindow(HWND hdlg);
 
     // returns the next open dialog; if no dialog is open, returns NULL;
-    // before the first call set 'index' to 0, use the returned value of 'index' 
-    // for subsequent calls (do not touch 'index' between calls); dialogs are returned 
+    // before the first call set 'index' to 0, use the returned value of 'index'
+    // for subsequent calls (do not touch 'index' between calls); dialogs are returned
     // in cycles (after the last one it returns to the first)
     HWND GetNextOpenedDlg(int* index);
 
@@ -281,7 +281,7 @@ public:
     // know it should terminate)
     void PostCancelToAllDlgs();
 
-    // sends a message to all dialogs that the icon (color) has changed and needs 
+    // sends a message to all dialogs that the icon (color) has changed and needs
     // to be set again; call only from the main thread
     void PostIconChange();
 };
@@ -298,8 +298,8 @@ class CStaticText;
 class CProgressBar;
 struct CStartProgressDialogData;
 
-// returns FALSE if the progress dialog could not be opened in the new thread or 
-// if starting an operation in the worker thread failed in this dialog; when FALSE 
+// returns FALSE if the progress dialog could not be opened in the new thread or
+// if starting an operation in the worker thread failed in this dialog; when FALSE
 // is returned the caller must free the script 'script' manually (otherwise the script
 // is freed after the operation in the worker thread finishes)
 BOOL StartProgressDialog(COperations* script, const char* caption,
@@ -1278,7 +1278,7 @@ class CSharesDialog : public CCommonDialog
 {
 protected:
     HWND HListView;
-    CShares SharedDirs; // keep our own instance so nobody 
+    CShares SharedDirs; // keep our own instance so nobody
                         // refreshes it in the background
     BYTE SortBy;        // indicates the column used for sorting
     int FocusedIndex;   // used to return the value
@@ -1350,8 +1350,8 @@ public:
     ~CDisconnectDialog();
 
     const char* GetFocusedPath();                 // returns the path of the selected share; call only after Execute() returns
-                                  // returns NULL if the "Focus" button was not pressed and the dialog returned IDOK
-                                  // from Execute()
+                                                  // returns NULL if the "Focus" button was not pressed and the dialog returned IDOK
+                                                  // from Execute()
     BOOL NoConnection() { return NoConncection; } // returns TRUE if the dialog wasn't opened because there was no connection
 
 protected:

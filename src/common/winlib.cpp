@@ -912,8 +912,8 @@ CWindowQueue::~CWindowQueue()
 {
     if (!Empty())
         TRACE_ET(_T("Some window is still opened in ") << QueueName << _T(" queue!")); // should not happen...
-// there is no multithreading risk here anymore (the app is shutting down and the threads have been terminated)
-// deallocate at least some memory
+                                                                                       // there is no multithreading risk here anymore (the app is shutting down and the threads have been terminated)
+                                                                                       // deallocate at least some memory
     CWindowQueueItem* last;
     CWindowQueueItem* item = Head;
     while (item != NULL)

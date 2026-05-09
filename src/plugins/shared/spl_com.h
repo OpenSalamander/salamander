@@ -187,7 +187,7 @@ struct CQuadWord
     double GetDouble() const
     { // MSVC cannot convert unsigned __int64 to double, so this must be handled explicitly
         if (Value < CQuadWord(0, 0x80000000).Value)
-            return (double)(__int64)Value;             // positive number
+            return (double)(__int64)Value; // positive number
         else
             return 9223372036854775808.0 + (double)(__int64)(Value - CQuadWord(0, 0x80000000).Value);
     }
@@ -214,7 +214,7 @@ struct CFileData // no destructor may be added here!
                                    // allocated on Salamander's heap (see CSalamanderGeneralAbstract::Alloc/Realloc/Free)
     DWORD_PTR PluginData;          // used by the plugin through CPluginDataInterfaceAbstract; Salamander ignores it
     unsigned NameLen : 9;          // length of Name (strlen(Name)) - WARNING: the maximum name length is (MAX_PATH - 5)
-    unsigned Hidden : 1;               // is it hidden? (if 1, the icon is 50% more transparent - ghosted)
+    unsigned Hidden : 1;           // is it hidden? (if 1, the icon is 50% more transparent - ghosted)
     unsigned IsLink : 1;           // is it a link? (if 1, the icon gets the link overlay) - standard filling: see CSalamanderGeneralAbstract::IsFileLink(CFileData::Ext); when displayed, it takes precedence over IsOffline, but IconOverlayIndex takes precedence
     unsigned IsOffline : 1;        // is it offline? (if 1, the icon gets the offline overlay - black clock); when displayed, IsLink and IconOverlayIndex take precedence
     unsigned IconOverlayIndex : 4; // icon overlay index (if the icon has no overlay, this is ICONOVERLAYINDEX_NOTUSED); when displayed, it takes precedence over IsLink and IsOffline
@@ -226,7 +226,7 @@ struct CFileData // no destructor may be added here!
     unsigned Archive : 1;         // is this an archive? used to display the archive icon in the panel
     unsigned SizeValid : 1;       // has the directory size already been computed?
     unsigned Dirty : 1;           // does this item need to be redrawn? (temporary only; the message queue must not be pumped between setting the bit and redrawing the panel, otherwise the icon may be redrawn by the icon reader and the bit reset; as a result the item will not be redrawn)
-    unsigned CutToClip : 1;           // is it cut to the clipboard? (if 1, the icon is 50% more transparent - ghosted)
+    unsigned CutToClip : 1;       // is it cut to the clipboard? (if 1, the icon is 50% more transparent - ghosted)
     unsigned IconOverlayDone : 1; // for icon-reader-thread use only: are we retrieving or have we already retrieved the icon overlay? (0 - no, 1 - yes)
 };
 
@@ -473,7 +473,7 @@ struct CColumn
                                 // VALID_DATA_EXTENSION set. Use CSalamanderGeneralAbstract::AddStrToStr() to join the two
                                 // strings.
 
-    char Description[COLUMN_DESCRIPTION_MAX];     // Tooltip in the header line
+    char Description[COLUMN_DESCRIPTION_MAX]; // Tooltip in the header line
                                               // It must not contain an empty string.
                                               // WARNING: After the first null terminator, it may also contain
                                               // the description of the "Ext" column - this happens when there is no

@@ -2300,8 +2300,8 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
                     DiskWork.FlushDataBuffer = NULL; // work is in progress; we cannot free the buffer containing the read data, so leave it to the disk-work thread (see the cancellation section) - we can write to DiskWork because after Cancel the disk thread must no longer access it (it might not even exist)
             }
             // if we cancelled the work before it started, we must release the flush buffer, and
-                        // if the work has already finished, release the flush buffer here because fweDiskWorkReadFinished
-                        // will arrive elsewhere (where it will be ignored)
+            // if the work has already finished, release the flush buffer here because fweDiskWorkReadFinished
+            // will arrive elsewhere (where it will be ignored)
             if (DiskWork.FlushDataBuffer != NULL)
             {
                 free(DiskWork.FlushDataBuffer);

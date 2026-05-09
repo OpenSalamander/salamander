@@ -1219,8 +1219,8 @@ void CControlConnectionSocket::SocketWasClosed(DWORD error)
     AddEvent(ccsevClosed, error, 0);
 
     // Inform the user about the control connection closing if it does not happen
-        // during a socket operation (which would report a timeout or a "kick"
-        // leading to disconnection from the FTP server)
+    // during a socket operation (which would report a timeout or a "kick"
+    // leading to disconnection from the FTP server)
     ClosedCtrlConChecker.Add(this);
 
     HANDLES(EnterCriticalSection(&SocketCritSect));

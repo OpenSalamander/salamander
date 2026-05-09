@@ -21,7 +21,7 @@ struct CThreadQueueItem
 {
     HANDLE Thread;
     DWORD ThreadID; // debugging only (to find the thread in the debugger thread list)
-    int Locks;          // lock count; if > 0, 'Thread' must not be closed
+    int Locks;      // lock count; if > 0, 'Thread' must not be closed
     CThreadQueueItem* Next;
 
     CThreadQueueItem(HANDLE thread, DWORD tid)
