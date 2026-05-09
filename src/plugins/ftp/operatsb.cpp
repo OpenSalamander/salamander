@@ -83,7 +83,7 @@ void CFTPWorker::HandleEventInWorkingState5(CFTPWorkerEvent event, BOOL& sendQui
             HANDLES(LeaveCriticalSection(&WorkerCritSect));
             char* flushBuffer;
             // since we are already in CSocketsThread::CritSect, this call
-            // is also possible from CSocket::SocketCritSect (no deadlock risk)
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
             BOOL haveBufferForData = WorkerUploadDataCon->GiveBufferForData(&flushBuffer);
             HANDLES(EnterCriticalSection(&WorkerCritSect));
 

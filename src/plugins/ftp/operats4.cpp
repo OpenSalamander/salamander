@@ -68,7 +68,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 // since we are already inside CSocketsThread::CritSect, this call
-                                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 if (WorkerDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                                     WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                                 WorkerDataCon->FreeFlushData();
@@ -103,7 +103,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             LastTimeEstimation = -1;
 
                             // since we are already inside CSocketsThread::CritSect, this call
-                            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                            // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                             SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* perform the first status update "immediately" */,
                                                     WORKER_STATUSUPDATETIMID, NULL); // ignore the error; at worst the status will not update
                         }
@@ -155,7 +155,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 // since we are already inside CSocketsThread::CritSect, this call
-                                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 if (WorkerUploadDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                                     WorkerUploadDataCon->CloseSocketEx(NULL); // shutdown (we will not learn the result)
                                 WorkerUploadDataCon->FreeBufferedData();
@@ -190,7 +190,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                             LastTimeEstimation = -1;
 
                             // since we are already inside CSocketsThread::CritSect, this call
-                            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                            // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                             SocketsThread->AddTimer(Msg, UID, GetTickCount() + 100 /* we perform the first status update "immediately" */,
                                                     WORKER_STATUSUPDATETIMID, NULL); // ignore the error; at worst the status will not update
                         }
@@ -274,7 +274,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 reportWorkerChange = TRUE;            // we need to hide any progress of fetching the listing
 
                                 // since we are already inside CSocketsThread::CritSect, this call
-                                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                                // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                                 SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                             }
                         }
@@ -914,7 +914,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                                 reportWorkerChange = TRUE;            // we need to hide any progress of fetching the listing
 
                                 // since we are already inside CSocketsThread::CritSect, this call
-                                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                                // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                                 SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                             }
                         }
@@ -979,7 +979,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                 reportWorkerChange = TRUE;
 
                 // since we are already inside CSocketsThread::CritSect, this call
-                // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                 SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
             }
             else
@@ -1012,7 +1012,7 @@ void CFTPWorker::HandleEventInWorkingState(CFTPWorkerEvent event, BOOL& sendQuit
                     reportWorkerChange = TRUE;
 
                     // since we are already inside CSocketsThread::CritSect, this call
-                    // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+                    // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                     SocketsThread->DeleteTimer(UID, WORKER_STATUSUPDATETIMID); // cancel any timer from previous work
                 }
             }
@@ -1134,7 +1134,7 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
         if (ShouldStop || ShouldBePaused)
         {
             // since we are already inside CSocketsThread::CritSect, this call
-            // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no risk of deadlock)
+            // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
             SocketsThread->DeleteTimer(UID, WORKER_RECONTIMEOUTTIMID);
         }
         else // normal activity
@@ -1222,7 +1222,7 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
 
                 BOOL isConnected;
                 // since we are already inside CSocketsThread::CritSect, this call
-                // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                 if (SocketsThread->IsSocketConnected(ctrlUID, &isConnected) &&
                     !isConnected) // the socket object of the panel's control connection still exists and has no connection to the server
                 {
@@ -1299,7 +1299,7 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
             if (serverTimeout < 1000)
                 serverTimeout = 1000; // at least one second
             // since we are already inside CSocketsThread::CritSect, this call
-            // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
             SocketsThread->AddTimer(Msg, UID, GetTickCount() + serverTimeout,
                                     WORKER_TIMEOUTTIMERID, NULL); // ignore errors; at worst the user will press Stop
         }
@@ -1326,7 +1326,7 @@ void CFTPWorker::HandleEvent(CFTPWorkerEvent event, char* reply, int replySize, 
     if (postActivate)
     {
         // since we are already inside CSocketsThread::CritSect, this call
-        // is also possible from CSocket::SocketCritSect (no risk of deadlock)
+        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
         SocketsThread->PostSocketMessage(Msg, UID, WORKER_ACTIVATE, NULL); // ignore errors; at worst the user will press Stop
     }
     if (operStatusMaybeChanged)

@@ -103,7 +103,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
             int validBytesInFlushBuffer;
             BOOL deleteTgtFile;
             // since we are already in CSocketsThread::CritSect, this call
-            // is also possible from CSocket::SocketCritSect (no deadlock risk)
+            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
             BOOL haveFlushData = WorkerDataCon->GiveFlushData(&flushBuffer, &validBytesInFlushBuffer, &deleteTgtFile);
 
             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -138,7 +138,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                         {
                             HANDLES(LeaveCriticalSection(&WorkerCritSect));
                             // since we are already in the CSocketsThread::CritSect section, this call
-                            // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                             if (WorkerDataCon->IsConnected())       // close the "data connection"; the system tries to perform a "graceful" shutdown
                                 WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                             WorkerDataCon->FreeFlushData();
@@ -179,7 +179,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                             {
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 // since we are already in the CSocketsThread::CritSect section, this call
-                                // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 if (WorkerDataCon->IsConnected())       // close the "data connection"; the system will attempt a "graceful" shutdown
                                     WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                                 WorkerDataCon->FreeFlushData();
@@ -220,7 +220,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                 {
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // since we are already in CSocketsThread::CritSect, this call
-                    // can also be made from CSocket::SocketCritSect (no deadlock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     WorkerDataCon->FlushDataFinished(DiskWork.FlushDataBuffer, TRUE);
                     if (!WorkerDataCon->IsConnected())
                     {
@@ -266,7 +266,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                 {
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // since we are already in the CSocketsThread::CritSect section, this call
-                    // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     if (WorkerDataCon->IsConnected())       // close the "data connection"; the system will attempt a graceful shutdown
                         WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                     WorkerDataCon->FreeFlushData();
@@ -331,7 +331,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                                 {
                                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                     // since we are already in the CSocketsThread::CritSect section, this call
-                                    // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                     DeleteSocket(WorkerDataCon); // it will only be deallocated
                                     WorkerDataCon = NULL;
                                     HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -354,7 +354,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
 
                                 HANDLES(LeaveCriticalSection(&WorkerCritSect));
                                 // since we are already in CSocketsThread::CritSect, this call
-                                // is also possible from CSocket::SocketCritSect (no deadlock risk)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 WorkerDataCon->SetPostMessagesToWorker(TRUE, Msg, UID,
                                                                        WORKER_DATACON_CONNECTED,
                                                                        WORKER_DATACON_CLOSED,
@@ -438,7 +438,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())       // close the "data connection"; the system tries to perform a "graceful" shutdown
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         WorkerDataCon->FreeFlushData();
@@ -529,7 +529,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())       // close the "data connection"; the system will try a "graceful" shutdown
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         WorkerDataCon->FreeFlushData();
@@ -554,7 +554,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())       // close the "data connection"; the system attempts a graceful shutdown
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         WorkerDataCon->FreeFlushData();
@@ -588,7 +588,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())       // close the "data connection"; the system attempts a graceful shutdown
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         WorkerDataCon->FreeFlushData();
@@ -635,7 +635,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                 {
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // since we are already in the CSocketsThread::CritSect section, this call
-                    // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     WorkerDataCon->ActivateConnection();
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
                 }
@@ -697,7 +697,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                         if (FTP_DIGIT_1(replyCode) != FTP_D1_SUCCESS)
                         { // the server reports an error retrieving the file
                             // since we are already in CSocketsThread::CritSect, this call
-                            // is also possible from CSocket::SocketCritSect (no deadlock risk)
+                            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                             if (WorkerDataCon->IsConnected())       // close the "data connection"; the system attempts a graceful shutdown
                                 WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         }
@@ -709,10 +709,10 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                                 if (!WorkerDataCon->IsTransfering(&trFinished) && !trFinished)
                                 { // connection has not been established - wait 5 seconds, then possibly report an error (if the connection still has not been established and ListCmdReplyCode is success)
                                     // since we are already in CSocketsThread::CritSect, this call
-                                    // can also be made from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
+                                    // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                                     SocketsThread->DeleteTimer(UID, WORKER_DATACONSTARTTIMID);
                                     // since we are already in CSocketsThread::CritSect, this call
-                                    // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
+                                    // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                                     SocketsThread->AddTimer(Msg, UID, GetTickCount() + 20000,
                                                             WORKER_DATACONSTARTTIMID, NULL); // ignore the error; at worst the user presses Stop
                                 }
@@ -726,7 +726,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                         {
                             HANDLES(LeaveCriticalSection(&WorkerCritSect));
                             // since we are already in the CSocketsThread::CritSect section, this call
-                            // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                            // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                             if (WorkerDataCon->IsConnected())       // close the "data connection"; the system tries to perform a graceful shutdown
                                 WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -746,7 +746,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     {
                         HANDLES(LeaveCriticalSection(&WorkerCritSect));
                         // since we are already in the CSocketsThread::CritSect section, this call
-                        // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())       // close the "data connection"; the system will try a graceful shutdown
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
                         WorkerDataCon->FreeFlushData();
@@ -791,7 +791,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                             if (FTP_DIGIT_1(retrReply) == FTP_D1_SUCCESS) // retry the operation (the server returned success, but the data connection did not even open, so something is wrong)
                             {
                                 // since we are already in CSocketsThread::CritSect, this call
-                                // can also be made from CSocket::SocketCritSect (no deadlock risk)
+                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                 WorkerDataCon->FreeFlushData();
                                 DeleteSocket(WorkerDataCon);
                                 WorkerDataCon = NULL;
@@ -806,7 +806,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                         }
                     }
                     // since we are already in the CSocketsThread::CritSect section, this call
-                    // is also possible from the CSocket::SocketCritSect section (no dead-lock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     con = WorkerDataCon->IsConnected();
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
                 }
@@ -815,7 +815,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                     nextLoopCopy = TRUE;
                     SubState = fwssWorkCopyFinishFlushData;
                     // since we are already in CSocketsThread::CritSect, this call
-                    // is also possible from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
+                    // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                     SocketsThread->DeleteTimer(UID, WORKER_DATACONSTARTTIMID);
                 }
                 break;
@@ -828,7 +828,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                 {
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     // since we are already in CSocketsThread::CritSect, this call
-                    // can also be made from CSocket::SocketCritSect (no deadlock risk)
+                    // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                     done = WorkerDataCon->AreAllDataFlushed(FALSE);
                     HANDLES(EnterCriticalSection(&WorkerCritSect));
                 }
@@ -877,7 +877,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                         if (!WorkerDataCon->GetProxyError(errBuf, 50 + FTP_MAX_PATH, NULL, 0, TRUE))
                             errBuf[0] = 0;
                         // since we are already in CSocketsThread::CritSect, this call
-                        // is also possible from CSocket::SocketCritSect (no deadlock risk)
+                        // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                         // the data connection should already be closed, so closing it is probably redundant, but keep the defensive close...
                         if (WorkerDataCon->IsConnected()) // close the "data connection"; the system attempts a graceful shutdown
                         {
@@ -923,7 +923,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                                             if (IsConnected()) // "manually" close the control connection
                                             {
                                                 // since we are already in CSocketsThread::CritSect, this call
-                                                // is also possible from CSocket::SocketCritSect (no deadlock risk)
+                                                // can also be called while holding CSocket::SocketCritSect (no deadlock risk)
                                                 ForceClose(); // it would be cleaner to send QUIT, but a certificate change is very unlikely, so it is not worth the hassle :-)
                                             }
                                             HANDLES(EnterCriticalSection(&WorkerCritSect));
@@ -941,7 +941,7 @@ void CFTPWorker::HandleEventInWorkingState3(CFTPWorkerEvent event, BOOL& sendQui
                                             {
                                                 SubState = fwssWorkCopyDelayedAutoRetry; // use a delayed auto-retry so that all unexpected server responses have time to arrive
                                                 // since we are already in CSocketsThread::CritSect, this call
-                                                // can also be made from CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
+                                                // can also be called while holding CSocket::SocketCritSect and CFTPWorker::WorkerCritSect (no deadlock risk)
                                                 SocketsThread->AddTimer(Msg, UID, GetTickCount() + WORKER_DELAYEDAUTORETRYTIMEOUT,
                                                                         WORKER_DELAYEDAUTORETRYTIMID, NULL); // ignore the error; at worst the user presses Stop
                                             }
