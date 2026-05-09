@@ -1576,7 +1576,7 @@ void ClearViewerHistory(BOOL dataOnly)
 
     if (!dataOnly)
     {
-        // also clear the combobox in any open Find windows
+        // also clear the combo box in any open Find windows
         ViewerWindowQueue.BroadcastMessage(WM_USER_CLEARHISTORY, 0, 0);
     }
 }

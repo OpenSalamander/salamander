@@ -5,7 +5,7 @@
 #include "precomp.h"
 
 // ****************************************************************************
-// support for filling the combobox with default behavior when errors occur during operations
+// support for filling the combo box with default behavior when errors occur during operations
 
 int OperDefFileAlreadyExists[] = {IDS_OPERATIONSUSERPROMPT, IDS_OPERATIONSAUTORENAME, IDS_OPERATIONSRESUME,
                                   IDS_OPERATIONSRESUMEOROVERWR, IDS_OPERATIONSOVERWRITE,

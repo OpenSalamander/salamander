@@ -842,7 +842,7 @@ BOOL CPluginFSInterface::CopyFile(FILE_RECORD_I<char>* record, char* filename, c
         if (result == INVALID_HANDLE_VALUE)
         {
             ret = FALSE;
-            deleteTargetOnError = FALSE; // overwrite dialog was cancelled, keep target file
+            deleteTargetOnError = FALSE; // overwrite dialog was canceled, keep target file
             break;
         }
 

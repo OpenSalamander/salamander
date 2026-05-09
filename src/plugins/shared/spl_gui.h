@@ -106,7 +106,7 @@ public:
     // Sets the progress and optionally the text in the center
     //
     // Compared to SetProgress(), this method has the advantage that if 'progressCurrent' >= 'progressTotal',
-    // it sets the progress directly: if 'progressTotal' is 0 it sets 0%, otherwise 100%, and does not perform the calculation
+    // Sets the progress directly: if 'progressTotal' is 0 it sets 0%, otherwise 100%, and does not perform the calculation
     // (it is meaningless and triggers RTC because of the cast). This "disallowed" state occurs,
     // for example, when a file grows during the operation or when working with file links - links have
     // zero size, but then contain data with the size of the linked file.
@@ -2126,7 +2126,7 @@ public:
     // XP Visual Styles
     //
     // When called on an operating system that supports visual styles,
-    // it calls SetWindowTheme(hWindow, L" ", L" ") to disable visual styles
+    // Calls SetWindowTheme(hWindow, L" ", L" ") to disable visual styles
     // for window 'hWindow'
     // returns TRUE if the operating system supports visual styles, otherwise FALSE
     virtual BOOL WINAPI DisableWindowVisualStyles(HWND hWindow) = 0;

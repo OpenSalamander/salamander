@@ -1835,7 +1835,7 @@ LRESULT CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     if (uMsg == WM_MOUSEHWHEEL) // horizontal scroll, supported from Windows Vista
     {
         short zDelta = (short)HIWORD(wParam);
-        DWORD scrollChars = SalamanderGeneral->GetMouseWheelScrollChars(); // can be also WHEEL_PAGESCROLL (0xffffffff) for page scroll
+        DWORD scrollChars = SalamanderGeneral->GetMouseWheelScrollChars(); // can also be WHEEL_PAGESCROLL (0xffffffff) for page scroll
         if (scrollChars >= (DWORD)(PageWidth / XLine))
         {
             SendMessage(HWindow, WM_HSCROLL, zDelta < 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);

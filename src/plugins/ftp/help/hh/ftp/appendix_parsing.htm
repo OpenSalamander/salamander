@@ -122,12 +122,12 @@ character. Positive number is introduced by '+' character (it can be omitted).</
 <h4>Columns</h4>
 
 <p>Each column has an identifier name, a type of values, an empty value, a name
-and description for displaying in panel, and an alignment of values. The identifier
+and description for displaying in the panel, and an alignment of values. The identifier
 name is used in the column identifier which is used for assigning values to the
 column. Each column can contain only one value for each item (a file or directory).
 If no value was assigned to the column, the empty value defined for the column is
-used. The column can be visible in panel or not. Only columns of Name and Extension
-types are always visible in panel. Columns are defined in the
+used. The column can be visible in the panel or not. Only columns of Name and Extension
+types are always visible in the panel. Columns are defined in the
 <a href="dlgboxes_editcolumn.htm">New/Edit Column dialog box</a>.</p>
 
 <p>We have the following types of columns:</p>
@@ -148,7 +148,7 @@ types are always visible in panel. Columns are defined in the
          values in the column of the Name type; it cannot be hidden; the definition of the
 	 empty value for this column makes no sense</td></tr>
  <tr><td>File Size in Bytes</td><td>64-bit unsigned integer; file size in bytes; the value is zero
-         and is displayed as "DIR" in panel for all directories; the default empty
+         and is displayed as "DIR" in the panel for all directories; the default empty
 	 value is zero</td></tr>
  <tr><td>Last Write Date</td><td>date; last write (modification) date; a date value must be valid (if not,
          it is replaced by the value January 1, 1602); the default empty value is
@@ -160,12 +160,12 @@ types are always visible in panel. Columns are defined in the
  <tr><td>Any Text</td><td>string; general purpose; the default empty value is the empty string ("")</td></tr>
  <tr><td>Any Date</td><td>date; general purpose; a date value must be valid (if not,
          it is replaced by the value January 1, 1602); the default empty value is the empty
-	 string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+	 string (""), it means that if the value is not assigned, nothing is shown in the panel</td></tr>
  <tr><td>Any Time</td><td>time; general purpose; the default empty value is the empty
-         string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+         string (""), it means that if the value is not assigned, nothing is shown in the panel</td></tr>
  <tr><td>Any Number</td><td>64-bit signed integer; general purpose; the default empty
          value is the empty string (""); it means that if the value is not assigned,
-	 nothing is shown in panel</td></tr>
+	 nothing is shown in the panel</td></tr>
 </table>
 
 <p>In addition, there are three virtual columns with the identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;,
@@ -405,7 +405,7 @@ the column default empty value in the expression).</p>
 
  <tr><td>time(&lt;column&gt;)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be time; assigns hours, minutes, and
-	 eventually also seconds and milliseconds represented by decimal numbers at
+	 optionally seconds and milliseconds represented by decimal numbers at
 	 the pointer position to the column; supported time formats are: 00:00,
 	 00:00:00, or 00:00:00.000; if the time value is followed by "a", "am", "p",
 	 or "pm", it is considered to be "a.m." (morning) or "p.m." (evening) and the
@@ -417,7 +417,7 @@ the column default empty value in the expression).</p>
 
  <tr><td>year_or_time(&lt;column_date&gt;, &lt;column_time&gt;)</td><td>
          types of values in columns (<i>&lt;column_date&gt;</i> and <i>&lt;column_time&gt;</i> parameters)
-	 must be date and time; assigns year and eventually also time (only hours and minutes)
+	 must be date and time; assigns year and optionally time (only hours and minutes)
 	 represented by a decimal number (if it is year) or two decimal numbers separated by ':'
 	 character (if it is time) at the pointer position to the column; supports standard Unix
 	 format: if it is year at the pointer position, time is unknown, and if it is time at the
@@ -462,7 +462,7 @@ the column default empty value in the expression).</p>
 	 and <i>&lt;column_link&gt;</i> must be Name and Any Text; works with a string starting
 	 at the pointer position and ending before the end of line; moves the pointer behind this
 	 string; expects standard Unix format of link: "link_name -&gt; target_name" or "link_name"
-	 (if the link target is not accessible); gets the link name and eventually also the link
+	 (if the link target is not accessible); gets the link name and optionally the link
 	 target from the string and detects if it is the link to a file or directory (used
 	 heuristics: if the link name or target contains extension, it is probably the link to
 	 a file, otherwise it is the link to a directory; if this heuristics does not fit, you

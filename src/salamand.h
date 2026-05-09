@@ -1104,7 +1104,7 @@ BOOL GetUpgradeInfo(BOOL* autoImportConfig, char* autoImportConfigFromKey, int a
 BOOL FindLatestConfiguration(BOOL* deleteConfigurations, const char*& loadConfiguration);                    // description in mainwnd2.cpp
 BOOL FindLanguageFromPrevVerOfSal(char* slgName);                                                            // description in mainwnd2.cpp
 
-// creates and attaches a special class to the edit line/combobox 'ctrlID' that enables
+// creates and attaches a special class to the edit line/combo box 'ctrlID' that enables
 // capturing keys and sending the WM_USER_KEYDOWN message to the dialog 'hDialog'
 // LOWORD(wParam) contains ctrlID, and lParam contains the pressed key (wParam from the WM_KEYDOWN/WM_SYSKEYDOWN message)
 BOOL CreateKeyForwarder(HWND hDialog, int ctrlID);

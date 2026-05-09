@@ -401,7 +401,7 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-            // the user cancelled the operation
+            // the user canceled the operation
             // delete the incomplete file afterwards
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());

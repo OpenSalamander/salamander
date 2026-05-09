@@ -1155,7 +1155,7 @@ BOOL ResourceGetDialogName(WCHAR* buff, int buffSize, char* name, int nameMax)
     return TRUE;
 }
 
-// it tries to load aclui.dll and retrieve the dialog name stored under ID 103 (Security tab)
+// Tries to load aclui.dll and retrieve the dialog name stored under ID 103 (Security tab)
 // if successful, it fills pageName with the dialog name and returns TRUE; otherwise it returns FALSE
 BOOL GetACLUISecurityPageName(char* pageName, int pageNameMax)
 {

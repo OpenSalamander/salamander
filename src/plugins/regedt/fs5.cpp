@@ -1051,7 +1051,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsNam
                 }
             }
 
-            // determine whether it makes sense to continue (if not cancelled and another selected item exists)
+            // determine whether it makes sense to continue (if not canceled and another selected item exists)
             if (!success || focused || f == NULL)
                 break;
         }

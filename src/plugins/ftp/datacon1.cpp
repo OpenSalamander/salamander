@@ -1384,7 +1384,7 @@ void CDataConnectionSocket::CloseTgtFile()
                 if (workIsInProgress)
                     DiskWork.FlushDataBuffer = NULL; // the work is already underway, so we cannot free the buffer with the data being written/tested; leave it to the disk-work thread (see the cancellation part) - we can still write to DiskWork because after Cancel the disk thread must no longer access it (it may not even exist anymore)
                 else
-                { // the work was cancelled before the disk thread started processing it - deallocate the flush buffer
+                { // the work was canceled before the disk thread started processing it - deallocate the flush buffer
                     if (DiskWork.FlushDataBuffer != NULL)
                     {
                         free(DiskWork.FlushDataBuffer);

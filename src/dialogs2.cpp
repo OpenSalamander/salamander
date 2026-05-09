@@ -457,7 +457,7 @@ CSizeResultsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             EnableWindow(GetDlgItem(HWindow, IDS_COMPRATIO), FALSE);
         }
 
-        // fill the combobox
+        // fill the combo box
 
         DWORD clusterSize = 2048; // most likely used for CDs
         CFilesWindow* panel = MainWindow->GetNonActivePanel();
@@ -580,7 +580,7 @@ CSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILEMASK)); // install WordBreakProc to the combobox
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILEMASK)); // install WordBreakProc to the combo box
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_FILEMASK_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
@@ -640,7 +640,7 @@ void CImportConfigDialog::Transfer(CTransferInfo& ti)
                     selIndex = 1; // the last configuration becomes default
             }
         }
-        if (selIndex == 0) // nothing to choose from, disable the combobox
+        if (selIndex == 0) // nothing to choose from, disable the combo box
         {
             EnableWindow(GetDlgItem(HWindow, IDC_IMPORTCONFIG), FALSE);
         }

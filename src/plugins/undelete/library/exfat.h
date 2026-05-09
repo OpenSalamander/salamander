@@ -580,7 +580,7 @@ BOOL CExFATSnapshot<CHAR>::EncodeClusterChains(CRunsBuffer<CHAR>* tmpRunsBuffer,
                 delete[] runs;
                 return String<CHAR>::Error(IDS_UNDELETE, IDS_LOWMEM);
             }
-            stream->FirstLCN = 0; // not needed anymore, encoded in data runs
+            stream->FirstLCN = 0; // no longer needed, encoded in data runs
             stream->Ptrs = ptrs;
             ptrs->StartVCN = 0;
             ptrs->LastVCN = (stream->DSSize - 1) / this->Volume->BytesPerCluster;
@@ -741,7 +741,7 @@ BOOL CExFATSnapshot<CHAR>::Update(CSnapshotProgressDlg* progress, DWORD udFlags,
     if (this->UdFlags & UF_ESTIMATEDAMAGE)
         EstimateFileDamage(deletedFiles, clusterMap);
 
-    // we can destroy {Metafiles} virtual directory now if not needed anymore
+    // we can destroy {Metafiles} virtual directory now if no longer needed
     if ((this->UdFlags & UF_SHOWMETAFILES) == 0 && VirtualDirsCount == 2)
     {
         FreeRecord2(this->Root->DirItems[this->Root->NumDirItems - 1].Record);

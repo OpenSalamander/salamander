@@ -459,7 +459,7 @@ public:
     void PrematureDeleteByPlugin(CPluginInterfaceAbstract* ownDeletePlugin, BOOL onlyDetach);
 
     // the TEMP directory clean-up from the rest of previous instances; called only by the first instance
-    // if it finds subdirectories "SAL*.tmp", it asks the user if he wants to delete them and if so,
+    // if it finds subdirectories "SAL*.tmp", it asks the user whether they want to delete them and if so,
     // it deletes them
     void ClearTEMPIfNeeded(HWND parent, HWND hActivePanel);
 

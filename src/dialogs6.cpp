@@ -1879,7 +1879,7 @@ CCmpDirProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // redraw explicitly before showing the messagebox
                 FlushDataToControls();
 
-                // ask the user if he wants to interrupt the operation
+                // asks the user whether they want to interrupt the operation
                 Cancel = (SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION), LoadStr(IDS_QUESTION),
                                         MB_YESNO | MB_ICONQUESTION) == IDYES);
             }

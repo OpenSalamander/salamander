@@ -417,8 +417,8 @@ BOOL ChangeToIconButton(HWND hParent, int ctrlID, int iconID);
 //  ****************************************************************************
 // VerticalAlignChildToChild
 //
-// used to align the "browse" button next to an edit line / combobox
-// (in Resource Workshop it is hard to place the button correctly next to a combobox)
+// used to align the "browse" button next to an edit line / combo box
+// (in Resource Workshop it is hard to place the button correctly next to a combo box)
 // adjusts the size and position of child window 'alignID' so that it sits at the same height
 // (and has the same height) as child 'toID'
 void VerticalAlignChildToChild(HWND hParent, int alignID, int toID);

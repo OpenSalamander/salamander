@@ -509,7 +509,7 @@ class CSendCmdUserIfaceForListAndDownload : public CSendCmdUserIfaceAbstract
 {
 protected:
     BOOL ForDownload;     // object usage: TRUE = download, FALSE = list
-    BOOL DatConCancelled; // TRUE = the data connection was cancelled (either it never opened (accept)
+    BOOL DatConCancelled; // TRUE = the data connection was canceled (either it never opened (accept)
                           // or it was closed after an error from the server was received)
 
     CListWaitWindow WaitWnd;

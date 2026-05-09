@@ -1332,7 +1332,7 @@ void DoCreateFile(CFTPDiskWork& localWork, char* fullName, BOOL& workDone, BOOL&
             }
             else
             {
-                workDone = TRUE; // if the operation is cancelled, delete the newly created file
+                workDone = TRUE; // if the operation is canceled, delete the newly created file
                 localWork.OpenedFile = file;
                 localWork.FileSize.Set(0, 0);
                 localWork.CanOverwrite = TRUE;       // the file was newly created (not resumed)
@@ -1648,7 +1648,7 @@ void DoCreateFile(CFTPDiskWork& localWork, char* fullName, BOOL& workDone, BOOL&
                 }
                 else
                 {
-                    workDone = TRUE; // if the operation is cancelled, delete the newly created file
+                    workDone = TRUE; // if the operation is canceled, delete the newly created file
                     ok = TRUE;
                     localWork.OpenedFile = file;
                     localWork.FileSize.Set(0, 0);
@@ -1813,7 +1813,7 @@ void DoCreateFile(CFTPDiskWork& localWork, char* fullName, BOOL& workDone, BOOL&
 
             if (file != INVALID_HANDLE_VALUE) // the file is open
             {
-                workDone = TRUE; // if the operation is cancelled, delete the newly created file
+                workDone = TRUE; // if the operation is canceled, delete the newly created file
                 localWork.OpenedFile = file;
                 localWork.FileSize.Set(0, 0);
                 localWork.CanOverwrite = TRUE;
@@ -1989,7 +1989,7 @@ void DoCreateAndWriteFile(CFTPDiskWork& localWork, BOOL& needCopyBack, BOOL& wor
         {
             file = f;
             localWork.OpenedFile = f;
-            workDone = TRUE;     // if cancelled, close the file handle and delete the file
+            workDone = TRUE;     // if canceled, close the file handle and delete the file
             needCopyBack = TRUE; // return the handle of the created file
         }
         else // error while creating the file
@@ -2547,10 +2547,10 @@ CFTPDiskThread::Body()
                 }
             }
 
-            // determine whether the work needs to be cancelled
+            // determine whether the work needs to be canceled
             HANDLES(EnterCriticalSection(&DiskCritSect));
             BOOL doCancel = FALSE;
-            if (work != NULL && Work.Count > 0 && work == Work[0]) // the work being processed was not cancelled
+            if (work != NULL && Work.Count > 0 && work == Work[0]) // the work being processed was not canceled
             {
                 if (needCopyBack)
                 {
@@ -2562,7 +2562,7 @@ CFTPDiskThread::Body()
             }
             else
                 doCancel = work != NULL;
-            if (Work.Count > 0) // remove the processed item or NULL (if it was cancelled)
+            if (Work.Count > 0) // remove the processed item or NULL (if it was canceled)
             {
                 Work.Detach(0);
                 if (!Work.IsGood())
@@ -2592,7 +2592,7 @@ CFTPDiskThread::Body()
                 {
                     SocketsThread->PostSocketMessage(localWork.SocketMsg, localWork.SocketUID, localWork.MsgID, work);
                 }
-                else // the work was cancelled, perform cleanup (as if the work never happened)
+                else // the work was canceled, perform cleanup (as if the work never happened)
                 {
                     switch (localWork.Type)
                     {

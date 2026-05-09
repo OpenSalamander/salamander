@@ -354,7 +354,7 @@ void ThreadSafeWaitWindowFBody(BOOL showCloseButton)
             {
                 // postpone showing the window briefly; this is needed when showing it
                 // is triggered by activation of hForegroundWindow after a MessageBox closes;
-                // if the user cancelled the operation there, showing it immediately would
+                // if the user canceled the operation there, showing it immediately would
                 // cause the wait window to flash briefly and then be destroyed immediately;
                 // the delay prevents that
                 if (timer == 0)

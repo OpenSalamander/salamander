@@ -1980,7 +1980,7 @@ CFileListDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (hl != NULL)
             hl->SetActionShowHint(LoadStr(IDS_FILELISTLINE_HINT));
 
-        InstallWordBreakProc(GetDlgItem(HWindow, IDC_FL_FILENAME)); // install WordBreakProc into the editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDC_FL_FILENAME)); // install WordBreakProc into the edit line
 
         HWND hCombo = GetDlgItem(HWindow, IDC_FL_LINE);
         EditLine->AttachToWindow(GetWindow(hCombo, GW_CHILD));

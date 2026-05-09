@@ -8,7 +8,7 @@
 //
 // CComboboxEdit
 //
-// The combobox loses focus and control is buggy so we can't determine the selection
+// The combo box loses focus and control is buggy so we can't determine the selection
 // the usual way. This helper control works around that problem.
 //
 
@@ -127,10 +127,10 @@ struct CUserMenuAdvancedData // additional data used only for the User Menu: arr
 //
 
 // Displays a popup menu with the supplied list and after selecting an item inserts text into the edit line.
-// hParent:          dialog containing the edit line or combobox and the Browse button
+// hParent:          dialog containing the edit line or combo box and the Browse button
 // buttonResID:      ID of the Browse button
-// editlineResID:    ID of the edit line or combobox
-// combobox:         when TRUE, editlineResID identifies an edit line; otherwise it identifies a combobox
+// editlineResID:    ID of the edit line or combo box
+// combo box:         when TRUE, editlineResID identifies an edit line; otherwise it identifies a combo box
 //                   when TRUE, attaches the CComboboxEdit control to the editlineResID
 // executeItems:     array used to fill the menu
 // filterResID:      text for the browse window opened in a special case from the menu
