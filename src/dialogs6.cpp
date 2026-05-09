@@ -1183,7 +1183,7 @@ void CDisconnectDialog::EnumConnections()
         free(fsList);
     }
 
-    // if at least one file system was inserted, add in front of the the first plugin group
+    // if at least one file system was inserted, insert it before the first plugin group
     if (pluginGroupIndex < Connections.Count)
         InsertItem(pluginGroupIndex, FALSE, citGroup, CONNECTION_ICON_PLUGIN, LoadStr(IDS_NETWORK_PLUGINS), "", FALSE, NULL);
 }

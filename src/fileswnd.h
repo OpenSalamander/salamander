@@ -642,14 +642,14 @@ class CVisibleItemsArray
 protected:
     CRITICAL_SECTION Monitor; // critical section used to synchronize this object (monitor behavior)
 
-    BOOL SurroundArr; // TRUE/FALSE = array of items around the visible area / array ofitems only from the visible area
+    BOOL SurroundArr; // TRUE/FALSE = array of items around the visible area / array of items only from the visible area
 
     int ArrVersionNum; // version of the array
     BOOL ArrIsValid;   // is the array filled and valid?
 
-    char** ArrNames;       // allocated array of names that are currently visible in the panel (names are only references into Files+Dirs in the (CFileData: :Name) panel)
+    char** ArrNames;       // allocated array of names that are currently visible in the panel (names are only references into Files+Dirs in the (CFileData::Name) panel)
     int ArrNamesCount;     // number of names in ArrNames
-    int ArrNamesAllocated; // number of allocated namesfor ArrNames
+    int ArrNamesAllocated; // number of allocated names for ArrNames
 
     int FirstVisibleItem; // index of the first visible item
     int LastVisibleItem;  // index of the last visible item
@@ -658,10 +658,10 @@ public:
     CVisibleItemsArray(BOOL surroundArr);
     ~CVisibleItemsArray();
 
-    // Returns TRUE if the array is filled and valid (matches the current state of thepanel
+    // Returns TRUE if the array is filled and valid (matches the current state of the panel
     // and visible items), also returns the number of the array version in 'versionNum'
-    // (if it is not NULL), otherwise it returns FALSE ('versionNum' is also returnedin this case)
-    // Called by both - the panel and the icon reader
+    // (if it is not NULL), otherwise it returns FALSE ('versionNum' is also returned in this case)
+    // Called by both the panel and the icon reader
     BOOL IsArrValid(int* versionNum);
 
     // Reports a change in the panel or visible items; invalidates the array
@@ -733,7 +733,7 @@ public:
     DWORD WaitBeforeReadingIcons;         // how many milliseconds to wait before the icon reader starts reading icons (used on refresh; while waiting old icons can be pushed into the cache to avoid repeated reading and endless refreshes on network drives)
     DWORD WaitOneTimeBeforeReadingIcons;  // how many milliseconds to wait before starting to read icons, then this value resets (used to catch batches of changes from Tortoise SVN, see IconOverlaysChangedOnPath())
     DWORD EndOfIconReadingTime;           // GetTickCount() from the moment all icons were loaded in the panel
-    HANDLE IconCacheThread;               // handle of the icon - reading the thread
+    HANDLE IconCacheThread;               // handle of the icon reader thread
     HANDLE ICEventTerminate;              // signaled -> terminate the thread
     HANDLE ICEventWork;                   // signaled -> start reading icons
     BOOL ICSleep;                         // TRUE -> leave the icon-reading loop

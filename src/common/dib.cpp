@@ -245,7 +245,7 @@ DWORD DIBWidth(LPSTR lpDIB)
 //
 // Purpose:    Given a handle to global memory with a DIB spec in it,
 //             and a palette, returns a device dependent bitmap.  The
-//             The DDB will be rendered with the specified palette.
+//             DDB will be rendered with the specified palette.
 //
 // Parms:      hDIB == HANDLE to global memory containing a DIB spec
 //                     (either BITMAPINFOHEADER or BITMAPCOREHEADER)

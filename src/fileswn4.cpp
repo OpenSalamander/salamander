@@ -593,7 +593,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         else
             nameLen = f->NameLen;
 
-        // set the the applied font, background color and text color
+        // set the applied font, background color and text color
         SetFontAndColors(hDC, highlightMasksItem, f, isItemFocusedOrEditMode, itemIndex);
 
         RECT r = rect;
