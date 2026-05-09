@@ -411,7 +411,7 @@ protected:
 
 BOOL InitializeViewer();
 void ReleaseViewer();
-void ClearViewerHistory(BOOL dataOnly); // clears histories; for dataOnly==FALSE also clears the Find dialog combobox (if any)
+void ClearViewerHistory(BOOL dataOnly); // clears histories; for dataOnly==FALSE also clears the Find dialog combo box (if any)
 void UpdateViewerColors(SALCOLOR* colors);
 
 extern const char* CVIEWERWINDOW_CLASSNAME; // viewer window class

@@ -377,7 +377,7 @@ BOOL CPluginInterfaceForArchiver::UnpackArchive(CSalamanderForOperationsAbstract
                     if (!salamander->ProgressAddSize((int)size2.Value, TRUE))
                     {
                         ret = FALSE;
-                        break; // Operation cancelled
+                        break; // Operation canceled
                     }
                 }
                 else

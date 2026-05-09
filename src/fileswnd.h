@@ -94,11 +94,11 @@ public:
 
     CCriteriaData& operator=(const CCriteriaData& s);
 
-    // it returns TRUE if any criterion is set
+    // Returns TRUE if any criterion is set
     BOOL IsDirty();
 
     // if the file 'file' matches UseMasks/Masks and UseAdvanced/Advanced
-    // it returns TRUE; if it doesn't match, it returns FALSE
+    // Returns TRUE; otherwise returns FALSE
     // NOTE: masks must be prepared beforehand
     // NOTE: advanced criteria must also be prepared
     BOOL AgreeMasksAndAdvanced(const CFileData* file);
@@ -112,7 +112,7 @@ public:
 
 // options for the Copy/Move dialog; for now only one item is stored
 // if it exists, it is used as the default for newly opened Copy/Move dialogs
-// eventually users will likely push us to extend this to multiple options as Find has
+// over time, users will probably ask for multiple saved options, similar to the Find dialog
 class CCopyMoveOptions
 {
 protected:
@@ -121,7 +121,7 @@ protected:
 public:
     CCopyMoveOptions() : Items(1, 1) {}
 
-    void Set(const CCriteriaData* item); // it stores the item (if the item already exists in the array, it will be overwritten); if 'item' is NULL, the current item is cleared and the array becomes empty
+    void Set(const CCriteriaData* item); // Stores the item (if the item already exists in the array, it will be overwritten); if 'item' is NULL, the current item is cleared and the array becomes empty
     const CCriteriaData* Get();          // if an item is held, it returns a pointer to it, otherwise it returns NULL
 
     BOOL Save(HKEY hKey);
@@ -334,16 +334,16 @@ public:
                  const char* fileName, const char* dosFileName,
                  const FILETIME& lastWrite, const CQuadWord& fileSize, DWORD attr);
 
-    // it verifies time stamps, updates if necessary and prepares the object for further use
+    // Verifies time stamps, updates if necessary and prepares the object for further use
     void CheckAndPackAndClear(HWND parent, BOOL* someFilesChanged = NULL, BOOL* archMaybeUpdated = NULL);
 
-    // it fills a list box with names of all stored files
+    // Fills a list box with names of all stored files
     void AddFilesToListBox(HWND list);
 
-    // it removes files from all given indexes; 'indexes' is an array of indexes, 'count' is their number
+    // Removes files from the specified indexes; 'indexes' is an array of indexes, 'count' is their number
     void Remove(int* indexes, int count);
 
-    // it allows copying files from all given indexes; 'indexes' is an array of indexes, 'count' is
+    // Allows copying the files at the specified indexes; 'indexes' is an array of indexes, 'count' is
     // the number of them; 'parent' is the parent dialog; 'initPath' is the suggested target path
     void CopyFilesTo(HWND parent, int* indexes, int count, const char* initPath);
 };
@@ -544,7 +544,7 @@ public:
     // returns the path shown in the panel (disk, archive, or FS);
     // if convertFSPathToExternal is TRUE and the panel holds an FS path,
     // CPluginInterfaceForFSAbstract::ConvertPathToExternal() is called
-    // it returns TRUE if the path fits into the buffer completely, otherwise a truncated path is returned
+    // Returns TRUE if the path fits into the buffer completely, otherwise a truncated path is returned
     BOOL GetGeneralPath(char* buf, int bufSize, BOOL convertFSPathToExternal = FALSE);
 
     const char* GetPath() { return Path; }
@@ -669,7 +669,7 @@ public:
     void InvalidateArr();
 
     // it is used to refresh the array based on the current state of the panel and displayed items
-    // it increments the version number and marks it valid. Called only by the
+    // Increments the version number and marks it valid. Called only by the
     // panel while in idle mode
     void RefreshArr(CFilesWindow* panel);
 
@@ -1170,7 +1170,7 @@ public:
 
     void SetAutomaticRefresh(BOOL value, BOOL force = FALSE);
 
-    // it sets ValidFileData; it checks if the VALID_DATA_PL_XXX constants can be used
+    // Sets ValidFileData; checks if the VALID_DATA_PL_XXX constants can be used
     // (PluginData must not be empty and the corresponding constant VALID_DATA_SIZE,
     // VALID_DATA_DATE or VALID_DATA_TIME must not be used)
     void SetValidFileData(DWORD validFileData);

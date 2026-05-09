@@ -1298,7 +1298,7 @@ protected:
 
     DWORD WaitForCmdErrError; // error of the last Write(), more details see fwcsWaitForCmdError
 
-    BOOL CanDeleteSocket;    // FALSE = the worker is still in the operation's WorkersList, it cannot be cancelled after handing the socket to the "control connection" panel
+    BOOL CanDeleteSocket;    // FALSE = the worker is still in the operation's WorkersList, it cannot be canceled after handing the socket to the "control connection" panel
     BOOL ReturnToControlCon; // TRUE = the worker returns the socket to the "control connection" panel, it cannot be left for deletion in DeleteWorkers
 
     BOOL ReceivingWakeup; // TRUE = this worker has been posted the WORKER_WAKEUP message (after delivery it switches to FALSE)
@@ -1418,7 +1418,7 @@ public:
     BOOL GetErrorDescr(char* buf, int bufSize, BOOL* postActivate,
                        CCertificate** unverifiedCertificate);
 
-    // used to query whether the worker can be cancelled from the CReturningConnections methods (only
+    // used to query whether the worker can be canceled from the CReturningConnections methods (only
     // if we already attempted deletion via DeleteWorkers); returns TRUE if cancellation is possible
     BOOL CanDeleteFromRetCons();
 
@@ -1455,7 +1455,7 @@ public:
     BOOL SocketClosedAndDataConDoesntExist();
 
     // determines whether the worker has work in the disk thread; returns FALSE if it has no work
-    // (the worker can be cancelled)
+    // (the worker can be canceled)
     BOOL HaveWorkInDiskThread();
 
     // prepares the worker for cancellation (force-closes both the "control connection" and the "data connection");
@@ -2202,7 +2202,7 @@ protected:
     // for Delete:
     // ****************************************************************************
 
-    // user-preferred behaviour in the following situations
+    // user-preferred behavior in the following situations
     unsigned ConfirmDelOnNonEmptyDir : 2; // see constants NONEMPTYDIRDEL_XXX
     unsigned ConfirmDelOnHiddenFile : 2;  // see constants HIDDENFILEDEL_XXX
     unsigned ConfirmDelOnHiddenDir : 2;   // see constants HIDDENDIRDEL_XXX
@@ -2471,7 +2471,7 @@ public:
     // (for a single change 'secondUID' is -1) or the pair (-1, -1) if more than two items changed
     void GetChangedItems(int* firstUID, int* secondUID);
 
-    // fills in the default behaviour values for disk operations defined for the operation
+    // fills in the default behavior values for disk operations defined for the operation
     void GetDiskOperDefaults(CFTPDiskWork* diskWork);
 
     // returns CannotCreateDir (in the critical section)
@@ -2829,7 +2829,7 @@ public:
     void PauseWorkers(HWND parent, int operUID, int workerInd, BOOL pause);
 
     // removes the operation with UID 'uid' from the array (updates FirstFreeIndexInOperations);
-    // the operation dialog must be closed in advance and all workers of the operation must be cancelled;
+    // the operation dialog must be closed in advance and all workers of the operation must be canceled;
     // if 'doNotPostChangeOnPathNotifications' is TRUE, the method does not call
     // PostChangeOnPathNotifications (FALSE only in case of canceling the operation);
     // WARNING: also enters the CUploadListingCache::UploadLstCacheCritSect section !!!

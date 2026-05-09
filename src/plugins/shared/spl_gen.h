@@ -454,7 +454,7 @@ struct CSalamanderPluginInternalViewerData : public CSalamanderPluginViewerData
 #define SALCFG_CNFRMSHDIRDEL 74   // BOOL, system or hidden directory delete
 #define SALCFG_CNFRMSHFILEOVER 75 // BOOL, system or hidden file overwrite
 #define SALCFG_CNFRMCREATEPATH 76 // BOOL, show "do you want to create target path?" in Copy/Move operations
-#define SALCFG_CNFRMDIROVER 77    // BOOL, directory overwrite (copy/move selected directory: ask user if directory already exists on target path - standard behaviour is to join contents of both directories)
+#define SALCFG_CNFRMDIROVER 77    // BOOL, directory overwrite (copy/move selected directory: ask user if directory already exists on target path - standard behavior is to join contents of both directories)
 // drive specific settings
 #define SALCFG_DRVSPECFLOPPYMON 88         // BOOL, floppy disks - use automatic refresh (changes monitoring)
 #define SALCFG_DRVSPECFLOPPYSIM 89         // BOOL, floppy disks - use simple icons
@@ -2790,7 +2790,7 @@ public:
     // fills up
     // (it is used cyclically); if you need the text later, we recommend
     // copying it to a local buffer); if 'module' is NULL or 'resID' is not present in the module,
-    // it returns the text "ERROR LOADING STRING" (and the debug/SDK version outputs TRACE_E)
+    // Returns the text "ERROR LOADING STRING" (and the debug/SDK version outputs TRACE_E)
     // Can be called from any thread
     virtual char* WINAPI LoadStr(HINSTANCE module, int resID) = 0;
 

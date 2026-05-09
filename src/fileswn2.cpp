@@ -2992,7 +2992,7 @@ BOOL CFilesWindow::ChangePathToPluginFS(const char* fsName, const char* fsUserPa
                     }
                 }
 
-                //        if (UseSystemIcons || UseThumbnails) SleepIconCacheThread();   // vola se v ChangeAndListPathOnFS
+                //        if (UseSystemIcons || UseThumbnails) SleepIconCacheThread();   // called from ChangeAndListPathOnFS
 
                 // add new pluginData to the current (newly filled) PluginFSDir
                 PluginData.Init(pluginData, GetPluginFS()->GetDLLName(),

@@ -6503,7 +6503,7 @@ BOOL DoCreateDir(HWND hProgressDlg, char* name, DWORD attr,
                 BOOL adsSkip = FALSE;
                 if (!DoCopyADS(hProgressDlg, sourceDir, TRUE, name, totalDone,
                                operDone, operTotal, dlgData, script, &adsSkip, buffer) ||
-                    adsSkip) // user cancelled or skipped at least one ADS
+                    adsSkip) // user canceled or skipped at least one ADS
                 {
                     if (RemoveDirectory(nameCrDir) == 0)
                     {

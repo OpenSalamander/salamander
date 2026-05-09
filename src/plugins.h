@@ -2920,7 +2920,7 @@ public:
     // Salamander is exiting; plugins should exit as well, returns success (TRUE = plugins unloaded)
     BOOL UnloadAll(HWND parent);
 
-    // it stores a unique registry key name for plugin private data in 'uniqueKeyName',
+    // Stores a unique registry key name for plugin private data in 'uniqueKeyName',
     // the name is based on 'regKeyName'
     void GetUniqueRegKeyName(char* uniqueKeyName, const char* regKeyName);
 

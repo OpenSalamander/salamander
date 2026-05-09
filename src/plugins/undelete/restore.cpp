@@ -158,7 +158,7 @@ static BOOL RestoreFile(const char* fileName, const char* sourcePath, const char
         if ((result = OpenEncryptedFileRaw(dstpath, CREATE_FOR_IMPORT, &context)) != ERROR_SUCCESS ||
             (result = WriteEncryptedFileRaw(RestoreCallback, (PVOID)&ctx, context)) != ERROR_SUCCESS)
         {
-            if (result != ERROR_CANCELLED) // return if the user cancelled
+            if (result != ERROR_CANCELLED) // return if the user canceled
             {
                 SetLastError(result);
                 String<char>::SysError(IDS_UNDELETE, IDS_ERRORENCRYPTED);

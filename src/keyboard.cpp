@@ -210,7 +210,7 @@ BOOL IsSalHotKey(WORD hotKey)
         break;
     }
 
-    // VK_0 thru VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39)
+    // VK_0 through VK_9 are the same as ASCII '0' through '9' (0x30 - 0x39)
     case '0':
     {
         switch (mods)
@@ -351,7 +351,7 @@ BOOL IsSalHotKey(WORD hotKey)
         break;
     }
 
-    // VK_A thru VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A)
+    // VK_A through VK_Z are the same as ASCII 'A' through 'Z' (0x41 - 0x5A)
     case 'A':
     {
         switch (mods)
@@ -1046,7 +1046,7 @@ BOOL IsSalHotKey(WORD hotKey)
 #define VK_CAPITAL        0x14
 
 #define VK_KANA           0x15
-#define VK_HANGEUL        0x15  // old name - should be here for compatibility 
+#define VK_HANGEUL        0x15  // old name - should be here for compatibility
 #define VK_HANGUL         0x15
 #define VK_JUNJA          0x17
 #define VK_FINAL          0x18
@@ -1077,8 +1077,8 @@ BOOL IsSalHotKey(WORD hotKey)
 #define VK_DELETE         0x2E
 #define VK_HELP           0x2F
 
-// VK_0 thru VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39) 
-// VK_A thru VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A) 
+// VK_0 through VK_9 are the same as ASCII '0' through '9' (0x30 - 0x39)
+// VK_A through VK_Z are the same as ASCII 'A' through 'Z' (0x41 - 0x5A)
 
 #define VK_LWIN           0x5B
 #define VK_RWIN           0x5C
@@ -1142,7 +1142,7 @@ BOOL IsSalHotKey(WORD hotKey)
 
 #if(WINVER >= 0x0400)
 #define VK_PROCESSKEY     0xE5
-#endif // WINVER >= 0x0400 
+#endif // WINVER >= 0x0400
 
 #define VK_ATTN           0xF6
 #define VK_CRSEL          0xF7

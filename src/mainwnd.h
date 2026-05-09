@@ -690,7 +690,7 @@ public:
     void RebuildDriveBarsIfNeeded(BOOL useDrivesMask, DWORD drivesMask, BOOL checkCloudStorages,
                                   DWORD cloudStoragesMask);
 
-    // it sets DoNotLoadAnyPlugins and when it is FALSE, it sends refreshes to panels loading thumbnails
+    // Sets DoNotLoadAnyPlugins and when it is FALSE, it sends refreshes to panels loading thumbnails
     void SetDoNotLoadAnyPlugins(BOOL doNotLoad);
 
     // based on 'show', shows or hides two drive bars

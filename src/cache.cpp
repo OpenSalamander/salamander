@@ -1704,7 +1704,7 @@ void CDeleteManager::PluginWasUnloaded(CPluginData* plugin, CPluginInterfaceAbst
 
     if (plugin->IsArchiverAndHaveOwnDelete())
     {
-        // tmp-files must be disconnected (plugin is not loaded anymore)
+        // tmp-files must be disconnected (plugin is no longer loaded)
         DiskCache.PrematureDeleteByPlugin(unloadedPlugin, TRUE);
     }
 }

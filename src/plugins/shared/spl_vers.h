@@ -125,7 +125,7 @@
 // Salamander version, it knows Salamander contains it (the only remaining risk is loading
 // into a newer Salamander version, which must also contain these methods).
 //
-// It is also used the other way around: to ensure Salamander will call all plugin
+// It is also used in the opposite direction: to ensure Salamander will call all plugin
 // methods (including the newest ones), an internal plugin returns this version as the version
 // it was built for (see the SalamanderPluginGetReqVer plugin export).
 //

@@ -2763,7 +2763,7 @@ void CSocketsThread::ReceivePostMessage()
             CSocket* s = Sockets[index];
             if (s != NULL && s->GetUID() == data->SocketUID) // it is the recipient of the message (it was waiting)
                 s->ReceivePostMessage(data->ID, data->Param);
-            else // this is a message that did not arrive because the socket was cancelled or swapped
+            else // this is a message that did not arrive because the socket was canceled or swapped
             {    // when sockets are swapped, find the target socket sequentially and deliver the message
                 int i;
                 for (i = 0; i < Sockets.Count; i++)
@@ -2901,7 +2901,7 @@ BOOL CSocketsThread::DeleteTimer(int socketUID, DWORD id)
             ret = TRUE;
         }
     }
-    if (setTimer) // a timer with the nearest timeout was cancelled, adjust the timeout
+    if (setTimer) // a timer with the nearest timeout was canceled, adjust the timeout
     {
         if (Timers.Count > 0 && !Terminating)
         {

@@ -1985,7 +1985,7 @@ BOOL GetSidMD5(BYTE* sidMD5)
 // ghMutexExe = CreateMutex(NULL, FALSE , "APPLICOM_IO_MUTEX");
 // When I use my DLL with an application that is running in Real time priority, I can't run another application that uses the same DLL. When I use the function:
 // ghMutexExe = CreateMutex(NULL, FALSE , "APPLICOM_IO_MUTEX");
-// It returns NULL (ghMutexExe = NULL), and GetLastError returns 5 (Access is denied. ERROR_ACCESS_DENIED).
+// Returns NULL (ghMutexExe = NULL), and GetLastError returns 5 (Access is denied. ERROR_ACCESS_DENIED).
 // Can you help me?
 // Bertrand Lauret
 //

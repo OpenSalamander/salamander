@@ -1997,7 +1997,7 @@ BOOL CFATSnapshot<CHAR>::EncodeClusterChains(CRunsBuffer<CHAR>* tmpRunsBuffer, F
                 delete[] runs;
                 return String<CHAR>::Error(IDS_UNDELETE, IDS_LOWMEM);
             }
-            stream->FirstLCN = 0; // not needed anymore, encoded in data runs
+            stream->FirstLCN = 0; // no longer needed, encoded in data runs
             stream->Ptrs = ptrs;
             ptrs->StartVCN = 0;
             ptrs->LastVCN = (stream->DSSize - 1) / this->Volume->BytesPerCluster;

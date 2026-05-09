@@ -514,7 +514,7 @@ typedef struct
 // returns TRUE); if 'streamNamesCount' is not NULL, it returns the number of elements
 // in 'streamNames'; if 'lowMemory' is not NULL, it returns TRUE when an out-of-memory
 // error occurs (possible only when 'streamNames' is not NULL); if 'winError' is not NULL,
-// it returns the Windows error code (NO_ERROR if none occurred - if a Windows error occurs,
+// Returns the Windows error code (NO_ERROR if none occurred - if a Windows error occurs,
 // the function always returns FALSE); the function returns TRUE if the file/directory
 // contains any ADS, otherwise FALSE; 'bytesPerCluster' is the cluster size
 // used to compute the disk space occupied by the ADS (0 = unknown size);

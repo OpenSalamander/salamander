@@ -269,7 +269,7 @@ BOOL InstallWordBreakProc(HWND hWindow)
     className[0] = 0;
     if (GetClassName(hWindow, className, 30) == 0 || StrICmp(className, "edit") != 0)
     {
-        // might be a combobox, so try grabbing its internal edit control
+        // might be a combo box, so try grabbing its internal edit control
         hWindow = GetWindow(hWindow, GW_CHILD);
         if (hWindow == NULL || GetClassName(hWindow, className, 30) == 0 || StrICmp(className, "edit") != 0)
         {
@@ -1867,9 +1867,9 @@ CEditWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         if (WindowsVistaAndLater)
         {
-            // Vista finally fixed combobox flicker during resizing,
+            // Vista finally fixed combo box flicker during resizing,
             // so we must manually erase the area between the child windows and the
-            // combobox border; otherwise garbage remains there
+            // combo box border; otherwise garbage remains there
             (HPEN) SelectObject(hDC, WndPen);
             Rectangle(hDC, cr.left + EL_XBORDER - 1, cr.top + 4 - 1,
                       cr.right - GetSystemMetrics(SM_CXVSCROLL) - 1, cr.bottom - 4 + 1);

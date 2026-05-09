@@ -5770,7 +5770,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         {
             ActivateSuspMode = 0;
             // TRACE_E("WM_USER_END_SUSPMODE: problem 2");  // opening a message box with a NULL parent resends WM_ACTIVATEAPP "activate" (Salamander is already active)
-            return 0; // the message was already cancelled
+            return 0; // the message was already canceled
         }
         HCURSOR oldCur = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
@@ -5823,7 +5823,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         RightPanel->Activate(FALSE);
 
         // if OneDrive Personal/Business was connected or disconnected, refresh the Drive bars
-        // so the icon or drop down menu disappears or appears
+        // so the icon or drop-down menu disappears or appears
         BOOL oneDrivePersonal = OneDrivePath[0] != 0;
         int oneDriveBusinessStoragesCount = OneDriveBusinessStorages.Count;
         InitOneDrivePath();
@@ -6101,7 +6101,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             else
                 SalMessageBox(HWindow, LoadStr(IDS_FORCEDSHUTDOWN), SALAMANDER_TEXT_VERSION, MB_OK | MB_ICONINFORMATION);
             // unfortunately there's no way to tell whether shutdown is still running or the user
-            // has cancelled it (black full screen window on Win7). If not, the OS kills the app; we
+            // has canceled it (black full screen window on Win7). If not, the OS kills the app; we
             // already warned the user, nothing more to do.
             // Disk operations may still be running; if they don't get canceled, files remain in an
             // incomplete state, e.g. during copying the full file size is allocated but the content is not

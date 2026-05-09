@@ -52,7 +52,7 @@ enum CErrorType
 //  -behaves like classic array, in addition it can pre-allocate to bigger or
 //   smaller (look at constructor 'base' and 'delta' values).
 //  -when adding item to array, copy-constructor is called
-//  -when deleting item, item destructor is called, you can change this behaviour,
+//  -when deleting item, item destructor is called, you can change this behavior,
 //   see CallDestructor method
 //  -you can use this array for simple types and also for objects which does not
 //   contain pointers to its own data, reason:

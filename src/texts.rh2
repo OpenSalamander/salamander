@@ -302,7 +302,7 @@
 
 // title of Edit New File dialog (Shift+F4)
 #define IDS_EDITNEWFILE            10116
-// title of editline in Edit New File dialog
+// title of edit line in Edit New File dialog
 #define IDS_NEWFILENAME            10117
 
 // error in path specified - UNC name contains no server name (\\server\share\directory)
@@ -1021,7 +1021,7 @@
 
 // Restrictions
 #define IDS_POLICIESRESTRICTION_TITLE 10806
-// This operation has been cancelled due to restrictions in effect on this
+// This operation has been canceled due to restrictions in effect on this
 // computer. Please contact your system administrator.
 #define IDS_POLICIESRESTRICTION       10807
 // Reading Group Policy from registry...
@@ -2557,11 +2557,11 @@
 // Compare Directories: after comparing: if some pairs of files were different exactly one or two hours, this message informs user that these differences (exact number) were ignored
 #define IDS_CMPDIRS_IGNDSTDIFFSEXACT    13929
 
-// Copy/Move dialog box options drop down menu: Reset and hide options
+// Copy/Move dialog box options drop-down menu: Reset and hide options
 #define IDS_COPYMOVE_RESETHIDE          13932
-// Copy/Move dialog box options drop down menu: Save options as defaults
+// Copy/Move dialog box options drop-down menu: Save options as defaults
 #define IDS_COPYMOVE_SAVEASDEF          13933
-// Copy/Move dialog box options drop down menu: Reset options and defaults
+// Copy/Move dialog box options drop-down menu: Reset options and defaults
 #define IDS_COPYMOVE_RESETDEFS          13934
 
 // information: rename config_.reg to config.reg + why to clear key with configuration before import

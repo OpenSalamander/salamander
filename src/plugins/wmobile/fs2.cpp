@@ -1668,7 +1668,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 success = CRAPI::FindAllFilesInTree(Path, f->Name, array, 0, TRUE);
         }
 
-        // Determine whether it makes sense to continue (when not cancelled and another selected item exists)
+        // Determine whether it makes sense to continue (when not canceled and another selected item exists)
         if (!success || focused || f == NULL)
             break;
     }
@@ -2030,7 +2030,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // Determine whether to continue if not cancelled
+            break; // Determine whether to continue if not canceled
     }
 
     EnableWindow(mainWnd, TRUE);
@@ -2385,7 +2385,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     { // perform copy/move on a file/directory
         success = FindAllFilesInTree(sourcePath, name, array, TRUE, 0);
 
-        // Determine whether it makes sense to continue (when not cancelled)
+        // Determine whether it makes sense to continue (when not canceled)
         if (!success)
             break;
     }
@@ -2576,7 +2576,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                     DWORD err = CRAPI::CopyFileToCE(sourceName, targetName, FALSE, &dlg, copied, totalsize, &errFileName);
                     if (err != 0)
                     {
-                        if (err == -1) // JR cancelled by the user
+                        if (err == -1) // JR canceled by the user
                             success = FALSE;
                         else if (!skipAllErrors)
                         {
@@ -2714,7 +2714,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
             dlg.SetProgress((DWORD)progress, 0, FALSE);
         }
         else
-            break; // determine whether to continue (if not cancelled)
+            break; // determine whether to continue (if not canceled)
     }
 
     EnableWindow(mainWnd, TRUE);
@@ -2898,7 +2898,7 @@ CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int panel,
             }
         }
 
-        // Determine whether it makes sense to continue (when not cancelled and another selected item exists)
+        // Determine whether it makes sense to continue (when not canceled and another selected item exists)
         if (!success || focused || f == NULL)
             break;
     }

@@ -3208,7 +3208,7 @@ struct CConfigurationPage7SubData
 
 struct CConfigurationPage7Data
 {
-    int ItemLabel; // resID of the string with the item name [combobox]
+    int ItemLabel; // resID of the string with the item name [combo box]
     CConfigurationPage7SubData Items[CFG_COLORS_BUTTONS];
 };
 
@@ -4039,10 +4039,10 @@ void CCfgPageHistory::OnClearHistory()
     Configuration.ClearHistory();
     MainWindow->EditWindow->FillHistory();
 
-    // Find dialog history including combobox of open windows
+    // Find dialog history including combo box of open windows
     ClearFindHistory(FALSE);
 
-    // internal viewer history including combobox of open Find windows
+    // internal viewer history including combo box of open Find windows
     ClearViewerHistory(FALSE);
 
     // storage of selected names

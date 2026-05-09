@@ -40,8 +40,8 @@ protected:
     int SelectionEnd;
 
 public:
-    // 'history' determines whether the dialog will contain a combobox (TRUE) or an editline (FALSE)
-    // 'directoryHelper' specifies if a resource with a button behind the editline will be used to select a directory
+    // 'history' determines whether the dialog will contain a combo box (TRUE) or an edit line (FALSE)
+    // 'directoryHelper' specifies if a resource with a button behind the edit line will be used to select a directory
     // 'selectionEnd' specifies up to which character the name is selected (used for quick rename), -1 == all
     CCopyMoveDialog(HWND parent, char* path, int pathBufSize, char* title,
                     CTruncatedString* subject, DWORD helpID,
@@ -92,8 +92,8 @@ protected:
     CButton* MoreButton;
 
 public:
-    // 'history' determines whether the dialog will contain a combobox (TRUE) or an editline (FALSE)
-    // 'directoryHelper' specifies if a resource with a button behind the editline will be used to select a directory
+    // 'history' determines whether the dialog will contain a combo box (TRUE) or an edit line (FALSE)
+    // 'directoryHelper' specifies if a resource with a button behind the edit line will be used to select a directory
     CCopyMoveMoreDialog(HWND parent, char* path, int pathBufSize, char* title,
                         CTruncatedString* subject, DWORD helpID,
                         char* history[], int historyCount, CCriteriaData* criteriaInOut,
@@ -1520,7 +1520,7 @@ public:
     // changes progress relatively
     void AddSize(const CQuadWord& size);
 
-    // distributes messages; returns FALSE if the user cancelled the operation
+    // distributes messages; returns FALSE if the user canceled the operation
     BOOL Continue();
 
     void FlushDataToControls(); // passes stored values to controls for display

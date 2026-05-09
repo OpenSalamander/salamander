@@ -3586,7 +3586,7 @@ BOOL CFileHistory::HasItem()
 
 //****************************************************************************
 //
-// Directory editline/combobox support
+// Directory edit line/combo box support
 //
 
 #define DIRECTORY_COMMAND_BROWSE 1    // browse directory

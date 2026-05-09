@@ -133,7 +133,7 @@ public:
 
     // encrypts the plaintext password into the binary form using strong encryption (AES)
     // before AES encryption, it performs an additional scramble that adds padding (hardening short passwords)
-    // if the caller requires AES password encryption ('encrypt' == TRUE), before calling the method he must call AskForMasterPassword() that must return TRUE
+    // if the caller requires AES password encryption ('encrypt' == TRUE), the caller must call AskForMasterPassword() that must return TRUE
     // 'plainPassword' is the pointer to the zero-terminated password in text form
     // 'encryptedPassword' returns a pointer to a binary buffer allocated by Salamander with the encrypted password; this buffer must be deallocated using CSalamanderGeneralAbstract::Free
     // 'encryptedPasswordSize' returns the size of the 'encryptedPassword' buffer in bytes

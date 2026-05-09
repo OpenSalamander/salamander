@@ -25,24 +25,24 @@ struct FIND_LOG_ITEM
 extern BOOL IsNotAlpha[256];
 
 #define ITEMNAME_TEXT_LEN MAX_PATH + MAX_PATH + 10
-#define NAMED_TEXT_LEN MAX_PATH  // maximum text length in the combobox
-#define LOOKIN_TEXT_LEN MAX_PATH // maximum text length in the combobox
-#define GREP_TEXT_LEN 201        // maximum text length in the combobox; NOTE: should match FIND_TEXT_LEN
+#define NAMED_TEXT_LEN MAX_PATH  // maximum text length in the combo box
+#define LOOKIN_TEXT_LEN MAX_PATH // maximum text length in the combo box
+#define GREP_TEXT_LEN 201        // maximum text length in the combo box; NOTE: should match FIND_TEXT_LEN
 #define GREP_LINE_LEN 10000      // maximum line length for regular expressions (viewer uses a different macro)
 
 // Length of the mapped view; must be greater than the length of a line for regexp + EOL +
 // AllocationGranularity
 #define VOF_VIEW_SIZE 0x2800400 // 40 MB (more is risky, virtual memory may be limited) + 1 KB (space for a reasonable text line)
 
-// history for the Named combobox
+// history for the Named combo box
 #define FIND_NAMED_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindNamedHistory[FIND_NAMED_HISTORY_SIZE];
 
-// history for the LookIn combobox
+// history for the LookIn combo box
 #define FIND_LOOKIN_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindLookInHistory[FIND_LOOKIN_HISTORY_SIZE];
 
-// history for the Containing combobox
+// history for the Containing combo box
 #define FIND_GREP_HISTORY_SIZE 30 // number of remembered strings
 extern char* FindGrepHistory[FIND_GREP_HISTORY_SIZE];
 

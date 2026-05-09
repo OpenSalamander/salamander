@@ -479,7 +479,7 @@ public:
     ~CWaitWindow();
 
     // returns TRUE if the user clicked the wait-window close button with the mouse;
-    // it returns TRUE only once per click of the close button
+    // Returns TRUE only once per click of the close button
     BOOL GetWindowClosePressed()
     {
         BOOL ret = WindowClosePressed;

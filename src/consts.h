@@ -1000,7 +1000,7 @@ HICON GetFileOrPathIconAux(const char* path, BOOL large, BOOL isDir);
 // network connection and prompts the user for credentials if needed. Returns TRUE
 // if the connection is established. Returns FALSE if `UNCPath` is not a UNC path,
 // if the UNC root is accessible, or if the connection could not be established. In
-// `pathInvalid`, returns TRUE if the user cancelled the credentials dialog or if
+// `pathInvalid`, returns TRUE if the user canceled the credentials dialog or if
 // establishing the connection failed (e.g. "credentials conflict"). If
 // `donotReconnect` is TRUE, no network connection is attempted and FALSE is
 // returned immediately.
@@ -1010,7 +1010,7 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
 // Attempts to restore a network connection (if it previously existed) on
 // 'drive:'. 'parent' is the parent dialog. Returns TRUE if the connection was
 // restored successfully (the network drive is mapped again).
-// 'pathInvalid' returns TRUE if the user cancelled the username/password dialog
+// 'pathInvalid' returns TRUE if the user canceled the username/password dialog
 // or an attempt to establish the connection failed (e.g. "credentials conflict")
 BOOL CheckAndRestoreNetworkConnection(HWND parent, const char drive, BOOL& pathInvalid);
 
@@ -2338,11 +2338,11 @@ extern char CheckPathRootWithRetryMsgBox[MAX_PATH];
 extern HWND LastDriveSelectErrDlgHWnd;
 
 // GetDriveFormFactor returns the drive form factor.
-//  It returns 350 if the drive is a 3.5" floppy drive.
-//  It returns 525 if the drive is a 5.25" floppy drive.
-//  It returns 800 if the drive is an 8" floppy drive.
-//  It returns   1 if the drive supports removable media other than 3.5", 5.25", and 8" floppies.
-//  It returns   0 on error.
+//  Returns 350 if the drive is a 3.5" floppy drive.
+//  Returns 525 if the drive is a 5.25" floppy drive.
+//  Returns 800 if the drive is an 8" floppy drive.
+//  Returns 1 if the drive supports removable media other than 3.5", 5.25", and 8" floppies.
+//  Returns 0 on error.
 //  iDrive is 1 for drive A:, 2 for drive B:, etc.
 DWORD GetDriveFormFactor(int iDrive);
 

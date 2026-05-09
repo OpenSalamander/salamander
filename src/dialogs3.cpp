@@ -340,7 +340,7 @@ CFilterDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILTER)); // install WordBreakProc into the combobox
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_FILTER)); // install WordBreakProc into the combo box
 
         CHyperLink* hl = new CHyperLink(HWindow, IDC_FILEMASK_HINT, STF_DOTUNDERLINE);
         if (hl != NULL)
@@ -450,13 +450,13 @@ CCopyMoveDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the combobox
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the combo box
 
         CreateKeyForwarder(HWindow, IDE_PATH); // so that we receive WM_USER_KEYDOWN
         if (DirectoryHelper)
         {
             ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY);   // the button will have a folder icon and an arrow to the right
-            VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button precisely after the editline
+            VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button precisely after the edit line
         }
 
         SetWindowText(HWindow, Title);
@@ -511,7 +511,7 @@ CEditNewFileDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
     {
         ChangeToArrowButton(HWindow, IDB_BROWSE);
-        VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button precisely after the editline
+        VerticalAlignChildToChild(HWindow, IDB_BROWSE, IDE_PATH); // place the button precisely after the edit line
         break;
     }
 
@@ -933,7 +933,7 @@ CCopyMoveMoreDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the combobox
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the combo box
 
         // since 2.53 we can save options, so IDC_CM_STARTONIDLE must always be enabled so the user can preset it
         // EnableWindow(GetDlgItem(HWindow, IDC_CM_STARTONIDLE), !OperationsQueue.IsEmpty());
@@ -1098,7 +1098,7 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
 
             EnableControls();
 
-            // if the user clicked at the mask enabling checkbox, they probably want to edit it
+            // if the user clicked the mask enabling checkbox, they probably want to edit it
             if (LOWORD(wParam) == IDC_CM_NAMED)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_CM_NAMED))
@@ -1107,7 +1107,7 @@ MENU_TEMPLATE_ITEM CopyMoveMoreDialogMenu[] =
                     SetDlgItemText(HWindow, IDC_CM_NAMED_MASK, "*.*"); // default value for the mask
             }
 
-            // if the user clicked at the speed-limit checkbox, they probably want to edit it
+            // if the user clicked the speed-limit checkbox, they probably want to edit it
             if (LOWORD(wParam) == IDC_CM_SPEEDLIMIT)
             {
                 if (IsDlgButtonChecked(HWindow, IDC_CM_SPEEDLIMIT))
@@ -1190,7 +1190,7 @@ CChangeDirDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (SendDirectlyToPlugin == NULL)
             EnableWindow(GetDlgItem(HWindow, IDC_SENDDIRECTTOPLG), FALSE);
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH));    // install WordBreakProc into the combobox
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH));    // install WordBreakProc into the combo box
         CreateKeyForwarder(HWindow, IDE_PATH);                  // so that we receive WM_USER_KEYDOWN
         ChangeToIconButton(HWindow, IDB_BROWSE, IDI_DIRECTORY); // the button will have a folder icon and an arrow to the right
 
@@ -1494,7 +1494,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             GrowWidth(IDT_CAPACITY, longWidth);
             GrowWidth(IDT_FREESPACE, longWidth);
             GrowWidth(IDT_USEDSPACE, longWidth);
-            longWidth++; // switching to an editline caused the right edges to be offset by one pixel
+            longWidth++; // switching to an edit line caused the right edges to be offset by one pixel
 
             int y1, y2, y3;
             int x;
@@ -1523,7 +1523,7 @@ void CDriveInfo::Transfer(CTransferInfo& ti)
             GrowWidth(IDT_CAPACITY_SHORT, shortWidth);
             GrowWidth(IDT_FREESPACE_SHORT, shortWidth);
             GrowWidth(IDT_USEDSPACE_SHORT, shortWidth);
-            shortWidth++;                                                                 // switching to an editline caused the right edges to be offset by one pixel
+            shortWidth++;                                                                 // switching to an edit line caused the right edges to be offset by one pixel
             x = r.left + longWidth + (spaceForLongAndShort - longWidth - shortWidth) / 2; // center SHORT between LONG and GRAPH
             if (x < r.left + longWidth)
                 x = r.left + longWidth + height;
@@ -1894,7 +1894,7 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the edit line
 
         HWND hSubject = GetDlgItem(HWindow, IDS_SUBJECT);
         if (Subject->TruncateText(hSubject))
@@ -1922,7 +1922,7 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     GetWindowText(GetDlgItem(HWindow, IDE_PATH), name2, MAX_PATH);
 
                 // WARNING: code must stay consistent with CPackDialog::Transfer
-                // swap extensions in the combobox
+                // swap extensions in the combo box
                 SendDlgItemMessage(HWindow, IDE_PATH, CB_RESETCONTENT, 0, 0);
                 strcpy(name, Path);
                 if (ChangeExtension(name, PackerConfig->GetPackerExt(i)))
@@ -1944,7 +1944,7 @@ CPackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SendDlgItemMessage(HWindow, IDE_PATH, CB_SETCURSEL, (WPARAM)curSel, 0);
                 else
                 {
-                    // if the editline was modified, change the extension there as well
+                    // if the edit line was modified, change the extension there as well
                     if (ChangeExtension(name2, PackerConfig->GetPackerExt(i)))
                         SetWindowText(GetDlgItem(HWindow, IDE_PATH), name2);
                 }
@@ -2045,8 +2045,8 @@ CUnpackDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the editline
-        InstallWordBreakProc(GetDlgItem(HWindow, IDE_MASK)); // install WordBreakProc into the editline
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_PATH)); // install WordBreakProc into the edit line
+        InstallWordBreakProc(GetDlgItem(HWindow, IDE_MASK)); // install WordBreakProc into the edit line
 
         HWND hSubject = GetDlgItem(HWindow, IDS_SUBJECT);
         if (Subject->TruncateText(hSubject))

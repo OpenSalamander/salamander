@@ -929,11 +929,11 @@ BOOL CheckAndConnectUNCNetworkPath(HWND parent, const char* UNCPath, BOOL& pathI
 /*
   GetDriveFormFactor returns the drive form factor.
 
-  It returns 350 if the drive is a 3.5" floppy drive.
-  It returns 525 if the drive is a 5.25" floppy drive.
-  It returns 800 if the drive is an 8" floppy drive.
-  It returns   1 if the drive supports removable media other than 3.5", 5.25", and 8" floppies.
-  It returns   0 on error.
+  Returns 350 if the drive is a 3.5" floppy drive.
+  Returns 525 if the drive is a 5.25" floppy drive.
+  Returns 800 if the drive is an 8" floppy drive.
+  Returns 1 if the drive supports removable media other than 3.5", 5.25", and 8" floppies.
+  Returns 0 on error.
 
   iDrive is 1 for drive A:, 2 for drive B:, etc.
 */
@@ -1995,7 +1995,7 @@ BOOL CDrivesList::BuildData(BOOL noTimeout, TDirectArray<CDriveData>* copyDrives
         if (c == 1 && OneDrivePath[0] == 0)
             CachedCloudStoragesMask |= 0x08 /* only one OneDrive storage - Business */;
         if (c > 1)
-            CachedCloudStoragesMask |= 0x10 /* more OneDrive storages - drop down menu on drive-bar */;
+            CachedCloudStoragesMask |= 0x10 /* more OneDrive storages - drop-down menu on drive-bar */;
         char itemText[200 + ONEDRIVE_MAXBUSINESSDISPLAYNAME];
         HICON oneDriveIco = c == 0 ? NULL : SalLoadIcon(HInstance, IDI_ONEDRIVE, iconSize);
         BOOL destroyOneDriveIco = oneDriveIco != NULL;
@@ -2302,7 +2302,7 @@ BOOL CDrivesList::ExecuteItem(int index, HWND hwnd, const RECT* exclude, BOOL* f
         break;
     }
 
-    case drvtOneDriveMenu: // opening the drop down menu for OneDrive storage selection
+    case drvtOneDriveMenu: // opening the drop-down menu for OneDrive storage selection
     {
         if (fromDropDown != NULL)
             *fromDropDown = TRUE;

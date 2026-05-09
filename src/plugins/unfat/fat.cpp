@@ -851,7 +851,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         {
             salamander->ProgressEnableCancel(FALSE);
             ok = FALSE;
-            goto EXIT; // the operation was cancelled
+            goto EXIT; // the operation was canceled
         }
 
         remains.Value -= read;
@@ -863,7 +863,7 @@ BOOL CFATImage::UnpackFile(CSalamanderForOperationsAbstract* salamander, const c
         if (!salamander->ProgressAddSize((int)remains.Value, TRUE))
         {
             ok = FALSE;
-            goto EXIT; // the operation was cancelled
+            goto EXIT; // the operation was canceled
         }
     }
 

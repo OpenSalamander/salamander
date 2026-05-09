@@ -1005,7 +1005,7 @@ void CFTPWorker::ForceCloseDiskWork()
             if (workIsInProgress)
                 DiskWork.FlushDataBuffer = NULL; // work is in progress; we cannot free the buffer with data being written/verified (or for read data), leave it to the disk-work thread (see the cancellation section) - we may write into DiskWork because after Cancel the disk thread must no longer access it (for example, it might no longer exist)
             else
-            { // the work was cancelled before the disk thread started executing it - deallocate the flush buffer (for both download and upload)
+            { // the work was canceled before the disk thread started executing it - deallocate the flush buffer (for both download and upload)
                 if (DiskWork.FlushDataBuffer != NULL)
                 {
                     free(DiskWork.FlushDataBuffer);
