@@ -1528,7 +1528,7 @@ BOOL CSite::Create(HWND hParentWnd)
     if (!ObjectInitialize())
         return FALSE;
 
-// Create an instance of CLSID_WebBrowser and fetch IID_IUnknown
+    // Create an instance of CLSID_WebBrowser and fetch IID_IUnknown
     HRESULT hr = CoCreateInstance(my_CLSID_WebBrowser, NULL,
                                   CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER,
                                   IID_IUnknown, (void**)&m_pIUnknown);
@@ -1553,7 +1553,7 @@ BOOL CSite::Create(HWND hParentWnd)
         return FALSE;
     }
 
-// see whether IID_IWebBrowser2 is also available
+    // see whether IID_IWebBrowser2 is also available
     hr = m_pIUnknown->QueryInterface(IID_IWebBrowser2, (void**)&m_pIWebBrowser2);
     if (FAILED(hr))
     {
@@ -1935,8 +1935,8 @@ CIEMainWindowQueue::~CIEMainWindowQueue()
 {
     if (!Empty())
         TRACE_E("A viewer window remained open!");
-// no multithreading risk here (the plugin is ending, and the threads have been or are being terminated)
-// free at least some memory
+    // no multithreading risk here (the plugin is ending, and the threads have been or are being terminated)
+    // free at least some memory
     CIEMainWindowQueueItem* last;
     CIEMainWindowQueueItem* item = Head;
     while (item != NULL)
@@ -2008,7 +2008,7 @@ BOOL CIEMainWindowQueue::CloseAllWindows(BOOL force, int waitTime, int forceWait
     }
     CS.Leave();
 
-// wait to see whether they close
+    // wait to see whether they close
     DWORD ti = GetTickCount();
     DWORD w = force ? forceWaitTime : waitTime;
     while ((w == INFINITE || w > 0) && !Empty())

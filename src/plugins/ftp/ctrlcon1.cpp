@@ -119,8 +119,8 @@ CControlConnectionSocket::~CControlConnectionSocket()
     HANDLES(DeleteCriticalSection(&EventCritSect));
 
     // Logs cannot access the "control connection" (nested critical sections are forbidden),
-        // this call synchronizes only the validity of the pointer to the "control connection" (not the object contents,
-        // so it can be at the very end of the destructor)
+    // this call synchronizes only the validity of the pointer to the "control connection" (not the object contents,
+    // so it can be at the very end of the destructor)
     if (LogUID != -1)
         Logs.ClosingConnection(LogUID);
 }
@@ -1614,8 +1614,8 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
                                                         FTP_DIGIT_1(replyCode) == FTP_D1_ERROR)            // e.g. 530 Not logged in (invalid password)
                                                     {
                                                         if (FTP_DIGIT_1(replyCode) == FTP_D1_TRANSIENTERROR)
-                                                        { // convenient handling of the "too many users" error - retry immediately without prompting
-// possible issue: this code may be followed by a message that requires changing the user/password
+                                                        {   // convenient handling of the "too many users" error - retry immediately without prompting
+                                                            // possible issue: this code may be followed by a message that requires changing the user/password
                                                             retryLoginWithoutAsking = TRUE;
                                                         }
 

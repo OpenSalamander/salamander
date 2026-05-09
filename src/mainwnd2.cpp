@@ -1314,8 +1314,8 @@ void CMainWindow::DeleteOldConfigurations(BOOL* deleteConfigurations, BOOL autoI
                 HANDLES(RegCloseKey(cfgKey));
             }
             if (!ok) // if this happens, it is probably not a problem because we likely did not
-// write Salamander's configuration either (it goes to the same key), and
-// the whole upgrade will need to be run again
+                     // write Salamander's configuration either (it goes to the same key), and
+                     // the whole upgrade will need to be run again
             {
                 TRACE_E("CMainWindow::DeleteOldConfigurations(): unable to delete " << SALAMANDER_AUTO_IMPORT_CONFIG << " value from HKCU\\" << SalamanderConfigurationRoots[0]);
             }

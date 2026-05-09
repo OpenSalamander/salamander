@@ -2261,7 +2261,7 @@ void CMenuPopup::DoDispatchMessage(MSG* msg, BOOL* leaveMenu, DWORD* retValue, B
             CMenuItem* item = popup->Items[popup->SelectedItemIndex];
             if (!(item->State & MENU_STATE_GRAYED) ||
                 SharedRes->MenuBar != NULL && SharedRes->MenuBar->HelpMode && // Petr: we are opened from the menubar and in HelpMode (Shift+F1) +
-                    (item->SubMenu == NULL || item->ID != 0))                                     // Petr: and we have a command ID or submenu (a "grayed" submenu cannot be opened)
+                    (item->SubMenu == NULL || item->ID != 0))                 // Petr: and we have a command ID or submenu (a "grayed" submenu cannot be opened)
             {
                 if (!(item->State & MENU_STATE_GRAYED) && // Petr: a "grayed" submenu cannot be opened
                     item->SubMenu != NULL && item->SubMenu != popup->OpenedSubMenu)

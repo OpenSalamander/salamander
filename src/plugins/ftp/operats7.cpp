@@ -835,9 +835,9 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                     HANDLES(LeaveCriticalSection(&WorkerCritSect));
                     if (FTP_DIGIT_1(replyCode) != FTP_D1_SUCCESS ||
                         !WorkerDataCon->IsTransfering(&trFinished) && !trFinished)
-                    { // the server returned a listing error or the connection was not established
-// Since we are already in CSocketsThread::CritSect, this call
-// is allowed even from CSocket::SocketCritSect (no deadlock risk)
+                    {   // the server returned a listing error or the connection was not established
+                        // Since we are already in CSocketsThread::CritSect, this call
+                        // is allowed even from CSocket::SocketCritSect (no deadlock risk)
                         if (WorkerDataCon->IsConnected())
                         {                                       // close the "data connection", the system will attempt a "graceful"
                             WorkerDataCon->CloseSocketEx(NULL); // shutdown (we will not learn about the result)
@@ -984,8 +984,8 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                     else
                     {
                         if (err != NO_ERROR && !IsConnected())
-                        { // the LIST reply arrived, but while waiting for the transfer to finish over the data connection
-// both connections were interrupted (data connection and control connection) -> RETRY
+                        {   // the LIST reply arrived, but while waiting for the transfer to finish over the data connection
+                            // both connections were interrupted (data connection and control connection) -> RETRY
 
                             // Since we are already in CSocketsThread::CritSect, this call
                             // is allowed even from CSocket::SocketCritSect (no deadlock risk)
@@ -1534,8 +1534,8 @@ void CFTPWorker::HandleEventInWorkingState2(CFTPWorkerEvent event, BOOL& sendQui
                                                         CFTPQueueItemDir* parentItem = (CFTPQueueItemDir*)(ftpQueueItems->At(ftpQueueItems->Count - 1)); // it must necessarily be a descendant of CFTPQueueItemDir (each "parent" item has the counts Skipped+Failed+NotDone)
                                                         parentItem->SetStateAndNotDoneSkippedFailed(childItemsNotDone, childItemsSkipped,
                                                                                                     childItemsFailed, childItemsUINeeded);
-// Now all new items are represented only by the "parent" item -> count
-// the new NotDone + Skipped + Failed + UINeeded only for this item
+                                                        // Now all new items are represented only by the "parent" item -> count
+                                                        // the new NotDone + Skipped + Failed + UINeeded only for this item
                                                         childItemsNotDone = 1;
                                                         childItemsFailed = 0;
                                                         childItemsSkipped = 0;

@@ -269,8 +269,8 @@ void CSendCmdUserIfaceForListAndDownload::HandleESCWhenWaitingForFinish(HWND par
     if (esc)
     {
         // WaitWnd.SetText(LoadStr(IDS_LISTWNDABORTINGCOMMAND)); // unnecessary, the window will not be shown again
-                // while the user decides whether to abort, the data connection may finish (hence the
-                // "listing may be incomplete" message); then it makes sense to ignore the abort
+        // while the user decides whether to abort, the data connection may finish (hence the
+        // "listing may be incomplete" message); then it makes sense to ignore the abort
         if (DataConnection->IsTransfering(NULL) || DataConnection->IsFlushingDataToDisk())
         {
             DataConnection->CancelConnectionAndFlushing(); // close the "data connection"; the system attempts a "graceful" shutdown (we will not learn the result)
@@ -665,7 +665,7 @@ BOOL CControlConnectionSocket::ListWorkingPath(HWND parent, const char* path, ch
                                                       retryMsgBuf, 300))
                             {
                                 if (strcmp(cmdBuf, path) == 0) // we have the desired working directory on the server
-// (assumption: the server always returns the same working-directory string)
+                                                               // (assumption: the server always returns the same working-directory string)
                                 {
                                     pathError = FALSE;
                                     ok = TRUE; // successful reconnect; list again

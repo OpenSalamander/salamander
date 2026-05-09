@@ -1509,7 +1509,7 @@ void CFilesWindow::EditNewFile()
             {
                 const char* dot = strrchr(path, '.');
                 if (dot != NULL && dot > path) // although ".cvspass" counts as an extension in Windows, Explorer selects the whole name, so we do the same
-//      if (dot != NULL)
+                                               //      if (dot != NULL)
                     selectionEnd = (int)(dot - path);
                 dlg.SetSelectionEnd(selectionEnd);
                 first = FALSE; // after an error we get the full file name, so we select it all
