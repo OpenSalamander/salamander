@@ -158,7 +158,7 @@ BOOL UnscramblePassword(char* password)
     }
     if (!ok)
     {
-        password[0] = 0; // some error occured; clear the password
+        password[0] = 0; // some error occurred; clear the password
         TRACE_E("Unable to unscramble password! scrambled=" << backup);
     }
     memset(backup, 0, lstrlen(backup)); // wipe the memory that contained the password
@@ -618,7 +618,7 @@ BOOL CPasswordManager::DecryptPassword(const BYTE* encryptedPassword, int encryp
 
 TRY_DECRYPT_AGAIN:
 
-    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call unscramble after AES 
+    BYTE* tmpBuff = (BYTE*)malloc(encryptedPasswordSize + 1); // +1 for the terminator so we can call unscramble after AES
     memcpy(tmpBuff, encryptedPassword, encryptedPasswordSize);
     tmpBuff[encryptedPasswordSize] = 0; // terminator required by UnscramblePassword
 
@@ -641,10 +641,10 @@ TRY_DECRYPT_AGAIN:
 
             if (plainMasterPassword == OldPlainMasterPassword && UseMasterPassword && PlainMasterPassword != NULL)
             { // handle the case where the password is encrypted with the new master password
-              // (the password cannot be decrypted with the old master password, but can with the new one,
-              // therefore, the message that the password cannot be decrypted would be misleading,
-              // because when the user tries to decrypt it with the new master password, it succeeds
-              // meaning the user has no way to identify the undecryptable password)
+                // (the password cannot be decrypted with the old master password, but can with the new one,
+                // therefore, the message that the password cannot be decrypted would be misleading,
+                // because when the user tries to decrypt it with the new master password, it succeeds
+                // meaning the user has no way to identify the undecryptable password)
                 plainMasterPassword = PlainMasterPassword;
                 goto TRY_DECRYPT_AGAIN;
             }

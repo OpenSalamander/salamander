@@ -238,17 +238,17 @@ void CFilesWindow::DrawIcon(HDC hDC, CFileData* f, BOOL isDir, BOOL isItemUpDir,
                         }
                     }
                 }
-                else // it's a file
+                else // file
                 {
                     int index;
                     BOOL exceptions = *(DWORD*)lowerExtension == *(DWORD*)"scr" || // icons in the file,
-                                      *(DWORD*)lowerExtension == *(DWORD*)"pif" || // even though it isn't visible
+                                      *(DWORD*)lowerExtension == *(DWORD*)"pif" || // even though it is not visible in the Registry
                                       *(DWORD*)lowerExtension == *(DWORD*)"lnk";   // in the Registry
 
-                    if (exceptions || Associations.GetIndex(lowerExtension, index)) // the extension has an icon (association)
+                    if (exceptions || Associations.GetIndex(lowerExtension, index)) // the extension has an associated icon
                     {
                         if (!exceptions)
-                            TransferAssocIndex = index;                               // remember the valid index in Associations
+                            TransferAssocIndex = index;                               // store the valid index in Associations
                         if (exceptions || Associations[index].GetIndex(iconSize) < 0) // dynamic icon (from the file) or a loaded static icon
                         {                                                             // icon in the file
                             int icon;
@@ -316,7 +316,7 @@ void CFilesWindow::DrawIcon(HDC hDC, CFileData* f, BOOL isDir, BOOL isItemUpDir,
                 if (!IconCache->GetIndex(NULL /*fileName*/, icon, &PluginData, f) ||                // the icon-thread isn't loading it
                     IconCache->At(icon).GetFlag() != 1 && IconCache->At(icon).GetFlag() != 2 ||     // neither new nor old icon is loaded
                     !IconCache->GetIcon(IconCache->At(icon).GetIndex(), &iconList, &iconListIndex)) // failed to obtain its icon
-                {                                                                                   // we will display a simple symbol from the plug-in
+                {                                                                                   // we will display a simple symbol from the plugin
                     // the simple icon index will be obtained via the GetPluginIconIndex callback
                     TransferFileData = f;
                     TransferIsDir = isDir ? (isItemUpDir ? 2 : 1) : 0;
@@ -495,9 +495,9 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     //  TRACE_I("DrawingSmall itemIndex="<<dec<<itemIndex<<" y="<<itemRect->top);
 
     BOOL isItemFocusedOrEditMode = FALSE;
-    if (FocusedIndex == itemIndex) // drawing the cursor
+    if (FocusedIndex == itemIndex) // Draw the cursor.
     {
-        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched in the command-line
+        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched to the command line
             isItemFocusedOrEditMode = TRUE;
     }
     if (drawFlags & DRAWFLAG_NO_FRAME)
@@ -522,7 +522,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         // if it is only the cursor position change, skip visibility tests
         drawFlags |= DRAWFLAG_SKIP_VISTEST;
 
-        // we are drawing only a small area and have plenty of time - so using the cache is fine
+        // only a small area is being drawn and there is enough time, so we will use the cache
         hDC = ItemBitmap.HMemDC;
 
         // the bitmap is empty for now
@@ -560,7 +560,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         innerRect.bottom = innerRect.top + IconSizes[ICONSIZE_16];
 
         // clear the area around the icon
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be filled
             FillIntersectionRegion(hDC, &iconRect, &innerRect);
 
         /*
@@ -593,7 +593,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         else
             nameLen = f->NameLen;
 
-        // set the the applied font, background color and text color
+        // set the applied font, background color and text color
         SetFontAndColors(hDC, highlightMasksItem, f, isItemFocusedOrEditMode, itemIndex);
 
         RECT r = rect;
@@ -634,9 +634,9 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         // text drawing
         //
         // !!! Warning !!!
-        // For smooth rendering of the whole line the GdiBatchLimit is used
-        // Ensure text drawing does not interrupt buffering
-        // (GDI functions do not return BOOL they call GdiFlush())
+        // GdiBatchLimit is used for smooth rendering of the whole line
+        // It is necessary to ensure that buffering is not interrupted during text drawing
+        // (GDI functions that do not return BOOL call GdiFlush())
         //
         //    GdiFlush();
 
@@ -834,7 +834,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                     else
                     {
                         // extension is an exception - it always follows Name and we handle it explicitly
-                        if (isDir && !Configuration.SortDirsByExt || f->Ext[0] == 0 || f->Ext <= f->Name + 1) // empty value in the Ext column (exception for names like ".htaccess", they appear in the Name column even though they are extensions)
+                        if (isDir && !Configuration.SortDirsByExt || f->Ext[0] == 0 || f->Ext <= f->Name + 1) // empty value in the Ext column (exception for names like ".htaccess", which are shown in the Name column even though they look like extensions)
                             TransferLen = 0;
                         else
                         {
@@ -850,7 +850,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
                         ExtTextOut(hDC, r.left, y, ETO_OPAQUE, &adjR, "", 0, NULL); // just clearing
                     else
                     {
-                        if (column->FixedWidth == 1) // NarrowedNameColumn does not apply here (not Name column)
+                        if (column->FixedWidth == 1) // NarrowedNameColumn does not apply here (this is not the Name column)
                         {
                             int fitChars;
                             // for fixed-width columns we must check whether the entire text fits
@@ -954,7 +954,7 @@ void CFilesWindow::DrawBriefDetailedItem(HDC hTgtDC, int itemIndex, RECT* itemRe
 
             DrawFocusRect(hDC, &r, (f->Selected == 1), Parent->EditMode);
             /*
-      // for debugging the dual cursor issue we need to distinguish normal focus and drop target
+      // to debug the two-cursor bug, we need to distinguish normal focus from the drop target
       if (itemIndex == DropTargetIndex)
       {
         MoveToEx(hDC, r.left, r.top + 3, NULL);
@@ -1002,7 +1002,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
                char* out2, int* out2Len, int* out2Width)
 {
     SIZE sz;
-    // measure the width of every character
+    // measure the widths of all characters
     GetTextExtentExPoint(hDC, text, textLen, 0, NULL, DrawItemAlpDx, &sz);
 
     if (sz.cx > *maxWidth)
@@ -1017,7 +1017,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
         int maxW = *maxWidth;
         int w = 0;
         int index = 0;
-        while (index < maxW) // this condition should not be applied
+        while (index < maxW) // this condition should not apply
         {
             if (text[index] == ' ')
                 lastSpaceIndex = index;
@@ -1061,7 +1061,7 @@ void SplitText(HDC hDC, const char* text, int textLen, int* maxWidth,
             if (*out1Len >= 3)
                 memmove(out1 + *out1Len - 3, "...", 3);
 
-            // look for a space where we can continue to the next line
+            // look for a space where we can break to the next line
             while (index < textLen)
             {
                 if (text[index++] == ' ')
@@ -1180,7 +1180,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
     BOOL isItemFocusedOrEditMode = FALSE;
     if (FocusedIndex == itemIndex) // drawing the cursor
     {
-        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched in the command-line
+        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched to the command line
             isItemFocusedOrEditMode = TRUE;
     }
 
@@ -1295,7 +1295,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
         // outer rectangle from which we clear towards the inner one
         RECT outerRect = rect;
 
-        // rectangle we will clear to
+        // rectangle towards which we will clear
         RECT innerRect;
         BOOL thickFrame = FALSE; // for Thumbnails only -- should the frame be doubled?
         if (GetViewMode() == vmThumbnails)
@@ -1485,7 +1485,7 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
             y = outerRect.top + 4;
         }
 
-        // inner rectangle we clear towards
+        // inner rectangle towards which we clear
         RECT r;
         r.left = rect.left + (itemWidth - maxWidth) / 2 - 2;
         r.top = y - 2;
@@ -1495,10 +1495,10 @@ void CFilesWindow::DrawIconThumbnailItem(HDC hTgtDC, int itemIndex, RECT* itemRe
             r.bottom += FontCharHeight;
 
         // clear the background around the text
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // When drawing the mask (B&W), do not draw the background color
             FillIntersectionRegion(hDC, &outerRect, &r);
 
-        if (drawFocusFrame) // if there won't be a frame displayed, reduce the area by it
+        if (drawFocusFrame) // if the focus frame will be drawn, shrink the area for it
             InflateRect(&r, -1, -1);
 
         int oldRTop = r.top;
@@ -1556,7 +1556,7 @@ void TruncateSringToFitWidth(HDC hDC, char* buffer, int* bufferLen, int maxTextW
         // search from the end for the character after which we can copy "..." and it fits in the column
         while (fitChars > 0 && DrawItemAlpDx[fitChars - 1] + TextEllipsisWidth > maxTextWidth)
             fitChars--;
-        // copy part of the original string to another buffer
+        // copy part of the original string within the buffer
         if (fitChars > 0)
         {
             // and append "..."
@@ -1739,9 +1739,9 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
     //  TRACE_I("DrawTileItem itemIndex="<<dec<<itemIndex<<" y="<<itemRect->top);
 
     BOOL isItemFocusedOrEditMode = FALSE;
-    if (FocusedIndex == itemIndex) // drawing the cursor
+    if (FocusedIndex == itemIndex) // draw the cursor
     {
-        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched in the command-line
+        if (FocusVisible || Parent->EditMode && Parent->GetActivePanel() == this) // switched to the command line
             isItemFocusedOrEditMode = TRUE;
     }
 
@@ -1784,7 +1784,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
         innerRect.bottom = iconY + iconH;
 
         // clear the background around the icon or frame (for Thumbnails)
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), do not draw the background color
             FillIntersectionRegion(hDC, &outerRect, &innerRect);
         // no thumbnail available -> draw the icon
         DrawIcon(hDC, f, isDir, isItemUpDir, isItemFocusedOrEditMode,
@@ -1844,29 +1844,29 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             out0Len = 0;
         }
 
-        // vnejsi obdelnik, od ktereho mazu smerem k vnitrnimu
+        // outer rectangle from which I erase toward the inner one
         RECT outerRect = rect;
         outerRect.left += TILE_LEFT_MARGIN + IconSizes[iconSize];
 
         //int oldRTop = r.top;
 
-        // vnitrni obdelnik, ke kterememu mazu
+        // inner rectangle toward which I erase
         RECT r;
         r.left = outerRect.left + 2;
         r.right = r.left + 2 + widthNeeded + 2 + 1;
 
-        int visibleLines = 1; // nazev je viditelny urcite
+        int visibleLines = 1; // the name is definitely visible
         if (out1[0] != 0)
             visibleLines++;
         if (out2[0] != 0)
             visibleLines++;
         int textH = visibleLines * FontCharHeight + 4;
         int textX = r.left + 2;
-        int textY = rect.top + (rect.bottom - rect.top - textH) / 2; // centrujeme
+        int textY = rect.top + (rect.bottom - rect.top - textH) / 2; // center vertically
 
         r.top = textY;
         r.bottom = textY + textH;
-        RECT focusR = r; // zazalohujeme pro kresleni focusu
+        RECT focusR = r; // save for focus-frame drawing
 
         if (drawFocusFrame)
         {
@@ -1878,7 +1878,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
         textY += 2;
 
         // clear the background around the text
-        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), the background color must not be painted
+        if ((drawFlags & DRAWFLAG_MASK) == 0) // when drawing the mask (b&w), do not draw the background color
             FillIntersectionRegion(hDC, &outerRect, &r);
 
         //    if (drawFocusFrame) // if there won't be a frame displayed, reduce the area by it
@@ -1892,7 +1892,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             if (drawFocusFrame)
                 r.bottom--;
         }
-        // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+        // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
         ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out0, (drawFlags & DRAWFLAG_MASK) ? 0 : out0Len, NULL);
 
         // display the second line
@@ -1907,7 +1907,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
                 if (drawFocusFrame)
                     r.bottom--;
             }
-            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out1, (drawFlags & DRAWFLAG_MASK) ? 0 : out1Len, NULL);
         }
         // display the third line and clear the background of the area below it
@@ -1918,7 +1918,7 @@ void CFilesWindow::DrawTileItem(HDC hTgtDC, int itemIndex, RECT* itemRect, DWORD
             if (drawFocusFrame)
                 r.bottom--;
             textY += FontCharHeight;
-            // DRAWFLAG_MASK: hack, under XP some stuff is added in font of the text in the mask while drawing short texts; not an issue if text is not drawn
+            // DRAWFLAG_MASK: hack, under XP some stuff is added in front of the text in the mask while drawing short texts; not an issue if text is not drawn
             ExtTextOut(hDC, textX, textY, ETO_OPAQUE, &r, out2, (drawFlags & DRAWFLAG_MASK) ? 0 : out2Len, NULL);
         }
 
@@ -1984,7 +1984,7 @@ BOOL StateImageList_Draw(CIconList* iconList, int imageIndex, HDC hDC, int xDst,
     int iconW = IconSizes[iconSize];
     int iconH = IconSizes[iconSize];
 
-    // for a thumbnail overlayRect != NULL and we move the overlay to its lower left corner
+    // For thumbnails, overlayRect != NULL and we move the overlay to its bottom-left corner
     if (overlayRect != NULL)
     {
         xOverlayDst = overlayRect->left;

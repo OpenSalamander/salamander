@@ -426,7 +426,7 @@ public:
 
         //Check normal font height
         GetTextExtentPoint32(hdc, TEXT("W"), 1, &sz);
-        this->_headerheight += sz.cy; //even when type string is empty add the space so the tooltip doesn't change its size unexpectedly
+        this->_headerheight += sz.cy; // reserve the space even when the type string is empty so the tooltip size does not change unexpectedly
 
         int dataheight = 0;
         for (int i = 0; i < TT_LINECOUNT; i++)

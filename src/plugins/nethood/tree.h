@@ -40,7 +40,7 @@ protected:
         /// Pointer to the next sibling in the chain.
         CNode* m_pNextSibling;
 
-        /// Pointer to the the first child in the chain.
+        /// Pointer to the first child in the chain.
         CNode* m_pFirstChild;
 
         /// Pointer to the parent node.

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -117,7 +118,7 @@ public:
     ~CStreamReader() { Release(); }
 
     BOOL Init(CVolume<CHAR>* volume, DATA_STREAM_I<CHAR>* str);
-    // when 'numRead' is not NULL, it will return number of read clusters or -1 when special error occurred
+    // when 'numRead' is not NULL, it receives the number of clusters read or -1 when a special error occurs
     BOOL GetClusters(BYTE* buffer, QWORD num, QWORD* numRead = NULL);
     BOOL IsSafeChunk(QWORD n) { return RunLength >= n; }
     void Release();

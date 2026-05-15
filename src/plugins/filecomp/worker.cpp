@@ -217,7 +217,7 @@ void CFilecompWorker::GuardedBody()
     for (i = 0; i <= 1; i++)
     {
         // Patera 2008.12.28: FILE_SHARE_WRITE added to support files locked by others
-        // NOTE: IntViewer can open such files, users wants FC to support them as well
+        // NOTE: IntViewer can open such files; users want FC to support them as well
         // See https://forum.altap.cz/viewtopic.php?t=2675
         // See also CHexFileViewWindow::SetData()
         Files[i].File = CreateFile(Files[i].Name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,

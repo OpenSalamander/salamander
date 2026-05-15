@@ -9,7 +9,7 @@
 #error this file is not editable by Microsoft Visual C++
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
-#include "plugins\shared\spl_vers.h" // vytahneme cisla verzi + buildu
+#include "plugins\shared\spl_vers.h" // Extract version and build numbers.
 
 #define VERSINFO_MAJOR       VERSINFO_SALAMANDER_MAJOR
 #define VERSINFO_MINORA      VERSINFO_SALAMANDER_MINORA

@@ -141,12 +141,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "TAR" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "TAR" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // let Salamander load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "TAR" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "TAR" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -165,7 +165,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "TAR" /* neprekladat! */, "tar;tgz;taz;tbz;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk");
+                                   "TAR" /* do not translate! */, "tar;tgz;taz;tbz;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 

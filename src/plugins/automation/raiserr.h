@@ -15,7 +15,7 @@
 
 void RaiseError(LPCOLESTR pszDescription, REFIID riid, LPCOLESTR pszProgId);
 
-/// \param nIdDescription Idenfier of the string in the language
+/// \param nIdDescription Identifier of the string in the language
 ///        module that describes the error.
 void RaiseError(int nIdDescription, REFIID riid, LPCOLESTR pszProgId);
 

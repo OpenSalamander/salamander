@@ -14,7 +14,7 @@
 #define __PORTABLES_FX_RH
 
 /**
-	This symbol indentifies bitmap stripe that contains plugin icons.
+	This symbol identifies bitmap stripe that contains plugin icons.
 	The resource must be PNG bitmap 16 pixels in height, width in multiple
 	of 16 pixels. Framework uses first icon as the plugin icon.
 	The resource type must be RCDATA.

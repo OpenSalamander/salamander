@@ -172,7 +172,7 @@ namespace sspack
 *        }
 *    }
 *
-*    So you could call this aplication with the following command line to count 
+*    So you could call this application with the following command line to count
 *    lines in the foo and bar files:
 *
 *        wc.exe /lines /files:foo /files:bar
@@ -189,15 +189,15 @@ namespace sspack
 *        /files:<string>                     short form /f
 *        @<file>                             Read response file for more options
 *
-*    That was pretty easy. However, you realy want to omit the "/files:" for the 
-*    list of files. The details of field parsing can be controled using custom 
+*    That was pretty easy. However, you really want to omit the "/files:" for the
+*    list of files. The details of field parsing can be controlled using custom
 *    attributes. The attributes which control parsing behaviour are:
 *
 *    ArgumentAttribute 
 *        - controls short name, long name, required, allow duplicates, default value
 *        and help text
 *    DefaultArgumentAttribute 
-*        - allows omition of the "/name".
+*        - allows omission of the "/name".
 *        - This attribute is allowed on only one field in the argument class.
 *
 *    So for the wc.exe program we want this:
@@ -271,7 +271,7 @@ namespace sspack
 		/// </summary>
 		Unique = 0x02,
 		/// <summary>
-		/// Inidicates that the argument may be specified more than once.
+		/// Indicates that the argument may be specified more than once.
 		/// Only valid if the argument is a collection
 		/// </summary>
 		Multiple = 0x04,
@@ -419,7 +419,7 @@ namespace sspack
 	/// <summary>
 	/// Parser for command line arguments.
 	///
-	/// The parser specification is infered from the instance fields of the object
+	/// The parser specification is inferred from the instance fields of the object
 	/// specified as the destination of the parse.
 	/// Valid argument types are: int, uint, string, bool, enums
 	/// Also argument types of Array of the above types are also valid.
@@ -449,7 +449,7 @@ namespace sspack
 
 		/// <summary>
 		/// Parses Command Line Arguments. Displays usage message to Console.Out
-		/// if /?, /help or invalid arguments are encounterd.
+		/// if /?, /help or invalid arguments are encountered.
 		/// Errors are output on Console.Error.
 		/// Use ArgumentAttributes to control parsing behaviour.
 		/// </summary>
@@ -598,7 +598,7 @@ namespace sspack
 		/// <param name="text"> The text to search. </param>
 		/// <param name="value"> The character value to search for. </param>
 		/// <param name="startIndex"> The index to stat searching at. </param>
-		/// <returns> The index of the first occurence of value or -1 if it is not found. </returns>
+		/// <returns> The index of the first occurrence of value or -1 if it is not found. </returns>
 		public static int IndexOf(StringBuilder text, char value, int startIndex)
 		{
 			for (int index = startIndex; index < text.Length; index++)
@@ -616,7 +616,7 @@ namespace sspack
 		/// <param name="text"> The text to search. </param>
 		/// <param name="value"> The character to search for. </param>
 		/// <param name="startIndex"> The index to start the search at. </param>
-		/// <returns>The index of the last occurence of value in text or -1 if it is not found. </returns>
+		/// <returns>The index of the last occurrence of value in text or -1 if it is not found. </returns>
 		public static int LastIndexOf(StringBuilder text, char value, int startIndex)
 		{
 			for (int index = Math.Min(startIndex, text.Length - 1); index >= 0; index--)
@@ -811,7 +811,7 @@ namespace sspack
 		}
 
 		/// <summary>
-		/// A user firendly usage string describing the command line argument syntax.
+		/// A user friendly usage string describing the command line argument syntax.
 		/// </summary>
 		public string GetUsageString(int screenWidth)
 		{

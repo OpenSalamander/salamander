@@ -65,7 +65,7 @@ struct CColorsCfgButton
 {
     int TextID;         // button label identifier
     int ColorLineNumFG; // index of the FG color for the first button or -1 (FG cannot be configured)
-    int ColorLineNumBK; // index of the BG color for the first button or -1 (the button will not be visible)
+    int ColorLineNumBK; // index of the BK color for the first button or -1 (the button will not be visible)
     int ColorTextFG;    // index of the FG color for the second button or -1 (FG cannot be configured)
     int ColorTextBK;    // index of the BG color for the second button or -1 (the button will not be visible)
 };

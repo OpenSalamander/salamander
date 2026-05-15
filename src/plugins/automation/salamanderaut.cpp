@@ -119,7 +119,7 @@ static void WINAPI ShowMsgBoxProc(void* pContext)
 
     if (msgbox.nDlgResult == 0)
     {
-        // the most probable reason of failure is invalid arguments
+        // the most likely reason for the failure is invalid arguments
         // to SalMessageBoxEx
         return E_INVALIDARG;
     }
@@ -891,7 +891,7 @@ static void CALLBACK ShowQuestionDialogProc(void* pContext)
 
         if (FAILED(hr))
         {
-            // TODO: report better error, st. like "panel object expected"
+            // TODO: report a better error, e.g. "panel object expected"
             return hr;
         }
     }

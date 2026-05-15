@@ -653,7 +653,7 @@ interface ISalamander : IUnknown
 	HRESULT Forms(
 		[out, retval] ISalamanderGui **gui);
 
-	/// \brief Saves value accross script invocations.
+	/// \brief Saves a value across script invocations.
 	///
 	/// The \b SetPersistentVal method saves value to the persistent
 	/// storage. The value is then available next time the script

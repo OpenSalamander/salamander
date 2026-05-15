@@ -1,26 +1,24 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// Zavadi handler pro reseni situace, kdy dosla pamet pri volani operatoru new nebo
-// funkce malloc (tu pouzivaji calloc, realloc a dalsi, viz help). Zarucuje, ze ani
-// operator new ani malloc nikdy bez vedomi uzivatele nevrati NULL. Zobrazuje
-// messagebox s chybou "nedostatek pameti" a uzivatel muze po zavreni dalsich
-// aplikaci zopakovat pokus o alokaci pameti. Uzivatel muze tez terminovat proces
-// nebo nechat propadnout chybu alokace do aplikace (operator new nebo malloc
-// vrati NULL, alokace velkych bloku pameti by na to mely byt pripravene, jinak
-// dojde k padu - uzivatel je o tom informovany).
+// Installs a handler for out-of-memory failures in operator new and malloc
+// (and in calloc, realloc, and related functions). It ensures those calls never
+// return NULL silently: the user sees an "Insufficient memory" message box and
+// can retry after closing other applications. The user may also terminate the
+// process or let the allocation failure propagate back to the application.
 
-// nastaveni lokalizovane podoby hlasky o nedostatku pameti a varovnych hlasek
-// (pokud se string nema menit, pouzijte NULL); ocekavany obsah zni:
+// Sets localized text for the out-of-memory and warning messages
+// (pass NULL to leave a string unchanged); expected contents:
 // message:
 // Insufficient memory to allocate %u bytes. Try to release some memory (e.g.
 // close some running application) and click Retry. If it does not help, you can
 // click Ignore to pass memory allocation error to this application or click Abort
 // to terminate this application.
-// title: (pouziva se pro oboji: "message" i "warning")
-// doporucujeme pouzit jmeno aplikace, at user vi, ktera aplikace si stezuje
+// title: (used for both "message" and "warning")
+// We recommend using the application name so the user knows which program reported the problem.
 // warningIgnore:
 // Do you really want to pass memory allocation error to this application?\n\n
 // WARNING: Application may crash and then all unsaved data will be lost!\n

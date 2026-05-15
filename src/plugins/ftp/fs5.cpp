@@ -47,7 +47,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
     { // we only care about data iface objects of type CFTPListingPluginDataInterface
         CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)pluginDataIface;
         int rightsCol = dataIface->FindRightsColumn();
-        if (rightsCol != -1) // if the Rights column exists (it does not have to be Unix, that is handled later)
+        if (rightsCol != -1) // if the Rights column exists (it does not have to be a Unix column; that is handled later)
         {
             displayWarning = FALSE;
             const CFileData* f = NULL; // pointer to the file/directory in the panel that should be processed
@@ -93,7 +93,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
         }
     }
 
-    if (!displayWarning || // optionally display a warning that this is not a UNIX server with the traditional rights model (e.g. we do not support ACL)
+    if (!displayWarning || // optionally display a warning that this is not a UNIX server with the traditional permissions model (e.g. ACLs are not supported)
         SalamanderGeneral->SalMessageBox(parent, LoadStr(IDS_CHATTRNOTUNIXSRV),
                                          LoadStr(IDS_FTPPLUGINTITLE),
                                          MB_YESNO | MSGBOXEX_ESCAPEENABLED |
@@ -105,7 +105,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
         CChangeAttrsDlg dlg(parent, subject, attr, attrDiff, selDirs);
         if (dlg.Execute() == IDOK)
         {
-            BOOL failed = TRUE; // pre-initialize the operation error
+            BOOL failed = TRUE; // initialize the operation as failed
             // create the operation object
             CFTPOperation* oper = new CFTPOperation;
             if (oper != NULL)
@@ -141,7 +141,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                             CFTPListingPluginDataInterface* dataIface = (CFTPListingPluginDataInterface*)pluginDataIface;
                             if (dataIface != NULL && (void*)dataIface == (void*)&SimpleListPluginDataInterface)
                                 dataIface = NULL; // we only care about data iface objects of type CFTPListingPluginDataInterface
-                            int rightsCol = -1;   // index of the column with rights (used to detect links)
+                            int rightsCol = -1;   // index of the permissions column (used to detect links)
                             if (dataIface != NULL)
                                 rightsCol = dataIface->FindRightsColumn();
                             const CFileData* f = NULL; // pointer to the file/directory/link in the panel that should be processed
@@ -238,7 +238,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
                         }
                         if (!ok)
                             FTPOperationsList.DeleteOperation(operUID, TRUE);
-                        oper = NULL; // the operation is already added in the array, do not free it with 'delete' (see below)
+                        oper = NULL; // the operation is already added to the array, do not free it with 'delete' (see below)
                     }
                 }
                 if (oper != NULL)
@@ -246,7 +246,7 @@ BOOL CPluginFSInterface::ChangeAttributes(const char* fsName, HWND parent, int p
             }
             else
                 TRACE_E(LOW_MEMORY);
-            return !failed; // return the operation success (TRUE = clear the selection in the panel)
+            return !failed; // return whether the operation succeeded (TRUE = clear the selection in the panel)
         }
     }
     return FALSE; // cancellation
@@ -258,7 +258,7 @@ BOOL CPluginFSInterface::RunOperation(HWND parent, int operUID, CFTPOperation* o
 
     BOOL ok = TRUE;
 
-    CFTPWorker* workerWithCon = NULL; // if we passed the connection, this points to who received it
+    CFTPWorker* workerWithCon = NULL; // if we passed the connection, this points to the recipient
     int i;
     for (i = 0; i < 1; i++) // FIXME: eventually we may place the initial number of operation workers into the configuration: just replace "1" with the appropriate count...
     {
@@ -456,14 +456,14 @@ void CPluginFSInterface::ViewFile(const char* fsName, HWND parent,
     // open the viewer
     HANDLE fileLock;
     BOOL fileLockOwner;
-    if (!fileExists && !newFileCreated || // open the viewer only if the copy of the file is fine
+    if (!fileExists && !newFileCreated || // open the viewer only if the file copy is valid
         !salamander->OpenViewer(parent, tmpFileName, &fileLock, &fileLockOwner))
     { // on error reset the "lock"
         fileLock = NULL;
         fileLockOwner = FALSE;
     }
 
-    // we still have to call FreeFileNameInCache as a pair to AllocFileNameInCache (link
+    // we still have to call FreeFileNameInCache to match AllocFileNameInCache (link
     // the viewer and the disk cache)
     salamander->FreeFileNameInCache(uniqueFileName, fileExists, newFileCreated,
                                     newFileSize, fileLock, fileLockOwner,
@@ -714,7 +714,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
     if (mode == 2 || mode == 3)
     {
         // 'targetPath' contains the raw path entered by the user (the only thing we know about it
-        // is that it points to the FTP, otherwise Salamander would not call this method)
+        // is that it is on FTP, otherwise Salamander would not call this method)
         int isFTPS = SalamanderGeneral->StrNICmp(targetPath, AssignedFSNameFTPS, AssignedFSNameLenFTPS) == 0 &&
                      targetPath[AssignedFSNameLenFTPS] == ':';
 
@@ -744,7 +744,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
         if (p != NULL && *p != 0)
             port = atoi(p);
 
-        if (ControlConnection == NULL) // open the connection (open the path on the FTP server)
+        if (ControlConnection == NULL) // opening the connection (opening the path on the FTP server)
         {
             TotalConnectAttemptNum = 1; // opening the connection = first attempt to open the connection
 
@@ -886,7 +886,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             }
 
             // if this is a root (only specific cases, other types of root paths continue further), no more adjustments
-            // nor path analysis make sense - use the path as is plus the "*" mask
+            // or path analysis makes sense - use the path as is plus the "*" mask
             if (!isSpecRootPath)
             {
                 // if the path ends with a separator, treat it as a path without a mask (e.g. "/pub/dir/" or
@@ -1034,7 +1034,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
 
         // the path is analyzed, start the operation:
         // 'tgtPath' is the target path, 'mask' is the operation mask
-        BOOL success = FALSE; // pre-initialize cancel/error state of the operation
+        BOOL success = FALSE; // preset the cancel/error state of the operation
 
         char dlgSubjectSrc[MAX_PATH + 100];
         if (sourceFiles + sourceDirs <= 1) // one selected item
@@ -1070,7 +1070,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
             if (cert)
                 cert->Release();
             oper->SetCompressData(ControlConnection->GetCompressData());
-            if (ControlConnection->InitOperation(oper)) // initialize the connection to the server according to the "control connection"
+            if (ControlConnection->InitOperation(oper)) // initialize the connection to the server based on the "control connection"
             {
                 oper->SetBasicData(dlgSubjectSrc, (AutodetectSrvType ? NULL : LastServerType));
                 char targetPath2[2 * MAX_PATH];
@@ -1207,7 +1207,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
 
                             oper->SetQueue(queue); // set the queue of its items for the operation
                             queue = NULL;
-                            // FIXME: there is probably no place for an "only add to queue" checkbox: if (Config.UploadAddToQueue) success = TRUE;  // perform the operation later -> for now the operation is successful
+                            // FIXME: there is probably nowhere to put an "only add to queue" checkbox: if (Config.UploadAddToQueue) success = TRUE;  // perform the operation later -> for now, this counts as a successful operation
                             // else // perform the operation in the active "control connection"
                             // {
                             // open the operation progress window and start the operation
@@ -1219,7 +1219,7 @@ BOOL CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char*
                         }
                         if (!ok)
                             FTPOperationsList.DeleteOperation(operUID, TRUE);
-                        oper = NULL; // the operation is already added in the array, do not free it with 'delete' (see below)
+                        oper = NULL; // the operation is already added to the array, do not free it with 'delete' (see below)
                     }
                 }
             }
@@ -1248,7 +1248,7 @@ void CPluginFSInterface::ShowSecurityInfo(HWND hParent)
             char errBuf[300];
             int panel;
             if (SalamanderGeneral->GetPanelWithPluginFS(this, panel))
-            { // the user might have imported the certificate or deleted it from the MS store, verify the state and show it in the panel
+            { // the user might have imported the certificate or deleted it from the MS store; recheck its status and show it in the panel
                 bool verified = cert->CheckCertificate(errBuf, 300);
                 cert->SetVerified(verified);
                 SalamanderGeneral->ShowSecurityIcon(panel, TRUE, verified,

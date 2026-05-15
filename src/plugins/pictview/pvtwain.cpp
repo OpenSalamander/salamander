@@ -135,7 +135,7 @@ CTwain::CallTwainProc(TW_IDENTITY* origin,
     {
         TW_STATUS twStatus;
         (*DSMEntry)(origin, dest, DG_CONTROL, DAT_STATUS, MSG_GET, &twStatus);
-        int resID = IDS_TWCC_BUMMER; // uknown error
+        int resID = IDS_TWCC_BUMMER; // unknown error
         switch (twStatus.ConditionCode)
         {
         case TWCC_LOWMEMORY:

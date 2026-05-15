@@ -760,7 +760,7 @@ int CPluginInterfaceForArchiver::ProcessDataProc(const void* buffer, DWORD size)
                 Abort = TRUE;
                 return 0;
             }
-            return 1; // sucess
+            return 1; // success
         }
         lstrcpy(buf, LoadStr(IDS_UNABLEWRITE));
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,

@@ -4,7 +4,7 @@
 
 #include "precomp.h"
 
-// FS-name assigned by Salamander after loading the plug-in
+// FS-name assigned by Salamander after loading the plugin
 char AssignedFSName[MAX_PATH] = "";
 int AssignedFSNameLen = 0;
 
@@ -39,7 +39,7 @@ void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
 
 BOOL InitFS()
 {
-#ifdef _DEBUG // must be 4 bytes because it is stored in LastWrite into the upper and lower DWORD
+#ifdef _DEBUG // must be 4 bytes because it is stored in LastWrite in the upper and lower DWORDs
     if (sizeof(CFTPTime) != 4 || sizeof(CFTPDate) != 4)
         TRACE_E("FATAL ERROR: sizeof(CFTPTime) or sizeof(CFTPDate) is not 4 bytes!");
 #endif
@@ -215,7 +215,7 @@ void ReleaseFS()
         SalamanderGeneral->DestroySafeWaitWindow();
     }
 
-    // kill auxiliary threads that did not finish "legally"
+    // kill auxiliary threads that did not finish cleanly
     AuxThreadQueue.KillAll(TRUE, 0, 0);
 
     if (FTPIcon != NULL)
@@ -305,7 +305,7 @@ void CPluginInterfaceForFS::CloseFS(CPluginFSInterfaceAbstract* fs)
                 break;
             }
         }
-        if (!found) // "i == FTPConnections.Count" is not enough (there is Delete(i))
+        if (!found) // "i == FTPConnections.Count" is not enough because Delete(i) is called
             TRACE_E("Unexpected situation in CPluginInterfaceForFS::CloseFS(): FS not found in FTPConnections.");
 
         delete ((CPluginFSInterface*)fs); // to call the correct destructor
@@ -691,7 +691,7 @@ void CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* p
                 fs->MakeUserPart(newUserPart, FTP_USERPART_SIZE, newPath);
                 if (SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newUserPart))
                 {
-                    fs->TopIndexMem.Push(type, backupPath, topIndex); // remember the top-index for the return
+                    fs->TopIndexMem.Push(type, backupPath, topIndex); // remember the top index for returning
                 }
             }
         }
@@ -756,7 +756,7 @@ void CTopIndexMem::Push(CFTPServerPathType type, const char* path, int topIndex)
         ok = FTPIsTheSameServerPath(type, testPath, Path);
     }
 
-    if (ok) // it follows -> remember the next top-index
+    if (ok) // continues from the current path -> remember the next top-index
     {
         if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // we need to discard the first top-index from memory
         {
@@ -788,13 +788,13 @@ BOOL CTopIndexMem::FindAndPop(CFTPServerPathType type, const char* path, int& to
             topIndex = TopIndexes[--TopIndexesCount];
             return TRUE;
         }
-        else // we no longer have this value (it was not stored or low memory removed it)
+        else // we no longer have this value (it was not stored, or it was discarded due to low memory)
         {
             Clear();
             return FALSE;
         }
     }
-    else // query for another path -> clear the memory, a long jump occurred
+    else // query for a different path -> clear memory, a long jump occurred
     {
         Clear();
         return FALSE;

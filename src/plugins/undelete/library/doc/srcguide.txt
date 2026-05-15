@@ -42,7 +42,7 @@ called the cluster chain.
 
 Most file systems do not bother to overwrite the clusters of a file when it is
 deleted. Instead all the clusters are marked as free and are reused by other files
-in the future. This is what makes undelete untilies possible.
+in the future. This is what makes undelete utilities possible.
 
 The first sector on the disk is reserved and contains basic information such as
 the cluster size, the position of the first cluster, the total number of clusters,
@@ -189,7 +189,7 @@ consists of all zeros, it is not stored at all.
 NTFS also allows file encryption. Actually the EFS (Encrypting File System) layer
 is implemented above the NTFS driver. A special $DATA attribute, named '$EFS' is
 stored for each encrypted file and holds information about users who have access
-to the file, namely thier public keys.
+to the file, namely their public keys.
 
 When a file is deleted, its MFT record is marked as unused, as are all its
 streams' clusters. All data runs in the record however remain intact and there is
@@ -257,7 +257,7 @@ description.
 Overview of the core source files
 ---------------------------------
 
-There are four main compoments of the plugin (or DLL library):
+There are four main components of the plugin (or DLL library):
 
   - VOLUME, a module providing unified direct disk access,
   - NTFS, containing NTFS-related functions,
@@ -360,7 +360,7 @@ Instead, the directory tree is build from the parent links of all records.
 This is exactly what BuildDirectoryTree() does. First all records that do not have
 names are removed. These are often some of the system files from the beginning of
 the MFT. Then the root directory is found. It should be located at the record #5,
-but it is searched for anyway. The program can even handle the unprobabl
+but it is searched for anyway. The program can even handle the improbable
 situation of a missing root directory record, in which case an artificial
 FILE_RECORD is allocated for it. After that all directories containing deleted
 files are marked. This is done by walking through the MFT and calling the function
@@ -375,13 +375,13 @@ the virtual directory '{All Deleted Files}' is created and each file is added to
 it as well.
 
 The directory '{All Deleted Files}' is an example of a directory that has been
-made up by the program. There is one more situtation which results in the
-inclusion of artifical directories in the root. Whenever a file's parent record is
+made up by the program. There is one more situation which results in the
+inclusion of artificial directories in the root. Whenever a file's parent record is
 no longer what it originally was, for instance it is no longer a directory, there
 is nowhere to place the deleted file. Such files are placed to directories named
 'DirectoryXXXXX' in the root. A related problem is that with a little bit of bad
 luck, whole subtrees can be placed to unexpected locations if the original parent
-no loger exists and has been replaced by a new directory. It is therefore
+no longer exists and has been replaced by a new directory. It is therefore
 recommended to always take a look in '{All Deleted Files}' as a last resort if the
 deleted file does not appear where it used to reside.
 
@@ -427,7 +427,7 @@ Of course this makes several things more complicated. A directory cannot be full
 processed until all of its clusters have been gathered. Once this happens, the
 function DecodeDirectoryClusters() is called. In its main loop it walks through
 the directory entries and establishes a new FILE_RECORD for each of them. More
-precisely, only for the 'short' entries: the long entries, if encoutered, are
+precisely, only for the 'short' entries: the long entries, if encountered, are
 accumulated to obtain the long name, which is then used for the following short
 entry. The usual information, such as file name, attributes and date/time, are
 extracted from the short entries.
@@ -539,4 +539,3 @@ FAT family: FAT12, FAT16, and FAT32
 
 exFAT
   Clusters count: up to 2^32 (4,294,967,296)
-

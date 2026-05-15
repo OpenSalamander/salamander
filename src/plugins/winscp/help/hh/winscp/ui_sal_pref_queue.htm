@@ -15,7 +15,7 @@
 
 <p>
 The Background &amp; Resume tab allows you to configure behaviour of WinSCP when
-<a href="transfer_queue.htm">transferring files on background</a> and
+<a href="transfer_queue.htm">transferring files in the background</a> and
 <a href="resume.htm">resuming transfers</a>.
 </p>
 
@@ -23,9 +23,9 @@ The Background &amp; Resume tab allows you to configure behaviour of WinSCP when
 <h4>Background Transfers</h4>
 
 <p>
-The <em>Transfer on background by default</em> checkbox makes WinSCP to perform all transfers
-on background. You can always alter this for particular transfer
-on <a href="ui_copy.htm">transfer options dialog</a> (if enabled).
+The <em>Transfer on background by default</em> checkbox makes WinSCP perform all transfers
+in the background. You can always change this for a particular transfer in
+the <a href="ui_copy.htm">Transfer Options Dialog</a> (if enabled).
 </p>
 
 <p>
@@ -38,8 +38,8 @@ for the background transfer.
 Use <em>Remember password of main session for background transfers</em> checkbox to avoid
 background transfers asking for password. WinSCP will save the main session password and reuse
 it for background transfer connections. Note that for this WinSCP must keep the password in memory,
-what may have security implications. If you have the password saved in
-<a href="ui_login_stored_sessions.htm">stored session</a>, what is not recommended at all,
+which may have security implications. If you have the password saved in
+<a href="ui_login_stored_sessions.htm">a stored session</a>, which is not recommended,
 the saved password is used automatically for background transfers.
 </p>
 
@@ -48,7 +48,7 @@ the saved password is used automatically for background transfers.
 <h4>Transfer Resume/Transfer to Temporary Filename</h4>
 
 <p>
-WinSCP is able to store file being transferred to temporary filename first,
+WinSCP is able to store a file being transferred under a temporary filename first,
 renaming it to the target name only once the transfer successfully finishes.
 </p>
 
@@ -58,11 +58,11 @@ Reasons to do that:
 
 <ul>
 <li>If the transfer is interrupted, on the next attempt,
-    WinSCP is able to detect the partial/temporary file and suggest you
-    transfer resuming automatically (or even resume automatically).</li>
+    WinSCP is able to detect the partial/temporary file and suggest
+    resuming the transfer automatically (or even resume it automatically).</li>
 <li>While updating an existing file, the original version of the file exists
-    during whole transfer. This is particularly useful when updating
-    frequently accessed file on web sites.</li>
+    throughout the transfer. This is particularly useful when updating
+    frequently accessed files on websites.</li>
 </ul>
 
 <p>
@@ -74,13 +74,13 @@ Reasons not to do that:
     technically a new file, even though the file with target 
     name already exists. So after the original file is deleted 
     and temporary file is renamed to the original file name, 
-    you loose all attributes of the original file (such as 
+    you lose all attributes of the original file (such as 
     owner and group) except for permissions.</li>
 </ul>
 
 <p>
 For performance reasons transfer to temporary file name is enabled by default for files
-larger then a given threshold.
+larger than a given threshold.
 The threshold is initially 100 <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>.
 You can change the threshold. You can also enable the feature for all files,
 particularly when looking to achieve the second impact.

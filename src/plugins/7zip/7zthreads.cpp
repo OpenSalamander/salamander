@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -36,7 +37,7 @@ BOOL CALLBACK SubClassedProgressDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
             return S_OK;
 
         case WM_7ZIP_ADDTEXT:
-            Salamander->ProgressDialogAddText((char*)lParam, TRUE); // delayed paint, to avoid slow down by frequent refresh
+            Salamander->ProgressDialogAddText((char*)lParam, TRUE); // Delayed paint to avoid slowdown from frequent refreshes
             return S_OK;
 
         case WM_7ZIP_CREATEFILE:
@@ -126,7 +127,7 @@ HRESULT LaunchAndDo7ZipTask(LPTHREAD_START_ROUTINE threadProc, LPVOID args)
 
             GetExitCodeThread(hThread, &exitCode);
             CloseHandle(hThread);
-            return exitCode; // Our thread body func returns HRESULT
+            return exitCode; // Our thread body function returns HRESULT
         }
 
         MSG msg;
@@ -155,9 +156,9 @@ HRESULT DoDecompress(CSalamanderForOperationsAbstract* salamander, CDecompressPa
 
         if (FAILED(result) && ((FACILITY_WIN32 << 16) == (result & 0x7FFF0000)))
         {
-            // LastError error encoded into HRESULT
-            // There is something strange: E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
-            // even when not truncated to 16 bits while 0x80000002L prints as "Ran out of memory"
+            // LastError encoded as HRESULT
+            // Oddly, E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
+            // even without truncating to 16 bits, while 0x80000002L prints as "Ran out of memory"
             SysError(label, (result == E_OUTOFMEMORY) ? 0x80000002L : (result & 0xFFFF), FALSE);
         }
         else

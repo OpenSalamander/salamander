@@ -14,7 +14,7 @@
 <h1>Permissions</h1>
 
 <p>
-On several occasions you need or have chance to set remote file permissions (Unix-style). This includes:
+On several occasions, you need or have a chance to set remote file permissions (Unix-style). These include:
 </p>
 
 <ul>
@@ -34,10 +34,10 @@ On several occasions you need or have chance to set remote file permissions (Uni
 <h4>Simple Permissions</h4>
 
 <p>
-The rows of checkboxes are used to set/unset specific permissions for the <em>Owner</em> (the owner of the file); the <em>Group</em> (members of file group); and
+The rows of checkboxes are used to set/unset specific permissions for the <em>Owner</em> (the owner of the file), the <em>Group</em> (members of the file group), and
 <em>Others</em> (all others). The label <em>R</em> stands for &quot;read permissions&quot;,
-<em>W</em> for &quot;write&quot; and <em>X</em> for &quot;execute&quot;. For directories the &quot;execute permission&quot; means permission
-to enter the directory (make it working directory).
+<em>W</em> for &quot;write,&quot; and <em>X</em> for &quot;execute.&quot; For directories, the &quot;execute permission&quot; means permission
+to enter the directory (make it the working directory).
 </p>
 
 <a name="special_permissions"></a>
@@ -45,8 +45,8 @@ to enter the directory (make it working directory).
 
 <p>
 There are three special permissions. <em>Set <acronym title="User ID">UID</acronym></em> and
-<em>Set <acronym title="Group ID">GID</acronym></em> are used with executable files. They grant the user,
-who executes the file, permissions of file owner or group, respectively. <em>Sticky bit</em> for executable
+<em>Set <acronym title="Group ID">GID</acronym></em> are used with executable files. They grant the user
+who executes the file the permissions of the file owner or group, respectively. <em>Sticky bit</em> for executable
 files makes the kernel keep the memory image of the process after it has terminated, in order to avoid the
 overhead of reloading it when it is re-invoked. <em>Sticky bit</em> for directories ensures that only the
 owner of a file can remove or delete the file or directory.
@@ -54,26 +54,26 @@ owner of a file can remove or delete the file or directory.
 
 <p>
 Note that while non-Unix systems are usually able to map the 9 simple Unix-style permissions to their own
-style, they probably won't be able to handle the 3 special permissions.
+style, they probably cannot handle the 3 special permissions.
 </p>
 
 <p>
-Also <a href="interoperability.htm">not all Unix SFTP servers</a>
+Also, <a href="interoperability.htm">not all Unix SFTP servers</a>
 are able to set the special permissions.
 </p>
 
 <p>
-Also <a href="interoperability.htm">neither all Unix SFTP servers</a> are able to set the special permissions.
+Also, <a href="interoperability.htm">not all Unix SFTP servers</a> are able to set the special permissions.
 </p>
 
 <a name="undefined_permissions"></a>
 <h4>Undefined Permissions</h4>
 
 <p>
-When explicitly changing permissions of existing remote files, the checkboxes can be set to undefined
+When explicitly changing permissions of existing remote files, the checkboxes can be set to an undefined
 state <a href="#fn1">(see note 1)</a>.
-It means that the particular permissions should be left to its current state. This is useful when
-you want to change one particular permission for set of files/directories that have different permissions.
+This means that the particular permission should be left in its current state. This is useful when
+you want to change one particular permission for a set of files/directories that have different permissions.
 </p>
 
 <p>
@@ -85,10 +85,10 @@ for files in subdirectories.
 <h4>Octal Format</h4>
 
 <p>
-The <em>Octal</em> box shows octal number representation of the permissions set by the above checkboxes.
+The <em>Octal</em> box shows the octal number representation of the permissions set by the above checkboxes.
 You can enter the octal format directly instead of manually ticking the checkboxes. If you enter only
-three numbers, the leading zero for unset special permissions is added automatically. When any of the
-checkboxes are in undefined state the <em>Octal</em> box is empty.
+three numbers, a leading zero for unset special permissions is added automatically. When any of the
+checkboxes are in an undefined state, the <em>Octal</em> box is empty.
 </p>
 
 <p>
@@ -101,7 +101,7 @@ into the edit box, without having to pop it up.
 
 <p>
 The <em>Add X to directories</em> checkbox makes WinSCP add &quot;execute&quot; permission to directories for
-every permission group (owner/group/others) where there is a &quot;read&quot; permission set already.
+every permission group (owner/group/others) that has a &quot;read&quot; permission set already.
 </p>
 
 <p>
@@ -111,19 +111,19 @@ for subdirectories of selected directories.
 </p>
 
 <p>
-The checkbox is disabled, if you check "execute" permissions explicitly
-for all permission groups, as it makes it effectively useless.
+The check box is disabled if you check "execute" permissions explicitly
+for all permission groups, as that makes it redundant.
 </p>
 
 <p>
-The checkbox is disabled, if you check &quot;execute&quot; permissions explicitly for all permission groups,
-as it makes it effectively useless.
+It remains useful when some &quot;execute&quot; permissions are left unset,
+so WinSCP can add them automatically to directories that already have read permission.
 </p>
 
 <h4>Notes:</h4>
 <p>
 <a name="fn1"></a>
-1) Grayed checkbox on Windows 2000 and older, green square on default theme of Windows XP
+1) Grayed check box on Windows 2000 and older; green square on the default theme of Windows XP
 </p>
 
 </div>

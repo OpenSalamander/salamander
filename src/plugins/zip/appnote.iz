@@ -693,7 +693,7 @@ IV. General Format of a .ZIP file
           0x4453        Windows NT security descriptor (binary ACL)
           0x4704        VM/CMS
           0x470f        MVS
-          0x4854        Theos, old inofficial port
+          0x4854        Theos, old unofficial port
           0x4b46        FWKCS MD5 (see below)
           0x4c41        OS/2 access control list (text ACL)
           0x4d49        Info-ZIP OpenVMS (obsolete)
@@ -2035,10 +2035,10 @@ IV. General Format of a .ZIP file
             0x80  not hidden
 
 
-         -THEOS old inofficial Extra Field:
+         -THEOS old unofficial Extra Field:
           ================================
 
-          The following is the layout of an inoffical former version of a
+          The following is the layout of an unofficial former version of a
           Theos file-attributes extra blocks.  This layout was never published
           and is no longer created. However, UnZip can optionally support it
           when compiling with the option flag OLD_THEOS_EXTRA defined.
@@ -2670,7 +2670,7 @@ The Enhanced Deflating algorithm is similar to Deflate but
 uses a sliding dictionary of up to 64K. Deflate64(tm) is supported
 by the Deflate extractor.
 
-[This description is inofficial.  It has been deduced by Info-ZIP from
+[This description is unofficial.  It has been deduced by Info-ZIP from
 close inspection of PKZIP 4.x Deflate64(tm) compressed output.]
 
 The Deflate64 algorithm is almost identical to the normal Deflate algorithm.
@@ -2986,7 +2986,7 @@ are masked to hide their actual value.
          Values > 0x0003 reserved for certificate processing
 
 
-3. Decryption header record preceeding compressed file data.
+3. Decryption header record preceding compressed file data.
 
          -Decryption Header:
 

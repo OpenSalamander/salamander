@@ -15,62 +15,62 @@
 <h1>Customizing User Menu</h1>
 
 <p>The User Menu allows you to execute external programs or open documents. The User Menu
-is list of individual commands ("items") you have defined. Each item contains an
-item name and executed command. Moreover, icon, additional arguments, initial
-directory, and executing flags can be specified.</p>
+is a list of individual commands ("items") that you define. Each item contains an
+item name and the command to execute. You can also specify an icon, additional arguments, the initial
+directory, and execution flags.</p>
 
 <p>You can use additional arguments to specify command-line arguments that are
-passed to the application each time you start it. For example you can use
+passed to the application each time you start it. For example, you can use
 $(FullName) to pass the filenames of selected files (one User Menu command is
 executed for each selected file). See the List of Variables below for details.</p>
 
-<h3>To add new command to the User Menu:</h3>
+<h3>To add a new command to the User Menu:</h3>
 <ol>
 <li>In the Options menu, select Configuration..., and then choose the 
     <a href="configuration_usrmn.htm">User Menu dialog box</a>.</li>
-<li>In the <i>Menu Contents</i> select the last empty row.</li>
-<li>Type the name of the created item.</li>
+<li>In <i>Menu Contents</i>, select the last empty row.</li>
+<li>Type the name of the new item.</li>
 <li>Press the Enter key.</li>
-<li>In the <i>Command</i> box, type path and filename of the file you want to
+<li>In the <i>Command</i> box, type the path and filename of the file you want to
     execute.</li>
 <li>Choose the OK button.</li>
 </ol>
 
 <h4>Advanced Features</h4>
 
-<p>The User Menu supports executing of utilities for comparing/merging of files
+<p>The User Menu supports utilities for comparing or merging files
 and directories. You can use special variables in the <i>Arguments</i> box (see
 the List of Variables below for details) to pass two files or two directories to
 the compare/merge utility. For example, enter <i>"$(FileOrDirToCompareLeft)"
-"$(FileOrDirToCompareRight)"</i> to the <i>Arguments</i> box and two full names
-of two files/directories specified in panels will be used as arguments for the
+"$(FileOrDirToCompareRight)"</i> in the <i>Arguments</i> box to use the two full names
+of the two files or directories specified in the panels as arguments for the
 compare/merge utility (specify its .exe file in the <i>Command</i> box).
-See the following list to learn how to specify two files/directories for
-the compare/merge utility directly in panels:</p>
+See the following list to learn how to specify them directly in the panels for
+the compare/merge utility:</p>
     <ol>
-    <li>select both files/directories in one panel,</li>
-    <li>select first file/directory in left panel and then select second file/directory in right panel,</li>
-    <li>select first file/directory and then focus the second file/directory in one panel,</li>
-    <li>select first file/directory in left panel and then focus second file/directory in right panel (and vice versa),</li>
-    <li>if you have files/directories with the same name in both panels, focus first file/directory
-        in one panel and second file/directory with the same name will be taken from
-	opposite panel.</li>
+    <li>select both files or directories in one panel,</li>
+    <li>select first file or directory in left panel and then select second file or directory in right panel,</li>
+    <li>select first file or directory and then focus the second file or directory in one panel,</li>
+    <li>select first file or directory in left panel and then focus second file or directory in right panel (and vice versa),</li>
+    <li>if you have files or directories with the same name in both panels, focus first file or directory
+        in one panel and second file or directory with the same name is taken from
+	the opposite panel.</li>
     </ol>
 
 
 <p>The list of selected files and directories can be used in command arguments in the
-User Menu. In this case only one User Menu command is executed for all selected files and directories.
-See $(ListOfSelectedNames) and $(ListOfSelectedNames) variables in the List of Variables below.</p>
+User Menu. In this case, only one User Menu command is executed for all selected files and directories.
+See the $(ListOfSelectedNames) and $(ListOfSelectedFullNames) variables in the list below.</p>
 
 <h4>List of Variables</h4>
 
-<p>All variables are available from context menus on buttons on the right sides of
+<p>All variables are available from the context menus on the buttons on the right side of
 the <i>Command</i>, <i>Arguments</i>, and <i>Initial directory</i> boxes.</p>
 
 <p>The User Menu command is executed for each selected file and directory or for
 the focused file or directory (if there is no selection). The file or directory
-for which is executed the User Menu command is called <i>the current file or
-directory</i> in the following table. Exception from this rule: if you use variables
+for which the User Menu command is executed is called <i>the current file or
+directory</i> in the following table. Exception: if you use variables
 for compare/merge utilities or lists of selected files and directories, only one
 User Menu command is executed for all selected files and directories.</p>
 
@@ -258,7 +258,7 @@ User Menu command is executed for all selected files and directories.</p>
      separated by space character. Names containing spaces are surrounded by double quotes
      (e.g. dir1 file.txt "my first document.html"). The order of names in the list is the same
      as in the panel or Find window. The maximum length of the list is 32771 characters (see
-     <i>Command Line Length Limits</i> later on this page for limits overview).</td>
+     <i>Command Line Length Limits</i> later on this page for an overview of the limits).</td>
 </tr>
 <tr>
  <td>$(ListOfSelectedFullNames)</td>
@@ -267,20 +267,20 @@ User Menu command is executed for all selected files and directories.</p>
      by double quotes (e.g. C:\test\dir1 C:\test\file.txt "C:\test\my first document.html").
      The order of names in the list is the same as in the panel or Find window. The maximum
      length of the list is 32771 characters (see <i>Command Line Length Limits</i> later on
-     this page for limits overview).</td>
+     this page for an overview of the limits).</td>
 </tr>
 
 </table>
 
 
 <h4>Command Line Length Limits</h4>
-<p>The maximal length of command with arguments depends on Windows version and
-if you are executing command through shell or not (see <i>Execute through shell</i>
+<p>The maximum length of a command with arguments depends on the Windows version and
+on whether you are executing the command through the shell (see the <i>Execute through shell</i>
 check box in <a href="configuration_usrmn.htm">User Menu dialog box</a>).
 </p>
 
-<p>Maximal length of command with arguments when executing through system command
-shell (more precisely using batch file):</p>
+<p>Maximum length of a command with arguments when executing through the system command
+shell (more precisely, by using a batch file):</p>
 
 <table>
 
@@ -310,7 +310,7 @@ shell (more precisely using batch file):</p>
 
 </table>
 
-<p>Maximal length of command with arguments when executing directly (not through system command shell):</p>
+<p>Maximum length of a command with arguments when executing directly (not through the system command shell):</p>
 
 <table>
 
@@ -343,8 +343,8 @@ shell (more precisely using batch file):</p>
 
 <h4>Remarks</h4>
 <p>When <a href="windows_usrmenu.htm">User Menu Bar</a> is visible, you can
-add new User Menu item using drag &amp; drop operation. Simply drag the application
-or document to the User Menu bar.</p>
+add a new User Menu item through a drag &amp; drop operation. Simply drag the application
+or document to the User Menu Bar.</p>
 
 
 <h4>See also</h4>

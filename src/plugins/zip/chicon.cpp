@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -77,7 +78,7 @@ BOOL ChangeSfxIconAndAddManifest(const char* sfxFile, CIcon* icons, int iconsCou
                                       MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), manifest, manifestSize))
                 {
                     if (re.EndUpdateResource(FALSE))
-                        ret = TRUE; //sucess
+                        ret = TRUE; //success
                 }
                 else
                     re.EndUpdateResource(TRUE);
@@ -93,7 +94,7 @@ BOOL HasExtension(const char* filename, const char* extension)
 {
     CALL_STACK_MESSAGE_NONE
     const char* dot = strrchr(filename, '.');
-    if (dot != NULL) // ".cvspass" is extension in Windows
+    if (dot != NULL) // ".cvspass" is an extension in Windows
     {
         if (lstrcmpi(++dot, extension) == 0)
             return TRUE;
@@ -105,7 +106,7 @@ BOOL HasExtension(const char* filename, const char* extension)
 //
 // return values:
 //   0  success
-//   1  error openning file
+//   1  error opening file
 //   2  module is not valid win32 application
 //   3  unable to load module containing icon data
 //   4  unable to load icon from file
@@ -189,7 +190,7 @@ CIcon* LoadIconsFromDirectory(HINSTANCE module, LPICONDIR directory, BOOL isIco)
         if (isIco)
             icons[i].lpData = LoadIconDataFromICO((HANDLE)module, directory->idEntries[i].dwImageOffset, directory->idEntries[i].dwBytesInRes);
         else
-            icons[i].lpData = LoadIconDataFromEXE(module, directory->idEntries[i].dwImageOffset /*it is ID*/);
+            icons[i].lpData = LoadIconDataFromEXE(module, directory->idEntries[i].dwImageOffset /* ID */);
         if (!icons[i].lpData)
         {
             DestroyIcons(icons, i);

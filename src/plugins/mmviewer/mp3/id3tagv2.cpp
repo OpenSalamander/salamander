@@ -280,14 +280,14 @@ BOOL SwitchUnicodeString(LPWSTR wstr, int len)
     return TRUE;
 }
 
-// reads a string and always creates NULL/NULLNULL
+// reads a string and always adds a NULL/NULLNULL terminator
 BOOL ReadStr(FILE* f, char** out_str, long& size, int encoding = 0)
 {
     if (*out_str)
         free(*out_str);
 
     if (size == 0)
-        return TRUE; // the string has been cleaned and that's it
+        return TRUE; // string cleaned
 
     int nullterm = (encoding == 0) ? 1 : 2;
 
@@ -305,7 +305,7 @@ BOOL ReadStr(FILE* f, char** out_str, long& size, int encoding = 0)
         // appended the string's NULL terminator (even for Unicode)
         (*out_str)[size] = 0;
 
-        if (encoding == 1) // and another one for Unicode
+        if (encoding == 1) // another one for Unicode
             (*out_str)[size + 1] = 0;
 
         size += nullterm;
@@ -319,12 +319,12 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
 {
     assert(size > 0);
     /*encoding:
-    0 - ISO-8859-1 ..... NULL terminator at the end
-    1 - 16bit Unicode .. Unicode BOM at the beginning ($FF FE or $FE FF) - defines byte order
-                        Unicode NULL at the end ($FF FE 00 00 or $FE FF 00 00).
-    2 - UTF16 BE with BOM
-    3 - UTF8 without BOM
-  */
+        0 - ISO-8859-1 ..... NULL terminator at the end
+        1 - 16-bit Unicode .. Unicode BOM at the beginning ($FF FE or $FE FF) - defines byte order
+                            Unicode NULL at the end ($FF FE 00 00 or $FE FF 00 00).
+        2 - UTF16 BE with BOM
+        3 - UTF8 without BOM
+      */
 
     if (*out_str)
     {
@@ -336,12 +336,12 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
             if (size < 4)
                 return FALSE;
 
-            if (((*out_str)[0] == 0xFE) && ((*out_str)[1] == 0xFF)) // reversed BOM, swap it
+            if (((*out_str)[0] == 0xFE) && ((*out_str)[1] == 0xFF)) // Reversed BOM, swap bytes
                 SwitchUnicodeString(((WCHAR*)(*out_str)) + 1, size - 2);
 
             assert((size % 2) == 0);
 
-            if ((size % 2) != 0) // that's some glitch, try it like this
+            if ((size % 2) != 0) // odd size, try handling it like this
                 size++;
 
             // and now we have the ANSI size
@@ -364,7 +364,7 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
             //free(*out_str);
             *out_str = new_out_str;
         }
-        else if (encoding == 3 /*UTF8 w/o BOM*/)
+        else if (encoding == 3 /*UTF8 without BOM*/)
         {
         }
         else
@@ -380,7 +380,7 @@ BOOL ConvertStr(char** out_str, long& size, int encoding = 0)
     return FALSE;
 }
 
-// splits the string into two at the point where the NULL terminator is
+// splits the string into two at the NULL terminator
 BOOL BreakStr(char** out_str, int size, int encoding, char** pp1, int& sizep1, char** pp2, int& sizep2, BOOL second_is_ansi = FALSE)
 {
     char* part1;
@@ -478,7 +478,7 @@ BOOL ReadTextInfoFrm(FILE* f, const ID3TagV2FrameHeaderAbstract* pfh, char** out
         {
             if ((*out_str) && pfh->CompareID(id3v2_frames[26]))
             {
-                // special filtering of GENRE (parentheses with a number as an index in the tag1 genre list...)
+                // Special filtering of GENRE (parentheses with a number used as an index into the tag1 genre list...)
                 char* tmp;
                 char* string = *out_str;
                 char* new_out_str = NULL;
@@ -526,7 +526,7 @@ void ReadBreakStr(FILE* f, char** out_str, long size, int encoding)
         int p1size;
         int p2size;
 
-        // a comment consists of two parts. Between them is a NULL terminator. Split them
+        // The comment consists of two parts. There is a NULL terminator between them. Split them.
         if (BreakStr(out_str, size, encoding, &p1, p1size, &p2, p2size))
         {
             char separator[] = " - ";
@@ -548,10 +548,10 @@ void ReadBreakStr(FILE* f, char** out_str, long size, int encoding)
             if (p2)
                 free(p2);
 
-            if (*out_str && (p1 != *out_str /*sometimes!*/))
+            if (*out_str && (p1 != *out_str /* p1 sometimes aliases *out_str */))
                 free(*out_str);
 
-            *out_str = new_out_str; // returns null if allocation fails
+            *out_str = new_out_str; // set to NULL if allocation fails
         }
     }
 }
@@ -644,7 +644,7 @@ BOOL ID3TAGV2_Read(FILE* f, const ID3TAGV2_HEADER* pmh, ID3TAGV2_DECODED* phd)
     if (f && pmh && phd)
     {
         if (pmh->ver > 4)
-            return FALSE; // currently do not support versions > id3v2.4
+            return FALSE; // versions later than ID3v2.4 are not supported yet
 
         memset(phd, 0, sizeof(ID3TAGV2_DECODED));
 
@@ -764,7 +764,7 @@ BOOL ID3TAGV2_ReadMainHead(FILE* f, ID3TAGV2_HEADER* pmh)
                 switch (pmh->ver)
                 {
                 case 2:           // v2.2
-                    return FALSE; // in this version the 6th bit means compressed. We don't take compressed ones. Extended is not here
+                    return FALSE; // In this version, bit 6 means compressed. Compressed frames are not supported. There is no extended header here.
 
                 case 3: // v2.3
                 case 4: // v2.4

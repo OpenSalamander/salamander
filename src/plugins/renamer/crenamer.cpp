@@ -353,7 +353,7 @@ int CRenamer::Rename(CSourceFile* file, int counter, char* newName, char** newPa
             // perform the requested substitution in the name
             int substl = UseRegExp ? RESubst(tmp, namel, newName, MAX_PATH - pathLen) : BMSubst(tmp, namel, newName, MAX_PATH - pathLen);
 
-            // dokopirujeme extension
+            // Copy the extension.
             if (substl < 0 || substl + (l - namel) >= MAX_PATH - pathLen)
                 return -1;
             memcpy(newName + substl, tmp + namel, l - namel + 1);
@@ -643,7 +643,7 @@ BOOL CRenamer::SafeSubst(char* dest, int max, int& pos)
                             changeCase = ccStripDia;
                             replace += sizeof("stripdia") - 1 + 1;
                             break;
-                        default: // '}' nebo ')'
+                        default: // '}' or ')'
                             replace++;
                             break;
                         }
@@ -753,7 +753,7 @@ void ChangeCase(CChangeCase change, char* dst, const char* src,
                         *d++ = *s;
                     s++;
                 }
-                // Convert back to MBCS, check for orther composite characters
+                // Convert back to MBCS and check for other composite characters.
                 WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, wstr, (int)(d - wstr), dst, (int)(end - start), NULL, NULL);
                 free(wstr);
             }

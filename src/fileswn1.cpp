@@ -124,7 +124,7 @@ BOOL CFilesWindowAncestor::IsPathFromActiveFS(const char* fsName, char* fsUserPa
     fsNameIndex = -1;
     if (Is(ptPluginFS) && PluginFS.NotEmpty())
     {
-        if (Plugins.AreFSNamesFromSamePlugin(PluginFS.GetPluginFSName(), fsName, fsNameIndex)) // we compare whether the file systems are from the same plug-in
+        if (Plugins.AreFSNamesFromSamePlugin(PluginFS.GetPluginFSName(), fsName, fsNameIndex)) // Check whether the file systems are from the same plugin
         {
             if (convertPathToInternal)
             {
@@ -291,7 +291,7 @@ void CFilesWindowAncestor::SetPath(const char* path)
             ((CFilesWindow*)this)->SetAutomaticRefresh(FALSE, TRUE);
         }
     }
-    else // ptPluginFS - do not perform any refreshes; the plug-in manages them itself
+    else // ptPluginFS - do not perform any refreshes; the plugin manages them itself
     {
         ((CFilesWindow*)this)->SetAutomaticRefresh(TRUE, TRUE);
     }
@@ -525,7 +525,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                     else
                         TRACE_E("Unexpected situation.");
                 }
-                // before starting set "ReadingDone" of all icon-cache items and "IconOverlayDone" of all panel items to FALSE
+                // Before starting, set "ReadingDone" to FALSE for all icon-cache items and "IconOverlayDone" to FALSE for all items in the panel
                 int x;
                 if (!repeatedRound)
                     for (x = 0; x < window->IconCache->Count; x++)
@@ -543,12 +543,12 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                 int selectMode = 1;
                 // 1 = sequential traversal (VisibleItemsArray.IsArrValid() == FALSE),
-                // 2 = traversal according to VisibleItemsArray,
-                // 3 = traversal according to VisibleItemsArraySurround,
+                // 2 = traversal using VisibleItemsArray,
+                // 3 = traversal using VisibleItemsArraySurround,
                 // 4 = sequential traversal (VisibleItemsArray.IsArrValid() == TRUE)
 
                 BOOL canReadIconOverlays = firstRound && window->Is(ptDisk) && iconReadersIconOverlayIds != NULL;
-                BOOL readIconOverlaysNow = FALSE; // TRUE = reading overlays now, FALSE = reading icons + thumbnails
+                BOOL readIconOverlaysNow = FALSE; // TRUE = reading overlays now, FALSE = reading icons and thumbnails
 
                 //          TRACE_I("wanted=" << wanted << ", selectMode=" << selectMode);
 
@@ -559,7 +559,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                 while (1)
                 {
                     BOOL callWaitForObjects = TRUE;                                                                        // optimization only - while searching for an item (takes almost no time) WaitForMultipleObjects is not called
-                    if (i < (readIconOverlaysNow ? window->Files->Count + window->Dirs->Count : window->IconCache->Count)) // loading an icon from a file/directory or retrieving icon overlay for a file/directory
+                    if (i < (readIconOverlaysNow ? window->Files->Count + window->Dirs->Count : window->IconCache->Count)) // load an icon from a file/directory or retrieve the icon overlay for a file/directory
                     {
                         CIconData* iconData = readIconOverlaysNow ? NULL : &window->IconCache->At(i);
 
@@ -716,9 +716,9 @@ unsigned IconThreadThreadFBody(void* parameter)
                                     iconData->GetFlag() == wanted)
                                 {
                                     iconData->SetReadingDone(1);    // mark that we have already worked with this icon so we do not try again during this cycle
-                                    if (wanted == 0 || wanted == 2) // loading icons directly from a file or from a plug-in
+                                    if (wanted == 0 || wanted == 2) // loading icons directly from a file or from a plugin
                                     {
-                                        if (!pluginFSIconsFromPlugin) // icon on disk
+                                        if (!pluginFSIconsFromPlugin) // icon from disk
                                         {
                                             if (strlen(iconData->NameAndData) + (name - path) < MAX_PATH)
                                             {
@@ -761,7 +761,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 TRACE_I("Too long filename to get icon from: " << path << iconData->NameAndData);
                                             }
                                         }
-                                        else // icon in a plug-in FS - reading cannot be interrupted (risk of PluginData being destroyed)
+                                        else // icon in a plugin FS - loading cannot be interrupted (risk of PluginData being destroyed)
                                         {
                                             const CFileData* f = iconData->GetFSFileData();
                                             if (f != NULL)
@@ -783,12 +783,12 @@ unsigned IconThreadThreadFBody(void* parameter)
                                     }
                                     else
                                     {
-                                        if (wanted == 3) // loading icons from the icon-location
+                                        if (wanted == 3) // loading icons from icon-location
                                         {
                                             shi.hIcon = NULL;
                                             char* nameAndData = iconData->NameAndData;
                                             int size = (int)strlen(nameAndData) + 4;
-                                            size -= (size & 0x3);         // size % 4 (alignment to four bytes)
+                                            size -= (size & 0x3);         // size % 4 (4-byte alignment)
                                             char* s = nameAndData + size; // skip the alignment zeros
                                             BOOL doExtractIcons = FALSE;
                                             BOOL doLoadImage = FALSE;
@@ -870,14 +870,14 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                             HANDLES(EnterCriticalSection(&window->ICSleepSection));
                                         }
-                                        else // wanted == 4 or 6; loading thumbnails from a plug-in ("thumbnail loader")
+                                        else // wanted == 4 or 6; loading thumbnails from a plugin ("thumbnail loader")
                                         {
                                             shi.hIcon = NULL; // precaution against incorrect icon deallocation (none is created here)
 
                                             char* s = iconData->NameAndData;
                                             int len = (int)strlen(s);
                                             int size = len + 4;
-                                            size -= (size & 0x3); // size % 4 (alignment to four bytes)
+                                            size -= (size & 0x3); // size % 4 (4-byte alignment)
                                             if (strlen(s) + (name - path) < MAX_PATH)
                                             {
                                                 strcpy(name, s);
@@ -894,9 +894,9 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                     {
                                                         thumbnailFlag = wanted == 4 /* first thumbnail loading round */ ? (thumbMaker.IsOnlyPreview() ? 6 /* low-quality/smaller */ : 5 /* quality */) : 5 /* in the second round all obtained thumbnails are quality */;
                                                         thumbMaker.HandleIncompleteImages();
-                                                        break; // the thumbnail may be loaded; do not try another plug-in
+                                                        break; // the thumbnail may be loaded; do not try another plugin
                                                     }
-                                                    loader++; // try the next plug-in in line, it might load the thumbnail
+                                                    loader++; // try the next plugin in line, it might load the thumbnail
                                                 }
                                                 if (*loader == NULL)
                                                     thumbMaker.Clear(); // failed thumbnail -> clean it up
@@ -915,7 +915,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                     {
                                         thumbMaker.Clear(); // the thumbnail will no longer be needed
 
-                                        // if this is not an icon from a plug-in that forbids icon destruction, destroy it
+                                        // if this is not an icon from a plugin that forbids icon destruction, destroy it
                                         if (shi.hIcon != NULL && (!pluginFSIconsFromPlugin || destroyPluginIcon))
                                         {
                                             ::NOHANDLES(DestroyIcon(shi.hIcon));
@@ -939,9 +939,9 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                                 HANDLES(LeaveCriticalSection(&window->ICSectionUsingIcon));
 
-                                                // find the index of the item for which we loaded the icon
+                                                // find the index of the item whose icon we loaded
 
-                                                if (pluginFSIconsFromPlugin) // pitFromPlugin: let the plug-in compare items itself (must compare with no duplicates)
+                                                if (pluginFSIconsFromPlugin) // pitFromPlugin: let the plugin compare the items itself (the comparison must not treat any two items in the listing as equal)
                                                 {
                                                     const CFileData* file = iconData->GetFSFileData();
                                                     if (file != NULL)
@@ -973,7 +973,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                         }
                                                     }
                                                 }
-                                                else // duplicate names are not a problem (e.g., archives where identical names cannot have different icons)
+                                                else // duplicate names are not a problem (or are not an obstacle, as for example in an archive, where
                                                 {
                                                     char* name2 = iconData->NameAndData;
                                                     CFilesArray* arr = window->Dirs;
@@ -1024,7 +1024,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                                                 if (thumbMaker.RenderToThumbnailData(thumbnailData))
                                                 {
                                                     iconData->SetFlag(thumbnailFlag); // already loaded
-                                                    if (thumbnailFlag == 6 /* low-quality/smaller thumbnail in the first loading round */)
+                                                    if (thumbnailFlag == 6 /* lower-quality/smaller thumbnail in the first thumbnail-loading pass */)
                                                         iconData->SetReadingDone(0); // another round will follow, so mark as not "done"
                                                     thumbnailCreated = TRUE;
                                                 }
@@ -1032,7 +1032,7 @@ unsigned IconThreadThreadFBody(void* parameter)
 
                                                 if (thumbnailCreated)
                                                 {
-                                                    // find the index of the file (directories have no thumbnails) for which we loaded the thumbnail
+                                                    // find the index of the file (directories have no thumbnails) whose thumbnail we loaded
                                                     char* name2 = iconData->NameAndData;
                                                     int z;
                                                     for (z = 0; z < window->Files->Count; z++)
@@ -1087,13 +1087,13 @@ unsigned IconThreadThreadFBody(void* parameter)
                         canReadIconOverlays = FALSE;
 
                         // loading order: new icons, new thumbnails, old icons, old thumbnails
-                        BOOL done = FALSE; // TRUE == break, everything is loaded
+                        BOOL done = FALSE; // TRUE = stop, everything has already been loaded
                         switch (wanted)
                         {
                         case 0: // new icons have already been loaded
                         {
-                            // if thumbnails should be read and this is the first round (plug-ins do not work
-                            // randomly like the system, so if they fail the first time they will never load), read
+                            // if thumbnails should be loaded and this is the first loading pass (plugins do not behave
+                            // nondeterministically like the system, so if they do not load the first time, they will never load), load
                             // new thumbnails (wanted == 4)
                             if (readThumbnails && firstRound)
                                 wanted = 4;
@@ -1187,7 +1187,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                             }
                         }
                     }
-                    if (wait == WAIT_TIMEOUT) // reason to retry reading icons (visible area change or usermenu icons finished)
+                    if (wait == WAIT_TIMEOUT) // reason to retry reading icons (visible area changed or user-menu icon reading finished)
                     {
                         if (!UserMenuIconBkgndReader.IsReadingIcons()) // if usermenu icons are done, read icons outside the visible area
                         {
@@ -1212,7 +1212,7 @@ unsigned IconThreadThreadFBody(void* parameter)
                     if (window->Is(ptDisk) && failed && firstRound)
                     {                                   // try again (not all icons were loaded)
                         firstRound = FALSE;             // only one extra round
-                        waitBeforeFirstReadIcon = TRUE; // prevent immediate rereading (low chance of success)
+                        waitBeforeFirstReadIcon = TRUE; // avoid reading the icon again immediately (low chance of success)
                                                         //              TRACE_I("Going to second round of reading (some icons have not been read in the first round).");
                         goto SECOND_ROUND;
                         // postRefresh = TRUE;
@@ -1291,7 +1291,7 @@ unsigned IconThreadThreadFEH(void* param)
     {
         TRACE_I("Thread IconReader: calling ExitProcess(1).");
         //    ExitProcess(1);
-        TerminateProcess(GetCurrentProcess(), 1); // harder exit (this call still performs some operations)
+        TerminateProcess(GetCurrentProcess(), 1); // harder exit (the referent of "this one" is unclear here)
         return 1;
     }
 #endif // CALLSTK_DISABLE
@@ -1526,7 +1526,7 @@ void CFilesWindow::WakeupIconCacheThread()
     CALL_STACK_MESSAGE_NONE
     ICStopWork = FALSE;    // so that the work is not interrupted right from the start
     SetEvent(ICEventWork); // switch to work mode without waiting for a response
-    MSG msg;               // remove any WM_USER_ICONREADING_END that would set IconCacheValid = TRUE
+    MSG msg;               // remove any pending WM_USER_ICONREADING_END that would set IconCacheValid = TRUE
     while (PeekMessage(&msg, HWindow, WM_USER_ICONREADING_END, WM_USER_ICONREADING_END, PM_REMOVE))
         ;
 }
@@ -1565,7 +1565,7 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
                         HANDLES(EnterCriticalSection(&TimeCounterSection));
                         int t1 = MyTimeCounter++;
                         HANDLES(LeaveCriticalSection(&TimeCounterSection));
-                        PostMessage(HWindow, WM_USER_REFRESH_DIR, 0, t1); // ensure the icon cache is refilled (ideally after the plug-in unload/remove)
+                        PostMessage(HWindow, WM_USER_REFRESH_DIR, 0, t1); // ensure the icon cache is refilled (ideally after the plugin unload/remove)
                     }
                 }
             }
@@ -1587,27 +1587,27 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
             else
             {
                 if (Is(ptZIPArchive))
-                { // an archive may not use PluginData, therefore we must also test archive associations
-                    // this part matters only when shutting Salamander down—otherwise the plug-in
-                    // could unload while the archiver is still in use (each archiver function loads the plug-in)
-                    // NOTE: icon overlays from the plug-in are an exception; after unload they would stop drawing
-                    //       (the plug-in's overlay table is released during unload)
+                { // an archive may not use PluginData, so we must also check archive associations
+                    // this part matters only when Salamander is shutting down; otherwise the plugin
+                    // could be unloaded while the archiver is still in use (each archiver function loads the plugin)
+                    // NOTE: icon overlays from the plugin are an exception; after the plugin is unloaded, they stop being drawn
+                    //       (the plugin's icon-overlay array is released during unload)
                     int format = PackerFormatConfig.PackIsArchive(GetZIPArchive());
                     if (format != 0) // found a supported archive
                     {
                         format--;
                         CPluginData* data;
                         int index = PackerFormatConfig.GetUnpackerIndex(format);
-                        if (index < 0) // view: is this internal processing (plug-in)?
+                        if (index < 0) // is this handled internally by a plugin?
                         {
                             data = Plugins.Get(-index - 1);
                             if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
                                 used = TRUE;
                         }
-                        if (PackerFormatConfig.GetUsePacker(format)) // has an editor?
+                        if (PackerFormatConfig.GetUsePacker(format)) // supports editing?
                         {
                             index = PackerFormatConfig.GetPackerIndex(format);
-                            if (index < 0) // is this internal processing (plug-in)?
+                            if (index < 0) // handled by a plugin?
                             {
                                 data = Plugins.Get(-index - 1);
                                 if (data != NULL && data->GetPluginInterface()->GetInterface() == plugin)
@@ -1620,7 +1620,7 @@ BOOL CFilesWindow::CanUnloadPlugin(HWND parent, CPluginInterfaceAbstract* plugin
         }
         if (used)
         {
-            if (Is(ptZIPArchive) || Is(ptPluginFS)) // archive -> just leave it; plug-in FS -> return to the last disk path
+            if (Is(ptZIPArchive) || Is(ptPluginFS)) // archive -> just leave it; plugin FS -> return to the last disk path
             {
                 char path[MAX_PATH];
                 strcpy(path, GetPath());
@@ -1878,7 +1878,7 @@ void CFilesWindow::StoreGlobalSelection()
             int totalCount = Dirs->Count + Files->Count;
             if (clipboard)
             {
-                // we should put the list on the clipboard
+                // put the list on the clipboard
 
                 // compute the required buffer size (name1CRLFname2CRLF...nameNCRLF)
                 DWORD size = 0;
@@ -2140,11 +2140,11 @@ void CFilesWindow::SetAutomaticRefresh(BOOL value, BOOL force)
     if (force || AutomaticRefresh != value)
     {
         AutomaticRefresh = value;
-        /* // "throwing away" the refresh mark from the directory line
-    // it crashed here; a destroyed object was called
-    if (DirectoryLine != NULL)                       
-      DirectoryLine->SetAutomatic(AutomaticRefresh);
-*/
+        /* // removing the refresh flag from the directory line
+            // it crashed here; a method was called on a destroyed object
+            if (DirectoryLine != NULL)
+              DirectoryLine->SetAutomatic(AutomaticRefresh);
+        */
     }
 }
 
@@ -2244,9 +2244,9 @@ void CFilesWindow::OpenActiveFolder()
 
 #ifndef _WIN64
         // replace "C:\\Windows\\sysnative\\*" with "C:\\Windows\\system32\\*" on 64-bit systems
-        // the Explorer process knows nothing about "sysnative", so let's not bother users with it,
+        // the 64-bit Explorer process knows nothing about "sysnative", so minimize user disruption,
         // also replace "C:\\Windows\\system32\\*" with "C:\\Windows\\SysWOW64\\*"
-        //  (except for a group of directories excluded from the redirector that thus point back to System32)
+        // (except for a group of directories excluded from the redirector that thus point back to System32)
         char dirName[MAX_PATH];
         dirName[0] = 0;
         if (Windows64Bit && WindowsDirectory[0] != 0)

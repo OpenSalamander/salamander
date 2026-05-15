@@ -1,20 +1,20 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// Pridat do DEBUG verze projektu makro _CRTDBG_MAP_ALLOC, jinak se neukazuje zdroj leaku.
+// Define _CRTDBG_MAP_ALLOC in debug builds, otherwise leak reports will not show the source location.
 
 #if defined(_DEBUG) && !defined(HEAP_DISABLE)
 
-#define GCHEAP_MAX_USED_MODULES 100 // kolik nejvic modulu se ma pamatovat pro load pred vypisem leaku
+#define GCHEAP_MAX_USED_MODULES 100 // maximum number of modules remembered so they can be reloaded before printing leak reports
 
-// vola se pro moduly, ve kterych se muzou hlasit memory leaky, pokud se memory leaky detekuji,
-// dojde k loadu "as image" (bez initu modulu) vsech takto registrovanych modulu (pri kontrole
-// memory leaku uz jsou tyto moduly unloadle), a pak teprve k vypisu memory leaku = jsou videt
-// jmena .cpp modulu misto "#File Error#" hlasek, zaroven MSVC neotravuje s hromadou generovanych
-// exceptionu (jmena modulu jsou dostupna)
-// mozne volat z libovolneho threadu
+// Register modules that may report memory leaks. If leaks are detected, all
+// registered modules are reloaded "as image" (without running initialization)
+// before the leak report is printed, because they are already unloaded then. That preserves .cpp module names instead
+// of "#File Error#" messages and avoids noisy MSVC-generated exceptions.
+// Safe to call from any thread.
 void AddModuleWithPossibleMemoryLeaks(const TCHAR* fileName);
 
 #endif // defined(_DEBUG) && !defined(HEAP_DISABLE)

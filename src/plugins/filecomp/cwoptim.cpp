@@ -150,7 +150,7 @@ void CFilecompCoWorkerOptimized<CChar>::IdentifyLines(CFilecompCoWorkerBase<CCha
     {
         // reserve space
         compareData[i].resize(files[i].Lines.size() - 1);
-        // indentify each line
+        // identify each line
         typename CLineBuffer::iterator line = files[i].Lines.begin();
         CIndexes::iterator eqvclass = compareData[i].begin();
         for (; line < files[i].Lines.end() - 1; ++line, ++eqvclass)
@@ -232,11 +232,11 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
             this->CancelFlag);
         if (d == -1)
             CFilecompWorker::CException::Raise(IDS_INTERNALERROR, 0);
-        /*  if (d == 0) We now let the file display
-    {
-      throw CFilecompWorker::CFilesDontDifferException();
-      }
-    }*/
+        /*  if (d == 0) We now let the file be displayed
+            {
+              throw CFilecompWorker::CFilesDontDifferException();
+              }
+            }*/
 
         // shift-boundaries, call before RemoveSingleCharMatches
         this->ShiftBoundaries(editScript, compareData);
@@ -329,7 +329,7 @@ void CFilecompCoWorkerOptimized<CChar>::Compare(CTextFileReader (&reader)[2])
   }*/
 
     if (changesToLines.size() == 0) // all changes were ignorable
-    {                               // Check & remmber the # of changes. SendResults resets it to 0.
+    {                               // Check and remember the number of changes. SendResults resets it to 0.
         // d == 0 from above means no changes
         d = 0;
     }

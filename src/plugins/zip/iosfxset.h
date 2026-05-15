@@ -12,7 +12,7 @@ extern const char* SFX_TDREGVAL;
 
 int ImportSFXSettings(const char* textData, CSfxSettings* settings, const char* zip2sfxDir);
 
-// return valueas
+// return values
 //
 // lower word is one of the following values:
 //
@@ -22,6 +22,6 @@ int ImportSFXSettings(const char* textData, CSfxSettings* settings, const char* 
 // 3 unknown keyword in $()
 // 4 bad key
 //
-// higher word contains index of where the syntax error occured in the target dir string
+// higher word contains the index where the syntax error occurred in the target dir string
 DWORD ParseTargetDir(const char* path, unsigned* targetDir, const char** subDir,
                      const char** dirSpecLeft, const char** dirSpecRight, HKEY* Key);

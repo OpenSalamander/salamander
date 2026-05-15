@@ -173,11 +173,11 @@ UInt16 *SzArEx_GetFullNameUtf16_Back(const CSzArEx *p, size_t fileIndex, UInt16 
 SRes SzArEx_Extract(
     const CSzArEx *db,
     ILookInStream *inStream,
-    UInt32 fileIndex,         /* index of file */
-    UInt32 *blockIndex,       /* index of solid block */
+    UInt32 fileIndex,         /* file index */
+    UInt32 *blockIndex,       /* solid block index */
     Byte **outBuffer,         /* pointer to pointer to output buffer (allocated with allocMain) */
-    size_t *outBufferSize,    /* buffer size for output buffer */
-    size_t *offset,           /* offset of stream for required file in *outBuffer */
+    size_t *outBufferSize,    /* size of the output buffer */
+    size_t *offset,           /* offset of the required file stream in *outBuffer */
     size_t *outSizeProcessed, /* size of file in *outBuffer */
     ISzAlloc *allocMain,
     ISzAlloc *allocTemp);

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -11,36 +12,34 @@
 
 #pragma once
 
-// definice maker TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW a CALL_STACK_MESSAGEXXX pro pluginy,
-// v pluginu je treba definovat promennou SalamanderDebug (typ viz nize) a
-// v SalamanderPluginEntry tuto promennou inicializovat:
-// SalamanderDebug = salamander->GetSalamanderDebug();
+// Definitions of TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW and CALL_STACK_MESSAGE... macros for plugins.
+// In a plugin, define the SalamanderDebug variable (type shown below) and initialize it in SalamanderPluginEntry:
+//   SalamanderDebug = salamander->GetSalamanderDebug();
 //
-// TRACE se zapina definici makra TRACE_ENABLE
-// CALL-STACK se vypina definici makra CALLSTK_DISABLE
+// Enable tracing by defining the TRACE_ENABLE macro.
+// Disable call-stack reporting by defining the CALLSTK_DISABLE macro.
 
-// POZOR: TRACE_C se nesmi pouzivat v DllMain knihoven, ani v zadnem kodu, ktery
-//        se z DllMainu vola, jinak dojde k deadlocku, vice viz implementace
-//        C__Trace::SendMessageToServer
+// WARNING: TRACE_C must not be used in DllMain or in any code called from DllMain; otherwise a deadlock may occur.
+// See C__Trace::SendMessageToServer for details.
 
-// makro CALLSTK_MEASURETIMES - zapne mereni casu straveneho pri priprave call-stack hlaseni (meri se pomer proti
-//                              celkovemu casu behu funkci)
-//                              POZOR: nutne zapnout tez pro kazdy plugin zvlast
-// makro CALLSTK_DISABLEMEASURETIMES - potlaci mereni casu straveneho pri priprave call-stack hlaseni v DEBUG verzi
+// macro CALLSTK_MEASURETIMES - enables measurement of the time spent preparing
+//                              call-stack reports (measured as a ratio of the
+//                              total function run time); it must also be enabled separately in each plugin
+// macro CALLSTK_DISABLEMEASURETIMES - suppresses measurement of the time spent preparing call-stack reports in DEBUG builds
 
-// prehled typu maker: (vsechna jsou neprazdna jen pokud neni definovano CALLSTK_DISABLE)
-// CALL_STACK_MESSAGE - bezne call-stack makro
-// SLOW_CALL_STACK_MESSAGE - call-stack makro, u ktereho se ignoruje libovolne zpomaleni kodu (pouziti
-//                           na mistech, kde vime, ze vyrazne zpomaluje kod, ale presto ho na tomto
-//                           miste potrebujeme)
-// DEBUG_SLOW_CALL_STACK_MESSAGE - call-stack makro, ktere je v release verzi prazdne, v DEBUG verzi
-//                                 se chova jako SLOW_CALL_STACK_MESSAGE (pouziti na mistech, kde jsme
-//                                 ochotni ignorovat zpomaleni jen v debug verzi, release verze je rychla)
+// overview of macro types: (all are non-empty only if CALLSTK_DISABLE is not defined)
+// CALL_STACK_MESSAGE - regular call-stack macro
+// SLOW_CALL_STACK_MESSAGE - call-stack macro for places where we ignore any slowdown of the code (use
+//                           at places where we know it slows the code down significantly but still
+//                           need it there)
+// DEBUG_SLOW_CALL_STACK_MESSAGE - call-stack macro that is empty in release builds and behaves like
+//                                 SLOW_CALL_STACK_MESSAGE in DEBUG builds (use at places where we are
+//                                 willing to ignore the slowdown only in debug builds; the release build stays fast)
 
-// globalni promenna s interfacem CSalamanderDebugAbstract
+// global variable holding the CSalamanderDebugAbstract interface
 extern CSalamanderDebugAbstract* SalamanderDebug;
 
-// kopie z spl_com.h: globalni promenna s verzi Salamandera, ve kterem je tento plugin nacteny
+// copy from spl_com.h: global variable holding the Salamander version in which this plugin is loaded
 extern int SalamanderVersion;
 
 #ifndef __WFILE__
@@ -81,7 +80,7 @@ public:
     // return pointer to the beginning of the data, terminated by null
     const char* c_str()
     {
-        // add trailing null
+        // add a trailing null terminator
         sputc('\0');
 
         // decrement the pointer back, trailing null is not part of the data
@@ -104,7 +103,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -133,7 +132,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate the old buffer, if necessary
             if (pbase())
             {
 #ifdef __BORLANDC__
@@ -146,7 +145,7 @@ protected:
 
             // update pointers
             setp(ptr, ptr + newsize);
-            pbump((int)oldsize); // FIXME_X64 - je pretypovani na (int) OK?
+            pbump((int)oldsize); // FIXME_X64 - is the cast to (int) OK?
         }
 
         // store the character
@@ -213,7 +212,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -242,7 +241,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate the old buffer, if necessary
             if (pbase())
             {
 #ifdef __BORLANDC__
@@ -374,12 +373,12 @@ public:
 
 #ifndef TRACE_ENABLE
 
-// aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
+// to avoid problems with semicolons in the macros defined below
 
 // Bypasses a clang-format bug in version 19.1.5 (part of Visual Studio 2022 17.14).
 // clang-format off
 inline void __TraceEmptyFunction() {}
-// clang-format on
+// to avoid problems with semicolons in the macros defined below
 
 #define TRACE_MI(file, line, str) __TraceEmptyFunction()
 #define TRACE_MIW(file, line, str) __TraceEmptyFunction()
@@ -391,18 +390,18 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_MEW(file, line, str) __TraceEmptyFunction()
 #define TRACE_E(str) __TraceEmptyFunction()
 #define TRACE_EW(str) __TraceEmptyFunction()
-// pri crashi softu pres DebugBreak() nejde vystopovat, kde lezi volani
-// TRACE_C/TRACE_MC, protoze adresa exceptiony je kdesi v ntdll.dll
-// a sekce Stack Back Trace bug reportu muze obsahovat nesmysly, pokud
-// funkce volajici TRACE_C/TRACE_MC nepouziva stary jednoduchy model
-// ukladani a prace s EBP/ESP, ovsem i v tom pripade je zde jen adresa
-// odkud byla tato funkce volana (ne primo adresa TRACE_C/TRACE_MC),
-// proto aspon prozatim pouzivame stary primitivni zpusob crashe
-// zapisem na NULL
-//#define TRACE_MC(file, line, str) DebugBreak()
-//#define TRACE_MCW(file, line, str) DebugBreak()
-//#define TRACE_C(str) DebugBreak()
-//#define TRACE_CW(str) DebugBreak()
+// when the application crashes via DebugBreak(), it is impossible to trace where
+// TRACE_C/TRACE_MC was called, because the exception address ends up somewhere in ntdll.dll
+// and the Stack Back Trace section of the bug report can contain garbage if
+// the function calling TRACE_C/TRACE_MC does not use the old simple model
+// of storing and working with EBP/ESP; even then only the address
+// from which that function was called is available (not the address of TRACE_C/TRACE_MC itself),
+// so at least for now we use the old primitive way of crashing
+// by writing to NULL
+// #define TRACE_MC(file, line, str) DebugBreak()
+// #define TRACE_MCW(file, line, str) DebugBreak()
+// #define TRACE_C(str) DebugBreak()
+// #define TRACE_CW(str) DebugBreak()
 #define TRACE_MC(file, line, str) (*((int*)NULL) = 0x666)
 #define TRACE_MCW(file, line, str) (*((int*)NULL) = 0x666)
 #define TRACE_C(str) (*((int*)NULL) = 0x666)
@@ -413,7 +412,7 @@ inline void __TraceEmptyFunction() {}
 
 #else // TRACE_ENABLE
 
-// info-trace, manualne zadana pozice v souboru
+// info-trace, manually specified file position
 #define TRACE_MI(file, line, str) \
     (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
      __Trace) \
@@ -434,7 +433,7 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_W(str) TRACE_I(str)
 #define TRACE_WW(str) TRACE_IW(str)
 
-// error-trace, manualne zadana pozice v souboru
+// error-trace, manually specified file position
 #define TRACE_ME(file, line, str) \
     (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
      __Trace) \
@@ -451,15 +450,15 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_E(str) TRACE_ME(__FILE__, __LINE__, str)
 #define TRACE_EW(str) TRACE_MEW(__WFILE__, __LINE__, str)
 
-// fatal-error-trace (CRASHING TRACE), manualne zadana pozice v souboru;
-// zastavime soft v debuggeru, pro snadne odladeni problemu, ktery prave vznikl,
-// release verze spadne a problem snad bude jasny z call-stacku v bug-reportu;
-// nepouzivame DebugBreak(), protoze pri crashi softu nejde vystopovat, kde
-// lezi volani DebugBreak(), protoze adresa exceptiony je kdesi v ntdll.dll
-// a sekce Stack Back Trace bug reportu muze obsahovat nesmysly, pokud
-// funkce, ze ktere volame TRACE_C/MC, nepouziva stary jednoduchy model ukladani
-// a prace s EBP/ESP (to zalezi na kompileru a zaplych optimalizacich), proto
-// aspon prozatim pouzivame stary primitivni zpusob crashe zapisem na NULL
+// fatal-error-trace (CRASHING TRACE), manually specified file position;
+// stop the application in the debugger to make the problem that just occurred easy to debug,
+// the release build crashes and the problem will hopefully be clear from the call stack in the bug report;
+// we do not use DebugBreak(), because when the application crashes it is impossible to trace where
+// DebugBreak() was called, because the exception address ends up somewhere in ntdll.dll
+// and the Stack Back Trace section of the bug report can contain garbage if
+// the function from which we call TRACE_C/MC does not use the old simple model of storing and working with EBP/ESP
+// (that depends on the compiler and enabled optimizations), so
+// at least for now we use the old primitive way of crashing by writing to NULL
 #define TRACE_MC(file, line, str) \
     ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
       __Trace) \
@@ -489,13 +488,13 @@ public:
     CRITICAL_SECTION CriticalSection;
 
 protected:
-    const char* File;                    // pomocne promenne pro predani jmena souboru (ANSI)
-    const WCHAR* FileW;                  // pomocne promenne pro predani jmena souboru (unicode)
-    int Line;                            // a cisla radku, odkud se vola TRACE_X()
-    C__StringStreamBuf TraceStringBuf;   // string buffer drzici data trace streamu (ANSI)
-    C__StringStreamBufW TraceStringBufW; // string buffer drzici data trace streamu (unicode)
-    C__TraceStream TraceStrStream;       // vlastni trace stream (ANSI)
-    C__TraceStreamW TraceStrStreamW;     // vlastni trace stream (unicode)
+    const char* File;                    // helper variable for passing the file name (ANSI)
+    const WCHAR* FileW;                  // helper variable for passing the file name (Unicode)
+    int Line;                            // and the line number from which TRACE_X() is called
+    C__StringStreamBuf TraceStringBuf;   // string buffer holding trace stream data (ANSI)
+    C__StringStreamBufW TraceStringBufW; // string buffer holding trace stream data (Unicode)
+    C__TraceStream TraceStrStream;           // trace stream object (ANSI)
+    C__TraceStreamW TraceStrStreamW;         // trace stream object (Unicode)
 
 public:
     C__Trace();
@@ -529,8 +528,8 @@ protected:
 
 public:
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-    // 'doNotMeasureTimes'==TRUE = nemerit Push tohoto call-stack makra (zrejme dost zpomaluje, ale
-    // nechceme ho vyhodit, je prilis dulezite pro debugovani)
+    // 'doNotMeasureTimes'==TRUE = do not measure Push for this call-stack macro (it probably slows things down, but
+    // it is too important for debugging to remove)
 #ifdef __BORLANDC__
     CCallStackMessage(BOOL doNotMeasureTimes, const char* format, ...)
 #else  // __BORLANDC__
@@ -812,7 +811,7 @@ extern BOOL __CallStk_T; // always TRUE - just to check format string and type o
 
 #endif // _DEBUG
 
-// prazdne makro: oznamuje CheckStk, ze u teto funkce si call-stack message neprejeme
+// empty macro: tells CheckStk that we do not want a call-stack message for this function
 #define CALL_STACK_MESSAGE_NONE
 
 //
@@ -820,8 +819,8 @@ extern BOOL __CallStk_T; // always TRUE - just to check format string and type o
 // TraceAttachCurrentThread + SetThreadNameInVCAndTrace
 //
 
-// nepouzivat pokud uz se SalamanderDebug->TraceAttachThread pro tento thread volalo (primo
-// nebo napr. pri startu threadu pres CThreadQueue::StartThread)
+// do not use if SalamanderDebug->TraceAttachThread has already been called for this thread (directly
+// or, for example, when the thread was started via CThreadQueue::StartThread)
 inline void TraceAttachCurrentThread() { SalamanderDebug->TraceAttachThread(GetCurrentThread(), GetCurrentThreadId()); }
 
 inline void SetThreadNameInVCAndTrace(const char* name) { SalamanderDebug->SetThreadNameInVCAndTrace(name); }

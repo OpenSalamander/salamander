@@ -27,7 +27,7 @@ CCenteredDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontal and vertical centering of the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // I want the focus from DefDlgProc
+        break; // Let DefDlgProc set the focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -538,7 +538,7 @@ CConfigPageDefaults::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         HWND combo = GetDlgItem(HWindow, IDC_PROXYSERVER);
                         int sel = (int)SendMessage(combo, CB_GETCURSEL, 0, 0);
                         int count = (int)SendMessage(combo, CB_GETCOUNT, 0, 0);
-                        int fixedItems = 1; // this will be 2 for "not used" + "default"
+                        int fixedItems = 1; // this will be 2 for "not used" and "default"
                         EnableMenuItem(subMenu, CM_EDITPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel >= fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
                         EnableMenuItem(subMenu, CM_DELETEPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel >= fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
                         EnableMenuItem(subMenu, CM_MOVEUPPROXYSRV, MF_BYCOMMAND | ((sel != CB_ERR && count != CB_ERR ? sel > fixedItems : FALSE) ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
@@ -647,7 +647,7 @@ protected:
         case WM_APP + 1000: // we should detach from the dialog (already centered)
         {
             DetachWindow();
-            delete this; // a bit hacky, but nothing touches 'this' anymore, so it's fine
+            delete this; // a bit of a hack, but 'this' will no longer be accessed afterward
             return 0;
         }
         }
@@ -821,7 +821,7 @@ CBookmarksListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
-        break; // let the keys propagate, the listbox should not handle them, no problem
+        break; // pass the keys on; the listbox should not process them
     }
 
     case WM_LBUTTONDBLCLK:
@@ -1210,7 +1210,7 @@ void CConnectDlg::RefreshList(BOOL focusLast)
 
 void CConnectDlg::MoveItem(HWND list, int fromIndex, int toIndex, int topIndex)
 {
-    if (fromIndex > 0 && toIndex > 0 && fromIndex != toIndex &&                   // nobody is allowed to move the quick-connect entry
+    if (fromIndex > 0 && toIndex > 0 && fromIndex != toIndex &&                   // the quick-connect entry must not be moved
         fromIndex <= TmpFTPServerList.Count && toIndex <= TmpFTPServerList.Count) // movement stays within the array
     {
         fromIndex--;
@@ -1411,7 +1411,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)button, TRUE);
                 PostMessage(HWindow, uMsg, wParam, lParam); // postpone this command
                 CanChangeFocus = FALSE;                     // prevents an infinite loop
-                return TRUE;                                // do nothing; wait for the kill focus in the edit boxes
+                return TRUE;                                // do nothing; wait for the edit boxes to lose focus
             }
             CanChangeFocus = TRUE;
 
@@ -1442,7 +1442,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     HWND wnd = GetFocus();
                     while (wnd != NULL && wnd != ctrl)
                         wnd = GetParent(wnd);
-                    if (wnd == NULL) // set focus only if the control is not an ancestor of GetFocus
+                    if (wnd == NULL) // set focus only if the control is not an ancestor of the window returned by GetFocus
                     {                // for example, the edit line in the combo box
                         SendMessage(HWindow, WM_NEXTDLGCTL, (WPARAM)ctrl, TRUE);
                     }
@@ -1466,7 +1466,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // if the connection needs passwords, we must be able to decrypt them
                 // test the bookmark
                 if (!s->EnsurePasswordCanBeDecrypted(HWindow))
-                    return TRUE; // failed to enter the master password or it probably failed to decrypt the password
+                    return TRUE; // the master password was not entered, or the password probably could not be decrypted with it
 
                 // WARNING: s->EnsurePasswordCanBeDecrypted() might have cleared the password in 's' and its stored copy, which means
                 //        returning to the dialog (return TRUE) requires performing a "refresh"
@@ -1481,7 +1481,7 @@ CConnectDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     SelChanged();
                     EnableControls();
 
-                    return TRUE; // failed to enter the master password or they could not decrypt the password
+                    return TRUE; // master password entry failed or the password could not be decrypted
                 }
             }
             break;

@@ -102,7 +102,7 @@ protected:
     //      piMalloc - Pointer to the allocator interface that should allocate memory.
     //  cbSize   - Size of the ITEMIDLIST to create.
     //  RETURN VALUE:
-    //      Returns a pointer to the new ITEMIDLIST, or NULL if a problem occured.
+    //      Returns a pointer to the new ITEMIDLIST, or NULL if a problem occurred.
     LPITEMIDLIST PIDL_Create(DWORD size)
     {
         LPITEMIDLIST res = (LPITEMIDLIST)CoTaskMemAlloc(size);

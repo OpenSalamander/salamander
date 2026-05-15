@@ -15,8 +15,8 @@
 <h1>Timestamps</h1>
 
 <p>
-Particularly when you want to use some of the <a href="task_synchronize.htm">synchronization</a> features,
-first make sure that WinSCP will be able to convert timestamps from local conventions to remote server
+Particularly when you want to use one of the <a href="task_synchronize.htm">synchronization</a> features,
+first make sure that WinSCP can convert timestamps from local conventions to remote server
 conventions and vice versa.
 </p>
 
@@ -38,26 +38,26 @@ There are several factors that affect conversion and interpretation of the times
   </tr>
   <tr>
     <td><a href="ui_login_scp.htm#other_options">Server timezone offset</a> </td>
-    <td>Timestamps of all files are shifted by the same time span. Only
+    <td>Timestamps of all files are shifted by the same time span. Only the
 		    <a href="protocols.htm#scp">SCP protocol</a> is affected. </td>
   </tr>
   <tr>
     <td>Local file system is <acronym title="File Allocation Table">FAT</acronym> </td>
-    <td>File timestamp is always rounded to the next even second. This is property of old
-		    <acronym title="File Allocation Table">FAT</acronym> filesystem. For the reason WinSCP ignores
-				less than 2-seconds time difference with all its <a href="task_synchronize.htm">synchronization</a>
-				features. Note that <acronym title="File Allocation Table">FAT</acronym> is used rarely
-				nowadays, mostly with removable medias only. </td>
+    <td>File timestamp is always rounded to the next even second. This is a property of the old
+		    <acronym title="File Allocation Table">FAT</acronym> filesystem. For this reason, WinSCP ignores
+				less than 2-second time differences with all its <a href="task_synchronize.htm">synchronization</a>
+				features. Note that <acronym title="File Allocation Table">FAT</acronym> is rarely used
+				nowadays, mostly with removable media only. </td>
   </tr>
   <tr>
     <td><a href="ui_login_scp.htm#directory_listing">Timestamp precision</a> </td>
-    <td>Files changed shortly after previous synchronization are not synchronized. Only
+    <td>Files changed shortly after previous synchronization are not synchronized. Only the
 		    <a href="protocols.htm#scp">SCP protocol</a> is affected. </td>
   </tr>
 </table><br/>
 
 <p>
-Also note that for WinSCP to try to convert file timestamp at all, you need to have transfer option
+Also, note that for WinSCP to try to convert file timestamps at all, you need to have the transfer option
 <em><a href="ui_transfer.htm#common_options">Preserve timestamp</a></em> enabled.
 </p>
 
@@ -66,15 +66,15 @@ Also note that for WinSCP to try to convert file timestamp at all, you need to h
 <h4>Windows vs. Unix</h4>
 
 <p>
-For certain reasons NT-class versions of Microsoft Windows (NT, 2000, XP, 2003, 7) shifts timestamps
-of ALL files by one hour once Daylight Saving Time starts and/or finishes <a href="#fn1">(see note 1)</a>.
-For example, for file created on 2005-02-25 14:00, the Windows applications (like Windows Explorer or
-WinSCP) will show modification time 2005-02-25 15:00, when <acronym title="Daylight Savings Time">DST</acronym>
+For certain reasons, NT-class versions of Microsoft Windows (NT, 2000, XP, 2003, 7) shift timestamps
+of ALL files by one hour when Daylight Saving Time starts and/or finishes <a href="#fn1">(see note 1)</a>.
+For example, for a file created on 2005-02-25 14:00, Windows applications (like Windows Explorer or
+WinSCP) will show the modification time as 2005-02-25 15:00 when <acronym title="Daylight Savings Time">DST</acronym>
 is in effect. Unfortunately, to allow <a href="task_synchronize.htm">synchronization</a> functions to
-work, WinSCP has to apply the same correction to timestamps of remote files as Windows apply to
+work, WinSCP has to apply the same correction to timestamps of remote files as Windows applies to
 timestamps of local files. As the remote operating system, being typically Unix-style, usually does
-not perform the Windows NT-style correction, you will see different timestamps in directory listing
-of WinSCP, than you see in directory listing on the server (for example in <code>ls</code> listing).
+not perform the Windows NT-style correction, you will see different timestamps in the directory listing
+of WinSCP than you see in the directory listing on the server (for example, in <code>ls</code> listing).
 </p>
 
 <a name="synchronization"></a>
@@ -89,7 +89,7 @@ with option <em><a href="ui_synchronize.htm#synchronize_options">Synchronize tim
 <h4>Notes:</h4>
 <p>
 <a name="fn1"></a>
-1) See article <a href="https://www.codeproject.com/Articles/1144/Beating-the-Daylight-Savings-Time-bug-and-getting" target="_blank">Beating the Daylight Savings
+1) See the article <a href="https://www.codeproject.com/Articles/1144/Beating-the-Daylight-Savings-Time-bug-and-getting" target="_blank">Beating the Daylight Savings
    Time bug</a>
 </p>
 

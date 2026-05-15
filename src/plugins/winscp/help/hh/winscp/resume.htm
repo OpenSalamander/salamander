@@ -18,8 +18,8 @@
 <h4>Basic Usage</h4>
 
 <p>
-WinSCP supports resuming file transfers with <a href="protocols.htm">SFTP protocol</a> only.
-<acronym title="Secure Copy Protocol">SCP</acronym> protocol does not allow it.
+WinSCP supports resuming file transfers with the <a href="protocols.htm">SFTP protocol</a> only.
+The <acronym title="Secure Copy Protocol">SCP</acronym> protocol does not allow it.
 </p>
 
 <a name="automatic"></a>
@@ -27,23 +27,23 @@ WinSCP supports resuming file transfers with <a href="protocols.htm">SFTP protoc
 <h4>Automatic Resume</h4>
 
 <p>
-When transferring file with <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol,
-it is first transferred into a temporary file with <code>.filepart</code> extension.
-Only after the transfer is completed the extension is removed.
+When transferring a file with the <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol,
+it is first transferred into a temporary file with a <code>.filepart</code> extension.
+Only after the transfer is completed is the extension removed.
 </p>
 
 <p>
-If your transfer is interrupted, a partial file (with
-<code>.filepart</code> extensions) remains in the target folder. After you try to transfer the file
-a second time, WinSCP looks for the partial file. If it finds a partial file, it offers you chance to resume the transfer
+If your transfer is interrupted, a partial file (with a
+<code>.filepart</code> extension) remains in the target folder. When you try to transfer the file
+a second time, WinSCP looks for the partial file. If it finds a partial file, it offers you a chance to resume the transfer
 (<a href="ui_sal_pref_confirmations.htm#confirmations">the confirmation can be disabled</a>).
 </p>
 
 <p>
-For performance reasons, WinSCP only supports automatic file transfer resumption for files larger then a given threshold.
+For performance reasons, WinSCP only supports automatic file transfer resumption for files larger than a given threshold.
 By default, the threshold is 100 <acronym title="Kibibyte (1,024 bytes)">KiB</acronym>.
-This can be configured on <em><a href="ui_sal_pref_queue.htm">Background &amp; Resume tab</a></em>
-of Preferences dialog. Also resuming <a href="transfer_mode.htm">text mode transfers</a> is not supported.
+This can be configured on the <em><a href="ui_sal_pref_queue.htm">Background &amp; Resume tab</a></em>
+of the Preferences dialog. Also, resuming <a href="transfer_mode.htm">text mode transfers</a> is not supported.
 </p>
 
 <a name="manual"></a>
@@ -51,21 +51,21 @@ of Preferences dialog. Also resuming <a href="transfer_mode.htm">text mode trans
 <h4>Manual Resume</h4>
 
 <p>
-There's an alternative manual method to resume transfer.
-The method is useful for resuming transfers initiated by other clients and also to update log files.
+There is an alternative manual method for resuming a transfer.
+The method is useful for resuming transfers initiated by other clients and also for updating log files.
 </p>
 
 <p>
 If you attempt to transfer a file that already exists in the target directory and
-the target file is smaller then the source file, the overwrite confirmation dialog displays a
+the target file is smaller than the source file, the overwrite confirmation dialog displays a
 <em>Resume</em> button or an <em>Append</em> button (when appending is supported).
-After you click <em>Append</em>, WinSCP opens another prompt that lets you append source file or
+After you click <em>Append</em>, WinSCP opens another prompt that lets you append the source file or
 resume your transfer.
 </p>
 
 <p>
-If you select to resume transfer, the part of source file equal to size of
-the target file will be skipped and only the remaining part will be transferred.
+If you choose to resume the transfer, the part of the source file equal to the size of
+the target file will be skipped, and only the remaining part will be transferred.
 </p>
 
 <p>
@@ -86,13 +86,13 @@ Manual resuming of <a href="transfer_mode.htm">text mode transfers</a> with
 If you want to resume your transfer, you must use the same source file version as the interrupted transfer.
 If you do not, your target file will include the source file's previous version and its current version.
 For automatic resume, if the partial file is bigger than the source file,
-WinSCP will display error and disallow resume.
+WinSCP will display an error and disallow resuming.
 </p>
 
 <p>
-If the target file exists and it is not write-able, but the target directory is, the file will
+If the target file exists and it is not writable, but the target directory is, the file
 may be transferred anyway with automatic resume. The error overwriting the file will occur only after the transfer finishes.
-It is because the file is first transferred into temporary file.
+This is because the file is first transferred into a temporary file.
 </p>
 
 </div>

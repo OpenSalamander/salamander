@@ -96,7 +96,7 @@ public:
         return FocusX == AnchorX && FocusY == AnchorY;
     }
 
-    // return TRUE if cell [x,y] had a different state in oldSelection
+    // return TRUE if cell [x,y] had a different state in the old selection
     BOOL Changed(const CSelection* old, int x, int y)
     {
         // if the selection state changed
@@ -233,7 +233,7 @@ public:
     char DefaultCoding[210];
     BOOL UseCodeTable; // should the CodeTable be used for recoding?
     // CodeTable matters only when UseCodeTable is TRUE
-    char CodeTable[256]; // translation table
+    char CodeTable[256]; // encoding table
 
 protected:
     int EnumFilesSourceUID;    // source UID for enumerating viewer files
@@ -301,17 +301,17 @@ protected:
     BOOL HitTest(int x, int y, int* column, int* row, BOOL getNearest);
     BOOL HitTestRow(int y, int* row, BOOL getNearest);
     BOOL HitTestColumn(int x, int* column, BOOL getNearest);
-    // return TRUE if x is approximately above a divider between columns
-    // column and offset can be NULL
+    // returns TRUE if x is approximately over a column divider
+    // column and offset may be NULL
     BOOL HitTestColumnSplit(int x, int* column, int* offset);
 
     // start editing the cell under the focus
     //    void OnEditCell();
 
-    // find the column with the visibleIndex; if found,
-    // set index according to its position in Database.Column and xPos to
-    // its X coordinate and return TRUE;
-    // otherwise return FALSE
+    // finds the column with index visibleIndex and, if found,
+    // sets index to its position in Database.Column and xPos to
+    // its X coordinate, then returns TRUE
+    // otherwise returns FALSE
     BOOL GetColumnInfo(int visibleIndex, int* index, int* xPos);
 
     // enable/disable the timer and state variables during block dragging
@@ -330,7 +330,7 @@ protected:
 
     // prepare the buffer and let Salamander detect the code page
     void RecognizeCodePage();
-    // convert characters in the text buffer
+    // converts characters in the text buffer
     void CodeCharacters(char* text, size_t textLen);
 
     void SetViewerTitle();

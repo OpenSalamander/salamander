@@ -15,16 +15,16 @@
 <h1>Supported Transfer Protocols</h1>
 
 <p>
-WinSCP supports two secure transfer protocols, <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+WinSCP supports two secure transfer protocols: <acronym title="SSH File Transfer Protocol">SFTP</acronym>
 and <acronym title="Secure Copy Protocol">SCP</acronym>. Currently, many <acronym title="Secure Shell">SSH</acronym>
 servers support both protocols. Each has its advantages and disadvantages; this document contains a comparison to help
-you to decide which is most appropriate for your needs. The comparison describes both features that are characteristic
-to the specific protocol as-is, and features that are caused by the implementation of the protocol in WinSCP.
+you decide which is most appropriate for your needs. The comparison describes both features that are characteristic
+of the specific protocol itself and features that are caused by the implementation of the protocol in WinSCP.
 </p>
 
 <p>
 The default mode of operation is to use <acronym title="SSH File Transfer Protocol">SFTP</acronym> and fall back to
-<acronym title="Secure Copy Protocol">SCP</acronym>. Select your preferred protocol on
+<acronym title="Secure Copy Protocol">SCP</acronym>. Select your preferred protocol in the
 <a href="ui_login_session.htm#protocol_group">Login dialog</a>.
 </p>
 
@@ -35,21 +35,21 @@ The default mode of operation is to use <acronym title="SSH File Transfer Protoc
 <p>
 Despite <acronym title="Secure Shell">SSH</acronym> in its name,
 it is designed to work over any reliable data stream,
-but WinSCP supports only operation over <acronym title="Secure Shell">SSH</acronym>,
-which is also by far its most common usage.
+but WinSCP supports it only over <acronym title="Secure Shell">SSH</acronym>,
+which is also by far its most common use.
 </p>
 
 <p>
-Being operated over <acronym title="Secure Shell">SSH</acronym>, it is secure protocol.
-In its basic functionally it is similar to old <acronym title="File Transfer Protocol">FTP</acronym>,
-while having better designed advanced functionality.
-Unfortunately not all <acronym title="SSH File Transfer Protocol">SFTP</acronym> server implementation
-take advantage of the advanced features, yet.
+Because it operates over <acronym title="Secure Shell">SSH</acronym>, it is a secure protocol.
+In its basic functionality, it is similar to the old <acronym title="File Transfer Protocol">FTP</acronym>
+while having better-designed advanced functionality.
+Unfortunately, not all <acronym title="SSH File Transfer Protocol">SFTP</acronym> server implementations
+take advantage of the advanced features yet.
 </p>
 
 <p>
-Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, for connection with an
-<acronym title="SSH File Transfer Protocol">SFTP</acronym> server you do not need access to shell
+Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, to connect to an
+<acronym title="SSH File Transfer Protocol">SFTP</acronym> server, you do not need shell access
 (although some implementations may still require that).
 </p>
 
@@ -59,27 +59,27 @@ Unlike <acronym title="Secure Copy Protocol">SCP</acronym>, for connection with 
 
 <p>
 <acronym title="Secure Copy Protocol">SCP</acronym> is mostly used with <acronym title="Secure Shell">SSH</acronym>-1.
-<acronym title="Secure Copy Protocol">SCP</acronym> is an older protocol, but almost universally supported on
+<acronym title="Secure Copy Protocol">SCP</acronym> is an older protocol, but it is almost universally supported on
 Unix-like platforms as part of an <acronym title="Secure Shell">SSH</acronym> protocol suite. It is rarely supported
 on other platforms. <acronym title="Secure Copy Protocol">SCP</acronym> is a descendant of the ancient &quot;rcp.&quot;
 </p>
 
 <p>
 The <acronym title="Secure Copy Protocol">SCP</acronym> protocol allows only file transfers in both directions.
-WinSCP is able to offer other features, implemented using common shell commands like <code>cd</code>,
-<code>ls</code>, <code>pwd</code>, <code>rm</code>, <code>ln</code>, etc. For this, WinSCP - unlike command-line
-<acronym title="Secure Copy Protocol">SCP</acronym> clients (which allow only file transfers) - requires full
+WinSCP is able to offer other features implemented using common shell commands like <code>cd</code>,
+<code>ls</code>, <code>pwd</code>, <code>rm</code>, <code>ln</code>, etc. For this, WinSCP—unlike command-line
+<acronym title="Secure Copy Protocol">SCP</acronym> clients (which allow only file transfers)—requires full
 shell access and permission to execute other commands in addition to <code>scp</code> (see
-<a href="requirements.htm">requirements</a>). For access to non-UNIX servers it is necessary that the server
-have at least a UNIX-like shell: one like that which is available with
-<a href="http://sshwindows.sourceforge.net/" target="_blank">OpenSSH for Windows</a>, for example.
+<a href="requirements.htm">requirements</a>). For access to non-Unix servers, the server must
+have at least a Unix-like shell, such as the one available with
+<a href="http://sshwindows.sourceforge.net/" target="_blank">OpenSSH for Windows</a>.
 </p>
 
 <a name="protocol_comparison"></a>
 <h4>Protocol Comparison</h4>
 
 <p>
-The list below shows only those features, which differ between the protocols, so it is not complete listing.
+The list below shows only those features that differ between the protocols, so it is not a complete listing.
 </p>
 
 <table>
@@ -90,13 +90,13 @@ The list below shows only those features, which differ between the protocols, so
   </tr>
   <tr>
     <th>Speed </th>
-    <td>Generally slowest (necessity to wait for packet confirmations).</td>
+    <td>Generally slower (because it must wait for packet confirmations).</td>
     <td>Faster (efficient file transfer, yet it does not allow the transfer to be interrupted).</td>
   </tr>
   <tr>
     <th><a href="resume.htm">Transfer resume</a> </th>
-    <td>Supported. WinSCP supports resuming only since SFTP-2 (which introduces rename command).
-            By default it resumes transfers for files larger than 100 kB only, since the overhead is excessive
+    <td>Supported. WinSCP supports resuming only since SFTP-2 (which introduces the rename command).
+            By default, it resumes transfers only for files larger than 100 kB, since the overhead is excessive
                 for smaller files. It is possible to change the threshold in Preferences. </td>
     <td>Unsupported. </td>
   </tr>
@@ -113,22 +113,22 @@ The list below shows only those features, which differ between the protocols, so
   <tr>
     <th><a href="ui_progress.htm#controlling_the_operation">Transfer cancellation</a> </th>
     <td>Supported.</td>
-    <td>Transfer cannot be canceled without termination of session. </td>
+    <td>Transfers cannot be canceled without terminating the session. </td>
   </tr>
   <tr>
     <th>Text (<acronym title="American Standard Code for Information Interchange">ASCII</acronym>)
             <a href="transfer_mode.htm">transfer mode</a> </th>
-    <td>Supported since SFTP-4. For older versions WinSCP emulates text mode by converting
+    <td>Supported since SFTP-4. For older versions, WinSCP emulates text mode by converting
             files before transfer.</td>
-    <td>Not supported by the protocol. WinSCP emulates text mode by converting file before transfer.</td>
+    <td>Not supported by the protocol. WinSCP emulates text mode by converting files before transfer.</td>
   </tr>
   <tr>
     <th>Directory operations </th>
     <td>Recursive operations with directories (deletion, permissions change) must be performed separately
-            for each file. Thus operations can take a long time, especially for directories with
+            for each file. Thus, operations can take a long time, especially for directories with
                 a large number of files. </td>
-    <td>Recursive operations with directories (deletion, permissions change), can be done with a single
-            command (<code>rm</code>, <code>chmod</code>, etc). Thus they are quick. On the other hand it
+    <td>Recursive operations with directories (deletion, permissions change) can be done with a single
+            command (<code>rm</code>, <code>chmod</code>, etc.). Thus they are quick. On the other hand, this
                 limits some functionality. </td>
   </tr>
   <tr>
@@ -152,9 +152,9 @@ The list below shows only those features, which differ between the protocols, so
   <tr>
     <th><a href="task_properties.htm">Owner or group change</a> </th>
     <td>In SFTP-2 and SFTP-3, the owner
-            and group can be changed only with knowledge of
+            and group can be changed only with knowledge of the
                 <acronym title="User ID">UID</acronym>/<acronym title="Group ID">GID</acronym>.
-                Since SFTP-4 even change using user or group name is allowed. </td>
+                Since SFTP-4, even changing using the user or group name is allowed. </td>
     <td>Supported (<code>chown</code>, <code>chgrp</code>). </td>
   </tr>
   <tr>
@@ -170,25 +170,25 @@ The list below shows only those features, which differ between the protocols, so
   <tr>
     <th>Influence of environment variables </th>
     <td>Generally unaffected by environment variables. </td>
-    <td>As WinSCP uses shell, it is influenced by environment variables (date format, etc.). WinSCP
-            requires the English environment. See <a href="requirements.htm">requirements</a>. </td>
+    <td>As WinSCP uses a shell, it is influenced by environment variables (date format, etc.). WinSCP
+            requires an English environment. See <a href="requirements.htm">requirements</a>. </td>
   </tr>
   <tr>
     <th>File modification <a href="timestamp.htm">time-stamp</a> </th>
-    <td>Theoretically the problem does not occur, as the protocol requires timestamps to be in
-            <acronym title="Universal Time Coordinated">UTC</acronym>. Practically some of the
+    <td>Theoretically, the problem does not occur, as the protocol requires timestamps to be in
+            <acronym title="Universal Time Coordinated">UTC</acronym>. Practically, some of the
                 <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers have problems with
                 <acronym title="Daylight Savings Time">DST</acronym>. </td>
-    <td>Some shell commands are influenced by daylight-saving time. For example, the <code>ls</code>
+    <td>Some shell commands are influenced by daylight saving time. For example, the <code>ls</code>
             command can return a different time than <code>scp</code>. Thus, after transfer, the time-stamp
-                of the file can be different. Also there can be an additional difference caused by the server timezone
+                of the file can be different. Also, there can be an additional difference caused by the server timezone
                 offset. This causes trouble when comparing directories and
-                <a href="task_synchronize.htm">synchronization</a>. </td>
+                during <a href="task_synchronize.htm">synchronization</a>. </td>
   </tr>
   <tr>
     <th><a href="ui_login.htm">Configuration</a> </th>
     <td>Generally, only login information is needed. </td>
-    <td>For a successful connection to a server it is often necessary to properly set up several configuration
+    <td>For a successful connection to a server, it is often necessary to properly set up several configuration
             options on the <a href="ui_login_scp.htm">Login dialog</a>. </td>
   </tr>
 </table>

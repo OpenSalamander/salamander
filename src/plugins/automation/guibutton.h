@@ -21,7 +21,7 @@ private:
     int m_nDialogResult;
 
 protected:
-    /// Overrriden.
+    /// Overridden.
     /// \see CSalamanderGuiComponentBase::CreateHwnd
     virtual HWND CreateHwnd(HWND hWndParent);
 

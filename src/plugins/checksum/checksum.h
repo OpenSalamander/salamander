@@ -14,7 +14,7 @@ typedef enum eHASH_TYPE
     HT_SHA1,
     HT_SHA256,
     HT_SHA512,
-    HT_COUNT // Not a hash type but # of known hash types
+    HT_COUNT // Not a hash type, but the count of known hash types
 } eHASH_TYPE;
 
 typedef struct SHashInfo

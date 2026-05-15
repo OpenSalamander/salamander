@@ -212,7 +212,7 @@
   vertical-align: top;
   padding: 2px 4px;
   font-weight: bold;
-  width: 10%;           /* narrow the left side of the table to the minimum */
+  width: 10%;           /* narrow the left side of the table as much as possible */
   padding-right :10px;  /* but leave at least 10 points so it still looks decent */
   white-space: nowrap;
 }

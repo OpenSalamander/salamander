@@ -80,7 +80,7 @@ protected:
         }
         else
         {
-            //TODO: Display something!
+            // TODO: Display content
             BitBlt(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL, 0, 0, BLACKNESS);
 
             //HACK: this was put together quickly to have something for version 1.0; fortunately it should not happen too often

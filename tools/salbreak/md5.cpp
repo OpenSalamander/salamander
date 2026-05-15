@@ -1,9 +1,10 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "md5.h"
 
-// aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
+// to avoid problems with semicolons in the macros defined below
 inline void __TraceEmptyFunction() {}
 
 #define TRACE_E(str) __TraceEmptyFunction()
@@ -64,7 +65,7 @@ void MD5::update(uint1* input, uint4 input_length)
 }
 
 // MD5 finalization. Ends an MD5 message-digest operation, writing the
-// the message digest and zeroizing the context.
+// message digest and zeroizing the context.
 
 void MD5::finalize()
 {

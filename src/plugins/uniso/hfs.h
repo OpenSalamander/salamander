@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -73,7 +74,6 @@ public:
         UInt32 pmBootEntry2;  // reserved
         UInt32 pmBootCksum;   // boot code checksum
         char pmProcessor[16]; // processor type
-                              //    UInt16  pmPad[0..188]; // reserved
     };
 
     struct HFSExtentDescriptor
@@ -234,7 +234,7 @@ public:
         kHFSRootFolderID = 2,           // Folder ID of the root folder
         kHFSExtentsFileID = 3,          // File ID of the extents overflow file
         kHFSCatalogFileID = 4,          // File ID of the catalog file
-        kHFSBadBlockFileID = 5,         // File ID of the bad block file. The bad block file is not a file in the same sense as a special file and a user file
+        kHFSBadBlockFileID = 5,         // File ID of the bad block file. The bad block file is not a file in the same sense as a special file or a user file
         kHFSAllocationFileID = 6,       // File ID of the allocation file (introduced with HFS Plus)
         kHFSStartupFileID = 7,          // File ID of the startup file (introduced with HFS Plus)
         kHFSAttributesFileID = 8,       // File ID of the attributes file (introduced with HFS Plus)
@@ -406,7 +406,7 @@ private:
     bool bSkipRootParent;
 
     BOOL SeekSector(int sector); // Seeks on disk (sector is usually 512 or 2048 bytes); TRUE on success
-    BOOL SeekBlock(int block);   // Seeks on HFS+ partition (block is usually 4096 bytes); TRUE on success
+    BOOL SeekBlock(int block);   // Seeks to the given block on the HFS+ partition (the block is usually 4096 bytes); returns TRUE on success
     __int64 SeekRel(int offset); // Seeks relatively; Returns new position
     BOOL Read(LPVOID buf, DWORD dwBytesToRead, DWORD* dwBytesRead);
 

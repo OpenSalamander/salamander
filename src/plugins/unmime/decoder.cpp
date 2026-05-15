@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /****************************************************************************************\
 **                                                                                      **
@@ -446,7 +447,7 @@ BOOL CBinHexDecoder::DecodeChar(char c)
     default:
         return TRUE;
     }
-    // execution jumps here once the breaks above reach the end; a bit of a hack, sorry...
+    // Control jumps here when the breaks above are hit; a bit of a hack.
     bFinished = TRUE;
     eCharState = CS_END;
     return TRUE;
@@ -535,7 +536,7 @@ void CBinHexDecoder::DecodeBinary(BYTE b)
         {
             if (!bCalcSize && iResourceLength)
             {
-                // We are gonna loose the resource fork
+                // The resource fork will be lost
                 if (!(G.nDontShowAnymore & DSA_RESOURCE_FORK_LOST))
                 {
                     BOOL checked = FALSE;

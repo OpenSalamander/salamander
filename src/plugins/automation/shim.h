@@ -55,7 +55,7 @@ public:
     virtual HRESULT InterruptScript(IActiveScript* pScript);
 
     /// Allows the shim to control, whether particular error will be displayed
-    /// or supressed.
+    /// or suppressed.
     /// \return If the error should be displayed, the return value is true.
     virtual bool DisplayErrorHook(__in EXCEPINFO* ei, __in_opt BSTR src, __in bool bDebug);
 

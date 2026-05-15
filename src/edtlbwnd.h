@@ -114,7 +114,7 @@ public:
 
     BOOL SetCurSel(int index);
 
-    // returns index of the selected item - for a new item it is one more than
+    // returns index of the selected item - for a new item it is 1 more than
     // the number of items
     BOOL GetCurSel(int& index);
     // returns -1 for an empty item

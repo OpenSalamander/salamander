@@ -195,10 +195,10 @@ HRESULT CScriptSite::OnStateChange(
 HRESULT CScriptSite::OnScriptError(
     /* [in] */ __RPC__in_opt IActiveScriptError* pScriptError)
 {
-    // May be NULL if the error raises during the parsing phase.
+    // May be NULL if the error occurs during the parsing phase.
     if (m_pExecInfo != NULL)
     {
-        // The abort palette is no longer needed, hide it now.
+        // The abort palette is no longer needed; delete it now.
         delete m_pExecInfo->pAbortPalette;
         m_pExecInfo->pAbortPalette = NULL;
     }
@@ -220,10 +220,10 @@ HRESULT CScriptSite::OnScriptError(
 
     FreeException(ei);
 
-    // Never ever try to return anything else than S_OK here.
+    // Never return anything other than S_OK here.
     // If JScript.dll returns CTL_E_OUTOFMEMORY because of infinite
-    // recursion (see Redmine #782 bug) it keeps calling OnScriptError
-    // again and again if we return anything else than S_OK.
+    // recursion (see Redmine #782), it keeps calling OnScriptError
+    // repeatedly unless we return S_OK.
 
     return S_OK;
 }
@@ -382,10 +382,10 @@ HRESULT STDMETHODCALLTYPE CScriptSite::OnScriptErrorDebug(
     /* [out] */ BOOL* pfEnterDebugger,
     /* [out] */ BOOL* pfCallOnScriptErrorWhenContinuing)
 {
-    // May be NULL if the error raises during the parsing phase.
+    // May be NULL if the error occurs during the parsing phase.
     if (m_pExecInfo != NULL)
     {
-        // The abort palette is no longer needed, hide it now.
+        // The abort palette is no longer needed; delete it now.
         delete m_pExecInfo->pAbortPalette;
         m_pExecInfo->pAbortPalette = NULL;
     }

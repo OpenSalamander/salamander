@@ -481,7 +481,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         LastActivityTime = GetTickCount();
         Config.OperDlgPlacement.length = sizeof(WINDOWPLACEMENT); // store the window position
         GetWindowPlacement(HWindow, &Config.OperDlgPlacement);
-        if (SimpleLook) // simple-look is unsuitable; store the size of the opened dialog
+        if (SimpleLook) // simple-look is not suitable; store the open dialog size
             Config.OperDlgPlacement.rcNormalPosition.bottom = Config.OperDlgPlacement.rcNormalPosition.top + LastDlgHeight1;
         else
         {
@@ -579,7 +579,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     DlgWillCloseIfOpFinWithSkips = (IsDlgButtonChecked(HWindow, IDC_OPCLOSEWINWHENDONE) == BST_CHECKED);
                     CorrectLookOfPrevFocusedDisabledButton(focus);
                     if (res != IDYES)
-                        return TRUE; // no Cancel/Close will happen
+                        return TRUE; // no Cancel/Close will occur
                     break;
                 }
 
@@ -983,7 +983,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             ToggleSimpleLook(); // the dialog must be shown in the detailed form
                         if (workerIndex != -1)
                         {
-                            // focus the worker whose error we are going to solve
+                            // focus the worker whose error we are going to handle
                             BOOL oldEnableChangeFocusedCon = EnableChangeFocusedCon;
                             EnableChangeFocusedCon = FALSE;
                             ListView_SetItemState(ConsListView, workerIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -1029,7 +1029,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             else
                                 TRACE_E("Unexpected situation in COperationDlg::DialogProc::OPERDLG_AUTOSHOWERRTIMER!");
                         }
-                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0);                         // to have an "immediate" reaction to the next error (PostMessage cannot be used here because another window beeps for some reason; I did not investigate why, WorkersList->PostNewWorkAvailable causes it)
+                        SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER2, 100, 0);                         // for an "immediate" response to the next error (PostMessage cannot be used here because another window beeps for some reason; the cause was not investigated, but WorkersList->PostNewWorkAvailable triggers it)
                         SetTimer(HWindow, OPERDLG_AUTOSHOWERRTIMER, OPERDLG_AUTOSHOWERRPERIOD, NULL); // resume regular error checks
                     }
                 }
@@ -1224,7 +1224,7 @@ COperationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                                        // from the message loop of that modal dialog)
             SalamanderGeneral->CloseAllOwnedEnabledDialogs(HWindow);
             *SendWMClose = TRUE; // request WM_CLOSE again
-            return TRUE;         // do not process further (closing was denied)
+            return TRUE;         // do not process further (close was blocked)
         }
         DestroyWindow(HWindow); // destroy the window (the standard variant tries IDCANCEL, which we do not want)
         return TRUE;            // do not process further

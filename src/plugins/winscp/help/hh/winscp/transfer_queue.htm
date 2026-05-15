@@ -15,31 +15,31 @@
 <h1>Background Transfers</h1>
 
 <p>
-By default WinSCP transfers files on foreground. This way it can use one connection to the server only
-all the time, however during the transfer you cannot use Open Salamander for any other task. Alternative way is
+By default, WinSCP transfers files in the foreground. This way it can use one connection to the server
+all the time; however, during the transfer you cannot use Open Salamander for any other task. An alternative way is
 to use background transfers.
 </p>
 
 <a name="transferring_files_on_background"></a>
-<h4>Transferring Files on Background</h4>
+<h4>Transferring Files in the Background</h4>
 
 <p>
-To instruct WinSCP to perform the transfer on background, check <em>Transfer on background</em>
-on <a href="ui_copy.htm">transfer options dialog</a> before the transfer. If you
-do not use the dialog or want to transfer file on background by default, check
+To instruct WinSCP to perform the transfer in the background, check <em>Transfer on background</em>
+in the <a href="ui_copy.htm">Transfer Options Dialog</a> before the transfer. If you
+do not use the dialog or want to transfer files in the background by default, check
 <em><a href="ui_sal_pref_queue.htm#background_transfers">Transfer on background by default</a></em>
-on <em>Background &amp; Resume tab</em> of Preferences dialog.
+on the <em>Background &amp; Resume tab</em> of the Preferences dialog.
 </p>
 
 <p>
-Once you instruct WinSCP to perform the transfer on background, separate transfer progress window is shown, WinSCP opens
+Once you instruct WinSCP to perform the transfer in the background, a separate transfer progress window is shown. WinSCP opens a
 separate <acronym title="Secure Shell">SSH</acronym> connection to the server using the same session
-option as used for the main session. Once the transfer finishes the connection is kept on background
+options as used for the main session. Once the transfer finishes, the connection is kept in the background
 and reused for future transfers.
 </p>
 
 <p>
-Once the background transfer finishes, the target directory is reloaded (still on background) and content
+Once the background transfer finishes, the target directory is reloaded (still in the background), and the content
 of the respective file panel is refreshed.
 </p>
 

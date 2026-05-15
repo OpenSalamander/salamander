@@ -61,9 +61,9 @@ INT_PTR CAutomationConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
         HWND hwndList = GetDlgItem(HWindow, IDC_DIRLIST);
         if (hwndFrom == hwndList || GetParent(hwndFrom) == hwndList)
         {
-            // command forwarded from the list view,
-            // do not pass it to the CDialog::DialogProc
-            // since if it is IDOK the dialog will close
+            // command forwarded from the list view;
+            // do not pass it to CDialog::DialogProc,
+            // because IDOK would close the dialog
             return FALSE;
         }
 
@@ -330,8 +330,8 @@ BOOL CAutomationConfigDialog::OnDirListBeginLabelEdit(NMLVDISPINFO* nmlv)
     _ASSERTE(IsWindow(hwndEdit));
 
     // autocomplete must be attached before we subclass
-    // the edit control to not mess the subclass chain
-    // while unsubclassing
+    // the edit control so as not to disrupt the subclass chain
+    // during unsubclassing
     SHAutoComplete(hwndEdit, SHACF_FILESYS_DIRS);
 
     SubclassLabelEdit(hwndEdit);
@@ -383,9 +383,9 @@ BOOL CAutomationConfigDialog::OnDirListEndLabelEdit(NMLVDISPINFO* nmlv)
     // accept the edited text
     SetWindowLongPtr(HWindow, DWLP_MSGRESULT, TRUE);
 
-    // the width of the column might be changed,
-    // defer recalcing the width once the new text will
-    // be set after we return from this notification handler
+    // the column width might change;
+    // defer recalculating it until the new text is set
+    // after we return from this notification handler
     PostMessage(HWindow, WM_USER_RECALCWIDTH, 0, 0);
 
     DirSelChanged();

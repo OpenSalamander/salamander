@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -307,15 +308,15 @@ void CDeflate::fill_window()
          */
         if (more == (unsigned)EOF)
         {
-            /* Very unlikely, but possible on 16 bit machine if strstart == 0
-             * and lookahead == 1 (input done one byte at time)
-             */
+            /* Very unlikely, but possible on a 16-bit machine if strstart == 0
+                         * and lookahead == 1 (input done one byte at a time)
+                         */
             more--;
 
             /* For MMAP or BIG_MEM, the whole input file is already in memory
-         * so we must not perform sliding. We must however call file_read in
-         * order to compute the crc, update lookahead and possibly set eofile.
-         */
+             * so we must not perform sliding. We must, however, call ReadData to
+             * compute the CRC, update lookahead, and possibly set eofile.
+             */
         }
         else if (strstart >= WSIZE + MAX_DIST && sliding)
         {
@@ -382,8 +383,8 @@ void CDeflate::fill_window()
 }
 
 /* ===========================================================================
- * Processes a new input file and return its compressed length. This
- * function does not perform lazy evaluationof matches and inserts
+ * Processes a new input file and returns its compressed length. This
+ * function does not perform lazy evaluation of matches and inserts
  * new strings in the dictionary only for unmatched strings or for short
  * matches. It is used only for the fast compression options.
  */
@@ -407,9 +408,9 @@ ullg CDeflate::deflate_fast()
         if (hash_head != NIL && strstart - hash_head <= MAX_DIST)
         {
             /* To simplify the code, we prevent matches with the string
-             * of window index 0 (in particular we have to avoid a match
-             * of the string with itself at the start of the input file).
-             */
+                         * at window index 0 (in particular we have to avoid a match
+                         * of the string with itself at the start of the input file).
+                         */
 #ifndef HUFFMAN_ONLY
             match_length = longest_match(hash_head);
 #endif

@@ -412,7 +412,7 @@ static SRes SzFolder_Decode2(const CSzFolder *folder,
         }
         else if (ci == 2)
         {
-          if (unpackSize > outSize) /* check it */
+          if (unpackSize > outSize) /* check size */
             return SZ_ERROR_PARAM;
           tempBuf3 = outBufCur = outBuffer + (outSize - (size_t)unpackSize);
           tempSize3 = outSizeCur = (SizeT)unpackSize;

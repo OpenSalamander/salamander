@@ -13,7 +13,7 @@
 #define VERSINFO_MINORA      1
 #define VERSINFO_MINORB      2
 
-#include "spl_vers.h" // pull version numbers + build
+#include "spl_vers.h" // pull in version numbers and the build number
 
 #define VERSINFO_COPYRIGHT   "Copyright © 1999-2023 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"

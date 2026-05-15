@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -32,14 +33,14 @@ public:
     CZIPFileData(QWORD qwPackedSize, int nItem, BOOL bUnix) : PackedSize(qwPackedSize), ItemNumber(nItem), Unix(bUnix) {}
 
     QWORD PackedSize;
-    int ItemNumber; // # of item in Cetral Directory, not offset
+    int ItemNumber; // item index in Central Directory, not offset
     BOOL Unix;
 };
 
 struct CExtInfo
 {
     LPTSTR Name;
-    int ItemNumber; // # of item in Cetral Directory, not offset
+    int ItemNumber; // item index in Central Directory, not offset
     bool IsDir;
 
     CExtInfo(LPCTSTR pName, bool isDir, int nItem);
@@ -64,7 +65,7 @@ struct CConfiguration
     bool NoEmptyDirs;                  //don't add empty directories to zip
     bool BackupZip;                    //create temporary backup of zip before
                                        //any modification of it
-    bool ShowExOptions;                //display exteded pack options dialog
+    bool ShowExOptions;                //display extended pack options dialog
     bool TimeToNewestFile;             //set zip file time to the newest file time
     char VolSizeCache[5][MAX_VOL_STR]; //volume sizes
     unsigned VolSizeUnits[5];          //MB if nozero
@@ -75,7 +76,7 @@ struct CConfiguration
     int Version;                       //config version (0 - default; 1 - beta 3; 2 - beta 4)
     char DefSfxFile[MAX_PATH];         //default sfx package
     char LastExportPath[MAX_PATH];     //default path to export sfx settings to
-    int CurSalamanderVersion;          //current version of Altap Salamnder
+    int CurSalamanderVersion;          //current version of Altap Salamander
     int ChangeLangReaction;            //viz CLR_xxx
     BOOL WinZipNames;                  // winzip compatible multi-volume archive names
 
@@ -157,23 +158,23 @@ struct CFile
 class CZipCommon
 {
 public:
-    CFile* ZipFile;             //zip file hanndle
+    CFile* ZipFile;             //zip file handle
     char ZipName[MAX_PATH + 1]; //name of zip file
     const char* ZipRoot;
     int RootLen; //length of ZipRoot
     bool ZeroZip;
     QWORD EOCentrDirOffs;           //offset of end of central directory record
-    QWORD Zip64EOCentrDirOffs;      //offset of zip 64 end of central directory record
+    QWORD Zip64EOCentrDirOffs;      //offset of Zip64 end of central directory record
     CEOCentrDirRecordEx EOCentrDir; //end of central directory record
     QWORD CentrDirSize;
     QWORD CentrDirOffs;
-    int CentrDirStartDisk; //jen pro list a extract
+    int CentrDirStartDisk; //only for list and extract
                            // number of the disk with the start of the central directory
     bool Zip64;
     QWORD ExtraBytes;
     CSalamanderForOperationsAbstract* Salamander;
     int ErrorID;
-    CQuadWord MatchedTotalSize; //total uncopressed size of all files
+    CQuadWord MatchedTotalSize; //total uncompressed size of all files
                                 //that are about to be extracted
     CQuadWord ProgressTotalSize;
     bool Fatal;

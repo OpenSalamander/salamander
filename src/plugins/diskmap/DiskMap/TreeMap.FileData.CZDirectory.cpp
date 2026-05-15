@@ -204,7 +204,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                         realsize = 0;
                         disksize = 0;
                     }
-                    else if (datasize == 0) //everything ok, but empty
+                    else if (datasize == 0) //no error, but empty
                     {
                         this->_dircount++;
                         dircount++;
@@ -294,7 +294,7 @@ INT64 CZDirectory::PopulateDir(CWorkerThread* mythread, TCHAR* path, int pos, si
                 this->_files->At(fre) = f;
             }
             //if (((filecount + dircount) > MAXREPORTEDFILES) || (GetTickCount() - lastTime > 500)) //either many files or 0.5 sec elapsed
-            if ((GetTickCount() - lastTime > 250) && (filecount + dircount) > 0) //if 0.25 sec elapsed and at least something new was found
+            if ((GetTickCount() - lastTime > 250) && (filecount + dircount) > 0) //if 0.25 sec have elapsed and at least something new was found
             {
                 this->_root->IncStats(filecount, dircount, tsize);
                 lastTime = GetTickCount();

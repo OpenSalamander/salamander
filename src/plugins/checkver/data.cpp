@@ -157,9 +157,9 @@ const char* CONFIG_NEXTOPEN = "NextOpen";
 const char* CONFIG_NUMOFERRORS = "NumOfErrors";
 
 // ConfigVersion: 0 - no configuration was loaded from the Registry (plugin installation),
-//                1 - configuration before the 'Version' value was added to the registry
+//                1 - configuration from before the 'Version' value was added to the registry
 //                2 - Salamander 2.52: enforce new default values (set inetLAN defaults for everyone)
-//                3 - Salamander 3.0: enforce new default values (show all new versions, add the "ignore this version" link, hopefully CheckVer will no longer be disabled manually)
+//                3 - Salamander 3.0: enforce new default values (show all new versions, add the "ignore this version" link, hopefully CheckVer will no longer be disabled outright)
 //                4 - Salamander 4.0: enforce new default values
 
 int ConfigVersion = 0;             // version of the configuration loaded from the registry (see above for description)
@@ -357,7 +357,7 @@ void LoadConfig(HKEY regKey, CSalamanderRegistryAbstract* registry)
     if (regKey != NULL && !registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD)))
         ConfigVersion = 1; // configuration before the 'Version' value was added to the registry
     BOOL curVerIsPB = IsPBVersion(SalamanderTextVersion);
-    if (curVerIsPB) // the PB build tests PB versions by default
+    if (curVerIsPB) // in the PB build, PB versions are checked by default
     {
         int i;
         for (i = 0; i < inetCount; i++)
@@ -606,9 +606,9 @@ BOOL CSalModuleInfo::SetVersion(const char* version)
                     sprintf(partR + len - 1, ".%d", ch - 'a' + 1);
             }
         }
-        // compose the version
-        // bug still present in AS2.51: without adding 0.5 the values were "random", because
-        // when WinSCP is loaded into the process it changes CPU rounding (applies per thread)
+        // build the version
+        // bug still present in AS2.51: without adding 0.5, the values came out "random" because
+        // WinSCP changes the CPU rounding mode when loaded into the process (per-thread)
         ResolvedVersion = ((WORD)(atof(partL) * 1000 + 0.5)) << 16;
         if (partR[0] != 0)
             ResolvedVersion |= ((WORD)(atof(partR) * 100 + 0.5));
@@ -938,10 +938,10 @@ BOOL CModules::BuildDataFromScript()
         *(line + lineLen) = 0;
 
         if (lstrcmp(line, SCRIPT_SIGNATURE_EOF) == 0)
-            break; // everything loaded...
+            break; // all data loaded...
 
         if (count >= LoadedScriptSize - 2)
-            break; // time to bail out
+            break; // time to exit
         if (*lineEnd == '\r' && *(lineEnd + 1) == '\r' && *(lineEnd + 2) == '\n')
         { // '\r\r\n' - '\r\n' converted via FTP
             lineEnd += 3;
@@ -1119,7 +1119,7 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
     {
         // reset the event
         ResetEvent(HModulesEnumDone);
-        // post a command so the main Salamander thread reaches us,
+        // post a command so that Salamander's main thread reaches us,
         // from which we can perform the enumeration
         SalGeneral->PostMenuExtCommand(CM_ENUMMODULES, FALSE);
         // wait until the enumeration is finished
@@ -1172,9 +1172,9 @@ void CModules::CompareWithInstalledModulesAndLogIt(BOOL rereadModules)
             BOOL newModule = FALSE;
             if (installed && salMdl->GetResBeta() == mdl->GetResBeta())
             {
-                // if the module is installed and it matches the beta/non-beta state of the scripted module,
-                // compare their versions (when versions match, decide by checking whether it is an IB/DB/PB/CB,
-                // a special build always takes precedence over a non-special build and among special builds
+                // if the module is installed and its beta/non-beta state matches the module from the script,
+                // compare their versions (if the versions match, whether it is an IB/DB/PB/CB can still decide,
+                // a special build always takes precedence over a non-special build, and among special builds
                 // the build number decides)
                 if (salMdl->GetResVer() < mdl->GetResVer() ||
                     salMdl->GetResVer() == mdl->GetResVer() && salMdl->GetSpecBld() > 0 && mdl->GetSpecBld() == 0 || // same version + installed module is a special build and the scripted module is not

@@ -278,7 +278,7 @@ protected:
                     int rp = p;
                     int miswidth = pathwidth - width + this->_dotsWidth + dx[p - 1];
 
-                    dx[strlen] = miswidth; //stopper
+                    dx[strlen] = miswidth; //sentinel
                     while (miswidth > dx[rp])
                         rp++;
 

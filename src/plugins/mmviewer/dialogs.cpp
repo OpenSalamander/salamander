@@ -32,7 +32,7 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontal and vertical centering of the dialog to the parent
         if (Parent != NULL)
             SalGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // want focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);

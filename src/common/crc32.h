@@ -1,11 +1,12 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 //#define STATIC_CRC_TAB
 
-//size of crc tab in the memory
+// size of the CRC table in memory
 #define CRC_TAB_SIZE 256 * sizeof(DWORD)
 //initial value of crc shift register
 #define INIT_CRC 0L
@@ -15,7 +16,7 @@
 extern const DWORD StaticCrcTab[256];
 #endif
 
-//fill up crc table
+//populate the CRC table
 void MakeCrcTable(DWORD* crcTab);
 
 //run a set of bytes through the crc shift register, if buffer is a NULL

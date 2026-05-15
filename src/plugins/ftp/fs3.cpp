@@ -23,7 +23,7 @@ BOOL CPluginFSInterface::TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL&
     {
         if (reason == FSTRYCLOSE_CHANGEPATH)
         {
-            if (canDetach && !Config.DisconnectCommandUsed) // "close or detach" and it is not the "Disconnect" command
+            if (canDetach && !Config.DisconnectCommandUsed) // "close or detach", not the "Disconnect" command
             {
                 int res;
                 if (!Config.AlwaysNotCloseCon)
@@ -88,7 +88,7 @@ MENU_TEMPLATE_ITEM MsgBoxButtons[] =
             {
                 close = ret = TRUE; // this prompt proved to be very confusing and incomprehensible, so we simply prefer Disconnect
                                     /*
-        // "no path on the FTP is accessible, disconnect?"
+        // "no path on the FTP server is accessible, disconnect?"
         close = ret = (SalamanderGeneral->SalMessageBox(SalamanderGeneral->GetMsgBoxParent(),
                                                         LoadStr(IDS_NOPATHACCESSINPANEL),
                                                         LoadStr(IDS_FTPPLUGINTITLE),
@@ -168,12 +168,12 @@ void CPluginFSInterface::Event(int event, DWORD param)
 
     case FSE_TIMER: // delayed panel refresh (to give the connection time to return from the operation dialog to the panel)
     {
-        DWORD paramLimit = 4; // maximum one second waiting for the connection (we wait to see whether the worker will try to hand over the connection)
+        DWORD paramLimit = 4; // wait up to one second for the connection (we wait to see whether the worker will try to hand over the connection)
         DWORD ti;
         if (ControlConnection != NULL &&
             ControlConnection->GetIsSocketConnectedLastCallTime(&ti) && GetTickCount() - ti < 5000)
         {
-            paramLimit = 24; // maximum five seconds waiting for the connection (we know the worker is trying to hand it over)
+            paramLimit = 24; // wait up to five seconds for the connection (we know the worker is trying to hand it over)
         }
         if (param >= paramLimit || // param < paramLimit: start the refresh only if we have the connection, param >= paramLimit always allows the refresh
             ControlConnection != NULL && ControlConnection->IsConnected())
@@ -222,8 +222,8 @@ void CPluginFSInterface::ReleaseObject(HWND parent)
         }
         else
         {
-            // if we have not yet written what led to closing the connection, do it now
-            // at least into the log (there is no point in showing a window, the user is probably no longer interested)
+            // if we have not yet logged what caused the connection to close, do it now
+            // at least to the log (there is no point in showing a window; the user is probably no longer interested)
             ControlConnection->CheckCtrlConClose(TRUE, FALSE, parent, TRUE);
         }
 
@@ -319,7 +319,7 @@ BOOL CPluginFSInterface::GetNextDirectoryLineHotPath(const char* text, int pathL
             if (*root == '/' || *root == '\\')
                 root++; // skip '/' or '\\' from the disk root path
         }
-        if (DirLineHotPathType == ftpsptTandem) // for Tandem paths skip the "system" ("\\SYSTEM"), a shorter path makes no sense
+        if (DirLineHotPathType == ftpsptTandem) // for Tandem paths, skip "system" ("\\SYSTEM"); a shorter path makes no sense
             while (root < end && *root != '.')
                 root++;
     }
@@ -777,7 +777,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
             BOOL ok = TRUE;
             char newPath[FTP_MAX_PATH];
             BOOL needChangeDir = reconnected; // after reconnect try to set the working directory again
-            if (!reconnected)                 // already connected for a longer time, verify that the working directory matches 'Path'
+            if (!reconnected)                 // already connected for some time, verify that the working directory matches 'Path'
             {
                 // use the cache, under normal circumstances the path should be there
                 ok = ControlConnection->GetCurrentWorkingPath(parent, newPath, FTP_MAX_PATH, FALSE,
@@ -787,7 +787,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                     run = TRUE;
                     retryMsgAux = retryMsgBuf;
                 }
-                if (ok && strcmp(newPath, Path) != 0) // working directory on the server differs - change required
+                if (ok && strcmp(newPath, Path) != 0) // the working directory on the server differs - change required
                     needChangeDir = TRUE;             // (assumption: the server returns the same working path string)
             }
             if (ok && needChangeDir) // working directory needs to be changed
@@ -795,14 +795,14 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                 int panel;
                 BOOL notInPanel = !SalamanderGeneral->GetPanelWithPluginFS(this, panel);
                 BOOL success;
-                // SendChangeWorkingPath() calls ReconnectIfNeeded() on connection failure, luckily that
+                // SendChangeWorkingPath() calls ReconnectIfNeeded() on connection failure; this
                 // does not matter because the code preceding this call runs only when reconnect did not
                 // occur - "if (!reconnected)" - if reconnect happens, both code paths are the same
                 ok = ControlConnection->SendChangeWorkingPath(notInPanel, panel == PANEL_LEFT, parent, Path,
                                                               User, USER_MAX_SIZE, &success,
                                                               ftpReplyBuf, 700, NULL,
                                                               &TotalConnectAttemptNum, NULL, TRUE, NULL);
-                if (ok && !success && Path[0] != 0) // send succeeded, but the server reports an error (+ignore the error for an empty path) -> user command cannot
+                if (ok && !success && Path[0] != 0) // send succeeded, but the server reports an error (+ignore the error for an empty path) -> the user command cannot be sent
                 {                                   // be sent (it may be tied to the current path in the panel)
                     char errBuf[900 + FTP_MAX_PATH];
                     _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), Path, ftpReplyBuf);
@@ -844,7 +844,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                         }
                     }
 
-                    if (ok) // everything went well, report the command result to the user
+                    if (ok) // command succeeded, report the command result to the user
                     {
                         char* s = logBuf + strlen(logBuf);
                         while (s > logBuf && (*(s - 1) == '\n' || *(s - 1) == '\r'))
@@ -856,7 +856,7 @@ void CPluginFSInterface::SendUserFTPCommand(HWND parent)
                 }
                 else
                 {
-                    if (dlg.RefreshWorkingPath) // the Path may have changed, invalidate the Path listing cache
+                    if (dlg.RefreshWorkingPath) // Path may have changed, invalidate the listing for Path in the cache
                         UploadListingCache.ReportUnknownChange(User, Host, Port, Path, GetFTPServerPathType(Path));
 
                     if (canRetry) // "retry" is allowed
@@ -927,7 +927,7 @@ void CPluginFSInterface::ContextMenu(const char* fsName, HWND parent, int menuX,
                     int type2, lastType = sctyUnknown;
                     while (SalamanderGeneral->EnumSalamanderCommands(&index, &salCmd, nameBuf, 200, &enabled, &type2))
                     {
-                        if (!enabled || salCmd == SALCMD_OPEN || // we cannot "open" files yet, so do not add it (we can do it only for directories and there it is uninteresting)
+                        if (!enabled || salCmd == SALCMD_OPEN || // we cannot "open" files yet, so do not add it (we only support it for directories, where it is not useful)
                             type2 == sctyForFocusedFile && isfocusedDir ||
                             (type2 != sctyForFocusedFile && type2 != sctyForFocusedFileOrDirectory &&
                              type2 != sctyForSelectedFilesAndDirectories))
@@ -1344,7 +1344,7 @@ CFTPListingPluginDataInterface::CFTPListingPluginDataInterface(TIndirectArray<CS
                     }
                     else
                     {
-                        if ((nameID == 10 /* block size */ || nameID == 22 /* Physical Block Length */) &&
+                        if ((nameID == 10 /* size in blocks */ || nameID == 22 /* Physical Block Length */) &&
                             BlocksColumnOffset == -1)
                         { // found the column with file sizes in blocks (take the first from the left)
                             BlocksColumnOffset = ItemDataSize;
@@ -1754,7 +1754,7 @@ void CFTPListingPluginDataInterface::GetLastWriteDateAndTime(const CFileData& fi
     if (TimeColumnOffset == -2 || DateColumnOffset == -2)
     {
         DWORD mask = (TimeColumnOffset == -2 ? VALID_DATA_TIME : 0) | (DateColumnOffset == -2 ? VALID_DATA_DATE : 0);
-        if ((ValidDataMask & mask) == mask) // just to be sure
+        if ((ValidDataMask & mask) == mask) // safety check
         {
             FILETIME ft;
             SYSTEMTIME st;

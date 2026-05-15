@@ -14,15 +14,15 @@
 <h1>Interoperability</h1>
 
 <p>
-Following table shows known issues of interoperability with various <a href="protocols.htm#sftp">SFTP</a>
-servers. It includes both problems of the servers or known problems (typically fixed) of WinSCP that
-emerge with particular server only. It also includes special (even proprietary) features of some servers
+The following table shows known issues of interoperability with various <a href="protocols.htm#sftp">SFTP</a>
+servers. It includes both problems with the servers and known problems (typically fixed) of WinSCP that
+occur with particular servers only. It also includes special (even proprietary) features of some servers
 that WinSCP can use.
 </p>
 
 <p>
 Workarounds for bugs of major <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers can be
-configured on <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of Login dialog.
+configured on the <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of the Login dialog.
 </p>
 
 <table>
@@ -62,24 +62,24 @@ configured on <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of Login di
   <tr>
     <th> </th>
     <td>Cannot set <a href="ui_permissions.htm#special_permissions">special permissions</a>.</td>
-    <td>User can issue <a href="remote_command.htm">remote_command</a> to set these permissions.</td>
+    <td>The user can issue a <a href="remote_command.htm">remote command</a> to set these permissions.</td>
   </tr>
   <tr>
     <th> </th>
     <td>Cannot set <a href="ui_permissions.htm#special_permissions">special permissions</a>. </td>
-    <td>User can issue <a href="remote_command.htm">remote command</a> to set these permissions. </td>
+    <td>The user can issue a <a href="remote_command.htm">remote command</a> to set these permissions. </td>
   </tr>
   <tr>
     <th>VShell </th>
-    <td>Windows version does not have Unix-like behaviour. </td>
-    <td>WinSCP can handle that, but if version 4 or newer of
-            <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol is used only. </td>
+    <td>Windows version does not have Unix-like behavior. </td>
+    <td>WinSCP can handle this, but only if version 4 or later of the
+            <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol is used. </td>
   </tr>
   <tr>
     <th> </th>
     <td>Provides file attributes (<code>SSH_FILEXFER_ATTR_BITS</code>) with
-            <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, when it is allowed since
-                version 5 only. </td>
+            <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, when it is allowed only since
+                version 5. </td>
     <td>WinSCP can handle that.</td>
   </tr>
   <tr>
@@ -99,16 +99,16 @@ configured on <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of Login di
   <tr>
     <th>FTPshell </th>
     <td>Does not support reading of file attributes (<code>SSH_FXP_LSTAT</code> request). </td>
-    <td>WinSCP uses this also to check existence of directory before entering it. To allow user to enter
-            to directory on FTPshell server, WinSCP automatically fall backs to checking the
-                existence by reading directory content. This in turn forbids used to enter traverse-only
+    <td>WinSCP uses this also to check the existence of a directory before entering it. To allow users to enter
+            directories on FTPshell servers, WinSCP automatically falls back to checking the
+                existence by reading the directory content. This in turn prevents users from entering traverse-only
                 directories (with permissions 110). </td>
   </tr>
   <tr>
     <th>MultiNet </th>
-    <td>For <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, it indicates presence of
+    <td>For <acronym title="SSH File Transfer Protocol">SFTP</acronym> version 4, it indicates the presence of
             <acronym title="User ID">UID</acronym>/<acronym title="Graphical User Interface">GUI</acronym> in
-                directory listing, but actually it does not include them. </td>
+                the directory listing, but it does not actually include them. </td>
     <td>These attributes are not allowed for <acronym title="SSH File Transfer Protocol">SFTP</acronym>
             version 4 and newer, so WinSCP ignores the indication. </td>
   </tr>
@@ -128,13 +128,13 @@ configured on <em><a href="ui_login_sftp.htm#bugs">SFTP tab</a></em> of Login di
     <th> </th>
     <td>Incorrectly encodes server capabilities packet (<code>supported2</code> extension). </td>
     <td><a href="ui_login_sftp.htm#protocol_options">Force SFTP version 4 or lower</a> either on server or client side
-            to avoid the server provide the incorrect packet. </td>
+            to prevent the server from providing the incorrect packet. </td>
   </tr>
   <tr>
     <th>CoreFTP server </th>
     <td>Violates <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol in response to changing
             file properties. </td>
-    <td>Turn off setting file properties (e.g. in <a href="ui_transfer.htm">transfer settings</a>). </td>
+    <td>Turn off setting file properties (e.g., in <a href="ui_transfer.htm">transfer settings</a>). </td>
   </tr>
 </table>
 

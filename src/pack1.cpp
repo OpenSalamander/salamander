@@ -19,8 +19,7 @@
 //
 
 // Pointer to the error handling function
-BOOL(*PackErrorHandlerPtr)
-(HWND parent, const WORD errNum, ...) = EmptyErrorHandler;
+BOOL (*PackErrorHandlerPtr)(HWND parent, const WORD errNum, ...) = EmptyErrorHandler;
 
 const char* SPAWN_EXE_NAME = "salspawn.exe";
 const char* SPAWN_EXE_PARAMS = "-c10000";
@@ -152,7 +151,7 @@ const SPackBrowseTable PackBrowseTable[] =
 char* PackGetField(char* buffer, const int index, const int nameidx, const char separator)
 {
     CALL_STACK_MESSAGE5("PackGetField(%s, %d, %d, %u)", buffer, index, nameidx, separator);
-    // the requested item does not exist for the given archiver program
+    // the requested item does not exist for the given archiver
     if (index == 0)
         return NULL;
 
@@ -170,7 +169,7 @@ char* PackGetField(char* buffer, const int index, const int nameidx, const char 
     {
         // skip the item
         if (i == nameidx)
-            // if we are on the name, only a newline is a separator
+            // for the name field, only a newline is a separator
             while (*buffer != '\0' && *buffer != '\n')
                 buffer++;
         else
@@ -180,13 +179,13 @@ char* PackGetField(char* buffer, const int index, const int nameidx, const char 
                    *buffer != separator)
                 buffer++;
 
-        // skip the spaces behind it
+        // skip the spaces after it
         while (*buffer != '\0' && (*buffer == ' ' || *buffer == '\t' ||
                                    *buffer == '\n' || *buffer == 0x10 ||
                                    *buffer == 0x11 || *buffer == separator))
             buffer++;
 
-        // we are on the next item
+        // now at the next item
         i++;
     }
     return buffer;
@@ -364,7 +363,7 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
             t.wYear += 2000;
     }
 
-    // ted cas
+    // time
     idx = configTable->TimeIdx;
     if (ARJHack)
         idx--;
@@ -575,8 +574,8 @@ BOOL PackScanLine(char* buffer, CSalamanderDirectory& dir, const int index,
 //   IN:  panel is Salamander's file panel
 //        archiveFileName is the name of the archive file to be listed
 //   OUT: dir is filled with archive data
-//        pluginData is the interface to column data defined by the archiver plug-in
-//        plugin is the plug-in record that performed ListArchive
+//        pluginData is the interface to column data defined by the archiver plugin
+//        plugin is the plugin record that performed ListArchive
 
 BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirectory& dir,
               CPluginDataInterfaceAbstract*& pluginData, CPluginData*& plugin)
@@ -717,7 +716,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PROCESS, SpawnExe, GetErrorText(err));
     }
 
-    // We no longer need these handles; the child will close the duplicates, we keep only StdOutRd
+    // These handles are no longer needed; the child closes the duplicates, and we keep only StdOutRd
     HANDLES(CloseHandle(StdOutWr));
     HANDLES(CloseHandle(StdErrWr));
 
@@ -872,7 +871,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
     // a few local variables
     char* line = NULL; // buffer for building a "multi-line line"
     int lines = 0;     // how many lines of the multi-line item we have read
-    int validData = 0; // whether we read header/footer or valid data
+    int validData = 0; // whether we are reading header/footer data or valid data
     int toSkip = browseTable->LinesToSkip;
     int alwaysSkip = browseTable->AlwaysSkip;
     int linesPerFile = browseTable->LinesPerFile;
@@ -886,7 +885,7 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         switch (validData)
         {
         case 0: // we are in the header
-            // determine whether we stay in it
+            // determine whether we stay in the header
             if (!strncmp(lineArray[i], browseTable->StartString,
                          strlen(browseTable->StartString)))
                 validData++;
@@ -977,13 +976,13 @@ BOOL PackList(CFilesWindow* panel, const char* archiveFileName, CSalamanderDirec
         free(line);
         line = NULL;
         if (!ret)
-            return FALSE; // no need to call the error function, PackScanLine already did the call
+            return FALSE; // no need to call the error function; PackScanLine already called it
 
         // initialize variables
         lines = 0;
     }
 
-    // if we ended somewhere else than in the footer, we have a problem
+    // if we ended up anywhere other than in the footer, we have a problem
     if (validData < 2)
         return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_PARSE);
 
@@ -1036,7 +1035,7 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
         if (!strncmp(txtPtr, "END", 3))
             break;
 
-        // if the item is LIST, we determine which directory we are in
+        // if the item is LIST, determine which directory we are in
         if (!strncmp(txtPtr, "LIST", 4))
         {
             // run to the start of the name
@@ -1067,7 +1066,7 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
             continue;
         }
 
-        // if the item is FILE/DIR, we create a file/directory
+        // if the item is FILE/DIR, we create a file or directory
         if (!strncmp(txtPtr, "DIR", 3) || !strncmp(txtPtr, "FILE", 4))
         {
             // what is it, a file or a directory?
@@ -1090,8 +1089,8 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
             newfile.DosName = NULL;
             newfile.PluginData = -1; // just -1, ignored
 
-            // main parsing loop of a file/directory
-            // ends once we hit an unknown keyword
+            // the main file/directory parsing loop
+            // ends as soon as we encounter an unknown keyword
             while (1)
             {
                 // prepare the next line
@@ -1294,7 +1293,7 @@ BOOL PackUC2List(const char* archiveFileName, CPackLineArray& lineArray,
                 free(newfile.Name);
                 return (*PackErrorHandlerPtr)(NULL, IDS_PACKERR_GENERAL, buffer);
             }
-            // and finally just create a new object
+            // and finally just create a new file object
             newfile.IsOffline = 0;
             if (isDir)
             {
@@ -1677,7 +1676,7 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
     if (fileData != NULL)
         *fileData = NULL;
 
-    // if there are no more masks return NULL - finished
+    // if there are no more masks, return NULL - end
     if (param == NULL || *(char**)param == NULL)
         return NULL;
 
@@ -1756,16 +1755,16 @@ const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWo
 //   Function for extracting a single file from an archive (for the viewer).
 //
 //   RET: returns TRUE on success, FALSE on error
-//        on error the callback function *PackErrorHandlerPtr is called
+//        on error, calls the callback function *PackErrorHandlerPtr
 //   IN:  panel is the Salamander file panel
-//        archiveFileName is the name of the archive from which we extract
-//        nameInArchive is the name of the file we extract
+//        archiveFileName is the name of the archive from which the file is extracted
+//        nameInArchive is the name of the file to extract
 //        fileData is a pointer to the CFileData structure of the extracted file
 //        targetDir is the path where the file should be extracted
-//        newFileName (if not NULL) is the new name of the extracted file (during extraction, the file
-//          must be renamed from its original name to this new one)
-//        renamingNotSupported (only if newFileName is not NULL) - set TRUE if the plugin
-//          does not support renaming during extraction, Salamander will show an error
+//        newFileName (if not NULL) is the new name of the extracted file (during extraction,
+//          the file must be renamed from its original name to this new name)
+//        renamingNotSupported (only if newFileName is not NULL) - set to TRUE if the plugin
+//          does not support renaming during extraction; Salamander will display an error message
 //   OUT:
 
 BOOL PackUnpackOneFile(CFilesWindow* panel, const char* archiveFileName,

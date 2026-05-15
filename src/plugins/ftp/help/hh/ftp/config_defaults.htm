@@ -30,13 +30,13 @@ add more settings for proxy servers and later just choose which one to use.
 </dd>
 
 <dt><i>Use passive transfer mode (may help if you are behind firewall or proxy server)</i></dt>
-<dd>When checked, data connections are opened in the passive mode. It means that the FTP client
-opens data connection by connecting to the supplied port on the FTP server. Otherwise, data
-connections are opened in the active mode. It means that the data connection is opened by
-the FTP server by connecting to the supplied port on the FTP client. This mode is problematic
-if the FTP client is behind firewall or proxy server because they can block access to the FTP
-client (if they have not support for FTP protocol). The passive mode is not supported by some
-FTP servers (only few), you have to use active mode for accessing these FTP servers.
+<dd>When checked, data connections are opened in passive mode. This means that the FTP client
+opens the data connection by connecting to the supplied port on the FTP server. Otherwise, data
+connections are opened in active mode. In that case, the FTP server opens the data connection
+by connecting to the supplied port on the FTP client. Active mode can be problematic
+if the FTP client is behind a firewall or proxy server because they can block access to the FTP
+client if they do not support the FTP protocol. Passive mode is not supported by a few
+FTP servers, so you must use active mode to access those servers.
 </dd>
 
 <dt><i>Keep connections alive (prevents server from disconnecting you due to no activity)</i></dt>
@@ -50,46 +50,46 @@ connections alive</i> below for more information about keeping connections alive
 
 <dt><i>Use cache for viewed files and lists of files and directories on server (faster browsing)</i></dt>
 <dd>When checked, all viewed files and all path listings (lists of files and directories)
-from the FTP server are cached. It allows to use these cached files and listings when they
-are requested next time. Advantage is faster browsing of already visited directories and viewing
-of already viewed files. Disadvantage is that listings and files could be changed and when they
-are taken from the cache, they can be out of date. Use the
-<a href="using_refresh.htm">Refresh</a> command to reset
+from the FTP server are cached. This allows the plugin to reuse cached files and listings when they
+are requested again. The advantage is faster browsing of directories you have already visited and faster viewing
+of files you have already viewed. The disadvantage is that listings and files may have changed, so when they
+are taken from the cache they can be out of date. Use the
+<a href="using_refresh.htm">Refresh</a> command to reset the
 cache for the current directory and all its subdirectories (it removes all listings and all viewed
-files from cache). Cached files are stored in the temporary directory. Cached listings are
-stored in the memory cache, you can limit the size of this cache, see <i>Size limit for memory
+files from the cache). Cached files are stored in the temporary directory. Cached listings are
+stored in the memory cache; you can limit the size of this cache, see <i>Size limit for memory
 cache</i> in <a href="config_advanced.htm">Configuration/Advanced</a>.
 </dd>
 
 <dt><i>Compress data transfers if server supports compression (MODE Z)</i></dt>
 <dd>When checked, the plugin attempts to compress all data transfers (downloads and uploads, plus directory listings
-obtained from the server). No error is reported when the server does not support compression.
-However, you can check if compression is used: Check the result of the MODE Z command at the end of the Welcome
-Message or look for MODE Z just before the SYST or first PWD command in the FTP log.
+obtained from the server). No error is reported if the server does not support compression.
+However, you can check whether compression is being used: check the result of the MODE Z command at the end of the Welcome
+Message, or look for MODE Z just before the SYST or first PWD command in the FTP log.
 </dd>
 
 <dt><b>Default settings for keeping connections alive</b></dt>
-<dd>Choose a command which is sent to keep the connection alive (when the connection is not
-used to communicate with the server nor to send any data). NOOP and PWD commands
-are not transferring any data. If your FTP server closes connections due to no data transfer,
-use NLST or LIST commands. We recommend to use the NLST command because it transfers less
-data (the current path listing containing only filenames). Moreover specify a period of
-sending keep alive commands and when to stop sending keep alive commands. See
+<dd>Choose a command to send to keep the connection alive (when the connection is not
+being used to communicate with the server or transfer any data). The NOOP and PWD commands
+do not transfer any data. If your FTP server closes connections because no data is transferred,
+use the NLST or LIST commands. We recommend NLST because it transfers less
+data (the current path listing containing only file names). Also specify how often to
+send keep-alive commands and when to stop sending them. See
 <i>Keep connections alive (prevents server from disconnecting you due to no activity)</i>
-above for details on activation of the keep alive feature.
+above for details about activating the keep-alive feature.
 </dd>
 
 <dt><b>Default file transfer mode</b></dt>
 
-<dt><i>Binary mode (no changes during tranfers)</i></dt>
+<dt><i>Binary mode (no changes during transfers)</i></dt>
 <dd>When checked, all files are transferred in Binary mode. It means no changes in the file
 content during transfer.
 </dd>
 
 <dt><i>ASCII mode (convert files to use system default line ends)</i></dt>
-<dd>When checked, all files are transferred in ASCII mode. It means that all files
-are treated like text files and so all end of line characters will be converted
-to target system default end of line characters during transfer.
+<dd>When checked, all files are transferred in ASCII mode. This means that all files
+are treated as text files, so all end-of-line characters are converted
+to the target system's default end-of-line characters during transfer.
 </dd>
 
 <dt><i>Automatic - ASCII mode for specified files</i></dt>

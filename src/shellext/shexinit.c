@@ -44,7 +44,7 @@ SEI_Release(THIS)
 //
 //  PARAMETERS:
 //    pIDFolder - Specifies the parent folder
-//    pDataObj  - Spefifies the set of items selected in that folder.
+//    pDataObj  - Specifies the set of items selected in that folder.
 //    hRegKey   - Specifies the type of the focused item in the selection.
 //
 //  RETURN VALUE:

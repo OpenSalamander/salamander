@@ -1,15 +1,16 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// aby byly struktury nezavisle na nastavenem zarovnavani
+// to make the structures independent of the current packing alignment
 #pragma pack(push, 4)
 
 struct CMessage
 {
     int Size;
-    int SenderID; // doplni message center pri odeslani
+    int SenderID; // filled in by the message center when sending
 };
 
 #pragma pack(pop)
@@ -69,7 +70,7 @@ private:
     HANDLE HaveMessage;
     HANDLE FileMapping;
     CBuffer* Buffer;
-    HANDLE Reciever;   // jen pro odesilatele, handle ciloveho procesu
-    DWORD RecieverPid; // jen pro odesilatele, id ciloveho procesu
-    int SenderID;      // unikatni identifikator odesilatele
+    HANDLE Reciever;   // sender only: target process handle
+    DWORD RecieverPid; // sender only: target process ID
+    int SenderID;      // unique sender ID
 };

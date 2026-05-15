@@ -218,7 +218,7 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // we should detach from the dialog (centering is done)
+        case WM_APP + 1000: // detach from the dialog after centering
         {
             DetachWindow();
             delete this; // a bit of a hack, but nothing will touch 'this' anymore so it's fine
@@ -286,7 +286,7 @@ CConfigurationDialog::CConfigurationDialog(HWND parent, CConfiguration* configur
       Page3(options, changeFlag)
 {
     CALL_STACK_MESSAGE1("CConfigurationDialog::CConfigurationDialog(, , , , )");
-    Add(&Page1); // Genereal
+    Add(&Page1); // General
     Add(&Page2); // Default Compare Options
     Add(&Page3); // Colors
 

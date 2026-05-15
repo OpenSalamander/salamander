@@ -411,7 +411,7 @@ void CLogsDlg::LoadLog(int updateUID)
 
     if (updateUID != -1) // the log with UID 'updateUID' should be updated
     {
-        BOOL found = (actLogUID == updateUID); // TRUE = the combo has the updated log with UID 'actLogUID' selected
+        BOOL found = (actLogUID == updateUID); // TRUE = the combo has the log with UID 'actLogUID' selected for update
         MSG msg;                               // remove other messages requesting a log update (update the current log)
         while (PeekMessage(&msg, NULL, WM_APP_UPDATELOG, WM_APP_UPDATELOG, PM_REMOVE))
         {
@@ -582,7 +582,7 @@ CLogsDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         for (i = 0; i < count; i++)
         {
             if (SendMessage(combo, CB_GETITEMDATA, i, 0) == (int)wParam) // find the UID // FIXME_X64 suspicious cast
-            {                                                            // (unfortunately we cannot search directly in Logs - a changed log count would misalign the index)
+            {                                                            // (unfortunately we cannot search directly in Logs - if the number of logs changes, the index would no longer match)
                 if (SendMessage(combo, CB_GETCURSEL, 0, 0) != i)
                 {
                     SendMessage(combo, CB_SETCURSEL, i, 0);
@@ -1111,8 +1111,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // the application was deactivated and the wait window should be shown (no longer hidden because of a dialog)
         if (!Visible && wParam == FALSE && HasTimer)
             Show(TRUE); // the window must be shown so Salamander can be reached via Alt+Tab
-        break;          // WM_ACTIVATEAPP arrives even when neither the wait window nor its parent is active (any
-    } // modeless dialog without a parent - previously the Logs dialog) - the wait window cannot be activated
+        break;          // WM_ACTIVATEAPP arrives even when neither the wait window nor its parent is active
+    } // for example, for a modeless dialog without a parent; the wait window cannot be activated
 
     case WM_ACTIVATE:
     {
@@ -1161,8 +1161,8 @@ CWaitWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_NCHITTEST:
     {
-        // prevent moving the window by dragging its title bar
-        // also block the tooltip above the Close button
+        // prevent moving the window by dragging the title bar
+        // also block the tooltip over the Close button
         return HTCLIENT;
     }
 
@@ -1448,7 +1448,7 @@ void CListWaitWindow::RefreshTimeAndStatusAndProgress(BOOL fromTimer)
     int asciiTrForBinFileHowToSolve = 0;
     if (Visible && DataConnection->IsAsciiTrForBinFileProblem(&asciiTrForBinFileHowToSolve))
     {                                         // detected the "ascii transfer mode for binary file" problem, ask how to solve it
-        if (asciiTrForBinFileHowToSolve == 0) // we should ask the user
+        if (asciiTrForBinFileHowToSolve == 0) // ask the user
         {
             Show(FALSE);
             INT_PTR res = CViewErrAsciiTrForBinFileDlg(HParent).Execute();

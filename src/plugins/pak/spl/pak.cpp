@@ -80,12 +80,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "PAK" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "PAK" /* do not translate! */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // let the language module (.slg) load
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "PAK" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "PAK" /* do not translate! */);
     if (HLanguage == NULL)
         return NULL;
 

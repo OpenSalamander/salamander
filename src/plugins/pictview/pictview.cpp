@@ -2729,7 +2729,7 @@ void CViewerWindow::ToggleFullScreen()
         {
             // This is an ugly patch, maybe not needed for W2K+:
             // If the window already covers entire monitor area (although not in maximized state),
-            // the second (originallly the only) SetWindowPos in fact would not do anything.
+            // the second (originally the only) SetWindowPos in fact would not do anything.
             // As a result, the renderer would not get resized, window frame would stay and
             // the window title and rebar/menu area would display rubbish
             SetWindowPos(HWindow, HWND_TOPMOST, maxRect.left, maxRect.top,

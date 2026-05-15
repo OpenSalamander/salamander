@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <tchar.h>
@@ -1136,7 +1137,7 @@ int CZipUnpack::UnBZIP2File(CFileInfo* fileInfo, int* errorID)
         break;
     }
     case 3: // Out of memory
-    case 4: // Error uncompressing BZIP2 stream
+    case 4: // Error decompressing the BZIP2 stream
         switch (ProcessError(
             ret == 3 ? IDS_LOWMEM : IDS_ERRBZIP2,
             0, FileNameDisp,
@@ -1324,7 +1325,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                     WORD pwdVerFile;
                                     bool repeat;
 
-                                    // AES v2 doesn't store CRC, seems to be created by TC
+                                    // AES v2 does not store a CRC; it seems to be created by TC
                                     if (AES_VERSION_2 == aesExtraField.Version)
                                         bCheckCRC = false;
                                     ZipFile->FilePointer = fileInfo->DataOffset;
@@ -1440,7 +1441,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                             break;
                                         }
                                     //                    if (i >= Passwords.Count)// pwd not found in cache
-                                    if (!bFound) // pwd not found in cache
+                                    if (!bFound) // Password not found in cache
                                         do
                                         {
                                             repeat = false;
@@ -1920,7 +1921,7 @@ int CZipUnpack::SafeCreateCFile(CFile** file, const char* fileName, const char* 
                 {
                     if (q == CQuadWord(0, 0x80000000))
                     {
-                        // allocation failed and we will not attempt it again
+                        // allocation failed and we will not try again
                         AllocateWholeFile = false;
                         TestAllocateWholeFile = false;
                     }
@@ -2010,7 +2011,7 @@ LABEL_QuickSortHeaders2:
     {
         if (i < right)
         {
-            if (j - left < right - i) // both "halves" need sorting; recurse into the smaller one and handle the other via goto
+            if (j - left < right - i) // both "halves" need to be sorted, so recurse into the smaller one and process the other via "goto"
             {
                 QuickSortHeaders2(left, j, headers);
                 left = i;

@@ -18,7 +18,7 @@ class CMyThreadQueue : public CThreadQueue
 public:
     CMyThreadQueue(const char* queueName /* e.g., "DemoPlug Viewers" */) : CThreadQueue(queueName) {}
 
-    void Add(HANDLE hThread, DWORD tid) // adds an item to the queue, returns success
+    void Add(HANDLE hThread, DWORD tid) // adds an item to the queue
     {
         CS.Enter();
         CThreadQueue::Add(new CThreadQueueItem(hThread, tid)); // cannot fail
@@ -108,22 +108,22 @@ public:
         this->_lock = new CLock();
         this->_rwlock = new CRWLock();
 
-        this->_doDelete = FALSE; // the thread may finish before CreateThread() returns, so postpone deletion
+        this->_doDelete = FALSE; // the thread may finish before CreateThread() returns, so postpone deleting the object
 
         this->_hThread = CreateThread(
             NULL,                               // default security attributes
             0,                                  // use default stack size
             CWorkerThread::s_ThreadProc,        // thread function
             this,                               // argument to thread function
-            (suspended) ? CREATE_SUSPENDED : 0, // use default creation flags
-            &this->_threadId);                  // returns the thread identifier
+            (suspended) ? CREATE_SUSPENDED : 0, // creation flags
+            &this->_threadId);                  // receives the thread identifier
 
         if (this->_hThread != NULL)
             ThreadQueue.Add(this->_hThread, this->_threadId);
         else
             this->_finished = TRUE; // the thread failed to start = act as if it has already finished
         if (selfDelete)
-            this->SetSelfDelete(selfDelete); // deletion of the object is now possible
+            this->SetSelfDelete(selfDelete); // the object can now be deleted
     }
     ~CWorkerThread()
     {
@@ -144,7 +144,7 @@ public:
     CLock* GetLock() { return this->_lock; }
     CRWLock* GetRWLock() { return this->_rwlock; }
 
-    void SetSelfDelete(BOOL selfDelete) //after calling with TRUE, references to the object are unsafe and it may be destroyed at any time
+    void SetSelfDelete(BOOL selfDelete) // after calling with TRUE, the object may be destroyed at any time, so references to it are unsafe
     {
         this->_innerlock->Enter();
         if (this->_doDelete != selfDelete)
@@ -155,11 +155,11 @@ public:
             }
             else //if the thread has already finished
             {
-                if (selfDelete) //wants to delete me, so delete...
+                if (selfDelete) // wants to delete this object, so delete it...
                 {
                     this->_innerlock->Leave(); //first release the lock
                     delete this;               //destroy ourselves
-                    return;                    //and exit quickly
+                    return;                    // return immediately
                 }
             }
         }

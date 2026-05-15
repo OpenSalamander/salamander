@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -146,8 +147,8 @@ void CDeflate::bi_init() /* output zip file, NULL for in-memory compression */
 void CDeflate::send_bits(int value,  /* value to send */
                          int length) /* number of bits */
 {
-    /* If not enough room in bi_buf, use (valid) bits from bi_buf and
-     * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
+    /* If there is not enough room in bi_buf, use the valid bits in bi_buf and
+     * (16 - bi_valid) bits from value, leaving (length - (16 - bi_valid))
      * unused bits in value.
      */
     if (bi_valid > (int)Buf_size - length)
@@ -165,11 +166,11 @@ void CDeflate::send_bits(int value,  /* value to send */
 }
 
 /* ===========================================================================
- * Reverse the first len bits of a code, using straightforward code (a faster
- * method would use a table)
- * IN assertion: 1 <= len <= 15
+ * Reverse the first len bits of a code using straightforward code (a faster
+ * method would use a table).
+ * Assertion: 1 <= len <= 15
  */
-unsigned CDeflate::bi_reverse(unsigned code, /* the value to invert */
+unsigned CDeflate::bi_reverse(unsigned code, /* value to reverse */
                               int len)       /* its bit length */
 {
     unsigned res = 0;

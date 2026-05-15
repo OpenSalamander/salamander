@@ -8,7 +8,7 @@
 //
 // CComboboxEdit
 //
-// The combobox loses focus and control is buggy so we can't determine the selection
+// The combo box loses focus and control is buggy so we can't determine the selection
 // the usual way. This helper control works around that problem.
 //
 
@@ -101,8 +101,8 @@ struct CUserMenuValidationData // additional data used to validate User Menu: ar
     BOOL MustHandleItemsAsGroup;     // TRUE = items must be processed as a group: ListOfSelectedNames, ListOfSelectedFullNames, FileToCompareXXX, DirToCompareXXX
     BOOL MustHandleItemsOneByOne;    // TRUE = items must be processed individually: FullName, Name, NamePart, ExtPart, DOSFullName, DOSName, DOSNamePart, DOSExtPart
     int UsedCompareType;             // 0 = none yet, 1 = file-left-right, 2 = file-active-inactive, 3 = dir-left-right, 4 = dir-active-inactive, 5 = multiple types (invalid), 6 = file-or-dir-left-right, 7 = file-or-dir-active-inactive
-    BOOL UsedCompareLeftOrActive;    // TRUE = at least one variable compare-left or compare-active is used (we're testing if both parameters are used; otherwise it's nonsense)
-    BOOL UsedCompareRightOrInactive; // TRUE = at least one variable compare-right or compare-inactive is used (we're testing if both parameters are used; otherwise it's nonsense)
+    BOOL UsedCompareLeftOrActive;    // TRUE = at least one compare-left or compare-active variable is used (we test whether both parameters are used; otherwise it makes no sense)
+    BOOL UsedCompareRightOrInactive; // TRUE = at least one compare-right or compare-inactive variable is used (we test whether both parameters are used; otherwise it makes no sense)
 };
 
 struct CUserMenuAdvancedData // additional data used only for the User Menu: array Arguments
@@ -127,10 +127,10 @@ struct CUserMenuAdvancedData // additional data used only for the User Menu: arr
 //
 
 // Displays a popup menu with the supplied list and after selecting an item inserts text into the edit line.
-// hParent:          dialog containing the edit line or combobox and the Browse button
+// hParent:          dialog containing the edit line or combo box and the Browse button
 // buttonResID:      ID of the Browse button
-// editlineResID:    ID of the edit line or combobox
-// combobox:         when TRUE, editlineResID identifies an edit line; otherwise it identifies a combobox
+// editlineResID:    ID of the edit line or combo box
+// combo box:         when TRUE, editlineResID identifies an edit line; otherwise it identifies a combo box
 //                   when TRUE, attaches the CComboboxEdit control to the editlineResID
 // executeItems:     array used to fill the menu
 // filterResID:      text for the browse window opened in a special case from the menu
@@ -189,7 +189,7 @@ BOOL ExpandInfoLineItems(HWND msgParent, const char* varText, CPluginDataInterfa
                          int* varPlacementsCount, DWORD validFileData, BOOL isDisk);
 
 // validates varText containing variables from the MakeFileListItems array
-// msgParent - parent of themessage box for errors; if NULL, errors are not shown
+// msgParent - parent of the message box for errors; if NULL, errors are not shown
 BOOL ValidateMakeFileList(HWND msgParent, const char* varText, int& errorPos1, int& errorPos2);
 
 // expands varText containing variables from MakeFileListItems and stores the result in buffer

@@ -953,7 +953,7 @@ CFoundFilesListView::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (next != NULL)
         {
             char className[30];
-            WORD wl = LOWORD(GetWindowLong(next, GWL_STYLE)); // jen BS_...
+            WORD wl = LOWORD(GetWindowLong(next, GWL_STYLE)); // BS_* styles only
             nextIsButton = (GetClassName(next, className, 30) != 0 &&
                             SG->StrICmp(className, "BUTTON") == 0 &&
                             (wl == BS_PUSHBUTTON || wl == BS_DEFPUSHBUTTON));

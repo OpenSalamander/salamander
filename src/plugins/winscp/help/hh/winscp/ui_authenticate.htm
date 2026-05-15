@@ -15,17 +15,17 @@
 
 <p>
 During <a href="ssh.htm#authentication_in_ssh">authentication</a>
-WinSCP will present you with authentication window
-to show you progress of authentication and
+WinSCP will present you with an authentication window
+to show you the progress of authentication and
 to prompt you to enter your credentials or other information.
 </p>
 
 <a name="username"></a>
 <h4>Username</h4>
 <p>
-If you do not specify username on
+If you do not specify a username on the
 <a href="ui_login_session.htm#session_group">Login dialog</a>,
-WinSCP will prompt you once it needs it for authentication.
+WinSCP will prompt you when it needs one for authentication.
 </p>
 
 <a name="password"></a>
@@ -34,25 +34,25 @@ WinSCP will prompt you once it needs it for authentication.
 <p>
 If you are using password authentication, you can enter your password directly on
 <a href="ui_login_session.htm#session_group">Login dialog</a>. Otherwise WinSCP will prompt you
-once a server asks for it. You will be prompted again, if you enter invalid password. Also note
-that most of the servers will &quot;prompt&quot; for password when you use invalid username, not to allow
-attacker to learn if particular account exists.
+when the server asks for it. You will be prompted again if you enter an invalid password. Also note
+that most servers will &quot;prompt&quot; for a password when you use an invalid username, to prevent
+an attacker from learning whether a particular account exists.
 </p>
 
 <p>
 When authentication with stored password (if any) has failed before,
-the prompt will include <em>Change stored password to this one</em> check.
-Use it to overwrite stored password with new one.
+the prompt will include the <em>Change stored password to this one</em> checkbox.
+Use it to overwrite the stored password with a new one.
 </p>
 
 <a name="keyboard_interactive"></a>
 <h4>Keyboard Interactive</h4>
 
 <p>
-For keyboard-interactive, TIS or Cryptocard authentication methodsthe server can issue its own
-prompt. Most of the servers use keyboard-interactive authentication just as different method for getting
-account password. For the reason WinSCP by default responds to the first keyboard-interactive prompt
-with the password entered on Login dialog (if any). To disable this behaviour unset keyboard-interactive
+For keyboard-interactive, TIS, or Cryptocard authentication methods, the server can issue its own
+prompt. Most servers use keyboard-interactive authentication as a different method for obtaining the
+account password. For this reason, WinSCP by default responds to the first keyboard-interactive prompt
+with the password entered on the Login dialog (if any). To disable this behavior, unset the keyboard-interactive
 authentication option
 <em><a href="ui_login_authentication.htm#attempt_keyboard-interactive_authentication">Respond with password
 to the first prompt</a></em>.
@@ -60,30 +60,30 @@ to the first prompt</a></em>.
 
 <p>
 The server may also issue multiple prompts at once.
-Some servers will use such prompt to request a password change.
+Some servers will use such a prompt to request a password change.
 </p>
 
 <a name="private_key_passphrase"></a>
 <h4>Private Key Passphrase</h4>
 
 <p>
-If you are using <a href="public_key.htm">public key authentication</a> with encrypted
-<a href="public_key.htm#private">private key</a> you will be prompted to enter passphrase for your key.
+If you are using <a href="public_key.htm">public key authentication</a> with an encrypted
+<a href="public_key.htm#private">private key</a>, you will be prompted to enter the passphrase for your key.
 </p>
 
 <a name="authentication_banner"></a>
 <h4>Authentication Banner</h4>
 
 <p>
-During <a href="ssh.htm#authentication_in_ssh">authentication against SSH server</a> the server can issue authentication banner.
+During <a href="ssh.htm#authentication_in_ssh">authentication against an SSH server</a>, the server can issue an authentication banner.
 It can contain various information, generally regarding security and server usage. After reviewing the text,
-press <em>Continue</em> button to continue.
+press the <em>Continue</em> button to continue.
 </p>
 
 <p>
-If you want to avoid seeing the banner each time you login, check <em>Never show this banner again</em>.
-It will make WinSCP ignore the same banner for the particular account and server the next time. However
-if the banner content changes you will see it again. Suppression of banners can be
+If you want to avoid seeing the banner each time you log in, check <em>Never show this banner again</em>.
+This will make WinSCP ignore the same banner for this account and server the next time. However,
+if the banner content changes, you will see it again. Suppression of banners can be
 <a href="administration.htm">restricted by system administrator</a>.
 </p>
 
@@ -96,18 +96,18 @@ particularly if your password has expired.
 </p>
 
 <p>
-Enter your current password to <em>Current password</em>.
+Enter your current password in <em>Current password</em>.
 </p>
 
 <p>
-Enter your new password to <em>New password</em> and once again to
+Enter your new password in <em>New password</em> and again in
 <em>Confirm new password</em>.
 </p>
 
 <p>
-Note that the server may use
+Note that the server may use the
 <a href="#keyboard_interactive">keyboard interactive</a>
-method for change password request. Then the prompts will differ.
+method for a password change request. In that case, the prompts will differ.
 </p>
 
 </div>

@@ -200,7 +200,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
 
         BOOL ourClipDataObject = FALSE;
         DWORD effect = 0;
-        if (ownRutine) // if there's a chance for our own handling, check if it's copy or move
+        if (ownRutine) // if our own handling is possible, check whether this is a copy or move
         {
             DWORD dropEffect = 0;
             UINT cfPrefDrop = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
@@ -226,7 +226,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
                 if (GetClipboardData(cfSalDataObject) != NULL)
                     ourClipDataObject = TRUE;
                 else
-                    ownRutine = FALSE; // if it is not our IDataObject, we won't perform our own operation
+                    ownRutine = FALSE; // if it is not our IDataObject, do not perform our own operation
                 CloseClipboard();
             }
             else
@@ -241,7 +241,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
         }
         filesOnClip = files && ourClipDataObject;
 
-        if (ownRutine) // execute our own routine - copy or move
+        if (ownRutine) // perform the internal copy or move routine
         {
             if (pastePath != NULL)
                 strcpy(DropPath, pastePath);
@@ -290,7 +290,7 @@ BOOL CFilesWindow::ClipboardPaste(BOOL onlyLinks, BOOL onlyTest, const char* pas
         }
         else
         {
-            if (files && !onlyTest) // perform paste/pastelink
+            if (files && !onlyTest) // perform Paste/Paste Link
             {
                 //        MainWindow->ReleaseMenuNew();  // Windows are not designed for multiple context menus
 
@@ -415,7 +415,7 @@ BOOL CFilesWindow::ClipboardPasteToArcOrFS(BOOL onlyTest, DWORD* pasteDefEffect)
         if (IsSimpleSelection(dataObj, namesList)) // check if these are files/directories from disk and if they come from the same path
         {
             ret = TRUE;
-            // check if it's copy or move
+            // determine whether this is a copy or move operation
             DWORD dropEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE; // if we can't determine the effect, assume both (Copy takes priority)
             UINT cfPrefDrop = RegisterClipboardFormat(CFSTR_PREFERREDDROPEFFECT);
             if (OpenClipboard(HWindow))
@@ -563,7 +563,7 @@ BOOL CFilesWindow::IsTextOnClipboard()
         else
         {
             if (attempt++ <= 10)
-                Sleep(10); // wait to see if the clipboard gets released (max. 100 ms)
+                Sleep(10); // wait for the clipboard to be released (max. 100 ms)
             else
             {
                 TRACE_E("OpenClipboard() has failed!");
@@ -585,7 +585,7 @@ BOOL CFilesWindow::PostProcessPathFromUser(HWND parent, char (&buff)[2 * MAX_PAT
     // trim quotes, see https://forum.altap.cz/viewtopic.php?t=4160
     CutDoubleQuotesFromBothSides(buff);
 
-    if (IsFileURLPath(buff)) // it is a URL: convert URL (file://) to a Windows path
+    if (IsFileURLPath(buff)) // it is a URL: convert the URL (file://) to a Windows path
     {
         char path[MAX_PATH];
         DWORD pathLen = _countof(path);
@@ -605,8 +605,8 @@ BOOL CFilesWindow::PostProcessPathFromUser(HWND parent, char (&buff)[2 * MAX_PAT
             return TRUE; // let the FS plugin handle the processing
     }
 
-    // expand ENV variables (as frequently requested on the forum and for internal use)
-    // if an ENV variable does not exist, a directory with the same name gets a chance to be expanded
+    // expand ENV variables (at frequent request on the forum and for internal use)
+    // if an ENV variable does not exist, a directory with the same name gets a chance instead
     char expandedBuff[_countof(buff) + 1];
     DWORD auxRes = ExpandEnvironmentStrings(buff, expandedBuff, _countof(expandedBuff));
     if (auxRes == 0 || auxRes > _countof(buff))
@@ -717,7 +717,7 @@ BOOL CFilesWindow::OnLButtonDown(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     }
 
     // compatibility with Windows Explorer: clicking outside (in either the active or inactive panel)
-    // means confirming the rename; other actions (Alt+Tab), unlike Explorer, are considered
+    // confirms the rename; other actions (Alt+Tab), unlike in Explorer, are treated
     // as canceling the rename
     if (!MainWindow->DoQuickRename())
     {
@@ -1145,7 +1145,7 @@ void CFilesWindow::OfferArchiveUpdateIfNeeded(HWND parent, int textID, BOOL* arc
     CFilesWindow* otherPanel = MainWindow->LeftPanel == this ? MainWindow->RightPanel : MainWindow->LeftPanel;
     BOOL otherPanelArchMaybeUpdated = FALSE;
     if (otherPanel->Is(ptZIPArchive) && StrICmp(GetZIPArchive(), otherPanel->GetZIPArchive()) == 0)
-    { // the same archive is in the other panel, we must update it as well
+    { // the same archive is open in the other panel, so we must update it as well
         otherPanel->OfferArchiveUpdateIfNeededAux(parent, textID, &otherPanelArchMaybeUpdated);
         if (otherPanelArchMaybeUpdated)
             *archMaybeUpdated = TRUE;
@@ -1173,21 +1173,21 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
 {
     CALL_STACK_MESSAGE_NONE
     *lResult = 0;
-    if (BeginDragDrop && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "dragging" for drag&drop
+    if (BeginDragDrop && (wParam & (MK_LBUTTON | MK_RBUTTON))) // start drag-and-drop when the mouse is dragged
     {
         int x = abs(LButtonDown.x - (short)LOWORD(lParam));
         int y = abs(LButtonDown.y - (short)HIWORD(lParam));
         if (x > GetSystemMetrics(SM_CXDRAG) || y > GetSystemMetrics(SM_CYDRAG)) // move
         {
-            // the condition "!PerformingDragDrop" was added after AS 2.52 due to a bug report from ehter:
-            // in the directory there must be two files (one EXE downloaded via IE, which contains a security ADS) and another file
-            // dragging the other file onto the EXE triggers a security dialog, which triggers a security dialog that is NONMODAL and has its own message loop
-            // thus Salamander's main thread gets stuck in ShellAction(); then a second drag&drop leads to a crash
-            // this patch disables new drag&drop, just like Windows Explorer does
-            // the solution isn't perfect because Salamander only appears to be running (the main thread isn't in our app loop)
+            // The "!PerformingDragDrop" condition was added after AS 2.52 because of a state reported by ehter:
+            // the directory must contain two files (one EXE downloaded via IE so it contains a security ADS) and another file
+            // dragging the other file onto the EXE opens a security dialog, but it is NONMODAL and has its own message loop
+            // so Salamander's main thread gets stuck in ShellAction(); then a second drag&drop led to a crash
+            // this patch disables a new drag&drop operation, just as Windows Explorer does
+            // the solution is not clean, because Salamander only appears to be running (the main thread is not in our application loop)
             if (!PerformingDragDrop)
             {
-                if (Is(ptZIPArchive) && AssocUsed) // if the user edited files from the archive we must update them before operating on it, otherwise we'd work with old versions of the edited files stored directly in the archive
+                if (Is(ptZIPArchive) && AssocUsed) // If the user edited files from the archive, we must update them before operating on the archive; otherwise, we would work with old versions of the edited files stored directly in the archive.
                 {
                     BOOL archMaybeUpdated;
                     OfferArchiveUpdateIfNeeded(MainWindow->HWindow, IDS_ARCHIVECLOSEEDIT3, &archMaybeUpdated);
@@ -1244,7 +1244,7 @@ BOOL CFilesWindow::OnMouseMove(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         return TRUE;
     }
 
-    if (BeginBoxSelect && (wParam & (MK_LBUTTON | MK_RBUTTON))) // "opening" selection box
+    if (BeginBoxSelect && (wParam & (MK_LBUTTON | MK_RBUTTON))) // Start the selection box
     {
         short xPos = (short)LOWORD(lParam);
         short yPos = (short)HIWORD(lParam);
@@ -1684,7 +1684,7 @@ CFilesWindow::CreateDragImage(int cursorX, int cursorY, int& dxHotspot, int& dyH
                 //        DrawBriefDetailedItem(hDC, itemIndex, &r, DRAWFLAG_NO_FRAME | DRAWFLAG_NO_STATE | DRAWFLAG_SKIP_VISTEST | DRAWFLAG_DRAGDROP | DRAWFLAG_ICON_ONLY);
             }
             ListBox->XOffset = oldXOffset;
-            if (GetViewMode() == vmBrief) // not sure what is in XOffset in brief mode, so ensure dxHotspot is correct
+            if (GetViewMode() == vmBrief) // XOffset in brief mode is uncertain, so make sure dxHotspot is correct
                 oldXOffset = 0;
         }
         else if (GetViewMode() == vmIcons || GetViewMode() == vmThumbnails)
@@ -1810,7 +1810,7 @@ BOOL CopyUNCPathToClipboard(const char* path, const char* name, BOOL isDir, HWND
         }
         if (!isDir)
             strcat(uncPath, name);
-        if (SalGetFullName(uncPath)) // root "c:\\", others without '\\' at the end
+        if (SalGetFullName(uncPath)) // root "c:\\", others without a trailing '\\'
             return CopyTextToClipboard(uncPath);
     }
 
@@ -1864,7 +1864,7 @@ BOOL CFilesWindow::CopyFocusedNameToClipboard(CCopyFocusedNameModeEnum mode)
 
     if (FocusedIndex == 0 && FocusedIndex < Dirs->Count &&
         strcmp(Dirs->At(0).Name, "..") == 0)
-        return FALSE; // do not accept up-directory entries
+        return FALSE; // ignore the up-directory entry
     if (FocusedIndex < 0 || FocusedIndex >= Files->Count + Dirs->Count)
         return FALSE; // ignore an invalid index
 
@@ -2019,7 +2019,7 @@ BOOL CFilesWindow::BuildColumnsTemplate()
         {
             lstrcpy(column.Name, LoadStr(item->NameResID));
             lstrcpy(column.Description, LoadStr(item->DescResID));
-            if (i == 0) // column "Name"
+            if (i == 0) // "Name" column
             {
                 if ((ViewTemplate->Flags & VIEW_SHOW_EXTENSION) == 0) // "Ext" is part of the "Name" column, the name and description of the "Ext" column are after the terminating null of the name and description
                 {
@@ -2110,7 +2110,7 @@ void CFilesWindow::DeleteColumnsWithoutData(DWORD columnValidMask)
         {
             Columns.Delete(i);
             if (!Columns.IsGood())
-                Columns.ResetState(); // cannot fail, the array just wasn't reduced
+                Columns.ResetState(); // this cannot fail; only the array was not reduced
         }
     }
 }
@@ -2158,7 +2158,7 @@ void CFilesWindow::OnHeaderLineColWidthChanged()
         }
         if (column->ID == COLUMN_ID_CUSTOM) // it is a column added by a plugin
         {
-            if (column->FixedWidth && PluginData.NotEmpty()) // only non-elastic columns + "always true"
+            if (column->FixedWidth && PluginData.NotEmpty()) // only fixed-width columns + "always true"
             {
                 PluginData.ColumnWidthWasChanged(leftPanel, column, column->Width);
                 pluginColMaybeChanged = TRUE;
@@ -2166,7 +2166,7 @@ void CFilesWindow::OnHeaderLineColWidthChanged()
         }
         else
         {
-            if (colIndex != -1) // "always true"
+            if (colIndex != -1) // "always TRUE"
             {
                 if (leftPanel)
                     ViewTemplate->Columns[colIndex].LeftWidth = column->Width;
