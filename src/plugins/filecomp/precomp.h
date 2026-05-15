@@ -43,7 +43,7 @@
 #include "winliblt.h"
 #include "auxtools.h"
 
-// get rid of some anoying warnings
+// get rid of some annoying warnings
 #pragma warning(disable : 4661)
 #pragma warning(disable : 4786)
 

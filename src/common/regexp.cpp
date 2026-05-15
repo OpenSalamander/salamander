@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
@@ -39,14 +40,14 @@
 
 #pragma warning(3 : 4706) // warning C4706: assignment within conditional expression
 
-//#include "trace.h" aby to slo pripojit i k pluginum, stejne tu zatim zadny TRACE neni
+// Needed so this can also be built for plugins; TRACE isn't available here yet.
 #include "str.h"
 #include "regexp.h"
 
 //*****************************************************************************
 //*****************************************************************************
 //
-// moje cast regexp.cpp
+// my section of regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -65,7 +66,7 @@ public:
 
 C__RegExpSection __RegExpSection;
 
-/*    - moznost definice svych vlastnich hlasek, jinak staci nakopirovat do kodu
+/*    - custom error messages can be defined here; otherwise, copying this into the code is sufficient
 
 const char *RegExpErrorText(CRegExpErrors err)
 {
@@ -159,7 +160,7 @@ BOOL CRegularExpression::SetFlags(WORD flags)
     Expression = regcomp(pattern, LastErrorText);
 
     if (Expression != NULL && (Flags & sfForward) == 0)
-    { // vyraz je syntakticky o.k. + backward search
+    { // Expression is syntactically correct; backward search.
         if (Expression != NULL)
             free(Expression);
         Expression = NULL;
@@ -208,7 +209,7 @@ BOOL CRegularExpression::SetLine(const char* start, const char* end)
             memcpy(Line, start, LineLength);
             Line[LineLength] = 0;
         }
-        else // insensitive
+        else // case-insensitive
         {
             char* l = Line;
             while (start < end)
@@ -225,7 +226,7 @@ BOOL CRegularExpression::SetLine(const char* start, const char* end)
                 *l++ = *--end;
             *l = 0;
         }
-        else // insensitive
+        else // case-insensitive
         {
             char* l = Line;
             while (start < end)
@@ -263,16 +264,16 @@ BOOL CRegularExpression::ExpandVariables(char* pattern, char* buffer, int bufSiz
 {
     char* sour = pattern;
     char* dest = buffer;
-    bufSize--; //rezervujeme si misto pro NULL
+    bufSize--; // Reserve space for the NULL terminator.
     while (*sour)
     {
         if (!bufSize)
-            return FALSE; //dosel nam buffer
+            return FALSE; // Out of buffer space.
         if (*sour == '\\')
         {
             sour++;
             if (!*sour)
-                break; // tady bych asi mnel hodit chybu takovato sekvence neni definovana
+                break; // An error should probably be reported here; this sequence is undefined.
             if (*sour >= '1' && *sour <= '9')
             {
                 int n = *sour - '0';
@@ -308,9 +309,9 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
     char* output = buffer;
     int len;
     while (start <= LineLength && regexec(Expression, Line, start) == 1 &&
-           Expression->endp[0] - Expression->startp[0] > 0 /*zero sized match neberem*/)
+           Expression->endp[0] - Expression->startp[0] > 0 /* Ignore zero-length matches. */)
     {
-        //zkopirujeme nezmeny text, ktery predchazi match
+        // Copy the unchanged text before the match.
         len = (int)((Expression->startp[0] - Line) - start);
         if (len + 1 > bufSize)
         {
@@ -319,7 +320,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
         memcpy(output, OrigLineStart + start, len);
         output += len;
         bufSize -= len;
-        //nahradime co jsme nasli
+        // Replace the matched text.
         if (!ExpandVariables(pattern, output, bufSize, &len))
         {
             return FALSE;
@@ -334,7 +335,7 @@ int CRegularExpression::ReplaceForward(int start, char* pattern, BOOL global,
 
     if (ret && start < LineLength)
     {
-        //dokopirujeme text nasledujici match
+        // Copy the text after the match.
         if (LineLength - start + 1 > bufSize)
         {
             return FALSE;
@@ -350,9 +351,9 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 
     while (s < srcExpEnd)
     {
-        //---  hledani konce atomu - pro zopakovani '*', '+' a '?'
-        char* ss;    // ukazuje za atom
-        BOOL addPar; // paruji zavorky? (ma se pridat zavorka do paru)
+        //--- find the end of the atom for '*', '+' and '?' repetition
+        char* ss;    // Points past the atom.
+        BOOL addPar; // Should a matching parenthesis be added?
         switch (*s)
         {
         case '\\':
@@ -362,8 +363,8 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
         case '(':
         case '[':
         {
-            int parNum = (*s == '(') ? 1 : 0; // pocty zavorek
-            int braNum = (*s == '[') ? 1 : 0; // pocty zavorek
+            int parNum = (*s == '(') ? 1 : 0; // Parenthesis count.
+            int braNum = (*s == '[') ? 1 : 0; // Bracket count.
             char* lastBra = (*s == '[') ? s : NULL;
             ss = s + 1;
             while (*ss != 0 && (parNum != 0 || braNum != 0))
@@ -373,10 +374,10 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case '(':
                     if (braNum == 0)
                         parNum++;
-                    break; // [..(..] je povoleno
+                    break; // [..(..] is allowed.
                 case '[':
                 {
-                    if (braNum == 0) // [..[..] je povoleno
+                    if (braNum == 0) // [..[..] is allowed.
                     {
                         braNum++;
                         lastBra = ss - 1;
@@ -387,13 +388,13 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 case ')':
                     if (braNum == 0 && parNum > 0)
                         parNum--;
-                    break; // [..)..] je povoleno
+                    break; // [..)..] is allowed.
                 case ']':
                 {
-                    if (braNum != 0) // ..].. je povoleno
+                    if (braNum != 0) // ..].. is allowed.
                     {
-                        if (ss - 2 != lastBra &&                     // []..] je povoleno
-                            (ss - 3 != lastBra || *(ss - 2) != '^')) // [^]..] je take povoleno
+                        if (ss - 2 != lastBra &&                     // []..] is allowed.
+                            (ss - 3 != lastBra || *(ss - 2) != '^')) // [^]..] is also allowed.
                         {
                             braNum--;
                         }
@@ -405,7 +406,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
                 {
                     if (*ss != 0)
                         ss++;
-                    break; // znak za '\\' nemuze byt brany jako zavorka
+                    break; // The character after '\\' cannot be treated as a parenthesis.
                 }
                 }
             }
@@ -422,12 +423,12 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             break;
         }
 
-        //---  nakopirovani vsech '*', '+' a '?' obsazenych za atomem
+        //--- copy all '*', '+' and '?' following the atom
         char* oldSS = ss;
         while (*ss == '*' || *ss == '?' || *ss == '+')
             *--dstExpEnd = *ss++;
 
-        //--- nakopirovani obraceneho atomu
+        //--- copy the reversed atom
         switch (*s)
         {
         case '\\':
@@ -446,13 +447,13 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             else
                 *--dstExpEnd = (*s == '(') ? ')' : ']';
 
-            if (oldSS - s >= 2) // pokud vyraz nekonci otevrenou zavorkou
+            if (oldSS - s >= 2) // if the expression does not end with an opening bracket
             {
                 if (*s == '(')
-                { // kopie reversovaneho vyrazu - ohraniceni
+                { // Copy the reversed expression - parenthesized group.
                     ReverseRegExp(dstExpEnd, s + 1, oldSS - 1);
                 }
-                else // prosta kopie vnitrku - mnozina
+                else // Simple copy of the character set contents.
                 {
                     dstExpEnd -= (oldSS - 1) - (s + 1);
                     memcpy(dstExpEnd, s + 1, (oldSS - 1) - (s + 1));
@@ -476,7 +477,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
             break;
         }
 
-        //---  prechod na dalsi atom
+        //--- move to the next atom
         s = ss;
     }
 }
@@ -484,7 +485,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 //*****************************************************************************
 //*****************************************************************************
 //
-// puvodni regexp.cpp
+// original regexp.cpp
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -608,7 +609,7 @@ void CRegularExpression::ReverseRegExp(char*& dstExpEnd, char* srcExp, char* src
 /*
  * Flags to be passed up and down.
  */
-#define HASWIDTH 01 /* Known never to match null string. */
+#define HASWIDTH 01 /* Known never to match the empty string. */
 #define SIMPLE 02   /* Simple enough to be STAR/PLUS operand. */
 #define SPSTART 04  /* Starts with * or +. */
 #define WORST 0     /* Worst case. */
@@ -745,7 +746,7 @@ regexp* regcomp(char* exp, const char*& lastErrorText)
         }
     }
 
-    lastErrorText = NULL; // uspesny navrat
+    lastErrorText = NULL; // Successful return.
     __RegExpSection.Leave();
     return (r);
 }
@@ -829,7 +830,7 @@ char* reg(int paren /* Parenthesized? */, int* flagp)
 }
 
 /*
- - regbranch - one alternative of an | operator
+ * regbranch - one alternative of the | operator
  *
  * Implements the concatenation operator.
  */
@@ -902,7 +903,7 @@ char* regpiece(int* flagp)
         regoptail(ret, regnode(BACK));  /* and loop */
         regoptail(ret, ret);            /* back */
         regtail(ret, regnode(BRANCH));  /* or */
-        regtail(ret, regnode(NOTHING)); /* null. */
+        regtail(ret, regnode(NOTHING)); /* empty branch. */
     }
     else if (op == '+' && (flags & SIMPLE))
         reginsert(PLUS, ret);
@@ -1067,7 +1068,7 @@ char* regnode(char op) /* Location. */
 
     ptr = ret;
     *ptr++ = op;
-    *ptr++ = '\0'; /* Null "next" pointer. */
+    *ptr++ = '\0'; /* Null "next" pointer byte. */
     *ptr++ = '\0';
     regcode = ptr;
 
@@ -1086,9 +1087,9 @@ void regc(char b)
 }
 
 /*
- - reginsert - insert an operator in front of already-emitted operand
+ * reginsert - insert an operator in front of an already-emitted operand
  *
- * Means relocating the operand.
+ * This means relocating the operand.
  */
 void reginsert(char op, char* opnd)
 {
@@ -1168,14 +1169,14 @@ char** regstartp; /* Pointer to startp array. */
 char** regendp;   /* Ditto for endp. */
 
 /*
- * Forwards.
+ * Forward declarations.
  */
 int regtry(regexp* prog, char* string);
 int regmatch(char* prog);
 int regrepeat(char* p);
 
 /*
- - regexec - match a regexp against a string
+ - regexec - match a regular expression against a string
  */
 int regexec(regexp* prog, char* string, int offset)
 {
@@ -1238,7 +1239,7 @@ int regexec(regexp* prog, char* string, int offset)
             s++;
         }
     else
-        /* We don't -- general case. */
+        /* We don't know the start character -- general case. */
         do
         {
             if (regtry(prog, s))
@@ -1254,9 +1255,9 @@ int regexec(regexp* prog, char* string, int offset)
 }
 
 /*
- - regtry - try match at specific point
+ - regtry - try a match at a specific point
  */
-int regtry(regexp* prog, char* string) /* 0 failure, 1 success */
+int regtry(regexp* prog, char* string) /* Returns 0 on failure, 1 on success. */
 {
     int i;
     char** sp;
@@ -1284,13 +1285,13 @@ int regtry(regexp* prog, char* string) /* 0 failure, 1 success */
 }
 
 /*
- - regmatch - main matching routine
+ * regmatch - main matching routine
  *
- * Conceptually the strategy is simple:  check to see whether the current
- * node matches, call self recursively to see whether the rest matches,
- * and then act accordingly.  In practice we make some effort to avoid
- * recursion, in particular by going through "ordinary" nodes (that don't
- * need to know whether the rest of the match failed) by a loop instead of
+ * Conceptually the strategy is simple: check whether the current
+ * node matches, call itself recursively to see whether the rest matches,
+ * and then act accordingly. In practice, some effort is made to avoid
+ * recursion, in particular by going through "ordinary" nodes (that do not
+ * need to know whether the rest of the match failed) in a loop instead of
  * by recursion.
  */
 int regmatch(char* prog) /* 0 failure, 1 success */
@@ -1448,11 +1449,11 @@ int regmatch(char* prog) /* 0 failure, 1 success */
             no = regrepeat(OPERAND(scan));
             while (no >= min)
             {
-                /* If it could work, try it. */
+                /* Try it if it might match. */
                 if (nextch == '\0' || *reginput == nextch)
                     if (regmatch(next))
                         return (1);
-                /* Couldn't or didn't -- back up. */
+                /* Match failed or was skipped; back up. */
                 no--;
                 reginput = save + no;
             }
@@ -1460,7 +1461,7 @@ int regmatch(char* prog) /* 0 failure, 1 success */
         }
 
         case END:
-            return (1); /* Success! */
+            return (1); /* Match succeeded. */
         default:
             return (0); /* memory corruption */
         }

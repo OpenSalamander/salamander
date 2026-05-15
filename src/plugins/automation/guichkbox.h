@@ -21,7 +21,7 @@ private:
     bool m_bChecked;
 
 protected:
-    /// Overrriden.
+    /// Overridden.
     /// \see CSalamanderGuiComponentBase::CreateHwnd
     virtual HWND CreateHwnd(HWND hWndParent);
 

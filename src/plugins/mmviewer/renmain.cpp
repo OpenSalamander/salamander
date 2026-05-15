@@ -265,7 +265,7 @@ LRESULT CRendererWindow::OnCommand(WPARAM wParam, LPARAM lParam)
                     FileName[0] = 0;
                 }
 
-                // set the index even if it fails so the user can move to the next/previous image
+                // Set the index even if opening fails so the user can move to the next/previous image
                 EnumFilesCurrentIndex = enumFilesCurrentIndex;
             }
         }
@@ -482,7 +482,7 @@ CRendererWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (Output.GetCount())
             return 1;
-        // Let Windows erase the bground for us if we have nothing to show...
+        // Let Windows erase the background for us if we have nothing to show...
         break;
     }
 

@@ -99,7 +99,7 @@ private:
         Cancel
     };
     // behavior of the callback when a data error occurs
-    BOOL DataErrorSilent; // whether to ask about Keep or Delete
+    BOOL DataErrorSilent; // whether to prompt for Keep or Delete
     EOperationMode DataErrorMode;
     BOOL DataErrorDeleteSilent; // report an error when deleting
     BOOL SilentDelete;

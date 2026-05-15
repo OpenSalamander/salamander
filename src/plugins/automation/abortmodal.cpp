@@ -128,7 +128,7 @@ HRESULT AbortableModalDialogWrapper(
     {
         hr = SALAUT_E_ABORT;
 
-        // Pump out the WM_QUIT we generated. The eventual messages
+        // Pump out the WM_QUIT we generated. Any messages
         // before WM_QUIT are lost.
         MSG msg;
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

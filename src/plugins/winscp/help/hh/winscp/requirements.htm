@@ -18,21 +18,21 @@
 <h4>Server Requirements</h4>
 
 <p>
-Using WinSCP, you can connect to a <a href="ssh.htm">SSH</a> (Secure Shell) server
-with <a href="protocols.htm#sftp">SFTP</a> (<acronym title="Secure Shell">SSH</acronym> File
+Using WinSCP, you can connect to an <a href="ssh.htm">SSH</a> (Secure Shell) server
+with an <a href="protocols.htm#sftp">SFTP</a> (<acronym title="Secure Shell">SSH</acronym> File
 Transfer Protocol) or <a href="protocols.htm#scp">SCP</a> (Secure Copy Protocol) service.
 </p>
 
 <p>
 <acronym title="SSH File Transfer Protocol">SFTP</acronym> is a standard
-part of <acronym title="Secure Shell">SSH</acronym>-2 package. <acronym title="Secure Copy Protocol">SCP</acronym>
-is a standard part of <acronym title="Secure Shell">SSH</acronym>-1 package.
-You can also run both protocols on the latter <acronym title="Secure Shell">SSH</acronym> version.
+part of the <acronym title="Secure Shell">SSH</acronym>-2 package. <acronym title="Secure Copy Protocol">SCP</acronym>
+is a standard part of the <acronym title="Secure Shell">SSH</acronym>-1 package.
+You can also run both protocols on the later <acronym title="Secure Shell">SSH</acronym> version.
 WinSCP supports both <acronym title="Secure Shell">SSH</acronym>-1 and <acronym title="Secure Shell">SSH</acronym>-2.
-For authentication, the user can use user name and password or <a href="public_key.htm">public key</a>
+For authentication, users can use their username and password or a <a href="public_key.htm">public key</a>
 (<acronym title="Rivest, Shamir &amp; Adelman">RSA</acronym> or
-<acronym title="Digital Signature Algorithm">DSA</acronym>). Other supported means of authorization
-include TIS, Cryptocard, Keyboard-interactive, and Kerberos.
+<acronym title="Digital Signature Algorithm">DSA</acronym>). Other supported authentication methods
+include TIS, Cryptocard, keyboard-interactive, and Kerberos.
 </p>
 
 <a name="sftp_requirements"></a>
@@ -64,22 +64,22 @@ option on the <a href="ui_login_scp.htm">SCP/Shell tab</a> in the Login dialog.
 <p>
 For correct functionality, you must do the following. The <code>bash</code> shell is recommended
 for working with WinSCP. If your default shell doesn't work with WinSCP, you can make WinSCP use
-<a href="ui_login_scp.htm#shell">other shell</a>.
+<a href="ui_login_scp.htm#shell">another shell</a>.
 </p>
 
 <p>
 For its operation, WinSCP needs several commands: <code>cd</code>, <code>chgrp</code>,
 <code>chmod</code>, <code>chown</code>, <code>echo</code>, <code>groups</code>, <code>ls</code>,
 <code>mkdir</code>, <code>mv</code>, <code>pwd</code>, <code>scp</code>, <code>rm</code>, <code>ln</code>,
-<code>unalias</code> and <code>unset</code>. These commands have to be placed in the path and user must have
-sufficient permissions to execute them. WinSCP expects &quot;standard&quot; behavior of these commands. You can avoid
-needing these commands by not using some of WinSCP functions (<code>mkdir</code>, <code>chown</code>,
+<code>unalias</code>, and <code>unset</code>. These commands must be in the path, and the user must have
+sufficient permissions to execute them. WinSCP expects &quot;standard&quot; behavior from these commands. You can avoid
+needing these commands by not using some of WinSCP's functions (<code>mkdir</code>, <code>chown</code>,
 <code>ln</code>, etc.) or by changing some configuration options (<code>groups</code>,
-<code>unalias</code> and <code>unset</code>).
+<code>unalias</code>, and <code>unset</code>).
 </p>
 
 <p>
-Just after establishing the connection with server, all <a href="ui_login_scp.htm#other_options">aliases on the
+Just after establishing a connection with the server, all <a href="ui_login_scp.htm#other_options">aliases on the
 above commands are cleared</a>. This helps avoid unexpected behavior.
 </p>
 
@@ -91,15 +91,15 @@ server settings, it may be necessary to change this before WinSCP can be used.
 </p>
 
 <p>
-The last necessary condition is the proper output of <code>ls -la</code> command.
-Particularly standard number and ordering of the columns.
-If the default output does not satisfy WinSCP need, you can use
+The last necessary condition is proper output from the <code>ls -la</code> command,
+particularly the standard number and ordering of columns.
+If the default output does not satisfy WinSCP's needs, you can use the
 <em><a href="ui_login_scp.htm#directory_listing">Listing command</a></em> option
 on the <em>SCP/Shell tab</em> in the Login dialog to modify it.
 </p>
 
 <p>
-WinSCP will attempt detect support for <code>--full-time</code> switch of the <code>ls</code> command.
+WinSCP will attempt to detect support for the <code>--full-time</code> switch of the <code>ls</code> command.
 If the detection causes you problems, you can <a href="ui_login_scp.htm#directory_listing">disable</a> it.
 </p>
 
@@ -107,9 +107,8 @@ If the detection causes you problems, you can <a href="ui_login_scp.htm#director
 <h4>Using WinSCP with Restricted Shell Environments</h4>
 
 <p>
-A number of restricted shell environments exist for supporting
-<acronym title="SSH File Transfer Protocol">SFTP</acronym>/<acronym title="Secure Copy Protocol">SCP</acronym>
-only accounts. These systems restrict the user to a small subset of commands needed to manipulate files
+A number of restricted shell environments exist to support
+<acronym title="SSH File Transfer Protocol">SFTP</acronym>/<acronym title="Secure Copy Protocol">SCP</acronym>-only accounts. These systems restrict the user to a small subset of commands needed to manipulate files
 while denying the ability to execute arbitrary commands. Some of these environments create incompatibilities
 with WinSCP, particularly if using <acronym title="Secure Copy Protocol">SCP</acronym> instead of
 <acronym title="SSH File Transfer Protocol">SFTP</acronym>.
@@ -125,7 +124,7 @@ make the shell incompatible with WinSCP.
 
 <p>
 This mainly affects the <acronym title="Secure Copy Protocol">SCP</acronym> protocol. An example is colorized
-output with the <code>ls</code> command that outputs ANSI color sequences to the command output which WinSCP is
+output with the <code>ls</code> command that outputs ANSI color sequences to the command output, which WinSCP is
 unable to parse.
 </p>
 
@@ -137,9 +136,9 @@ is where some message is printed from a start-up script. WinSCP (and any other
 </p>
 
 <p>
-You should configure your start-up scripts to conform to non-interactive sessions (like WinSCP). Some shells
-call different profile/start-up scripts for interactive and non-interactive sessions. You can also use some
-environment variables, such as <code>TERM</code> to distinguish interactive and non-interactive sessions.
+You should configure your startup scripts to conform to non-interactive sessions (like WinSCP). Some shells
+call different profile/startup scripts for interactive and non-interactive sessions. You can also use some
+environment variables, such as <code>TERM</code>, to distinguish between interactive and non-interactive sessions.
 </p>
 
 </div>

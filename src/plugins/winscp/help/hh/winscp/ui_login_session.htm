@@ -14,7 +14,7 @@
 <h1>Session Tab (Login Dialog)</h1>
 
 <p>
-<em>Session tab</em> contains the most basic session options.
+The <em>Session tab</em> contains the most basic session options.
 </p>
 
 <a name="session_group"></a>
@@ -30,11 +30,11 @@ for a session to open.
 The <em>Username</em> box is where you type your account name on the server.
 If you do not fill the username and it needs to be known
 to complete authentication (most cases),
-you will be <a href="ui_authenticate.htm#username">prompted for username</a> then.
+you will then be <a href="ui_authenticate.htm#username">prompted for a username</a>.
 </p>
 
 <p>
-Unless at least <em>Host name</em> and <em>Username</em> are filled a session cannot be opened
+Unless at least <em>Host name</em> and <em>Username</em> are filled, a session cannot be opened
 (<em>Login</em> button is disabled).
 </p>
 
@@ -45,16 +45,16 @@ The <em>Port number</em> box lets you specify which port number on the server to
 
 <p>
 The <em>Password</em> box is for the password associated with the account. You are advised not to fill
-it in if you are going to save the session to <a href="ui_login_stored_sessions.htm">stored session list</a>.
-Also do not fill the password if you are
-going to use other <a href="ssh.htm#authentication_in_ssh">authentication method</a> (like public key).
+it in if you are going to save the session to the <a href="ui_login_stored_sessions.htm">stored session list</a>.
+Also, do not fill the password if you are
+going to use another <a href="ssh.htm#authentication_in_ssh">authentication method</a> (like public key).
 If you do not fill the password and other authentication methods fail (password has the lowest
 preference), you will be <a href="ui_authenticate.htm#password">prompted for password</a> then. Password
 storing can be <a href="administration.htm">restricted by system administrator</a>.
 </p>
 
 <p>
-Use the <em>Private key file</em> box to specify path to your <a href="public_key.htm#private">private key file</a>
+Use the <em>Private key file</em> box to specify the path to your <a href="public_key.htm#private">private key file</a>
 if you are going to use <a href="public_key.htm">public key authentication</a>.
 You can use environment variables in the path, with syntax <code>%NAME%</code>.
 The file must be in
@@ -65,8 +65,8 @@ unless you want to ensure that only that particular key is used for authenticati
 </p>
 
 <p>
-The passphrase cannot be entered in advance on Login dialog and thus it cannot be saved to
-<a href="ui_login_stored_sessions.htm">stored session</a>. If you need to login to server
+The passphrase cannot be entered in advance in the Login dialog, so it cannot be saved with a
+<a href="ui_login_stored_sessions.htm">stored session</a>. If you need to log in to the server
 automatically without prompt, generate key without passphrase. Use this method carefully and only
 under special circumstances.
 </p>
@@ -89,7 +89,7 @@ WinSCP tries harder using non-standard methods to find the
 server (read <a href="requirements.htm#sftp_requirements">SFTP requirements</a> for more).
 </p>
 <p>
-You can see the protocol actually used on the <a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
+You can see the protocol actually used in the <a href="ui_fsinfo.htm">Server and Protocol Information Dialog</a>.
 </p>
 
 </div>

@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <windows.h>
@@ -70,26 +71,26 @@ BOOL GetChar(HANDLE file, char& c)
         return FALSE;
     }
     /*
-    switch (c)
-    {
-      case '\r': break; //dump all CRLF sequences
-      case '\n':
-        if (prev == '\r') break;
-        else return TRUE;
+        switch (c)
+        {
+          case '\r': break; //skip all CRLF sequences
+          case '\n':
+            if (prev == '\r') break;
+            else return TRUE;
 
-      case '\\': break; // read next (control) character
+          case '\\': break; //read the next control character
 
-      case 'n':  //process all \n ad  sequences
-        if (prev == '\\') c = '\n';
-        return TRUE;
+          case 'n':  //process all \n sequences
+            if (prev == '\\') c = '\n';
+            return TRUE;
 
-      case 'r': //process all \r ad  sequences
-        if (prev == '\\') c = '\r';
-        return TRUE;
+          case 'r': //process all \r sequences
+            if (prev == '\\') c = '\r';
+            return TRUE;
 
-      default: return TRUE;
-    }
-    */
+          default: return TRUE;
+        }
+        */
     return TRUE;
     // prev = c;
     //  }
@@ -265,7 +266,7 @@ int main(int argc, char* argv[])
     if (SfxFile == INVALID_HANDLE_VALUE)
         return Error("Unable to create SFX package file.");
 
-    //open file with default texts
+    // open file with default text
     HANDLE textFile = CreateFile(argv[2], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (textFile == INVALID_HANDLE_VALUE)
         return Error("Unable to open text file.");

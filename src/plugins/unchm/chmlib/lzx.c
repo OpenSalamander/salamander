@@ -1,5 +1,6 @@
 /* $Id$ */
 /***************************************************************************
+// CommentsTranslationProject: TRANSLATED
  *                        lzx.c - LZX decompression routines               *
  *                           -------------------                           *
  *                                                                         *
@@ -54,9 +55,9 @@ typedef signed int LONG;      /* 32 bits (or more) */
 #define LZX_BLOCKTYPE_ALIGNED (2)
 #define LZX_BLOCKTYPE_UNCOMPRESSED (3)
 #define LZX_PRETREE_NUM_ELEMENTS (20)
-#define LZX_ALIGNED_NUM_ELEMENTS (8)    /* aligned offset tree #elements */
-#define LZX_NUM_PRIMARY_LENGTHS (7)     /* this one missing from spec! */
-#define LZX_NUM_SECONDARY_LENGTHS (249) /* length tree #elements */
+#define LZX_ALIGNED_NUM_ELEMENTS (8)    /* number of elements in the aligned offset tree */
+#define LZX_NUM_PRIMARY_LENGTHS (7)     /* missing from the spec */
+#define LZX_NUM_SECONDARY_LENGTHS (249) /* number of elements in the length tree */
 
 /* LZX huffman defines: tweak tablebits as desired */
 #define LZX_PRETREE_MAXSYMBOLS (LZX_PRETREE_NUM_ELEMENTS)
@@ -361,16 +362,16 @@ int LZXreset(struct LZXstate* pState)
 
 /* make_decode_table(nsyms, nbits, length[], table[])
  *
- * This function was coded by David Tritscher. It builds a fast huffman
- * decoding table out of just a canonical huffman code lengths table.
+ * This function was coded by David Tritscher. It builds a fast Huffman
+ * decoding table from a canonical Huffman code-length table.
  *
- * nsyms  = total number of symbols in this huffman tree.
+ * nsyms  = total number of symbols in this Huffman tree.
  * nbits  = any symbols with a code length of nbits or less can be decoded
  *          in one lookup of the table.
- * length = A table to get code lengths from [0 to syms-1]
- * table  = The table to fill up with decoded symbols and pointers.
+ * length = table of code lengths for symbols [0 to nsyms-1]
+ * table  = table to fill with decoded symbols and pointers.
  *
- * Returns 0 for OK or 1 for error
+ * Returns 0 for OK or 1 for error.
  */
 
 static int make_decode_table(ULONG nsyms, ULONG nbits, UBYTE* length, UWORD* table)
@@ -381,7 +382,7 @@ static int make_decode_table(ULONG nsyms, ULONG nbits, UBYTE* length, UWORD* tab
     ULONG fill;
     ULONG pos = 0; /* the current position in the decode table */
     ULONG table_mask = 1 << nbits;
-    ULONG bit_mask = table_mask >> 1; /* don't do 0 length codes */
+    ULONG bit_mask = table_mask >> 1; /* do not process 0-length codes */
     ULONG next_symbol = bit_mask;     /* base of allocation for long codes */
 
     /* fill entries for codes short enough for a direct mapping */
@@ -628,14 +629,13 @@ int LZXdecompress(struct LZXstate* pState, unsigned char* inpos, unsigned char* 
         /* buffer exhaustion check */
         if (inpos > endinp)
         {
-            /* it's possible to have a file where the next run is less than
-             * 16 bits in size. In this case, the READ_HUFFSYM() macro used
-             * in building the tables will exhaust the buffer, so we should
-             * allow for this, but not allow those accidentally read bits to
-             * be used (so we check that there are at least 16 bits
-             * remaining - in this boundary case they aren't really part of
-             * the compressed data)
-             */
+            /* it is possible to have a file where the next run is less than
+                         * 16 bits in size. In this case, the READ_HUFFSYM() macro used
+                         * while building the tables will exhaust the buffer, so this must
+                         * be allowed, but those extra bits must not be used
+                         * (so we check that at least 16 bits remain; in this boundary case
+                         * they are not really part of the compressed data)
+                         */
             if (inpos > (endinp + 2) || bitsleft < 16)
                 return DECR_ILLEGALDATA;
         }
@@ -649,7 +649,7 @@ int LZXdecompress(struct LZXstate* pState, unsigned char* inpos, unsigned char* 
 
             /* apply 2^x-1 mask */
             window_posn &= window_size - 1;
-            /* runs can't straddle the window wraparound */
+            /* runs cannot cross the window wraparound */
             if ((window_posn + this_run) > window_size)
                 return DECR_DATAFORMAT;
 
@@ -684,7 +684,7 @@ int LZXdecompress(struct LZXstate* pState, unsigned char* inpos, unsigned char* 
 
                         if (match_offset > 2)
                         {
-                            /* not repeated offset */
+                            /* non-repeated offset */
                             if (match_offset != 3)
                             {
                                 extra = extra_bits[match_offset];
@@ -766,7 +766,7 @@ int LZXdecompress(struct LZXstate* pState, unsigned char* inpos, unsigned char* 
 
                         if (match_offset > 2)
                         {
-                            /* not repeated offset */
+                            /* non-repeated offset */
                             extra = extra_bits[match_offset];
                             match_offset = position_base[match_offset] - 2;
                             if (extra > 3)
@@ -847,7 +847,7 @@ int LZXdecompress(struct LZXstate* pState, unsigned char* inpos, unsigned char* 
                 break;
 
             default:
-                return DECR_ILLEGALDATA; /* might as well */
+                return DECR_ILLEGALDATA; /* treat as illegal data */
             }
         }
     }

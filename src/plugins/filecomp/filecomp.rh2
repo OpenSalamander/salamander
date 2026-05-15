@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file, and the resource compiler does not seem to support "#pragma once".
 #ifndef __FILECOMP_RH2
 #define __FILECOMP_RH2
 
@@ -7,7 +8,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 300
-#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+#include "statics.rh2"   // 300 to 339 are reserved by this include.
 
 #define IDI_FCICO       500
 #define IDC_SPLIT_VERT  501
@@ -18,7 +19,7 @@
 
 //***********************************************************************************
 //
-// texty
+// strings
 //
 
 #define IDS_PLUGINNAME  1000
@@ -122,7 +123,7 @@
 
 //***********************************************************************************
 //
-// virtualni IDcka - pouze pro vazbu s helpem
+// virtual IDs - used only for help mapping
 //
 
 #define IDH_KEYBOARD        400

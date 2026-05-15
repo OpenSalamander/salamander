@@ -13,6 +13,6 @@
 
 #pragma once
 
-// returns TRUE when window 'hWnd' belongs to process with 'dwProcessId'
-// function walks through parent processes
+// Returns TRUE when window 'hWnd' belongs to the process with 'dwProcessId'.
+// The function walks through parent processes.
 BOOL WindowBelongsToProcessID(HWND hWnd, DWORD dwProcessId);

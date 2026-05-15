@@ -5,7 +5,7 @@
 
 #include "selfextr/comdefs.h"
 
-//types defintions
+//types definitions
 
 //basic types
 typedef unsigned __int8 __UINT8;
@@ -141,7 +141,7 @@ typedef struct
     // [variable size] zip64 extensible data sector
 } CZip64EOCentrDirRecord;
 
-typedef struct // May immediatelly follow (actually be included in) CZip64EOCentrDirRecord
+typedef struct // May immediately follow (actually be included in) CZip64EOCentrDirRecord
 {
     __UINT16 Method;     // compression method
     __UINT64 CompSize;   // compressed size
@@ -356,7 +356,7 @@ extern const SYSTEMTIME MinZipTime;
 
 #define ZIP64_HEADER_ID 0x0001 //zip64 extra header id
 
-//general purose bit flag masks
+//general purpose bit flag masks
 #define GPF_ENCRYPTED 0x01 //indicate that file is encrypted
 #define GPF_DATADESCR 0x08 //compressed data are followed by data descriptor
 #define GPF_UTF8 0x800     //the filename and comment fields for this file are encoded in UTF-8 \
@@ -459,7 +459,7 @@ extern const SYSTEMTIME MinZipTime;
 #define PE_QUIET 0x4
 
 //all files attributes in ZIP are masked before usage
-//also when compressing atrrributes are masked before stored
+//also when compressing attributes are masked before stored
 //this preserve displaying some confusing attributes in archive,
 //like 'compressed' or 'temporary'
 

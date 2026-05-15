@@ -1741,7 +1741,6 @@ BOOL CDialogData::GetFooterSeparatorAndButtons(TDirectArray<DWORD>* footer)
 
     // measure the distances between buttons; in some dialogs the bottom row of buttons
     // is split into two parts (one left aligned, one right aligned) - we do not tidy that automatically
-    // we do not tidy it automatically
     BOOL spacingIsOK = TRUE;
     if (indexes.Count > 2)
     {

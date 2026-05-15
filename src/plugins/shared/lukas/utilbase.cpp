@@ -1,24 +1,25 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
 // ****************************************************************************
 
-HINSTANCE DLLInstance = NULL; // handle k SPL-ku - jazykove nezavisle resourcy
-HINSTANCE HLanguage = NULL;   // handle k SLG-cku - jazykove zavisle resourcy
-BOOL WindowsVistaAndLater;    // Windows Vista nebo pozdejsi z rady NT (6.0+)
+HINSTANCE DLLInstance = NULL; // Handle to the SPL - language-independent resources
+HINSTANCE HLanguage = NULL;   // Handle to the SLG - language-dependent resources
+BOOL WindowsVistaAndLater;    // Windows Vista or later from the NT family (6.0+)
 BOOL WindowsXP64AndLater;     // Windows XP 64, Vista or later (5.2+)
 
-// rozhrani Open Salamandera - platna od volani InitUtils() az do
-// ukonceni pluginu
+// Open Salamander interface - valid from the InitUtils() call until
+// the plugin terminates
 CSalamanderGeneralAbstract* SG = NULL;
 CSalamanderGUIAbstract* SalGUI = NULL;
 
-// definice promenne pro "dbg.h"
+// Variable definition for "dbg.h"
 CSalamanderDebugAbstract* SalamanderDebug = NULL;
 
-// definice promenne pro "spl_com.h"
+// Variable definition for "spl_com.h"
 int SalamanderVersion = 0;
 
 DWORD MainThreadID;
@@ -49,33 +50,33 @@ BOOL InitLCUtils(CSalamanderPluginEntryAbstract* salamander, const char* pluginN
 {
     CALL_STACK_MESSAGE_NONE
 
-    // nastavime SalamanderDebug pro "dbg.h"
+    // Set SalamanderDebug for "dbg.h"
     SalamanderDebug = salamander->GetSalamanderDebug();
 
-    // nastavime SalamanderVersion pro "spl_com.h"
+    // Set SalamanderVersion for "spl_com.h"
     SalamanderVersion = salamander->GetVersion();
 
     CALL_STACK_MESSAGE1("InitLCUtils()");
 
-    // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
+    // Check that the current Salamander version is supported
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-    { // tady nelze volat Error, protoze pouziva SG->SalMessageBox (SG neni inicializovane + jde o nekompatibilni rozhrani)
+    { // Error cannot be called here because it uses SG->SalMessageBox (SG is not initialized and the interface is incompatible)
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
                    pluginName, MB_OK | MB_ICONERROR);
         return FALSE;
     }
 
-    // nechame nacist jazykovy modul (.slg)
+    // Load the language module (.slg)
     HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), pluginName);
     if (HLanguage == NULL)
         return FALSE;
 
-    // ziskame rozhrani Salamandera
+    // Get the Salamander interface
     SG = salamander->GetSalamanderGeneral();
     SalGUI = salamander->GetSalamanderGUI();
 
-    // zjistime si na jakem bezime OS
+    // Determine which OS we are running on
     WindowsXP64AndLater = SalIsWindowsVersionOrGreater(5, 2, 0);
     WindowsVistaAndLater = SalIsWindowsVersionOrGreater(6, 0, 0);
 

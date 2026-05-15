@@ -75,7 +75,7 @@ private:
         PERSISTENT_ENTRY(const PERSISTENT_ENTRY& e)
         {
             // Transfer ownership of the values to this entry.
-            // Reduces overhead of excesive allocating/copying
+            // Reduces overhead of excessive allocating/copying
             // between temporary instances.
 
             this->name = e.name;

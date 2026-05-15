@@ -156,7 +156,7 @@ COldMenuHookTlsAllocator::HookThread()
         hOldHookProc = SetWindowsHookEx(WH_CALLWNDPROC, // HANDLES can't do this!
                                         MenuMessageHookProc,
                                         NULL, threadID);
-        // it stores th handle to the procedure in TLS so that CallNextHookEx can be called
+        // Stores the handle to the procedure in TLS so that CallNextHookEx can be called
         TlsSetValue(OldMenuHookTlsIndexHOldHook, (LPVOID)hOldHookProc);
         return hOldHookProc;
     }
@@ -284,7 +284,7 @@ void CMenuItem::DecodeSubTextLenghtsAndWidths(CMenuSharedResources* sharedRes, B
     ColumnL2 = NULL;
     ColumnR = NULL;
 
-    // set column pointers and character counts
+    // set pointers and character counts for each column
     while (inifiniteLoop)
     {
         if (*iterator == '\t' || *iterator == 0)

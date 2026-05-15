@@ -1183,7 +1183,7 @@ void CDisconnectDialog::EnumConnections()
         free(fsList);
     }
 
-    // if at least one file system was inserted, add in front of the the first plugin group
+    // if at least one file system was inserted, insert it before the first plugin group
     if (pluginGroupIndex < Connections.Count)
         InsertItem(pluginGroupIndex, FALSE, citGroup, CONNECTION_ICON_PLUGIN, LoadStr(IDS_NETWORK_PLUGINS), "", FALSE, NULL);
 }
@@ -1879,7 +1879,7 @@ CCmpDirProgressDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // redraw explicitly before showing the messagebox
                 FlushDataToControls();
 
-                // ask the user if he wants to interrupt the operation
+                // asks the user whether they want to interrupt the operation
                 Cancel = (SalMessageBox(HWindow, LoadStr(IDS_CANCELOPERATION), LoadStr(IDS_QUESTION),
                                         MB_YESNO | MB_ICONQUESTION) == IDYES);
             }

@@ -358,7 +358,7 @@ CMainDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         // the monitored process grants us permission to call SetForegroundWindow.
         // The crucial detail is to invoke it only once our message loop is already running;
-        // otherwise Windows behaves poorly (until we call SetForegroundWindow from OpenMainDialog).
+        // otherwise Windows behaves poorly (when we called SetForegroundWindow from OpenMainDialog).
         // When the monitored application was launched from the Start Menu and crashed, we stayed in the background,
         // the ProtMon window remained inactive, and it did not receive focus until the monitored application
         // closed its window.

@@ -16,29 +16,29 @@
 <p>Use this dialog to rename many files and directories in a batch using specified rules.</p>
 <h4>Menu</h4>
 
-The Batch Rename dialog contains menu with following commands:
+The Batch Rename dialog contains a menu with the following commands:
 
 <a id="rename"></a>
 
 <dl>
 <dt><i>Commands/Rename</i></dt>
 
-<dd>Starts batch renaming. It changes filenames on disk according to rules
-specified in this dialog. It can also move files to another directories if you
+<dd>Starts batch renaming. This changes filenames on disk according to the rules
+specified in this dialog. It can also move files to other directories if you
 rename filenames including their full or relative paths.
 </dd>
 
 <dt><i>Commands/Validate</i></dt>
 
-<dd>Tries if batch renaming will succeed. It reports syntax errors in new filenames,
-duplicate filenames (more original filenames with the same resulting name), and some
-other errors. Use this command to prevent only partially finished batch rename
+<dd>Tests whether batch renaming will succeed. This reports syntax errors in new filenames,
+duplicate filenames (multiple original filenames with the same resulting name), and other
+errors. Use this command to prevent a partially completed batch rename
 operation.
 </dd>
 
 <dt><i>Commands/Undo</i></dt>
 
-<dd>Reverts all performed rename operations in the last batch (the last use of the
+<dd>Reverts all rename operations performed in the last batch (the last use of the
 Rename command).
 </dd>
 
@@ -49,107 +49,106 @@ Rename command).
 
 <dt><i>Edit/Store List to Clipboard</i></dt>
 
-<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
-Copies the list of new names to clipboard, so you can e.g. paste it to your favorite
-text editor to edit them.
+<dd>Works only in the manual mode of batch rename; see the Manual mode check box.
+Copies the list of new names to the clipboard, so you can paste it into your favorite
+text editor to edit it.
 </dd>
 
 <dt><i>Edit/Load List from Clipboard</i></dt>
 
-<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
-Replaces the list of new names by a text from the clipboard, so you can use it e.g.
-to copy the changed list of new names from your favorite text editor back
-to this dialog.
+<dd>Works only in the manual mode of batch rename; see the Manual mode check box.
+Replaces the list of new names with text from the clipboard, allowing you to copy the
+changed list of new names from your favorite text editor back to this dialog.
 </dd>
 
 <dt><i>Edit/Open List in External Editor...</i></dt>
 
-<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
-It saves the list of new names to a temporary file, opens this file in your favorite
-text editor, and waits until you finish editing and save changes. Then it loads back the
-list of new names from this temporary file. You can specify your favorite text editor
+<dd>Works only in the manual mode of batch rename; see the Manual mode check box.
+This saves the list of new names to a temporary file, opens the file in your favorite
+text editor, and waits until you finish editing and save the changes. It then loads the
+list of new names back from the temporary file. You can specify your favorite text editor
 in the <a href="dlgboxes_advoptions.htm">Advanced Options dialog</a>.
 </dd>
 
 <dt><i>Edit/Filter List Through Shell Command...</i></dt>
 
-<dd>Works only in the manual mode of the batch rename, see the Manual mode checkbox.
-It executes specified shell command (or any command line application) and sends it
-the list of new names to the standard input. The standard output of this shell command
-is used as the new list of new names.
+<dd>Works only in the manual mode of batch rename; see the Manual mode check box.
+This executes the specified shell command (or any command-line application) and sends
+the list of new names to its standard input. The standard output of this shell command
+is used as the new list of names.
 </dd>
 
 <dt><i>View/Sort by Original Name</i></dt>
 
-<dd>Changes sorting of items in the Preview listview to sorting by the Original Name column.
+<dd>Changes the sorting of items in the Preview list view to sort by the Original Name column.
 </dd>
 
 <dt><i>View/Sort by Size</i></dt>
 
-<dd>Changes sorting of items in the Preview listview to sorting by the Size column.
+<dd>Changes the sorting of items in the Preview list view to sort by the Size column.
 </dd>
 
 <dt><i>View/Sort by Time</i></dt>
 
-<dd>Changes sorting of items in the Preview listview to sorting by the Date and Time columns.
+<dd>Changes the sorting of items in the Preview list view to sort by the Date and Time columns.
 </dd>
 
 <dt><i>View/Sort by Path</i></dt>
 
-<dd>Changes sorting of items in the Preview listview to sorting by the Path column.
+<dd>Changes the sorting of items in the Preview list view to sort by the Path column.
 </dd>
 
 <dt><i>View/All Files</i></dt>
 
-<dd>Displays all files in the Preview listview.
+<dd>Displays all files in the Preview list view.
 </dd>
 
 <dt><i>View/Successfully Renamed Files</i></dt>
 
-<dd>Displays only successfully renamed files in the Preview listview.
+<dd>Displays only successfully renamed files in the Preview list view.
 </dd>
 
 <dt><i>View/Not Renamed Files</i></dt>
 
-<dd>Displays only not renamed files in the Preview listview. Renaming of these
-files has failed, you can try to correct their new names.
+<dd>Displays only files that were not renamed in the Preview list view. Renaming of these
+files has failed; you can try to correct their new names.
 </dd>
 
 <dt><i>Options/Rename Filenames</i></dt>
 
-<dd>Choose this option if you want to work only with filenames without paths.
+<dd>Choose this option to work only with filenames without paths.
 </dd>
 
 <dt><i>Options/Rename Relative Path</i></dt>
 
-<dd>Choose this option if you want to work with filenames with relative paths.
-It has sense only if you want to rename files in subdirectories selected in panel
-before opening of the Batch Renamer dialog. You need also to select the Include
-subdirectories check box. It enables you to move files to another directories.
+<dd>Choose this option to work with filenames with relative paths.
+This is useful only if you want to rename files in subdirectories selected in the panel
+before opening the Batch Rename dialog. You also need to select the Include
+subdirectories check box. This enables you to move files to other directories.
 </dd>
 
 <dt><i>Options/Rename Full Path</i></dt>
 
-<dd>Choose this option if you want to work with filenames with full paths. It enables
-you to move files to another directories and drives.
+<dd>Choose this option to work with filenames with full paths. This enables
+you to move files to other directories and drives.
 </dd>
 
 <dt><i>Options/Remove Emptied Directories</i></dt>
 
-<dd>When you rename (move) files to another directories, some of original directories
-can be emptied (all files from these directories are moved away). Check this option if
-you want to delete such empty directories.
+<dd>When you rename (move) files to other directories, some of the original directories
+may become empty (all files from these directories are moved away). Check this option to
+delete such empty directories.
 </dd>
 
 <dt><i>Options/Last Used</i></dt>
 
-<dd>Sets all options in this dialog to values used in the last batch rename
-operation. Use this command to easily repeat the same batch rename operation.
+<dd>Sets all options in this dialog to the values used in the last batch rename
+operation. Use this command to repeat the same batch rename operation.
 </dd>
 
 <dt><i>Options/Reset</i></dt>
 
-<dd>Sets the default values to all options.
+<dd>Sets default values for all options.
 </dd>
 
 <dt><i>Options/Advanced...</i></dt>
@@ -173,33 +172,33 @@ operation. Use this command to easily repeat the same batch rename operation.
 <dl>
 <dt><i>Mask</i></dt>
 
-<dd>You can filter files for batch rename operation by this mask. It's especially
-important when you rename files in subdirectories (e.g. you want to rename only
+<dd>You can filter files for the batch rename operation using this mask. This is especially
+useful when you rename files in subdirectories (e.g., if you want to rename only
 *.htm files).
 </dd>
 
 <dt><i>Include subdirectories</i></dt>
 
-<dd>When checked, you are working with all files contained in selected
-subdirectories in panel (instead of working with selected subdirectories).
+<dd>When checked, you work with all files contained in the selected
+subdirectories in the panel (instead of working with the selected subdirectories themselves).
 </dd>
 
 <dt><i>Rename/Validate/Undo</i></dt>
 
-<dd>See commands in menu <a href="#rename">Commands</a>.
+<dd>See commands in the <a href="#rename">Commands</a> menu.
 </dd>
 
 <dt><i>Manual mode</i></dt>
 
-<dd>When checked, you can edit a list of new names as a plain text directly in
-this dialog, using an external text editor, or change these names using a command
-line application.
+<dd>When checked, you can edit the list of new names as plain text directly in
+this dialog, using an external text editor, or modify these names using a command-line
+application.
 </dd>
 
 <dt><i>New name</i></dt>
 
 <dd>Specify a template for a new name here. You can use predefined variables
-containing various useful values (e.g. an original file name, a file extension,
+containing various useful values (e.g., an original filename, a file extension,
 a counter). Click the button next to the combo box to see a context
 menu with all these variables.
 </dd>
@@ -207,16 +206,16 @@ menu with all these variables.
 <dt><i>Search for/Replace with</i></dt>
 
 <dd>You can search for a substring in the new name and replace it with something
-else. You can use also <a href="appendix_regexp.htm">regular expressions</a> here,
-it can be used for sophisticated substitutions and reordering of words in the new name.
-Click buttons next to the combo boxes to see context menus with parts of regular
-expressions.
+else. You can also use <a href="appendix_regexp.htm">regular expressions</a> here,
+which enables sophisticated substitutions and reordering of words in the new name.
+Click the buttons next to the combo boxes to see context menus with regular
+expression components.
 </dd>
 
 <dt><i>Case sensitive</i></dt>
 
 <dd>When checked, searching for a substring is case sensitive. Otherwise, searching
-is not case sensitive (upper and lower case characters are equal).
+is case insensitive (uppercase and lowercase characters are treated as equal).
 </dd>
 
 <dt><i>Only once in each name</i></dt>
@@ -227,7 +226,7 @@ of the substring are ignored).
 
 <dt><i>Whole words</i></dt>
 
-<dd>When checked, a found substring must be preceded and followed by a space, tab, or
+<dd>When checked, the found substring must be preceded and followed by a space, tab, or
 punctuation character, or be at the start or end of the name. Otherwise, the found
 substring may be a fragment of a larger string.
 </dd>
@@ -235,37 +234,37 @@ substring may be a fragment of a larger string.
 <dt><i>Regular expression</i></dt>
 
 <dd>When checked, the Search for field contains a regular expression. Otherwise,
-it contains a plain text. See description of
+it contains plain text. See the description of
 <a href="appendix_regexp.htm">regular expressions</a>.
 </dd>
 
 <dt><i>Exclude extension</i></dt>
 
-<dd>When checked, searching for a substring is performed only in a name part of
-the new name (the extension part of name is ignored).
+<dd>When checked, searching for a substring is performed only in the name part of
+the new name (the extension part of the name is ignored).
 </dd>
 
 <dt><i>File name</i></dt>
 
-<dd>You can choose upper/lower/mixed case for a name part of the new name here.
+<dd>You can choose uppercase/lowercase/mixed case for the name part of the new name here.
 </dd>
 
 <dt><i>Extension</i></dt>
 
-<dd>You can choose upper/lower/mixed case for an extension part of the new name here.
+<dd>You can choose uppercase/lowercase/mixed case for the extension part of the new name here.
 </dd>
 
 <dt><i>Include path part</i></dt>
 
-<dd>When checked, changing of case of a name part is applied also to a path part of the new name.
+<dd>When checked, changing the case of the name part is applied also to the path part of the new name.
 </dd>
 
 <dt><i>Preview</i></dt>
 
-<dd>You can see all planned changes in a real-time preview of resulting names. Columns
-contain original names, new names, sizes, dates, times, and paths. New names are
-displayed in a gray color if they are the same as original names. You can sort this
-preview by clicking on column headers or in the View menu.
+<dd>You can see all planned changes in a real-time preview of the resulting names. Columns
+show original names, new names, sizes, dates, times, and paths. New names are
+displayed in gray if they are the same as the original names. You can sort this
+preview by clicking column headers or using the View menu.
 </dd>
 
 </dl>

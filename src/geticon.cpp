@@ -66,7 +66,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
 {
     BOOL ret = FALSE;
 
-    IExtractIconA* pxi = NULL; // if 'isIExtractIconW' is TRUE, this pointer is actually IExtractIconW
+    IExtractIconA* pxi = NULL; // if 'isIExtractIconW' is TRUE, this pointer is of type IExtractIconW
     BOOL isIExtractIconW = FALSE;
     HICON hIconSmall = NULL;
     HICON hIconLarge = NULL;
@@ -227,7 +227,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
             else
                 hres = pxi->Extract(iconFile, iconIndex, &hIconLarge, &hIconSmall, MAKELONG(IconSizes[largeIconSize], IconSizes[ICONSIZE_16]));
             //TRACE_I("  SalGetIconFromPIDL() pxi->Extract() hIconLarge="<<hIconLarge<<" hIconSmall="<<hIconSmall<<" isIExtractIconW="<<isIExtractIconW);
-            // WARNING: for *.ai files iconFile==0 and iconIndex==0 yet Extract() still returns an icon (Adobe Illustrator shell extension)
+            // WARNING: for *.ai files, iconFile==0 and iconIndex==0, yet Extract() still returns an icon (apparently due to the Adobe Illustrator shell extension)
             // WARNING: D:\Store\Salamand\ICO_SONY\SonyF707_Day_Flash.icc returns hIconLarge==hIconSmall, both 32x32
         }
 
@@ -288,7 +288,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
         // use hIconSmall for the small icon because IExtractIcon::Extract() ignores the pixel size and always returns 16 and 32
         if (iconSize == ICONSIZE_16)
         {
-            // if the small icon is missing or we were given the handle of the large one, create it
+            // if the small icon is missing or we were given the large icon handle, create it
             if (hIconSmall == NULL || hIconSmall == hIconLarge)
             {
                 hIconSmall = (HICON)CopyImage(hIconLarge, IMAGE_ICON, IconSizes[ICONSIZE_16], IconSizes[ICONSIZE_16], LR_COPYFROMRESOURCE);
@@ -303,7 +303,7 @@ BOOL SalGetIconFromPIDL(IShellFolder* psf, const char* path, LPCITEMIDLIST pidl,
         }
         else // ICONSIZE_32 || ICONSIZE_48
         {
-            // if the large icon is missing or we were given the handle of the small one, create it
+            // if the large icon is missing or we were given the small icon handle, create it
             if (hIconLarge == NULL || hIconSmall == hIconLarge)
             {
                 hIconLarge = (HICON)CopyImage(hIconSmall, IMAGE_ICON, IconSizes[largeIconSize], IconSizes[largeIconSize], LR_COPYFROMRESOURCE);

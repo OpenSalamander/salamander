@@ -1,1 +1,3 @@
-V tomto adresari jsou jen automaticky generovane soubory.
+CommentsTranslationProject: TRANSLATED
+
+This directory contains only automatically generated files.

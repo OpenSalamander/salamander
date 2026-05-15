@@ -15,7 +15,7 @@ public:
     }
     BOOL TryEnter()
     {
-        return InterlockedExchange(&this->_lock, 1) == 0; // before writing, 0 means acquire the lock; otherwise it was already locked (1)
+        return InterlockedExchange(&this->_lock, 1) == 0; // before the write, 0 means the lock was acquired; otherwise it was already locked (1)
     }
     void Enter()
     {

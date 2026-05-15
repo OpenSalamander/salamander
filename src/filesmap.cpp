@@ -119,7 +119,7 @@ BOOL CFilesMap::CreateMap()
                     AlterFileName(formatedFileName, f->Name, -1, Configuration.FileNameFormat, 0, isDir);
 
                     const char* s = formatedFileName;
-                    // skip the ".."
+                    // suppress ".."
                     if (*s == '.' && *(s + 1) == '.' && *(s + 2) == 0)
                         s = NULL;
 
@@ -418,7 +418,7 @@ void CFilesMap::SetPoint(int x, int y)
             }
             item = GetMapItem(col, row);
 
-            if (item == NULL) // there were several crashes in CFilesMap::SetPoint; cause unknown
+            if (item == NULL) // Several crashes occurred in CFilesMap::SetPoint; cause unknown
                 continue;     // this avoids a crash; at worst, selection will not work
 
             BOOL inOld = PointInRect(col, row, oldRect);

@@ -191,7 +191,7 @@ BOOL C7zClient::FillItemData(IInArchive* archive, UINT32 index, C7zClient::CItem
     else
         itemData->SetMethod(GetAnsiString(propVariant.bstrVal));
 
-    /*  // 06F10701 is the id for 7zAES -> so it's the password :)
+    /*  // 06F10701 is the ID for 7zAES, i.e. encryption
 //  if (strstr(itemData->Method, "06F10701") != NULL)
   if (strstr(itemData->Method, "7zAES") != NULL)
     itemData->Encrypted = TRUE;
@@ -271,7 +271,7 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
         }
         fd.PluginData = (DWORD_PTR)itemData;
 
-        // Creation Time
+        // Modification Time
         archive->GetProperty(idx, kpidMTime, &propVariant);
         fd.LastWrite = propVariant.filetime;
 
@@ -333,7 +333,7 @@ BOOL C7zClient::AddFileDir(IInArchive* archive, UINT32 idx,
             // file length
             archive->GetProperty(idx, kpidSize, &propVariant);
             ::ConvertPropVariantToUInt64(propVariant, fd.Size.Value);
-            // What is better? Check on *.lnk/pif/url extensions or Unix flags or both? We do both.
+            // Which is better? Checking *.lnk/pif/url extensions, Unix flags, or both? We do both.
             fd.IsLink |= SalamanderGeneral->IsFileLink(fd.Ext);
 
             // file
@@ -535,7 +535,7 @@ int C7zClient::GetArchiveItemList(IInArchive* archive, TIndirectArray<CArchiveIt
         UString path;
         path = propVariant.bstrVal;
 
-        // Creation Time
+        // Modification Time
         archive->GetProperty(i, kpidMTime, &propVariant);
         FILETIME lastWrite = propVariant.filetime;
 
@@ -706,7 +706,7 @@ int C7zClient::Delete(CSalamanderForOperationsAbstract* salamander, const char* 
         updateCallbackSpec->Password = password;
         updateCallbackSpec->AskPassword = passwordIsDefined;
 
-        // TODO: what about delete? is it possible to load compression parameters? and do they even need to be set?
+        // TODO: what about delete? Can the compression parameters be loaded, and do they need to be set at all?
         //    SetCompressionParams(outArchive, compr);
 
         // start update in a thread
@@ -1079,7 +1079,7 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
                       CCompressParams* compressParams, bool passwordIsDefined, UString password)
 {
     char tmpName[MAX_PATH];
-    // trim the filename from archiveName, leaving the target path where we will extract
+    // strip the filename from archiveName, leaving the target path where we will extract
     lstrcpy(tmpName, archiveName);
     SalamanderGeneral->CutDirectory(tmpName, NULL);
     DWORD err;
@@ -1226,9 +1226,9 @@ int C7zClient::Update(CSalamanderForOperationsAbstract* salamander, const char* 
             //      else {
             if (FAILED(result) && ((FACILITY_WIN32 << 16) == (result & 0x7FFF0000)))
             {
-                // LastError error encoded into HRESULT
-                // There is something strange: E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
-                // even when not truncated to 16 bits while 0x80000002L prints as "Ran out of memory"
+                // LastError encoded as HRESULT
+                // Oddly, E_OUTOFMEMORY as 0x8007000EL prints as "Not enough storage is available to complete this operation"
+                // even without truncating to 16 bits, while 0x80000002L prints as "Ran out of memory"
                 SysError(IDS_7Z_FATAL_ERROR, (result == E_OUTOFMEMORY) ? 0x80000002L : (result & 0xFFFF), FALSE);
             }
             else

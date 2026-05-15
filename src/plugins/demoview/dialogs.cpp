@@ -36,7 +36,7 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontally and vertically center the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // want focus from DefDlgProc
+        break; // let DefDlgProc handle focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -98,7 +98,7 @@ protected:
             break;
         }
 
-        case WM_APP + 1000: // we should detach from the dialog (already centered)
+        case WM_APP + 1000: // detach from the dialog (it is already centered)
         {
             DetachWindow();
             delete this; // a bit of a hack, but nobody will touch 'this' anymore, so it's fine

@@ -15,40 +15,40 @@
 <h1>Directory Caching</h1>
 
 <p>
-WinSCP supports caching directory content. The caching can be configured per-session. To configure it
+WinSCP supports caching directory content. The caching can be configured per-session. To configure it,
 see <em><a href="ui_login_directories.htm">Directories tab</a></em> of Login dialog.
 </p>
 
 <p>
-There are two caches. The first cache stores file listing of already visited directories. The cache
-is enabled by default and can be disabled by unticking <em>Cache visited remote directories</em>
-checkbox. The cache is temporary, i.e. not preserved between sessions.
+There are two caches. The first cache stores the file listing of already-visited directories. This cache
+is enabled by default and can be disabled by clearing the <em>Cache visited remote directories</em>
+check box. The cache is temporary; that is, it is not preserved between sessions.
 </p>
 
 <p>
-The second cache stores information useful for changing directories, like existence of particular
-directory and canonical paths (useful for <acronym title="SSH File Transfer Protocol">SFTP</acronym>
-protocol only, as <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers need not to
-follow Unix-style path handling). The cache in enabled by default and can be disabled by unticking
-the <em>Cache directory changes</em> checkbox. The cache can be permanent (enabled by default), i.e.
+The second cache stores information useful for changing directories, such as the existence of particular
+directories and canonical paths (useful only for the <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+protocol, as <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers do not necessarily
+follow Unix-style path handling). This cache is enabled by default and can be disabled by clearing
+the <em>Cache directory changes</em> checkbox. The cache can be permanent (enabled by default); that is,
 preserved between sessions. Note
-that the cache is specific for a specific user/host. So you may need to disable it, if you are
+that the cache is specific to a particular user and host combination. You may need to disable it if you are
 running two servers on the same host with different path semantics. For
-<acronym title="Secure Copy Protocol">SCP</acronym> protocol the cache has no benefit without
-<em>Cache visited remote directories</em> being turned on as well.
+the <acronym title="Secure Copy Protocol">SCP</acronym> protocol, the cache has no benefit without
+<em>Cache visited remote directories</em> also being enabled.
 </p>
 
 <p>
-When both caches are enabled, the already visited directory can be opened without any data exchange
-with the server, i.e. immediately.
+When both caches are enabled, previously visited directories can be opened without any data exchange
+with the server; that is, immediately.
 </p>
 
 <p>
-The directory cache is updated whenever you perform any operation on the directory, like file
-transfer. If the directory is changed externally (not from WinSCP), you may use <em>Refresh</em>
-command to reload directory content and update the cache. Note that running
-<a href="remote_command.htm">remote command</a> purges the cache for the current directory only. If your
-command modifies other directories too, you need to refresh them manually.
+The directory cache is updated whenever you perform any operation on the directory, such as a file
+transfer. If the directory is changed externally (not from WinSCP), you can use the <em>Refresh</em>
+command to reload the directory content and update the cache. Note that running a
+<a href="remote_command.htm">remote command</a> purges the cache only for the current directory. If your
+command modifies other directories as well, you need to refresh them manually.
 </p>
 
 </div>

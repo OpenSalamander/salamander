@@ -68,7 +68,7 @@
 #define CM_FILE_FIRST              10040
 #define CM_FILE_LAST               10041
 
-// for Coversion submenu
+// for Conversion submenu
 #define CM_CODING_FIRST            10050
 #define CM_CODING_LAST             10250
 

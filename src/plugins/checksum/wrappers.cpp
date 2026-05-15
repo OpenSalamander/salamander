@@ -17,7 +17,7 @@ public:
     virtual bool Init(); // Init for a new file. true on success
     virtual bool Update(const char* buf, DWORD size);
     virtual bool Finalize();
-    virtual int GetDigest(char* buf, DWORD bufsize); // Returns # of copied binary bytes
+    virtual int GetDigest(char* buf, DWORD bufsize); // Returns the number of copied binary bytes.
     virtual bool ParseDigest(char* buf, char* fileName, int fileNameLen, char* digest);
 
 private:
@@ -45,12 +45,12 @@ public:
     virtual bool Init(); // Init for a new file. true on success
     virtual bool Update(const char* buf, DWORD size);
     virtual bool Finalize();
-    virtual int GetDigest(char* buf, DWORD bufsize); // Returns # of copied binary bytes
+    virtual int GetDigest(char* buf, DWORD bufsize); // Returns the number of copied digest bytes.
 
 protected:
     virtual const char* GetID() { return "MD5"; };
     virtual int GetIDLen() { return 3; };      // strlen(GetID())
-    virtual int GetDigestLen() { return 16; }; // ensure DIGEST_MAX_SIZE remains large enough!
+    virtual int GetDigestLen() { return 16; }; // ensure DIGEST_MAX_SIZE is large enough
 
 private:
     CSalamanderMD5* md5;
@@ -66,12 +66,12 @@ public:
     virtual bool Init(); // Init for a new file. true on success
     virtual bool Update(const char* buf, DWORD size);
     virtual bool Finalize();
-    virtual int GetDigest(char* buf, DWORD bufsize); // Returns # of copied binary bytes
+    virtual int GetDigest(char* buf, DWORD bufsize); // Returns the number of copied digest bytes.
 
 protected:
     virtual const char* GetID() { return "SHA1"; };
     virtual int GetIDLen() { return 4; };
-    virtual int GetDigestLen() { return 20; }; // ensure DIGEST_MAX_SIZE remains large enough!
+    virtual int GetDigestLen() { return 20; }; // ensure DIGEST_MAX_SIZE does not need to be increased
 
 private:
     CSalSHA1 sha1;
@@ -87,12 +87,12 @@ public:
     virtual bool Init(); // Init for a new file. true on success
     virtual bool Update(const char* buf, DWORD size);
     virtual bool Finalize();
-    virtual int GetDigest(char* buf, DWORD bufsize); // Returns # of copied binary bytes
+    virtual int GetDigest(char* buf, DWORD bufsize); // Returns the number of copied digest bytes.
 
 protected:
     virtual const char* GetID() { return "SHA256"; };
     virtual int GetIDLen() { return 6; };
-    virtual int GetDigestLen() { return 32; }; // ensure DIGEST_MAX_SIZE remains large enough!
+    virtual int GetDigestLen() { return 32; }; // ensure DIGEST_MAX_SIZE does not need to be increased
 
 private:
     hash_state sha256;
@@ -108,12 +108,12 @@ public:
     virtual bool Init(); // Init for a new file. true on success
     virtual bool Update(const char* buf, DWORD size);
     virtual bool Finalize();
-    virtual int GetDigest(char* buf, DWORD bufsize); // Returns # of copied binary bytes
+    virtual int GetDigest(char* buf, DWORD bufsize); // Returns the number of copied digest bytes.
 
 protected:
     virtual const char* GetID() { return "SHA512"; };
     virtual int GetIDLen() { return 6; };
-    virtual int GetDigestLen() { return 64; }; // ensure DIGEST_MAX_SIZE remains large enough!
+    virtual int GetDigestLen() { return 64; }; // ensure DIGEST_MAX_SIZE does not need to be increased
 
 private:
     hash_state sha512;
@@ -248,7 +248,7 @@ bool CCRCAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, char* dig
         pos--;
     buf[pos] = 0;
     if ((int)strlen(buf) >= fileNameLen)
-        return false; // too long name
+        return false; // file name too long
     strcpy_s(fileName, fileNameLen, buf);
     return true;
 }
@@ -260,7 +260,7 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
     int pos, len;
 
     // WARNING: the following code must match CVerifyDialog::AnalyzeSourceFile() !!!
-    // checksum at the beginning (before ' ') or checksum at the end (after ' ' or '=') and at the same time
+    // checksum at the beginning (before ' ') or at the end (after ' ' or '=') and
     // the hash name at the beginning (before '(' or ' ')
 
     GetFirstWord(buf, pos, len, '(');
@@ -285,7 +285,7 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
         if (buf[pos] == '(')
         {
             pos++;
-            // What if filename contains ')'???
+            // File names may contain ')'.
             // "openssl md5 file().txt" produces: "MD5(file().txt)= 636e5618c32f05ac9f2623169527cd3c"
             len = (int)strlen(buf);
             if (len > 0 && buf[len - 1] == ')')
@@ -306,7 +306,7 @@ bool CGenericHashAlgo::ParseDigest(char* buf, char* fileName, int fileNameLen, c
             pos++; // skip the asterisk indicating a binary file
     }
     if ((int)strlen(buf + pos) >= fileNameLen)
-        return false; // too long name
+        return false; // file name too long
     strcpy_s(fileName, fileNameLen, buf + pos);
     return true;
 }

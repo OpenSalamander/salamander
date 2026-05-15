@@ -271,7 +271,7 @@ public:
         static const int maxexp = sizeof expch / sizeof TCHAR - 2;
         size_t len = 0;
         int exp = 0;
-        //C4244 ok: we only need the first few digits because we compute the short form "1.45TB"
+        //C4244 is OK: we only need the first few digits because we compute the short form "1,45TB"
         double rs = (double)(__int64)size;
         while (rs >= 1024 && exp < maxexp)
         {

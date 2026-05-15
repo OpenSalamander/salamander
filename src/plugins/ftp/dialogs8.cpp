@@ -297,7 +297,7 @@ CServersListbox::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
-        break; // let the keys pass through, the listbox should not handle them, no problem
+        break; // let the keys pass through; the listbox should not handle them
     }
 
     case WM_LBUTTONDBLCLK:
@@ -977,7 +977,7 @@ CRenameDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                             checkboxName[0] != 0 ? checkboxName : LoadStr(IDS_QUICKCONNECT));
                     SetDlgItemText(HWindow, IDC_COPYFOCUSEDSRV, buf);
                 }
-                else // new server type + empty list = necessary to hide/disable the "copy from" checkbox
+                else // new server type + empty list = need to hide/disable the "copy from" checkbox
                 {
                     ShowWindow(GetDlgItem(HWindow, IDC_COPYFOCUSEDSRV), SW_HIDE);
                 }
@@ -1193,7 +1193,7 @@ void CConfigPageAdvanced::Validate(CTransferInfo& ti)
     int num;
     int arr[] = {IDE_SRVREPLIESTIMEOUT, IDE_DELAYBETWCONRETR, IDE_CONNECTRETRIES,
                  IDE_NODATATRTIMEOUT, IDE_RESUMEMINFILESIZE, IDE_RESUMEOVERLAP, -1};
-    BOOL gzthzero[] = {TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, -1}; // testing > 0 (TRUE) or >= 0 (FALSE)
+    BOOL gzthzero[] = {TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, -1}; // test > 0 (TRUE) or >= 0 (FALSE)
     int i;
     for (i = 0; arr[i] != -1; i++)
     {

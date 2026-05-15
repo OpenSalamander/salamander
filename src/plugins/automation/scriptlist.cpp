@@ -348,9 +348,9 @@ bool CScriptInfo::ExecuteWorker(EXECUTION_INFO* info)
     m_bSiteErrorDisplayed = false;
     if (!CreateEngine(info))
     {
-        // If the error occured during parsing and was already displayed
-        // through the site's OnScriptError event, don't display it here.
-        // Otherwise display generic error message here.
+        // If the error occurred during parsing and was already displayed
+        // through the site's OnScriptError event, do not display it here.
+        // Otherwise, display a generic error message here.
         if (!m_bSiteErrorDisplayed)
         {
             SalamanderGeneral->SalMessageBox(
@@ -363,42 +363,44 @@ bool CScriptInfo::ExecuteWorker(EXECUTION_INFO* info)
         return false;
     }
 
-    // workaround for WshShell.SendKeys to work properly (by john):
-    // Salamander is not responding properly on SendKeys (http://msdn.microsoft.com/en-us/library/8c6yea83%28VS.85%29.aspx)
-    // when Ctrl/Shift/Alt is still pressed (for example when script was started using Ctrl+Shift+Z hot key).
-    // Miranda global hot key (Ctrl+Shift+A) is triggered on (salamander ->) Ctrl+Shift+Z -> (script started ->) SendKeys("a").
-    // Attempt to release pressed Ctrl/Shift/Alt using SetKeyboardState() doesn't work.
-    // Note: it seems that SendKeys is using API ::SendInput() beacause it doesn't work too (Miranda is activated).
-    // Fortunately, following hack works pretty well.
+    // Workaround to make WshShell.SendKeys work correctly (by john):
+    // Salamander does not handle SendKeys correctly while Ctrl/Shift/Alt are still pressed
+    // (for example, when the script was started with the Ctrl+Shift+Z hotkey):
+    // http://msdn.microsoft.com/en-us/library/8c6yea83%28VS.85%29.aspx
+    // Miranda's global hotkey (Ctrl+Shift+A) is triggered by the sequence
+    // Ctrl+Shift+Z in Salamander -> script start -> SendKeys("a").
+    // An attempt to release pressed Ctrl/Shift/Alt with SetKeyboardState() does not work.
+    // SendKeys appears to use the ::SendInput() API, because that does not work either
+    // (Miranda is activated). Fortunately, the following workaround works well.
     ResetKeyboardState();
 
     m_pShim->BeginExecution();
 
     // Run the script.
     // We used to have only SetScriptState(SCRIPTSTATE_CONNECTED) here, but tracing
-    // the cscript.exe revealed, that it calls SCRIPTSTATE_INITIALIZED immediately
-    // followed by SCRIPTSTATE_STARTED. We changed the logic here to match the one
-    // of cscript.exe more closely. This was done primarily because of RScript22
-    // won't execute a script without SCRIPTSTATE_STARTED. Hopefully, this won't
-    // break other engines (JScript and VBScript seems fine).
+    // cscript.exe revealed that it calls SCRIPTSTATE_INITIALIZED immediately,
+    // followed by SCRIPTSTATE_STARTED. We changed the logic here to match
+    // cscript.exe more closely. This was done primarily because RScript22
+    // will not execute a script without SCRIPTSTATE_STARTED. Hopefully, this will not
+    // break other engines (JScript and VBScript seem fine).
     hr = m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
     if (SUCCEEDED(hr))
     {
         hr = m_pScript->SetScriptState(SCRIPTSTATE_STARTED);
     }
 
-    // ActivePython returns SCRIPT_E_REPORTED if there was parse error.
-    // If debugging is enabled, the SCRIPT_E_PROPAGATE may be returned
-    // if debugger is detached while an exception is being debugged.
+    // ActivePython returns SCRIPT_E_REPORTED if there was a parse error.
+    // If debugging is enabled, SCRIPT_E_PROPAGATE may be returned
+    // if the debugger is detached while an exception is being debugged.
     _ASSERTE(SUCCEEDED(hr) || hr == SCRIPT_E_REPORTED || hr == SCRIPT_E_PROPAGATE || m_pHardError);
 
     m_pSite->SetExecutionInfo(NULL);
     UninitializeDebugger(&info->dbgInfo);
     m_pShim->EndExecution();
 
-    // cscript.exe doesn't call SetScriptState at all at the end of the execution. But it can
-    // afford not calling it because the process ends afterwards. We must deal with buggy
-    // engines and do need to uninitialize it.
+    // cscript.exe does not call SetScriptState at the end of execution.
+    // It can afford not to, because the process exits afterwards. We must handle
+    // buggy engines and explicitly uninitialize them.
     hr = m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
     _ASSERTE(SUCCEEDED(hr));
 
@@ -546,7 +548,7 @@ HRESULT CScriptInfo::AbortScript()
         // message boxes, exit GUI loops, cancel sleeps, break
         // enumerators etc.).
 
-        // Set the abort event, so the kernel waits can exit (e.g.
+        // Set the abort event so kernel wait operations can exit (e.g.
         // Salamander.Sleep()).
         _ASSERTE(m_hAbortEvent != NULL);
         SetEvent(m_hAbortEvent);
@@ -574,13 +576,14 @@ void CScriptInfo::ScriptEnter()
         hwndPalette = m_pExecInfo->pAbortPalette->GetHwnd();
         _ASSERTE(IsWindow(hwndPalette));
 
-        // Make the main window inaccessible, since the script may display
-        // modeless window and the user can unload the whole plugin from
-        // the main window in the mean time.
-        // NOTE: 'hwndPalette' mechanism is not used because WS_EX_TOPMOST with process tree
-        // checking using WindowBelongsToProcessID() look like better solution for now.
-        // For example unpack script is starting several command prompt windows
-        // so WS_EX_TOPMOST toolbar is better accessible.
+        // Make the main window inaccessible because the script may display a
+        // modeless window, and the user could unload the entire plugin from
+        // the main window in the meantime.
+        // NOTE: The 'hwndPalette' mechanism is not used because WS_EX_TOPMOST with
+        // process-tree checking via WindowBelongsToProcessID() looks like a better
+        // solution for now.
+        // For example, the unpack script starts several command prompt windows,
+        // so a WS_EX_TOPMOST toolbar is more accessible.
         SalamanderGeneral->LockMainWindow(TRUE, NULL, SalamanderGeneral->LoadStr(g_hLangInst, IDS_MAINWINDOWLOCKED));
     }
 }
@@ -874,7 +877,7 @@ int CScriptLookup::FillContainer(
 
         if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
-            if (fd.cFileName[0] != _T('.')) // exclude . and .. as well as unix style hidden dirs
+            if (fd.cFileName[0] != _T('.')) // exclude . and .. as well as Unix-style hidden directories
             {
                 int cSubScripts = 0;
                 CScriptContainer* pSubContainer;
@@ -1135,8 +1138,8 @@ int CScriptLookup::GetUniquier(
         StringCchPrintf(szName, _countof(szName), "%06X", HashFromId(nHash));
         if (!registry->OpenKey(hKey, szName, hkSub))
         {
-            // the hash key does not even exist in the registry,
-            // return 1st available uniquier
+            // the hash key does not exist in the registry,
+            // return the first available uniquier
             m_bModified = true;
             return 0;
         }
@@ -1173,7 +1176,7 @@ int CScriptLookup::GetUniquier(
         registry->CloseKey(hkSub);
 
         // the script path was not found in the registry,
-        // look if we can allocate a new uniquier for this path
+        // check whether we can allocate a new uniquifier for this path
         m_bModified = true;
         return bitmap.Alloc();
     }
@@ -1208,7 +1211,7 @@ int CScriptLookup::GetUniquier(
         return bitmap.Alloc();
     }
 
-    // no uniquier for this hash yet, start counting at zero
+    // no uniquifier for this hash yet; start counting from zero
     return 0;
 }
 
@@ -1257,9 +1260,9 @@ bool CScriptLookup::Refresh(bool bForce)
 
     if (GetTickCount() - m_dwLastRefreshTime < 5000 && !bForce)
     {
-        // ignore refresh request if it comes too early
-        // since the last one (this prevents excessive
-        // disk activity when user repeatedly runs a script)
+        // ignore the refresh request if it comes too soon
+        // after the last one (this prevents excessive
+        // disk activity when the user repeatedly runs a script)
         return true;
     }
 

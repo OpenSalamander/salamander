@@ -15,19 +15,19 @@
 <h1>Moving or Renaming Files and Directories</h1>
 
 <p>You can move files and directories from any local or network path to a destination
-directory on any local or network path, in the archive, or in the plugin file system.
-It is possible to move files in both directions except archives (move from the archive
-to the disk is not supported, you can use Copy operation followed by Delete operation
-instead of it). Moving between archives and plugin file systems is not supported, please
-use some temporary directory to complete such operations (e.g. move from the plugin file system
-to this temporary directory and then from it to another plugin file system or archive).
-When you move a directory, all the contained files and subdirectories are moved too.</p>
+directory on any local or network path, in an archive, or in a plugin file system.
+Moving works in both directions except for archives (moving from an archive
+to disk is not supported; use Copy followed by Delete instead).
+Moving between archives and plugin file systems is not supported; use a temporary directory
+to complete such operations (for example, move from the plugin file system
+to a temporary directory and then from that directory to another plugin file system or archive).
+When you move a directory, all contained files and subdirectories are moved as well.</p>
 
-<h3>Moving or renaming files and directories using Move/Rename command</h3>
+<h3>Moving or renaming files and directories using the Move/Rename command</h3>
 
 <ol> 
-<li><p>Select files and directories you want to move.</p></li>
-<li>Open <a href="dlgboxes_move.htm">Move/Rename dialog box</a>:
+<li><p>Select the files and directories you want to move.</p></li>
+<li>Open the <a href="dlgboxes_move.htm">Move/Rename dialog box</a>:
  <table>
  <tr><td class="hdr">Menu:</td><td>Files/Move/Rename...</td></tr>
  <tr><td class="hdr">Shortcut key:</td><td>F6</td></tr>
@@ -41,19 +41,19 @@ When you move a directory, all the contained files and subdirectories are moved 
 
 <h3>Moving files and directories using drag and drop</h3>
 <p class="indent">Select the files and directories you want to move. Make sure the
-   place you want to drag files and directories to is visible. When you drag a
+   destination is visible. When you drag a
    selection to its new location, watch the mouse cursor shape. If it contains
-   the plus sign, it means you are copying files and directories. If it contains
-   the link (shortcut) sign, it means you are creating shortcuts of files and directories.
-   If it does not contain any sign, you are moving files and directories. You can
-   change this action by pressing (and holding) Shift (for moving), Ctrl (for copying),
-   and Shift+Ctrl (for creating shortcuts) keys. While dragging you can move mouse
-   pointer near the edge of the panel for scrolling panel contents.</p>
+   the plus sign, you are copying files and directories. If it contains
+   the link (shortcut) sign, you are creating shortcuts to files and directories.
+   If it contains no sign, you are moving files and directories. You can
+   change this action by pressing and holding Shift (for moving), Ctrl (for copying),
+   or Shift+Ctrl (for creating shortcuts). While dragging, you can move the mouse
+   pointer near the edge of the panel to scroll the panel contents.</p>
 
-<h3>Moving files and directories using clipboard</h3>
+<h3>Moving files and directories using the clipboard</h3>
 <ol> 
 <li>Select the files and directories you want to move.</li>
-<li>Choose cut to clipboard command:
+<li>Choose the Cut to Clipboard command:
 <table>
 <tr><td class="hdr">Menu:</td><td>Edit/Cut</td></tr>
 <tr><td class="hdr">Context menu:</td><td>Right-click selected files and
@@ -63,9 +63,9 @@ When you move a directory, all the contained files and subdirectories are moved 
   Top or Middle toolbar.</td></tr>
 </table></li>
 
-<li>Open the directory (it can be also in the archive or plugin file system) where you
-    want to put selected files and directories.</li>
-<li>Choose paste from clipboard command:
+<li>Open the directory where you want to place the selected files and directories (it can also be
+    in an archive or plugin file system).</li>
+<li>Choose the Paste from Clipboard command:
  <table>
  <tr><td class="hdr">Menu:</td><td>Edit/Paste</td></tr>
  <tr><td class="hdr">Context menu:</td><td>Right-click destination directory

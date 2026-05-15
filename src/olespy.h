@@ -11,7 +11,7 @@
 // Details on finding OLE leaks are described in OLESPY.CPP.
 
 // Attaches our IMallocSpy to OLE; COM must be initialized first.
-// If it returns TRUE, the followed functions can be called.
+// If it returns TRUE, the following functions can be called.
 BOOL OleSpyRegister();
 
 // Detaches the Spy from OLE; OleSpyDump can still be called after this function.

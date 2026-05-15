@@ -84,7 +84,7 @@ CParserVQF::GetFileInfo(COutputInterface* output)
                 {'(', 'c', ')', ' ', IDS_VQF_COPYRIGHT, NULL},
                 {'F', 'I', 'L', 'E', IDS_VQF_ORIGFILENAME, NULL},
 
-                //TODO I do not know exactly what these tags mean, you will have to find out
+                // TODO: The exact meaning of these tags is unknown and must be determined.
                 {'L', 'Y', 'R', 'C', IDS_VQF_LYRC, NULL},
                 {'W', 'O', 'R', 'D', IDS_VQF_WORD, NULL},
                 {'M', 'U', 'S', 'C', IDS_VQF_MUSC, NULL},

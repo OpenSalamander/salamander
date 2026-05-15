@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include <windows.h>
 
@@ -228,7 +229,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
             lpcbData != NULL &&
             (ret == ERROR_MORE_DATA || lpData == NULL && ret == ERROR_SUCCESS))
         {
-            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request extra space for a possible null terminator
+            (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request extra space for a possible extra null terminator(s)
             return ret;
         }
         if (ret == ERROR_SUCCESS && lpData != NULL)
@@ -242,7 +243,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                 }
                 else // not enough space for the null terminator in the buffer
                 {
-                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // request the necessary null terminator
+                    (*lpcbData) += type == REG_MULTI_SZ ? 2 : 1; // account for the required null terminator(s)
                     return ERROR_MORE_DATA;
                 }
             }
@@ -255,7 +256,7 @@ LONG SalRegQueryValueEx(HKEY hKey, LPCSTR lpValueName, LPDWORD lpReserved,
                 }
                 else // not enough room for the second null terminator in the buffer
                 {
-                    (*lpcbData)++; // request the required null terminator
+                    (*lpcbData)++; // request space for the required null terminator
                     return ERROR_MORE_DATA;
                 }
             }
@@ -332,7 +333,7 @@ int InitExtraction(const char* name)
     direntries = *(unsigned long*)(ptr + 20 + 23 * 4); // number of dir entries
     for (section = *(unsigned short*)(ptr + 2) - 1; section >= 0; section--)
     {
-        offset += *(unsigned long*)(ptr + 20 + 24 * 4 + direntries * 8 + section * 10 * 4 + 4 * 4); // size of section
+        offset += *(unsigned long*)(ptr + 20 + 24 * 4 + direntries * 8 + section * 10 * 4 + 4 * 4); // section size
     }
     //test header consistence
     ArchiveStart = (CSelfExtrHeader*)(ArchiveBase + offset);
@@ -373,7 +374,7 @@ int InitExtraction(const char* name)
 #ifdef EXT_VER
         bool b = TargetPath[0] == 0;
 
-        if (b) //temp path specified on commandline
+        if (b) // temp path specified on the command line
 #endif         //EXT_VER
             if (GetTempPath(MAX_PATH, TargetPath) == 0)
                 return HandleError(STR_ERROR_TEMPPATH, GetLastError());
@@ -667,7 +668,7 @@ int MyWinMain()
   }
   */
 
-    // finally show the message box
+    // show the message box
     if (ArchiveStart->MBoxStyle != -1)
     {
         int r = (int)ArchiveStart->MBoxStyle < 0 ? DialogBox(HInstance, MAKEINTRESOURCE(IDD_LONGMESSAGE), NULL, LongMessageDlgProc) : MessageBox(NULL, (char*)ArchiveStart + ArchiveStart->MBoxTextOffs, (char*)ArchiveStart + ArchiveStart->MBoxTitleOffs, ArchiveStart->MBoxStyle);

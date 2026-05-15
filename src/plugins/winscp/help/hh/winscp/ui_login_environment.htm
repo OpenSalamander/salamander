@@ -14,7 +14,7 @@
 <h1>Environment Tab (Login Dialog)</h1>
 
 <p>
-<em>Environment tab</em> allows user to configure WinSCP adaptation for particular server/environment.
+<em>Environment tab</em> lets you adapt WinSCP to a particular server environment.
 </p>
 
 <p>
@@ -37,15 +37,15 @@ More environmental options are available on subtabs:
 <p>
 Use <em>End-of-line characters</em> to specify text file format used by
 the server.
-To allow <a href="transfer_mode.htm">text mode transfers</a>, WinSCP needs to know the format of text file.
-Generally there is plenty of text file formats, almost every platform has it own format. WinSCP
-supports two most used formats, Unix and Windows. As most servers are
-run on Unix system, generally you may leave the default Unix format. If your server runs on Windows, select the
+To allow <a href="transfer_mode.htm">text mode transfers</a>, WinSCP needs to know the text-file format.
+Generally there are plenty of text file formats, and almost every platform has its own format. WinSCP
+supports the two most used formats, Unix and Windows. As most servers are
+run on Unix system, generally you can leave the default Unix format. If your server runs on Windows, select the
 Windows format. If you do not use text mode transfers, the option is not important for you.
 </p>
 
 <p>
-With <a href="protocols.htm#sftp">SFTP-4 and newer</a>, the server tells itself what format it uses, so
+With <a href="protocols.htm#sftp">SFTP-4 and newer</a>, the server tells WinSCP what format it uses, so
 the configured option is not used.
 </p>
 
@@ -88,15 +88,15 @@ is not supported with <a href="protocols.htm#scp">SCP protocol</a>.
 <h5>Timezone Offset</h5>
 
 <p>
-The <em>Timezone offset</em> allows user to configure timezone difference
+The <em>Timezone offset</em> allows you to configure the time zone difference
 of the server.
 </p>
 
 <p>
 With <a href="protocols.htm#scp">SCP protocol</a> the option is used
-to counterweight time difference between
+to offset the time difference between
 <a href="timestamp.htm">timestamp</a> of remote file shown in directory listing and timestamp set on
-downloaded file, and vice versa. The difference is caused by fact that during transfer <code>scp</code>
+downloaded file, and vice versa. The difference is caused by the fact that during transfer <code>scp</code>
 command usually uses <acronym title="Universal Time Coordinated">UTC</acronym> time format, while
 <code>ls</code> command may display time in local (for server) time format. The time difference can be
 negative. For example if the timestamps of remote files are two hours ahead of local files, set the
@@ -126,7 +126,7 @@ to try to use it to adjust the incorrect timestamp of already transferred file.
 
 <p>
 Use the third option <em>Preserve remote timestamp</em>,
-if you want to see exact non-adjusted remote timestamp in remote panel.
+if you want to see the exact, unadjusted remote timestamp in the remote panel.
 Drawback is that with the option selected,
 the <a href="task_synchronize.htm">synchronization</a>
 functions will not work.
@@ -146,7 +146,7 @@ for a server running on these platforms.
 <a name="other_settings"></a>
 <h2>Other Settings</h2>
 <p>
-Use link <em>Recycle bin</em> to reveal <em><a href="ui_login_recycle_bin.htm">Recycle bin tab</a></em>.
+Use the <em>Recycle bin</em> link to open <em><a href="ui_login_recycle_bin.htm">Recycle bin tab</a></em>.
 </p>
 
 <h4>Notes:</h4>

@@ -362,7 +362,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                 QuietTranslate && (OutWindow.GetInfoLines() == 1 || completelyUntranslated)) // nothing to translate (the only info line is the header) or no text translated at all—report via exit code
             {
                 DestroyWindow(HWindow);
-                ExitProcess(QuietTranslate && completelyUntranslated ? 0 : 1); // terminate immediately to avoid showing the main window; exit code 1 means validation succeeded
+                ExitProcess(QuietTranslate && completelyUntranslated ? 0 : 1); // terminate immediately to avoid showing the main window and other unwanted things; exit code 1 means validation succeeded
             }
         }
 
@@ -374,7 +374,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
             if (!dirty || Data.Save() && Data.SaveProject())
             {
                 DestroyWindow(HWindow);
-                ExitProcess(dirty ? 0 : 1); // terminate immediately; exit code 0 = changes saved, 1 = no changes detected
+                ExitProcess(dirty ? 0 : 1); // terminate immediately to avoid showing the main window and other unwanted things; exit code 0 = changes saved, 1 = no changes detected
             }
         }
 
@@ -405,7 +405,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                 if (Data.Save() && Data.SaveProject())
                 {
                     DestroyWindow(HWindow);
-                    ExitProcess(1); // terminate immediately to avoid flashing the main window; exit code 1 indicates success
+                    ExitProcess(1); // terminate immediately to avoid flashing the main window and other unwanted things; exit code 1 indicates success
                 }
             }
         }
@@ -459,7 +459,7 @@ BOOL CFrameWindow::OpenProject(const char* importSubPath)
                     if (Data.Save() && Data.SaveProject())
                     {
                         DestroyWindow(HWindow);
-                        ExitProcess(1); // exit immediately to avoid showing the main window; exit code 1 means validation succeeded
+                        ExitProcess(1); // exit immediately to avoid showing the main window and other unwanted things; exit code 1 means validation succeeded
                     }
                 }
             }
@@ -735,7 +735,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+        PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // safely close the window
         return 0;
     }
 
@@ -1391,7 +1391,7 @@ CFrameWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         Data.Save();
                         Data.SaveProject();
                     }
-                    PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // bezpecny close-window
+                    PostMessage(HWindow, WM_COMMAND, CM_EXIT, 0); // safely close the window
                 }
             }
             return 0;

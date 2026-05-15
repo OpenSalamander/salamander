@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 //#include <windows.h>
@@ -109,14 +110,14 @@ BOOL WriteSFXHeader()
     offs += ++l;
     header.ArchiveNameOffs = offs;
     //l = lstrlen(archName);
-    //ArchiveDataOffs += l; // we accounted for this earlier
+    //ArchiveDataOffs += l; // we did not account for this before
     //offs += ++l;
     offs++;
     header.TargetDirSpecOffs = offs;
     offs += (sdr - sdl) + 1;
     if (td == SE_REGVALUE)
     {
-        offs += sizeof(LONG); // prepend the HKEY value; even the 64-bit build stores only a 32-bit key for known roots (e.g. HKEY_CURRENT_USER)
+        offs += sizeof(LONG); // prepend the HKEY value; even the 64-bit build stores only a 32-bit key; known roots (e.g. HKEY_CURRENT_USER) are defined as 32-bit IDs
         const char* bs = StrNChr(sdl, sdr - sdl, '\\');
         if (!bs)
             offs += 1; // add a separator character between the subkey and value

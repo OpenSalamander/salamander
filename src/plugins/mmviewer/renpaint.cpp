@@ -117,7 +117,7 @@ void CRendererWindow::Paint(HDC hDC, BOOL moveEditBoxes, DWORD deferFlg)
     SCROLLINFO si;
     si.cbSize = sizeof(si);
     si.fMask = SIF_POS;
-    if (!GetScrollInfo(HWindow, SB_VERT, &si)) //0 = no scrollbar
+    if (!GetScrollInfo(HWindow, SB_VERT, &si)) // 0 = no scroll position
         si.nPos = 0;
 
     int yPos = si.nPos;
@@ -158,7 +158,7 @@ void CRendererWindow::Paint(HDC hDC, BOOL moveEditBoxes, DWORD deferFlg)
                     {
                         LRESULT lines = SendMessage(item->hwnd, (UINT)EM_GETLINECOUNT, 0, 0);
 
-                        if (lines > 1) // add a tiny scrollbar ;-)
+                        if (lines > 1) // add a vertical scrollbar
                         {
                             LONG style = GetWindowLong(item->hwnd, GWL_STYLE);
                             SetWindowLong(item->hwnd, GWL_STYLE, style | WS_VSCROLL);

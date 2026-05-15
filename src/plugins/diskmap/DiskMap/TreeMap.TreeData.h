@@ -157,7 +157,7 @@ public:
             return dirHorizontal;
             break;
         }
-        return dirNULL; //TODO: error!
+        return dirNULL; //TODO: bug
     }
     //virtual ERenderDecision Decide(CCushionRow *csr, double width, double length, int level, EDirection lastdir, INT64 datasize, INT64 remainingdata, int i, int remainingfiles)
     virtual ERenderDecision Decide(CCushionRow* csr, double width, double length, INT64 datasize, INT64 remainingdata) = 0;

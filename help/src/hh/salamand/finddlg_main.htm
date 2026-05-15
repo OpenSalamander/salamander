@@ -13,7 +13,7 @@
 <div class="page">
 <h1>Find</h1>
 
-<p>Use this dialog box to search for files or directories on your computer or
+<p>Use this dialog box to search for files or directories on your computer and on
 network drives.</p>
 
 <h4>Dialog Box Options</h4>
@@ -21,27 +21,27 @@ network drives.</p>
 <dt><i>Named</i></dt>
 <dd>Type the file or directory name in this box. Use <a href="appendix_filemasks.htm">file masks</a>
 to specify a group of files or directories. Use the drop-down list to select previous
-search masks. Important note: when you specify mask without asterisk (*), question mark (?), and
-point (.), you will find all files and directories whose names are containing this mask (e.g. when
-you specify "dog", you will find "dogs.txt", "hotdog.jpg", etc.), you can prevent this by adding
-point (.) to the end of such mask (e.g. when you specify "dog.", you will find only "dog").</dd>
+search masks. Important: if you specify a mask without an asterisk (*), question mark (?), or
+period (.), you will find all files and directories whose names contain this mask (e.g. if
+you specify "dog", you will find "dogs.txt", "hotdog.jpg", etc.). You can prevent this by adding a
+period (.) to the end of the mask (e.g. if you specify "dog.", you will find only "dog").</dd>
 
 <dt><i>Find Now</i></dt>
-<dd>This button starts the search. Pressing Escape or the Stop button can
-interrupt it. Click on the right side of this button to open context menu
+<dd>This button starts the search. Press Escape or click the Stop button to
+interrupt it. Click the right side of this button to open a context menu
 with other commands.</dd>
 
 <dt><i>Look in</i></dt>
-<dd>This box contains directories in which you want to start the search.
-More starting directories can be specified using semi-colon (;) as a separator.
+<dd>This box contains the directories in which you want to start the search.
+You can specify multiple starting directories by separating them with semicolons (;).
 Use the drop-down list to select previously used starting directories.</dd>
 
 <dt><i>Add</i></dt>
-<dd>Displays the context menu, where you can select from the three commands.
-The Browse command allows you to locate and add desired directory to the <i>Look in</i>
-box. The Add Local Drives command inserts all local drives to the <i>Look in</i> box.
+<dd>Displays a context menu where you can choose from three commands.
+The Browse command lets you locate and add the desired directory to the <i>Look in</i>
+box. The Add Local Drives command inserts all local drives into the <i>Look in</i> box.
 The Add Local and Network Drives command inserts all local and network (mapped) drives
-to the <i>Look in</i> box.</dd>
+into the <i>Look in</i> box.</dd>
 
 <dt><i>Search subdirectories</i></dt>
 <dd>Select this check box if you want to search all subdirectories of the
@@ -51,43 +51,42 @@ directories listed in the <i>Look in</i> box.</dd>
 <dd>When checked and the <i>Containing</i> box is not empty, the file content will be searched.</dd>
 
 <dt><i>Containing</i></dt>
-<dd>Type some text which should be contained in a file. If you don't know a file's name,
-you may be able to find the file by typing some of its contents. You can specify
+<dd>Type the text that a file should contain. If you do not know a file's name,
+you may be able to find it by typing some of its contents. You can specify
 four additional options: HEX-mode, Case sensitive, Whole words, and Regular
-expression. Use the drop-down list to select previous search strings.</dd>
+expression. Use the drop-down list to select previously used search strings.</dd>
 
 <dt><i>HEX-mode</i></dt>
-<dd>Hexadecimal mode will be used to set character by character in hexadecimal
-numbers. You can also input normal text in the hexadecimal mode, but it must be
-quoted using double quotes. So if you set '01 02 "text" 00', it will be a pattern
-with 7 characters, 2+4+1.</dd>
+<dd>Hexadecimal mode is used to enter the pattern character by character as hexadecimal
+numbers. You can also enter normal text in hexadecimal mode, but it must be
+quoted using double quotes. For example, if you enter '01 02 "text" 00', the pattern
+contains 7 characters: 2+4+1.</dd>
 
 <dt><i>Case sensitive</i></dt>
 <dd>When selected, it searches for strings that match the <i>Containing</i>
-string exactly. Otherwise, it searches ignoring case of characters (lower and
-upper characters are equal).</dd>
+string exactly. Otherwise, it searches without regard to character case (lowercase and
+uppercase characters are treated as equal).</dd>
 
 <dt><i>Whole words</i></dt>
 <dd>When selected, the found string must be preceded and followed by a space, tab,
-or punctuation character or the start or end of a line. Otherwise, the
-search finds any matching string, whether it is a fragment of a larger string
-or not.</dd>
+punctuation character, or the start or end of a line. Otherwise, the search
+finds any matching string, whether it is a fragment of a larger string or not.</dd>
 
 <dt><i>Regular expression</i></dt>
-<dd>When checked, type <a href="appendix_regexp.htm">regular expression</a> to the
-<i>Containing</i> box. The regular expressions are powerful, you can use them to find
-text which have specified attributes. These attributes are for example "pattern begins
-at the beginning of line", "pattern ends at the end of line", "pattern starts with
-some prefix and ends with some suffix", "pattern is one word from a set of words", or
-"pattern contains only characters from some character sequence (e.g. numbers)".</dd>
+<dd>When checked, type a <a href="appendix_regexp.htm">regular expression</a> into the
+<i>Containing</i> box. Regular expressions are powerful; you can use them to find
+text with specified attributes. For example, you can search for text where the pattern
+begins at the beginning of a line, ends at the end of a line, starts with one prefix
+and ends with another suffix, matches one word from a set of words, or contains only
+characters from a particular character sequence (e.g. numbers).</dd>
 
 <dt><i>Advanced</i></dt>
 <dd>Opens the <a href="finddlg_advan.htm">Advanced Options dialog box</a> where you can
 specify advanced search criteria.</dd>
 
 <dt><i>Found Items</i></dt>
-<dd>Contains a list of found files and directories. Click on columns headers to sort this
-list by name, size, path, or time. Or use sort commands from the View menu.</dd>
+<dd>Contains a list of found files and directories. Click the column headers to sort this
+list by name, size, path, or time. You can also use the sort commands on the View menu.</dd>
 
 </dl>
 

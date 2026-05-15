@@ -7,7 +7,7 @@
 int CSimpleListPluginDataInterface::ListingColumnWidth = 0;      // LO/HI-WORD: left/right panel: width of the Raw Listing column
 int CSimpleListPluginDataInterface::ListingColumnFixedWidth = 0; // LO/HI-WORD: left/right panel: does the Raw Listing column have a fixed width?
 
-// Global variables where I store pointers to Salamander's global variables
+// Global variables that store pointers to Salamander's global variables
 const CFileData** TransferFileData = NULL;
 int* TransferIsDir = NULL;
 char* TransferBuffer = NULL;
@@ -385,7 +385,7 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
     if (lastErrorState == fesFatal)
     {
         TargetPanelPath[0] = 0; // the connection failed, no path change in the target panel
-        return FALSE;           // fatal error, stop
+        return FALSE;           // fatal error, abort
     }
 
     // Treat a hard refresh as distrust of the path; drop from the disk cache all files
@@ -411,7 +411,7 @@ BOOL CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fs
         TotalConnectAttemptNum = 1; // opening the connection = first attempt to open it
         InformAboutUnknownSrvType = TRUE;
 
-        BOOL parsedPath = TRUE; // TRUE = path obtained from the user part; need to decide whether to trim '/' or '\\' at the start
+        BOOL parsedPath = TRUE; // TRUE = path obtained from the user-part; need to determine whether to trim a leading '/' or '\\'
         ControlConnection = new CControlConnectionSocket;
         if (ControlConnection == NULL || !ControlConnection->IsGood())
         {
@@ -1168,7 +1168,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                             {
                                 serverType->CompiledAutodetCond = CompileAutodetectCond(HandleNULLStr(serverType->AutodetectCond),
                                                                                         NULL, NULL, NULL, NULL, 0);
-                                if (serverType->CompiledAutodetCond == NULL) // can only fail due to lack of memory
+                                if (serverType->CompiledAutodetCond == NULL) // this can only be a low-memory error
                                 {
                                     err = TRUE;
                                     break;
@@ -1205,8 +1205,8 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                         serverType = serverTypeList->At(i);
                         if (!serverType->ParserAlreadyTested) // only if we have not tried it yet
                         {
-                            // serverType is selected, try its parser on the listing
-                            // serverType->ParserAlreadyTested = TRUE;  // unnecessary, not used afterwards
+                            // serverType has been selected; try its parser on the listing
+                            // serverType->ParserAlreadyTested = TRUE;  // unnecessary, not used later
                             if (ParseListing(dir, &pluginData, serverType, &err, isVMS, NULL, FALSE, NULL, NULL) || err)
                             {
                                 if (!err)
@@ -1260,7 +1260,7 @@ BOOL CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
                 pluginData = &SimpleListPluginDataInterface; // ATTENTION: the change may also affect obtaining the data interface in CPluginFSInterface::ChangeAttributes!
                 dir->SetValidData(VALID_DATA_NONE);
                 dir->SetFlags(SALDIRFLAG_CASESENSITIVE | SALDIRFLAG_IGNOREDUPDIRS); // probably unnecessary, but everything is treated as case-sensitive so this should be safe
-                if (!PathListingIsBroken &&                                         // if the listing is not OK, rather use an empty listing
+                if (!PathListingIsBroken &&                                         // if the listing is not OK, use an empty listing instead
                     PathListingLen > 0)
                 {
                     char* beg = PathListing;

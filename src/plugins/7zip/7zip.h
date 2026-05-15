@@ -125,7 +125,7 @@ protected:
     C7zClient* Client;
     UString Password;
 
-    friend class CPluginInterfaceForArchiver; // For acessing Password
+    friend class CPluginInterfaceForArchiver; // For accessing Password
 
 public:
     CPluginDataInterface(C7zClient* client);

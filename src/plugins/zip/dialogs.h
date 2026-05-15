@@ -37,7 +37,7 @@ public:
 
 class CPackDialog : public CDlgRoot
 {
-    CZipPack* PackObject; //used in adcanced self-extr settings dialog
+    CZipPack* PackObject; // used in advanced self-extr settings dialog
     CConfiguration* Config;
     CExtendedOptions* PackOptions;
     //unsigned            CustomVolSize;//in KB
@@ -399,7 +399,7 @@ public:
 
 class CCreateSFXDialog : public CDlgRoot
 {
-    CZipPack* PackObject; //used in adcanced self-extr settings dialog
+    CZipPack* PackObject; // used in advanced self-extr settings dialog
     CExtendedOptions* PackOptions;
     char* ZipName;
     char* ExeName;

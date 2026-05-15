@@ -193,8 +193,8 @@ public:
     // returns the new TopIndex that EnsureItemVisible would set for scroll == FALSE
     int PredictTopIndex(int index);
 
-    // special version: scrolls only the part of the screen that doesn't contain
-    // the item index, then repaints the remaining items
+    // special version of the function: scrolls only the part of the screen that does not contain
+    // item index; then repaints the remaining items
     void EnsureItemVisible2(int newTopIndex, int index);
 
     // returns TRUE if item 'index' is at least partially visible; if 'isFullyVisible' is not NULL,
@@ -222,7 +222,7 @@ protected:
     void SetupScrollBars(DWORD flags = UPDATE_VERT_SCROLL | UPDATE_HORZ_SCROLL); // updates scrollbar information
     BOOL ShowHideChilds();                                                       // shows or hides children based on Mode; returns TRUE when a change occurs otherwise returns FALSE
     void UpdateInternalData();
-    void CheckAndCorrectBoundaries(); // ensures scrollbars are in valid ranges, adjusting them if needed
+    void CheckAndCorrectBoundaries(); // ensures the scrollbars are in valid positions, adjusting them if needed
 
     void OnHScroll(int scrollCode, int pos);
     void OnVScroll(int scrollCode, int pos);

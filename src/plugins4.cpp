@@ -99,7 +99,7 @@ void CPlugins::UpdatePluginsOrder(BOOL sortByName)
             }
         }
         DWORD flags = 1;
-        if (foundIndex == -1) // this plugin has no record in the Order array => append it to the end
+        if (foundIndex == -1) // this plugin has no entry in the Order array => append it to the end
         {
             foundIndex = AddPluginToOrder(pluginData->DLLName, TRUE);
             if (firstAdded)
@@ -254,7 +254,7 @@ int CPlugins::FindIndexForNewPluginFSTimer(DWORD timeoutAbs)
         if (actTimeoutAbs == timeoutAbs)
         {
             while (++m < PluginFSTimers.Count && PluginFSTimers[m]->AbsTimeout - timeoutAbsBase == timeoutAbs)
-                ;     // return the index after the last identical timer
+                ;     // return the index after the last timer with the same timeout
             return m; // found
         }
         else if (actTimeoutAbs > timeoutAbs)
@@ -327,12 +327,12 @@ int CPlugins::KillPluginFSTimer(CPluginFSInterfaceAbstract* timerOwner, BOOL all
             ret++;
         }
     }
-    if (setTimer) // the timer with the nearest timeout was cancelled, the timeout must be reset
+    if (setTimer) // the timer with the nearest timeout was canceled; the timeout must be reset
     {
         if (PluginFSTimers.Count > 0)
         {
             DWORD ti = PluginFSTimers[0]->AbsTimeout - GetTickCount();
-            if ((int)ti > 0) // if the new timer hasn't already timed out (the difference can even be negative), adjust or start the Windows timer
+            if ((int)ti > 0) // if the new timer has not already expired (the time difference can even be negative), adjust or start the Windows timer
             {
                 SetTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS, ti, NULL);
             }
@@ -411,7 +411,7 @@ void CPlugins::HandlePluginFSTimers()
         if (PluginFSTimers.Count > 0)
         {
             DWORD ti = PluginFSTimers[0]->AbsTimeout - GetTickCount();
-            if ((int)ti > 0) // if the new timer hasn't already timed out (the difference can even be negative), adjust or start the Windows timer
+            if ((int)ti > 0) // if the new timer has not already expired (the time difference can even be negative), adjust or start the Windows timer
                 SetTimer(MainWindow->HWindow, IDT_PLUGINFSTIMERS, ti, NULL);
             else
                 PostMessage(MainWindow->HWindow, WM_TIMER, IDT_PLUGINFSTIMERS, 0); // process the next timeout as soon as possible

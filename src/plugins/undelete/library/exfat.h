@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -145,7 +146,7 @@ private:
     DWORD GetFATItem(DWORD index);
     QWORD GetFATItems() { return FATItems; }
     BOOL LoadDirectoryTree(FILE_RECORD_I<CHAR>* parent, DWORD dirFirstCluster, QWORD dirFileSize, BOOL dirClusterChainInFAT, BOOL isRootDirectory, CHAR* tracePath);
-    DWORD GetClusterChainLen(DWORD index);                                                                    // return number of clusters in cluster chain starting at 'index'
+    DWORD GetClusterChainLen(DWORD index);                                                                    // Returns the number of clusters in the cluster chain starting at 'index'
     BOOL LoadClusterChain(BYTE** buff, DWORD firstCluster, QWORD fileSize, BOOL chainInFAT, QWORD* clusters); // allocate 'buffer' and read clusters based on cluster chain starting at 'index', returns number of 'clusters'
     DWORD ConvertExFATAttr(DWORD exfatattr);
     void DosTimeToFileTime(DWORD dosTime, BYTE dosTime10ms, FILETIME* ft);
@@ -166,8 +167,8 @@ private:
     BOOL EstimateFileDamage(const FILE_RECORD_I<CHAR>* deletedFiles, CLUSTER_MAP_I** clusterMap);
     BOOL GetLostClustersMap(CClusterBitmap* clusterBitmap, CLUSTER_MAP_I* clusterMap);
 
-    // exFAT FAT table could contain 2^32 items (cluster),
-    // it is not possible to allocate/read it whole as we do with FAT32 volumes
+    // The exFAT FAT table can contain 2^32 items (clusters),
+    // so it is not possible to allocate/read it as a whole as we do for FAT32 volumes
     DWORD FATItems;          // total number of DWORD items in FAT
     DWORD* FATHead;          // buffer with first clusters of FAT, up to MAX_FAT_HEAD_SIZE size
     DWORD FATHeadItems;      // number of DWORD items in FATHead
@@ -579,7 +580,7 @@ BOOL CExFATSnapshot<CHAR>::EncodeClusterChains(CRunsBuffer<CHAR>* tmpRunsBuffer,
                 delete[] runs;
                 return String<CHAR>::Error(IDS_UNDELETE, IDS_LOWMEM);
             }
-            stream->FirstLCN = 0; // not needed anymore, encoded in data runs
+            stream->FirstLCN = 0; // no longer needed, encoded in data runs
             stream->Ptrs = ptrs;
             ptrs->StartVCN = 0;
             ptrs->LastVCN = (stream->DSSize - 1) / this->Volume->BytesPerCluster;
@@ -740,7 +741,7 @@ BOOL CExFATSnapshot<CHAR>::Update(CSnapshotProgressDlg* progress, DWORD udFlags,
     if (this->UdFlags & UF_ESTIMATEDAMAGE)
         EstimateFileDamage(deletedFiles, clusterMap);
 
-    // we can destroy {Metafiles} virtual directory now if not needed anymore
+    // we can destroy {Metafiles} virtual directory now if no longer needed
     if ((this->UdFlags & UF_SHOWMETAFILES) == 0 && VirtualDirsCount == 2)
     {
         FreeRecord2(this->Root->DirItems[this->Root->NumDirItems - 1].Record);
@@ -915,7 +916,7 @@ BOOL CExFATSnapshot<CHAR>::FilterExistingDirectories(FILE_RECORD_I<CHAR>* record
 {
     CALL_STACK_MESSAGE_NONE
     //CALL_STACK_MESSAGE1("CExFATSnapshot::FilterExistingDirectories()");
-    // remove existing directories which contains only existing files and directories
+    // remove existing directories that contain only existing files and directories
     // (single deleted subdirectory of subfile means we cannot remove this directory)
     DWORD j = 0;
     for (DWORD i = 0; i < record->NumDirItems; i++)
@@ -933,7 +934,7 @@ BOOL CExFATSnapshot<CHAR>::FilterExistingDirectories(FILE_RECORD_I<CHAR>* record
         }
     }
     record->NumDirItems = j;
-    return j == 0; // returns TRUE when directory was removed
+    return j == 0; // Returns TRUE when all directory items were removed
 }
 
 template <typename CHAR>
@@ -942,7 +943,7 @@ BOOL CExFATSnapshot<CHAR>::FilterEmptyDirectories(FILE_RECORD_I<CHAR>* record)
     CALL_STACK_MESSAGE_NONE
     //CALL_STACK_MESSAGE1("CExFATSnapshot::FilterEmptyDirectories()");
 
-    // remove directories which contains only further directories (doesn't contain files)
+    // remove directories that contain only further directories (doesn't contain files)
     DWORD j = 0;
     for (DWORD i = 0; i < record->NumDirItems; i++)
     {
@@ -1158,7 +1159,7 @@ void CExFATSnapshot<CHAR>::DrawDeletedFile(FILE_RECORD_I<CHAR>* record, CCluster
                 QWORD lcn;
                 QWORD length;
                 if (!runsWalker.GetNextRun(&lcn, &length, NULL))
-                    break; // unlikely error, moreover it doesn't matter
+                    break; // unlikely error; it does not matter here
                 if (lcn != -1)
                 {
                     // if value in bitmap is smaller than 2, increase it
@@ -1263,12 +1264,12 @@ BOOL CExFATSnapshot<CHAR>::EstimateFileDamage(const FILE_RECORD_I<CHAR>* deleted
         }
     }
 
-    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is lost cluster map required?
+    if (this->UdFlags & UF_GETLOSTCLUSTERMAP) // is a lost cluster map required?
     {
         if (clusterMap != NULL)
         {
             // files with Condition FC_FAIR or FC_POOR render as "2 - there are more then one delete file in this place"
-            // because we should return map of clusters which are not used by existing files and files which could be recovered (FC_GOOD)
+            // because we should return map of clusters that are not used by existing files and files which could be recovered (FC_GOOD)
             for (i = 0; i < deletedFiles->NumDirItems; i++)
             {
                 FILE_RECORD_I<CHAR>* r = deletedFiles->DirItems[i].Record;
@@ -1312,7 +1313,7 @@ BOOL CExFATSnapshot<CHAR>::GetLostClustersMap(CClusterBitmap* clusterBitmap, CLU
             // for cluster number 'i' find related two bits in bitmap
             BYTE c;
             clusterBitmap->GetValue(i - 2, &c); // exFAT bitmap is zero based
-            if (c == 0 || c == 2)               // cluster is not used (or we don't know about it) || there is FC_FAIR or FC_POOR
+            if (c == 0 || c == 2)               // cluster is not used (or we do not know about it), or it is FC_FAIR or FC_POOR
             {
                 // if it is beginning of segment that we are interested in, store lcnFirst and set we are in segment
                 if (!inside)

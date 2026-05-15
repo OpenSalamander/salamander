@@ -1,8 +1,9 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 // ****************************************************************************
-// Boyer-Mooruv algoritmus hledani podretezce
+// Boyer-Moore substring search algorithm
 // ****************************************************************************
 
 #pragma once
@@ -49,8 +50,8 @@ public:
                                  Fail1 != NULL && Fail2 != NULL; }
     void SetFlags(WORD flags);
     void Set(const char* pattern, WORD flags);
-    // pro patterny obsahujici '\0'
-    // buffer pattern musi mit delku (length + 1) znaku (kompatibilita se stringy)
+    // for patterns containing '\0'
+    // the pattern buffer must be (length + 1) characters long (for compatibility with C strings)
     void Set(const char* pattern, const int length, WORD flags);
 
     inline int SearchForward(const char* text, int length, int start);
@@ -60,26 +61,24 @@ protected:
     int Minimum(int a, int b) { return (a < b) ? a : b; }
     int Maximum(int a, int b) { return (a > b) ? a : b; }
 
-    int* Fail1;            // fail pole pro akt. pismeno
-    int* Fail2;            // fail pole pro vyskyt substringu zprava
-    char* OriginalPattern; // puvodni vzorek ke hledani
-    char* Pattern;         // vzorek ke hledani v prislusnem tvaru (Flag)
-    int Length;            // delka vzorku
+    int* Fail1;            // fail array for the current character
+    int* Fail2;            // fail array for substring occurrence from the right
+    char* OriginalPattern; // original search pattern
+    char* Pattern;         // search pattern in the corresponding flag-dependent form
+    int Length;            // pattern length
 
 private:
-    BOOL Initialize(); // vola se jen ze SetFlags
+    BOOL Initialize(); // called only from SetFlags
 
-    WORD Flags; // menit pres SetFlags
+    WORD Flags; // modify via SetFlags
 };
 
-//
 // ****************************************************************************
 // SearchForward
-// vraci pozici Patternu nebo -1
-// text - v cem ma hledat
-// length - delka stringu text
-// start - prvni znak cislovano od 0
-//
+// returns the index of Pattern or -1
+// text - text to search in
+// length - length of the text string
+// start - index of the first character, starting at 0
 
 int CSearchData::SearchForward(const char* text, int length, int start)
 {
@@ -118,13 +117,11 @@ int CSearchData::SearchForward(const char* text, int length, int start)
     return -1;
 }
 
-//
 // ****************************************************************************
 // SearchBackward
-// vraci pozici Patternu nebo -1
-// text - v cem ma hledat
-// length - delka stringu text
-//
+// returns the index of Pattern or -1
+// text - text to search in
+// length - length of the text string
 
 int CSearchData::SearchBackward(const char* text, int length)
 {

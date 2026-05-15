@@ -318,8 +318,8 @@
 // Connect to FTP Server dialog: first item in listbox - Quick Connect
 #define IDS_QUICKCONNECT     10100
 
-// Connect to FTP Server dialog: texts for editline with short description of Advanced features
-// no advaced options
+// Connect to FTP Server dialog: texts for the edit line showing short descriptions of Advanced features
+// no advanced options
 #define IDS_ADVSTRNONE          10105
 // target path is set
 #define IDS_ADVSTRTARGETPATH    10106
@@ -528,7 +528,7 @@
 #define IDS_QUICKRENAMEFILEERRSUF1 10233
 // suffix for IDS_QUICKRENAMEFILEERR: Error: Target file is locked by another operation."
 #define IDS_QUICKRENAMEFILEERRSUF2 10234
-// proxy script error: Error has occured while processing proxy server script.\n\nError: %s
+// proxy script error: Error has occurred while processing proxy server script.\n\nError: %s
 #define IDS_ERRINPROXYSCRIPT    10235
 // Proxy server address is empty.
 #define IDS_PROXYSRVADREMPTY    10236
@@ -551,7 +551,7 @@
 #define IDS_ENTERACCTTEXT           10246
 // Enter User name dialog: info: Connecting to "%s".
 #define IDS_CONNECTINGTOAS1         10247
-// Enter Password/Acount dialog: info: Connecting to "%s" as "%s".
+// Enter Password/Account dialog: info: Connecting to "%s" as "%s".
 #define IDS_CONNECTINGTOAS2         10248
 
 // word "hidden" instead of real password or account in log-file or welcome message
@@ -679,7 +679,7 @@
 #define IDS_LOGMSGUPLOADISNOTCOMPL2   10371
 // download failed only due to missing server reply to RETR command - file is probably OK, so it worths to Resume it: Forcing Resume for file ""%s"" (file content was successfully received but server did not confirm successful sending of this file).\r\n
 #define IDS_LOGMSGDWNLOADFORCRESUM    10372
-// upload: autorename tryies to upload file to newly generated name: Renaming file for upload to ""%s""...\r\n
+// upload: autorename tries to upload the file under a newly generated name: Renaming file for upload to ""%s""...\r\n
 #define IDS_LOGMSGUPLOADRENFILE       10373
 // Downloading file ""%s"" to ""%s""...\r\n
 #define IDS_LOGMSGDOWNLOADFILE2       10374
@@ -708,9 +708,9 @@
 #define IDS_LOGMSGUNABLETOOPEN2       10391
 // Data connection was terminated on user demand...\r\n
 #define IDS_LOGMSGDATACONTERMINATED   10392
-// preliminar attempt to open passive data con. has failed, reconnecting (after sending of FTP transfer command): Reconnecting data connection...\r\n
+// preliminary attempt to open the passive data connection failed; reconnecting (after sending the FTP transfer command): Reconnecting the data connection...\r\n
 #define IDS_LOGMSGDATACONRECON        10393
-// some error has occured in data connection: Data connection error: %s\r\n
+// some error has occurred in the data connection: Data connection error: %s\r\n
 #define IDS_LOGMSGDATCONERROR         10394
 // unexpected server reply (some extra reply received before sending of next command): Unexpected reply:
 #define IDS_LOGMSGUNEXPREPLY          10395
@@ -1179,7 +1179,7 @@
 #define IDS_FINISHINGKEEPALIVECMD     10711
 // when keep alive command is processing and user press ESC: Do you want to cancel command sent to keep the connection alive? Connection to FTP server will be terminated.
 #define IDS_KEEPALIVECMDESC           10712
-// message to log: when keep alive command is processing and FTP client want to send another command and when timeout occures: Sending of command to keep the connection alive has timed out.\r\n
+// log message: when the keep-alive command is being processed, the FTP client wants to send another command, and a timeout occurs: The command sent to keep the connection alive has timed out.\r\n
 #define IDS_LOGMSGKEEPALIVECMDTIMEOUT 10713
 // message to log: NLST/LIST keep-alive command: error when trying to prepare active data connection (unable to listen on socket): Unable to prepare active data connection.\r\n
 #define IDS_LOGMSGOPENACTDATACONERROR 10714
@@ -1419,7 +1419,7 @@
 #define IDS_OPERDOPPR_INCOMPLDOWNLOAD2  10866
 // Move operation: Unable to delete source file or link after successful transfer, server reply:
 #define IDS_OPERDOPPR_UNABLETODELSRCFILE 10867
-// dalsi viz IDS_OPERDOPPR_UPLCANTCRTGTDIR
+// For the rest, see IDS_OPERDOPPR_UPLCANTCRTGTDIR.
 
 // second column in Connections listview (Action) values:
 // Stopping
@@ -1454,7 +1454,7 @@
 #define IDS_OPERDLGCOACT_CONNECTING   10891
 // Unable to connect, waiting %d seconds to retry (attempt no. %d of %d): %s
 #define IDS_OPERDLGCOACT_WAITRECON    10892
-// no more attemps to reconnect (%s is description of error of last attempt to open connection): Unable to connect: %s
+// no more attempts to reconnect (%s is the error description from the last attempt to open the connection): Unable to connect: %s
 #define IDS_OPERDLGCOACT_CONERROR     10893
 // when downloading file, estimated time left: time left:
 #define IDS_OPERDLGCOACT_TIMELEFT     10894
@@ -1812,7 +1812,7 @@
 #define IDS_PRXSCRERR_HOSTVARSONLY    11224
 // invalid port definition in server address (follows "Connect to:"): You can set port only as number or as $(ProxyPort) or $(Port) variable.
 #define IDS_PRXSCRERR_INVPORT         11225
-// note: do not translate "USER" (it's FTP command): You cannot use ""3xx:"" condition for the first command, some preceeding command (typically ""USER"") is neccessary.
+// note: do not translate "USER" (it is an FTP command): You cannot use the ""3xx:"" condition for the first command; a preceding command (typically ""USER"") is necessary.
 #define IDS_PRXSCRERR_3XXONFIRSTLINE  11226
 // Proxy script must contain at least one command.
 #define IDS_PRXSCRERR_NONECMDS        11227
@@ -1850,7 +1850,7 @@
 // when connecting and server demands more commands than is supplied in proxy script (text for Solve Error dialog in operation dialog): Proxy script is probably incomplete. See server reply to last script command for details: %s
 #define IDS_INCOMPLETEPRXSCR3         11257
 
-// proxy server error codes (when proxy server tryies to connect to FTP server):
+// proxy server error codes (when the proxy server tries to connect to the FTP server):
 // Connection was rejected or failed.
 #define IDS_PROXYERRREJORFAIL         11265
 // Unable to connect to identd on client (you probably need to install identd service).
@@ -1878,7 +1878,7 @@
 #define IDS_PROXYERRUNABLETOCON2      11281
 // Proxy server rejects anonymous users, please add your username and password to proxy server definition.
 #define IDS_PROXYERRNOAUTHUNSUP       11282
-// Proxy server does not support username+password authentification, please try anonymous access (clear username and password in proxy server definition).
+// Proxy server does not support username+password authentication, please try anonymous access (clear username and password in proxy server definition).
 #define IDS_PROXYERRUSERPASSAUTHUNSUP 11283
 // Proxy server rejects your username and password.
 #define IDS_PROXYERRUSERPASSFAIL      11284
@@ -1922,8 +1922,8 @@
 // FTP configuration: page Defaults:
 // Type of your default proxy server is HTTP 1.1. It supports only passive transfer mode. Please change your default transfer mode to passive (or change your default proxy server).
 #define IDS_HTTPNEEDPASSIVETRMODE     11320
-// Connect FTP Server dialog: after click on Connect button:
-// You are connecting to FTP server through proxy server. Type of this proxy server is HTTP 1.1. It supports only passive transfer mode. Please change transfer mode to passive (click Advaced button, see Use passive transfer mode checkbox).
+// Connect to FTP Server dialog: after clicking the Connect button:
+// You are connecting to the FTP server through a proxy server. The type of this proxy server is HTTP 1.1. It supports only passive transfer mode. Please change the transfer mode to passive (click the Advanced button, see the Use passive transfer mode checkbox).
 #define IDS_HTTPNEEDPASSIVETRMODE2    11321
 
 // Hint "How to list hidden files and directories (unix)": (to display it, go to menu Plugins > FTP Client > List Hidden Files and Directories (Unix))

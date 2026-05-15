@@ -815,9 +815,9 @@ void CFindDialog::Transfer(CTransferInfo& ti)
                     FIND_HISTORY_SIZE, FindHistory);
     /*
   if (ti.Type == ttDataToWindow)
-  { // initialize the searched text according to the selection in the viewer (parent of this dialog)
+  { // initialize the search text from the selection in the viewer (the parent of this dialog)
     CWindowsObject *win = WindowsManager.GetWindowPtr(Parent);
-    if (win != NULL && win->Is(otViewerWindow))  // double-check that this is a viewer window
+    if (win != NULL && win->Is(otViewerWindow))  // make sure this is a viewer window
     {
       CViewerWindow *view = (CViewerWindow *)win;
       char buf[FIND_TEXT_LEN];

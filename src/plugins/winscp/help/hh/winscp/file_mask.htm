@@ -14,7 +14,7 @@
 <h1>Masks</h1>
 
 <p>
-To use the following features of WinSCP you need to specify a mask (wildcard) to select files (or other things):
+To use the following WinSCP features, you need to specify a mask (wildcard) to select files (or other things):
 </p>
 
 <ul>
@@ -24,7 +24,7 @@ To use the following features of WinSCP you need to specify a mask (wildcard) to
 
 <h4>Filename Mask</h4>
 <p>
-When specifying the mask you can use following patterns:
+When specifying the mask, you can use the following patterns:
 </p>
 
 <table>
@@ -60,70 +60,70 @@ All other characters are treated literally.
 </p>
 
 <p>
-To escape character with special meaning (<code>*?[</code>) enclose 
-it into set pattern, e.g. <code>filewithstar[*]</code>.
+To escape a character with special meaning (<code>*?[</code>), enclose
+it in a set pattern, e.g., <code>filewithstar[*]</code>.
 </p>
 
 <h4>Directory Mask</h4>
 
 <p>
-Particularly when specifying an <a href="ui_transfer.htm#other_options">include mask</a>
-for transfers, bear in mind that it is 
-applied to directories as well, so that <code>*.bak</code> will only 
+When specifying an <a href="ui_transfer.htm#other_options">include mask</a>
+for transfers, keep in mind that it is
+also applied to directories, so <code>*.bak</code> will only
 match backup files located in the current directory (unless 
-you happen to have a subdirectory whose own name ends in ".bak",
-in which case it will be applied to all backup files 
-in there too).
+you have a subdirectory whose name ends in ".bak",
+in which case it will also be applied to all backup files
+in that subdirectory).
 </p>
 
 <p>
-A mask ending with slash matches only directories. The mask 
+A mask ending with a slash matches only directories. The mask
 <code>*/</code> matches any directory.
 </p>
 
 <p>
-For example to transfer only HTML files located in any 
+For example, to transfer only HTML files located in any
 directory, use the include mask <code>*/; *.html</code>
-(see below for combining masks).
+(see below for information about combining masks).
 </p>
 
 <p>
-To make operation non-recursive use exclude mask <code>*/</code>.
+To make an operation non-recursive, use the exclude mask <code>*/</code>.
 </p>
 
 <h4>Path Mask</h4>
 
 <p>
-When the mask selects files and it makes sense to select them based on directory, you can extend the mask
-with a path mask. You should separate the path mask from the filename mask by a slash. For example
-mask <code>/home/martinp/*.txt</code> matches all text files within the directory, but not in subdirectories.
-To match all text files within subtree, use mask <code>/home/martinp/*.txt; /home/martinp/*/*.txt</code>
-(Simpler, but less precise, form would be <code>/home/martinp*/*.txt</code>).
+When a mask selects files and it makes sense to select them by directory, you can extend it
+with a path mask. You should separate the path mask from the filename mask with a slash. For example,
+the mask <code>/home/martinp/*.txt</code> matches all text files within the directory, but not in subdirectories.
+To match all text files within the subtree, use the mask <code>/home/martinp/*.txt; /home/martinp/*/*.txt</code>
+(a simpler but less precise form would be <code>/home/martinp*/*.txt</code>).
 </p>
 
 <p>
-For a relative path mask it makes no difference whether you use back (<code>\</code>) or forward slashes (<code>/</code>); the
+For a relative path mask, it makes no difference whether you use backslashes (<code>\</code>) or forward slashes (<code>/</code>); the
 mask will always work for both local and remote paths. For example, the mask
 <code>*/public_html/*.bak</code> will match backup files both in <code>D:\Documents\public_html</code>
-and <code>/home/martinp/public_html</code>. If you want to match directories only, add a slash at the end
+and <code>/home/martinp/public_html</code>. If you want to match only directories, add a slash at the end
 of the mask.
 </p>
 
 <p>
-You can also specify full path to specific file or directory, both local and remote.
-For example if you want to match only specific <code>.csv</code> directory, not all,
+You can also specify the full path to a specific local or remote file or directory.
+For example, if you want to match only a specific <code>.csv</code> directory and not all of them,
 use <code>/home/martinp/data/.csv/</code> instead of <code>.csv/</code>.
 </p>
 
 <p>
-Particularly when specifying an <a href="ui_transfer.htm#other_options">include mask</a> for transfers, bear
-in mind that it is applied to directories as well, so that <code>*.bak</code> will only match backup files
-located in the current directory (unless you happen to have a subdirectory whose own name ends in &quot;.bak&quot;, in
-which case it will be applied to all backup files in there too).
+When specifying an <a href="ui_transfer.htm#other_options">include mask</a> for transfers, keep
+in mind that it is also applied to directories, so <code>*.bak</code> will only match backup files
+located in the current directory (unless you have a subdirectory whose name ends in &quot;.bak&quot;, in
+which case it will also be applied to all backup files in that subdirectory).
 </p>
 
 <p>
-The mask <code>*/</code> matches any directory. For example to transfer only
+The mask <code>*/</code> matches any directory. For example, to transfer only
 <acronym title="HyperText Markup Language">HTML</acronym> files located in any directory, use the include
 mask <code>*/; *.html</code>.
 </p>
@@ -131,20 +131,20 @@ mask <code>*/; *.html</code>.
 <h4>Exceptions</h4>
 
 <p>
-For convenience, a masks <code>*.*</code> and <code>*.</code> are exceptions matching any file and any file
-without an extension, respectively, even if its name does not include any dot.
+For convenience, the masks <code>*.*</code> and <code>*.</code> are exceptions that match any file and any file
+without an extension, respectively, even if the filename does not include any dot.
 </p>
 
 <h4>Combining masks and exclude mask</h4>
 
 <p>
-You can combine several masks using semicolon (<code>;</code>) or comma (<code>,</code>).
+You can combine several masks using a semicolon (<code>;</code>) or comma (<code>,</code>).
 </p>
 
 <p>
-You can add exclude mask by separating it by pipe (<code>|</code>) 
-from the include mask. To use exclude mask only, start with 
-pipe straight away.
+You can add an exclude mask by separating it with a pipe (<code>|</code>)
+from the include mask. To use an exclude mask only, start with
+a pipe immediately.
 </p>
 
 </div>

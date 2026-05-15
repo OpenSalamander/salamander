@@ -56,7 +56,7 @@ INT_PTR CALLBACK InternetProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPa
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_INTERNET, FALSE);
-        return TRUE; // never let F1 reach the parent
+        return TRUE; // never let F1 propagate to the parent
     }
 
     case WM_APP + 55:
@@ -285,7 +285,7 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_CONFIGURATION, FALSE);
-        return TRUE; // never let F1 reach the parent
+        return TRUE; // never let F1 propagate to the parent
     }
 
     case WM_COMMAND:
@@ -376,7 +376,7 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
                 }
             }
             BOOL autoConnect = IsDlgButtonChecked(hWindow, IDC_CFG_AUTOCONNECT) == BST_CHECKED;
-            if (Data.AutoConnect != autoConnect) // meaning of NextOpenOrCheckTime changed: just open the dialog / open it with an automatic version check
+            if (Data.AutoConnect != autoConnect) // NextOpenOrCheckTime now means: open the dialog only / open it with an automatic version check
             {
                 Data.AutoConnect = autoConnect;
                 updateNextOpenOrCheckTime = TRUE;
@@ -385,7 +385,7 @@ INT_PTR CALLBACK CfgDlgProc(HWND hWindow, UINT uMsg, WPARAM wParam, LPARAM lPara
             }
             if (updateNextOpenOrCheckTime)
             {
-                if (!autoConnect || LastCheckTime.wYear == 0)                      // no automatic check or we have not performed one yet
+                if (!autoConnect || LastCheckTime.wYear == 0)                      // this is not an automatic check, or we have not performed one yet
                     ZeroMemory(&NextOpenOrCheckTime, sizeof(NextOpenOrCheckTime)); // opening the window and optionally performing a check on the first load-on-start (ASAP)
                 else
                     GetFutureTime(&NextOpenOrCheckTime, &LastCheckTime, GetWaitDays()); // base the next check on the date of the last check
@@ -554,9 +554,9 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
             {
                 if (tvData->FirstLoadAfterInstall)
                 {
-                    // on the first load after installation (without loading a configuration, i.e. installation on a machine without Salamander) the window
-                    // is shown after two seconds so that the user, if using a personal firewall, sees why
-                    // Salamander is accessing the internet (without a firewall, checkver should finish faster and the user
+                    // on the first load after installation (without loading a configuration, i.e. installation on a machine without Salamander), the window
+                    // is shown after two seconds so that a user with a personal firewall can see why
+                    // Salamander is trying to access the internet (without a firewall, checkver should finish faster, so the user
                     // would not see the CheckVer window at all)
                     if (!SetTimer(hWindow, 665, 2000, NULL))
                         ShowMinNA_IfNotShownYet(hWindow, TRUE, TRUE); // if the timer cannot be created, show the window immediately
@@ -599,7 +599,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
     {
         if ((GetKeyState(VK_CONTROL) & 0x8000) == 0 && (GetKeyState(VK_SHIFT) & 0x8000) == 0)
             SalGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, IDD_MAIN, FALSE);
-        return TRUE; // never let F1 reach the parent
+        return TRUE; // never let F1 propagate to the parent
     }
 
     case WM_SIZE:
@@ -769,7 +769,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
 
             if (MainDlgAutoOpen2 && IsTimeExpired(&NextOpenOrCheckTime) && Data.AutoCheckMode != achmNever)
             {
-                GetFutureTime(&NextOpenOrCheckTime, 1); // if opening the dialog and the check did not finish successfully (and therefore did not set NextOpenOrCheckTime), schedule another attempt for tomorrow
+                GetFutureTime(&NextOpenOrCheckTime, 1); // if opening the dialog and any subsequent check did not complete successfully (and therefore did not set NextOpenOrCheckTime), schedule the next attempt for tomorrow
                                                         //            TRACE_I("New on Close: NextOpenOrCheckTime: " << NextOpenOrCheckTime.wDay << "." << NextOpenOrCheckTime.wMonth << "." << NextOpenOrCheckTime.wYear);
             }
 
@@ -803,7 +803,7 @@ MENU_TEMPLATE_ITEM AppendToSystemMenu[] =
         }
         else
         {
-            if (autoClose && ++ErrorsSinceLastCheck >= 4) // report only the fourth error (ignore the first three to bother the user as little as possible)
+            if (autoClose && ++ErrorsSinceLastCheck >= 4) // report only the fourth error (ignore the first three to minimize user disruption)
             {
                 autoClose = FALSE;
                 ErrorsSinceLastCheck = 0;

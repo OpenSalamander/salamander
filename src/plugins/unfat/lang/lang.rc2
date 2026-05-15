@@ -64,6 +64,6 @@ STRINGTABLE DISCARDABLE
     IDS_WARNING,                "Warning"
     IDS_CANT_READ,              "Reading problem\n\n"
     IDS_CANT_SEEK_IN_FILE,      "Can not seek in file\n\n"
-    IDS_ERROR_OPENING_MULTISESSION, "Some error(s) occured while reading multisession image.\n\nShowing only correctly read sessions."
+    IDS_ERROR_OPENING_MULTISESSION, "Some error(s) occurred while reading multisession image.\n\nShowing only correctly read sessions."
 */
 }

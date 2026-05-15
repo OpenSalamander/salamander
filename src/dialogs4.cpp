@@ -187,7 +187,7 @@ void CLoadSaveToRegistryMutex::Init()
     // 2.52b1: adding support for FastUserSwitching/Terminal Services
     // Up to this version the mutex was created in the local namespace under the name SalamanderLoadSaveToRegistryMutex.
     // Now we want to provide interoperability across all sessions, so we place it in the Global namespace.
-    // We also append the SID (from W2K on) so that mutexes of Salamander instances running under different users 
+    // We also append the SID (from W2K on) so that mutexes of Salamander instances running under different users
     // do not collide -- they work with their own Registry trees, no synchronization needed there.
     // We could add the Salamander version into the mutex name as well (every version has its own Registry tree).
     // But new versions can remove obsolete configurations, so we won't do it.
@@ -743,7 +743,7 @@ void CConfigurationDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        // ColorsChanged() calls a plug-in method (when colors change PLUGINEVENT_COLORSCHANGED 
+        // ColorsChanged() calls a plug-in method (when colors change PLUGINEVENT_COLORSCHANGED
         // is called) -> we must set the parent for their message boxes
         HOldPluginMsgBoxParent = PluginMsgBoxParent;
         PluginMsgBoxParent = Dialog.HWindow;
@@ -1084,7 +1084,7 @@ void CCfgPageView::LoadControls()
     BOOL checked[CFGP2ItemsCount];
 
     BOOL empty = TRUE;
-    if (index >= 2 && index != 3 && index != 4 && index != 5) // tree a brief ma disabled checkboxy
+    if (index >= 2 && index != 3 && index != 4 && index != 5) // tree and brief view use disabled checkboxes
     {
         checked[0] = TRUE;
         int i;
@@ -3208,7 +3208,7 @@ struct CConfigurationPage7SubData
 
 struct CConfigurationPage7Data
 {
-    int ItemLabel; // resID of the string with the item name [combobox]
+    int ItemLabel; // resID of the string with the item name [combo box]
     CConfigurationPage7SubData Items[CFG_COLORS_BUTTONS];
 };
 
@@ -4039,10 +4039,10 @@ void CCfgPageHistory::OnClearHistory()
     Configuration.ClearHistory();
     MainWindow->EditWindow->FillHistory();
 
-    // Find dialog history including combobox of open windows
+    // Find dialog history including combo box of open windows
     ClearFindHistory(FALSE);
 
-    // internal viewer history including combobox of open Find windows
+    // internal viewer history including combo box of open Find windows
     ClearViewerHistory(FALSE);
 
     // storage of selected names

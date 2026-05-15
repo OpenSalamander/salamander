@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -28,7 +29,7 @@ CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         // horizontal and vertical centering of the dialog relative to the parent
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);
@@ -129,7 +130,7 @@ BOOL CProgressDlg::GetWantCancel()
     }
 
     MSG msg;
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // give the user a moment ...
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) // briefly process pending UI messages...
     {
         if (!IsWindow(HWindow) || !IsDialogMessage(HWindow, &msg))
         {
@@ -183,13 +184,13 @@ CProgressDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (ProgressBar == NULL)
         {
             DestroyWindow(HWindow); // error -> do not open the dialog
-            return FALSE;           // end of processing
+            return FALSE;           // stop processing
         }
 
         ::SetWindowText(HWindow, Title);
         SetDlgItemText(HWindow, IDT_OPERATION, Operation);
 
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
 
     case WM_COMMAND:
@@ -279,7 +280,7 @@ CProgress2Dlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         SetDlgItemText(HWindow, IDT_OPERATION2, Operation2);
 
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
     }
     return CProgressDlg::DialogProc(uMsg, wParam, lParam);
@@ -372,11 +373,11 @@ void CChangeAttrDialog::Transfer(CTransferInfo& ti)
         DateTime_SetSystemtime(HModifiedDate, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_VALID, &TimeAccessed);
-        // then set the state to disabled (cannot be done in a single operation)
+        // then disable it (cannot be done in a single operation)
         DateTime_SetSystemtime(HModifiedDate, GDT_NONE, &TimeModified);
         DateTime_SetSystemtime(HCreatedDate, GDT_NONE, &TimeCreated);
         DateTime_SetSystemtime(HAccessedDate, GDT_NONE, &TimeAccessed);
-        // populate the times
+        // populate the time fields
         DateTime_SetSystemtime(HModifiedTime, GDT_VALID, &TimeModified);
         DateTime_SetSystemtime(HCreatedTime, GDT_VALID, &TimeCreated);
         DateTime_SetSystemtime(HAccessedTime, GDT_VALID, &TimeAccessed);

@@ -1,478 +1,500 @@
-Popis formatu pravidel pro parsovani:
-=====================================
+CommentsTranslationProject: TRANSLATED
 
-Komentar zacina znakem '#' a je ukoncen koncem radky.
-
-Vsechny pravidla zacinaji znakem '*' a konci znakem ';'. Pocet
-pravidel neni omezen. Pravidlo se sklada z funkci vzajemne
-oddelenych znakem ','.
-
-Funkce se sklada ze jmena, znaku '(', seznamu parametru a
-znaku ')'.
-
-Seznam jmen funkci je uveden dale v dokumentu.
-
-V seznamu parametru funkce jsou jednotlive parametry vzajemne
-oddelene znakem ','. Parametry jsou vyrazy.
-
-Vyraz tvori identifikator sloupce, stavova promenna, konstanta
-nebo jedna binarni operace. Binarni operace se zapisuje
-v klasicke notaci (prvni_operand operacni_znak druhy_operand)
-a jako operandy se pouzivaji identifikatory sloupcu, stavove
-promenne nebo konstanty.
-
-Seznam stavovych promennych je uveden dale v dokumentu.
-
-Seznam operacnich znaku je uveden dale v dokumentu.
-
-Konstanty jsou typu retezec, cislo nebo boolean.
-
-Retezec je ohranicen znaky '"', retezec nemuze presahovat
-konec radky, escape-sekvence jsou uvozeny znakem '\': pro
-znak '"' je to "\"", pro znak '\' je to "\\", pro znak
-tabelator je to "\t", pro znaky konce radku CR+LF je to
-dvojice "\r" a "\n". Nezname escape-sekvence se hlasi jako
-chyby.
-
-Cislo se zapisuje desitkove bez jakychkoliv oddelovacu.
-Zaporne cislo zacina znakem '-'. Kladne cislo zacina
-znakem '+' (muze byt vynechan).
-
-Boolean je "true" nebo "false" (psano bez uvozovek).
-
-Uzivatel definuje sloupce. Kazdy sloupec ma jmeno identifikatoru,
-typ hodnot, prazdnou hodnotu a jmeno a popis pro zobrazeni
-v panelu. Identifikator se pouziva pri prirazovani hodnot
-do sloupcu. Kazda polozka muze mit ve sloupci prirazenou
-prave jednu hodnotu. Pokud nedoslo k prirazeni zadne hodnoty,
-pouziva se ve sloupci uzivatelem definovana prazdna hodnota.
-Dale se u sloupcu definuje, jestli se maji zobrazovat v panelu.
-Zobrazeni nelze vypnout u sloupcu typu "Name" a "Extension".
-
-Identifikator sloupce zacina znakem '<', obsahuje jmeno
-identifikatoru zadane uzivatelem a konci znakem '>'.
-
-Existuji nasledujici typy sloupcu:
-- Name - (retezec) prave jeden sloupec tohoto typu je povinny,
-  nemuze byt schovany, definice prazdne hodnoty u nej nema smysl,
-  parser do nej musi u kazdeho souboru a adresare priradit,
-  pokud k prirazeni nedojde, nevznika parsovanim podle aktualniho
-  pravidla zadny soubor ani adresar - pouziva se pro preskok
-  prazdnych radek a dalsich nepodstatnych casti listingu,
-  prirazeni prazdneho retezce do tohoto sloupce se povazuje
-  za chybu parsovani,
-- Extension - generuje se na zaklade hodnoty ve sloupci typu
-  "Name", nemuze byt schovany, definice prazdne hodnoty u nej
-  nema smysl,
-- Size - (cislo - unsigned int64), u adresaru je hodnota vzdy 0
-  a v panelu se zobrazuje "DIR", defaultni prazdna hodnota je 0,
-- Date - (datum) - datum musi byt platny (jinak je nahrazen hodnotou
-  1.1.1602), defaultni prazdna hodnota je 1.1.1602,
-- Time - (cas) - defaultni prazdna hodnota je 0:00:00,
-- Type - generuje se na zaklade hodnoty ve sloupci typu "Name",
-  definice prazdne hodnoty u nej nema smysl,
-- Any Text - (retezec) - defaultni prazdna hodnota je "",
-- Any Date - (datum) - datum musi byt platny (jinak je nahrazen
-  hodnotou 1.1.1602), defaultni prazdna hodnota je "",
-- Any Time - (cas) - defaultni prazdna hodnota je "",
-- Any Number - (cislo - signed int64) - defaultni prazdna hodnota
-  je "".
-
-Navic existuji tri sloupce s identifikatory "<is_dir>", "<is_hidden>"
-a "<is_link>". Do vsech tri se prirazuji hodnoty typu boolean a rikaji
-o polozce jestli je "soubor" nebo "adresar", jestli "je skryta" nebo
-"neni skryta" a jestli "je link" nebo "neni link". Prirazeni do techto
-sloupcu neni povinne, jejich prazdne hodnoty jsou "soubor",
-"neni skryta" a "neni link".
-
-
-Popis formatu podminky pro autodetekci:
+Description of the rule parsing format:
 =======================================
 
-Jde o logicky vyraz. Operatory ve vyrazu jsou (od nejvyssi
-priority): NOT, AND a OR. NOT (logicka negace) je unarni, AND
-(logicky soucin) a OR (logicky soucet) jsou binarni. Ve vyrazu
-je dale mozne pouzivat zavorky (vymezeni podvyrazu). Jako operandy
-se pouzivaji nasledujici funkce:
+A comment starts with the '#' character and ends at the end of the line.
 
-- syst_contains(retezec) - nabyva hodnoty TRUE pokud se v odpovedi
-  serveru na prikaz SYST (get type of operating system) vyskytuje
-  zadany retezec,
+All rules start with the '*' character and end with ';'. The number of
+rules is unlimited. A rule consists of functions separated by ','.
 
-- welcome_contains(retezec) - nabyva hodnoty TRUE pokud se v prvni
-  odpovedi serveru (hned po navazani spojeni) vyskytuje zadany
-  retezec,
+A function consists of a name, the '(' character, a list of
+parameters, and the ')' character.
 
-- reg_exp_in_syst(retezec_regularniho_vyrazu) - nabyva hodnoty TRUE
-  pokud se v odpovedi serveru na prikaz SYST (get type of operating
-  system) vyskytuje retezec odpovidajici zadanemu regularnimu
-  vyrazu,
+The list of function names is given later in this document.
 
-- reg_exp_in_welcome(retezec_regularniho_vyrazu) - nabyva hodnoty TRUE
-  pokud se v prvni odpovedi serveru (hned po navazani spojeni)
-  vyskytuje retezec odpovidajici zadanemu regularnimu vyrazu.
+In a function parameter list, individual parameters are separated by
+','. Parameters are expressions.
+
+An expression consists of a column identifier, a state variable, a
+constant, or one binary operation. A binary operation is written in the
+usual notation (first_operand operator second_operand), and its
+operands are column identifiers, state variables, or constants.
+
+The list of state variables is given later in this document.
+
+The list of operator symbols is given later in this document.
+
+Constants may be string, number, or boolean.
+
+A string is delimited by the '"' character. A string may not extend
+past the end of the line. Escape sequences use the '\' character: for
+'"', it is "\""; for '\', it is "\\"; for a tab character, it is
+"\t"; for the line-ending characters CR+LF, it is the pair "\r" and
+"\n". Unknown escape sequences are reported as errors.
+
+A number is written in decimal form without any separators. A negative
+number starts with '-'. A positive number starts with '+' (which may be
+omitted).
+
+A boolean is "true" or "false" (written without quotes).
+
+The user defines columns. Each column has an identifier name, a value
+type, an empty value, and a name and description for display in the
+panel. The identifier is used when assigning values to columns. Each
+item may have exactly one value assigned in a column. If no value is
+assigned, the user-defined empty value is used in that column. Columns
+also define whether they should be displayed in the panel. Display
+cannot be turned off for columns of type "Name" and "Extension".
+
+A column identifier starts with '<', contains the user-defined
+identifier name, and ends with '>'.
+
+The following column types exist:
+- Name - (string) exactly one column of this type is required, it
+  cannot be hidden, defining an empty value for it makes no sense, and
+  the parser must assign to it for every file and directory. If no
+  assignment happens, parsing according to the current rule produces no
+  file or directory - this is used to skip empty lines and other
+  unimportant parts of the listing. Assigning the empty string to this
+  column is considered a parsing error,
+- Extension - generated from the value in the "Name" column, cannot be
+  hidden, defining an empty value for it makes no sense,
+- Size - (number - unsigned int64), for directories the value is
+  always 0 and "DIR" is displayed in the panel; the default empty value
+  is 0,
+- Date - (date) the date must be valid (otherwise it is replaced with
+  1.1.1602); the default empty value is 1.1.1602,
+- Time - (time) the default empty value is 0:00:00,
+- Type - generated from the value in the "Name" column; defining an
+  empty value for it makes no sense,
+- Any Text - (string) the default empty value is "",
+- Any Date - (date) the date must be valid (otherwise it is replaced
+  with 1.1.1602); the default empty value is "",
+- Any Time - (time) the default empty value is "",
+- Any Number - (number - signed int64) the default empty value is "".
+
+In addition, there are three columns with identifiers "<is_dir>",
+"<is_hidden>", and "<is_link>". Boolean values are assigned to all
+three, and they tell whether the item is a "file" or a "directory",
+whether it "is hidden" or "is not hidden", and whether it "is a link"
+or "is not a link". Assignment to these columns is not required; their
+empty values are "file", "is not hidden", and "is not a link".
 
 
-Ziskani listingu pri pevne danem typu serveru:
-==============================================
+Description of the autodetection condition format:
+==================================================
 
-Spusti se parsovani textu listingu. Pokud parsovani dopadne dobre,
-pouziji se ziskane vysledky a algoritmus se ukonci. Pri neuspechu
-parsovani se zobrazi text listingu bez uprav v panelu.
+This is a logical expression. The operators in the expression are
+(from highest priority): NOT, AND, and OR. NOT (logical negation) is
+unary; AND (logical conjunction) and OR (logical disjunction) are
+binary. Parentheses may also be used in the expression (to define
+subexpressions). The following functions are used as operands:
 
-Pred umistenim listingu do panelu jeste probehne odstraneni adresare
-"." (je-li ve vysledcich parsovani) a u korenove cesty take
-adresare ".." (je-li ve vysledcich parsovani). Pokud v listingu
-zustava adresar "..", je vzdy viditelny (ignoruje se hodnota ve
-sloupci "<is_hidden>").
+- syst_contains(string) - evaluates to TRUE if the reply to the SYST
+  command (get type of operating system) contains the given string,
 
+- welcome_contains(string) - evaluates to TRUE if the given string
+  appears in the server's first reply (immediately after the connection
+  is established),
 
-Popis autodetekce typu serveru:
-=======================================
+- reg_exp_in_syst(regular_expression_string) - evaluates to TRUE if the
+  reply to the SYST command (get type of operating system) contains a
+  string matching the given regular expression,
 
-Postupne se prochazeji vsechny definovane typy serveru. U kazdeho se
-vyhodnoti "autodetect condition". Pokud tato podminka neni splnena,
-pokracuje se v prochazeni dalsim typem serveru. Pri splneni podminky
-se spusti parsovani textu listingu. Pokud parsovani dopadne dobre,
-pouziji se ziskane vysledky a algoritmus se ukonci. Pokud nastane pri
-parsovani chyba, pokracuje se v prochazeni dalsim typem serveru.
-
-Pokud se timto zpusobem projdou vsechny typy serveru bez uspechu,
-pokracuje se postupnym prochazenim tech typu serveru, u kterych
-nebyla splnena "autodetect condition". U nich se spousti parsovani
-textu listingu. Stejne jako v predeslem pripade se algoritmus ukonci
-v okamziku, kdy parsovani probehne bez chyby.
-
-Pokud zadny parser z definovanych typu serveru neuspeje pri parsovani
-textu listingu, zobrazi se text listingu bez uprav v panelu.
-
-Autodetekce probehne timto zpusobem jen u listingu prvni cesty
-na serveru. Pro dalsi listingy ze serveru se zkusi pouzit stejny
-typ serveru jako pro predchozi listing (aby napr. prazdne listingy
-meli "spravne" sloupce v panelu, atp.). Jen pokud nastane pri
-parsovani timto typem serveru chyba, spusti se znovu proces
-autodetekce typu serveru.
-
-Pred umistenim listingu do panelu jeste probehne odstraneni adresare
-"." (je-li ve vysledcich parsovani) a u korenove cesty take
-adresare ".." (je-li ve vysledcich parsovani). Pokud v listingu
-zustava adresar "..", je vzdy viditelny (ignoruje se hodnota ve
-sloupci "<is_hidden>").
+- reg_exp_in_welcome(regular_expression_string) - evaluates to TRUE if
+  the server's first reply (immediately after the connection is
+  established) contains a string matching the given regular expression.
 
 
-Popis prubehu parsovani:
+Obtaining a listing for a fixed server type:
+============================================
+
+Parsing of the listing text is started. If parsing succeeds, the
+obtained results are used and the algorithm terminates. If parsing
+fails, the listing text is displayed in the panel without
+modifications.
+
+Before the listing is placed into the panel, the "." directory is
+removed (if it is present in the parsing results), and for the root
+path the ".." directory is removed as well (if it is present in the
+parsing results). If the ".." directory remains in the listing, it is
+always visible (the value in the "<is_hidden>" column is ignored).
+
+
+Description of server type autodetection:
+=========================================
+
+All defined server types are processed one by one. For each server
+type, the "autodetect condition" is evaluated. If the condition is not
+satisfied, processing continues with the next server type. If the
+condition is satisfied, parsing of the listing text is started. If
+parsing succeeds, the obtained results are used and the algorithm
+terminates. If a parsing error occurs, processing continues with the
+next server type.
+
+If all server types are processed this way without success, the
+algorithm continues by processing those server types whose
+"autodetect condition" was not satisfied. For those types, parsing of
+the listing text is started. As in the previous case, the algorithm
+terminates as soon as parsing succeeds without an error.
+
+If none of the parsers from the defined server types succeeds in
+parsing the listing text, the listing text is displayed in the panel
+without modifications.
+
+Autodetection works this way only for the listing of the first path on
+the server. For later listings from the same server, the algorithm
+first tries to reuse the same server type that was used for the
+previous listing (so that, for example, empty listings still have the
+"correct" columns in the panel, and so on). Only if parsing with that
+server type fails is the server type autodetection process started
+again.
+
+Before the listing is placed into the panel, the "." directory is
+removed (if it is present in the parsing results), and for the root
+path the ".." directory is removed as well (if it is present in the
+parsing results). If the ".." directory remains in the listing, it is
+always visible (the value in the "<is_hidden>" column is ignored).
+
+
+Description of the parsing process:
+===================================
+
+A parser is considered successful when the entire listing text can be
+processed using the defined rules.
+
+For the description of the algorithm, we introduce the term "pointer",
+which denotes a position within the listing text.
+
+Rules consist of functions. A rule may be used only if all of its
+functions evaluate as successful, an empty string was not assigned to
+the "Name" column (that is, either a non-empty string was assigned or
+no assignment happened at all), and the pointer ends at the end of
+some line of the listing text. After a rule is used, the pointer is
+automatically moved to the beginning of the next line of the listing
+text.
+
+In addition to reporting success and moving the pointer, a function may
+also assign a value to a column or modify that value.
+
+A parser may define an entire sequence of rules. The rule to be used at
+any given moment is always selected in the order in which the rules
+were defined. In other words, the first usable rule is always used.
+
+The listing text may be incomplete because loading was interrupted,
+either at the user's request or because of a server connection error.
+Incomplete listing text is adjusted so that it contains only complete
+lines of text (the remainder is cut off).
+
+Parsing of incomplete listing texts is handled at the rule-application
+level. In the simpler case, the pointer reaches the end of the text
+after a rule is used and parsing ends there. In the more complex case,
+a function evaluated while using a rule is supposed to move the pointer
+to the next line. That move is impossible only because the listing text
+is incomplete, and parsing therefore ends successfully (as if the
+listing text ended in such a way that the currently used rule was not
+needed at all).
+
+
+Displaying the total size of selected files in the info line:
+=============================================================
+
+In order for the total size in bytes or blocks to be displayed in the
+info line when a group of files is selected, the file size must be
+stored in a column of type "File Size in Bytes" or in a column of type
+"Any Number" with the standard name "Blocks" or "BlkSz".
+
+
+List of functions:
+==================
+
+Unless stated otherwise, a function always succeeds, does not move the
+pointer, and does not assign a value to any column. If a function moves
+the pointer, then unless stated otherwise it cannot skip the end of the
+line.
+
+Before a column identifier may be used in an expression, a value must
+be assigned to that column. Without such an assignment, the expression
+has no meaning (such an expression can be replaced with a boolean
+constant computed by substituting the empty value of the given column
+into the expression).
+
+(white-space: space or tab)
+
+- skip_white_spaces() - skips all white-space characters using the
+  pointer,
+
+- skip_to_number() - moves the pointer to the nearest decimal digit,
+
+- white_spaces() - skips all white-space characters using the pointer;
+  the function succeeds only if the pointer moves,
+
+- white_spaces(number) - skips a sequence of white-space characters of
+  length 'number' using the pointer; the function succeeds only if such
+  a sequence exists,
+
+- white_spaces_and_line_ends() - skips all white-space characters and
+  line-ending characters using the pointer; the function succeeds only
+  if the pointer moves and does not end at the end of the listing
+  (it stops on some character),
+
+- rest_of_line() - moves the pointer to the end of the line; the
+  function succeeds only if the pointer moves,
+
+- rest_of_line(<column>) - (the value type of the column must be
+  string) - assigns to the column the string from the pointer position
+  to the end of the line, moves the pointer to the end of the line, and
+  succeeds if the pointer moves,
+
+- word() - skips all characters except white-space and end-of-line
+  characters using the pointer; the function succeeds only if the
+  pointer moves,
+
+- word(<column>) - (the value type of the column must be string) -
+  assigns to the column the string from the pointer position up to the
+  first white-space character or the end of the line, moves the pointer
+  past the end of that string, and succeeds if such a string can be
+  obtained (it contains at least one character),
+
+- number(<column>) - (the value type of the column must be number) -
+  assigns to the column the decimal number located at the pointer
+  position. This number must not be followed by a letter - all
+  separators are allowed (',', '.', ';', ':', and so on), including
+  white-space and end-of-line characters. The pointer is moved past the
+  end of the number. The function succeeds if the number exists, is
+  terminated correctly, and, for a column of type "Size", the number is
+  also non-negative,
+
+- positive_number(<column>) - (the value type of the column must be
+  number) - assigns to the column the positive decimal number located
+  at the pointer position. If the number is negative, the column
+  receives its default empty value (zero for type Size, "" for type Any
+  Number). The number must not be followed by a letter - all separators
+  are allowed (',', '.', ';', ':', and so on), including white-space
+  and end-of-line characters. The pointer is moved past the end of the
+  number. The function succeeds if the number exists and is terminated
+  correctly,
+
+- number_with_separators(<column>, string) - (the value type of the
+  column must be number) - assigns to the column the decimal number
+  with digit group separators located at the pointer position (used to
+  make large numbers easier to read; the allowed separators are given
+  in the string 'string'; any characters except '+', '-', and digits
+  are allowed). The number must not be followed by a letter - all
+  separators are allowed (',', '.', ';', ':', and so on), including
+  white-space and end-of-line characters. The pointer is moved past the
+  end of the number. The function succeeds if the number exists, is
+  terminated correctly, and, for a column of type "Size", the number is
+  also non-negative,
+
+- month_3(<column>) - (the value type of the column must be date) -
+  enriches the value in the column with a month recognized as a
+  three-letter token at the pointer position. It works with month names
+  in multiple languages (currently at least English and German). The
+  month must not be followed by a letter - all separators are allowed
+  (',', '.', ';', ':', and so on), including white-space and
+  end-of-line characters. The pointer is moved past those three
+  letters. The function succeeds only if the month was recognized and
+  all months in the listing belong to a single language,
+
+- month_3(<column>, string) - (the value type of the column must be
+  date) - enriches the value in the column with a month recognized as a
+  three-letter token at the pointer position. The month names are given
+  in the string, which must contain twelve three-letter month names
+  separated by spaces (for example "jan feb mar apr may jun jul aug sep
+  oct nov dec" for English). The month must not be followed by a
+  letter - all separators are allowed (',', '.', ';', ':', and so on),
+  including white-space and end-of-line characters. The pointer is
+  moved past those three letters. The function succeeds only if the
+  month was recognized,
+
+- month_txt(<column>) - (the value type of the column must be date) -
+  enriches the value in the column with a month recognized at the
+  pointer position. It works with month names in multiple languages
+  (currently only German). The month must not be followed by a letter -
+  all separators are allowed (',', '.', ';', ':', and so on),
+  including white-space and end-of-line characters. The pointer is
+  moved past the month name. The function succeeds only if the month
+  was recognized and all months in the listing belong to a single
+  language,
+
+- month_txt(<column>, string) - (the value type of the column must be
+  date) - enriches the value in the column with a month recognized at
+  the pointer position. The month names are given in the string, which
+  must contain twelve month names separated by spaces (for example
+  "Jan. Feb. Maerz Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez." for
+  German). The month must not be followed by a letter - all separators
+  are allowed (',', '.', ';', ':', and so on), including white-space
+  and end-of-line characters. The pointer is moved past the month name.
+  The function succeeds only if the month was recognized,
+
+- month(<column>) - (the value type of the column must be date) -
+  enriches the value in the column with the month stored as a decimal
+  number at the pointer position. The number must not be followed by a
+  letter - all separators are allowed (',', '.', ';', ':', and so on),
+  including white-space and end-of-line characters. The pointer is
+  moved past the end of the month number. The function succeeds only if
+  the month number is valid (1 through 12),
+
+- day(<column>) - (the value type of the column must be date) -
+  enriches the value in the column with the day stored as a decimal
+  number at the pointer position. The number must not be followed by a
+  letter - all separators are allowed (',', '.', ';', ':', and so on),
+  including white-space and end-of-line characters. The pointer is
+  moved past the end of the day number. The function succeeds only if
+  the day number is valid (1 through 31),
+
+- year(<column>) - (the value type of the column must be date) -
+  enriches the value in the column with the year stored as a decimal
+  number at the pointer position. The number must not be followed by a
+  letter - all separators are allowed (',', '.', ';', ':', and so on),
+  including white-space and end-of-line characters. The pointer is
+  moved past the end of the year number. The function succeeds only if
+  the year number is valid (0-999 (0-79 => +2000, 80-999 => +1900) or
+  1602-9999),
+
+- time(<column>) - (the value type of the column must be time) -
+  enriches the value in the column with hours, minutes, seconds, and
+  optionally milliseconds found as decimal numbers separated from each
+  other at the pointer position. The expected formats are 00:00,
+  00:00:00, or 00:00:00.000. If the string "a"/"am" or "p"/"pm"
+  follows immediately after the last digit of the time value, it is
+  treated as "a.m." (morning) or "p.m." (evening) and the time value is
+  adjusted accordingly. Otherwise, the time value must not be followed
+  by a letter or a digit - all separators are allowed (',', '.', ';',
+  ':', and so on), including white-space and end-of-line characters.
+  The pointer is moved past the end of the time value. The function
+  succeeds only if the time value is valid (0-23, 0-59, 0-59, and
+  0-999),
+
+- year_or_time(<date_column>, <time_column>) - (the value types of
+  date_column and time_column must be date and time) - obtains a year
+  and optionally also a time. If there is a year at the pointer
+  position, the time is unknown. If there is a time at the pointer
+  position, the year is determined using the rule that the full date
+  should be less than six months old relative to the current date. The
+  function enriches the column values with the year and optionally with
+  hours and minutes. The year is stored as a decimal number; the time
+  is stored as two decimal numbers (hours and minutes) separated by a
+  colon. The numbers must not be followed by a letter - all separators
+  are allowed (',', '.', ';', ':', and so on), including white-space
+  and end-of-line characters. The pointer is moved past the end of the
+  year or time. The function succeeds only if the numbers are valid
+  (1602-9999 and 0-23:0-59),
+
+- all(number) - moves the pointer by 'number' characters; the function
+  succeeds if the pointer can be moved,
+
+- all(<column>, number) - (the value type of the column must be
+  string) - assigns to the column a string of length 'number' starting
+  at the pointer position, moves the pointer to the end of that string,
+  and succeeds if the string can be obtained,
+
+- all_to(string) - moves the pointer behind the first following
+  occurrence of the string 'string' (case-insensitive comparison); the
+  function succeeds only if the string is found,
+
+- all_to(<column>, string) - (the value type of the column must be
+  string) - assigns to the column the string from the pointer position
+  up to and including the first following occurrence of the string
+  'string' (case-insensitive comparison), moves the pointer behind the
+  end of the found string, and succeeds if the string is found,
+
+- all_up_to(<column>, string) - (the value type of the column must be
+  string) - assigns to the column the string from the pointer position
+  up to the first following occurrence of the string 'string'
+  (case-insensitive comparison), moves the pointer behind the end of
+  the found string, and succeeds if the string is found,
+
+- unix_link(<is_dir>, <name_column>, <link_column>) - (the column
+  types of name_column and link_column must be "Name" and "Any Text") -
+  processes the string from the pointer position to the end of the
+  line, moves the pointer to the end of the line, and expects the
+  format "link_name -> target_name" or just "link_name" (if access to
+  the link target is denied). It obtains the link name and optionally
+  the link target and detects whether it is a file or a directory
+  (heuristic: if the name or, if available, the target has an
+  extension, it is probably a file; otherwise it is a directory. If
+  that heuristic is not suitable, it is enough to append, for example,
+  the function "assign(<is_dir>,false)" after unix_link). The obtained
+  values are assigned to the columns name_column, link_column (only if
+  the link target was obtained), and is_dir. The function succeeds if
+  the processed string matches the format and does not start with a
+  white-space character,
+
+- unix_device(<column>) - (the value type of the column must be
+  string) - assigns to the column a string starting at the pointer
+  position and consisting of two decimal numbers separated by a comma
+  and several spaces (for example "27,  26"), moves the pointer behind
+  that string, and succeeds if the string can be obtained and does not
+  end with a letter (all separators are allowed (',', '.', ';', ':',
+  and so on), including white-space and end-of-line characters),
+
+- if(expression) - (the result type of the expression must be boolean)
+  - the function succeeds only if the expression is true,
+
+- assign(<column>, expression) - (the result type of the expression
+  must match the value type of the column) - assigns the value of the
+  expression to the column,
+
+- add_string_to_column(<column>, expression) - (the value type of the
+  column and the result type of the expression must be string) - adds
+  the string obtained as the value of the expression to the column,
+
+- cut_white_spaces_end(<column>) - (the value type of the column must
+  be string) - trims white-space characters from the end of the string
+  in the column and assigns the new string back to the column,
+
+- cut_white_spaces_start(<column>) - (the value type of the column must
+  be string) - trims white-space characters from the start of the
+  string in the column and assigns the new string back to the column,
+
+- cut_white_spaces(<column>) - (the value type of the column must be
+  string) - trims white-space characters from the start and end of the
+  string in the column and assigns the new string back to the column,
+
+- back(number) - moves the pointer back by 'number' characters; the
+  function succeeds if the move is possible.
+
+- cut_end_of_string(<column>, number) - (the value type of the column
+  must be string) - trims 'number' characters from the end of the
+  string in the column and assigns the shortened string back to the
+  column. The function succeeds if the string can be shortened (if it
+  has at least 'number' characters)
+
+
+List of state variables:
 ========================
 
-Za uspech parseru se povazuje to, kdyz se podari pouzitim definovanych
-pravidel projit cely text listingu.
-
-Pro popis algoritmu zavedeme pojem "ukazovatko", ktery oznacuje
-pozici v textu listingu.
-
-Pravidla se skladaji z funkci. Pravidlo muze byt pouzito jen tehdy,
-kdyz se vsechny jeho funkce vyhodnoti jako uspesne, do sloupce typu
-"Name" nebyl prirazen prazdny retezec (tedy bud byl prirazen
-neprazdny retezec nebo k prirazeni vubec nedoslo) a ukazovatko
-skonci na konci nektere radky textu listingu. Po pouziti pravidla
-se ukazovatko automaticky presouva na zacatek nasledujici radky
-textu listingu.
-
-Funkce krome vyhodnoceni sve uspesnosti a posunu ukazovatka jeste
-muze prirazovat hodnotu do sloupce nebo tuto hodnotu muze menit.
-
-Parser muze mit definovanou celou radu pravidel. Vyber pravidla,
-ktere se ma v dany okamzik parsovani pouzit, se vzdy provadi
-v poradi jejich definice. Jinymi slovy, vzdy se pouzije prvni
-pouzitelne pravidlo.
-
-Text listingu muze byt nekompletni z duvodu preruseni jeho nacitani
-at jiz na zadost uzivatele nebo pro chybu spojeni se serverem.
-Nekompletni text listingu je upraveny tak, ze obsahuje jen kompletni
-radky textu (zbytek je oriznuty).
-
-Parsovani nekompletnich textu listingu je reseno na urovni pouzivani
-pravidel. V jednodussim pripade se ukazovatko dostane na konec
-textu po pouziti pravidla a tim se parsovani ukonci. Ve slozitejsim
-pripade se pri pouziti pravidla vyhodnocuje funkce, ktera ma
-ukazovatko posunout na dalsi radku. Tento posun neni mozny jen diky
-nekompletnosti textu listingu, a proto se parsovani ukonci uspesne
-(jako by text listingu koncil tak, ze by prave pouzivane pravidlo
-nebylo vubec treba).
+- first_nonempty_line - (boolean) - true if the pointer is on the first
+  non-empty line (containing characters other than white-space),
+- last_nonempty_line - (boolean) - true if the pointer is on the last
+  non-empty line (containing characters other than white-space); it
+  does not matter whether the listing text is complete or incomplete,
+- next_char - (string) - a string containing one character from the
+  pointer position; if the pointer is at the end of the listing text,
+  it is an empty string,
+- next_word - (string) - a string starting at the pointer position and
+  ending at a white-space character or the end of the line,
+- rest_of_line - (string) - a string starting at the pointer position
+  and ending at the end of the line,
 
 
-Zobrazeni celkove velikosti oznacenych souboru v info-line:
-===========================================================
+List of operator symbols:
+=========================
 
-Aby se pri oznaceni skupiny souboru v info-line zobrazovala celkova
-velikost v bytech nebo blocich, je nutne aby byla velikost souboru
-ulozena ve sloupci typu "File Size in Bytes" nebo ve sloupci
-typu "Any Number" pojmenovanem standardnim jmenem "Blocks" nebo
-"BlkSz".
+Before a column identifier may be used in an expression, a value must
+be assigned to that column. Without such an assignment, the expression
+has no meaning (such an expression can be replaced with a boolean
+constant computed by substituting the empty value of the given column
+into the expression).
 
-
-Seznam funkci:
-==============
-
-Pokud neni uvedeno jinak, je funkce vzdy uspesna, neposouva ukazovatko
-a neprirazuje hodnotu do zadneho sloupce. Pokud funkce posouva
-ukazovatko, tak pokud neni uvedeno jinak, tak neumi preskocit konec
-radky.
-
-Pred pouzitim identifikatoru sloupce ve vyrazu je nutne do
-sloupce priradit hodnotu. Bez tohoto prirazeni vyraz nema
-smysl (takovy vyraz se da nahradit booleanovou konstantou
-vypocitanou dosazenim prazdne hodnoty pro dany sloupec do vyrazu).
-
-(white-space: mezera nebo tabelator)
-
-- skip_white_spaces() - preskoci ukazovatkem vsechny znaky white-space,
-
-- skip_to_number() - preskoci ukazovatkem k nejblizsi dekadicke cislici,
-
-- white_spaces() - preskoci ukazovatkem vsechny znaky white-space,
-  funkce je uspesna jen pokud dojde k posunu ukazovatka,
-
-- white_spaces(cislo) - preskoci ukazovatkem retezec znaku white-space
-  o delce 'cislo', funkce je uspesna jen pokud takovy retezec existuje,
-
-- white_spaces_and_line_ends() - preskoci ukazovatkem vsechny znaky
-  white-space a znaky konce radky, funkce je uspesna jen pokud
-  dojde k posunu ukazovatka a ukazovatko neskonci na konci listingu
-  (zarazi se na nejakem znaku),
-
-- rest_of_line() - posune ukazovatko na konec radky, funkce je uspesna
-  jen pokud dojde k posunu ukazovatka,
-
-- rest_of_line(<sloupec>) - (typ hodnot ve sloupci musi byt
-  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az
-  do konce radky, ukazovatko se posune na konec radky, funkce je uspesna,
-  pokud se posune ukazovatko,
-
-- word() - preskoci ukazovatkem vsechny znaky mimo white-space a znak
-  konce radky, funkce je uspesna jen pokud dojde k posunuti ukazovatka,
-
-- word(<sloupec>) - (typ hodnot ve sloupci musi byt retezec) - priradi do
-  sloupce retezec, ktery saha od ukazovatka az do prvniho white-space nebo
-  konce radky, ukazovatko se posune za konec tohoto retezce, funkce je
-  uspesna, pokud lze retezec ziskat (obsahuje aspon jeden znak),
-
-- number(<sloupec>) - (typ hodnot ve sloupci musi byt cislo) - priradi
-  do sloupce dekadicke cislo lezici na pozici ukazovatka, toto cislo
-  nesmi byt ukoncene pismenem - povolene jsou vsechny oddelovace (',',
-  '.', ';', ':', atd.) vcetne znaku white-space a konce radku, ukazovatko
-  se posune za konec tohoto cisla, funkce je uspesna, pokud cislo existuje,
-  je korektne ukoncene a pokud jde o sloupec typu "Size", pak jeste pokud
-  je cislo nezaporne,
-
-- positive_number(<sloupec>) - (typ hodnot ve sloupci musi byt cislo) - priradi
-  do sloupce kladne dekadicke cislo lezici na pozici ukazovatka, je-li cislo
-  zaporne, do sloupce se priradi defaultni prazdna hodnota (nula pro typ Size,
-  "" pro typ Any Number), toto cislo nesmi byt ukoncene pismenem - povolene
-  jsou vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za konec tohoto cisla, funkce je uspesna,
-  pokud cislo existuje a je korektne ukoncene,
-
-- number_with_separators(<sloupec>, retezec) - (typ hodnot ve sloupci musi
-  byt cislo) - priradi do sloupce dekadicke cislo s oddelovaci radu
-  (pouziva se pro snazsi cteni velkych cisel, povolene oddelovace jsou
-  v retezci 'retezec', povolene jsou vsechny znaky krome '+', '-' a cislic)
-  lezici na pozici ukazovatka, toto cislo nesmi byt ukoncene
-  pismenem - povolene jsou vsechny oddelovace (',', '.', ';', ':', atd.)
-  vcetne znaku white-space a konce radku, ukazovatko se posune za konec
-  tohoto cisla, funkce je uspesna, pokud cislo existuje, je korektne
-  ukoncene a pokud jde o sloupec typu "Size", pak jeste pokud je cislo
-  nezaporne,
-
-- month_3(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
-  hodnotu ve sloupci o mesic rozpoznany ve trech pismenech na pozici
-  ukazovatka, pracuje s nazvy mesicu v ruznych jazycich (zatim alespon
-  anglicky a nemecky), mesic nesmi byt ukonceny pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za tato tri pismena, funkce je
-  uspesna jen pokud byl mesic rozpoznan a vsechny mesice v listingu
-  patri do jedineho jazyku,
-
-- month_3(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
-  datum) - obohati hodnotu ve sloupci o mesic rozpoznany ve trech
-  pismenech na pozici ukazovatka, nazvy mesicu jsou v retezci, ktery
-  musi obsahovat dvanact tripismenych nazvu mesicu vzajemne oddelenych
-  mezerami (napr. "jan feb mar apr may jun jul aug sep oct nov dec"
-  pro anglictinu), mesic nesmi byt ukonceny pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku
-  white-space a konce radku, ukazovatko se posune za tato tri pismena,
-  funkce je uspesna jen pokud byl mesic rozpoznan,
-
-- month_txt(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
-  hodnotu ve sloupci o mesic rozpoznany na pozici ukazovatka, pracuje
-  s nazvy mesicu v ruznych jazycich (zatim jen nemecky), mesic nesmi byt
-  ukonceny pismenem - povolene jsou vsechny oddelovace (',', '.', ';',
-  ':', atd.) vcetne znaku white-space a konce radku, ukazovatko se posune
-  za nazev mesice, funkce je uspesna jen pokud byl mesic rozpoznan a
-  vsechny mesice v listingu patri do jedineho jazyku,
-
-- month_txt(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
-  datum) - obohati hodnotu ve sloupci o mesic rozpoznany na pozici
-  ukazovatka, nazvy mesicu jsou v retezci, ktery musi obsahovat dvanact
-  nazvu mesicu vzajemne oddelenych mezerami (napr.
-  "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez." pro
-  nemcinu), mesic nesmi byt ukonceny pismenem - povolene jsou vsechny
-  oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space a konce
-  radku, ukazovatko se posune za nazev mesice, funkce je uspesna jen pokud
-  byl mesic rozpoznan,
-
-- month(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
-  hodnotu ve sloupci o mesic ulozeny jako dekadicke cislo na pozici
-  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za konec cisla mesice, funkce je
-  uspesna jen pokud je cislo mesice platne (1 az 12),
-
-- day(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
-  hodnotu ve sloupci o den ulozeny jako dekadicke cislo na pozici
-  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za konec cisla dne, funkce je
-  uspesna jen pokud je cislo dne platne (1 az 31),
-
-- year(<sloupec>) - (typ hodnot ve sloupci musi byt datum) - obohati
-  hodnotu ve sloupci o rok ulozeny jako dekadicke cislo na pozici
-  ukazovatka, toto cislo nesmi byt ukoncene pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za konec cisla roku, funkce je
-  uspesna jen pokud je cislo roku platne (0-999 (0-79=>+2000,
-  80-999=>+1900) nebo 1602-9999),
-
-- time(<sloupec>) - (typ hodnot ve sloupci musi byt cas) - obohati
-  hodnotu ve sloupci o hodiny, minuty, sekundy a pripadne i milisekundy
-  nalezene jako vzajemne oddelena dekadicka cisla na miste ukazovatka,
-  ocekavane formaty jsou 00:00 nebo 00:00:00 nebo 00:00:00.000, pokud
-  primo za posledni cislici casoveho udaje nasleduje retezec "a"/"am"
-  nebo "p"/"pm", je povazovan za "a.m." (rano) a "p.m." (vecer) a casovy
-  udaj se prislusne upravi, jinak casovy udaj nesmi byt ukoncen pismenem
-  ani cislem - povolene jsou vsechny oddelovace (',', '.', ';', ':', atd.)
-  vcetne znaku white-space a konce radku, ukazovatko se posune za konec
-  casoveho udaje, funkce je uspesna jen pokud je casovy udaj platny
-  (0-23, 0-59, 0-59 a 0-999),
-
-- year_or_time(<sloupec_datum>, <sloupec_cas>) - (typy hodnot ve sloupcich
-  sloupec_datum a sloupec_cas musi byt datum a cas) - ziska rok a pripadne
-  i cas (pokud je na pozici ukazovatka rok, cas neni znamy, je-li na pozici
-  ukazovatka cas, je rok urcen podle pravidla, ze cely datum by mel byt
-  stary mene nez sest mesicu od dnesniho datumu) a obohati hodnoty
-  ve sloupcich o rok a pripadne i o hodiny a minuty, rok je ulozeny jako
-  dekadicke cislo, cas je ulozen jako dve dekadicka cisla (hodiny a minuty)
-  oddelena dvojteckou, cisla nesmi byt ukoncena pismenem - povolene jsou
-  vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku white-space
-  a konce radku, ukazovatko se posune za konec roku nebo casu, funkce je
-  uspesna jen pokud jsou cisla platna (1602-9999 a 0-23:0-59),
-
-- all(cislo) - ukazovatko se posune o 'cislo' znaku, funkce je uspesna,
-  pokud lze ukazovatko posunout,
-
-- all(<sloupec>, cislo) - (typ hodnot ve sloupci musi byt retezec) - priradi
-  do sloupce retezec o delce 'cislo', ktery zacina od ukazovatka, ukazovatko
-  se posune na konec tohoto retezce, funkce je uspesna, pokud lze retezec
-  ziskat,
-
-- all_to(retezec) - nastavi ukazovatko za prvni nasledujici vyskyt
-  retezce 'retezec' (porovnava se case insensitive),
-  funkce je uspesna jen pokud je retezec nalezen,
-
-- all_to(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
-  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az za
-  prvni nasledujici vyskyt retezce 'retezec' (porovnava se case
-  insensitive), ukazovatko se posune za konec nalezeneho retezce,
-  funkce je uspesna, pokud je retezec nalezen,
-
-- all_up_to(<sloupec>, retezec) - (typ hodnot ve sloupci musi byt
-  retezec) - priradi do sloupce retezec, ktery saha od ukazovatka az do
-  prvniho nasledujiciho vyskytu retezce 'retezec' (porovnava se case
-  insensitive), ukazovatko se posune za konec nalezeneho
-  retezce, funkce je uspesna, pokud je retezec nalezen,
-
-- unix_link(<is_dir>, <sloupec_name>, <sloupec_link>) - (typy sloupcu
-  sloupec_name a sloupec_link musi byt "Name" a "Any Text") - zpracuje
-  retezec, ktery saha od ukazovatka az do konce radky, ukazovatko se
-  posune na konec radky, ocekava format "link_name -> target_name"
-  nebo jen "link_name" (je-li odepreny pristup k cili linku),
-  ziska jmeno linku a pripadne i cil linku a provede detekci jestli
-  jde o soubor nebo o adresar (heuristika: pokud jmeno nebo pripadne
-  cil maji priponu, jde pravdepodobne o soubor, jinak o adresar;
-  pokud tato heuristika nevyhovuje, staci napr. za funkci unix_link
-  pridat funkci "assign(<is_dir>,false)"), ziskane hodnoty priradi
-  do sloupcu sloupec_name, sloupec_link (jen pokud se podaril cil
-  linku ziskat) a is_dir, funkce je uspesna, pokud zpracovavany
-  retezec odpovida formatu a nezacina na znak white-space,
-
-- unix_device(<sloupec>) - (typ hodnot ve sloupci musi byt retezec) -
-  priradi do sloupce retezec zacinajici u ukazovatka, ktery je slozeny
-  ze dvou dekadickych cisel oddelenych carkou a nekolika mezerami
-  (napr. "27,  26"), ukazovatko posune za tento retezec, funkce je uspesna,
-  pokud se podari tento retezec ziskat a pokud nekonci pismenem (povolene
-  jsou vsechny oddelovace (',', '.', ';', ':', atd.) vcetne znaku
-  white-space a konce radku),
-
-- if(vyraz) - (typ vysledne hodnoty vyrazu musi byt boolean) - funkce
-  je uspesna jen pokud je vyraz true,
-
-- assign(<sloupec>, vyraz) - (typ vysledne hodnoty vyrazu musi odpovidat
-  typu hodnot sloupce) - priradi hodnotu vyrazu do sloupce,
-
-- add_string_to_column(<sloupec>, vyraz) - (typ hodnot ve sloupci a typ
-  vysledne hodnoty vyrazu musi byt retezec) - prida retezec ziskany jako
-  hodnota vyrazu do sloupce,
-
-- cut_white_spaces_end(<sloupec>) - (typ hodnot ve sloupci musi byt
-  retezec) - orizne znaky white_space na konci retezce ve sloupci
-  a tento novy retezec priradi do sloupce,
-
-- cut_white_spaces_start(<sloupec>) - (typ hodnot ve sloupci musi byt
-  retezec) - orizne znaky white_space na zacatku retezce ve sloupci
-  a tento novy retezec priradi do sloupce,
-
-- cut_white_spaces(<sloupec>) - (typ hodnot ve sloupci musi byt
-  retezec) - orizne znaky white_space na zacatku a konci retezce ve
-  sloupci a tento novy retezec priradi do sloupce,
-
-- back(cislo) - posune ukazovatko zpet o 'cislo' znaku, funkce je
-  uspesna pokud je posun mozny.
-
-- cut_end_of_string(<sloupec>, cislo) - (typ hodnot ve sloupci musi byt
-  retezec) - orizne retezec ve sloupci o 'cislo' znaku a tento zkraceny
-  retezec priradi do sloupce, funkce je uspesna, pokud lze retezec zkratit
-  (pokud ma aspon 'cislo' znaku)
-
-
-Seznam stavovych promennych:
-============================
-
-- first_nonempty_line - (boolean) - true pokud je ukazovatko na
-  prvni neprazdne (obsahujici jine znaky nez white-spaces) radce,
-- last_nonempty_line - (boolean) - true pokud je ukazovatko na
-  posledni neprazdne (obsahujici jine znaky nez white-spaces) radce,
-  nebere se v uvahu jestli text listingu je nebo neni nekompletni,
-- next_char - (retezec) - retezec obsahujici jeden znak z pozice
-  ukazovatka, je-li ukazovatko na konci textu listingu, jde o prazdny
-  retezec,
-- next_word - (retezec) - retezec zacinajici na pozici ukazovatka a
-  ukonceny znakem white-space nebo koncem radky,
-- rest_of_line - (retezec) - retezec zacinajici na pozici ukazovatka a
-  ukonceny koncem radky,
-
-
-Seznam operacnich znaku:
-========================
-
-Pred pouzitim identifikatoru sloupce ve vyrazu je nutne do
-sloupce priradit hodnotu. Bez tohoto prirazeni vyraz nema
-smysl (takovy vyraz se da nahradit booleanovou konstantou
-vypocitanou dosazenim prazdne hodnoty pro dany sloupec do vyrazu).
-
-- == - rovnost (u retezcu je porovnani case sensitive)
-- != - nerovnost (u retezcu je porovnani case sensitive)
-- eq - rovnost retezcu (case insensitive)
-- not_eq - nerovnost retezcu (case insensitive)
-- in - podretezec je v retezci (case insensitive)
-- not_in - podretezec neni v retezci (case insensitive)
-- end_with - retezec konci na retezec (case insensitive)
-- not_end_with - retezec nekonci na retezec (case insensitive)
+- == - equality (string comparison is case-sensitive)
+- != - inequality (string comparison is case-sensitive)
+- eq - string equality (case-insensitive)
+- not_eq - string inequality (case-insensitive)
+- in - substring is contained in string (case-insensitive)
+- not_in - substring is not contained in string (case-insensitive)
+- end_with - string ends with string (case-insensitive)
+- not_end_with - string does not end with string (case-insensitive)

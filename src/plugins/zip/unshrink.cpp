@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -268,7 +269,7 @@ int Unshrink(CDecompressionObject* decompress)
 
         /* search for freecode */
         freecode = (short)(lastfreecode + 1);
-        /* add if-test before loop for speed? */
+        /* Add an if-test before the loop for speed? */
         while (parent[freecode] != FREE_CODE)
             ++freecode;
         lastfreecode = freecode;
@@ -303,7 +304,7 @@ void partial_clear(short* parent)
 
     /* clear all nodes which have no children (i.e., leaf nodes only) */
 
-    /* first loop:  mark each parent as such */
+    /* first loop: mark each parent as having a child */
     for (code = BOGUSCODE + 1; code < HSIZE; ++code)
     {
         short cparent = (short)(parent[code] & CODE_MASK);

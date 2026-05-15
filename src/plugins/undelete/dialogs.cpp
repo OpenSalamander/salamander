@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -220,7 +221,7 @@ INT_PTR CCopyProgressDlg::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         if (Parent != NULL)
             SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-        break; // request focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
 
     case WM_COMMAND:
@@ -389,13 +390,13 @@ void CConnectDialog::InitDrives()
 
         case PATH_TYPE_FS:
         {
-            // remove the "del:" prefix so correct path will be selected when opening this dialog box on Undelete path
+            // Remove the "del:" prefix so the correct path is selected when opening this dialog box from an Undelete path.
             if (archiveOrFS != NULL)
                 memmove(sourcePanelPath, archiveOrFS + 1, strlen(archiveOrFS + 1) + 1);
             break;
         }
 
-        // can't do much about this
+        // not much can be done here
         default:
             break;
         }
@@ -429,7 +430,7 @@ void CConnectDialog::InitDrives()
         int serial = 0;
         for (i = 0; i < volumeListing.Count; ++i)
         {
-            // for simple disks get the icon from system, for mount points or unmounted disks get just plain HDD icon
+            // for regular disks, get the icon from the system; for mount points or unmounted disks, use a plain HDD icon
             // (passing MountPoints instead of volumeName is much faster for some disks)
             HICON icn;
             if (volumeListing[i].MountPoint && (3 == strlen(volumeListing[i].MountPoint)))

@@ -587,7 +587,7 @@ class CPackerFormatConfigData
 {
 public:
     char* Ext;         // list of extensions the archive can have
-    BOOL UsePacker;    // true if PackerIndex is valid (we can also pack)
+    BOOL UsePacker;    // true if PackerIndex is valid (packing is also supported)
     int PackerIndex;   // reference to the packer table
     int UnpackerIndex; // reference to the unpacker table
 
@@ -662,7 +662,7 @@ public:
     int GetFormatsCount() { return Formats.Count; } // returns the number of items in the array
 
     //    BOOL SwapFormats(int index1, int index2);         // swaps two items in the array
-    BOOL MoveFormat(int srcIndex, int dstIndex); // moves the item
+    BOOL MoveFormat(int srcIndex, int dstIndex); // moves the format
     void DeleteFormat(int index);
 
     int GetUnpackerIndex(int index) { return Formats[index]->UnpackerIndex; }
@@ -757,7 +757,7 @@ void PackAutoconfig(HWND parent);
 // runs the external program cmdLine and interprets the return code according to errorTable
 BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorTable* const errorTable);
 
-// callback for enumeration by mask (used to extract all files matching the mask)
+// callback for enumeration by mask (used to unpack all files matching the mask)
 const char* WINAPI PackEnumMask(HWND parent, int enumFiles, BOOL* isDir, CQuadWord* size,
                                 const CFileData** fileData, void* param, int* errorOccured);
 

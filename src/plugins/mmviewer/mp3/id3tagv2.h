@@ -41,7 +41,7 @@ typedef struct
             char* url_audiosource; //The 'Official audio source webpage' frame is a URL pointing at the official webpage for the source of the audio file, e.g. a movie.
             char* url_iradio;      //The 'Official internet radio station homepage' contains a URL pointing at the homepage of the internet radio station.
             char* url_payment;     //The 'Payment' frame is a URL pointing at a webpage that will handle the process of paying for this file.
-            char* url_publisher;   //The 'Publishers official webpage' frame is a URL pointing at the official wepage for the publisher
+            char* url_publisher;   //The 'Publishers official webpage' frame is a URL pointing at the official webpage for the publisher
             char* url_userdefined;
             char* text_userdefined;
         };

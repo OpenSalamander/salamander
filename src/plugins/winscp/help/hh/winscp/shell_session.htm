@@ -14,20 +14,20 @@
 <h1>Separate Shell Session</h1>
 
 <p>
-Some features allowed with <a href="protocols.htm">SCP protocol</a> are not supported by
-<a href="protocols.htm">SFTP protocol</a>. This includes execution of
-<a href="remote_command.htm">remote command</a> and
-direct <a href="task_move_duplicate.htm#duplicate">duplication of remote file</a>. To support
-these features with <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol,
-WinSCP can open a separate shell session, to perform the commands on. The shell session is
+Some features available with the <a href="protocols.htm">SCP protocol</a> are not supported by the
+<a href="protocols.htm">SFTP protocol</a>. This includes the execution of
+<a href="remote_command.htm">remote commands</a> and
+direct <a href="task_move_duplicate.htm#duplicate">duplication of remote files</a>. To support
+these features with the <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol,
+WinSCP can open a separate shell session in which to perform the commands. The shell session is
 opened automatically (with <a href="ui_sal_pref_confirmations.htm">suppressible confirmation</a>)
 when you attempt to use any of the mentioned features. After the command is executed,
-the shell session will be kept in background for future use.
+the shell session will be kept in the background for future use.
 </p>
 
 <p>
-For the feature to work, WinSCP must be able to open a shell session similar to one used by
-<acronym title="Secure Copy Protocol">SCP</acronym> sessions. So while you are using
+For the feature to work, WinSCP must be able to open a shell session similar to one used for
+<acronym title="Secure Copy Protocol">SCP</acronym> sessions. So, while you are using the
 <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol, you may still need to
 alter options on the <em><a href="ui_login_scp.htm">SCP/Shell tab</a></em> of the Login dialog
 if the defaults do not work. Also, for the feature to work, the shell must use the same path syntax

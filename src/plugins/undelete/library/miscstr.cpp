@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -66,7 +67,7 @@ char* String<char>::LoadStr(int resID)
 
     RELOAD:
         int size = LoadStringA(hInstance, resID, StrAct, STRBUFSIZE - (int)(StrAct - StringBuffer));
-        // size contains number of copied characters without terminator
+        // size contains the number of copied characters, excluding the terminator
         //    DWORD error = GetLastError();
         if (size != 0 /* || error == NO_ERROR*/) // error is NO_ERROR even if string doesn't exist, we cannot use it
         {

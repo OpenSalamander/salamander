@@ -33,8 +33,8 @@ protected:
 
     CFTPAutodetCondLexElement ActElem; // current symbol (lexNone = it is still necessary to find the symbol)
 
-    int* ErrorResID; // if not NULL, stores the id of the string in resources that describes the error
-    BOOL* LowMem;    // if not NULL, stores TRUE for an error caused by lack of memory
+    int* ErrorResID; // if not NULL, stores the ID of the string resource that describes the error
+    BOOL* LowMem;    // if not NULL, stores TRUE if the error was caused by lack of memory
     char* ErrBuf;    // buffer of size ErrBufSize for the textual description of the error (higher priority than ErrorResID)
     int ErrBufSize;  // size of the ErrBuf buffer (0 = NULL buffer)
 
@@ -221,7 +221,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                         break;
                                     }
                                     if (*s == '\r' || *s == '\n')
-                                        break;                     // the string cannot contain EOL directly (use escape sequences '\r' and '\n')
+                                        break;                     // the string cannot contain a literal EOL (use escape sequences '\r' and '\n')
                                     if (*s == '\\' && s + 1 < end) // escape sequence
                                     {
                                         s++;
@@ -236,7 +236,7 @@ CFTPAutodetCondLexAn::GetActualElement()
                                     }
                                     s++;
                                 }
-                                if (strEndFound) // string is OK
+                                if (strEndFound) // string is valid
                                 {
                                     const char* orgStrBeg = strBeg;
                                     char* str = (char*)malloc((s - strBeg) - esc + 1);
@@ -461,7 +461,7 @@ CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int*
     if (lexAn.GetActualElement() != lexEOS) // non-empty condition -> start parsing
     {
         CFTPAutodetCondNode* node = FTP_AC_ExpOr(lexAn);
-        if (node != NULL && lexAn.GetActualElement() != lexEOS) // if the entire string is not parsed, it is an error (the "empty" rule from the grammar is "unpacked" here)
+        if (node != NULL && lexAn.GetActualElement() != lexEOS) // if the entire string is not parsed, it is an error (the "empty" grammar rule is expanded here)
         {
             lexAn.SetErrorResID(IDS_STPAR_ERR_UNEXPSYM);
             delete node;
@@ -495,7 +495,7 @@ CFTPAutodetCondNode* CompileAutodetectCond(const char* cond, int* errorPos, int*
 //
 
 // allocates a new node for an operator; 'type' can only be 'acntOr' or 'acntAnd';
-// 'left'+'right' are operands; returns the allocated node; on lack of memory
+// 'left'+'right' are operands; returns the allocated node; if memory is insufficient,
 // deallocates 'left' and 'right' and returns NULL
 CFTPAutodetCondNode* CreateNewACOperNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodetCondNodeType type,
                                          CFTPAutodetCondNode* left, CFTPAutodetCondNode* right)
@@ -517,8 +517,8 @@ CFTPAutodetCondNode* CreateNewACOperNode(CFTPAutodetCondLexAn& lexAn, CFTPAutode
     return node;
 }
 
-// allocates a new node for negation; 'operand' is the operand of negation; returns the allocated
-// node; on lack of memory deallocates 'operand' and returns NULL
+// allocates a new node for negation; 'operand' is the negation operand; returns the allocated
+// node; if memory is insufficient, deallocates 'operand' and returns NULL
 CFTPAutodetCondNode* CreateNewACNotNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodetCondNode* operand)
 {
     CFTPAutodetCondNode* node = new CFTPAutodetCondNode;
@@ -535,8 +535,8 @@ CFTPAutodetCondNode* CreateNewACNotNode(CFTPAutodetCondLexAn& lexAn, CFTPAutodet
     return node;
 }
 
-// allocates a new node for a function loaded from 'lexAn'; returns the allocated node or
-// NULL when memory is insufficient
+// allocates a new node for a function read from 'lexAn'; returns the allocated node or
+// NULL if memory is insufficient
 CFTPAutodetCondNode* CreateNewACFuncNode(CFTPAutodetCondLexAn& lexAn)
 {
     CFTPAutodetCondNode* node = new CFTPAutodetCondNode;

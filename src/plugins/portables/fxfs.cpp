@@ -403,7 +403,7 @@ namespace Fx
                 {
                     if (assignItemForDirs)
                     {
-                        // Tranfer ownership of the FSItem to the PluginData.
+                        // Transfer ownership of the FSItem to the PluginData.
                         fileData.PluginData = reinterpret_cast<DWORD_PTR>(item);
                         item->AddRef();
                     }
@@ -419,7 +419,7 @@ namespace Fx
                 {
                     if (assignItemForFiles)
                     {
-                        // Tranfer ownership of the FSItem to the PluginData.
+                        // Transfer ownership of the FSItem to the PluginData.
                         fileData.PluginData = reinterpret_cast<DWORD_PTR>(item);
                         item->AddRef();
                     }
@@ -857,7 +857,7 @@ namespace Fx
             {
                 if (childEnumerator == nullptr && exitLoop)
                 {
-                    // We are exitting, return the last enumerator we have.
+                    // We are exiting, return the last enumerator we have.
                     childEnumerator = parentEnumerator;
                 }
                 else

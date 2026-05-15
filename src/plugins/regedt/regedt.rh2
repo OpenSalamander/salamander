@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file, and the resource compiler does not seem to support "#pragma once".
 #ifndef __REGEDT_RH2
 #define __REGEDT_RH2
 
@@ -7,7 +8,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 700
-#include "statics.rh2"   // 700 az 739 jsou timto zabrane !!!
+#include "statics.rh2"   // 700 to 739 are reserved by this include.
 
 #define IDI_REGEDT 500
 #define IDI_SZ 501
@@ -16,7 +17,7 @@
 #define IDI_FIND  504
 #define IDB_REGEDT 505
 
-// menu commandy
+// menu commands
 #define CMD_EXPORT  800
 #define CMD_SEARCH  801
 #define CMD_NEWVALUE  802
@@ -183,7 +184,7 @@
 #define IDS_EXP_BROWSE 1164
 #define IDS_EXP_SALDIR 1165
 
-// IDcka pro propojeni s helpem
+// IDs for linking to Help
 #define IDH_SEARCHREG  1500
 #define IDH_NEWKEY     1501
 #define IDH_NEWVALUE   1502

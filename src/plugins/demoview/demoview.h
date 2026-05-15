@@ -140,7 +140,7 @@ protected:
 class CViewerWindow : public CWindow
 {
 public:
-    HANDLE Lock;                      // 'lock' object or NULL (set to the signaled state once we close the file)
+    HANDLE Lock;                      // 'lock' object or NULL (set to the signaled state after the file is closed)
     char Name[MAX_PATH];              // file name or ""
     CRendererWindow Renderer;         // viewer inner window
     HIMAGELIST HGrayToolBarImageList; // toolbar and menu in the gray variant (computed from the colored one)
@@ -154,7 +154,7 @@ public:
     CGUIToolBarAbstract* ToolBar;
 
     int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
-    int EnumFilesCurrentIndex; // index of the current viewer file within the source
+    int EnumFilesCurrentIndex; // index of the current file in the viewer within the source
 
 public:
     CViewerWindow(int enumFilesSourceUID, int enumFilesCurrentIndex);

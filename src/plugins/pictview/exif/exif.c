@@ -112,7 +112,7 @@ EXIFGetInfo(const char* fileName, int dataLen, EXIFENUMPROC enumFunc, LPARAM lPa
             {
                 // We need the tag number to let the user highlight tags
                 // he/she is interested in.
-                // 0x5678 is a proprierary shift that helps us to distinguish mnote from ordinary tags
+                // 0x5678 is a proprietary shift that helps us to distinguish mnote from ordinary tags
                 unsigned int id = exif_mnote_data_get_id(md, i) + 0x5678;
                 // There are multiple 'Settings (first part)' & 'Settings (second part)' values coming from Canon
                 // We attempt here to give a unique ID to each of them.
@@ -263,7 +263,7 @@ BOOL WINAPI EXIFReplaceThumbnail(char* fileName, char* newFile, unsigned char* p
                     pSect->content.generic.size = (6 + size);
                     pSect->content.generic.data = malloc(6 + size);
                     *(DWORD*)pSect->content.generic.data = 'XXFJ';
-                    // NULL temrination of JFXX, version number
+                    // NULL termination of JFXX, version number
                     ((WORD*)pSect->content.generic.data)[2] = 0x1000;
                     memcpy((char*)pSect->content.generic.data + 6, pData, size);
                     ret = jpeg_data_save_file(pJpeg, newFile);

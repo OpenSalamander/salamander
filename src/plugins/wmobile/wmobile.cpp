@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -8,7 +9,7 @@ CPluginInterface PluginInterface;
 // additional parts of the CPluginInterface interface
 CPluginInterfaceForFS InterfaceForFS;
 
-// ConfigVersion: 0 - no configuration was read from the Registry (plugin installation or a version without configuration - up to and including 2.5 beta 7),
+// ConfigVersion: 0 - no configuration was loaded from the Registry (plugin installation or a version without configuration - up to and including 2.5 beta 7),
 //                1 - first configuration version (since 2.5 beta 8; introduced to automatically disable the Alt+F1/F2 menu item when rapi.dll is not installed)
 
 int ConfigVersion = 0;           // version of the configuration loaded from the registry (see description above)
@@ -59,11 +60,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         if (!InitCommonControlsEx(&initCtrls))
         {
             MessageBox(NULL, "InitCommonControlsEx failed!", "Error", MB_OK | MB_ICONERROR);
-            return FALSE; // DLL won't start
+            return FALSE; // DLL will not load
         }
     }
 
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 void OnAbout(HWND hParent)
@@ -209,7 +210,7 @@ CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRegistr
 {
     CALL_STACK_MESSAGE1("CPluginInterface::LoadConfiguration(, ,)");
 
-    if (regKey != NULL) // load from the registry
+    if (regKey != NULL) // load from registry
     {
         registry->GetValue(regKey, CONFIG_VERSION, REG_DWORD, &ConfigVersion, sizeof(DWORD));
     }

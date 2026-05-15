@@ -9,7 +9,7 @@
 
 void chkstrcpy(char* out, const char* in, size_t maxoutsize);
 
-//max ID3TAGV1::genre size allowed
+// Maximum allowed size for ID3TAGV1::genre
 const char* ID3TAGV1_GetGenreStr(BYTE genre)
 {
     switch (genre)

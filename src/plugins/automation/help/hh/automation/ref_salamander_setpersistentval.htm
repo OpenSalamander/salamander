@@ -13,9 +13,9 @@
 <div class="page">
 
 <h1>SetPersistentVal Method</h1>
-<p>The <b>SetPersistentVal</b> method saves value to the persistent storage.
-The value is then available next time the script is invoked and it is also
-accessible from different scripts.</p>
+<p>The <b>SetPersistentVal</b> method saves a value to the persistent storage.
+The value is then available the next time the script is invoked and it is also
+accessible to other scripts.</p>
 
 <h2>Syntax</h2>
 <pre><code>SetPersistentVal(<i>key</i>, <i>val</i>)</code></pre>
@@ -30,14 +30,14 @@ Value names are not case sensitive.</p>
 
 <h3>val</h3>
 <p>Value to be saved. Only string and integer data types are supported. To
-delete a value set it to <b><i>null</i></b>.</p>
+delete a value, set it to <b><i>null</i></b>.</p>
 
 <h2>Remarks</h2>
-<p>Since the persistent values are shared among all the scripts you should
-ensure to use unique name for private values. Otherwise the name can clash with
-another script&#8217;s private value. By convention the private name is formed
+<p>Since the persistent values are shared among all scripts, you should
+ensure that you use a unique name for private values. Otherwise the name can clash with
+another script&#8217;s private value. By convention, the private name is formed
 according to the scheme <i>[script_name][dot][value_name]</i>.</p>
-<p>To retrieve saved value the script uses the <a href="ref_salamander_getpersistentval.htm">GetPersistentVal</a>
+<p>To retrieve the saved value, the script uses the <a href="ref_salamander_getpersistentval.htm">GetPersistentVal</a>
 method.</p>
 
 <h2>Example</h2>

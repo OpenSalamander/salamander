@@ -471,9 +471,9 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         ok = s - path == l && SalamanderGeneral->StrNICmp(path, Path, l) == 0;
     }
 
-    if (ok) // it follows -> remember the next top index
+    if (ok) // path follows -> remember the next top index
     {
-        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to remove the first top index from memory
+        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // discard the first stored top index
         {
             int i;
             for (i = 0; i < TOP_INDEX_MEM_SIZE - 1; i++)
@@ -515,13 +515,13 @@ BOOL CTopIndexMem::FindAndPop(const char* path, int& topIndex)
             topIndex = TopIndexes[--TopIndexesCount];
             return TRUE;
         }
-        else // we no longer have this value (it was not stored or low memory discarded it)
+        else // we no longer have this value (it was not stored or was discarded due to low memory)
         {
             Clear();
             return FALSE;
         }
     }
-    else // request for another path -> clear the memory, a long jump occurred
+    else // request for a different path -> clear memory; a long jump occurred
     {
         Clear();
         return FALSE;

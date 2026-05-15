@@ -25,13 +25,13 @@ enum CFTPServerPathType
 
 // determines the path type on an FTP server; if 'serverFirstReply' is not NULL, it is the first
 // reply from the server (often containing the server version); if 'serverSystem' is not NULL, it
-// is the FTP server response to the SYST command (our ftpcmdSystem); 'path' is the path on the FTP
+// is the FTP server response to the SYST command (our ftpcmdSystem); 'path' is the path on the FTP server; returns the path type
 CFTPServerPathType GetFTPServerPathType(const char* serverFirstReply, const char* serverSystem,
                                         const char* path);
 
 // parses the system name from the server response to the SYST command stored in 'serverSystem'
-// and stores it into 'sysName' (a buffer of at least 201 characters); if it is not possible to
-// obtain the system name from this response, returns an empty string
+// and stores it into 'sysName' (a buffer of at least 201 characters); if the system name cannot be
+// obtained from this response, stores an empty string
 void FTPGetServerSystem(const char* serverSystem, char* sysName);
 
 // shortens the FTP server path by the last directory/file (directory separators depend on the
@@ -45,11 +45,11 @@ void FTPGetServerSystem(const char* serverSystem, char* sysName);
 BOOL FTPCutDirectory(CFTPServerPathType type, char* path, int pathBufSize,
                      char* cutDir, int cutDirBufSize, BOOL* fileNameCouldBeCut);
 
-// concatenates the path 'path' and 'name' (file/directory name - 'isDir' is FALSE/TRUE) into
-// 'path', performing the concatenation according to the path type - 'type'; 'path' is a buffer of
-// at least 'pathSize' characters; returns TRUE if 'name' fits into 'path'; if 'path' or 'name' is
-// empty, no concatenation occurs (the 'path' path may be adjusted - truncated to the minimal length - e.g.
-// "/pub/" + "" = "/pub")
+// concatenates 'path' and 'name' (file/directory name - 'isDir' is FALSE/TRUE) into 'path',
+// performing the concatenation according to the path type - 'type'; 'path' is a buffer of at
+// least 'pathSize' characters; returns TRUE if 'name' fits into 'path'; if 'path' or 'name' is
+// empty, no concatenation is performed (the path in 'path' may still be adjusted - truncated to
+// the minimal length - e.g. "/pub/" + "" = "/pub")
 BOOL FTPPathAppend(CFTPServerPathType type, char* path, int pathSize, const char* name, BOOL isDir);
 
 // determines whether the FTP server path (not a user-part path) 'path' is valid and whether it is
@@ -57,7 +57,7 @@ BOOL FTPPathAppend(CFTPServerPathType type, char* path, int pathSize, const char
 // and is not a root path
 BOOL FTPIsValidAndNotRootPath(CFTPServerPathType type, const char* path);
 
-// converts escape sequences (e.g. "%20" = " ") in the string 'txt' to ASCII characters
+// converts hex escape sequences (e.g. "%20" = " ") in the string 'txt' to ASCII characters
 void FTPConvertHexEscapeSequences(char* txt);
 // prepares the text 'txt' so that it survives the subsequent conversion of escape sequences to
 // ASCII characters (e.g. "%20" = "%2520"); 'txtSize' is the size of the 'txt' buffer; returns
@@ -65,11 +65,11 @@ void FTPConvertHexEscapeSequences(char* txt);
 BOOL FTPAddHexEscapeSequences(char* txt, int txtSize);
 
 // splits the user-part path into individual components (user name, host, port, and path (without
-// '/' or '\\' at the beginning)); inserts zero terminators into the path string 'p' so each
+// '/' or '\\' at the beginning)); inserts null terminators into the path string 'p' so each
 // component becomes a null-terminated string; if 'firstCharOfPath' is not NULL and the FTP path
-// contains a path within the server ('path' string), 'firstCharOfPath' receives the separator of this
-// path ('/' or '\\'); it does not need to return all components ('user', 'host', 'port', and 'path'
-// can be NULL); if a particular component cannot be obtained (the path might not contain it), the
+// contains a server path ('path' string), 'firstCharOfPath' receives the separator of that path
+// ('/' or '\\'); it does not need to return all components ('user', 'host', 'port', and 'path' can
+// be NULL); if a particular component cannot be obtained (the path might not contain it), the
 // corresponding variable receives NULL; 'user', 'host', and 'port' are returned trimmed of
 // whitespace on both sides; 'userLength' is zero if we do not know how long the user name is or if it
 // does not contain "forbidden" characters, otherwise it is the expected length of the user name;
@@ -80,7 +80,7 @@ void FTPSplitPath(char* p, char** user, char** password, char** host, char** por
 
 // returns the length of the username for use in the "userLength" parameters (FTPSplitPath,
 // FTPFindPath, etc.); for an anonymous user and other usernames without special characters
-// ('@', '/', '\', ':') returns zero; 'user' can also be NULL
+// ('@', '/', '\\', ':') returns zero; 'user' can also be NULL
 int FTPGetUserLength(const char* user);
 
 // returns a pointer to the remote path in an FTP path (a pointer into the 'path' buffer); 'path'
@@ -103,7 +103,8 @@ BOOL FTPIsTheSameServerPath(CFTPServerPathType type, const char* p1, const char*
 
 // determines whether 'prefix' is a prefix of 'path' - both paths are on the FTP server (not
 // user-part paths), returns TRUE if it is a prefix; 'type' is the type of at least one of the
-// paths; if 'mustBeSame' is TRUE, 'prefix' and 'path' must match (same function as
+// paths; if 'mustBeSame' is TRUE, 'prefix' and 'path' must match, which is equivalent to
+// FTPIsTheSameServerPath()
 BOOL FTPIsPrefixOfServerPath(CFTPServerPathType type, const char* prefix, const char* path,
                              BOOL mustBeSame = FALSE);
 
@@ -126,18 +127,18 @@ char* FTPGetErrorText(int err, char* buf, int bufSize);
 // returns, based on the path type, the character used to separate path components (subdirectories)
 char FTPGetPathDelimiter(CFTPServerPathType pathType);
 
-// only for the ftpsptIBMz_VM path type: obtains the root path from the path 'path';
-// 'root'+'rootSize' is the buffer for the result; returns success
+// only for the ftpsptIBMz_VM path type: obtains the root path from 'path';
+// 'root'+'rootSize' is the output buffer; returns success
 BOOL FTPGetIBMz_VMRootPath(char* root, int rootSize, const char* path);
 
-// only for the ftpsptOS2 path type: obtains the root path from the path 'path';
-// 'root'+'rootSize' is the buffer for the result; returns success
+// only for the ftpsptOS2 path type: obtains the root path from 'path';
+// 'root'+'rootSize' is the output buffer; returns success
 BOOL FTPGetOS2RootPath(char* root, int rootSize, const char* path);
 
-// obtains the numeric value from the UNIX rights string 'rights'; returns the value in actAttr
-// (must not be NULL); if it finds permissions that cannot be set via "site chmod" ('s', 't', etc.),
-// it ORs the respective bits into 'attrDiff' (must not be NULL); if the rights are UNIX rights, it
-// returns TRUE, otherwise it returns FALSE (unknown rights string or e.g. ACL rights on UNIX (such
+// obtains the numeric value from the UNIX rights string 'rights'; returns the value in 'actAttr'
+// (must not be NULL); if it finds rights that cannot be set using "site chmod" ('s', 't', etc.),
+// it ORs the corresponding bits into 'attrDiff' (must not be NULL); returns TRUE for UNIX rights
+// and FALSE otherwise (unknown rights string or e.g. UNIX ACL rights, such as "drwxrwxr-x+")
 BOOL GetAttrsFromUNIXRights(DWORD* actAttr, DWORD* attrDiff, const char* rights);
 
 // converts 'attrs' (numeric rights on UNIX) to a UNIX rights string (without the first letter)
@@ -153,30 +154,30 @@ BOOL IsUNIXLink(const char* rights);
 // NOTE: 'bufSize' must be greater than 2
 void FTPGetErrorTextForLog(DWORD err, char* errBuf, int bufSize);
 
-// method for detecting whether the buffer 'readBytes' (with 'readBytesCount' valid bytes, reading
-// from position 'readBytesOffset') already contains the entire response from the FTP server;
-// returns TRUE on success - 'reply' (must not be NULL) receives a pointer to the beginning of the
-// response, 'replySize' (must not be NULL) receives the length of the response, 'replyCode'
-// (if not NULL) receives the FTP response code or -1 if the response has no code (does not start
+// detects whether the buffer 'readBytes' (with 'readBytesCount' valid bytes, starting at
+// position 'readBytesOffset') already contains the complete response from the FTP server;
+// returns TRUE on success: 'reply' (must not be NULL) receives a pointer to the start of the
+// response, 'replySize' (must not be NULL) receives the response length, and 'replyCode'
+// (if not NULL) receives the FTP reply code or -1 if the response has no code (does not start
 // with a three-digit number); if the response is not complete yet, returns FALSE
 BOOL FTPReadFTPReply(char* readBytes, int readBytesCount, int readBytesOffset,
                      char** reply, int* replySize, int* replyCode);
 
-// parses the directory from the string 'reply' (rules see RFC 959 - FTP response number "257");
-// does not strictly require "257" at the beginning of the string (handle if necessary before
-// calling); returns TRUE if the directory was obtained successfully
+// parses the directory from the string 'reply' (for the rules, see RFC 959, FTP reply code "257");
+// does not strictly require "257" at the beginning of the string (if necessary, handle this before calling);
+// returns TRUE if the directory was parsed successfully
 // can be called from any thread
 BOOL FTPGetDirectoryFromReply(const char* reply, int replySize, char* dirBuf, int dirBufSize);
 
-// parses IP+port from the string 'reply' of length 'replySize' (-1 == use 'strlen(reply)') (returns
-// it in 'ip'+'port' (must not be NULL); rules see RFC 959 - FTP response number 227);
-// does not strictly require "227" at the beginning of the string (handle if necessary before
-// calling); returns TRUE if obtaining IP+port succeeded
+// parses the IP address and port from the string 'reply' of length 'replySize' (-1 == use 'strlen(reply)')
+// (returns them in 'ip' and 'port' (must not be NULL); for the rules, see RFC 959, FTP reply code 227);
+// does not strictly require "227" at the beginning of the string (if necessary, handle this before calling);
+// returns TRUE if the IP address and port were parsed successfully
 // can be called from any thread
 BOOL FTPGetIPAndPortFromReply(const char* reply, int replySize, DWORD* ip, unsigned short* port);
 
-// parses the data size from the string 'reply' of length 'replySize' and returns it in 'size';
-// on success returns TRUE, otherwise FALSE and 'size' is set arbitrarily
+// parses the data size from the string 'reply' of length 'replySize' and stores it in 'size';
+// returns TRUE on success; otherwise returns FALSE and 'size' is set to an arbitrary value
 BOOL FTPGetDataSizeInfoFromSrvReply(CQuadWord& size, const char* reply, int replySize);
 
 // creates a VMS directory name (adds ".DIR;1")
@@ -184,7 +185,8 @@ void FTPMakeVMSDirName(char* vmsDirNameBuf, int vmsDirNameBufSize, const char* d
 
 // checks whether there is an escape sequence before the character 'checkedChar' in the path
 // 'pathBeginning' (e.g. "^." is '.', which VMS does not consider a path or extension separator,
-// etc.); returns TRUE if there is an escape sequence before the character (meaning the character
+// etc.); returns TRUE if there is an escape sequence before the character (i.e. the character has
+// no special meaning)
 BOOL FTPIsVMSEscapeSequence(const char* pathBeginning, const char* checkedChar);
 
 // returns TRUE if the path 'path' of type 'type' ends with a path component delimiter
@@ -192,9 +194,9 @@ BOOL FTPIsVMSEscapeSequence(const char* pathBeginning, const char* checkedChar);
 BOOL FTPPathEndsWithDelimiter(CFTPServerPathType type, const char* path);
 
 // shortens an IBM z/VM path on the FTP server by the last two components; 'path' is an in/out
-// buffer (min. size 'pathBufSize' bytes), 'cutDir' (a buffer of at least
-// 'cutDirBufSize') returns the last two components (the removed part; if the string
-// does not fit into the buffer, it is truncated); returns TRUE if shortening occurred
+// buffer (minimum size 'pathBufSize' bytes), and 'cutDir' (a buffer of at least
+// 'cutDirBufSize' bytes) receives the last two components (the removed part; if the string
+// does not fit into the buffer, it is truncated); returns TRUE if the path was shortened
 BOOL FTPIBMz_VmCutTwoDirectories(char* path, int pathBufSize, char* cutDir, int cutDirBufSize);
 
 // trims the file version number from an OpenVMS file name (e.g. "a.txt;1" -> "a.txt");
@@ -219,7 +221,7 @@ BOOL FTPCutFirstDirFromRelativePath(CFTPServerPathType pathType, char* path,
 
 // completes an absolute path to a full absolute path (for VMS the volume is added - e.g.
 // "PUB$DEVICE:", for OS/2 the drive - e.g. "C:"); 'pathType' is the path type; 'path' is an
-// absolute path; 'path' (a buffer of at least 'pathBufSize' characters) returns the full
+// absolute path; 'path' (a buffer of at least 'pathBufSize' characters) receives the full
 // absolute path (lack of space = truncated result); 'workPath' is the working
 // full absolute path (from which the volume/drive is taken); returns success (even if
 // 'path' is already a full absolute path on input - meaning there is nothing to do)
@@ -235,21 +237,22 @@ BOOL FTPRemovePointsFromPath(char* path, CFTPServerPathType pathType);
 // otherwise it is case-insensitive (windows)
 BOOL FTPIsCaseSensitive(CFTPServerPathType pathType);
 
-// returns TRUE if this is an error response to the LIST command that only says the directory is
-// empty (so it is not actually an error - unfortunately VMS and Z/VM still report such errors)
+// returns TRUE if this is an error response to the LIST command that only indicates the directory
+// is empty (that is, it is not actually an error; unfortunately VMS and Z/VM report such
+// non-errors this way)
 BOOL FTPIsEmptyDirListErrReply(const char* listErrReply);
 
 // returns TRUE if the name 'name' can be the name of a single file/directory ('isDir' is
 // FALSE/TRUE) on the path 'path' of type 'pathType'; used only to prevent creating multiple
-// subdirectories instead of just one (e.g. "a.b.c" on VMS creates three subdirectories)
-// the server reports the syntax error in the name
+// subdirectories instead of just one (e.g. "a.b.c" on VMS creates three subdirectories);
+// any syntax error in the name is reported only by the server
 BOOL FTPMayBeValidNameComponent(const char* name, const char* path, BOOL isDir,
                                 CFTPServerPathType pathType);
 
 // for uploading to the server: adds the *.* or * mask to the target path (for later processing of
 // the operation mask); 'pathType' is the path type; 'targetPath' is a buffer (of size
 // 'targetPathBufSize') containing the target path on input (full, including fs-name)
-// and on output enriched with the mask; 'noFilesSelected' is TRUE if no files should be uploaded
+// and the same path with the mask appended on output; 'noFilesSelected' is TRUE if no files should be uploaded
 // (only directories are selected in the panel)
 void FTPAddOperationMask(CFTPServerPathType pathType, char* targetPath, int targetPathBufSize,
                          BOOL noFilesSelected);

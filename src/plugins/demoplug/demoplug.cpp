@@ -153,7 +153,7 @@ void InitIconOverlays()
     // in reality large icons have been supported for a long time and can be enabled via
     // Desktop/Properties/???/Large Icons; note that there will be no system image list
     // for 32x32 icons in that case, and we should fetch the actual icon sizes from the system
-    // for now we ignore it and enable 48x48 only from XP where they are normally available
+    // for now we ignore this and enable 48x48 only from XP, where they are normally available
     int iconSizes[3] = {16, 32, 48};
     if (!SalIsWindowsVersionOrGreater(5, 1, 0)) // not WindowsXPAndLater: not XP or later
         iconSizes[2] = 32;

@@ -36,7 +36,7 @@ SConfig Config = {
     {662, 301, 230, 80, 80, 229, 279, 430, 860}, // CalcDlgWidths
     {433, 301, 230, 80, 80},                     // VerDlgWidths
     {
-        // Register all known algorthms here
+        // Register all known algorithms here
         {HT_CRC, true, IDS_COLUMN_CRC, IDS_COPYTOCBOARD_CRC, IDS_SAVE_FILTER_CRC, IDS_VERIFY_CRC, _T(".sfv"), "CRC", CRCFactory},
         {HT_MD5, true, IDS_COLUMN_MD5, IDS_COPYTOCBOARD_MD5, IDS_SAVE_FILTER_MD5, IDS_VERIFY_MD5, _T(".md5"), "MD5", MD5Factory},
         {HT_SHA1, true, IDS_COLUMN_SHA1, IDS_COPYTOCBOARD_SHA1, IDS_SAVE_FILTER_SHA1, IDS_VERIFY_SHA1, _T(".sha1"), "SHA1", SHA1Factory},

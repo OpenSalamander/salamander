@@ -114,8 +114,8 @@ protected:
     // sorts the array case-insensitively by name
     void QuickSort(int left, int right);
 
-    // if it finds the 'name' item in the array, it returns its index; otherwise it returns -1
-    // it assumes the array is sorted alphabetically, it uses interval bisection
+    // if it finds an item named 'name' in the array, it returns its index; otherwise it returns -1
+    // assumes the array is sorted alphabetically; uses binary search
     int FindItemIndex(const char* name);
 
     // adds a copy of the item to the array and sets Type
@@ -205,7 +205,7 @@ void CEnvVariables::LoadFromProcess()
         // if this is not the current directory for drives, store the found item into the array
         // We ignore:
         // =::=::\
-    // =C:=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE
+        // =C:=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE
         // =E:=E:\Source\salamand\vcproj
         if (*begin != '=')
         {
@@ -275,7 +275,7 @@ void CEnvVariables::FindDifferences(CEnvVariables* oldVars, CEnvVariables* newVa
             }
             else
             {
-                // differences are ignored for now, for example in PATH, etc.
+                // Differences are ignored for now, for example in PATH.
                 //        if (strcmp(oldVar->Value, newVar->Value) != 0)
                 //          TRACE_I("DIFF: " << oldVar->Name << " = "<<oldVar->Value<<" : "<<newVar->Value);
                 //        else
@@ -507,7 +507,7 @@ BOOL GetResolvedPathMountPointAndGUID(const char* path, char* mountPoint, char* 
     char rootPath[MAX_PATH];
     GetRootPath(rootPath, resolvedPath);
     BOOL remotePath = TRUE;
-    if (!IsUNCPath(rootPath) && GetDriveType(rootPath) == DRIVE_FIXED) // it only makes sense to look for reparse points on fixed disks
+    if (!IsUNCPath(rootPath) && GetDriveType(rootPath) == DRIVE_FIXED) // it only makes sense to look for reparse points on fixed drives
     {
         BOOL cutPathIsPossible = TRUE;
         char netPath[MAX_PATH];
@@ -515,7 +515,7 @@ BOOL GetResolvedPathMountPointAndGUID(const char* path, char* mountPoint, char* 
         ResolveLocalPathWithReparsePoints(resolvedPath, path, &cutPathIsPossible, NULL, NULL, NULL, NULL, netPath);
         remotePath = netPath[0] != 0;
 
-        // GetVolumeNameForVolumeMountPoint requires the root
+        // GetVolumeNameForVolumeMountPoint requires the root path
         if (cutPathIsPossible)
         {
             GetRootPath(rootPath, resolvedPath);
@@ -524,9 +524,9 @@ BOOL GetResolvedPathMountPointAndGUID(const char* path, char* mountPoint, char* 
     }
     else
         strcpy(resolvedPath, rootPath); // for non-DRIVE_FIXED disks we take the root path, GetVolumeNameForVolumeMountPoint needs a mount point and searching for it by gradually shortening the path still seems too time-consuming (at least for network paths + for cards, mount points in subdirectories should not occur, right?)
-    // a GUID can also be obtained for non-DRIVE_FIXED disks, for example card readers
-    // according to https://msdn.microsoft.com/en-us/library/windows/desktop/aa364996%28v=vs.85%29.aspx there is currently no support for DRIVE_REMOTE,
-    // but that might potentially come as well
+    // A GUID can also be obtained for non-DRIVE_FIXED disks, for example card readers.
+    // According to https://msdn.microsoft.com/en-us/library/windows/desktop/aa364996%28v=vs.85%29.aspx, DRIVE_REMOTE is not currently supported,
+    // but that may potentially be added as well.
     char guidP[MAX_PATH];
     SalPathAddBackslash(resolvedPath, MAX_PATH); // GetVolumeNameForVolumeMountPoint requires a trailing backslash
     if (GetVolumeNameForVolumeMountPoint(resolvedPath, guidP, sizeof(guidP)))
@@ -542,7 +542,7 @@ BOOL GetResolvedPathMountPointAndGUID(const char* path, char* mountPoint, char* 
     }
     else
     {
-        if (!remotePath) // for network paths, it still commonly returns errors = we will not report it, no need to nag
+        if (!remotePath) // For network paths, this still commonly returns errors, so we will not report it to avoid unnecessary noise.
         {
             DWORD err = GetLastError();
             TRACE_E("GetResolvedPathMountPointAndGUID(): GetVolumeNameForVolumeMountPoint() failed: " << GetErrorText(err));

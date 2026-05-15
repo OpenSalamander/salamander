@@ -144,7 +144,7 @@ private
       file_size_bytes /= 1024.0
       count += 1
     end
-    format("%.2f",file_size_bytes) + %w(B KB MB GB TB)[count]  # return properly formated
+    format("%.2f",file_size_bytes) + %w(B KB MB GB TB)[count]  # return properly formatted
   rescue Exception => e
     Salamander.MsgBox(%Q{Error converting file to human readable format.\nError output: #{e.message}})
   end

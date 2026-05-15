@@ -183,7 +183,7 @@ void CFilesWindow::CtrlPageDnOrEnter(WPARAM key)
             int index = GetCaretIndex();
             if (key != VK_NEXT || index >= 0 && index < Dirs->Count || // Enter or directory or
                 index >= Dirs->Count && index < Files->Count + Dirs->Count &&
-                    (Files->At(index - Dirs->Count).Archive || IsNethoodFS())) // an archive file or a file in the Nethood FS (it has servers listed as files and Entire Network as a directory, so the panel is sorted correctly -> Ctrl+PageDown must also open servers and their shares, because they are "directories")
+                    (Files->At(index - Dirs->Count).Archive || IsNethoodFS())) // an archive file or a file in the Nethood FS (it lists servers as files and Entire Network as a directory so the panel sorts correctly; Ctrl+PageDown must therefore also open servers and their shares, because they are "directories")
             {
                 Execute(index);
             }
@@ -223,8 +223,8 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
         return;
     }
 
-    //!!! ATTENTION, Resolve may display a dialog and messages will start to be dispatched
-    // the panel can be refreshed, so from this moment on it is not possible to access
+    //!!! WARNING: Resolve may display a dialog and messages may start to be dispatched
+    // the panel may be refreshed, so from this point on it is no longer possible to access
     // the file pointer
 
     BOOL invalid = FALSE;
@@ -235,7 +235,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
     strcpy(junctionOrSymlinkTgt, fullName);
     if (GetReparsePointDestination(junctionOrSymlinkTgt, junctionOrSymlinkTgt, MAX_PATH, &repPointType, FALSE))
     {
-        // MOUNT POINT: I can't get this path in the panel (e.g., \??\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\)
+        // MOUNT POINT: this path cannot be shown in the panel (e.g., \\??\\Volume{98c0ba30-71ff-11e1-9099-005056c00008}\\)
         if (repPointType == 1 /* MOUNT POINT */)
             mountPoint = TRUE;
         else
@@ -282,7 +282,7 @@ void CFilesWindow::FocusShortcutTarget(CFilesWindow* panel)
                                         fullName[0] = 0;
                                         ITEMIDLIST* pidl;
                                         if (link->GetIDList(&pidl) == S_OK && pidl != NULL)
-                                        { // we get the ID-list and ask for the name of the last ID in the list, we expect "\\\\server"
+                                        { // get the ID list and ask for the name of its last ID; we expect "\\server"
                                             IMalloc* alloc;
                                             if (SUCCEEDED(CoGetMalloc(1, &alloc)))
                                             {
@@ -403,7 +403,7 @@ void CFilesWindow::SelectFocusedIndex()
     {
         int index = GetCaretIndex();
         SetSel(!GetSel(index), index);
-        if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // a move
+        if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // move
             SetCaretIndex(index + 1, FALSE);
         else
             RedrawIndex(index);
@@ -666,7 +666,7 @@ int CFilesWindow::GetSelItems(int itemsCountMax, int* items, BOOL /*focusedItemF
         }
     }
     // we fill the second part of the list: from the first selected item towards firstItem
-    for (i = 0; i < firstItem; i++) // this is executed only if focusedItemFirst==TRUE is set
+    for (i = 0; i < firstItem; i++) // executed only if focusedItemFirst==TRUE
     {
         CFileData* item = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
         if (item->Selected == 1)
@@ -887,8 +887,8 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
     BOOL controlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
     BOOL altPressed = (GetKeyState(VK_MENU) & 0x8000) != 0;
 
-    // if we are in QuickSearchEnterAlt mode, we must set the focus to
-    // the command line and buffer the letter there
+    // If we are in QuickSearchEnterAlt mode, we must give focus to
+    // the command line and buffer the character there
     if (!controlPressed && !altPressed &&
         !QuickSearchMode &&
         wParam > 32 && wParam < 256 &&
@@ -905,23 +905,23 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
         return FALSE;
     }
 
-    if (wParam > 31 && wParam < 256 &&  // only normal characters
+    if (wParam > 31 && wParam < 256 &&  // only printable characters
         Dirs->Count + Files->Count > 0) // at least 1 item
     {
         int index = FocusedIndex;
-        // On a German keyboard, the slash is on Shift+7, so it conflicts with HotPaths
-        // therefore, for * in QS, we will use backslash in addition to slash and sacrifice this
+        // On a German keyboard, slash is on Shift+7, so it conflicts with HotPaths
+        // therefore, for * in QS, we will use backslash in addition to slash and give up this
         // infrequently used function
         //
         // 8/2006: German users continue to complain that entering QS is
-        // difficult for them because with German layout enabled they have to press AltGr+\
-        // however, they have the '<' key free, which by the way, when switching to an English
-        // keyboard means a backslash, so we will start catching the '<' character in addition to '\\' and '/'
+        // difficult for them because with the German layout enabled they have to press AltGr+\
+        // however, they have a free '<' key, which maps to a backslash when the layout is switched
+        // to English, so we will also start catching the '<' character in addition to '\\' and '/'
         // the '<' character is also not allowed in a file name
         //
         //if (QuickSearchMode && (char)wParam == '\\')
         //{
-        //  // when the '\\' character is pressed during QS, we jump to the first item that matches QuickSearchMask
+        //  // when the '\\' character is pressed during QS, jump to the first item that matches QuickSearchMask
         //  if (!QSFindNext(GetCaretIndex(), TRUE, FALSE, TRUE, (char)0, index))
         //    QSFindNext(GetCaretIndex(), FALSE, TRUE, TRUE, (char)0, index);
         //}
@@ -931,7 +931,7 @@ BOOL CFilesWindow::OnChar(WPARAM wParam, LPARAM lParam, LRESULT* lResult)
             QSFindNext(GetCaretIndex(), FALSE, TRUE, FALSE, (char)wParam, index);
         //}
 
-        if (!QuickSearchMode) // initialization of search
+        if (!QuickSearchMode) // Initialize quick search
         {
             if (GetViewMode() == vmDetailed)
                 ListBox->OnHScroll(SB_THUMBPOSITION, 0);
@@ -1056,8 +1056,8 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         return TRUE;
 
     if (wParam == VK_SPACE && !shiftPressed && !controlPressed && !altPressed)
-    {                         // spacebar will be used for selection (names usually don't start with ' ')
-        if (!QuickSearchMode) // it can be in the middle of a name
+    {                         // spacebar toggles selection (names usually don't start with a space)
+        if (!QuickSearchMode) // ' ' can be in the middle of a name
         {
             SkipCharacter = TRUE;
             int index = GetCaretIndex();
@@ -1087,7 +1087,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     }
                 }
             }
-            if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // a move
+            if (index + 1 >= 0 && index + 1 < Dirs->Count + Files->Count) // move
                 SetCaretIndex(index + 1, FALSE);
             else
                 RedrawIndex(index);
@@ -1368,7 +1368,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             return TRUE;
         }
 
-        case VK_ESCAPE: // end quick search mode via ESC
+        case VK_ESCAPE: // end quick search mode with Esc
         {
             EndQuickSearch();
             return TRUE;
@@ -1425,7 +1425,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                      strcmp(name, "..") != 0) &&
                     name[len] != 0)
                 {
-                    // if there is still another one
+                    // if there is another one
                     QuickSearch[len] = name[len];
                     QuickSearch[len + 1] = 0;
                     int len2 = (int)strlen(QuickSearchMask);
@@ -1632,7 +1632,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
         {
         case VK_SPACE:
         {
-            return TRUE; // I don't want space
+            return TRUE; // ignore Space
         }
 
         case VK_INSERT: // selection / deselection of a listbox item + move to the next one
@@ -1690,7 +1690,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     else if (GetViewMode() == vmDetailed)
                     {
                         int i;
-                        for (i = 0; i < 5; i++) // let's do some macro programming
+                        for (i = 0; i < 5; i++) // a bit of macro programming
                             SendMessage(ListBox->HWindow, WM_HSCROLL, SB_LINEUP, 0);
                     }
                     break;
@@ -1703,7 +1703,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
                     else if (GetViewMode() == vmDetailed)
                     {
                         int i;
-                        for (i = 0; i < 5; i++) // let's do some macro programming
+                        for (i = 0; i < 5; i++) // repeat the scroll message several times
                             SendMessage(ListBox->HWindow, WM_HSCROLL, SB_LINEDOWN, 0);
                     }
                     break;
@@ -1738,7 +1738,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             {
                 if (newFocusedIndex > 0)
                 {
-                    if (altPressed) // Petr: in all modes, we go to the previous selected item (it might seem strange with icons/thumbnails/tiles, but it doesn't seem useful to me to search for a selected item only in the current column)
+                    if (altPressed) // Petr: in all modes, go to the previous selected item (this may look odd in icons/thumbnails/tiles mode, but it does not seem useful to search for a selected item only in the current column)
                     {
                         int index;
                         BOOL found = SelectFindNext(GetCaretIndex(), FALSE, TRUE, index);
@@ -1780,7 +1780,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
             {
                 if (newFocusedIndex < Dirs->Count + Files->Count - 1)
                 {
-                    if (altPressed) // Petr: in all modes, we go to the next selected item (it might seem strange with icons/thumbnails/tiles, but it doesn't seem useful to me to search for a selected item only in the current column)
+                    if (altPressed) // Petr: in all modes, go to the next selected item (this may seem odd for icons/thumbnails/tiles, but searching for a selected item only in the current column does not seem useful)
                     {
                         int index;
                         BOOL found = SelectFindNext(GetCaretIndex(), TRUE, TRUE, index);
@@ -1976,7 +1976,7 @@ BOOL CFilesWindow::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT
 
             if (newFocusedIndex != FocusedIndex || forceSelect)
             {
-                if (shiftPressed) // shift+movement selecting
+                if (shiftPressed) // Shift+movement selection
                 {
                     BOOL select = SelectItems; // we'll get the state that the item had when Shift was pressed
                     int targetIndex = newFocusedIndex;
@@ -2047,7 +2047,7 @@ void CFilesWindow::OnSetFocus(BOOL focusVisible)
     // change: instead of immediate redrawing, we only invalidate the area;
     // the focus will not be so aggressive when switching to Salamander and will wait
     // until other items are drawn.
-    if (Dirs->Count + Files->Count == 0) // we ensure that the text about an empty panel is drawn
+    if (Dirs->Count + Files->Count == 0) // ensure the empty-panel text is drawn
         InvalidateRect(ListBox->HWindow, &ListBox->FilesRect, FALSE);
     else
     {
@@ -2079,7 +2079,7 @@ void CFilesWindow::OnKillFocus(HWND hwndGetFocus)
     // change: instead of immediate redrawing, we only invalidate the area;
     // the focus will not be so aggressive when switching to Salamander and will wait
     // until other items are drawn.
-    if (Dirs->Count + Files->Count == 0) // we ensure that the text about an empty panel is drawn
+    if (Dirs->Count + Files->Count == 0) // ensure the empty panel text is redrawn
         InvalidateRect(ListBox->HWindow, &ListBox->FilesRect, FALSE);
     else
     {
@@ -2113,7 +2113,7 @@ void ReleaseListingBody(CPanelType oldPanelType, CSalamanderDirectory*& oldArchi
     }
     if (oldPluginData.NotEmpty())
     {
-        // we release plug-in data for individual files and directories
+        // we release plugin data for individual files and directories
         BOOL releaseFiles = oldPluginData.CallReleaseForFiles();
         BOOL releaseDirs = oldPluginData.CallReleaseForDirs();
         if (releaseFiles || releaseDirs)
@@ -2186,7 +2186,7 @@ BOOL AreTheSameDirs(DWORD validFileData, CPluginDataInterfaceEncapsulation* plug
         SYSTEMTIME st2;
         BOOL validDate2, validTime2;
         GetFileDateAndTimeFromPanel(validFileData, pluginData2, f2, TRUE, &st2, &validDate2, &validTime2);
-        if (validDate1 == validDate2 && validTime1 == validTime2 && // The same parts of the structures must be valid.
+        if (validDate1 == validDate2 && validTime1 == validTime2 && // The same parts of both structures must be valid.
             (!validDate1 ||
              st1.wYear == st2.wYear &&
                  st1.wMonth == st2.wMonth &&
@@ -2272,14 +2272,14 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     BOOL focusFirstNewItem = FocusFirstNewItem; // the first ReadDirectory resets it, so we make a backup
     BOOL cutToClipChanged = CutToClipChanged;   // the first ReadDirectory resets it, so we make a backup
 
-    // we'll save the top-index and xoffset so that there won't be unnecessary "jumps" in the panel content
+    // save the top index and xoffset to avoid unnecessary "jumps" in the panel contents
     int topIndex = ListBox->GetTopIndex();
     int xOffset = ListBox->GetXOffset();
 
     // we'll remember if the old listing is an FS with custom icons (pitFromPlugin)
     BOOL pluginFSIconsFromPlugin = Is(ptPluginFS) && GetPluginIconsType() == pitFromPlugin;
 
-    // we'll save the focus item data - we'll look for it later (and focus it)
+    // save the focused item's data; we will look for it later (and focus it)
     BOOL ensureFocusIndexVisible = FALSE;
     BOOL wholeItemVisible = FALSE; // partial item visibility is enough for us
     int focusIndex = GetCaretIndex();
@@ -2302,7 +2302,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     CIconCache* oldIconCache = NULL;
     if (UseSystemIcons || UseThumbnails)
         SleepIconCacheThread();    // we'll stop the icon-reader (IconCache/Files/Dirs might change)
-    if (!TemporarilySimpleIcons && // if we shouldn't use the IconCache, we won't transfer anything from it to the new cache (e.g. when switching views to/from Thumbnails)
+    if (!TemporarilySimpleIcons && // if we should not use IconCache, we will not transfer anything from it to the new cache (e.g. when switching to or from Thumbnails view)
         (UseSystemIcons || UseThumbnails))
     {
         oldIconCache = IconCache;
@@ -2484,14 +2484,14 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
         EndStopRefresh();
         if (setWait)
             SetCursor(oldCur);
-        return; // exit without performing a refresh (error exit)
+        return; // return without refreshing (error exit)
     }
 
     int oldSelectedCount = SelectedCount;
     BOOL clearWMUpdatePanel = FALSE;
     if (!OnlyDetachFSListing)
     {
-        // we secure the listbox against errors arising from a request to redraw (we have just cut the data)
+        // protect the list box against errors caused by redraw requests (we have just cut off its data)
         ListBox->SetItemsCount(0, 0, 0, TRUE); // TRUE - we disable setting the scrollbar
         SelectedCount = 0;
 
@@ -2506,18 +2506,18 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     BOOL oldCanAddToDirHistory = MainWindow->CanAddToDirHistory;
     MainWindow->CanAddToDirHistory = FALSE;
 
-    // a real mess: we have to postpone the start of reading icons in the icon-reader (this is started inside ChangePathToDisk, etc.),
-    // so that we have time to stop reading icons a few lines below (partly so we can take over old versions of icons+thumbnails
-    // and partly so that we can completely skip reading icons (icons loaded in the previous round will be used) in case
-    // 'probablyUselessRefresh' is TRUE and we don't recognize any changes in the directory); another place where this mess
-    // is used is when 'isInactiveRefresh' is TRUE, InactWinOptimizedReading is set to TRUE; a cleaner solution
-    // would be to not start reading icons at all in this case (not execute WakeupIconCacheThread()), but that seems quite
-    // non-trivial, so we are handling it like this via Sleep in the icon-reader
+    // Temporary workaround: postpone the start of icon loading in the icon reader (started inside ChangePathToDisk, etc.)
+    // so it can be stopped a few lines below. This lets us reuse previous icon and thumbnail versions,
+    // and also skip icon loading entirely (reusing icons loaded in the previous pass) when
+    // 'probablyUselessRefresh' is TRUE and no directory changes are detected; the same workaround
+    // is also used when 'isInactiveRefresh' is TRUE, by setting InactWinOptimizedReading to TRUE. A cleaner solution
+    // would be to avoid starting icon loading at all in this case (do not call WakeupIconCacheThread()), but that appears
+    // to be nontrivial, so this is handled via Sleep in the icon reader
     //
-    // ATTENTION: before leaving this function, we must put zero back into WaitBeforeReadingIcons !!!
+    // WARNING: before leaving this function, WaitBeforeReadingIcons must be reset to zero.
     WaitBeforeReadingIcons = 30;
 
-    // refresh of the path (change to the same one with forceUpdate TRUE)
+    // refresh the path (switching to the same path with forceUpdate TRUE)
     BOOL noChange;
     BOOL result;
     char buf1[MAX_PATH];
@@ -2544,8 +2544,8 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                             oldPluginData.GetVersion(), oldPluginData.GetPluginInterface(),
                             oldPluginData.GetBuiltForVersion());
             SetValidFileData(GetArchiveDir()->GetValidData());
-            // We'll keep the new IconCache so we don't lose the old one with loaded icons
-            // We'll keep Files and Dirs new so that synchronization can be performed (select and cut-to-clip)
+            // Keep the new IconCache so we do not lose the old one with loaded icons
+            // Keep the new Files and Dirs so synchronization can be performed (selection and cut-to-clipboard)
 
             CommonRefresh(HWindow, -1, NULL, FALSE, TRUE, TRUE); // without listbox refresh
             noChange = FALSE;                                    // change in Files+Dirs
@@ -2564,7 +2564,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             result = ChangePathToPluginFS(GetPluginFS()->GetPluginFSName(), buf1, -1, NULL, TRUE,
                                           1 /*refresh*/, &noChange, FALSE, NULL, TRUE);
         }
-        else // should not happen if the plug-in is written intelligently
+        else // should not happen if the plugin is written intelligently
         {
             ChangeToFixedDrive(HWindow, &noChange, FALSE); // we can safely end quick-search, it would end anyway
             result = FALSE;
@@ -2591,9 +2591,9 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
         PeekMessage(&msg2, HWindow, WM_USER_UPDATEPANEL, WM_USER_UPDATEPANEL, PM_REMOVE);
     }
 
-    if (!result || noChange) // refresh failed or is useless
+    if (!result || noChange) // refresh failed or is unnecessary
     {
-        if (noChange) // we'll return the old listing (no replacement was created), we perform cleanup (sort-dir, etc.)
+        if (noChange) // restore the old listing (no replacement was created), perform cleanup (sort-dir, etc.)
         {
             if (!OnlyDetachFSListing)
             {
@@ -2631,7 +2631,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             if (oldIconCache != NULL)
             {
                 delete oldIconCache;
-                oldIconCache = NULL; // so we don't perform a useless wake-up of the icon-reader
+                oldIconCache = NULL; // to avoid an unnecessary wake-up of the icon reader
             }
 
             topIndex = -1;   // different listing -> ignore
@@ -2680,7 +2680,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 iconReaderIsSleeping = TRUE;
                 BOOL newPluginFSIconsFromPlugin = Is(ptPluginFS) && GetPluginIconsType() == pitFromPlugin;
                 if (pluginFSIconsFromPlugin && newPluginFSIconsFromPlugin)
-                {                                                                // both the old and new listing are FS with custom icons -> transferring old icons makes sense + we must pass 'dataIface'
+                {                                                                // both the old and new listings are FS listings with custom icons, so transferring the old icons makes sense and we must pass 'dataIface'
                     IconCache->GetIconsAndThumbsFrom(oldIconCache, &PluginData); // we load the old versions of icons and thumbnails into it
                 }
                 else
@@ -2727,7 +2727,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     int oldCount = oldDirs->Count + oldFiles->Count;
     int count = Dirs->Count + Files->Count;
     if (count != oldCount + 1 && focusFirstNewItem)
-        focusFirstNewItem = FALSE; // one item wasn't added
+        focusFirstNewItem = FALSE; // no single item was added
 
     // if 'caseSensitive' is TRUE, we require exact (case sensitive) matching of name
     // during the following flag synchronization
@@ -2748,7 +2748,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
         if (oldData->NameLen == 2 && oldData->Name[0] == '.' && oldData->Name[1] == '.')
             j++;
     }
-    for (; j < oldDirs->Count; j++) // first directories
+    for (; j < oldDirs->Count; j++) // directories first
     {
         CFileData* oldData = &oldDirs->At(j);
         if (focusFirstNewItem || oldData->Selected || oldData->SizeValid || oldData->CutToClip ||
@@ -2774,7 +2774,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                                 if (!LessNameExt(*oldData, *newData2, FALSE)) // old == new (exact) - we prefer exact match over case insensitive match
                                 {
                                     exactMatch = TRUE;
-                                    if (ii > i) // we skipped at least one item (it was smaller than the searched old item)
+                                    if (ii > i) // we skipped at least one item (it was smaller than the old item being searched for)
                                     {
                                         if (focusFirstNewItem) // found a new item
                                         {
@@ -2786,7 +2786,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                                         newData = newData2;
                                     }
                                 }
-                                break; // in any case, we end the search for exact match
+                                break; // in any case, we stop searching for an exact match
                             }
                             ii++;
                         }
@@ -2821,7 +2821,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 break; // end of searching for selected items
         }
     }
-    if (focusFirstNewItem && i == Dirs->Count - 1) // found a new item
+    if (focusFirstNewItem && i == Dirs->Count - 1) // new item found
     {
         strcpy(NextFocusName, Dirs->At(i).Name);
         firstNewItemIsDir = 1 /* is directory */;
@@ -2829,7 +2829,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     }
 
     i = 0;
-    for (j = 0; j < oldFiles->Count; j++) // after directories also files
+    for (j = 0; j < oldFiles->Count; j++) // after the directories, also files
     {
         CFileData* oldData = &oldFiles->At(j);
         if (focusFirstNewItem || oldData->Selected || oldData->CutToClip ||
@@ -2855,11 +2855,11 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                                 if (!LessNameExt(*oldData, *newData2, FALSE)) // old == new (exact) - we prefer exact match over case insensitive match
                                 {
                                     exactMatch = TRUE;
-                                    if (ii > i) // we skipped at least one item (it was smaller than the searched old item)
+                                    if (ii > i) // we skipped at least one item (it was smaller than the old item being searched for)
                                     {
                                         if (focusFirstNewItem) // found a new item
                                         {
-                                            if (!Is(ptDisk) || (newData->Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) // on disk, we ignore tmp files (they disappear immediately), see https://forum.altap.cz/viewtopic.php?t=2496
+                                            if (!Is(ptDisk) || (newData->Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) // on disk, we ignore temporary files (they disappear immediately), see https://forum.altap.cz/viewtopic.php?t=2496
                                             {
                                                 strcpy(NextFocusName, newData->Name);
                                                 firstNewItemIsDir = 0 /* is file */;
@@ -2891,7 +2891,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 {
                     if (focusFirstNewItem) // found a new item
                     {
-                        if (!Is(ptDisk) || (newData->Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) // on disk, we ignore tmp files (they disappear immediately), see https://forum.altap.cz/viewtopic.php?t=2496
+                        if (!Is(ptDisk) || (newData->Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) // on disk, we ignore temporary files (they disappear again immediately), see https://forum.altap.cz/viewtopic.php?t=2496
                         {
                             strcpy(NextFocusName, newData->Name);
                             firstNewItemIsDir = 0 /* is file */;
@@ -2907,7 +2907,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
     }
     if (focusFirstNewItem && i == Files->Count - 1) // found a new item
     {
-        if (!Is(ptDisk) || (Files->At(i).Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) //  on disk, we ignore tmp files (they disappear immediately), see https://forum.altap.cz/viewtopic.php?t=2496
+        if (!Is(ptDisk) || (Files->At(i).Attr & FILE_ATTRIBUTE_TEMPORARY) == 0) // on disk, we ignore temporary files (they disappear again immediately), see https://forum.altap.cz/viewtopic.php?t=2496
         {
             strcpy(NextFocusName, Files->At(i).Name);
             firstNewItemIsDir = 0 /* is file */;
@@ -2929,14 +2929,14 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
 
     if (iconCacheBackuped && (UseSystemIcons || UseThumbnails)) // wake-up after SortDirectory()
     {
-        if (!oldIconCacheValid ||             // if the icon reading didn't finish
+        if (!oldIconCacheValid ||             // if icon reading did not finish
             oldInactWinOptimizedReading ||    // if only icons from the visible part of the panel were read
             !transferIconsAndThumbnailsAsNew) // if the listing has changed
         {
             WakeupIconCacheThread(); // we'll let it read all icons again (we'll show old versions in the meantime)
         }
         else
-            IconCacheValid = TRUE; // we won't start the icon-reader, the icons/thumbnails/overlays are loaded, nothing to do (avoids an infinite refresh cycle in case of a network drive, where at least one icon can't be read - if we start the icon-reader, it will try to read it, which will trigger a refresh and we'll cycle)
+            IconCacheValid = TRUE; // do not start the icon reader; the icons/thumbnails/overlays are already loaded, so there is nothing to do (this prevents an infinite refresh cycle on a network drive when at least one icon cannot be loaded - starting the icon reader would make it try again, trigger another refresh, and loop)
     }
 
     // we find the index of the focus item
@@ -2961,14 +2961,14 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             CFileData* f = (i < Dirs->Count) ? &Dirs->At(i) : &Files->At(i - Dirs->Count);
             if (f->NameLen == (unsigned)l &&
                 StrICmpEx(f->Name, f->NameLen, NextFocusName, l) == 0 &&
-                (firstNewItemIsDir == -1 /* we don't know what it is */ ||
+                (firstNewItemIsDir == -1 /* type unknown */ ||
                  firstNewItemIsDir == 0 /* is file */ && i >= Dirs->Count ||
                  firstNewItemIsDir == 1 /* is directory */ && i < Dirs->Count))
             {
                 foundFocus = TRUE;
                 ensureFocusIndexVisible = TRUE;
                 wholeItemVisible = TRUE;                                  // we want complete visibility of the new item
-                if (StrCmpEx(f->Name, f->NameLen, NextFocusName, l) == 0) // found: exact
+                if (StrCmpEx(f->Name, f->NameLen, NextFocusName, l) == 0) // found: exact match
                 {
                     focusIndex = i;
                     break;
@@ -2978,11 +2978,11 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             }
         }
         if (i == count && found != -1)
-            focusIndex = found; // found: ignore-case
+            focusIndex = found; // found: case-insensitive match
         NextFocusName[0] = 0;
     }
 
-    // first, we search for the old focus in the new listing (according to the case-sensitivity of the current listing)
+    // first, we look up the old focus in the new listing according to the current listing's case sensitivity
     if (!foundFocus && focusData.Name != NULL)
     {
         if (focusIsDir)
@@ -3049,7 +3049,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             break;
         }
 
-        if (focusData.Name != NULL) // we should search for the focus
+        if (focusData.Name != NULL) // look for the focused item
         {
             if (focusIsDir)
             {
@@ -3060,7 +3060,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 for (; i < count; i++)
                 {
                     CFileData* d2 = &Dirs->At(i);
-                    if (!lessDirs(*d2, focusData, ReverseSort)) // due to sorting, it will be TRUE only on the first larger item
+                    if (!lessDirs(*d2, focusData, ReverseSort)) // due to sorting, this becomes TRUE at the first item that is not smaller
                     {
                         focusIndex = i;
                         break;
@@ -3073,7 +3073,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
                 for (i = 0; i < count; i++)
                 {
                     CFileData* d2 = &Files->At(i);
-                    if (!lessFiles(*d2, focusData, ReverseSort)) // due to sorting, it will be TRUE only on the first larger item
+                    if (!lessFiles(*d2, focusData, ReverseSort)) // due to sorting, this becomes TRUE at the first larger item
                     {
                         focusIndex = Dirs->Count + i;
                         break;
@@ -3087,7 +3087,7 @@ void CFilesWindow::RefreshDirectory(BOOL probablyUselessRefresh, BOOL forceReloa
             focusIndex = max(0, count - 1);
     }
 
-    // release the backup of the old listing
+    // release the saved old listing
     ReleaseListingBody(oldPanelType, oldArchiveDir, oldPluginFSDir, oldPluginData,
                        oldFiles, oldDirs, TRUE);
 
@@ -3189,8 +3189,8 @@ void CFilesWindow::SetQuickSearchCaretPos()
         {
             x = r.left + 3 + IconSizes[ICONSIZE_16] + s.cx + offset;
             y = r.top + 2;
-            // if the column width is manually limited, we ensure that
-            // the caret doesn't go beyond the limit; otherwise, it would spill into other columns
+            // if the Name column width is manually limited, ensure that
+            // the caret stops at the maximum width; otherwise it would extend into the next columns
             if (GetViewMode() == vmDetailed && !ext && x >= (int)Columns[0].Width)
                 x = Columns[0].Width - 3;
             x -= ListBox->XOffset;

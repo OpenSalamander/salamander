@@ -93,7 +93,7 @@ public:
         }
         GetTextExtentPoint32(hdc, this->_escinfo->GetString(), (int)this->_escinfo->GetLength(), &sz);
         this->_escinfoWidth = sz.cx;
-        this->_lineHeight = sz.cy; //TODO nicer!
+        this->_lineHeight = sz.cy; // TODO: Improve this.
         SelectObject(hdc, fo);
         this->_headersWidth = width;
         //return TRUE;

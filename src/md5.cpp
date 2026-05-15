@@ -1,7 +1,8 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
-#include "precomp.h" // include slouzi pouze k prelozitelnosti v Salamanderu
+#include "precomp.h" // include serves only for compilability in Salamander
 
 //#include <assert.h>
 //#include <string.h>
@@ -27,7 +28,7 @@ void MD5::update(uint1* input, uint4 input_length)
     uint4 buffer_space; // how much space is left in buffer
 
     if (finalized)
-    { // so we can't update!
+    { // cannot update after finalization
         TRACE_E("MD5::update:  Can't update a finalized digest!");
         return;
     }
@@ -45,7 +46,7 @@ void MD5::update(uint1* input, uint4 input_length)
 
     // Transform as many times as possible.
     if (input_length >= buffer_space)
-    { // ie. we have enough to fill the buffer
+    { // i.e. we have enough data to fill the buffer
         // fill the rest of the buffer and transform
         memcpy(buffer + buffer_index, input, buffer_space);
         transform(buffer);
@@ -55,17 +56,17 @@ void MD5::update(uint1* input, uint4 input_length)
              input_index += 64)
             transform(input + input_index);
 
-        buffer_index = 0; // so we can buffer remaining
+        buffer_index = 0; // so we can buffer the remaining input
     }
     else
         input_index = 0; // so we can buffer the whole input
 
-    // and here we do the buffering:
+    // Buffer the input here:
     memcpy(buffer + buffer_index, input + input_index, input_length - input_index);
 }
 
 // MD5 finalization. Ends an MD5 message-digest operation, writing the
-// the message digest and zeroizing the context.
+// message digest and zeroizing the context.
 
 void MD5::finalize()
 {
@@ -118,9 +119,9 @@ void MD5::init()
     state[3] = 0x10325476;
 }
 
-// Constants for MD5Transform routine.
-// Although we could use C++ style constants, defines are actually better,
-// since they let us easily evade scope clashes.
+// Constants for the MD5Transform routine.
+// Although we could use C++-style constants, `#define`s are actually better,
+// since they let us easily avoid scope clashes.
 
 #define S11 7
 #define S12 12

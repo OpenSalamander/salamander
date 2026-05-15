@@ -45,8 +45,8 @@ public:
     // will be compatible with the screen
     BOOL ReCreateForScreenDC(int width = -1, int height = -1);
 
-    // enlarges the bitmap to desired size; if the bitmap is large enough already, it won't
-    // be shrinked - just returns TRUE
+    // enlarges the bitmap to the requested size; if the bitmap is already large enough,
+    // it does not shrink it and only returns TRUE
     BOOL Enlarge(int width, int height);
     // returns TRUE, if the bitmap needs to be enlarged
     BOOL NeedEnlarge(int width, int height);

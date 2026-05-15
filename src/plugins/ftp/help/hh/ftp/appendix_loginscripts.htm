@@ -25,8 +25,8 @@ and forwards all commands and replies between the FTP client and the FTP server.
 <h4>Description of Login Script</h4>
 
 <p>The first line of the login script is always "Connect to:" followed by a server address
-and port delimited by ':' character. The server address and port define where should
-the FTP client connect to. The server address must be defined. If the server port is not
+and port delimited by ':' character. The server address and port define where the
+FTP client should connect to. The server address must be defined. If the server port is not
 defined, it is assumed to be 21.
 </p>
 
@@ -35,20 +35,20 @@ only one command. Lines can contain variables which are expanded before sending
 commands to the server.
 </p>
 
-<p>We have two types of variables: optional and obligatory. They differ in action
-taken when the variable is used in a command (line) but it is not defined (specified by user).
+<p>There are two types of variables: optional and obligatory. They differ in what happens
+when a variable is used in a command (line) but is not defined by the user.
 If an optional variable is not defined, the whole line (command) is skipped. If
-an obligatory variable is not defined, a dialog box is opened and user must specify
-a value for this variable (or cancel connection). Variables are prefixed by '$'
-character and enclosed in parenthesis (e.g. "$(Password)"). The escape sequence for
-'$' character is "$$".
+an obligatory variable is not defined, a dialog box opens and the user must specify
+a value for the variable (or cancel the connection). Variables are prefixed with the '$'
+character and enclosed in parentheses (for example, "$(Password)"). The escape sequence for
+the '$' character is "$$".
 </p>
 
-<p>Lines starting with "3xx:" are skipped if the command from the previous line was
-skipped or if the server reply to this command was not 3xx. The 3xx reply means that
-the first digit of the FTP reply is '3' (it means "partial success"). It is used in
-command sequences and it means: continue with next command in sequence (e.g. the
-user name is accepted, send me a password).
+<p>Lines starting with "3xx:" are skipped if the command on the previous line was
+skipped or if the server's reply to that command was not 3xx. A 3xx reply means that
+the first digit of the FTP reply is '3' ("partial success"). It is used in
+command sequences and means: continue with the next command in the sequence (for example,
+the user name was accepted, so send the password).
 </p>
 
 <p>Restrictions for the first line of the login script: the server address can be
@@ -57,10 +57,10 @@ Host variable; the server port can be defined only as decimal number or as the
 ProxyPort or Port variable.
 </p>
 
-<p>The login sequence is considered to be successful (user is successfully connected
-to the FTP server) if no reply to sent commands is 4xx or 5xx (4xx is transient
-error, 5xx is permanent error) and the reply to the last sent command is 2xx
-(2xx is success).
+<p>The login sequence is considered successful (the user is successfully connected
+to the FTP server) if no reply to the sent commands is 4xx or 5xx (4xx is a transient
+error, 5xx is a permanent error) and the reply to the last sent command is 2xx
+(2xx means success).
 </p>
 
 
@@ -72,8 +72,8 @@ error, 5xx is permanent error) and the reply to the last sent command is 2xx
 
  <tr><td>ProxyHost</td><td>obligatory; the name or IP address of the proxy server (firewall)</td></tr>
 
- <tr><td>ProxyPort</td><td>always defined; the port number where is the proxy server (firewall)
-	 listening; the default port is 21 (if it is not specified by user)</td></tr>
+ <tr><td>ProxyPort</td><td>always defined; the port number where the proxy server (firewall)
+	 is listening; the default port is 21 (if it is not specified by user)</td></tr>
 
  <tr><td>ProxyUser</td><td>optional; the user name for the proxy server (firewall)</td></tr>
 
@@ -81,8 +81,8 @@ error, 5xx is permanent error) and the reply to the last sent command is 2xx
 
  <tr><td>Host</td><td>always defined; the name or IP address of the desired FTP server</td></tr>
 
- <tr><td>Port</td><td>always defined; the port number where is the desired FTP server
-	 listening; the default port is 21 (if it is not specified by user)</td></tr>
+ <tr><td>Port</td><td>always defined; the port number where the desired FTP server
+	 is listening; the default port is 21 (if it is not specified by user)</td></tr>
 
  <tr><td>User</td><td>obligatory; the user name for the desired FTP server</td></tr>
 

@@ -88,7 +88,7 @@ CCommonDialog::CCommonDialog(int resID, HWND hParent, CObjectOrigin origin)
     {
         // horizontal and vertical centering of the dialog over the parent
         CenterWindow(HWindow);
-        break; // I want focus from DefDlgProc
+        break; // let DefDlgProc set the focus
     }
     }
     return CDialog::DialogProc(uMsg, wParam, lParam);

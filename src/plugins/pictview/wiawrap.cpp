@@ -1490,7 +1490,7 @@ STDMETHODIMP CDataCallback::BandedDataCallback(
                 FixBitmapHeight(pBuffer + 1, m_nDataSize, TRUE);
 
                 // For WiaImgFmt_MEMORYBMP transfers, the WIA service does not
-                // include a BITMAPFILEHEADER preceeding the bitmap data.
+                // include a BITMAPFILEHEADER preceding the bitmap data.
                 // In this case, fill in the BITMAPFILEHEADER structure.
 
                 if (m_nHeaderSize != 0)

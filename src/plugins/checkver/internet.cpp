@@ -124,7 +124,7 @@ DWORD WINAPI ThreadDownload(void* param)
     CTDData* data = (CTDData*)param;
     DWORD dialogID = data->MainDialogID;
     BOOL firstLoadAfterInstall = data->FirstLoadAfterInstall;
-    SetEvent(data->Continue); // let the main thread continue; from this point on the data are invalid (=NULL)
+    SetEvent(data->Continue); // let the main thread continue; from this point on, the data are no longer valid (=NULL)
     data = NULL;
 
     // lock the DLL to prevent it from being unloaded while this function runs
@@ -204,8 +204,8 @@ DWORD WINAPI ThreadDownload(void* param)
 
         default:
         {
-            // p.s. adjusted to allow version checking behind a firewall (tested at SPS)
-            // HTTP (experimentally much faster than FTP-passive at SPS, probably due to HTTP caching,
+            // adjusted to allow version checking behind a firewall (tested at SPS)
+            // HTTP (experimentally much faster than FTP passive at SPS, probably due to HTTP caching;
             //       usually passes through firewalls)
             char scriptURL[200];
             _snprintf_s(scriptURL, _TRUNCATE, "%s?version=%s&lang=%s",
@@ -270,7 +270,7 @@ DWORD WINAPI ThreadDownload(void* param)
         PostMessage(HMainDialog, WM_USER_DOWNLOADTHREAD_EXIT, !exit, 0); // thread ends; data are loaded
         FreeLibrary(hLock);                                              // release the lock
         LeaveCriticalSection(&MainDialogIDSection);
-        return 0; // let the thread die naturally
+        return 0; // let the thread exit normally
     }
     else
     {
@@ -301,7 +301,7 @@ StartDownloadThread(BOOL firstLoadAfterInstall)
     HANDLE hThread = CreateThread(NULL, 0, ThreadDownload, &data, 0, &threadID);
     if (hThread == NULL)
         TRACE_E("Unable to create Check Version Download thread.");
-    else // wait until the thread takes the data
+    else // wait until the thread picks up the data
         WaitForSingleObject(data.Continue, INFINITE);
 
     CloseHandle(data.Continue);

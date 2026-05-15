@@ -624,9 +624,9 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
 
                             if (!ok)
                             {
-                                //---  refresh directories that are not automatically refreshed
-                                // if directory creation failed, report immediately changes (the user may
-                                // choose a completely different path next time); the new path is kept (almost dead code)
+                                //--- refresh directories that are not refreshed automatically
+                                // if directory creation failed, report the changes immediately (the user may
+                                // choose a completely different path next time); the newly created path is not removed (almost dead code)
                                 MainWindow->PostChangeOnPathNotification(changesRoot, TRUE);
 
                                 SalPathAddBackslash(path, MAX_PATH + 200);
@@ -668,7 +668,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     if (PackUncompress(MainWindow->HWindow, this, GetZIPArchive(), PluginData.GetInterface(),
                                        path, GetZIPPath(), PanelSalEnumSelection, &data))
                     {                        // unpacking succeeded
-                        if (tgtPath == NULL) // if it is not drag&drop (selection is not cleared there)
+                        if (tgtPath == NULL) // Only if this is not drag&drop; selection is not cleared there.
                         {
                             SetSel(FALSE, -1, TRUE);                        // explicit redraw
                             PostMessage(HWindow, WM_USER_SELCHANGED, 0, 0); // sel-change notify
@@ -681,7 +681,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
                     }
                     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 
-                    if (GetForegroundWindow() == MainWindow->HWindow) // for unknown reasons focus disappears from the panel when dragging to Explorer; return it
+                    if (GetForegroundWindow() == MainWindow->HWindow) // for unknown reasons, focus disappears from the panel during drag and drop to Explorer; restore it to the panel
                         RestoreFocusInSourcePanel();
                 }
                 else
@@ -722,7 +722,7 @@ void CFilesWindow::UnpackZIPArchive(CFilesWindow* target, BOOL deleteOp, const c
             MainWindow->PostChangeOnPathNotification(GetPath(), FALSE);
         }
     }
-    else // delete
+    else // Delete icon
     {
         //---  ask whether the user is sure they want to delete
         HICON hIcon = (HICON)HANDLES(LoadImage(Shell32DLL, MAKEINTRESOURCE(WindowsVistaAndLater ? 16777 : 161), // delete icon
@@ -822,7 +822,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
     char* end = path + strlen(path);
     char text[2 * MAX_PATH + 100];
     if ((end - path) + (*(end - 1) != '\\' ? 1 : 0) + strlen(name) + 2 >= _countof(path))
-        return TRUE; // path too long: continue without reporting the error until enumeration is complete
+        return TRUE; // path too long: continue; report the error during enumeration
     if (*(end - 1) != '\\')
     {
         *end++ = '\\';
@@ -850,7 +850,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
             {
                 if (errorOccured != NULL)
                     *errorOccured = SALENUM_CANCEL;
-                return FALSE; // user wants to quit
+                return FALSE; // user wants to cancel
             }
         }
         return TRUE; // user wants to continue
@@ -883,7 +883,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
             if (file.cFileName[0] == 0 ||
                 file.cFileName[0] == '.' &&
                     (file.cFileName[1] == 0 || (file.cFileName[1] == '.' && file.cFileName[2] == 0)))
-                continue; // "." a ".."
+                continue; // "." and ".."
 
             static DWORD lastBreakCheck = 0;
             if (containsDirLinks != NULL && GetTickCount() - lastBreakCheck > 200)
@@ -962,7 +962,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
                 newF.IsOffline = newF.Attr & FILE_ATTRIBUTE_OFFLINE ? 1 : 0;
             }
 
-            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // directory, so it is certainly a disk
+            if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // directory, so it is definitely on disk
             {
                 CSalamanderDirectory* salDir = NULL;
                 if (dir != NULL)
@@ -1042,7 +1042,7 @@ BOOL _ReadDirectoryTree(HWND parent, char (&path)[MAX_PATH], char* name, CSalama
             {
                 if (errorOccured != NULL)
                     *errorOccured = SALENUM_CANCEL;
-                return FALSE; // user wants to quit
+                return FALSE; // user canceled
             }
         }
 
@@ -1149,7 +1149,7 @@ CSalamanderDirectory* ReadDirectoryTree(HWND parent, CPanelTmpEnumData* data, in
             }
             else
             {
-                if ((f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // directory link found, stop...
+                if ((f->Attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0) // found a directory link, stop
                 {
                     *containsDirLinks = 1;
                     strcpy(path, data->WorkPath);
@@ -1236,7 +1236,7 @@ const char* WINAPI PanelEnumDiskSelection(HWND parent, int enumFiles, const char
         {
             data->DiskDirectoryTree = ReadDirectoryTree(parent, data, errorOccured, enumFiles == 3, NULL, NULL);
             if (data->DiskDirectoryTree == NULL)
-                return NULL; // error, stop
+                return NULL; // error, abort
         }
         const CFileData* f = NULL;
         const char* ret = _PanelSalEnumSelection(enumFiles, dosName, isDir, size, &f, data, parent, errorOccured);
@@ -1487,7 +1487,7 @@ void CFilesWindow::Pack(CFilesWindow* target, int pluginIndex, const char* plugi
 
     if (delFilesAfterPacking == 1)
         PackerConfig.Move = TRUE;
-    if (delFilesAfterPacking == 0 || // Petr: changed default - user must always enable deletion, it is too risky
+    if (delFilesAfterPacking == 0 || // Petr: changed the default; the user must always enable deletion because it is too risky
         delFilesAfterPacking == 2)
     {
         PackerConfig.Move = FALSE;
@@ -1545,12 +1545,13 @@ _PACK_AGAIN:
 
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
                 SetCurrentDirectoryToSystem();
-                // the directory contains a link and cannot be combined with "delete files after packing":
-                // I can't handle the situation where packing a single file from the directory fails
-                // (e.g., if the file is locked or access is denied), and I entered the directory via the link.
-                // Deleting the whole link is wrong because it won't show that packing failed,
+                // The directory contains a link and cannot be combined with "delete files after packing":
+                // this does not safely handle the case where packing a single file from the directory fails
+                // (for example, because the file is locked or access is denied) after entering it via the link.
+                // Deleting the whole link is wrong because it would hide that something failed to pack,
                 // and deleting everything except one file after traversing the link is also wrong,
-                // because it alters the original directory content, which users report as a bug since it's unexpected.
+                // because it changes the contents of the original directory, which would be reported as a bug
+                // because that behavior is unexpected.
                 if (containsDirLinks == 1)
                 {
                     _snprintf_s(text, _TRUNCATE, LoadStr(IDS_DELFILESAFTERPACKINGNOLINKS), linkName);
@@ -1725,7 +1726,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                     break;
                 }
             }
-            if (i2 == UnpackerConfig.GetUnpackersCount()) // requested plugin not found
+            if (i2 == UnpackerConfig.GetUnpackersCount()) // the requested plugin was not found
             {
                 sprintf(subject, LoadStr(IDS_PLUGINUNPACKERNOTFOUND), pluginName);
                 SalMessageBox(HWindow, subject, LoadStr(IDS_ERRORUNPACK), MB_OK | MB_ICONEXCLAMATION);
@@ -1803,7 +1804,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                         if (newDir[0] != 0)
                             RemoveEmptyDirs(newDir);
                     }
-                    else // unpacking succeeded (no Cancel, Skip may have occurred)
+                    else // unpacking succeeded (no Cancel; Skip may have occurred)
                     {
                         if (delArchiveWhenDone && archiveVolumes.Length > 0)
                         {
@@ -1820,7 +1821,7 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                                         {
                                             DWORD err = GetLastError();
                                             if (err == ERROR_FILE_NOT_FOUND)
-                                                break; // if the user already managed to delete the file, all is OK
+                                                break; // if the user has already deleted the file, everything is OK
                                             int res = (int)CFileErrorDlg(MainWindow->HWindow, LoadStr(IDS_ERRORDELETINGFILE), name, GetErrorText(err)).Execute();
                                             if (res == IDB_SKIPALL)
                                                 skipAll = TRUE;
@@ -1871,9 +1872,9 @@ void CFilesWindow::Unpack(CFilesWindow* target, int pluginIndex, const char* plu
                     {
                         CutDirectory(newDir); // should always work (path to the first newly created directory)
 
-                        //---  refresh directories that are not automatically refreshed
-                        // if creating directories failed, report changes immediately (the user may
-                        // choose a completely different path next time); the newly created path is kept (almost dead code)
+                        //--- refresh directories that are not refreshed automatically
+                        // if directory creation failed, report the changes immediately (the user may
+                        // choose a completely different path next time); the newly created path is not removed (almost dead code)
                         MainWindow->PostChangeOnPathNotification(newDir, TRUE);
                     }
                     goto DO_AGAIN;
@@ -1955,7 +1956,7 @@ void CFilesWindow::CalculateOccupiedZIPSpace(int countSizeMode)
             }
             delete[] (indexes);
         }
-        else // take the selected file or directory
+        else // Use the selected file or directory
         {
             selIndex = GetCaretIndex();
             if (upDir && selIndex == 0)
@@ -2032,7 +2033,7 @@ void CFilesWindow::AcceptChangeOnPathNotification(const char* path, BOOL includi
         refresh = !includingSubdirs && StrICmp(path1, path2) == 0 ||       // exact match
                   includingSubdirs && StrNICmp(path1, path2, len1) == 0 && // prefix match
                       (path2[len1] == 0 || path2[len1] == '\\');
-        if (Is(ptDisk) && !refresh && CutDirectory(path1)) // pointless for archives
+        if (Is(ptDisk) && !refresh && CutDirectory(path1)) // not applicable to archives
         {
             SalPathRemoveBackslash(path1);
             // on NTFS the last subdirectory timestamp also changes (unfortunately visible only after entering
@@ -2049,7 +2050,7 @@ void CFilesWindow::AcceptChangeOnPathNotification(const char* path, BOOL includi
     }
     else
     {
-        if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // send notification to the FS
+        if (Is(ptPluginFS) && GetPluginFS()->NotEmpty()) // send a notification to the FS
         {
             // the EnterPlugin+LeavePlugin section must be exposed up to here (not wrapped inside the interface)
             EnterPlugin();
@@ -2091,7 +2092,7 @@ void CFilesWindow::IconOverlaysChangedOnPath(const char* path)
             // if the timer fails, attempt an immediate refresh...
         }
         // try to refresh immediately (as long as it didn't come too soon after the previous one)
-        if (!IconCacheValid) // perform after icons finish loading (they may or may not load correctly)
+        if (!IconCacheValid) // refresh after icon loading completes (icons may or may not load correctly)
         {
             // TRACE_I("CFilesWindow::IconOverlaysChangedOnPath: delaying refresh till end of reading of icons");
             NeedIconOvrRefreshAfterIconsReading = TRUE;

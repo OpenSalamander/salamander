@@ -1037,7 +1037,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
             // the parent process has terminated, so we exit as well
 
             // if we find any dumps, process them - Salamander could have crashed during init while loading
-            // shell extensions and did not manage to open the main window and call CheckForBugs
+            // shell extensions and did not manage to open the main window and call ChechForBugs
             // or Salamander crashed before the exception handler was installed and the minidump was captured by WER,
             // which we have redirected to our bug report directory (Vista+)
             // Salamander could also have crashed in a way that bypassed the exception handler (typically caused by faulty shell extensions)
@@ -1053,7 +1053,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow
             if (LoadHLanguageVerbose(slgName)) // we need to display the GUI, we must load the SLG
             {
                 // if we manage to lock the mutex, release it later; we do not want
-                // additional processes started afterwards to pop up their windows during ours
+                // additional processes started afterwards to pop up their windows during our window
                 BOOL leave = MainDialogMutex.Enter();
                 OpenMainDialog(TRUE);
                 if (leave)

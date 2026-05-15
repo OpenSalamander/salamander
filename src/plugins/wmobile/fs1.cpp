@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -76,7 +77,7 @@ CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(HWND parent, int panel, in
 {
     CALL_STACK_MESSAGE7("CPluginInterfaceForFS::ChangeDriveMenuItemContextMenu(, %d, %d, %d, , %s, %d, %d, , , ,)",
                         panel, x, y, pluginFSName, pluginFSNameIndex, isDetachedFS);
-    // The Windows Mobile plugin has no context Change Drive menu
+    // The Windows Mobile plugin has no Change Drive context menu
     return FALSE;
 }
 
@@ -97,15 +98,15 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
         char newPath[MAX_PATH];
         strcpy(newPath, fs->Path);
 
-        if (isDir == 2) // up-dir
+        if (isDir == 2) // parent directory
         {
             char* cutDir = NULL;
-            if (SalamanderGeneral->CutDirectory(newPath, &cutDir)) // shorten the path by the last component
+            if (SalamanderGeneral->CutDirectory(newPath, &cutDir)) // remove the last component from the path
             {
                 int topIndex; // next top index, -1 -> invalid
                 if (!fs->TopIndexMem.FindAndPop(newPath, topIndex))
                     topIndex = -1;
-                // change the path in the panel
+                // change the panel path
                 SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newPath, NULL,
                                                              topIndex, cutDir);
             }
@@ -119,9 +120,9 @@ CPluginInterfaceForFS::ExecuteOnFS(int panel, CPluginFSInterfaceAbstract* plugin
 
             if (CRAPI::PathAppend(newPath, file.Name, MAX_PATH))
             {
-                // change the path in the panel
+                // change the panel path
                 if (SalamanderGeneral->ChangePanelPathToPluginFS(panel, pluginFSName, newPath))
-                    fs->TopIndexMem.Push(backupPath, topIndex); // remember the top index for the return
+                    fs->TopIndexMem.Push(backupPath, topIndex); // remember the top index for returning
             }
         }
     }
@@ -226,7 +227,7 @@ void CTopIndexMem::Push(const char* path, int topIndex)
 
     if (ok) // matches -> remember the next top index
     {
-        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to discard the first top index from memory
+        if (TopIndexesCount == TOP_INDEX_MEM_SIZE) // need to discard the oldest top index
         {
             int i;
             for (i = 0; i < TOP_INDEX_MEM_SIZE - 1; i++)
@@ -236,7 +237,7 @@ void CTopIndexMem::Push(const char* path, int topIndex)
         strcpy(Path, path);
         TopIndexes[TopIndexesCount++] = topIndex;
     }
-    else // does not match -> first top index in the sequence
+    else // path does not match -> first top index in the sequence
     {
         strcpy(Path, path);
         TopIndexesCount = 1;

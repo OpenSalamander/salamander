@@ -60,7 +60,7 @@
 #define CML_VIEWER_VIEW          1540
 #define CML_VIEWER_FILTER        1545
 
-#define CM_FILTER_FIRST          1550 // reserved interval
+#define CM_FILTER_FIRST          1550 // reserved range
 #define CM_FILTER_LAST           1559
 
 #define IDS_MENU_FILES           2000

@@ -14,27 +14,27 @@
 
 <h1>Operation Masks</h1>
 <p>Some Open Salamander operations, such as Copy, Move, or Rename, support
-entering of operation mask. Operation mask is appended behind the target path.</p>
+entering an operation mask. The operation mask is appended after the target path.</p>
 
 <p>Operation masks can contain special characters - asterisk (*) for the rest
 of the name or the extension and question mark (?) for a single character.
-So the operation mask 'new_*.???' will generate names which begin with 'new_'
-followed with the rest of the original name (from the fifth character to the end),
-and end with (.) followed with three characters from the original extension.</p>
+So the operation mask 'new_*.???' generates names that begin with 'new_'
+followed by the rest of the original name (from the fifth character to the end),
+and end with (.) followed by three characters from the original extension.</p>
 
-<p>Operation masks are usually used for simpler operations like changing
-extensions in the group of files (you can use '*.html' for renaming .htm files
+<p>Operation masks are usually used for simpler operations, such as changing
+extensions in a group of files (you can use '*.html' for renaming .htm files
 to .html files, etc.).</p>
 
-<p>If you need more sophisticated renaming or moving, consider using of
+<p>If you need more sophisticated renaming or moving, consider using the
 <a href="ms-its:renamer.chm::/hh/renamer/introduction_intro.htm">Renamer plugin</a>.
 </p>
 
 <h3>Operation Masks Containing More Points</h3>
 
-<p>The mask is divided by the first point (from the left side) to mask for name and
-mask for extension. Example: filename is "a.b.c.d" (name is "a.b.c", extension is "d"),
-mask is "*.*.old", mask is divided to "*" and "*.old", resulting filename is "a.b.c.d.old"
+<p>The mask is divided by the first period (from the left side) into a mask for the name and
+a mask for the extension. Example: filename is "a.b.c.d" (name is "a.b.c", extension is "d"),
+mask is "*.*.old", the mask is divided into "*" and "*.old", resulting filename is "a.b.c.d.old"
 ("a.b.c" + "*" = "a.b.c"; "d" + "*.old" = "d.old").</p>
 
 <h4>See Also</h4>

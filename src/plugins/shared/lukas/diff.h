@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
@@ -21,20 +22,20 @@
 //
 // Description
 //
-//   Computes length of the shortest edit script of two sequences with lengths
-//   `n', `m' starting at offsets `aoff', `boff'.
+//   Computes the length of the shortest edit script between two sequences of
+//   lengths `n' and `m' starting at offsets `aoff' and `boff'.
 //
-//   Let `size_t j, i' be position in the compared sequences then `equal(i, j)'
-//   tells whether the symbol at position `i' in the first sequence equals the
-//   symbol at position `j' in the seccond sequence.
+//   Let `size_t i, j' be positions in the compared sequences; then `equal(i, j)'
+//   returns true if the symbol at position `i' in the first sequence equals
+//   the symbol at position `j' in the second sequence.
 //
 //   The shortest edit script itself is reported by calling `edit(op, off,
-//   len)', where `op' identifies the edit operation (could be `diff_base::
-//   ed_match', `diff_base::ed_delete' or `diff_base::ed_insert'), `off' and
-//   `len' indicate the offset and length of the subsequence that matches or
-//   should be deleted from the first sequence a or inserted to the seccond
-//   sequence.  The shortest edit script is reported from the left to the
-//   right, i.e.  `off' in subsequent call to `edit' is never smaller than in
+//   len)', where `op' identifies the edit operation (one of
+//   `diff_base::ed_match', `diff_base::ed_delete' or `diff_base::ed_insert').
+//   `off' and `len' indicate the offset and length of the subsequence that
+//   matches, should be deleted from the first sequence, or should be inserted
+//   into the second sequence. The shortest edit script is reported left to
+//   right, i.e. `off' in a subsequent call to `edit' is never smaller than in
 //   the previous call.
 //
 //   Whenever value of `cancel' becomes false, computation is terminated by
@@ -51,13 +52,13 @@
 //
 // Some helper classes are defined in this header. See below.
 //
-// null_edit -- accepts op, off, len and does nothing, useful when you need
-// only the length of the shortest edit script
+// null_edit -- accepts op, off, len and does nothing; useful when you only
+// need the length of the shortest edit script
 //
 // ed_script_builder -- builds an edit script
 //
-// string_comparator -- binary predicate, tells whether two strings equals at
-// specified indicies
+// string_comparator -- binary predicate that reports whether two strings are
+// equal at specified indices
 //
 //
 // ****************************************************************************
@@ -148,9 +149,9 @@ protected:
 
 // ****************************************************************************
 //
-//  sequence_comparator -- binary predicate, tells whether two random access
-//  sequences equal at specified indicies, sequences are represented by random
-//  access iterators to their beginning
+//  sequence_comparator -- binary predicate that reports whether two random-
+//  access sequences are equal at specified indices. Sequences are represented
+//  by random-access iterators to their beginnings
 //
 
 template <class Arg1, class Arg2, class Result>
@@ -338,7 +339,7 @@ diff_t<equal_t, edit_t>::find_middle_snake(
                 x = xlo + 1;
             }
             y = x - k;
-            ms.x = x; // remember begining of the snake
+            ms.x = x; // remember beginning of the snake
 
             while (x < ptrdiff_t(n) && y < ptrdiff_t(m) && equal(aoff + x, boff + y))
             {
@@ -500,9 +501,9 @@ diff_t<equal_t, edit_t>::operator()(
     ptrdiff_t d;
     size_t p, s;
 
-    // The ses function assumes the SES will begin and end with a delete or
-    // insert. The following will insure this is true by eating any beginning
-    // matches. This is also a quick to process sequences that match entirely.
+    // The ses function assumes the SES begins and ends with a delete or insert.
+    // The following ensures this by consuming any leading matches.
+    // It is also a quick way to process sequences that match entirely.
 
     // eat common prefix
     p = 0;

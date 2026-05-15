@@ -13,7 +13,7 @@
 #define VERSINFO_MINORA      2
 #define VERSINFO_MINORB      7
 
-#include "spl_vers.h" // vytahneme cisla verzi + buildu
+#include "spl_vers.h" // Extract version and build numbers.
 
 #define VERSINFO_COPYRIGHT   "Copyright © 1997-2023 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"

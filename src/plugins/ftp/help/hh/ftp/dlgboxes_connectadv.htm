@@ -14,9 +14,9 @@
 
 <h1>Advanced Options</h1>
 
-<p>Allows you to customize advanced options for connecting to the FTP server. This dialog
-can be opened using the <i>Advanced</i> button in the <a href="dlgboxes_connect.htm">Connect
-to FTP Server dialog box</a> or <a href="dlgboxes_orgbookmarks.htm">Organize Bookmarks
+<p>Use this dialog to customize advanced options for connecting to an FTP server. It
+can be opened by using the <i>Advanced</i> button in the <a href="dlgboxes_connect.htm">Connect
+to FTP Server dialog box</a> or the <a href="dlgboxes_orgbookmarks.htm">Organize Bookmarks
 dialog box</a>.
 </p>
 
@@ -59,56 +59,55 @@ more information on transfer modes.
 </dd>
 
 <dt><i>Command for listing</i></dt>
-<dd>Specify what command should be used to receive the plain text listing of
-the current directory from the FTP server. FTP protocol contains two commands for listing: LIST (default) and NLST
-(name list). Some Unix FTP servers require an option "-a" behind the LIST command
-to list also hidden files and directories.
+<dd>Specify which command should be used to receive the plain-text listing of
+the current directory from the FTP server. The FTP protocol provides two commands for listing: LIST (default) and NLST
+(name list). Some Unix FTP servers require the "-a" option after the LIST command
+to list hidden files and directories as well.
 </dd>
 
 <dt><i>Initial FTP commands</i></dt>
-<dd>You may need to send some auxiliary FTP commands to the FTP server whenever you
-connect to it. Enter the list of such commands here, the list is separated by ';'
-character (e.g. "CWD []; HELP"). Commands will be send to the FTP server immediately
-after the successful login. If you do not want to send any command, leave this
+<dd>You may need to send auxiliary FTP commands to the FTP server whenever you
+connect. Enter the list of such commands here; the list is separated by the ';'
+character (for example, "CWD []; HELP"). The commands are sent to the FTP server immediately
+after a successful login. If you do not want to send any commands, leave this
 edit box empty.
 </dd>
 
 <dt><i>Keep connections alive (prevents server from disconnecting you due to no activity)</i></dt>
-<dd>When checked, the FTP client tries to keep its connections alive. It means that if the FTP
-client is not sending commands or transferring data to/from the FTP server for longer than
-specified time, it starts periodical sending auxiliary commands or making auxiliary data
-transfers. This should prevent closing the connection by the FTP server due to no activity
+<dd>When checked, the FTP client tries to keep its connections alive. This means that if the FTP
+client is not sending commands or transferring data to or from the FTP server for longer than
+the specified time, it starts sending auxiliary commands or making auxiliary data
+transfers periodically. This should prevent the FTP server from closing the connection because of inactivity
 or no data transfer (usually after 5 or 10 minutes). Leave this check box in the third state
-if you want to use default settings (see <i>Keep connections alive</i> in
+if you want to use the default settings (see <i>Keep connections alive</i> in
 <a href="config_defaults.htm">Configuration/Defaults</a>). Clear this check box to disable
-the keep connections alive feature.
+the keep-alive feature.
 
-<p>When checked, choose a command which is sent to keep the connection alive (when the
-connection is not used to communicate with the server nor to send any data). NOOP and
-PWD commands are not transferring any data. If your FTP server closes connections due
-to no data transfer, use NLST or LIST commands. We recommend to use the NLST command
-because it transfers less data (the current path listing containing only filenames).
-Moreover specify a period of sending keep alive commands and when to stop sending keep
-alive commands.</p>
+<p>When checked, choose a command to send to keep the connection alive (when the
+connection is not being used to communicate with the server or transfer any data). NOOP and
+PWD commands do not transfer any data. If your FTP server closes connections because no data is transferred,
+use the NLST or LIST commands. We recommend NLST because it transfers less data
+(the current path listing containing only file names). Also specify how often to send keep-alive commands
+and when to stop sending them.</p>
 </dd>
 
 <dt><i>Use passive transfer mode (may help if you are behind firewall or proxy server)</i></dt>
-<dd>When checked, data connections are opened in the passive mode. It means that the FTP client
-opens data connection by connecting to the supplied port on the FTP server. When cleared, data
-connections are opened in the active mode. It means that the data connection is opened by
-the FTP server by connecting to the supplied port on the FTP client. This mode is problematic
-if the FTP client is behind firewall or proxy server because they can block access to the FTP
-client (if they have not support for FTP protocol). The passive mode is not supported by some
-FTP servers (only few), you have to use active mode for accessing these FTP servers. Leave this
-check box in the third state if you want to use default settings (see <i>Use passive transfer
+<dd>When checked, data connections are opened in passive mode. This means that the FTP client
+opens the data connection by connecting to the supplied port on the FTP server. When cleared, data
+connections are opened in active mode. In that case, the FTP server opens the data connection
+by connecting to the supplied port on the FTP client. Active mode can be problematic
+if the FTP client is behind a firewall or proxy server because they can block access to the FTP
+client if they do not support the FTP protocol. Passive mode is not supported by a few
+FTP servers, so you must use active mode to access those servers. Leave this
+check box in the third state if you want to use the default settings (see <i>Use passive transfer
 mode</i> in <a href="config_defaults.htm">Configuration/Defaults</a>).
 </dd>
 
 <dt><i>Use cache for viewed files and lists of files and directories on server (faster browsing)</i></dt>
 <dd>When checked, all viewed files and all path listings (lists of files and directories)
-from the FTP server are cached. It allows to use these cached files and listings when they
-are requested next time. Advantage is faster browsing of already visited directories and viewing
-of already viewed files. Disadvantage is that listings and files could be changed and when they
+from the FTP server are cached. This allows the plugin to reuse these cached files and listings when they
+are requested again. The advantage is faster browsing of already visited directories and faster viewing
+of already viewed files. The disadvantage is that listings and files may have changed, so when they
 are taken from the cache, they can be out of date. Use the
 <a href="ms-its:salamand.chm::/hh/salamand/advwork_refresh.htm">Refresh</a> command to reset
 cache for the current directory and all its subdirectories (it removes all listings and all viewed
@@ -136,10 +135,10 @@ These two check boxes are enabled only on Windows 2000 and later systems because
 
 <dt><i>Compress data transfers if server supports compression (MODE Z)</i></dt>
 <dd>When checked, the plugin attempts to compress all data transfers (downloads and uploads, plus directory listings
-obtained from the server). No error is reported when the server does not support compression.
-However, you can check if compression is used: Check the result of the MODE Z command at the end of the Welcome
-Message or look for MODE Z just before the SYST or first PWD command in the FTP log.
-Leave this check box in the third state if you want to use default settings (see <i>Compress data transfers if
+obtained from the server). No error is reported if the server does not support compression.
+However, you can check whether compression is being used: check the result of the MODE Z command at the end of the Welcome
+Message, or look for MODE Z just before the SYST or first PWD command in the FTP log.
+Leave this check box in the third state if you want to use the default settings (see <i>Compress data transfers if
 server supports compression (MODE Z)</i> in <a href="config_defaults.htm">Configuration/Defaults</a>).
 </dd>
 

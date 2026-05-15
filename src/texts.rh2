@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// CommentsTranslationProject: TRANSLATED
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __TEXTS_RH2
 #define __TEXTS_RH2
 
@@ -301,7 +302,7 @@
 
 // title of Edit New File dialog (Shift+F4)
 #define IDS_EDITNEWFILE            10116
-// title of editline in Edit New File dialog
+// title of edit line in Edit New File dialog
 #define IDS_NEWFILENAME            10117
 
 // error in path specified - UNC name contains no server name (\\server\share\directory)
@@ -342,22 +343,22 @@
 // error message: copy/move operations: target path is invalid
 #define IDS_PATHISINVALID          10132
 
-// copy operation: title of error boxs
+// copy operation: title of error boxes
 #define IDS_ERRORCOPY              10133
 
-// move operation: title of error boxs
+// move operation: title of error boxes
 #define IDS_ERRORMOVE              10134
 
 // error message: file operation would produce too long full name
 #define IDS_NAMEISTOOLONG          10135
 
-// title of error box: some error during building subsidary script fop copy/move/...
+// title of error box: some error during building subsidiary script for copy/move/...
 #define IDS_ERRORBUILDINGSCRIPT    10136
 
-// error message: error during building subsidary script: cannot open dir for reading
+// error message: error during building subsidiary script: cannot open dir for reading
 #define IDS_CANNOTREADDIR          10137
 
-// error message: error during building subsidary script: cannot copy file to itself
+// error message: error during building subsidiary script: cannot copy file to itself
 #define IDS_CANNOTCOPYFILETOITSELF 10138
 
 // error message: internal viewer/Find Files dialog: invalid hex pattern (find)
@@ -432,10 +433,10 @@
 #define IDS_REGEXPERROR12          10177
 #define IDS_REGEXPERROR13          10178
 
-// error message: error during building subsidary script: cannot move file to itself
+// error message: error during building subsidiary script: cannot move file to itself
 #define IDS_CANNOTMOVEFILETOITSELF 10179
 
-// error message: error during building subsidary script: cannot move dir to itself
+// error message: error during building subsidiary script: cannot move dir to itself
 #define IDS_CANNOTMOVEDIRTOITSELF  10180
 
 // error message: before copy or move: probably not enough space on target drive
@@ -717,7 +718,7 @@
 #define IDS_TBTT_CLIPBOARDPASTE      10454   // Clipboard Paste
 #define IDS_TBTT_PERMISSIONS         10455   // Permissions
 #define IDS_TBTT_PROPERTIES          10456   // Properties
-#define IDS_TBTT_COMPAREDIR          10457   // Comapare Directories
+#define IDS_TBTT_COMPAREDIR          10457   // Compare Directories
 #define IDS_TBTT_DRIVEINFO           10458   // Drive Information
 #define IDS_TBTT_HELP                10460   // Help
 #define IDS_TBTT_CONTEXTHELP         10461   // Context Help
@@ -1020,7 +1021,7 @@
 
 // Restrictions
 #define IDS_POLICIESRESTRICTION_TITLE 10806
-// This operation has been cancelled due to restrictions in effect on this
+// This operation has been canceled due to restrictions in effect on this
 // computer. Please contact your system administrator.
 #define IDS_POLICIESRESTRICTION       10807
 // Reading Group Policy from registry...
@@ -1058,7 +1059,7 @@
 // Options/Plugin Configuration when no plugin with configuration is available (text for one disabled menu item)
 #define IDS_EMPTYPLUGINSMENU2         10831
 
-// cannot conver local path to UNC format
+// cannot convert local path to UNC format
 #define IDS_CANNOT_CREATE_UNC_NAME    10832
 
 // strings for Shared Directories dialog
@@ -1078,7 +1079,7 @@
 #define IDS_BUTTON_CONTINUE           10847
 #define IDS_BUTTON_YES                10848
 #define IDS_BUTTON_NO                 10849
-// nechat jeste par polozek rezervu
+// keep a few items reserved
 
 #define IDS_ESCAPE                    10860
 #define IDS_F11                       10861
@@ -1165,7 +1166,7 @@
 // Change Drive window: text of Documents item
 #define IDS_MYDOCUMENTS               10927
 
-// strings for Diconnect Network Drives dialog
+// strings for Disconnect Network Drives dialog
 #define IDS_DISCONNECT_NAME           10930
 #define IDS_DISCONNECT_PATH           10931
 #define IDS_DISCONNECT_NODRIVES       10932
@@ -1182,7 +1183,7 @@
 #define IDS_BROWSEONERRGOTOTITLE      10950
 // Configuration: Drives: text of Browse (...) path window: Select the path you want to visit when current path in panel is inaccessible
 #define IDS_BROWSEONERRGOTOTEXT       10951
-// 10952 je uz pouzite
+// 10952 is already used
 
 // Error Opening Alternate Data Stream dialog: second item in menu on Ignore button: Ignore &All
 #define IDS_ERROPENADS_IGNOREALL      10955
@@ -1278,11 +1279,11 @@
 #define IDS_PACKRET_FOPEN            11032
 // User error - bad parameters
 #define IDS_PACKRET_PARAMS           11033
-// Not enough memmory
+// Not enough memory
 #define IDS_PACKRET_MEMORY           11034
 // File is not an archive file
 #define IDS_PACKRET_NOTARC           11035
-// XMS memmory error
+// XMS memory error
 #define IDS_PACKRET_XMSMEM           11036
 // User break
 #define IDS_PACKRET_BREAK            11037
@@ -1339,7 +1340,7 @@
 #define IDS_PACK_EXE_UZP16           11067
 #define IDS_PACK_EXE_BROWSE          11068
 
-// 11070 je zabrany pro IDS_PACKRET_BREAK2
+// 11070 is reserved for IDS_PACKRET_BREAK2
 
 #define IDS_PACKQRY_PREFIX           11101
 // User query, whether discard root dir in archive while compressing
@@ -1498,7 +1499,7 @@
 // internal text/hex viewer: menu 'Convert': 'ANSI' code page name
 #define IDS_VIEWERANSICODEPAGE       12056
 
-// general file name input: empty file name has no sence here ...
+// general file name input: empty file name has no sense here ...
 #define IDS_EMPTYNAMENOTALLOWED      12060
 // general file name input: incomplete path, please specify full path
 #define IDS_INCOMLETEFILENAME        12061
@@ -1562,7 +1563,7 @@
 // plugins manager/test all: all plugins seem to work correctly
 #define IDS_PLUGINTESTALLOK          12108
 
-// 12109 je zabrane !!!
+// 12109 is reserved !!!
 
 // plugins manager/column name
 #define IDS_PLUGINS_NAME             12110
@@ -1575,9 +1576,9 @@
 // plugins manager: thumbnail extensions is empty string: "(none)"
 #define IDS_PLUGINTHUMBNONE          12114
 
-// pluing shortcuts dialog box: Command
+// plugin shortcuts dialog box: Command
 #define IDS_PLUGIN_COMMAND           12115
-// pluing shortcuts dialog box: Shortcut Keys
+// plugin shortcuts dialog box: Shortcut Keys
 #define IDS_PLUGIN_KEY               12116
 
 // command line parameters of Salamander: invalid parameters, usage: ...
@@ -1702,7 +1703,7 @@
 // There are no items in this panel.
 #define IDS_NOITEMSINPANEL           12233
 
-// text, ktery je pridan ke jmenu plug-inu, aby zvyraznil ze jde o plug-in - " (Plug-in)"
+// text appended to the plug-in name to highlight that it is a plug-in - " (Plug-in)"
 #define IDS_PLUGINSUFFIX             12235
 
 // task list dialog: You cannot break this task. Use another
@@ -1813,7 +1814,7 @@
 #define IDS_DELETETMPSALDIRS_NO     12362
 #define IDS_DELETETMPSALDIRS_FOCUS    12363
 
-// Unpack dialog: description for progress-bar showing progress on each file separatelly (no total progress)
+// Unpack dialog: description for progress-bar showing progress on each file separately (no total progress)
 #define IDS_UNPACKFILEPROGRESS        12365
 
 // Copy&Paste from archive: specified files and directories (names are placed in clipboard) were not found in archive
@@ -1853,9 +1854,9 @@
 // drag&drop or Paste to archive or FS: Some files or directories specified in drag&drop or clipboard operation were not found.\n\nDo you want to continue?
 #define IDS_SRCFILESNOTFOUND          12401
 
-// plugin tryies to open Pack dialog for its packer, but its packer is not found: Unable to found packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)
+// plugin tries to open Pack dialog for its packer, but its packer is not found: Unable to find packer for %s plugin (see Packers in Pack Dialog Box page in Configuration)
 #define IDS_PLUGINPACKERNOTFOUND      12405
-// plugin tryies to open Unpack dialog for its unpacker, but its unpacker is not found: Unable to found unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)
+// plugin tries to open Unpack dialog for its unpacker, but its unpacker is not found: Unable to find unpacker for %s plugin (see Unpackers in Unpack Dialog Box page in Configuration)
 #define IDS_PLUGINUNPACKERNOTFOUND    12406
 
 // dialog Confirm ADS Loss: when working with file (instead of directory): "File:"
@@ -1937,7 +1938,7 @@
 
 // ****************************************************************************
 // ****************************************************************************
-// konec sekce obycejnych textu (misto pro vkladani dalsich obyc. textu)
+// End of the ordinary text section (space for adding more ordinary text).
 // ****************************************************************************
 // ****************************************************************************
 
@@ -2269,7 +2270,7 @@
 #define IDS_FFMENU_FIND_DUPLICATES      13359
 
 //
-// archiv context menu
+// archive context menu
 //
 
 #define IDS_ARCHIVEMENU_OPEN            13360
@@ -2330,7 +2331,7 @@
 #define IDS_CNFRM_CLOSEARCHIVE          13477
 #define IDS_CNFRM_ONCREATEDIR           13478
 
-//                        rezervovat do 13550
+//                        reserve up to 13550
 #define IDS_CANCLOSESALAMANDER          13551
 
 // Do you want to close Find?
@@ -2556,11 +2557,11 @@
 // Compare Directories: after comparing: if some pairs of files were different exactly one or two hours, this message informs user that these differences (exact number) were ignored
 #define IDS_CMPDIRS_IGNDSTDIFFSEXACT    13929
 
-// Copy/Move dialog box options drop down menu: Reset and hide options
+// Copy/Move dialog box options drop-down menu: Reset and hide options
 #define IDS_COPYMOVE_RESETHIDE          13932
-// Copy/Move dialog box options drop down menu: Save options as defaults
+// Copy/Move dialog box options drop-down menu: Save options as defaults
 #define IDS_COPYMOVE_SAVEASDEF          13933
-// Copy/Move dialog box options drop down menu: Reset options and defaults
+// Copy/Move dialog box options drop-down menu: Reset options and defaults
 #define IDS_COPYMOVE_RESETDEFS          13934
 
 // information: rename config_.reg to config.reg + why to clear key with configuration before import

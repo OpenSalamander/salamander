@@ -70,7 +70,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
             char replyBuf[700];
             BOOL setStartTimeIfConnected = TRUE;
             BOOL sslErrReconnect = FALSE;     // TRUE = reconnect because of SSL errors
-            BOOL fastSSLErrReconnect = FALSE; // TRUE = server certificate changed, an immediate reconnect is desirable (without 20 seconds of waiting)
+            BOOL fastSSLErrReconnect = FALSE; // TRUE = the server certificate changed; an immediate reconnect is desirable (without waiting 20 seconds)
             while (ReconnectIfNeeded(notInPanel, panel == PANEL_LEFT, parent,
                                      userBuf, userBufSize, &reconnected,
                                      setStartTimeIfConnected, totalAttemptNum,
@@ -109,7 +109,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                                userBuf, userBufSize, &success,
                                                replyBuf, 700, NULL,
                                                totalAttemptNum, NULL, TRUE, NULL);
-                    if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+                    if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be downloaded
                     {                                       // downloaded (it is on the current path in the panel)
                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                         SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
@@ -184,7 +184,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     else // failed to open the "listen" socket for accepting the data connection from the server ->
                     {    // connection closed (so the standard Retry can be used)
                         ok = FALSE;
-                        if (canRetry) // "retry" is allowed, proceed to the next reconnect
+                        if (canRetry) // "retry" is allowed, proceed to the next reconnect attempt
                         {
                             run = TRUE;
                             retryMsgAux = retryMsgBuf;
@@ -192,7 +192,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     }
                 }
 
-                if (ok) // if we are still connected, change the transfer mode according to 'asciiMode' (ignore success)
+                if (ok) // if we are still connected, change the transfer mode according to 'asciiMode' (ignore the result)
                 {
                     if (!SetCurrentTransferMode(parent, asciiMode, NULL, NULL, 0, FALSE, &canRetry,
                                                 retryMsgBuf, 300))
@@ -234,7 +234,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     int asciiTrForBinFileHowToSolve = 0;
                     if (dataConnection->IsAsciiTrForBinFileProblem(&asciiTrForBinFileHowToSolve))
                     {                                         // the "ascii transfer mode for binary file" problem was detected
-                        if (asciiTrForBinFileHowToSolve == 0) // we should ask the user
+                        if (asciiTrForBinFileHowToSolve == 0) // ask the user
                         {
                             INT_PTR res = CViewErrAsciiTrForBinFileDlg(parent).Execute();
                             if (res == IDOK)
@@ -405,7 +405,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                         dataConnection->WaitForFileClose(5000); // max. 5 seconds
 
                         if (run) // go for another attempt; clean the target file just in case (it may have been created before the error/interruption)
-                        {        // we are not in any critical section, so even if the disk operation stalls for a while, nothing happens
+                        {        // we are not in any critical section, so it does not matter if the disk operation stalls for a while
                             SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL);
                             DeleteFile(tgtFileName);
                         }
@@ -420,7 +420,7 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                                 if (*newFileSize != CQuadWord(0, 0))
                                     TRACE_E("CControlConnectionSocket::DownloadOneFile(): unexpected situation: file was not created, but its size is not null!");
 
-                                // we are not in any critical section, so even if the disk operation stalls for a while, nothing happens
+                                // we are not in any critical section, so it does not matter if the disk operation stalls for a while
                                 SetFileAttributes(tgtFileName, FILE_ATTRIBUTE_NORMAL); // so a read-only file can be overwritten
                                 HANDLE file = HANDLES_Q(CreateFile(tgtFileName, GENERIC_WRITE,
                                                                    FILE_SHARE_READ, NULL,
@@ -453,8 +453,8 @@ void CControlConnectionSocket::DownloadOneFile(HWND parent, const char* fileName
                     }
                 }
 
-                if (dataConnection->IsConnected())       // close the "data connection" if needed; the system attempts a "graceful"
-                    dataConnection->CloseSocketEx(NULL); // shutdown (we do not learn the result)
+                if (dataConnection->IsConnected())       // close the "data connection" if needed; the system attempts a "graceful" shutdown
+                    dataConnection->CloseSocketEx(NULL); // shutdown (the result is not available)
 
                 if (!run)
                     break;
@@ -530,7 +530,7 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                                        userBuf, userBufSize, &success,
                                        replyBuf, 700, NULL,
                                        totalAttemptNum, NULL, TRUE, NULL);
-            if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+            if (ok && !success && workPath[0] != 0) // send succeeded, but the server reports an error (+ignore errors with an empty path) -> file cannot be downloaded
             {                                       // downloaded (it is on the current path in the panel)
                 _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                 SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
@@ -561,7 +561,7 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                     UploadListingCache.ReportCreateDirs(hostBuf, userBuffer, portBuf, workPath,
                                                         GetFTPServerPathType(workPath), newName, FALSE);
                 }
-                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // success is returned (should be 257)
+                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS && // a success reply is returned (should be 257)
                     FTPGetDirectoryFromReply(replyBuf, (int)strlen(replyBuf), newPath, FTP_MAX_PATH))
                 {                   // directory 'newPath' has just been created
                     newName[0] = 0; // no focus after refresh yet
@@ -578,12 +578,12 @@ BOOL CControlConnectionSocket::CreateDir(char* changedPath, HWND parent, char* n
                         if (FTPIsTheSameServerPath(pathType, newPath, workPath))
                             lstrcpyn(newName, cutDir, 2 * MAX_PATH); // directory name for focus after the refresh
                     }
-                    else // probably the server returns a relative directory name in reply "257" (e.g. warftpd)
+                    else // the server probably returns a relative directory name in reply "257" (e.g. warftpd)
                     {
                         lstrcpyn(newName, newPath, 2 * MAX_PATH); // directory name for focus after the refresh
                     }
                 }
-                else // error (including unexpected format of reply "257")
+                else // error (including an unexpected format of reply "257")
                 {
                     if (!retSuccess) // do not display an error message for a successful reply
                     {
@@ -706,7 +706,7 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                                                userBuf, userBufSize, &success,
                                                replyBuf, 700, NULL,
                                                totalAttemptNum, NULL, TRUE, NULL);
-                    if (ok && !success && workPath[0] != 0) // send succeeded but the server reports an error (+ignore errors with an empty path) -> file cannot be
+                    if (ok && !success && workPath[0] != 0) // send succeeded, but the server reports an error (+ignore errors for an empty path) -> file cannot be downloaded
                     {                                       // downloaded (it is on the current path in the panel)
                         _snprintf_s(errBuf, _TRUNCATE, LoadStr(IDS_CHANGEWORKPATHERROR), workPath, replyBuf);
                         SalamanderGeneral->SalMessageBox(parent, errBuf, LoadStr(IDS_FTPERRORTITLE),
@@ -733,7 +733,7 @@ BOOL CControlConnectionSocket::QuickRename(char* changedPath, HWND parent, const
                                                &ftpReplyCode, replyBuf, 700, FALSE, FALSE, FALSE, &canRetry,
                                                retryMsgBuf, 300, NULL))
                             {
-                                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // success is returned (should be 250)
+                                if (FTP_DIGIT_1(ftpReplyCode) == FTP_D1_SUCCESS) // success returned (should be 250)
                                 {                                                // quick rename completed successfully - leave the new name in 'newName' so it can be focused after the refresh
                                     retSuccess = TRUE;
                                     if (workPath[0] != 0)
@@ -840,7 +840,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
     CSetWaitCursorWindow* winParent = NULL;
     if (parentIsEnabled) // we cannot leave the parent enabled (the wait window is not modal)
     {
-        // store the focus from 'parent' (if the focus is not from 'parent', save NULL)
+        // save the focused window from 'parent' (if the focus is not in 'parent', save NULL)
         focusedWnd = GetFocus();
         HWND hwnd = focusedWnd;
         while (hwnd != NULL && hwnd != parent)
@@ -864,7 +864,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
 
     HANDLES(EnterCriticalSection(&SocketCritSect));
     int logUID = LogUID;                                  // log UID of this connection
-    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE if keep-alive is not handled one level above (it must be handled here)
+    BOOL handleKeepAlive = KeepAliveMode != kamForbidden; // TRUE if keep-alive is not handled at a higher level (it must be handled here)
     DWORD auxServerIP = ServerIP;
     int proxyPort = ProxyServer != NULL ? ProxyServer->ProxyPort : 0;
     HANDLES(LeaveCriticalSection(&SocketCritSect));
@@ -999,7 +999,7 @@ BOOL CControlConnectionSocket::OpenForListeningAndWaitForRes(HWND parent, CDataC
             }
             doNotCloseCon = TRUE;
         }
-        else // connection error on the proxy server; log the error, close the control connection, and perform "retry"
+        else // connection error when connecting to the proxy server; log the error, close the control connection, and retry
         {
             in_addr srvAddr;
             srvAddr.s_addr = auxServerIP;

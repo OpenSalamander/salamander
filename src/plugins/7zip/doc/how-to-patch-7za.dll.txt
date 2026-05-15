@@ -2,7 +2,7 @@
 
 In Salamander 3.07 we finally updated 7za.dll to the latest 16.02 after many years.
 Users reported security holes in the old build: https://forum.altap.cz/viewtopic.php?t=32446
-We maintain two branches in the E:\Source\7zip repository: default and ALTAP. Procedure:
+We use the E:\Source\7zip repository for patching; it has two branches: default and ALTAP. Procedure:
 1. download the current 7-Zip sources (for example 7z1602-src.7z)
 2. update the working copy in E:\Source\7zip to the default branch
 3. remove everything except the .hg directory
@@ -11,8 +11,8 @@ We maintain two branches in the E:\Source\7zip repository: default and ALTAP. Pr
 6. merge into the ALTAP branch, producing a new 7-Zip version with the ALTAP patches
 7. walk through every directory in E:\Source\salamand\plugins\7zip\7za and
    synchronize any directories that appeared in step 6
-8. if Igor added or removed a cpp file, you might need to add it to the project –
-   the compiler will complain otherwise
+8. if Igor added or removed a .cpp file, you might need to update the project accordingly -
+   this will show up when you try to compile the project
 
 
 ==================================================================================================
@@ -30,7 +30,7 @@ I. Adjust the sources so they build with older MS SDKs (that was my case)
 
    7za uses COM, so GUIDs must be defined for individual interfaces and who knows what else.
    It relies on the DEFINE_GUID macro, which clashes with the macro of the same name in MS SDKs.
-   Therefore we expand the macro manually:
+   For example, we expand these macros manually:
 
       DEFINE_GUID(CLSID_CCrypto7zAESEncoder,
       0x23170F69, 0x40C1, 0x278B, 0x06, 0xF1, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00);
