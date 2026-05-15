@@ -1,45 +1,46 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
-// makro TRACE_ENABLE - zapoji vypis hlasek na server
-// makro MULTITHREADED_TRACE_ENABLE - zapoji premapovavani TID na UTID
-// makro TRACE_TO_FILE - zapoji vypis hlasek do souboru v TEMPu (vyzaduje definici TRACE_ENABLE)
-// makro TRACE_IGNORE_AUTOCLEAR - zakaze Trace Serveru pri pripojeni tohoto procesu smazat vsechny zpravy,
-//                                i kdyz to ma zaple v nastaveni (hodi se pro utilitky spoustene za behu
-//                                hlavniho programu, u kterych je mazani zprav nezadouci)
-// makro __TRACESERVER - includeno z trace-serveru
+// macro TRACE_ENABLE - enables sending messages to the server
+// macro MULTITHREADED_TRACE_ENABLE - enables remapping TID to UTID
+// macro TRACE_TO_FILE - enables writing messages to a file in TEMP (requires TRACE_ENABLE to be defined)
+// macro TRACE_IGNORE_AUTOCLEAR - prevents Trace Server from clearing all messages when this process connects,
+//                                even if that is enabled in the settings (useful for utilities started while the main
+//                                program is running, where clearing messages is undesirable)
+// macro __TRACESERVER - included from trace-server
 
-// modul TRACE je pripraven na multi-threadove aplikace
+// TRACE module is ready for multi-threaded applications
 
-// POZOR: TRACE_C se nesmi pouzivat v DllMain knihoven, ani v zadnem kodu, ktery
-//        se z DllMainu vola, jinak dojde k deadlocku, vice viz implementace
-//        C__Trace::SendMessageToServer
+// WARNING: TRACE_C must not be used in a library's DllMain, or in any code that
+//        is called from DllMain, otherwise a deadlock will occur; see the
+//        implementation of C__Trace::SendMessageToServer
 
 #if defined(__TRACESERVER) || defined(TRACE_ENABLE)
 
 enum C__MessageType
 {
-    // druh message
+    // message type
     __mtInformation,
     __mtError,
 
-    // nastaveni nazvu procesu / threadu
+    // setting the process / thread name
     __mtSetProcessName,
     __mtSetThreadName,
 
-    // druh message - unicodove varianty zprav
+    // message type - Unicode message variants
     __mtInformationW,
     __mtErrorW,
 
-    // nastaveni nazvu procesu / threadu - unicodove varianty zprav
+    // setting the process / thread name - Unicode message variants
     __mtSetProcessNameW,
     __mtSetThreadNameW,
 
-    // zakazeme Trace Serveru pri pripojeni tohoto procesu smazat vsechny zpravy, i kdyz to ma
-    // zaple v nastaveni (hodi se pro utilitky spoustene za behu hlavniho programu, u kterych je
-    // mazani zprav nezadouci)
+    // prevents Trace Server from clearing all messages when this process connects, even if that is
+    // enabled in the settings (useful for utilities started while the main program is running, where
+    // clearing messages is undesirable)
     __mtIgnoreAutoClear,
 };
 
@@ -109,7 +110,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -138,7 +139,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate old buffer, if necessary
             if (pbase())
             {
                 traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
@@ -214,7 +215,7 @@ public:
     }
 
 protected:
-    // store the element in the buffer, growing it if neccessary
+    // store the element in the buffer, growing it if necessary
     virtual int_type overflow(int_type element = traits_type::eof())
     {
         // if EOF, just return success
@@ -243,7 +244,7 @@ protected:
             if (ptr == 0)
                 return traits_type::eof();
 
-            // copy data and dealocate old buffer, if neccessary
+            // copy data and deallocate old buffer, if necessary
             if (pbase())
             {
                 traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
@@ -357,14 +358,14 @@ extern const TCHAR* __OPEN_CONNECTION_MUTEX;
 extern const TCHAR* __CONNECT_DATA_READY_EVENT_NAME;
 extern const TCHAR* __CONNECT_DATA_ACCEPTED_EVENT_NAME;
 
-#define __PIPE_SIZE 100 // maximum dat v pipe (v kB)
+#define __PIPE_SIZE 100 // maximum data in the pipe (in kB)
 #define __COMMUNICATION_WAIT_TIMEOUT 5000
 
 //****************************************************************************
 //
 // CClientServerInitData
 //
-// tato struktura se pri zahajeni komunikace predava od clienta do serveru
+// This structure is passed from the client to the server when communication starts.
 
 struct C__ClientServerInitData
 {
@@ -380,45 +381,45 @@ struct C__ClientServerInitData
 //
 // CPipeDataHeader
 //
-// pomoci teto struktury komunikuje client se serverem pres pipu
+// This structure is used by the client and server to communicate through the pipe
 
-// Pro Type == __mtInformation || Type == __mtError
-// maji promenne tyto vyznamy:
+// For Type == __mtInformation || Type == __mtError
+// the variables have the following meanings:
 struct C__PipeDataHeader
 {
-    int Type;                // typ zpravy (C__MessageType)
-    DWORD ThreadID;          // pro upresneni jeste ID threadu
-    DWORD UniqueThreadID;    // unikatni cislo threadu (systemove ID se opakuji)
-    SYSTEMTIME Time;         // cas vzniku message
-    DWORD MessageSize;       // delka bufferu potrebneho pro prijem textu
-    DWORD MessageTextOffset; // offset textu ve spolecnem bufferu s filem
-    DWORD Line;              // cislo radky
-    double Counter;          // presne pocitadlo v ms
+    int Type;                // message type (C__MessageType)
+    DWORD ThreadID;          // thread ID for additional identification
+    DWORD UniqueThreadID;    // unique thread number (system IDs are reused)
+    SYSTEMTIME Time;         // message creation time
+    DWORD MessageSize;       // length of the buffer needed to receive the text
+    DWORD MessageTextOffset; // offset of the text in the buffer shared with the file name
+    DWORD Line;              // line number
+    double Counter;          // high-resolution counter in ms
 };
 
 #define __SIZEOF_PIPEDATAHEADER 48
 
-// Pro Type == __mtSetProcessName
-// C__MessageType Type;              // typ zpravy
-// DWORD          MessageSize        // delka bufferu potrebneho pro prijem nazvu
+// For Type == __mtSetProcessName
+// C__MessageType Type;              // message type
+// DWORD          MessageSize        // length of the buffer needed to receive the name
 
 // Pro Type == __mtSetThreadName
-// C__MessageType Type;              // typ zpravy
+// C__MessageType Type;              // message type
 // DWORD          UniqueThreadID;    // Unique Thread ID
-// DWORD          MessageSize        // delka bufferu potrebneho pro prijem nazvu
+// DWORD          MessageSize        // length of the buffer needed to receive the name
 
 // Pro Type == __mtIgnoreAutoClear
-// C__MessageType Type;              // typ zpravy
-// DWORD      ThreadID;              // 0 = neignorovat, 1 = ignorovat auto-clear na Trace Serveru
+// C__MessageType Type;              // message type
+// DWORD      ThreadID;              // 0 = do not ignore, 1 = ignore auto-clear in Trace Server
 
-// aktualni verze clientu (porovnava se s verzi serveru)
+// current client version (compared with the server version)
 #define TRACE_CLIENT_VERSION 7
 
 #endif // defined(__TRACESERVER) || defined(TRACE_ENABLE)
 
 #ifndef TRACE_ENABLE
 
-// aby nedochazelo k problemum se stredniky v nize nadefinovanych makrech
+// to avoid problems with semicolons in the macros defined below
 inline void __TraceEmptyFunction() {}
 
 #define TRACE_MI(file, line, str) __TraceEmptyFunction()
@@ -431,14 +432,14 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_MEW(file, line, str) __TraceEmptyFunction()
 #define TRACE_E(str) __TraceEmptyFunction()
 #define TRACE_EW(str) __TraceEmptyFunction()
-// pri crashi softu pres DebugBreak() nejde vystopovat, kde lezi volani
-// TRACE_C/TRACE_MC, protoze adresa exceptiony je kdesi v ntdll.dll
-// a sekce Stack Back Trace bug reportu muze obsahovat nesmysly, pokud
-// funkce volajici TRACE_C/TRACE_MC nepouziva stary jednoduchy model
-// ukladani a prace s EBP/ESP, ovsem i v tom pripade je zde jen adresa
-// odkud byla tato funkce volana (ne primo adresa TRACE_C/TRACE_MC),
-// proto aspon prozatim pouzivame stary primitivni zpusob crashe
-// zapisem na NULL
+// when the program crashes through DebugBreak(), it is impossible to trace where
+// TRACE_C/TRACE_MC was called, because the exception address ends up somewhere in ntdll.dll,
+// and the Stack Back Trace section of the bug report may contain nonsense if
+// the function calling TRACE_C/TRACE_MC does not use the old simple model for
+// saving and using EBP/ESP; even then, only the address from which
+// that function was called is available (not the TRACE_C/TRACE_MC address itself),
+// so at least for now we use the old primitive way of crashing
+// by writing to NULL
 //#define TRACE_MC(file, line, str) DebugBreak()
 //#define TRACE_MCW(file, line, str) DebugBreak()
 //#define TRACE_C(str) DebugBreak()
@@ -479,7 +480,7 @@ uintptr_t __TRACE_beginthreadex(void* security, unsigned stack_size,
 
 #endif // MULTITHREADED_TRACE_ENABLE
 
-// info-trace, manualne zadana pozice v souboru
+// info-trace, manually specified file position
 #define TRACE_MI(file, line, str) \
     (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.StoreLastError(), \
      __Trace.OStream() << str, __Trace) \
@@ -502,7 +503,7 @@ uintptr_t __TRACE_beginthreadex(void* security, unsigned stack_size,
 #define TRACE_W(str) TRACE_I(str)
 #define TRACE_WW(str) TRACE_IW(str)
 
-// error-trace, manualne zadana pozice v souboru
+// error-trace, manually specified file position
 #define TRACE_ME(file, line, str) \
     (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.StoreLastError(), \
      __Trace.OStream() << str, __Trace) \
@@ -521,15 +522,15 @@ uintptr_t __TRACE_beginthreadex(void* security, unsigned stack_size,
 #define TRACE_E(str) TRACE_ME(__FILE__, __LINE__, str)
 #define TRACE_EW(str) TRACE_MEW(__WFILE__, __LINE__, str)
 
-// fatal-error-trace (CRASHING TRACE), manualne zadana pozice v souboru;
-// zastavime soft v debuggeru, pro snadne odladeni problemu, ktery prave vznikl,
-// release verze spadne a problem snad bude jasny z call-stacku v bug-reportu;
-// nepouzivame DebugBreak(), protoze pri crashi softu nejde vystopovat, kde
-// lezi volani DebugBreak(), protoze adresa exceptiony je kdesi v ntdll.dll
-// a sekce Stack Back Trace bug reportu muze obsahovat nesmysly, pokud
-// funkce, ze ktere volame TRACE_C/MC, nepouziva stary jednoduchy model ukladani
-// a prace s EBP/ESP (to zalezi na kompileru a zaplych optimalizacich), proto
-// aspon prozatim pouzivame stary primitivni zpusob crashe zapisem na NULL
+// fatal-error-trace (CRASHING TRACE), manually specified source location;
+// stop the program in the debugger so the problem that just occurred is easier to debug;
+// the release build crashes, and the problem will hopefully be clear from the call stack in the bug report;
+// we do not use DebugBreak(), because when the program crashes that way, it is impossible to tell where
+// TRACE_C/MC was called: the exception address ends up somewhere in ntdll.dll,
+// and the Stack Back Trace section of the bug report may contain nonsense if
+// the function that calls TRACE_C/MC does not use the old simple model for
+// saving and using EBP/ESP (this depends on the compiler and enabled optimizations), so
+// at least for now we use the old primitive way of crashing by writing to NULL
 #define TRACE_MC(file, line, str) \
     ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.StoreLastError(), \
       __Trace.OStream() << str, __Trace) \
@@ -587,7 +588,7 @@ protected:
     int UniqueThreadID;
 
     DWORD CacheTID[__TRACE_CACHE_SIZE];
-    DWORD CacheUID[__TRACE_CACHE_SIZE]; // hodnota -1 -> invalidni zaznam
+    DWORD CacheUID[__TRACE_CACHE_SIZE]; // value -1 -> invalid record
 
 public:
     C__TraceThreadCache();
@@ -613,29 +614,29 @@ public:
 #endif // MULTITHREADED_TRACE_ENABLE
 
 protected:
-    HANDLE HWritePipe;                  // zapisovy konec pipe
-    HANDLE HPipeSemaphore;              // slouzi pro alokaci mista v pipe (1x wait = 1kB)
-    DWORD BytesAllocatedForWriteToPipe; // kolik mista pro zapis je prave naalokovano v pipe
+    HANDLE HWritePipe;                  // write end of the pipe
+    HANDLE HPipeSemaphore;              // used to allocate space in the pipe (1x wait = 1 kB)
+    DWORD BytesAllocatedForWriteToPipe; // amount of write space currently allocated in the pipe
 
 #ifdef TRACE_TO_FILE
-    HANDLE HTraceFile; // soubor otevreny pro zapis v TEMPu, ukladaji se do nej vsechny message
+    HANDLE HTraceFile; // file opened for writing in TEMP; all messages are stored there
 #ifdef __TRACESERVER
-    WCHAR TraceFileName[MAX_PATH]; // jmeno souboru HTraceFile
-#endif // __TRACESERVER
+    WCHAR TraceFileName[MAX_PATH]; // HTraceFile file name
+#endif // TRACE_TO_FILE
 #endif // TRACE_TO_FILE
 
-    LARGE_INTEGER StartPerformanceCounter; // pro presny counter - uvodni hodnota
-    LARGE_INTEGER PerformanceFrequency;    // pro presny counter
+    LARGE_INTEGER StartPerformanceCounter; // initial value of the high-resolution counter
+    LARGE_INTEGER PerformanceFrequency;    // high-resolution counter frequency
     BOOL SupportPerformanceFrequency;
 
-    const char* File;                    // pomocne promenne pro predani jmena souboru (ANSI)
-    const WCHAR* FileW;                  // pomocne promenne pro predani jmena souboru (unicode)
-    int Line;                            // a cisla radku, odkud se vola TRACE_X()
-    C__StringStreamBuf TraceStringBuf;   // string buffer drzici data trace streamu (ANSI)
-    C__StringStreamBufW TraceStringBufW; // string buffer drzici data trace streamu (unicode)
-    C__TraceStream TraceStrStream;       // vlastni trace stream (ANSI)
-    C__TraceStreamW TraceStrStreamW;     // vlastni trace stream (unicode)
-    DWORD StoredLastError;               // GetLastError() pred TRACE_? makrem
+    const char* File;                    // helper variables for passing the file name (ANSI)
+    const WCHAR* FileW;                  // helper variables for passing the file name (Unicode)
+    int Line;                            // and the line number from which TRACE_X() is called
+    C__StringStreamBuf TraceStringBuf;   // string buffer holding trace stream data (ANSI)
+    C__StringStreamBufW TraceStringBufW; // string buffer holding trace stream data (Unicode)
+    C__TraceStream TraceStrStream;       // trace stream object (ANSI)
+    C__TraceStreamW TraceStrStreamW;     // trace stream object (Unicode)
+    DWORD StoredLastError;               // GetLastError() value before the TRACE_? macro
 
 public:
     C__Trace();

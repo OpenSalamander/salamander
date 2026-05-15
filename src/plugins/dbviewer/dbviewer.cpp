@@ -16,7 +16,7 @@
 const char* READABLE_EN_PLUGIN_NAME = "Database Viewer";
 
 /*
-TODO: enabler sketch; Salamander needs to implement the offset method (enablersOffset)
+TODO: unfinished enablers; Salamander needs to implement the offset method (enablersOffset)
       also add a comment for this variable in SPL_GUI.H
       introduce it in DBVIEWER.CPP and DEMOPLUG.CPP, where enablers are global for windows from multiple threads -> conflict
 */
@@ -197,7 +197,7 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 
 struct CButtonData
 {
-    int ImageIndex;                   // zero base index
+    int ImageIndex;                   // zero-based index
     WORD ToolTipResID;                // resource ID with the tooltip string
     WORD ID;                          // universal command
     CViewerWindowEnablerEnum Enabler; // control variable used to enable the button
@@ -657,7 +657,7 @@ unsigned WINAPI ViewerThreadBody(void* param)
                                  window) != NULL)
             {
                 CALL_STACK_MESSAGE1("ViewerThreadBody::ShowWindow");
-                // NOTE! icons obtained without the LR_SHARED flag must be destroyed in WM_DESTROY
+                // NOTE: icons obtained without LR_SHARED must be destroyed in WM_DESTROY.
                 SendMessage(window->HWindow, WM_SETICON, ICON_BIG,
                             (LPARAM)LoadIcon(DLLInstance, MAKEINTRESOURCE(IDI_MAIN)));
                 SendMessage(window->HWindow, WM_SETICON, ICON_SMALL,
@@ -1220,9 +1220,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = BeginDeferWindowPos(2);
             if (hdwp != NULL)
             {
-                // +4: when increasing the window width the last 4 pixels of the rebar were not redrawn
-                // in the rebar; even after hours I could not find the reason; it works in Salamander;
-                // for now this workaround will do; maybe I'll remember the problem later
+                // +4: when increasing the window width, the last 4 pixels of the rebar were not redrawn
+                // in the rebar; even after several hours I did not find the cause; it works in Salamander;
+                // using this workaround for now; the cause may become clear later
                 hdwp = DeferWindowPos(hdwp, HRebar, NULL,
                                       0, 0, r.right + 4, rebarHeight,
                                       SWP_NOACTIVATE | SWP_NOZORDER);
@@ -1505,7 +1505,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
 
                 if (ok)
-                { // we've got a new name
+                { // new name received
                     if (!openedFileName || !*openedFileName || _stricmp(fileName, openedFileName))
                     {
 

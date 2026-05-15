@@ -15,11 +15,11 @@
 <h1>Operation</h1>
 
 <p>This dialog box is used by the following operations: copy and move from/to the FTP server and
-change attributes and delete on the FTP server. All operations are running on background, so you
-can switch back to the main window of Open Salamander and continue in work.
+change attributes and delete on the FTP server. All operations run in the background, so you
+can switch back to the main window of Open Salamander and continue working.
 </p>
 
-<p>See the Remarks section below for better understanding of this dialog behaviour.
+<p>See the Remarks section below for a better understanding of this dialog behavior.
 </p>
 
 <h4>Options</h4>
@@ -37,17 +37,17 @@ for user).
 
 <dt><i>Status</i></dt>
 <dd>Displays status of the operation (e.g. how many bytes were already copied, what
-is the total trasfer rate, or how many files were deleted).
+is the total transfer rate, or how many files were deleted).
 </dd>
 
 <dt><i>Progress</i></dt>
 <dd>Shows the progress of the operation in percents. It is the ratio between finished part
 of operation and total size of operation. Finished part of operation is sum of successfully
-finished items (operations in the Operations listview), skipped items, and finished part
+finished items (operations in the Operations list view), skipped items, and finished part
 of currently processed items.
 </dd>
 
-<dt><i>Close this dialog when operation finishes</i></dt>
+<dt><i>Close this dialog when the operation finishes</i></dt>
 <dd>When checked, this dialog box is closed automatically when the operation is
 finished (all items are successfully finished or skipped). Otherwise you must close
 this dialog box manually. See also the <i>Close operation dialog automatically when operation
@@ -61,9 +61,9 @@ this button again to hide operation details.
 </dd>
 
 <dt><i>Errors</i></dt>
-<dd>Use this button to show errors which occured during operation. It shows
+<dd>Use this button to show errors which occurred during operation. It shows
 operation details (the dialog box is enlarged) and filters items in the Operations
-listview only to items with error or user prompt and skipped items.
+list view only to items with error or user prompt and skipped items.
 </dd>
 
 <dt><i>Pause/Resume</i></dt>
@@ -79,14 +79,14 @@ resume operations in all connections.
 <dt><i>Connections: Solve Error, Add, Stop, Pause/Resume</i></dt>
 <dd>Contains all connections used in this operation. It shows identification number
 of connection (ID column) and what is happening in the connection (Action and Status
-columns) for each connection. You can focus any connection in this listview and than
-click on buttons under this listview.
+columns) for each connection. You can focus any connection in this list view and then
+click the buttons under this list view.
 
-<p>Use the Solve Error button (or double click) on the connection in error state to
+<p>Use the Solve Error button (or double-click) on the connection in error state to
 open the Error Connecting to FTP Server dialog box where you can try to solve this
 error.</p>
 
-<p>Click the Add button to add new connection for the operation. You may use as many
+<p>Click the Add button to add a new connection for the operation. You may use as many
 connections as you want but reasonable number of connections is five or less. You
 may try to add more connections but you will probably see that it will not shorten total
 operation time.</p>
@@ -99,13 +99,13 @@ connection with paused operation is focused, the Pause button will change to the
 Resume button. Use it to resume the operation in focused connection.</p>
 
 <p>You can drag (using the left mouse button) the bottom edge of the Connections
-listview to change the ratio between heights of the Connections listview and
-the Operations listview. It is possible only if you enlarge this dialog to provide
-some space for these listviews.</p>
+list view to change the ratio between heights of the Connections list view and
+the Operations list view. It is possible only if you enlarge this dialog to provide
+some space for these list views.</p>
 
 <p>If you need to see the FTP log for some connection, open the
 <a href="dlgboxes_ftplogswindow.htm">FTP Logs window</a> and then focus connection
-in this listview, its log should be activated in the FTP Logs window (it assumes that
+in this list view, its log should be activated in the FTP Logs window (it assumes that
 <i>Options/Always show log for active panel</i> is checked in the FTP Logs window).
 To open the FTP Logs window, switch to the main window of Open Salamander and choose
 the Show Logs command from the Plugins/FTP Client menu.</p>
@@ -114,15 +114,15 @@ the Show Logs command from the Plugins/FTP Client menu.</p>
 <dt><i>Operations: Show only errors, Solve Error, Retry, Skip</i></dt>
 <dd>Contains all operations that must be finished to complete the entire operation.
 It shows operation description and status (see Remarks section for details on operation
-status). You can focus any operation in this listview and than click on buttons under
-this listview.
+status). You can focus any operation in this list view and then click the buttons under
+this list view.
 
 <p>If the Show only errors check box is checked, items in the Operations
-listview are reduced only to items with error or user prompt and skipped items.
+list view are reduced only to items with error or user prompt and skipped items.
 </p>
 
-<p>Use the Solve Error button (or double click) on the focused operation to open
-a dialog box where you can try to solve the error which has occured during
+<p>Use the Solve Error button (or double-click) on the focused operation to open
+a dialog box where you can try to solve the error which has occurred during
 processing of the focused operation, provide some user input needed for further
 processing of the focused operation, or retry the focused operation if it was
 skipped (automatically or by user). See the <a href="dlgboxes_solveerror.htm">Solve
@@ -138,14 +138,14 @@ postponed.
 
 <p>Click the Skip button to skip the focused operation (it will not be processed).
 It is possible only if the operation is waiting for processing or for some user
-input or if the operation was not finished due to some error.
+input or if the operation was not finished because of an error.
 </p>
 
 <p>You may also want to stop processing of some operation. It is not directly supported
 but you can use the following procedure. Pause all connections (click the Pause button),
 find the connection with the operation and stop it (focus it and click the Stop button).
 Focus the operation (it should be waiting for processing now) and click the Skip button.
-Then resume all connections (click the Resume button) and you can also add new connection
+Then resume all connections (click the Resume button) and you can also add a new connection
 (click the Add button).
 </p>
 </dd>
@@ -155,27 +155,27 @@ Then resume all connections (click the Resume button) and you can also add new c
 
 <h4>Remarks</h4>
 
-<p>All operations use the connection from panel at the start. It saves time needed for opening new connection and
-bypasses problem with opening next connection to the FTP server with limited number of allowed
-connections from one client (from one IP address). The connection is returned back to panel when
-operation finishes or when you try to stop this connection manually (see the Stop
+<p>All operations use the connection from the panel at the start. This saves the time needed to open a new connection and
+bypasses the problem of opening the next connection to the FTP server with a limited number of allowed
+connections from one client (from one IP address). The connection is returned to the panel when
+the operation finishes or when you try to stop this connection manually (see the Stop
 button above). If you switch back to the main window of Open Salamander before the connection
 is returned and panel needs to use the connection (e.g. to refresh panel content), you will
-be prompted if you want to open new connection.
+be prompted if you want to open a new connection.
 </p>
 
 <p>You can use more connections for any operation. It can save a lot of time especially when
-the operation copies many small files, changes attributes to many files and directories,
-or delete many files and directories. The reason is that while the connection is negotiating
-(it sends FTP command and then waits for server reply and then send next FTP command and
-again waits for reply, etc.), it cannot use the full bandwidth, so other connections can try
-to use the rest of bandwidth.
+the operation copies many small files, changes attributes on many files and directories,
+or deletes many files and directories. The reason is that while the connection is negotiating
+(it sends an FTP command and then waits for the server reply and then sends the next FTP command and
+again waits for the reply, etc.), it cannot use the full bandwidth, so other connections can try
+to use the rest of the bandwidth.
 </p>
 
 <p>The plugin always tries to finish the largest possible part of the operation. For example:
 if you copy three files and the second file needs your attention because target file already
 exists, the third file is copied without waiting for anything. The second file is copied
-as soon as you answer the overwrite prompt. We recommend to set the default behaviour of file
+as soon as you answer the overwrite prompt. We recommend setting the default behavior of file
 operations according to your needs to avoid unnecessary user prompts (e.g. overwrite prompt), see
 <a href="config_operation1.htm">Configuration/Operations 1</a> and
 <a href="config_operation2.htm">Configuration/Operations 2</a>.
@@ -190,21 +190,21 @@ any number of these operations simultaneously).
 </p>
 
 <p>All operations are stored in the list which is displayed in the Operations
-listview. Operation status can be: "waiting" (it is waiting for processing), "postponed"
+list view. Operation status can be: "waiting" (it is waiting for processing), "postponed"
 (further processing is postponed until all dependent operations are successfully finished),
 "processing" (it is processing in some connection now), "finished" (it was successfully
 finished), "ask user" (some user input is needed before further processing), "error" (it
-was not finished because of some error), or "skipped" (it was skipped). Operations without
+was not finished because of an error), or "skipped" (it was skipped). Operations without
 dependencies are "waiting" when added to the list. Operations with dependencies are
 "postponed" and their status changes to "waiting" when all dependent operations are
 "finished" (e.g. "delete source directory" is dependent on all successful "move file"
 operations for files contained in the source directory). Each connection gets some
 "waiting" operation from the list, locks this operation by changing its status to
 "processing", and tries to process it. If some user input is needed during processing
-(e.g. overwrite prompt if target file already exists), the operation status is changed to
+(e.g. overwrite prompt if the target file already exists), the operation status is changed to
 "ask user" and the connection is free for processing next "waiting" operation.
 The same thing happens if the operation is processed successfully, if it is not processed
-due to some error, or if it is skipped. It just changes status of the operation to
+because of an error, or if it is skipped. It just changes status of the operation to
 "finished", "error", or "skipped" and the connection is free for processing next
 "waiting" operation.
 </p>

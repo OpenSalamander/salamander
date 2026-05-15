@@ -132,7 +132,7 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 
 struct CButtonData
 {
-    int ImageIndex;                   // zero base index
+    int ImageIndex;                   // zero-based index
     WORD ToolTipResID;                // resource ID with the tooltip string
     WORD ID;                          // universal command
     CViewerWindowEnablerEnum Enabler; // control variable for enabling the button
@@ -171,7 +171,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         }
     }
 
-    return TRUE; // DLL can be loaded
+    return TRUE; // Allow the DLL to load
 }
 
 //
@@ -567,7 +567,7 @@ struct CTVData
     BOOL Success;
     HANDLE Continue;
     int EnumFilesSourceUID;    // source UID for enumerating files in the viewer
-    int EnumFilesCurrentIndex; // index of the first file in the viewer within the source
+    int EnumFilesCurrentIndex; // index of the first file in the viewer in the source
 };
 
 unsigned WINAPI ViewerThreadBody(void* param)
@@ -644,7 +644,7 @@ unsigned WINAPI ViewerThreadBody(void* param)
     char name[MAX_PATH];
     strcpy(name, data->Name);
     BOOL openFile = data->Success;
-    SetEvent(data->Continue); // let the main thread continue, data are invalid from this point (=NULL)
+    SetEvent(data->Continue); // allow the main thread to continue; the data are invalid from this point on (=NULL)
     data = NULL;
 
     // if everything went smoothly, open the requested file in the window
@@ -957,9 +957,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = BeginDeferWindowPos(2);
             if (hdwp != NULL)
             {
-                // + 4: when increasing the window width the last 4 points of the rebar were not redrawn
-                // in the rebar; even after several hours I did not find the cause; it works in Salamander;
-                // for now I'm handling it like this; maybe I'll remember later where the problem is
+                // + 4: when increasing the window width, the last 4 pixels of the rebar were not redrawn
+                // in the rebar; even after several hours, the cause was not found; it works in Salamander;
+                // for now, this is handled this way; the root cause can be investigated later
                 hdwp = DeferWindowPos(hdwp, HRebar, NULL,
                                       0, 0, r.right + 4, rebarHeight,
                                       SWP_NOACTIVATE | SWP_NOZORDER);
@@ -1136,7 +1136,7 @@ void WINAPI MMVOperationFromDisk(const char* sourcePath, SalEnumSelection2 next,
 
     while ((name = next(data->Parent, 1, &dosName, &isDir, &size, &attr, &lastWrite, nextParam, &errorOccured)) != NULL)
     {
-        //if (errorOccured == SALENUM_ERROR); // SALENUM_CANCEL cannot arrive here
+        //if (errorOccured == SALENUM_ERROR); // SALENUM_CANCEL cannot occur here
         //  data->Success = FALSE; // Petr: I think skipped files do not block further processing (the user knows about them)
 
         if (!isDir)
@@ -1163,7 +1163,7 @@ void WINAPI MMVOperationFromDisk(const char* sourcePath, SalEnumSelection2 next,
         }
     }
 
-    if (errorOccured == SALENUM_CANCEL || // Petr: I think skipped files do not block further processing (the user knows about them), but if the user pressed Cancel we abort the operation
+    if (errorOccured == SALENUM_CANCEL || // Petr: Skipped files should not prevent further processing (the user is aware of them), but if the user pressed Cancel, abort the operation
         data->ProcessedFiles == 0)
     {
         data->Success = FALSE;

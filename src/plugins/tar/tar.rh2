@@ -56,7 +56,7 @@
 #define IDS_GZERR_BADBLOCKTYPE       11270
 // internal error
 #define IDS_ERR_INTERNAL             11271
-// memry allocation error
+// memory allocation error
 #define IDS_ERR_MEMORY               11272
 // CRC error
 #define IDS_GZERR_CRC                11273

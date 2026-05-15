@@ -25,7 +25,7 @@ BOOL FTPCutDirectory(CFTPServerPathType type, char* path, int pathBufSize,
     switch (type)
     {
     case ftpsptUnix:
-    case ftpsptAS400: // although it is not perfect, I think it will be enough (improvement: if it is a /qsys.lib path and the name ends with .mbr, cut two components and return them as the file name: "/QSYS.LIB/GARY.LIB/UCLSRC.FILE/BKPLIB2.MBR" -> "/QSYS.LIB/GARY.LIB" + "UCLSRC.FILE/BKPLIB2.MBR")
+    case ftpsptAS400: // not perfect, but sufficient for now (improvement: for a /qsys.lib path with a name ending in .mbr, cut two components and return them as the file name: "/QSYS.LIB/GARY.LIB/UCLSRC.FILE/BKPLIB2.MBR" -> "/QSYS.LIB/GARY.LIB" + "UCLSRC.FILE/BKPLIB2.MBR")
     {
         char* lastSlash = path + l - 1;
         while (--lastSlash >= path && *lastSlash != '/')
@@ -351,7 +351,7 @@ BOOL FTPPathAppend(CFTPServerPathType type, char* path, int pathSize, const char
     default:
     {
         char slash = '/';
-        if (type == ftpsptNetware || type == ftpsptWindows || type == ftpsptOS2) // novell + windows + OS/2
+        if (type == ftpsptNetware || type == ftpsptWindows || type == ftpsptOS2) // NetWare + Windows + OS/2
         {
             if (l > 0 && (path[l - 1] == '/' || path[l - 1] == '\\'))
             {
@@ -367,7 +367,7 @@ BOOL FTPPathAppend(CFTPServerPathType type, char* path, int pathSize, const char
         if (*name != 0)
         {
             int n = (int)strlen(name);
-            if (l + 1 + n < pathSize) // do we fit even with the terminating zero?
+            if (l + 1 + n < pathSize) // do we fit even with the terminating null character?
             {
                 if (!empty)
                     path[l] = slash;
@@ -429,7 +429,7 @@ BOOL FTPIsValidAndNotRootPath(CFTPServerPathType type, const char* path)
         if (l > 0) // valid path = non-empty
         {
             const char* s = strchr(path, '.');
-            return s == NULL || s != path + l - 1; // root ends with '.' and contains only one period
+            return s == NULL || s != path + l - 1; // root must not end with '.' as its only period
         }
         return FALSE;
     }
@@ -484,7 +484,7 @@ const char* FTPFindEndOfUserNameOrHostInURL(const char* url)
             while (--p >= url && *p != '@' && *p != ':' && *p != '\\')
                 ;
             if (p < url)
-                return hostEnd; // it is only the server address and port
+                return hostEnd; // only the server address and port
             if (*p == '\\' || *p == ':')
                 skip = TRUE; // neither '\\' nor ':' belongs here, stop parsing from the right
         }
@@ -573,12 +573,12 @@ void FTPSplitPath(char* p, char** user, char** password, char** host, char** por
                     *e-- = 0; // clip spaces at end
             }
             *p++ = 0;
-            if (passwd) // next is password
+            if (passwd) // password follows
             {
                 beg = p;
                 p = passEnd;
                 if (password != NULL)
-                    *password = beg; // let password as is (do not skip spaces)
+                    *password = beg; // leave the password as is (do not skip spaces)
                 *p++ = 0;
             }
             // next is host
@@ -630,7 +630,7 @@ int FTPGetUserLength(const char* user)
     while (*s != 0 && *s != '/' && *s != '\\' && *s != ':' && *s != '@')
         s++;
     if (*s == 0)
-        return 0; // problem-free name (including anonymous user)
+        return 0; // valid name (including anonymous user)
     while (*s != 0)
         s++;
     return (int)(s - user);
@@ -981,7 +981,7 @@ BOOL HaveSubstring(const char* text, const char* sub)
         }
         t++;
     }
-    return *sub == 0; // not found (exception: empty text and empty substring)
+    return *sub == 0; // not found (except when both text and substring are empty)
 }
 
 const char* KnownOSNames[] = {"UNIX", "Windows", "NETWARE", "TANDEM", "OS/2", "VMS", "MVS", "VM", "OS/400", NULL};
@@ -1005,7 +1005,7 @@ void FTPGetServerSystem(const char* serverSystem, char* sysName)
     if (serverSystem != NULL)
     {
         int replyLen = (int)strlen(serverSystem);
-        if (*serverSystem == '2' && replyLen > 4) // FTP_D1_SUCCESS + there is a chance of the system name string
+        if (*serverSystem == '2' && replyLen > 4) // FTP_D1_SUCCESS + the system name string may be present
         {
             const char* sys;
             if (serverSystem[3] == ' ')
@@ -1245,7 +1245,7 @@ CFTPServerPathType GetFTPServerPathType(const char* serverFirstReply, const char
                 return ftpsptTandem;
             }
             else
-                return ftpsptWindows; // Windows are more likely than NetWare
+                return ftpsptWindows; // Windows is more likely than NetWare
         }
     }
     if (charOnFirstPos && colonOnSecondPos && colon == 1 && // paths of the form "C:"
@@ -1280,7 +1280,7 @@ CFTPServerPathType GetFTPServerPathType(const char* serverFirstReply, const char
             return ftpsptWindows;
         if (HaveSubstring(sysName, "NETWARE") ||
             serverFirstReply != NULL && HaveSubstring(serverFirstReply, " NW 3") &&
-                HaveSubstring(serverFirstReply, " HellSoft")) // known first server response and it is a Hellsoft server on NetWare
+                HaveSubstring(serverFirstReply, " HellSoft")) // the server's first response is known and it is a HellSoft server on NetWare
         {
             return ftpsptNetware;
         }
@@ -1382,7 +1382,7 @@ BOOL FTPAddHexEscapeSequences(char* txt, int txtSize)
                 s += 3;
             }
             else
-                return FALSE; // maly buffer
+                return FALSE; // small buffer
         }
         else
             s++;
@@ -1436,7 +1436,7 @@ BOOL GetAttrsFromUNIXRights(DWORD* actAttr, DWORD* attrDiff, const char* rights)
 
     // CAUTION: if the format of UNIX permissions changes, IsUNIXLink() must be updated as well
 
-    if (rights != NULL && strlen(rights) == 10) // must be ten characters, otherwise it cannot be UNIX permissions (permissions with ACL have eleven characters, e.g. "drwxrwxr-x+", and we cannot modify them, so we pretend we do not know them)
+    if (rights != NULL && strlen(rights) == 10) // it must be ten characters, otherwise it cannot be UNIX permissions (permissions with ACL have eleven characters, e.g. "drwxrwxr-x+", but we cannot modify them, so we pretend they are unknown)
     {
         BOOL ok = TRUE;
         *actAttr = 0;
@@ -1494,7 +1494,7 @@ BOOL IsUNIXLink(const char* rights)
     // CAUTION: if the format of UNIX permissions changes, GetAttrsFromUNIXRights() must be updated as well
 
     int len = (rights != NULL ? (int)strlen(rights) : 0);
-    return ((len == 10 || len == 11 && rights[10] == '+') && // must be ten characters, otherwise it cannot be UNIX permissions; exception: with ACL it is eleven characters, e.g. "drwxrwxr-x+"
+    return ((len == 10 || len == 11 && rights[10] == '+') && // it must be ten characters, otherwise it cannot be UNIX permissions; exception: with ACL it has eleven characters, e.g. "drwxrwxr-x+"
             rights[0] == 'l' &&
             (rights[1] == 'r' || rights[1] == '-') &&
             (rights[2] == 'w' || rights[2] == '-') &&
@@ -1544,7 +1544,7 @@ BOOL FTPReadFTPReply(char* readBytes, int readBytesCount, int readBytesOffset,
                      char** reply, int* replySize, int* replyCode)
 {
     BOOL ret = FALSE;
-    if (readBytesOffset < readBytesCount) // if anything is loaded at all
+    if (readBytesOffset < readBytesCount) // if anything has been read at all
     {
         char* s = readBytes + readBytesOffset;
         char* end = readBytes + readBytesCount;
@@ -1752,7 +1752,7 @@ BOOL FTPGetIPAndPortFromReply(const char* reply, int replySize, DWORD* ip, unsig
     int p1, p2;
     while (s < end) // looking for a sequence of six numbers separated by ',' and whitespace
     {
-        if (*s >= '0' && *s <= '9') // hope for the start of the sequence
+        if (*s >= '0' && *s <= '9') // possible start of the sequence
         {
             int i;
             for (i = 0; i < 6; i++)
@@ -1790,7 +1790,7 @@ BOOL FTPGetIPAndPortFromReply(const char* reply, int replySize, DWORD* ip, unsig
                     }
                 }
                 else
-                    break; // number too large, cannot be the requested sextet
+                    break; // number too large, cannot be the searched-for sextet
 
                 if (i == 5) // end of search, success
                 {
@@ -2204,7 +2204,7 @@ BOOL FTPRemovePointsFromPath(char* path, CFTPServerPathType pathType)
     case ftpsptWindows:
     case ftpsptOS2:
     {
-        char backslashSep = backslash ? '\\' : '/'; // backslash==FALSE -> every check will test '/' twice (instead of both slash and backslash)
+        char backslashSep = backslash ? '\\' : '/'; // backslash==FALSE -> every check will test '/' twice (instead of testing both '/' and '\\')
         char* afterRoot = path + (*path == '/' || *path == backslashSep ? 1 : 0);
         if (pathType == ftpsptOS2 && afterRoot == path && *path != 0 && *(path + 1) == ':')
             afterRoot = path + 2 + (*(path + 2) == '/' || *(path + 2) == backslashSep ? 1 : 0);
@@ -2420,7 +2420,7 @@ BOOL FTPMayBeValidNameComponent(const char* name, const char* path, BOOL isDir, 
     default:
     {
         TRACE_E("FTPIsValidName(): unexpected path type!");
-        return TRUE; // we do not know what path that is, so assume OK (if it is not, the server will report it later; at worst it creates more subdirectories, tough luck)
+        return TRUE; // we do not know what type of path this is, so assume OK (if it is not OK, the server will report it later; at worst it creates more subdirectories, etc.)
     }
     }
 }
@@ -2557,10 +2557,10 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
     case ftpsptWindows:
     case ftpsptOS2:
         *phase = 1;
-        // the break is not missing here!
+        // the break is intentionally omitted here
     case ftpsptUnix:
     {
-        if (*phase == 0) // at this stage we assume a classic UNIX (names max 255 characters, do not contain '/' or '\0')
+        if (*phase == 0) // at this stage we assume classic UNIX (names max 255 characters, do not contain '/' or '\0')
         {
             const char* s = originalName;
             char* n = newName;
@@ -2620,7 +2620,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
                 if (255 - (n - newName) < suffixLen)
                 {
                     int cut = (int)(suffixLen - (255 - (n - newName)));
-                    if (dot != NULL && dot - newName > cut) // shortening in the name
+                    if (dot != NULL && dot - newName > cut) // shorten the name
                     {
                         memmove(dot - cut, dot, (n - dot) + 1);
                         dot -= cut;
@@ -2659,7 +2659,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
             if (*index != 0) // append " (number)" after the name
             {
                 char* n = newName + strlen(newName);
-                char* dot = isDir ? NULL : strrchr(newName + 1, '.'); // files only: the first period from the right that is not at the beginning of the name; NOTE: exception, because phase==0 means that we are not dealing with Windows: ".cvspass" on UNIX is not an extension
+                char* dot = isDir ? NULL : strrchr(newName + 1, '.'); // files only: the first period from the right that is not at the beginning of the name; NOTE: exception, because phase==0 means this is not Windows: ".cvspass" on UNIX is not an extension
                 if (alreadyRenamedFile)                               // ensure "name (2)"->"name (3)" instead of ->"name (2) (2)"
                 {
                     char* s = dot == NULL ? n : dot;
@@ -2693,7 +2693,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
                 if (MAX_PATH - 4 - (n - newName) < suffixLen)
                 {
                     int cut = (int)(suffixLen - (MAX_PATH - 4 - (n - newName)));
-                    if (dot != NULL && dot - newName > cut) // shortening in the name
+                    if (dot != NULL && dot - newName > cut) // shorten the name
                     {
                         memmove(dot - cut, dot, (n - dot) + 1);
                         dot -= cut;
@@ -2821,7 +2821,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
                 if (MAX_PATH - 4 - (n - newName) < suffixLen)
                 {
                     int cut = (int)(suffixLen - (MAX_PATH - 4 - (n - newName)));
-                    if (dot != NULL && dot - newName > cut) // shortening in the name
+                    if (dot != NULL && dot - newName > cut) // shorten the name
                     {
                         memmove(dot - cut, dot, (n - dot) + 1);
                         dot -= cut;
@@ -2985,8 +2985,8 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
                     }
                 }
             }
-            if (*index == 0 && *s == 0 && !changed) // newName is identical to originalName, we must adjust newName
-                *index = 1;                         // also handles the reserved name "." (by the way: ".." -> "__" or "_.")
+            if (*index == 0 && *s == 0 && !changed) // newName is identical to originalName, so newName must be adjusted
+                *index = 1;                         // also handles the reserved name "." (note: ".." -> "__" or "_.")
             if (*index != 0)                        // append "_number" after the name
             {
                 if (alreadyRenamedFile) // ensure "name_2"->"name_3" instead of ->"name_2_2"
@@ -3053,7 +3053,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
         break;
     }
 
-    case ftpsptAS400: // AS/400: we do not know anything about the naming format on AS/400 yet; for now we reuse the following Tandem code, it seems restrictive enough that AS/400 should be satisfied with it as well
+    case ftpsptAS400: // AS/400: we do not know anything about the AS/400 name format yet; for now we reuse the following Tandem code, which seems restrictive enough for AS/400 as well
     case ftpsptTandem:
     {
         // full path to a file: \\SYSTEM.$VVVVV.SUBVOLUM.FILENAME
@@ -3094,7 +3094,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
             }
         }
         *n = 0;
-        if (*index == 0 && *s == 0 && !change) // newName is identical to originalName, we must adjust newName
+        if (*index == 0 && *s == 0 && !change) // newName is identical to originalName, so newName must be adjusted
             *index = 1;
         if (*index != 0) // append "number" after the name
         {
@@ -3230,7 +3230,7 @@ void FTPGenerateNewName(int* phase, char* newName, int* index, const char* origi
             if (MAX_PATH - 4 - (n - newName) < suffixLen)
             {
                 int cut = (int)(suffixLen - (MAX_PATH - 4 - (n - newName)));
-                if (dot != NULL && dot - newName > cut) // shortening in the name
+                if (dot != NULL && dot - newName > cut) // shortening the name
                 {
                     memmove(dot - cut, dot, (n - dot) + 1);
                     dot -= cut;

@@ -3,7 +3,7 @@
 
 #pragma once
 
-//Persistent not supported!!!
+//Persistence not supported.
 
 class CBuffer
 {

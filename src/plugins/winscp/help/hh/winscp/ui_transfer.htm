@@ -14,7 +14,7 @@
 <h1>Transfer Settings</h1>
 
 <p>
-On several occasions you need or have chance to configure <a href="transfer_settings.htm">transfer settings</a>.
+On several occasions you need or have a chance to configure <a href="transfer_settings.htm">transfer settings</a>.
 This includes:
 </p>
 
@@ -61,7 +61,7 @@ On download, WinSCP:
    code;</li>
 <li>Replaces trailing space with <code>%20</code>;</li>
 <li>Replaces trailing dot with <code>%2E</code>;</li>
-<li>Addends <code>%00</code> to the end of names with reserved 
+<li>Appends <code>%00</code> to the end of names with reserved
     meaning on Windows (such as <code>NUL</code> or <code>PRN</code>).</li>
 </ul>
 
@@ -92,7 +92,7 @@ permissions, but this can also vary with the platform.
 
 <p>
 Note that while you may have rights to overwrite the remote file, you may not have rights to change its permissions.
-You need then to uncheck the <em>Set permissions</em> to be able to upload the files without being prompted with an error
+You then need to uncheck the <em>Set permissions</em> option to upload the files without being prompted with an error
 message.
 </p>
 
@@ -105,7 +105,7 @@ of source files once the upload finishes.
 <h3>Download Options</h3>
 
 <p>
-The <em>Preserve read-only</em> checkbox makes WinSCP to set &quot;read-only&quot; attribute to
+The <em>Preserve read-only</em> checkbox makes WinSCP set the &quot;read-only&quot; attribute on
 <a href="task_download.htm">downloaded</a> files that do not have user-write permission set. The option
 is not available if the server does not support UNIX-style permissions.
 </p>
@@ -122,15 +122,15 @@ timestamp recalculation</a> between local and remote filesystem.
 <p>
 Note that while you may have rights to overwrite the remote file, you may not have rights to change
 its timestamp.
-You need then to uncheck the <em>Preserve timestamp</em> to be able to <a href="task_upload.htm">upload</a>
+You then need to uncheck the <em>Preserve timestamp</em> option to <a href="task_upload.htm">upload</a>
 the files without being prompted with an error message.
 </p>
 
 <p>
-The <em>Calculate total size</em> checkbox make WinSCP calculate total size of all files to be
-transferred before the actual transfer. It allows it then to estimate time necessary to complete
-the transfer. Note that if you are going to transfer large number of files the calculation can
-take significant time.
+The <em>Calculate total size</em> checkbox makes WinSCP calculate the total size of all files to be
+transferred before the actual transfer. It then allows WinSCP to estimate the time needed to
+complete the transfer. Note that if you are going to transfer a large number of files, the
+calculation can take significant time.
 </p>
 
 <p>

@@ -71,7 +71,7 @@ void CDeleteProgressDlg::EnableCancel(BOOL enable)
 BOOL CDeleteProgressDlg::GetWantCancel()
 {
     MSG msg;
-    while (PeekMessage(&msg, NULL, 0, 0, TRUE)) // give the user a brief timeslice ...
+    while (PeekMessage(&msg, NULL, 0, 0, TRUE)) // give the user a brief moment ...
     {
         if (!IsWindow(HWindow) || !IsDialogMessage(HWindow, &msg))
         {
@@ -291,7 +291,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     if (FatalError)
     {
         FatalError = FALSE;
-        return FALSE; // ListCurrentPath failed because of low memory, fatal error
+        return FALSE; // ListCurrentPath failed due to low memory; fatal error
     }
 
     char errBuf[MAX_PATH];
@@ -315,7 +315,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
         {              // try to shorten the path
             PathError = FALSE;
             if (!SalamanderGeneral->CutDirectory(path, NULL))
-                return FALSE; // nothing left to shorten, fatal error
+                return FALSE; // the path cannot be shortened further; fatal error
             fileNameAlreadyCut = TRUE;
             if (pathWasCut != NULL)
                 *pathWasCut = TRUE;
@@ -332,7 +332,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
             }
 #endif // DEMOPLUG_QUIET
 
-            if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // success, pick the path as current
+            if (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0) // success, use the path as current
             {
                 if (errBuf[0] != 0) // if we have a message from shortening, display it now
                 {
@@ -341,7 +341,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
                 }
                 strcpy(Path, path);
 
-                // timer test only (useful for keep-connection-alive for example)
+                // timer test only (useful, for example, for keeping the connection alive)
                 //        SalamanderGeneral->KillPluginFSTimer(this, TRUE, 0);   // clear existing timers for this FS first
                 //        SalamanderGeneral->AddPluginFSTimer(2000, this, 1234);
 
@@ -502,7 +502,7 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract* dir,
             file.LastWrite = data.ftLastWriteTime;
             file.Hidden = file.Attr & FILE_ATTRIBUTE_HIDDEN ? 1 : 0;
             // always set IconOverlayIndex; Salamander will ignore it if it doesn't apply
-            // read-only = slow file overlay, system = shared overlay
+            // read-only = slow file icon overlay, system = shared icon overlay
             file.IconOverlayIndex = file.Attr & FILE_ATTRIBUTE_READONLY ? 1 : file.Attr & FILE_ATTRIBUTE_SYSTEM ? 0
                                                                                                                 : ICONOVERLAYINDEX_NOTUSED;
 
@@ -1026,7 +1026,7 @@ CPluginFSInterface::CreateDir(const char* fsName, int mode, HWND parent, char* n
 {
     cancel = FALSE;
     if (mode == 1)
-        return FALSE; // request for the standard dialog
+        return FALSE; // request the standard dialog
 
 #ifndef DEMOPLUG_QUIET
     char bufText[2 * MAX_PATH + 100];
@@ -1566,14 +1566,14 @@ BOOL DFS_IsValidPath(const char* path, CDFSPathError* err)
                     *err = dfspeShareNameMissing;
             }
             else
-                return TRUE; // cesta OK
+                return TRUE; // path OK
         }
     }
     else // path specified via a drive (c:\...)
     {
         if (LowerCase[*s] >= 'a' && LowerCase[*s] <= 'z' && *(s + 1) == ':' && *(s + 2) == '\\') // "c:\..."
         {
-            return TRUE; // cesta OK
+            return TRUE; // path OK
         }
         else
         {
@@ -1653,13 +1653,13 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
             SalamanderGeneral->SetUserWorkedOnPanelPath(PANEL_TARGET); // default action = work with the target panel path
         }
 
-        return FALSE; // request for the standard dialog
+        return FALSE; // request the standard dialog
     }
 
     if (mode == 4) // error in the standard Salamander processing of the destination path
     {
         // 'targetPath' contains an invalid path; the user was notified, just let them edit it
-        return FALSE; // request for the standard dialog
+        return FALSE; // request the standard dialog
     }
 
     const char* title = copy ? "DFS Copy" : "DFS Move";
@@ -1688,7 +1688,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
     if (mode == 2) // the user entered a path in the standard dialog
     {
         // resolve relative paths ourselves (Salamander cannot do that)
-        if ((targetPath[0] != '\\' || targetPath[1] != '\\') && // not an UNC path
+        if ((targetPath[0] != '\\' || targetPath[1] != '\\') && // not a UNC path
             (targetPath[0] == 0 || targetPath[1] != ':'))       // not a standard drive path
         {                                                       // so it is neither Windows nor archive syntax
             userPart = strchr(targetPath, ':');
@@ -1720,7 +1720,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 userPart = s;
                 BOOL tooLong = FALSE;
                 int rootLen = SalamanderGeneral->GetRootPath(s, Path);
-                if (targetPath[0] == '\\') // "\\path" -> build root + newName
+                if (targetPath[0] == '\\') // "\\path" -> concatenate root + newName
                 {
                     s += rootLen;
                     int len = (int)strlen(targetPath + 1); // skip the leading '\\'
@@ -1732,7 +1732,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                         *(s + len) = 0;
                     }
                 }
-                else // "path" -> combine Path + newName
+                else // "path" -> concatenate Path + newName
                 {
                     int pathLen = (int)strlen(Path);
                     if (pathLen < rootLen)
@@ -1834,7 +1834,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 {
                     char* end2 = end;
                     BOOL cut = FALSE;
-                    while (*--end2 != '\\') // at least one backslash must follow after the root
+                    while (*--end2 != '\\') // at least one backslash is guaranteed after the root
                     {
                         if (*end2 == '*' || *end2 == '?')
                             cut = TRUE;
@@ -1847,7 +1847,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     }
                 }
 
-                while (end > afterRoot) // there is still more than the root
+                while (end > afterRoot) // there is more than the root
                 {
                     DWORD attrs = SalamanderGeneral->SalGetFileAttributes(userPart);
                     if (attrs != 0xFFFFFFFF) // this part of the path exists
@@ -1982,7 +1982,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                 if (pathError)
                 {
                     // return 'targetPath' after adjustment (expansion of the path and possible tweaks to ".." and ".")
-                    return FALSE; // error -> re-open the standard dialog
+                    return FALSE; // error -> show the standard dialog again
                 }
             }
         }
@@ -2094,13 +2094,13 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
         opMask++;
     }
 
-    /*  // description of the operation destination gathered in the previous code:
+    /*  // description of the operation target obtained by the preceding code:
   if (diskPath)  // 'targetPath' is a Windows path, 'opMask' is the operation mask
   {
   }
-  else   // 'targetPath' is a path on this FS ('userPart' points to the FS user-part path), 'opMask' is the operation mask
+  else   // 'targetPath' is a path on this FS ('userPart' points to the user part of the FS path), 'opMask' is the operation mask
   {
-    // if 'rename' is TRUE we are renaming/copying a directory into itself
+    // if 'rename' is TRUE, this is renaming/copying a directory into itself
   }
 */
 
@@ -2204,7 +2204,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char* fsName, HW
                     if (!fileFromCache) // the file is not in the disk cache
                     {
                         // copy the file directly from DFS
-                        // the demo plug-in does not handle overwriting files; real code should confirm overwrites here
+                        // the demo plugin does not handle overwriting files; real code should confirm overwrites here
                         // (the ConfirmOnFileOverwrite and ConfirmOnSystemHiddenFileOverwrite flags apply)
                         while (1)
                         {
@@ -2475,7 +2475,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
     {
         // 'targetPath' contains the raw path entered by the user (all we know is that it
         // belongs to this FS, otherwise Salamander would not call this method)
-        char* userPart = strchr(targetPath, ':') + 1; // v 'targetPath' musi byt fs-name + ':'
+        char* userPart = strchr(targetPath, ':') + 1; // 'targetPath' must contain fs-name + ':'
 
         CDFSPathError err;
         BOOL invPath = !DFS_IsValidPath(userPart, &err);
@@ -2795,7 +2795,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char* fsNa
                         break;
                 }
 
-                if (success && !copy && !skip) // we are doing a move and the file was not skipped -> delete the source file
+                if (success && !copy && !skip) // this is a move and the file was not skipped -> delete the source file
                 {
                     // remove the file from disk
                     while (1)

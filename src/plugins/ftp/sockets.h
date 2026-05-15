@@ -33,8 +33,8 @@ extern WSADATA WinSocketsData; // info about the implementation of Windows Socke
 // GLOBAL FUNCTIONS
 // ****************************************************************************
 
-// initialization of the sockets module; 'parent' is the parent of the message box,
-// returns TRUE if initialization is successful
+// initializes the sockets module; 'parent' is the parent window for message boxes,
+// returns TRUE if initialization succeeds
 BOOL InitSockets(HWND parent);
 // release the sockets module
 void ReleaseSockets();
@@ -44,7 +44,7 @@ void ReleaseSockets();
 void DeleteSocket(class CSocket* socket);
 
 #ifdef _DEBUG
-extern BOOL InDeleteSocket; // TRUE if we are inside ::DeleteSocket (to test direct calls of "delete socket")
+extern BOOL InDeleteSocket; // TRUE if we are inside ::DeleteSocket (to detect direct calls to "delete socket")
 #endif
 
 //
@@ -132,15 +132,15 @@ protected:
     SOCKET Socket;              // encapsulated Windows Sockets socket; if INVALID_SOCKET, the socket is not open
     SSL* SSLConn;               // SSL connection, use instead of Socket if non-NULL
     int ReuseSSLSession;        // reuse the SSL session of this control connection for all its data connections: 0 = try, 1 = yes, 2 = no
-    BOOL ReuseSSLSessionFailed; // TRUE = reusing the SSL session for the last data connection opened failed: if we cannot do without it, we have to reconnect this control connection
+    BOOL ReuseSSLSessionFailed; // TRUE = reusing the SSL session for the most recently opened data connection failed: if SSL session reuse is required, this control connection must be reconnected
     CCertificate* pCertificate; // non-NULL on FTPS connections
     BOOL OurShutdown;           // TRUE if this side (the FTP client) initiated the shutdown
-    BOOL IsDataConnection;      // TRUE = socket for data transfer, set larger buffers (speed up listing, downloads and uploads)
+    BOOL IsDataConnection;      // TRUE = data transfer socket; larger buffers are used (to speed up listing, downloads, and uploads)
 
     CSocketState SocketState; // socket state
 
     // data for connecting through proxy servers (firewalls)
-    char* HostAddress;       // name address of the target machine we want to connect to
+    char* HostAddress;       // host name of the target machine we want to connect to
     DWORD HostIP;            // IP address of 'HostAddress' (==INADDR_NONE until the IP is known)
     unsigned short HostPort; // port of the target machine we want to connect to
     char* ProxyUser;         // username for the proxy server
@@ -201,8 +201,8 @@ public:
     // callable from any thread
     void SwapSockets(CSocket* sock);
 
-    // returns TRUE if CSocketsThread::IsSocketConnected() has been called for this socket -
-    // returns the call time in 'lastCallTime'; returns FALSE if CSocketsThread::IsSocketConnected()
+    // returns TRUE if CSocketsThread::IsSocketConnected() has been called for this socket;
+    // the call time is returned in 'lastCallTime'; returns FALSE if CSocketsThread::IsSocketConnected()
     // has not been called yet
     BOOL GetIsSocketConnectedLastCallTime(DWORD* lastCallTime);
 
@@ -214,27 +214,27 @@ public:
     // receives the results in the "sockets" thread - the "receive" methods of this object are called there)
     // ******************************************************************************************
 
-    // obtains an IP address from a host name (or even the textual IP address itself); 'hostUID' is used
+    // obtains an IP address from a host name (or even directly from a textual IP address); 'hostUID' is used
     // to identify the result when this method is called multiple times; the result (including 'hostUID')
-    // will be in the parameters of the ReceiveHostByAddress method called in the "sockets" thread;
+    // will be passed in the parameters of a call to the ReceiveHostByAddress method in the "sockets" thread;
     // returns TRUE if there is a chance of success (if the thread retrieving the IP address can be started),
-    // returns FALSE on failure; if it returns TRUE and this object was not connected to
-    // SocketsThread, it connects it (see the AddSocket method)
+    // returns FALSE on failure; if it returns TRUE and this object has not been attached to
+    // SocketsThread, it attaches it (see the AddSocket method)
     // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
-    //          SocketsThread); the exception is when we are already inside the CSocketsThread::CritSect critical section
+    //          SocketsThread); the exception is when already inside the CSocketsThread::CritSect critical section
     // callable from any thread
     BOOL GetHostByAddress(const char* address, int hostUID = 0);
 
-    // connects to a SOCKS 4/4A/5 or HTTP 1.1 (the proxy type is in 'proxyType') proxy server
-    // 'serverIP' on port 'serverPort' + if it is not one of these proxy servers, it works the same as
-    // the Connect method; creates a Windows socket and sets it as non-blocking - it sends messages
+    // connects to the proxy server at 'serverIP':'serverPort' using SOCKS 4/4A/5 or HTTP 1.1
+    // (the proxy type is in 'proxyType'); for other proxy server types, it behaves like the
+    // Connect method; creates a Windows socket and sets it to non-blocking mode - it sends messages
     // to the SocketsThread object, which, according to the proxy server protocol, performs
-    // the connection to address 'host' port 'port' with proxy-user-name 'proxyUser' and proxy-password
-    // 'proxyPassword' (only SOCKS 5 and HTTP 1.1); 'hostIP' (only SOCKS 4) is the IP address of 'host'
+    // the connection to address 'host' on port 'port' using proxy user name 'proxyUser' and proxy password
+    // 'proxyPassword' (SOCKS 5 and HTTP 1.1 only); 'hostIP' (SOCKS 4 only) is the IP address of 'host'
     // (if unknown, use INADDR_NONE); returns TRUE if there is a chance of success (the result of
     // connecting to 'host' is received by the ReceiveNetEvent method - FD_CONNECT), returns FALSE on failure
-    // and if the Windows error code is known, returns it in 'error' (if not NULL); if it returns TRUE
-    // and this object was not connected to SocketsThread, it connects it (see the AddSocket method)
+    // and, if the Windows error code is known, returns it in 'err' (if not NULL); if it returns TRUE
+    // and this object has not been attached to SocketsThread, it attaches it (see the AddSocket method)
     // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
     //          SocketsThread)
     // callable from any thread
@@ -242,12 +242,12 @@ public:
                           DWORD* err, const char* host, unsigned short port, const char* proxyUser,
                           const char* proxyPassword, DWORD hostIP);
 
-    // connects to IP address 'ip' on port 'port'; creates a Windows socket and sets it as non-blocking -
-    // it sends messages to the SocketsThread object, which based on these messages calls the
-    // ReceiveNetEvent method of this object; returns TRUE if there is a chance of success
-    // (the result is received by the ReceiveNetEvent method - FD_CONNECT), returns FALSE on failure
-    // and if the Windows error code is known, returns it in 'error' (if not NULL); if it returns
-    // TRUE and this object was not connected to SocketsThread, it connects it (see the AddSocket method);
+    // connects to IP address 'ip' on port 'port'; creates a Windows socket and sets it to
+    // non-blocking mode - it sends messages to the SocketsThread object, which invokes this
+    // object's ReceiveNetEvent method based on those messages; returns TRUE if there is a chance
+    // of success (the result is received by the ReceiveNetEvent method - FD_CONNECT), returns FALSE
+    // on failure and, if the Windows error code is known, returns it in 'error' (if not NULL); if it returns
+    // TRUE and this object has not been attached to SocketsThread, it attaches it (see the AddSocket method);
     // 'calledFromConnect' is TRUE only when called from one of the ConnectUsingXXX methods;
     // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
     //          SocketsThread)
@@ -268,16 +268,16 @@ public:
     // with a length of at least 'bufSize' characters
     BOOL GetProxyTimeoutDescr(char* buf, int bufSize);
 
-    // returns TRUE if the socket is not closed (INVALID_SOCKET)
+    // returns TRUE if the socket is not closed (i.e. is not INVALID_SOCKET)
     BOOL IsConnected();
 
-    // initiates a socket shutdown - after successfully sending + confirming the unsent data,
-    // FD_CLOSE arrives and closes the socket (releases Windows socket resources); after starting
-    // the shutdown, no data can be written to the socket anymore (if Write does not write the whole buffer
-    // at once, you must wait for the write to finish - event ccsevWriteDone);
-    // returns TRUE on success, FALSE on error - if the Windows error code is known, returns it
-    // in 'error' (if not NULL)
-    // NOTE: after receiving FD_CLOSE, the SocketWasClosed method is called (information about the socket closure)
+    // initiates socket shutdown - after all unsent data has been sent and acknowledged,
+    // FD_CLOSE is received and closes the socket (releasing Windows socket resources); once
+    // shutdown has started, no more data can be written to the socket (if Write does not write the entire buffer
+    // at once, it is necessary to wait for the write to complete - ccsevWriteDone event);
+    // returns TRUE on success, FALSE on error - if the Windows error code is known, returns
+    // it in 'error' (if not NULL)
+    // NOTE: after FD_CLOSE is received, the SocketWasClosed method is called (information about socket closure)
     BOOL Shutdown(DWORD* error);
 
     // hard socket closure (only when Shutdown timed out) - calls closesocket (deallocation of
@@ -285,45 +285,47 @@ public:
     // code is known, returns it in 'error' (if not NULL)
     BOOL CloseSocket(DWORD* error);
 
-    // encrypts the socket, returns TRUE on success; if the server certificate cannot be
+    // encrypts the socket and returns TRUE on success; if the server certificate cannot be
     // verified and the user has not previously accepted it as trusted: if 'unverifiedCert'
-    // is NULL, it returns failure and SSLCONERR_UNVERIFIEDCERT in 'sslErrorOccured'; if
-    // 'unverifiedCert' is not NULL, it returns success and the server certificate in 'unverifiedCert',
-    // the caller is responsible for releasing it by calling unverifiedCert->Release() and
-    // returns the reason why the certificate cannot be verified in 'errorBuf' (of size 'errorBufLen',
-    // if it is 0, 'errorBuf' can be NULL); in 'errorID' (if not NULL) it returns the resource-id
-    // of the error text or -1 if no error should be displayed; for other errors
-    // (except an untrusted certificate): it returns NULL in 'unverifiedCert', returns supplementary
-    // text for the error in 'errorBuf' (of size 'errorBufLen', if it is 0, 'errorBuf' can be NULL) (it is inserted
-    // into 'errorID' at position %s via sprintf); in 'sslErrorOccured' (if not NULL) it returns the error code (one of SSLCONERR_XXX);
-    // 'logUID' is the log UID; 'conForReuse' (if not NULL) is the socket whose SSL session should be reused (called
-    // "SSL session reuse", see for example http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
-    // and it is used from the control connection for all its data connections)
+    // is NULL, returns failure and SSLCONERR_UNVERIFIEDCERT in 'sslErrorOccured'; if
+    // 'unverifiedCert' is not NULL, returns success and the server certificate in 'unverifiedCert';
+    // the caller is responsible for releasing it by calling unverifiedCert->Release(), and
+    // the reason why the certificate cannot be verified is returned in 'errorBuf' (of size 'errorBufLen';
+    // if it is 0, 'errorBuf' may be NULL); in 'errorID' (if not NULL), returns the resource ID
+    // of the error text, or -1 if no error should be displayed; for other errors
+    // (except an untrusted certificate): returns NULL in 'unverifiedCert', and returns additional
+    // error text in 'errorBuf' (of size 'errorBufLen'; if it is 0, 'errorBuf' may be NULL)
+    // (inserted into the text identified by 'errorID' at the %s position via sprintf); in 'sslErrorOccured'
+    // (if not NULL), returns the error code (one of SSLCONERR_XXX); 'logUID' is the log UID;
+    // 'conForReuse' (if not NULL) is the socket whose SSL session should be reused (this is called
+    // "SSL session reuse", see e.g. http://vincent.bernat.im/en/blog/2011-ssl-session-reuse-rfc5077.html
+    // and it is used to reuse the control connection's SSL session for all its data connections)
     BOOL EncryptSocket(int logUID, int* sslErrorOccured, CCertificate** unverifiedCert,
                        int* errorID, char* errorBuf, int errorBufLen, CSocket* conForReuse);
 
-    // connects to a SOCKS 4/4A/5 or HTTP 1.1 (the proxy type is in 'proxyType') proxy server
-    // 'proxyIP' on port 'proxyPort' and opens a port for "listen" on it; the IP+port where it
-    // listens is received by the socket in the ListeningForConnection() method; if it is not one of these
-    // proxy servers, it works like OpenForListening(), except that it also passes the result
+    // connects to a SOCKS 4/4A/5 or HTTP 1.1 proxy server (the proxy type is in 'proxyType')
+    // at 'proxyIP':'proxyPort' and opens a "listen" port on it; the socket receives the listening
+    // IP+port in ListeningForConnection(); if it is not one of these proxy
+    // servers, it works like OpenForListening(), except that it also passes the result
     // through ListeningForConnection() - it is called directly from the OpenForListeningWithProxy() method;
-    // 'listenOnIP'+'listenOnPort' is used only when it is not a connection through these proxy
-    // servers - 'listenOnIP' is the IP of this machine (when binding the socket on multi-home machines
-    // the IP may not be detectable, for FTP we take the IP from the "control connection"), 'listenOnPort' is
-    // the port on which to listen; if it does not matter, value 0 is used;
-    // it creates a Windows socket and sets it as non-blocking - it sends messages to the
-    // SocketsThread object, which according to the proxy server protocol requests the opening of a "listen" port
-    // for connections from address 'host' (IP 'hostIP') port 'hostPort' with proxy-user-name
-    // 'proxyUser' and proxy-password 'proxyPassword' (only SOCKS 5 and HTTP 1.1); 'hostIP'
+    // 'listenOnIP'+'listenOnPort' are used only if the connection is not through one of these proxy
+    // servers - 'listenOnIP' is the IP of this machine (when binding the socket on multihomed machines,
+    // the IP may not be determinable; for FTP, the IP is taken from the "control connection"), 'listenOnPort' is
+    // the port on which to listen; if it does not matter, 0 is used;
+    // creates a Windows socket and sets it to non-blocking mode - sends messages to the
+    // SocketsThread object, which, according to the proxy server protocol, requests opening a "listen" port
+    // for a connection from address 'host' (IP 'hostIP') port 'hostPort' with proxy user name
+    // 'proxyUser' and proxy password 'proxyPassword' (only SOCKS 5 and HTTP 1.1); 'hostIP'
     // (used only for SOCKS 4, otherwise INADDR_NONE) is the IP address of 'host' (the IP must be
-    // known - a connection to 'hostIP' must be open, otherwise it is impossible to request this opening of a
-    // "listen" port); returns TRUE if there is a chance of success (the "listen" IP+port is received by the
-    // ListeningForConnection() method, and then the result of the connection from 'host' is received by the
-    // ConnectionAccepted() method - provided that the CSocket::ReceiveNetEvent method is called for FD_ACCEPT);
-    // returns FALSE on failure and if the Windows error code is known, returns it in 'err' (if not NULL), and
-    // if 'listenError' is not NULL, returns TRUE/FALSE in it depending on whether it is a LISTEN error (listen error without a proxy server)
-    // or CONNECT error (error connecting to the proxy server); if it returns TRUE and this object was not connected
-    // to SocketsThread, it connects it (see the AddSocket method)
+    // known - a connection to 'hostIP' must already be open, otherwise this opening of a
+    // "listen" port cannot be requested); returns TRUE if the operation can proceed
+    // (ListeningForConnection() receives the "listen" IP+port, and then the result of the connection from 'host'
+    // is received by ConnectionAccepted() - provided that CSocket::ReceiveNetEvent
+    // is called for FD_ACCEPT); returns FALSE on failure and, if the Windows error code is known,
+    // returns it in 'err' (if not NULL); if 'listenError' is not NULL, returns TRUE/FALSE in it
+    // depending on whether it is a LISTEN error (listen error without a proxy server) or a CONNECT error
+    // (error connecting to the proxy server); if it returns TRUE and this object is not connected
+    // to SocketsThread, it connects it (see AddSocket)
     // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
     //          SocketsThread)
     // callable from any thread
@@ -333,18 +335,20 @@ public:
                                    unsigned short proxyPort, const char* proxyUser,
                                    const char* proxyPassword, BOOL* listenError, DWORD* err);
 
-    // opens a socket and waits for a connection on it (listens); 'listenOnIP' (must not be NULL) is on
-    // input the IP of this machine (when binding the socket on multi-home machines the IP may not be detectable,
-    // for FTP we take the IP from the "control connection"), on output it is the IP where the connection is awaited;
-    // 'listenOnPort' (must not be NULL) is on input the port on which to wait for a connection,
-    // if it does not matter, value 0 is used; on output it is the port where the connection is awaited;
-    // it creates a Windows socket and sets it as non-blocking - it sends messages to the
-    // SocketsThread object, which based on these messages calls the ReceiveNetEvent method of this object
-    // (the incoming connection is announced by calling the ConnectionAccepted() method - provided that the
-    // CSocket::ReceiveNetEvent method is called for FD_ACCEPT); returns TRUE when the socket is opened successfully,
-    // returns FALSE on failure and if the Windows error code is known, returns it in 'error' (if not NULL);
-    // if it returns TRUE and this object was not connected to SocketsThread, it connects it (see the AddSocket method)
-    // WARNING: this method cannot be called from the SocketCritSect critical section (the method uses
+    // opens a socket and listens for connections; 'listenOnIP' (must not be NULL) specifies
+    // on input the IP address of this machine (when binding the socket on multihomed machines,
+    // the IP address may not be detectable; for FTP, the IP is taken from the "control connection"),
+    // and on output receives the IP address on which the socket listens;
+    // 'listenOnPort' (must not be NULL) specifies on input the port on which to listen for a connection;
+    // if it does not matter, use value 0; on output it receives the port on which the socket listens;
+    // creates a Windows socket and sets it to nonblocking mode; messages are sent to the
+    // SocketsThread object, which invokes this object's ReceiveNetEvent method based on them
+    // (an incoming connection is reported by calling ConnectionAccepted(), provided that
+    // CSocket::ReceiveNetEvent is called for FD_ACCEPT); returns TRUE if the socket is opened
+    // successfully; on failure returns FALSE and, if the Windows error code is known, stores it
+    // in 'error' (if not NULL); if the method returns TRUE and this object is not connected to
+    // SocketsThread, it connects it (see the AddSocket method)
+    // WARNING: this method cannot be called from the SocketCritSect critical section (it uses
     //          SocketsThread)
     // callable from any thread
     BOOL OpenForListening(DWORD* listenOnIP, unsigned short* listenOnPort, DWORD* error);
@@ -376,7 +380,7 @@ public:
     // the Windows error code (arrived with FD_CLOSE or occurred during FD_CLOSE processing)
     virtual void SocketWasClosed(DWORD error) {}
 
-    // receives a timer with ID 'id' and parameter 'param'
+    // receives a timer event with ID 'id' and parameter 'param'
     virtual void ReceiveTimer(DWORD id, void* param) {}
 
     // receives a posted message with ID 'id' and parameter 'param'
@@ -420,10 +424,10 @@ protected:
     // WARNING: call only with a single nesting level in the SocketCritSect section
     void ProxySendBytes(const char* buf, int bufLen, int index, BOOL* csLeft, BOOL isConnect);
 
-    // helper methods: 'index' is the socket index in the SocketsThread->Sockets array (used
-    // when calling ReceiveNetEvent()); inside the method the SocketCritSect critical section may be left,
+    // helper methods: 'index' is the index of the socket in the SocketsThread->Sockets array (used
+    // when calling ReceiveNetEvent()); the method may leave the SocketCritSect critical section,
     // in which case it returns TRUE in 'csLeft'
-    // WARNING: call only with a single nesting level in the SocketCritSect section
+    // WARNING: call only with exactly one nesting level in the SocketCritSect critical section
     //
     // sends request 'request' (1=CONNECT, 2=LISTEN) to the SOCKS4 proxy server; 'isConnect' is
     // TRUE/FALSE for CONNECT/LISTEN; 'isSocks4A' is TRUE/FALSE for SOCKS 4A/4
@@ -440,17 +444,17 @@ protected:
     void HTTP11SendRequest(int index, BOOL* csLeft);
 
     // helper method: receives a reply from the proxy server; returns TRUE if any data appears on
-    // the socket (if FD_CLOSE arrived, it returns the data + further FD_CLOSE processing is up to the caller);
-    // WARNING: if it returns FALSE, it has left the SocketCritSect section; 'buf'
-    // is the buffer for this response ('read' is on input the size of the 'buf' buffer, on
-    // output it is the number of bytes read); 'index' is the socket index in the
+    // the socket (if FD_CLOSE was received, it returns the data, and further FD_CLOSE processing
+    // is up to the caller); WARNING: if it returns FALSE, it has left the SocketCritSect critical
+    // section; 'buf' is the buffer for this reply ('read' is the size of 'buf' on input and the
+    // number of bytes read on output); 'index' is the socket index in the
     // SocketsThread->Sockets array (used when calling ReceiveNetEvent()); 'isConnect' is
-    // TRUE/FALSE for CONNECT/LISTEN_or_ACCEPT; 'isListen' only makes sense when
-    // 'isConnect'==FALSE and is TRUE/FALSE for LISTEN/ACCEPT; if 'readOnlyToEOL' is TRUE,
-    // the socket is read byte by byte only until the first LF occurs (reads at most
+    // TRUE for CONNECT and FALSE for LISTEN or ACCEPT; 'isListen' only makes sense when
+    // 'isConnect'==FALSE and is TRUE for LISTEN and FALSE for ACCEPT; if 'readOnlyToEOL' is TRUE,
+    // the socket is read one byte at a time only until the first LF is encountered (reads at most
     // one line including the trailing LF)
-    // WARNING: call only with a single nesting in the SocketCritSect section and at least one
-    //          nesting in the CSocketsThread::CritSect section
+    // WARNING: call only with one level of nesting in the SocketCritSect critical section and at
+    //          least one level of nesting in the CSocketsThread::CritSect critical section
     BOOL ProxyReceiveBytes(LPARAM lParam, char* buf, int* read, int index,
                            BOOL isConnect, BOOL isListen, BOOL readOnlyToEOL);
 
@@ -488,7 +492,7 @@ struct CMsgData // data for WM_APP_SOCKET_ADDR
 
 struct CTimerData // data for WM_TIMER (see CSocketsThread::AddTimer())
 {
-    int SocketMsg;    // message number used to receive events for the informed socket; if (WM_APP_SOCKET_MIN-1), it is a deleted timer in the locked section of the Timers array
+    int SocketMsg;    // message number used to receive events for the notified socket; if (WM_APP_SOCKET_MIN-1), this is a deleted timer in the locked section of the Timers array
     int SocketUID;    // UID of the informed socket
     DWORD TimeoutAbs; // absolute time in milliseconds; the timer fires only when GetTickCount() returns at least this value
     DWORD ID;         // timer id
@@ -507,7 +511,7 @@ struct CTimerData // data for WM_TIMER (see CSocketsThread::AddTimer())
 struct CPostMsgData // data for WM_APP_SOCKET_POSTMSG
 {
     int SocketMsg; // message number used to receive events for the informed socket
-    int SocketUID; // UID of the informed socket
+    int SocketUID; // UID of the notified socket
     DWORD ID;      // event id
     void* Param;   // event parameter
 
@@ -570,7 +574,7 @@ public:
     // the socket that should be notified of the added timer timeout (see the CSocket::ReceiveTimer() method);
     // 'id' is the timer ID; 'param' is an optional timer parameter, if it contains any allocated
     // value, the CSocket object must take care of deallocation when receiving the timer, when adding the timer fails,
-    // or when unloading the plugin; returns TRUE when the timer is added successfully, otherwise returns FALSE
+    // or when unloading the plugin; returns TRUE when the timer is added successfully, returns FALSE on failure
     // (the only error is lack of memory)
     // callable from any thread
     BOOL AddTimer(int socketMsg, int socketUID, DWORD timeoutAbs, DWORD id, void* param);
@@ -604,8 +608,8 @@ public:
     BOOL AddSocket(CSocket* sock);
 
     // deallocates/detaches ('onlyDetach' is FALSE/TRUE) the socket object 'sock' from the array of handled
-    // objects (writes NULL to the position and sets FirstFreeIndexInSockets); if the object is not in the array
-    // and 'onlyDetach' is TRUE, it is deallocated
+    // objects (writes NULL to its slot and sets FirstFreeIndexInSockets); if the object is not in the array
+    // and 'onlyDetach' is FALSE, it is deallocated
     // callable from any thread
     void DeleteSocket(CSocket* sock, BOOL onlyDetach = FALSE)
     {

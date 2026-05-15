@@ -152,7 +152,7 @@ public:
     /// \param bufSize Size of the buffer, in characters.
     /// \return If the method succeeds it should return nonzero value,
     ///         otherwise it should return zero.
-    /// Implement this method to get the Alt+Insert behavior. Is is also
+    /// Implement this method to get the Alt+Insert behavior. It is also
     /// used by the drag'n'drop manipulation and Ctrl+Shift+arrow handling.
     virtual BOOL WINAPI GetFullName(
         __in CFileData& file,
@@ -222,7 +222,7 @@ public:
     /// \param buf Caller supplied buffer. The method should copy the
     ///        title to it.
     /// \param bufSize Size of the buffer, in characters.
-    /// \return If the method provides the title, it shoulld return
+    /// \return If the method provides the title, it should return
     ///         a nonzero value. If the return value is zero, Salamander
     ///         will use the GetNextDirectoryLineHotPath method
     ///         to create the title automatically.

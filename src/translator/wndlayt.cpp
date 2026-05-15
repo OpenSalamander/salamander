@@ -503,7 +503,7 @@ void CLayoutEditor::DrawCage(POINT pt)
     bf.BlendOp = AC_SRC_OVER;
     bf.BlendFlags = 0;
     bf.SourceConstantAlpha = 50;
-    bf.AlphaFormat = 0; // AC_SRC_ALPHA nefunguje
+    bf.AlphaFormat = 0; // AC_SRC_ALPHA does not work
 
     BitBlt(TempBitmap->HMemDC, 0, 0, TempBitmap->GetWidth(), TempBitmap->GetHeight(), CacheBitmap->HMemDC, 0, 0, SRCCOPY);
     AlphaBlend(TempBitmap->HMemDC, r.left, r.top, r.right - r.left, r.bottom - r.top, CageBitmap->HMemDC, 0, 0, r.right - r.left, r.bottom - r.top, bf);

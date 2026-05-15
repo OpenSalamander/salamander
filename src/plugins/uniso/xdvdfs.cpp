@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -26,7 +27,7 @@
 #define GET_WORD(data, p) ((Uint16)data[p] | ((Uint16)data[(p) + 1] << 8))
 #define GET_DWORD(data, p) ((Uint32)data[p] | ((Uint32)data[(p) + 1] << 8) | ((Uint32)data[(p) + 2] << 16) | ((Uint32)data[(p) + 3] << 24))
 #define GET_QWORD(data, p) ((Uint64)data[p] | ((Uint64)data[(p) + 1] << 8) | ((Uint64)data[(p) + 2] << 16) | ((Uint64)data[(p) + 3] << 24) | ((Uint64)data[(p) + 4] << 32) | ((Uint64)data[(p) + 5] << 40) | ((Uint64)data[(p) + 6] << 48) | ((Uint64)data[(p) + 7] << 56))
-/* This is wrong with regard to endianess */
+/* This is wrong with regard to endianness */
 #define GETN(data, p, n, target) memcpy(target, &data[p], n)
 
 // ****************************************************************************
@@ -186,12 +187,12 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
         return ERR_TERMINATE;
     }
 
-    // read root
+    // read directory data
     if (Image->ReadBlock(sector, size, data) != size)
     {
         delete[] data;
         Error(IDS_ERROR_LISTING_IMAGE, FALSE, sector);
-        // if reading the sector with the root fails
+        // if reading the root sector fails
         return (sector == VD.RootSector) ? ERR_CONTINUE : ERR_TERMINATE;
     }
 
@@ -238,7 +239,7 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
             strcat(path, "\\");
             strcat(path, fileName);
 
-            // descend only when everything is OK
+            // recurse only if everything is OK
             if (ret == ERR_OK)
             {
                 ret = ScanDir(de.StartSector, de.FileSize, path, dir, pluginData);
@@ -250,7 +251,7 @@ int CXDVDFS::ScanDir(DWORD sector, DWORD size, char* path, CSalamanderDirectoryA
         }
 
         offset += 0x000E + len;
-        // align the offset to a DWORD
+        // align the offset to a DWORD boundary
         offset = ((offset + 3) / 4) * 4;
     }
 
@@ -358,14 +359,14 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
                 break;
             }
 
-            if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, so we do not slow things down
+            if (!salamander->ProgressAddSize(nbytes, TRUE)) // delayedPaint==TRUE, so we do not slow the operation down
             {
                 salamander->ProgressDialogAddText(LoadStr(IDS_CANCELING_OPERATION), FALSE);
                 salamander->ProgressEnableCancel(FALSE);
 
                 ret = UNPACK_CANCEL;
                 bFileComplete = FALSE;
-                break; // action interrupted
+                break; // operation interrupted
             }
 
             ULONG written;
@@ -400,7 +401,7 @@ int CXDVDFS::UnpackFile(CSalamanderForOperationsAbstract* salamander, const char
             if (!SetFileAttributes(name, attrs))
                 Error(LoadStr(IDS_CANT_SET_ATTRS), GetLastError());
 
-            // the user cancelled the operation
+            // the user canceled the operation
             // delete the incomplete file afterwards
             if (!DeleteFile(name))
                 Error(LoadStr(IDS_CANT_DELETE_TEMP_FILE), GetLastError());

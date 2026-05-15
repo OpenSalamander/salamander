@@ -804,16 +804,16 @@ char* GetTypeNameForUser(char* typeName, char* buf, int bufSize)
 
 #define WSTF_MAX_LINE_LEN 80 // used when writing and reading a string to a file
 
-// writes string 'str' to file 'file', returns any error in 'err' (must not be NULL);
-// format (apart from "// " at the beginning of the line exactly as it will be in the file - '"', '\', etc. have no C++ meaning):
-// "first line starts with double quotes
-// long lines has backslash after each part of line:
-// line-part1\
-// line-part2\
+// writes string 'str' to file 'file'; returns any error in 'err' ('err' must not be NULL);
+// format (except for the "// " at the beginning of the line, exactly as it will be in the file - '"', '\\', etc. do not have C++ meaning):
+// "first line starts with a double quote
+// long lines have a backslash after each line part:
+// line-part1\\
+// line-part2\\
 // line-part3
-// next-line with escape sequence \" for double quotes and \\ for backslash
-// NULL string is written only as \0 escape sequence
-// lastline ends with double quotes"
+// next-line with escape sequence \\\" for double quotes and \\\\ for backslash
+// NULL string is written only as the \\0 escape sequence
+// last line ends with a double quote"
 void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
 {
     char line[WSTF_MAX_LINE_LEN + 3]; // 3 characters are overhead for easy writing
@@ -821,7 +821,7 @@ void WriteStrToFile(HANDLE file, const char* str, DWORD* err)
     BOOL success;
     if (str == NULL)
     {
-        strcpy(line, "\"\\0\"\r\n"); // string for a NULL value
+        strcpy(line, "\"\\0\"\r\n"); // representation of a NULL string
         int len = (int)strlen(line);
         if ((success = WriteFile(file, line, len, &written, NULL)) == 0 ||
             written != (DWORD)len)
@@ -962,7 +962,7 @@ CServerType::ExportToFile(HANDLE file)
         ULONG written;
         BOOL success;
         int len = (int)strlen(line);
-        if (len > 0 && // there is something to write
+        if (len > 0 && // something to write
             ((success = WriteFile(file, line, len, &written, NULL)) == 0 ||
              written != (DWORD)len))
         {
@@ -991,7 +991,7 @@ BOOL MatchString(char* beg, char* end, const char* str, char** afterStr)
     return FALSE;
 }
 
-// returns a null-terminated allocated string from 'beg' to 'end'; on low memory
+// returns a newly allocated null-terminated string from 'beg' to 'end'; if memory allocation fails
 // returns NULL and stores FALSE in 'ret'
 char* AllocString(char* beg, char* end, BOOL* ret)
 {
@@ -1009,13 +1009,13 @@ char* AllocString(char* beg, char* end, BOOL* ret)
     return s;
 }
 
-// gradually reads a string from the file lines; the currently processed line is 'line' to 'lineEnd'
+// reads a string incrementally from the file lines; the currently processed line is 'line' to 'lineEnd'
 // (not null-terminated); 'firstLine' is an IN/OUT variable initialized to
-// TRUE, the ReadStrFromLines function changes it to FALSE as soon as it finds the beginning of the string;
+// TRUE; ReadStrFromLines changes it to FALSE as soon as it finds the beginning of the string;
 // 'dynStr' receives the part of the string read from the currently processed line; the pointers
-// 'firstLine' and 'dynStr' do not change during the loading of one string (they act as global
-// data); in 'success' (must not be NULL) FALSE is returned on a syntax error or a
-// 'dynStr' allocation error; returns TRUE if the entire string has already been read and in 'isNULLStr' returns
+// 'firstLine' and 'dynStr' do not change while reading one string (they serve as global
+// data); 'success' (must not be NULL) is set to FALSE on a syntax error or a
+// 'dynStr' allocation error; returns TRUE if the entire string has already been read, and 'isNULLStr' returns
 // TRUE if it is NULL (otherwise the string is stored in 'dynStr')
 BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
                       CDynString* dynStr, BOOL* success, BOOL* isNULLStr)
@@ -1065,7 +1065,7 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
             {
                 foundEnd = TRUE;
                 eol = FALSE;
-                break; // end of the string found (+ no more EOL)
+                break; // end of the string found (+ no following EOL)
             }
         }
         if (d + 2 >= end) // need to "flush" the local buffer to 'dynStr' (no space left for a character + EOL)
@@ -1086,9 +1086,9 @@ BOOL ReadStrFromLines(const char* line, const char* lineEnd, BOOL* firstLine,
     return foundEnd;
 }
 
-// helper function: if 'isNULLStr' is TRUE, it returns NULL in 'str'; otherwise, if 'success'
-// is TRUE, it tries to duplicate the 'dynStr' string into 'str', and on low memory returns
-// 'success' as FALSE
+// helper function: if 'isNULLStr' is TRUE, it stores NULL in 'str'; otherwise, if 'success'
+// is TRUE, it tries to duplicate the 'dynStr' string into 'str' and sets
+// 'success' to FALSE on out-of-memory
 void GetStrResult(char** str, BOOL* success, CDynString* dynStr, BOOL isNULLStr)
 {
     if (isNULLStr)
@@ -1278,7 +1278,7 @@ BOOL CServerType::ImportFromFile(HANDLE file, DWORD* err, int* errResID)
             case 5: // load columns
             {
                 BOOL read2 = TRUE;
-                if (strFirstLine) // the string has not started yet, check whether there is still a column on the line or whether they have ended
+                if (strFirstLine) // the string has not started yet, check whether there is still a column on the line or whether the columns have ended
                 {
                     char* s2 = lineBeg;
                     while (s2 < lineEnd && *s2 <= ' ')
@@ -1497,16 +1497,17 @@ CProxyScriptParams::CProxyScriptParams()
 }
 
 // 'buf' with size 'bufSize' is the buffer for the resulting text (host or command);
-// 'logBuf' with size 'logBufSize' is the buffer for the resulting text that can be published in the log
+// 'logBuf' with size 'logBufSize' is the buffer for the resulting text suitable for publishing in the log
 // (commands only - passwords are not published, they are replaced with the word "hidden"); 'strBeg' to 'strEnd'
-// is the script text to be expanded; 'hostVarsOnly' is TRUE when expanding
-// the host (only the Host and ProxyHost variables are allowed, and CRLF is not appended at the end as it is for commands);
-// 'proxyHostNeeded' (if not NULL) returns TRUE when the $(ProxyHost) variable is used during the expansion
+// is the script text to expand; 'hostVarsOnly' is TRUE when expanding
+// the host (only the Host and ProxyHost variables are allowed, and CRLF is not appended at the end as it is
+// for commands); 'proxyHostNeeded' (if not NULL) receives TRUE if the $(ProxyHost) variable is used during
+// string expansion
 // return values:
-// - error: returns FALSE, the error code is returned in 'errCode' and '*errorPos' gives the error position
-// - the line should be skipped: returns TRUE with 'skipThisLine'==TRUE
-// - missing variable values: returns FALSE, but 'errCode' is 0
-// - everything OK: returns TRUE with text in 'buf'
+// - error: returns FALSE, the error code is returned in 'errCode' and the error position is returned in '*errorPos'
+// - the line should be skipped: returns TRUE and 'skipThisLine'==TRUE
+// - variable values are missing: returns FALSE, but 'errCode' is 0
+// - everything OK: returns TRUE and the text is in 'buf'
 BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char* strBeg, const char* strEnd,
                 CProxyScriptParams* scriptParams, const char** errorPos, int* errCode,
                 BOOL hostVarsOnly, BOOL* skipThisLine, BOOL* proxyHostNeeded)
@@ -1743,7 +1744,7 @@ BOOL ExpandText(char* buf, int bufSize, char* logBuf, int logBufSize, const char
             int i;
             for (i = 0; i < 9; i++)
             {
-                if (needUserInput & (1 << i)) // necessarily means that 'scriptParams' is not NULL
+                if (needUserInput & (1 << i)) // implies that 'scriptParams' is not NULL
                 {
                     switch (i)
                     {
@@ -1830,7 +1831,7 @@ BOOL ProcessProxyScript(const char* script, const char** execPoint, int lastCmdR
     int errCode = 0;
     const char* s = *execPoint == NULL ? script : *execPoint;
     BOOL validateScript = scriptParams == NULL;
-    BOOL processNextLine = s > script; // TRUE = we should process the next line with a command in the script
+    BOOL processNextLine = s > script; // TRUE = process the next command line in the script
     if (s == script)                   // we are at the beginning of the script
     {
         while (*s != 0 && *s <= ' ')
@@ -2427,7 +2428,7 @@ BOOL CFTPProxyServer::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
     {
         saveProxyPassword = TRUE;
 
-        // detect and, if needed, clear the "unnecessary" (due to storing "save password" TRUE) empty scrambled password
+        // detect and, if needed, clear the empty scrambled password stored only to keep "save password" TRUE
         CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
         if (!passwordManager->IsPasswordEncrypted(proxyEncryptedPassword, proxyEncryptedPasswordSize))
         {

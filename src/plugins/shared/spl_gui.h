@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 //****************************************************************************
 //
@@ -12,33 +13,33 @@
 #pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_gui) // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_gui) // to make the structures independent of the current packing alignment
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
 #pragma option -a4
 #endif // __BORLANDC__
 
-////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 //                                                    //
-// Prostor WM_APP + 200 az WM_APP + 399 je v const.h  //
-// vyjmut z prostoru pouzivaneho pro interni zpravy   //
-// Salamandera.                                       //
+// WM_APP + 200 through WM_APP + 399 are reserved in  //
+// const.h and excluded from the range used for       //
+// Salamander internal messages.                                       //
 //                                                    //
-////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 // menu messages
-#define WM_USER_ENTERMENULOOP WM_APP + 200   // [0, 0] doslo ke vstupu do menu
-#define WM_USER_LEAVEMENULOOP WM_APP + 201   // [0, 0] byl ukoncen rezim menu loop; tato message je sendnuta pred postnutim commandu
-#define WM_USER_LEAVEMENULOOP2 WM_APP + 202  // [0, 0] byl ukoncen rezim menu loop; tato message je postnuta az po commandu
+#define WM_USER_ENTERMENULOOP WM_APP + 200   // [0, 0] menu mode entered
+#define WM_USER_LEAVEMENULOOP WM_APP + 201   // [0, 0] menu loop mode ended; this message is sent before the command is posted
+#define WM_USER_LEAVEMENULOOP2 WM_APP + 202  // [0, 0] menu loop mode ended; this message is posted only after the command
 #define WM_USER_INITMENUPOPUP WM_APP + 204   // [(CGUIMenuPopupAbstract*)menuPopup, LOWORD(uPos), HIWORD(uID)]
 #define WM_USER_UNINITMENUPOPUP WM_APP + 205 // [(CGUIMenuPopupAbstract*)menuPopup, LOWORD(uPos), HIWORD(uID)]
 #define WM_USER_CONTEXTMENU WM_APP + 206     // [(CGUIMenuPopupAbstract*)menuPopup, (BOOL)fromMouse \
-                                             //   (pokud dojde mysi akci, je rovno TRUE (pouzit GetMessagePos); \
-                                             //    pokud jde o klavesnicovou akci VK_APPS nebo Shift+F10, je rovno FALSE)] \
-                                             // p.s. pokud vrati TRUE, dojde ke spusteni prikazu menu nebo otevreni submenu \
-                                             // Pokud chceme v Salamu pretypovat menuPopup na CMenuPopup, \
-                                             // pouzijeme (CMenuPopup*)(CGUIMenuPopupAbstract*)menuPopup.
+                                             // (if triggered by a mouse event, it is TRUE (use GetMessagePos); \
+                                             //    if triggered by the keyboard event VK_APPS or Shift+F10, it is FALSE)] \
+                                             // p.s. if it returns TRUE, a menu command is executed or a submenu is opened \
+                                             // To cast menuPopup to CMenuPopup in Salamander, \
+                                             // use (CMenuPopup*)(CGUIMenuPopupAbstract*)menuPopup.
 
 // toolbar messages
 #define WM_USER_TBDROPDOWN WM_APP + 220    // [HWND hToolBar, int buttonIndex]
@@ -50,13 +51,13 @@
 #define WM_USER_TBENUMBUTTON2 WM_APP + 227 // [HWND hToolBar, TLBI_ITEM_INFO2 *tii]
 
 // tooltip messages
-#define TOOLTIP_TEXT_MAX 5000          // maximalni delka retezce tool tipu (zprava WM_USER_TTGETTEXT)
-#define WM_USER_TTGETTEXT WM_APP + 240 // [ID predany v SetCurrentToolTip, buffer omezeny TOOLTIP_TEXT_MAX]
+#define TOOLTIP_TEXT_MAX 5000          // maximum tooltip text length (WM_USER_TTGETTEXT message)
+#define WM_USER_TTGETTEXT WM_APP + 240 // [ID passed to SetCurrentToolTip, buffer limited to TOOLTIP_TEXT_MAX]
 
 // button pressed
-#define WM_USER_BUTTON WM_APP + 244 // [(LO)WORD buttonID, (LO)WORD udalost byla vyvolana z klavesnice, pokud otevirame menu, vybrat prvni polozku]
+#define WM_USER_BUTTON WM_APP + 244 // [(LO)WORD buttonID, (LO)WORD event triggered from the keyboard; if opening a menu, select the first item]
 // drop down of button pressed
-#define WM_USER_BUTTONDROPDOWN WM_APP + 245 // [(LO)WORD buttonID, (LO)WORD udalost byla vyvolana z klavesnice, pokud otevirame menu, vybrat prvni polozku]
+#define WM_USER_BUTTONDROPDOWN WM_APP + 245 // [(LO)WORD buttonID, (LO)WORD event triggered from the keyboard; if opening a menu, select the first item]
 
 #define WM_USER_KEYDOWN WM_APP + 246 // [(LO)WORD ctrlID, DWORD virtual-key code]
 
@@ -68,97 +69,97 @@
 class CGUIProgressBarAbstract
 {
 public:
-    // nastavuje progres, pripadne text uprostred
+    // Sets the progress and optionally the text in the center
     //
-    // existuje bezpecnejsi varianta SetProgress2(), podivejte se na ni nez pouzijete tuto metodu
+    // A safer variant, SetProgress2(), exists; check it before using this method.
     //
-    // progres dokaze pracovat ve dvou rezimech:
-    //   1) pro 'progress' >= 0 jde o klasicky teplomer 0% az 100%
-    //      v tomto rezimu lze pomoci promenne 'text' nastavit vlastni text zobrazeny uprostred
-    //      pokud je 'text' == NULL, zobrazi se uprostred standardni procenta
-    //   2) pro 'progress' == -1 jde o neurcity stav, kdy maly obdelnicek jezdi tam a zpet
-    //      pohyb se ridi pomoci metod SetSelfMoveTime(), SetSelfMoveSpeed() a Stop()
+    // The progress control can work in two modes:
+    //   1) for 'progress' >= 0 it is a standard progress bar from 0% to 100%
+    //      in this mode, the 'text' variable can be used to set custom text shown in the center
+    //      if 'text' == NULL, the standard percentage is shown in the center
+    //   2) for 'progress' == -1 it is an indeterminate state in which a small rectangle moves back and forth
+    //      the movement is controlled by SetSelfMoveTime(), SetSelfMoveSpeed(), and Stop()
     //
-    // prekresleni se provadi okamzite; u vetsiny operaci je vhodne data ukladat v parent
-    // dialogu do cache a spustit si 100ms timer, na ktery teprve volat tuto metodu
+    // Redrawing is immediate; for most operations it is better to cache the data in the parent
+    // dialog and start a 100 ms timer that calls this method.
     //
-    // mozne volat z libovolneho threadu, thread s controlem musi bezet, jinak dojde k zablokovani
-    // (pro doruceni hodnoty 'progress' controlu se pouziva SendMessage);
+    // Can be called from any thread; the control's thread must be running, otherwise the call blocks
+    // (SendMessage is used to deliver the 'progress' value to the control);
     virtual void WINAPI SetProgress(DWORD progress, const char* text) = 0;
 
-    // ma vyznam v kombinaci s volanim SetProgress(-1)
-    // urcuje kolik milisekund po zavolani SetProgress(-1) se jeste bude obdelnicek sam pohybovat
-    // pokud v tuto dobu dojde k zavolani dalsiho SetProgress(-1), cas se pocita zase od zacatku
-    // pokud je 'time'==0, posune se obdelnicek pouze jednou prave pri zavolani SetProgress(-1)
-    // pro hodnotu 'time'==0xFFFFFFFF se bude obdelnicek posouvat do nekonecna (implicitni hodnota)
+    // Used together with SetProgress(-1)
+    // specifies how many milliseconds the rectangle keeps moving on its own after SetProgress(-1) is called
+    // if another SetProgress(-1) is called during that time, the time is counted from the start again
+    // if 'time' == 0, the rectangle moves only once, exactly when SetProgress(-1) is called
+    // for 'time' == 0xFFFFFFFF, the rectangle keeps moving indefinitely (default value)
     virtual void WINAPI SetSelfMoveTime(DWORD time) = 0;
 
-    // ma vyznam v kombinaci s volanim SetProgress(-1)
-    // urcuje cas mezi posunutim obdelnicku v milisekundach
-    // implicitni hodnota je 'moveTime'==50, coz znamena 20 pohybu za vterinu
+    // Used together with SetProgress(-1)
+    // specifies the time between rectangle moves, in milliseconds
+    // the default value is 'moveTime' == 50, which means 20 moves per second
     virtual void WINAPI SetSelfMoveSpeed(DWORD moveTime) = 0;
 
-    // ma vyznam v kombinaci s volanim SetProgress(-1)
-    // pokud se obdelnicek prave pohybuje (diky SetSelfMoveTime), bude zastaven
+    // Used together with SetProgress(-1)
+    // if the rectangle is currently moving (because of SetSelfMoveTime), it is stopped
     virtual void WINAPI Stop() = 0;
 
-    // nastavuje progres, pripadne text uprostred
+    // Sets the progress and optionally the text in the center
     //
-    // proti SetProgress() ma vyhodu v tom, ze pokud je 'progressCurrent' >= 'progressTotal',
-    // nastavi progres primo: je-li 'progressTotal' 0 nastavi 0%, jinak 100% a neprovadi vypocet
-    // (je nesmyslny + rve na nem RTC kvuli pretypovani), tento "nepovoleny" stav nastava
-    // napr. pri zvetseni souboru behem operace nebo pri praci s linky na soubor - linky maji
-    // nulovou velikost, ale pak jsou na nich data o velikosti nalinkovaneho souboru,
-    // pokud si vypocet provedete sami, je nutne tento "nepovoleny" stav osetrit
+    // Compared to SetProgress(), this method has the advantage that if 'progressCurrent' >= 'progressTotal',
+    // Sets the progress directly: if 'progressTotal' is 0 it sets 0%, otherwise 100%, and does not perform the calculation
+    // (it is meaningless and triggers RTC because of the cast). This "disallowed" state occurs,
+    // for example, when a file grows during the operation or when working with file links - links have
+    // zero size, but then contain data with the size of the linked file.
+    // If you do the calculation yourself, you must handle this "disallowed" state.
     //
-    // progres dokaze pracovat ve dvou rezimech (viz SetProgress()), touto metodou lze
-    // nastavovat jen v rezimu 1):
-    //   1) jde o klasicky teplomer 0% az 100%
-    //      v tomto rezimu lze pomoci promenne 'text' nastavit vlastni text zobrazeny uprostred
-    //      pokud je 'text' == NULL, zobrazi se uprostred standardni procenta
+    // The progress control can work in two modes (see SetProgress()); this method can be used
+    // only in mode 1):
+    //   1) it is a standard progress bar from 0% to 100%
+    //      in this mode, the 'text' variable can be used to set custom text shown in the center
+    //      if 'text' == NULL, the standard percentage is shown in the center
     //
-    // prekresleni se provadi okamzite; u vetsiny operaci je vhodne data ukladat v parent
-    // dialogu do cache a spustit si 100ms timer, na ktery teprve volat tuto metodu
+    // Redrawing is immediate; for most operations it is better to cache the data in the parent
+    // dialog and start a 100 ms timer that calls this method.
     //
-    // mozne volat z libovolneho threadu, thread s controlem musi bezet, jinak dojde k zablokovani
-    // (pro doruceni hodnoty 'progress' controlu se pouziva SendMessage);
+    // Can be called from any thread; the control's thread must be running, otherwise the call blocks
+    // (SendMessage is used to deliver the 'progress' value to the control);
     virtual void WINAPI SetProgress2(const CQuadWord& progressCurrent, const CQuadWord& progressTotal,
                                      const char* text) = 0;
 
-    // priklady pouziti:
+    // Usage examples:
     //
-    // 1. obdelnicek chceme posouvat rucne, bez naseho prispeni se nepohybuje
+    // 1. We want to move the indicator manually; it does not move on its own
     //
-    //   SetSelfMoveTime(0)           // zakazeme samovolny pohyb
-    //   SetProgress(-1, NULL)        // posuneme o jeden dilek
+    //   SetSelfMoveTime(0)           // disable automatic movement
+    //   SetProgress(-1, NULL)        // move it by one step
     //   ...
-    //   SetProgress(-1, NULL)        // posuneme o jeden dilek
+    //   SetProgress(-1, NULL)        // move it by one step
     //
-    // 2. obdelnicek se ma pohybovat samostatne a do az do zavolani Stop
+    // 2. The indicator should move on its own until Stop is called
     //
-    //   SetSelfMoveTime(0xFFFFFFFF)  // nekonecny pohyb
-    //   SetSelfMoveSpeed(50)         // 20 pohybu za vterinu
-    //   SetProgress(-1, NULL)        // nastartujeme obdelnicek
-    //   ...                          // neco kutime
-    //   Stop()                       // zastavime obdelnicek
+    //   SetSelfMoveTime(0xFFFFFFFF)  // infinite movement
+    //   SetSelfMoveSpeed(50)         // 20 moves per second
+    //   SetProgress(-1, NULL)        // start the indicator
+    //   ...                          // do some work
+    //   Stop()                       // stop the indicator
     //
-    // 3. obdelnicek se ma pohybovat omezenou dobu, po ktere se zastavi
-    //   pokud do nej behem teto doby "drcneme", doba se obnovi
+    // 3. The indicator should move for a limited time and then stop
+    //   if we "nudge" it during that time, the timeout is reset
     //
-    //   SetSelfMoveTime(1000)        // samovolne se pohybuje vterinu, pak se zastavi
-    //   SetSelfMoveSpeed(50)         // 20 pohybu za vterinu
-    //   SetProgress(-1, NULL)        // nastartujeme obdelnicek na dobu jedne vteriny
+    //   SetSelfMoveTime(1000)        // moves on its own for one second, then stops
+    //   SetSelfMoveSpeed(50)         // 20 moves per second
+    //   SetProgress(-1, NULL)        // start the indicator for one second
     //   ...
-    //   SetProgress(-1, NULL)        // ozivime obdelnicek na dalsi vterinu
+    //   SetProgress(-1, NULL)        // restart the indicator for another second
     //
-    // 4. behem operace doslo k pausnuti a chceme to vizualizovat v progress bar
+    // 4. The operation was paused and we want to show it on the progress bar
     //
     //   SetProgress(0, NULL)         // 0%
     //   SetProgress(100, NULL)       // 10%
     //   SetProgress(200, NULL)       // 20%
-    //   SetProgress(300, "(paused)") // 30% -- misto "30 %" se zobrazi text "(paused)"
-    //   ... (cekame na resume)
-    //   SetProgress(300, NULL)       // 30% (text paused) zase vypneme a jedeme dal
+    //   SetProgress(300, "(paused)") // 30% -- "(paused)" is shown instead of "30 %"
+    //   ... (waiting for resume)
+    //   SetProgress(300, NULL)       // 30% -- turn off the paused text and continue
     //   SetProgress(400, NULL)       // 40%
     //   ...
 };
@@ -168,46 +169,46 @@ public:
 // CGUIStaticTextAbstract
 //
 
-#define STF_CACHED_PAINT 0x0000000001    // zobrazeni textu pojede pres cache (nebude blikat) \
-                                         // POZOR: zobrazeni je radove pomalejsi nez bez tohoto flagu. \
-                                         // Nepouzivat v pripade textu v dialogu, ktere se zobrazi \
-                                         // jednou a pak zustavaji nemenne. \
-                                         // Pouzivat u casto/rychle se menicich textu (provadena operace).
-#define STF_BOLD 0x0000000002            // pro text bude pouzit tucny font
-#define STF_UNDERLINE 0x0000000004       // pro text bude pouzit font s podtrzenim (pro spatnou citelnost \
-                                         // pouzivat pouze pro HyperLink a specialni pripady)
-#define STF_DOTUNDERLINE 0x0000000008    // text bude carkovane podtrzeny (pro spatnou citelnost \
-                                         // pouzivat pouze pro HyperLink a specialni pripady)
-#define STF_HYPERLINK_COLOR 0x0000000010 // barva textu bude urcena podle barvy hyperlinku
-#define STF_END_ELLIPSIS 0x0000000020    // pokud bude text prilis dlouhy, bude ukoncen vypustkou "..."
-#define STF_PATH_ELLIPSIS 0x0000000040   // pokud bude text prilis dlouhy, bude zkracen a bude do nej vlozena \
-                                         // vypustka "..." tak, aby byl konec viditelny
-#define STF_HANDLEPREFIX 0x0000000080    // znaky za '&' budou podtrzene; nelze pouzit s STF_END_ELLIPSIS nebo s STF_PATH_ELLIPSIS
+#define STF_CACHED_PAINT 0x0000000001    // text is drawn through the cache (it will not flicker) \
+                                         // WARNING: drawing is much slower than without this flag. \
+                                         // Do not use it for dialog text that is displayed \
+                                         // once and then remains unchanged. \
+                                         // Use it for frequently or rapidly changing text (current operation).
+#define STF_BOLD 0x0000000002            // a bold font is used for the text
+#define STF_UNDERLINE 0x0000000004       // an underlined font is used for the text (because of poor readability \
+                                         // use only for HyperLink and special cases)
+#define STF_DOTUNDERLINE 0x0000000008    // the text uses dotted underline (because of poor readability \
+                                         // use only for HyperLink and special cases)
+#define STF_HYPERLINK_COLOR 0x0000000010 // the text color is determined by the hyperlink color
+#define STF_END_ELLIPSIS 0x0000000020    // if the text is too long, it is truncated with an ellipsis "..."
+#define STF_PATH_ELLIPSIS 0x0000000040   // if the text is too long, it is shortened and an ellipsis "..." is inserted \
+                                         // so that the end remains visible
+#define STF_HANDLEPREFIX 0x0000000080    // Characters after '&' are underlined; cannot be used with STF_END_ELLIPSIS or STF_PATH_ELLIPSIS
 
 class CGUIStaticTextAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
     //
-    // Control lze v dialogu navstivit z klavesnice, pokud mu priradime styl WS_TABSTOP.
+    // The control can be reached from the keyboard in a dialog if it is given the WS_TABSTOP style.
 public:
-    // nastavi text controlu; volani teto metody je rychlejsi a mene vypocetne narocne
-    // nez nastavovani textu pomoci WM_SETTEXT; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the control text; calling this method is faster and less computationally expensive
+    // than setting the text with WM_SETTEXT; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetText(const char* text) = 0;
 
-    // vrati text controlu; mozne volat z libovolneho threadu;
-    // vrati NULL, pokud jeste nebylo volano SetText a static control byl bez textu
+    // Returns the control text; can be called from any thread.
+    // Returns NULL if SetText has not been called yet and the static control had no text
     virtual const char* WINAPI GetText() = 0;
 
-    // nastavi znak pro oddeleni casti cesty; ma vyznam v pripade STF_PATH_ELLIPSIS;
-    // implicitne je nastaveno na '\\';
+    // Sets the character used to separate path components; used with STF_PATH_ELLIPSIS;
+    // default is '\\';
     virtual void WINAPI SetPathSeparator(char separator) = 0;
 
-    // priradi text, ktery bude zobrazen jako tooltip
-    // vraci TRUE, pokud se podarilo naalokovat kopii textu, jinak vraci FALSE
+    // Sets the text to be shown as a tooltip
+    // returns TRUE if a copy of the text was allocated successfully, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
-    // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
+    // Sets the window and ID to which WM_USER_TTGETTEXT is sent when the tooltip is displayed
     virtual void WINAPI SetToolTip(HWND hNotifyWindow, DWORD id) = 0;
 };
 
@@ -218,43 +219,43 @@ public:
 
 class CGUIHyperLinkAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
     //
-    // Control lze v dialogu navstivit z klavesnice, pokud mu priradime styl WS_TABSTOP.
+    // The control can be reached from the keyboard in a dialog if it is given the WS_TABSTOP style.
 public:
-    // nastavi text controlu; volani teto metody je rychlejsi a mene vypocetne narocne
-    // nez nastavovani textu pomoci WM_SETTEXT; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the control text; calling this method is faster and less computationally expensive
+    // than setting the text with WM_SETTEXT; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetText(const char* text) = 0;
 
-    // vrati text controlu; mozne volat z libovolneho threadu
-    // vrati NULL, pokud jeste nebylo volano SetText a static control byl bez textu
+    // Returns the control text; can be called from any thread.
+    // Returns NULL if SetText has not been called yet and the static control had no text
     virtual const char* WINAPI GetText() = 0;
 
-    // priradi akci otevreni URL adresy (file="https://www.altap.cz") nebo
-    // spusteni programu (file="C:\\TEST.EXE"); na parametr je volano
-    // ShellExecute s 'open' commandem.
+    // Assigns an action that opens a URL (file="https://www.altap.cz") or
+    // launches a program (file="C:\\TEST.EXE"); ShellExecute
+    // is called for the parameter with the 'open' verb.
     virtual void WINAPI SetActionOpen(const char* file) = 0;
 
-    // priradi akci PostCommand(WM_COMMAND, command, 0) do parent okna
+    // Assigns the action PostCommand(WM_COMMAND, command, 0) to the parent window
     virtual void WINAPI SetActionPostCommand(WORD command) = 0;
 
-    // priradi akci zobrazeni hintu a tooltipu 'text'
-    // pokud je text NULL, je mozne tooltip priradit volanim metody
-    // SetToolTipText nebo SetToolTip; metoda pak vraci vzdy TRUE
-    // pokud je text ruzny od NULL, vraci metoda TRUE, pokud se podarilo
-    // naalokovat kopii textu, jinak vraci FALSE
-    // tooltip je mozne zobrazit kavesou Space/Up/Down (pokud je focus
-    // na controlu) a kliknutim mysi; hint (tooltip) je pak zobrazen primo
-    // pod textem a nezavre se dokud uzivatel neklikne mimo nej mysi nebo
-    // nestiskne nejakou klavesu
+    // Assigns the action that shows the hint and tooltip text 'text'
+    // if 'text' is NULL, the tooltip can be assigned by calling
+    // SetToolTipText or SetToolTip; the method then always returns TRUE
+    // if 'text' is not NULL, the method returns TRUE if it succeeds
+    // in allocating a copy of the text; otherwise it returns FALSE
+    // the tooltip can be shown with Space/Up/Down (if the control
+    // has focus) or by clicking the mouse; the hint (tooltip) is then shown directly
+    // below the text and stays open until the user clicks outside it with the mouse or
+    // presses a key
     virtual BOOL WINAPI SetActionShowHint(const char* text) = 0;
 
-    // priradi text, ktery bude zobrazen jako tooltip
-    // vraci TRUE, pokud se podarilo naalokovat kopii textu, jinak vraci FALSE
+    // Sets the text to be shown as a tooltip
+    // returns TRUE if a copy of the text was allocated successfully, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
-    // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
+    // Sets the window and ID to which WM_USER_TTGETTEXT is sent when the tooltip is displayed
     virtual void WINAPI SetToolTip(HWND hNotifyWindow, DWORD id) = 0;
 };
 
@@ -265,13 +266,13 @@ public:
 
 class CGUIButtonAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
 public:
-    // priradi text, ktery bude zobrazen jako tooltip; vraci TRUE v pripade uspechu, jinak FALSE
+    // Sets the text to be shown as a tooltip; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI SetToolTipText(const char* text) = 0;
 
-    // priradi okno a id, kteremu se pri zobrazeni tooltipu zasle WM_USER_TTGETTEXT
+    // Sets the window and ID to which WM_USER_TTGETTEXT is sent when the tooltip is displayed
     virtual void WINAPI SetToolTip(HWND hNotifyWindow, DWORD id) = 0;
 };
 
@@ -282,22 +283,22 @@ public:
 
 class CGUIColorArrowButtonAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
 public:
-    // nastavi barvu textu 'textColor' a barvu pozadi 'bkgndColor'
+    // Sets the text color 'textColor' and background color 'bkgndColor'
     virtual void WINAPI SetColor(COLORREF textColor, COLORREF bkgndColor) = 0;
 
-    // nastavi barvu textu 'textColor'
+    // Sets the text color 'textColor'
     virtual void WINAPI SetTextColor(COLORREF textColor) = 0;
 
-    // nastavi barvu pozadi 'bkgndColor'
+    // Sets the background color 'bkgndColor'
     virtual void WINAPI SetBkgndColor(COLORREF bkgndColor) = 0;
 
-    // vrati barvu textu
+    // Returns the text color
     virtual COLORREF WINAPI GetTextColor() = 0;
 
-    // vrati barvu pozadi
+    // Returns the background color
     virtual COLORREF WINAPI GetBkgndColor() = 0;
 };
 
@@ -311,19 +312,19 @@ public:
 #define MNTT_PE 3 // popup end
 #define MNTT_SP 4 // separator
 
-#define MNTS_B 0x01 // skill level beginned
+#define MNTS_B 0x01 // skill level beginner
 #define MNTS_I 0x02 // skill level intermediate
 #define MNTS_A 0x04 // skill level advanced
 
 struct MENU_TEMPLATE_ITEM
 {
     int RowType;      // MNTT_*
-    int TextResID;    // resource textu
+    int TextResID;    // text resource
     BYTE SkillLevel;  // MNTS_*
-    DWORD ID;         // genrovany command
-    short ImageIndex; // -1 = zadna ikonka
+    DWORD ID;         // generated command
+    short ImageIndex; // -1 = no icon
     DWORD State;
-    DWORD* Enabler; // ridici promenna pro enablovani polozky
+    DWORD* Enabler; // state variable for enabling the item
 };
 
 //
@@ -362,9 +363,9 @@ struct MENU_TEMPLATE_ITEM
 #define MENU_LEVEL_ADVANCED 0x00000004
 
 #define MENU_POPUP_THREECOLUMNS 0x00000001
-#define MENU_POPUP_UPDATESTATES 0x00000002 // pred otevrenim se zavola UpdateStates
+#define MENU_POPUP_UPDATESTATES 0x00000002 // UpdateStates is called before opening
 
-// tyto flagy jsou v prubehu vetve modifikovany pro jednolive popupy
+// these flags are modified for individual popups within a Track branch
 #define MENU_TRACK_SELECT 0x00000001 // If this flag is set, the function select item specified by SetSelectedItemIndex.
 //#define MENU_TRACK_LEFTALIGN    0x00000000 // If this flag is set, the function positions the shortcut menu so that its left side is aligned with the coordinate specified by the x parameter.
 //#define MENU_TRACK_TOPALIGN     0x00000000 // If this flag is set, the function positions the shortcut menu so that its top side is aligned with the coordinate specified by the y parameter.
@@ -374,7 +375,7 @@ struct MENU_TEMPLATE_ITEM
 #define MENU_TRACK_VCENTERALIGN 0x00000008 // If this flag is set, the function centers the shortcut menu vertically relative to the coordinate specified by the y parameter.
 #define MENU_TRACK_BOTTOMALIGN 0x00000010  // If this flag is set, the function positions the shortcut menu so that its bottom side is aligned with the coordinate specified by the y parameter.
 #define MENU_TRACK_VERTICAL 0x00000100     // If the menu cannot be shown at the specified location without overlapping the excluded rectangle, the system tries to accommodate the requested vertical alignment before the requested horizontal alignment.
-// spolecne flagy pro jednu vetev Track
+// flags shared by one Track branch
 #define MENU_TRACK_NONOTIFY 0x00001000  // If this flag is set, the function does not send notification messages when the user clicks on a menu item.
 #define MENU_TRACK_RETURNCMD 0x00002000 // If this flag is set, the function returns the menu item identifier of the user's selection in the return value.
 //#define MENU_TRACK_LEFTBUTTON   0x00000000 // If this flag is set, the user can select menu items with only the left mouse button.
@@ -409,80 +410,80 @@ Mask
   Members to retrieve or set. This member can be one or more of these values.
 
 Type
-  Typ polozky. Tato promenna muze nabivat jednu nebo vice hodnot:
+  Item type. This member can have one or more of these values:
 
-   MENU_TYPE_OWNERDRAW    Vykresleni polozek zajisti okno vlasntici menu.
-                          Pro kazdou polozku menu je zaslan dotaz WM_MEASUREITEM a
-                          WM_DRAWITEM. Promenna TypeData obsahuje 32-buitovou
-                          hodnotu definovanou aplikaci.
+   MENU_TYPE_OWNERDRAW    Item drawing is handled by the window that owns the menu.
+                          Each menu item receives WM_MEASUREITEM and
+                          WM_DRAWITEM messages. TypeData contains a 32-bit
+                          application-defined value.
 
-   MENU_TYPE_RADIOCHECK   Checked polozky jsou zobrazovany s teckou misto s fajfkou,
-                          je-li HBmpChecked rovno NULL.
+   MENU_TYPE_RADIOCHECK   Checked items are shown with a dot instead of a check mark
+                          if HBmpChecked is NULL.
 
-   MENU_TYPE_SEPARATOR    Horiznotalni oddelovaci cara. TypeData nema vyznam.
+   MENU_TYPE_SEPARATOR    Horizontal separator line. TypeData is unused.
 
-   MENU_TYPE_STRING       Polozka obsahuje textovy retezec. TypeData ukazuje na nulou
-                          zakonceny retzec.
+   MENU_TYPE_STRING       The item contains a text string. TypeData points to a null-
+                          terminated string.
 
-   MENU_TYPE_BITMAP       Polozka obsahuje bitmapu.
+   MENU_TYPE_BITMAP       The item contains a bitmap.
 
-  Hodnoty MENU_TYPE_BITMAP, MENU_TYPE_SEPARATOR a MENU_TYPE_STRING nemohou byt pouzity spolecne.
+  MENU_TYPE_BITMAP, MENU_TYPE_SEPARATOR, and MENU_TYPE_STRING cannot be used together.
 
 State
-  Stav polozky. Tato promenna muze nabivat jednu nebo vice hodnot:
+  Item state. This member can have one or more of these values:
 
-   MENU_STATE_CHECKED     Polozka je checked.
+   MENU_STATE_CHECKED     The item is checked.
 
-   MENU_STATE_DEFAULT     Menu muze obsahovat pouze jednu default polozku. Je
-                          vykreslna tucne.
+   MENU_STATE_DEFAULT     The menu can contain only one default item. It is
+                          drawn in bold.
 
-   MENU_STATE_GRAYED      Zakaze polozku - bude sediva a nepujde vybrat.
+   MENU_STATE_GRAYED      Disables the item; it is shown in gray and cannot be selected.
 
 SkillLevel
-  Uzivatelska uroven polozky. Tato promena muze nabyvat jedne z hodnot:
+  User skill level of the item. This member can have one of these values:
 
-   MENU_LEVEL_BEGINNER       zacatecnik - bude se zobrazovat vzdy
-   MENU_LEVEL_INTERMEDIATE   stredni - bude se zobrazovat guru a strednim uzivatelum
-   MENU_LEVEL_ADVANCED       pokrocily - bude se zobrazovat pouze guru uzivatelum
+   MENU_LEVEL_BEGINNER       beginner - always shown
+   MENU_LEVEL_INTERMEDIATE   intermediate - shown to guru and intermediate users
+   MENU_LEVEL_ADVANCED       advanced - shown only to guru users
 
 ID
-  Aplikaci definovana 16-bitova hodnota, ktera identifikuje polozku menu.
+  Application-defined 16-bit value that identifies the menu item.
 
 SubMenu
-  Ukazatel na popup menu pripojeneho na tutu polozku. Pokud tato polozka
-  neotevira submenu, je SubMenu rovno NULL.
+  Pointer to the popup menu attached to this item. If this item
+  does not open a submenu, SubMenu is NULL.
 
 HBmpChecked
-  Handle bitmapy, ktera je zobrazena pred polozkou v pripade, ze je polozka
-  checked. Je-li tato promenna rovna NULL, pouzije
-  se implicitni bitmapa. Jel-li nastaven bit MENU_TYPE_RADIOCHECK, je implicitni
-  bitmapa tecka, jinak zatrznitko. Je-li ImageIndex ruzne od -1, nebude
-  se tato bitmapa pouzivat.
+  Handle of the bitmap shown before the item when the item is
+  checked. If this member is NULL, the default
+  bitmap is used. If the MENU_TYPE_RADIOCHECK bit is set, the default
+  bitmap is a dot; otherwise it is a check mark. If ImageIndex is not -1,
+  this bitmap is not used.
 
 HBmpUnchecked
-  Handle bitmapy, ktera je zobrazena pred polozkou v pripade, ze neni polozka
-  checked. Jeli tato promenna rovna NULL, nebude
-  zobrazena zadna bitmapa. Je-li ImageIndex ruzne od -1, nebude
-  se tato bitmapa pouzivat.
+  Handle of the bitmap shown before the item when the item is not
+  checked. If this member is NULL, no
+  bitmap is shown. If ImageIndex is not -1,
+  this bitmap is not used.
 
 ImageIndex
-  Index bitmapy v ImageListu CMenuPopup::HImageList. Bitmapa je vykreslena
-  pred polozkou. V zavislosti na MENU_STATE_CHECKED a MENU_STATE_GRAYED.
-  Je-li promenna rovna -1, nebude se vykreslovat.
+  Bitmap index in the CMenuPopup::HImageList image list. The bitmap is drawn
+  before the item, depending on MENU_STATE_CHECKED and MENU_STATE_GRAYED.
+  If the member is -1, nothing is drawn.
 
 Enabler
-  Ukazatel na DWORD, ktery urcuje stav polozky: TRUE->enabled, FALSE->grayed.
-  Pokud je NULL, polozka bude enabled.
+  Pointer to a DWORD that determines the item state: TRUE->enabled, FALSE->grayed.
+  If it is NULL, the item is enabled.
 */
 
 class CGUIMenuPopupAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
 public:
     //
     // LoadFromTemplate
-    //   Builds menu contents based on 'menuTemplate',
+    //   Builds the menu contents from 'menuTemplate'.
     //
     // Parameters
     //   'hInstance'
@@ -492,28 +493,27 @@ public:
     //      [in] Pointer to a menu template.
     //
     //      A menu template consists of two or more MENU_TEMPLATE_ITEM structures.
-    //      'MENU_TEMPLATE_ITEM::RowType' of first structure must be MNTT_PB (popup begin).
-    //      'MENU_TEMPLATE_ITEM::RowType' of last structure must be MNTT_PE (popup end).
+    //      The 'MENU_TEMPLATE_ITEM::RowType' of the first structure must be MNTT_PB (popup begin).
+    //      The 'MENU_TEMPLATE_ITEM::RowType' of the last structure must be MNTT_PE (popup end).
     //
     //   'enablersOffset'
-    //      [in] Pointer to array of enablers.
+    //      [in] Pointer to an array of enablers.
     //
-    //      If this parameter is NULL, 'MENU_ITEM_INFO::Enabler' value is pointer to enabler
-    //      variable. Otherwise 'MENU_ITEM_INFO::Enabler' is index to the enablers array.
-    //      Zero index is reserved for "always enabled" item.
+    //      If this parameter is NULL, 'MENU_ITEM_INFO::Enabler' is a pointer to an enabler
+    //      variable. Otherwise, 'MENU_ITEM_INFO::Enabler' is an index into the enablers array.
+    //      Index zero is reserved for the "always enabled" item.
     //
     //   'hImageList'
-    //      [in] Handle of image list that the menu will use to display menu items images
-    //      that are in their default state.
+    //      [in] Handle to the image list that the menu will use to display menu item images
+    //      in their default state.
     //
     //      If this parameter is NULL, no images will be displayed in the menu items.
     //
     //   'hHotImageList'
-    //      [in] Handle of image list that the menu will use to display menu items images
-    //      that are in their selected or checked state.
+    //      [in] Handle to the image list that the menu will use to display menu item images
+    //      in their selected or checked state.
     //
     //      If this parameter is NULL, normal images will be displayed instead of hot images.
-    //
     //
     // Return Values
     //   Returns TRUE if successful, or FALSE otherwise.
@@ -1074,8 +1074,8 @@ public:
 
 class CGUIMenuBarAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
 public:
     //
     // CreateWnd
@@ -1149,11 +1149,11 @@ public:
     //
     virtual BOOL WINAPI GetItemRect(int index, RECT& r) = 0;
 
-    // prepne menu do Menu mode (jako by user stisknul a pustil Alt)
+    // switches the menu to Menu mode (as if the user pressed and released Alt)
     virtual void WINAPI EnterMenu() = 0;
-    // vraci TRUE, pokud je menu v Menu mode
+    // returns TRUE if the menu is in Menu mode
     virtual BOOL WINAPI IsInMenuLoop() = 0;
-    // prepina menu do Help mode (Shift + F1)
+    // switches the menu to Help mode (Shift + F1)
     virtual void WINAPI SetHelpMode(BOOL helpMode) = 0;
 
     //
@@ -1179,13 +1179,13 @@ public:
 
 // Toolbar Styles
 
-#define TLB_STYLE_IMAGE 0x00000001      // budou zobrazovany ikonky s ImageIndex != -1 \
-                                        // zaroven GetNeededSpace bude pocitat s vyskou ikonek
-#define TLB_STYLE_TEXT 0x00000002       // budou zobrazovany u polozek s nastavenym TLBI_STYLE_SHOWTEXT \
-                                        // zaroven GetNeededSpace bude pocitat s velikosti fontu
-#define TLB_STYLE_ADJUSTABLE 0x00000004 // lze toolbar konfigurovat?
-#define TLB_STYLE_VERTICAL 0x00000008   // tlacitka jsou pod sebou, separatory vodorovne, vylucuje se s TLB_STYLE_TEXT, \
-                                        // protoze svisle texty nejsou podporovany
+#define TLB_STYLE_IMAGE 0x00000001      // icons with ImageIndex != -1 are displayed \
+                                        // GetNeededSpace also accounts for icon height
+#define TLB_STYLE_TEXT 0x00000002       // text is displayed for items with TLBI_STYLE_SHOWTEXT set \
+                                        // GetNeededSpace also accounts for font size
+#define TLB_STYLE_ADJUSTABLE 0x00000004 // can the toolbar be customized?
+#define TLB_STYLE_VERTICAL 0x00000008   // buttons are arranged vertically, separators horizontally; incompatible with TLB_STYLE_TEXT, \
+                                        // because vertical text is not supported
 
 // Toolbar Item Masks
 #define TLBI_MASK_ID 0x00000001         // Retrieves or sets the 'ID' member.
@@ -1206,8 +1206,8 @@ public:
                                     // clicks it. The button has a different background color \
                                     // when it is in the pressed state.
 
-#define TLBI_STYLE_RADIO 0x00000002 // Pokud neni pri kliknuti TLBI_STATE_CHECKED, prepne se \
-                                    // do tohoto stavu. Pokud uz tam je, zustane tam.
+#define TLBI_STYLE_RADIO 0x00000002 // If TLBI_STATE_CHECKED is not set when clicked, it switches to \
+                                    // that state. If it is already set, it stays there.
 
 #define TLBI_STYLE_DROPDOWN 0x00000004 // Creates a drop-down style button that can display a \
                                        // list when the button is clicked. Instead of the \
@@ -1234,7 +1234,7 @@ public:
 #define TLBI_STYLE_SEPARATEDROPDOWN 0x00000080 // Specifies that the button will have a drop-down arrow, \
                                                // in separated section.
 
-#define TLBI_STYLE_FIXEDWIDTH 0x00000100 // Sirka teto polozky neni automaticky pocitana.
+#define TLBI_STYLE_FIXEDWIDTH 0x00000100 // the width of this item is not calculated automatically.
 
 // Toolbar Item States
 #define TLBI_STATE_CHECKED 0x00000001         // The button has the TLBI_STYLE_CHECK style and is being clicked.
@@ -1254,7 +1254,7 @@ struct TLBI_ITEM_INFO2
     int ImageIndex;
     HICON HIcon;
     HICON HOverlay;
-    DWORD CustomData; // FIXME_X64 - male pro ukazatel, neni nekdy potreba?
+    DWORD CustomData; // FIXME_X64 - too small for a pointer; is it ever needed?
     DWORD* Enabler;
 
     DWORD Index;
@@ -1263,51 +1263,51 @@ struct TLBI_ITEM_INFO2
 };
 
 /*
-Mask
-  TLBI_MASK_*
-
-Style
-  TLBI_STYLE_*
-
-State
-  TLBI_STATE_*
-
-ID
-  Command identifier associated with the button.
-  This identifier is used in a WM_COMMAND message when the button is chosen.
-
-Text
-  Text string displayed in the toolbar item.
-
-TextLen
-  Length of the toolbar item text, when information is received.
-
-Width
-  Width of the toolbar item text.
-
-ImageIndex
-  Zero-based index of the button image in the image list.
-
-HIcon
-  Handle to the icon to display instead of image list image.
-  Icon will not be destroyet.
-
-CustomData
-  Application-defined value associated with the toolbar item.
-
-Enabler
-  Pointer to the item enabler. Used in the UpdateItemsState.
-  0 -> item is TLBI_STATE_GRAYED; else item is enabled
-
-Index
-  For enumeration items in customize dialog.
-
-Name
-  Name in customize dialog.
-
-NameLen
-  Name len in customize dialog.
-*/
+ * Mask
+ *   TLBI_MASK_*
+ *
+ * Style
+ *   TLBI_STYLE_*
+ *
+ * State
+ *   TLBI_STATE_*
+ *
+ * ID
+ *   Command identifier associated with the button.
+ *   This identifier is used in a WM_COMMAND message when the button is selected.
+ *
+ * Text
+ *   Text string displayed in the toolbar item.
+ *
+ * TextLen
+ *   Length of the toolbar item text when information is retrieved.
+ *
+ * Width
+ *   Width of the toolbar item text.
+ *
+ * ImageIndex
+ *   Zero-based index of the button image in the image list.
+ *
+ * HIcon
+ *   Handle to the icon to display instead of an image-list image.
+ *   The icon is not destroyed.
+ *
+ * CustomData
+ *   Application-defined value associated with the toolbar item.
+ *
+ * Enabler
+ *   Pointer to the item enabler. Used in UpdateItemsState.
+ *   0 -> item is TLBI_STATE_GRAYED; otherwise the item is enabled
+ *
+ * Index
+ *   Used for enumeration items in the Customize dialog.
+ *
+ * Name
+ *   Name in the Customize dialog.
+ *
+ * NameLen
+ *   Length of the name in the Customize dialog.
+ */
 
 struct TOOLBAR_PADDING // The padding values are used to create a blank area
 {
@@ -1321,18 +1321,18 @@ struct TOOLBAR_PADDING // The padding values are used to create a blank area
 
 struct TOOLBAR_TOOLTIP
 {
-    HWND HToolBar;    // okno, ktere se dotazuje na tooltip
-    DWORD ID;         // ID buttonu, pro ktere je pozadovan tooltip
-    DWORD Index;      // index buttonu, pro ktere je pozadovan tooltip
-    DWORD CustomData; // custom data buttonu, pokud jsou definovany // FIXME_X64 - male pro ukazatel, neni nekdy potreba?
-    char* Buffer;     // tento buffer je treba naplnit, maximalni pocet znaku je TOOLTIP_TEXT_MAX
-                      // implicitne message je na nulty znak vlozen terminator
+    HWND HToolBar;    // window that requests the tooltip
+    DWORD ID;         // ID of the button whose tooltip is requested
+    DWORD Index;      // index of the button whose tooltip is requested
+    DWORD CustomData; // custom data of the button, if defined // FIXME_X64 - too small for a pointer; is it ever needed?
+    char* Buffer;     // this buffer must be filled; the maximum number of characters is TOOLTIP_TEXT_MAX
+                      // by default, the message is terminated at the first character
 };
 
 class CGUIToolBarAbstract
 {
-    // Vsechny metody je mozne volat pouze z threadu parent okna, ve kterem
-    // byl objekt pripojen na windows control a ziskan ukazatel na toto rozhrani.
+    // All methods may be called only from the thread of the parent window to whose Windows control
+    // this object was attached and from which the pointer to this interface was obtained.
 public:
     //
     // CreateWnd
@@ -1847,47 +1847,47 @@ public:
 // ****************************************************************************
 // CGUIIconListAbstract
 //
-// Nas interni 32-bitovy image list. 8 bitu na kazdy RGB kanal a 8 bitu alfa transparence.
+// Our internal 32-bit image list: 8 bits for each RGB channel and 8 bits for alpha transparency.
 
 class CGUIIconListAbstract
 {
 public:
-    // vytvori image list s rozmerem ikony 'imageWidth' x 'imageHeight' a poctem ikon
-    // 'imageCount'; pomoci volani metody ReplaceIcon() je potom potreba image list naplnit;
-    // vraci TRUE v pripade uspechu, jinak FALSE
+    // Creates an image list with icon size 'imageWidth' x 'imageHeight' and 'imageCount' icons.
+    // The image list must then be filled by calling ReplaceIcon().
+    // Returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI Create(int imageWidth, int imageHeight, int imageCount) = 0;
 
-    // vytvori se na zaklade dodaneho windows image listu ('hIL'); 'requiredImageSize' urcuje
-    // rozmer ikony, pokud je -1, pouziji se rozmery z 'hIL'; v pripade uspechu vraci TRUE,
-    // jinak FALSE
+    // Creates the image list from the supplied Windows image list ('hIL'); 'requiredImageSize' specifies
+    // the icon size; if it is -1, the size from 'hIL' is used; returns TRUE on success,
+    // otherwise FALSE
     virtual BOOL WINAPI CreateFromImageList(HIMAGELIST hIL, int requiredImageSize) = 0;
 
-    // vytvori se na zaklade dodaneho PNG resource; 'hInstance' a 'lpBitmapName' specifikuji resource,
-    // 'imageWidth' udava sirku jedne ikony v bodech; v pripade uspechu vraci TRUE, jinak FALSE
-    // poznamka: PNG musi byt pruh ikon jeden radek vysoky
-    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
+    // Creates the image list from the specified PNG resource; 'hInstance' and 'lpBitmapName' specify the resource,
+    // 'imageWidth' specifies the width of one icon in pixels; returns TRUE on success, otherwise FALSE
+    // Note: the PNG must be a one-row strip of icons.
+    // Note: it is recommended to compress the PNG with PNGSlim; see https://forum.altap.cz/viewtopic.php?f=15&t=3278
     virtual BOOL WINAPI CreateFromPNG(HINSTANCE hInstance, LPCTSTR lpBitmapName, int imageWidth) = 0;
 
-    // nahradi ikonu na danem indexu ikonou 'hIcon'; v pripade uspechu vraci TRUE, jinak FALSE
+    // Replaces the icon at the given index with 'hIcon'; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI ReplaceIcon(int index, HICON hIcon) = 0;
 
-    // vytvori ikonu z daneho indexu a vrati jeji handle; volajici je zodpovedny za jeji destrukci
-    // (volani DestroyIcon(hIcon)); v pripade neuspechu vraci NULL
+    // Creates an icon from the specified index and returns its handle; the caller is responsible for destroying it
+    // (call DestroyIcon(hIcon)); returns NULL on failure
     virtual HICON WINAPI GetIcon(int index) = 0;
 
-    // vytvori se na zaklade PNG podaneho v pameti; 'rawPNG' je ukazatel na pamet obsahujici PNG
-    // (napriklad nactene ze souboru) a 'rawPNGSize' urcuje velikost pameti obsazene PNG v bajtech,
-    // 'imageWidth' udava sirku jedne ikony v bodech; v pripade uspechu vraci TRUE, jinak FALSE
-    // poznamka: PNG musi byt pruh ikon jeden radek vysoky
-    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
+    // Creates the image list from PNG data supplied in memory; 'rawPNG' is a pointer to memory containing the PNG
+    // (for example loaded from a file) and 'rawPNGSize' specifies the size of the memory occupied by the PNG in bytes,
+    // 'imageWidth' specifies the width of one icon in pixels; returns TRUE on success, otherwise FALSE
+    // Note: the PNG must be a one-row strip of icons
+    // Note: it is recommended to compress the PNG with PNGSlim; see https://forum.altap.cz/viewtopic.php?f=15&t=3278
     virtual BOOL WINAPI CreateFromRawPNG(const void* rawPNG, DWORD rawPNGSize, int imageWidth) = 0;
 
-    // vytvori se jako kopie jineho (vytvoreneho) icon listu; pokud je 'grayscale' TRUE,
-    // provede se zaroven konverze na cernobilou verzi; v pripade uspechu vraci TRUE, jinak FALSE
+    // is created as a copy of another (created) icon list; if 'grayscale' is TRUE,
+    // it is also converted to a black-and-white version; returns TRUE on success, otherwise FALSE
     virtual BOOL WINAPI CreateAsCopy(const CGUIIconListAbstract* iconList, BOOL grayscale) = 0;
 
-    // vytvori HIMAGELIST, vraci jeho handle nebo NULL v pripade neuspechu
-    // vraceny imagelist je po pouziti treba destruovat pomoci API ImageList_Destroy()
+    // Creates an HIMAGELIST and returns its handle, or NULL on failure.
+    // The returned image list must be destroyed with the ImageList_Destroy() API after use
     virtual HIMAGELIST WINAPI GetImageList() = 0;
 };
 
@@ -1895,14 +1895,14 @@ public:
 // ****************************************************************************
 // CGUIToolbarHeaderAbstract
 //
-// Pomocna lista umistena nad seznamem (napr. konfigurace HotPaths, UserMenu),
-// ktera muze vpravo obsahovat toolbar s tlacitky pro ovladadni seznamu.
+// Helper bar placed above a list (e.g. HotPaths or UserMenu configuration),
+// which may contain a toolbar with buttons for controlling the list on the right.
 //
-// Vsechny metody je mozne volat pouze z threadu okna, ve kterem
-// byl objekt pripojen na windows control.
+// All methods may be called only from the thread of the window in which
+// the object was attached to a Windows control.
 //
 
-// Bitove masky pro EnableToolbar() a CheckToolbar()
+// bit masks for EnableToolbar() and CheckToolbar()
 #define TLBHDRMASK_MODIFY 0x01
 #define TLBHDRMASK_NEW 0x02
 #define TLBHDRMASK_DELETE 0x04
@@ -1910,35 +1910,35 @@ public:
 #define TLBHDRMASK_UP 0x10
 #define TLBHDRMASK_DOWN 0x20
 
-// Identifikace tlacitek pro WM_COMMAND, viz SetNotifyWindow()
+// button identifiers for WM_COMMAND; see SetNotifyWindow()
 #define TLBHDR_MODIFY 1
 #define TLBHDR_NEW 2
 #define TLBHDR_DELETE 3
 #define TLBHDR_SORT 4
 #define TLBHDR_UP 5
 #define TLBHDR_DOWN 6
-// Pocet polozek
+// number of items
 #define TLBHDR_COUNT 6
 
 class CGUIToolbarHeaderAbstract
 {
 public:
-    // standardne jsou vsechna tlacitka povolena; po zavolani teto metody budou povolena
-    // pouze tlacitka odpovidajici masce 'enableMask', ktera se sklada z jedne nebo vice
-    // (sectenych) TLBHDRMASK_xxx hodnot
+    // By default all buttons are enabled; after calling this method, only the buttons matching mask 'enableMask' are enabled,
+    // where the mask consists of one or more
+    // combined TLBHDRMASK_xxx values
     virtual void WINAPI EnableToolbar(DWORD enableMask) = 0;
 
-    // standardne jsou vsechna tlacitka nezamacknuta; po zavolani teto metody budou zamacknuta
-    // tlacitka odpovidajici masce 'checkMask', ktera se sklada z jedne nebo vice
-    // (sectenych) TLBHDRMASK_xxx hodnot
+    // By default all buttons are unpressed; after calling this method, the buttons matching mask 'checkMask' are pressed,
+    // where the mask consists of one or more
+    // combined TLBHDRMASK_xxx values
     virtual void WINAPI CheckToolbar(DWORD checkMask) = 0;
 
-    // zavolanim teto metody volajici specifikuje okno 'hWnd', kteremu budou doruceny
-    // WM_COMMAND od ToolbarHeader; LOWORD(wParam) bude obsahovat 'ctrlID' z volani
-    // AttachToolbarHeader() a LOWORD(wParam) je jedna z hodnot TLBHDR_xxx (dle tlacitka,
-    // na ktere uzivatel kliknul)
-    // poznamka: tuto metodu je treba volat pouze ve specialnich situacich, kdy se zpravy
-    // maji dorucovat do jineho nez parent okna, kam se zpravy dorucuji implicitne
+    // By calling this method, the caller specifies the 'hWnd' window that receives
+    // WM_COMMAND messages from ToolbarHeader; LOWORD(wParam) contains the 'ctrlID' from
+    // AttachToolbarHeader(), and LOWORD(wParam) is one of the TLBHDR_xxx values (depending on the button
+    // clicked by the user).
+    // Note: call this method only in special cases when the messages
+    // must be delivered to a window other than the parent window, which receives them by default
     virtual void WINAPI SetNotifyWindow(HWND hWnd) = 0;
 };
 
@@ -1947,11 +1947,11 @@ public:
 // CSalamanderGUIAbstract
 //
 
-#define BTF_CHECKBOX 0x00000001    // tlacitko se chova jako checkbox
-#define BTF_DROPDOWN 0x00000002    // tlacitko vzadu obsahuje drop down cast, posila WM_USER_BUTTONDROPDOWN message do parenta
-#define BTF_LBUTTONDOWN 0x00000004 // tlacitko reaguje na LBUTTONDOWN a posila WM_USER_BUTTON
-#define BTF_RIGHTARROW 0x00000008  // tlacitko ma na konci sipku ukazujici vpravo
-#define BTF_MORE 0x00000010        // tlacitko ma na konci symbol pro rozbaleni dialogu
+#define BTF_CHECKBOX 0x00000001    // button behaves like a checkbox
+#define BTF_DROPDOWN 0x00000002    // button has a drop-down part at the end and sends WM_USER_BUTTONDROPDOWN to the parent
+#define BTF_LBUTTONDOWN 0x00000004 // button reacts to LBUTTONDOWN and sends WM_USER_BUTTON
+#define BTF_RIGHTARROW 0x00000008  // button has a right-pointing arrow at the end
+#define BTF_MORE 0x00000010        // button has the symbol for expanding the dialog at the end
 
 class CSalamanderGUIAbstract
 {
@@ -1960,135 +1960,135 @@ public:
     //
     // ProgressBar
     //
-    // Slouzi k zobrazeni stavu operace v procentech uz vykonane prace.
-    // Ma vyznam u operaci, ktere mohou zabrat vetsi mnostvi casu. Tam je
-    // progress lepsi nez pouhy kurzor WAIT.
+    // Used to display the state of an operation as the percentage of work already done.
+    // It is useful for operations that can take a longer time. In that case a
+    // progress bar is better than a plain WAIT cursor.
     //
-    // pripoji Salamanderovsky progress bar na Windows control (tento control urcuje pozici
-    // progress bary); 'hParent' je handle parent okna (dialog nebo okno); ctrlID je ID
-    // Windows controlu; pri uspesnem pripojeni vraci rozhrani progress bary,
-    // jinak vraci NULL; rozhrani je platne az do okamziku destrukce (doruceni WM_DESTROY)
-    // Windows controlu; po pripojeni je progress bar nastaven na 0%;
-    // frame si kresli ve sve rezimu, takze controlu neprirazovat flagy SS_WHITEFRAME | WS_BORDER
+    // Attaches a Salamander progress bar to a Windows control (this control determines the position of the
+    // progress bar); 'hParent' is the handle of the parent window (dialog or window); ctrlID is the ID of the
+    // Windows control; on successful attachment returns the progress bar interface,
+    // otherwise returns NULL; the interface remains valid until the Windows control is destroyed (WM_DESTROY
+    // is delivered to the Windows control); after attachment the progress bar is set to 0%;
+    // it draws its own frame, so do not assign SS_WHITEFRAME | WS_BORDER to the control
     virtual CGUIProgressBarAbstract* WINAPI AttachProgressBar(HWND hParent, int ctrlID) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // StaticText
     //
-    // Slouzi pro zobrazeni nestandardnich textu v dialogu (tucny, podtrzeny),
-    // textu ktere se rychle meni a blikaly by nebo textu s nepredvidatelnou delkou,
-    // ktere je treba inteligentne zkratit.
+    // Used to display nonstandard text in a dialog (bold, underlined),
+    // text that changes quickly and would flicker, or text with unpredictable length
+    // that must be shortened intelligently.
     //
-    // pripoji Salamanderovsky StaticText na Windows control (tento control urcuje pozici
-    // StaticTextu); 'hParent' je handle parent okna (dialog nebo okno); ctrlID je ID;
-    // 'flags' je z rodiny STF_*, muze byt 0 nebo libovolna kombinace hodnot;
-    // Windows controlu; pri uspesnem pripojeni vraci rozhrani StaticTextu,
-    // jinak vraci NULL; rozhrani je platne az do okamziku destrukce (doruceni WM_DESTROY)
-    // Windows controlu; po pripojeni je vytazen text a zarovnani z Windows controlu.
-    // testovano na Windows controlu "STATIC"
+    // Attaches Salamander StaticText to a Windows control (this control determines the position of the
+    // StaticText); 'hParent' is the handle of the parent window (dialog or window); ctrlID is the ID;
+    // 'flags' is from the STF_* family; it can be 0 or any combination of values;
+    // on successful attachment returns the StaticText interface,
+    // otherwise returns NULL; the interface remains valid until the Windows control is destroyed (WM_DESTROY)
+    // is delivered to the Windows control; after attachment, the text and alignment are taken from the Windows control.
+    // Tested on the Windows "STATIC" control
     virtual CGUIStaticTextAbstract* WINAPI AttachStaticText(HWND hParent, int ctrlID, DWORD flags) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // HyperLink
     //
-    // Slouzi pro zobrazeni hyperlinku. Po kliknuti je mozne otevrit URL adresu
-    // nebo spustit soubor (SetActionOpen), nebo nechat postnout command zpet
-    // do dialogu (SetActionPostCommand).
-    // Control je pristupny pres klavesu TAB (muze mit focus), ale je treba mu
-    // nastavit WS_TABSTOP. Akci pak vyvolame klavesou Space. Pravym tlacitkem
-    // nebo pomoci Shift+F10 lze vyvolat menu s moznosti nakopirovat text controlu
-    // na clipboard.
+    // Used to display a hyperlink. Clicking it can open a URL
+    // or launch a file (SetActionOpen), or post a command back
+    // to the dialog (SetActionPostCommand).
+    // The control is accessible with the TAB key (it can take focus), but it must have
+    // WS_TABSTOP set. The action is then invoked with the Space key. Right-clicking
+    // or Shift+F10 can open a menu with an option to copy the control text
+    // to the clipboard.
     //
-    // pripoji Salamanderovsky HyperLink na Windows control (tento control urcuje pozici
-    // HyperLinku); 'hParent' je handle parent okna (dialog nebo okno); ctrlID je ID Windows controlu;
-    // 'flags' je z rodiny STF_*, muze byt 0 nebo libovolna kombinace hodnot;
-    // doporucena kombinace pro HyperLink je STF_UNDERLINE | STF_HYPERLINK_COLOR
-    // pri uspesnem pripojeni vraci rozhrani HyperLinku, jinak vraci NULL; rozhrani je
-    // platne az do okamziku destrukce (doruceni WM_DESTROY) Windows controlu; po pripojeni
-    // je vytazen text a zarovnani z Windows controlu.
-    // testovano na Windows controlu "STATIC"
+    // Attaches Salamander HyperLink to a Windows control (this control determines the position of the
+    // HyperLink); 'hParent' is the handle of the parent window (dialog or window); ctrlID is the ID of the Windows control;
+    // 'flags' is from the STF_* family; it can be 0 or any combination of values;
+    // the recommended combination for HyperLink is STF_UNDERLINE | STF_HYPERLINK_COLOR
+    // on successful attachment returns the HyperLink interface, otherwise returns NULL; the interface is
+    // valid until the Windows control is destroyed (WM_DESTROY is delivered); after attachment,
+    // the text and alignment are taken from the Windows control.
+    // Tested on the Windows "STATIC" control
     virtual CGUIHyperLinkAbstract* WINAPI AttachHyperLink(HWND hParent, int ctrlID, DWORD flags) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // Button
     //
-    // Slouzi pro vytvoreni tlacitka s textem nebo ikonou. Tlacitko muze obsahovat sipku
-    // vpravo nebo drop-down sipku. Viz flagy BTF_xxx.
+    // Creates a button with text or an icon. The button can contain a right arrow
+    // or a drop-down arrow. See the BTF_xxx flags.
     //
-    // pripoji Salamanderovsky TextArrowButton na Windows control (tento control urcuje pozici,
-    // text nebo ikonu a generovany command); 'hParent' je handle parent okna (dialog nebo okno);
-    // ctrlID je ID Windows controlu;
-    // pri uspesnem pripojeni vraci rozhrani CGUIButtonAbstract, jinak vraci NULL; rozhrani je
-    // platne az do okamziku destrukce (doruceni WM_DESTROY) Windows controlu;
-    // Testovano na Windows controlu "BUTTON".
+    // Attaches a Salamander TextArrowButton to a Windows control (that control determines the position,
+    // text or icon, and the generated command); 'hParent' is the handle of the parent window (dialog or window);
+    // ctrlID is the ID of the Windows control;
+    // on successful attachment, returns the CGUIButtonAbstract interface, otherwise returns NULL; the interface is
+    // valid until the Windows control is destroyed (WM_DESTROY is delivered);
+    // Tested on the Windows "BUTTON" control.
     virtual CGUIButtonAbstract* WINAPI AttachButton(HWND hParent, int ctrlID, DWORD flags) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ColorArrowButton
     //
-    // Slouzi pro vytvoreni tlacitka s barevnym obdelnickem, ktery naselduje sipka smerujici vpravo.
-    // (pokud je showArrow==TRUE)
-    // V obdelnicku je zobrazen text, ktery muze mit prirazenou jinou barvu nez barva pozadi obdelnicku.
-    // Pouziva se v konfiguracich barev, kde dokaze zobrazit jednu nebo dve barvy.
-    // Po stisku je vybaleno popup menu s moznosti zvolit, kterou barvu konfigurujeme..
+    // Creates a button with a colored rectangle followed by a right-pointing arrow.
+    // (if showArrow==TRUE)
+    // The rectangle displays text that can have a different color than the rectangle background.
+    // It is used in color configurations, where it can display one or two colors.
+    // Clicking it opens a popup menu with options for choosing which color is being configured.
     //
-    // pripoji Salamanderovsky ColorArrowButton na Windows control (tento control urcuje pozici,
-    // text a command ColorArrowButtonu); 'hParent' je handle parent okna (dialog nebo okno);
-    // ctrlID je ID Windows controlu;
-    // pri uspesnem pripojeni vraci rozhrani ColorArrowButtonu, jinak vraci NULL; rozhrani je
-    // platne az do okamziku destrukce (doruceni WM_DESTROY) Windows controlu;
-    // Testovano na Windows controlu "BUTTON".
+    // Attaches a Salamander ColorArrowButton to a Windows control (this control determines the position,
+    // text, and command of the ColorArrowButton); 'hParent' is the handle of the parent window (dialog or window);
+    // ctrlID is the ID of the Windows control;
+    // if attachment succeeds, returns the ColorArrowButton interface, otherwise returns NULL; the interface is
+    // valid until the Windows control is destroyed (WM_DESTROY is delivered);
+    // Tested on the Windows "BUTTON" control.
     virtual CGUIColorArrowButtonAbstract* WINAPI AttachColorArrowButton(HWND hParent, int ctrlID, BOOL showArrow) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ChangeToArrowButton
     //
-    // Slouzi pro vytvoreni tlacitka s sipkou smerujici vpravo umistene uprostred
-    // tlacitka. Vklada se za vstupni pole a po stisku je vedle tlacitka vybaleno
-    // popup menu obsahujici polozky vlozitelne do vstupniho pole (forma napovedy).
+    // Creates a button with a right-pointing arrow centered on the button.
+    // It is placed after an edit box, and clicking it opens a popup menu next to the button
+    // with items that can be inserted into the edit box (a form of hint).
     //
-    // Meni styl tlacitka, aby mohlo drzet ikonku s sipkou a potom tuto ikonku
-    // prirazuje. Nepripojuje zadny Salamanderovsky objekt ke controlu, protoze
-    // vse zvladne operacni system. Vraci TRUE v pripade uspechul, jinak FALSE.
-    // Text tlacitka je ignorovan.
-    // Testovano na Windows controlu "BUTTON".
+    // Changes the button style so it can hold the arrow icon and then assigns the icon.
+    // It does not attach any Salamander object to the control because
+    // all handling is provided by the operating system. Returns TRUE on success, otherwise FALSE.
+    // The button text is ignored.
+    // Tested on the Windows "BUTTON" control.
     virtual BOOL WINAPI ChangeToArrowButton(HWND hParent, int ctrlID) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // MenuPopup
     //
-    // Slouzi pro vytvoreni prazdneho popup menu. Vraci ukazatel na iface nebo
-    // NULL pri chybe.
+    // Creates an empty popup menu. Returns an interface pointer or
+    // NULL on failure.
     virtual CGUIMenuPopupAbstract* WINAPI CreateMenuPopup() = 0;
-    // Slouzi pro uvolneni alokovaneho menu.
+    // releases the allocated menu.
     virtual BOOL WINAPI DestroyMenuPopup(CGUIMenuPopupAbstract* popup) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // MenuBar
     //
-    // Slouzi pro vytvoreni menu bar; polozky 'menu' budou zobrazeny v menu bar,
-    // jejich childy budou submenu; 'hNotifyWindow' identifikuje okno, kteremu
-    // budou zasilany commandy a notifikace. Vraci ukazatel na iface nebo NULL
-    // pri chybe.
+    // Creates a menu bar; the items in 'menu' are shown in the menu bar,
+    // and their children become submenus; 'hNotifyWindow' identifies the window
+    // that receives commands and notifications. Returns an interface pointer or NULL
+    // on failure.
     virtual CGUIMenuBarAbstract* WINAPI CreateMenuBar(CGUIMenuPopupAbstract* menu, HWND hNotifyWindow) = 0;
-    // Slouzi pro uvolneni alokovane menu bar. Zaroven destruuje okno.
+    // releases the allocated menu bar. Also destroys the window.
     virtual BOOL WINAPI DestroyMenuBar(CGUIMenuBarAbstract* menuBar) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ToolBar support
     //
-    // Slouzi pro vytvoreni neaktivni (sede) verze bitmap pro menu nebo toolbar.
-    // Ze zdrojove bitmapy 'hSource' vytvori bitmapu ve stupnich sedi 'hGrayscale'
-    // a cernobilou masku 'hMask'. Barva 'transparent' je povazovana za pruhlednou.
-    // Pri uspechu vraci TRUE  a 'hGrayscale' a 'hMask'; pri chybe vraci FALSE.
+    // Used to create a disabled (gray) version of bitmaps for a menu or toolbar.
+    // From source bitmap 'hSource' it creates grayscale bitmap 'hGrayscale'
+    // and black-and-white mask 'hMask'. Color 'transparent' is treated as transparent.
+    // On success it returns TRUE and outputs 'hGrayscale' and 'hMask'; on error it returns FALSE.
     virtual BOOL WINAPI CreateGrayscaleAndMaskBitmaps(HBITMAP hSource, COLORREF transparent,
                                                       HBITMAP& hGrayscale, HBITMAP& hMask) = 0;
 
@@ -2096,48 +2096,48 @@ public:
     //
     // ToolBar
     //
-    // Slouzi pro vytvoreni tool bar; 'hNotifyWindow' identifikuje okno, kteremu
-    // budou zasilany commandy a notifikace. Vraci ukazatel na iface nebo NULL
-    // pri chybe.
+    // Used to create a toolbar; 'hNotifyWindow' identifies the window to which
+    // commands and notifications are sent. Returns an interface pointer or NULL
+    // on failure.
     virtual CGUIToolBarAbstract* WINAPI CreateToolBar(HWND hNotifyWindow) = 0;
-    // Slouzi pro uvolneni alokovane tool bar. Zaroven destruuje okno.
+    // releases the allocated toolbar. Also destroys the window.
     virtual BOOL WINAPI DestroyToolBar(CGUIToolBarAbstract* toolBar) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ToolTip
     //
-    // Tato metoda spusti casovac a pokud do jeho vyprseni neni zavolana znovu
-    // pozada okno 'hNotifyWindow' o text pomoci zpravy WM_USER_TTGETTEXT,
-    // ktery pak zobrazi pod kurzor na jeho aktualnich souradnicich.
-    // Promenna 'id' slouzi k rozliseni oblasti pri komunikaci s oknem 'hNotifyWindow'.
-    // Pokud bude tato metoda zavolana vicekrat se stejnym parametrem 'id', budou
-    // se tyto dalsi volani ignorovat.
-    // Hodnota 0 parametru 'hNotifyWindow' je vyhrazena pro zhasnuti okna a preruseni
-    // beziciho casovace.
+    // This method starts a timer and, if it is not called again before it expires,
+    // asks window 'hNotifyWindow' for the text by sending message WM_USER_TTGETTEXT,
+    // which it then shows below the cursor at its current coordinates.
+    // Variable 'id' is used to distinguish areas when communicating with window 'hNotifyWindow'.
+    // If this method is called several times with the same 'id' parameter,
+    // those additional calls are ignored.
+    // Value 0 of parameter 'hNotifyWindow' is reserved for hiding the window and stopping
+    // the running timer.
     virtual void WINAPI SetCurrentToolTip(HWND hNotifyWindow, DWORD id) = 0;
-    // potlaci zobrazeni tooltipu na aktualnich souradnicich mysi
-    // uzitecne volat pri aktivaci okna, ve kterem se tooltipy pouzivaji
-    // nebude tak dochazet k nechtenemu zobrazeni tooltipu
+    // Suppresses tooltip display at the current mouse coordinates
+    // Useful to call when activating a window that uses tooltips
+    // so that tooltips are not shown unintentionally
     virtual void WINAPI SuppressToolTipOnCurrentMousePos() = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // XP Visual Styles
     //
-    // Pokud je zavolana pod operacnim system podporujicim vizualni styly,
-    // vola SetWindowTheme(hWindow, L" ", L" ") pro zakazani vizualnich stylu
-    // pro okno 'hWindow'
-    // vraci TRUE, pokud operacni system podporuje vizualni styly, jinak vraci FALSE
+    // When called on an operating system that supports visual styles,
+    // Calls SetWindowTheme(hWindow, L" ", L" ") to disable visual styles
+    // for window 'hWindow'
+    // returns TRUE if the operating system supports visual styles, otherwise FALSE
     virtual BOOL WINAPI DisableWindowVisualStyles(HWND hWindow) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // IconList
     //
-    // Dve metody pro alokaci a destrukci objektu IconList slouziciho pro drzeni
-    // 32bpp ikonek (3 x 8 bitu pro barvu a 8 bitu pro alfa transparenci)
-    // Dalsi operace nad IconListem viz popis CGUIIconListAbstract
+    // Two methods for allocating and destroying the IconList object used to hold
+    // 32bpp icons (3 x 8 bits for color and 8 bits for alpha transparency)
+    // For other operations on IconList, see the description of CGUIIconListAbstract
     virtual CGUIIconListAbstract* WINAPI CreateIconList() = 0;
     virtual BOOL WINAPI DestroyIconList(CGUIIconListAbstract* iconList) = 0;
 
@@ -2145,27 +2145,27 @@ public:
     //
     // ToolTip support
     //
-    // Prohleda 'buf' na prvni vyskyt znaku '\t'. Pokud je 'stripHotKey' TRUE, ukonci
-    // se na tomto znaku retezec. Jinak se na jeho misto vlozi mezera a zbytek
-    // textu se ozavorkuje. Buffer 'buf' musi byt pri 'stripHotKey' FALSE dost velky
-    // na to, aby se text v bufferu mohl prodlouzit o dva znaky (uzavorkovani).
+    // Searches 'buf' for the first occurrence of '\t'. If 'stripHotKey' is TRUE, the
+    // string is terminated at that character. Otherwise a space is inserted in its place and the rest
+    // of the text is enclosed in parentheses. Buffer 'buf' must be large enough when 'stripHotKey' is FALSE
+    // for the text in the buffer to grow by two characters (the parentheses).
     virtual void WINAPI PrepareToolTipText(char* buf, BOOL stripHotKey) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // Subject with file/dir name truncated if needed
     //
-    // Nastavi text vznikly jako sprintf(, subjectFormatString, fileName) do staticu 'subjectWnd'.
-    // Formatovaci retezec 'subjectFormatString' musi obsahovat prave jedno '%s' (na miste vlozeni
-    // 'fileName'). Pokud by text presahl delku staticu, dojde k jeho zkraceni tim, ze se zkrati
-    // 'fileName'. Navic provede konverzi 'fileName' podle SALCFG_FILENAMEFORMAT (aby se shodoval
-    // s tim, jak je 'fileName' zobrazeno v panelu) pomoci CSalamanderGeneralAbstract::AlterFileName.
-    // Pokud jde o soubor, bude 'isDir' FALSE, jinak TRUE. Ma-li static 'subjectWnd' SS_NOPREFIX,
-    // bude 'duplicateAmpersands' FALSE, jinak TRUE (zdvoji druhy a dalsi ampersandy ('&'), prvni
-    // ampersand oznacuje hotkey v subjectu a musi ho obsahovat 'subjectFormatString' pred '%s').
-    // Priklad pouziti: SetSubjectTruncatedText(GetDlgItem(HWindow, IDS_SUBJECT), "&Rename %s to",
+    // Sets the text produced by sprintf(, subjectFormatString, fileName) in static control 'subjectWnd'.
+    // Format string 'subjectFormatString' must contain exactly one '%s' (at the position where
+    // 'fileName' is inserted). If the text would exceed the length of the static control, it is shortened by shortening
+    // 'fileName'. It also converts 'fileName' according to SALCFG_FILENAMEFORMAT (so it matches
+    // the way 'fileName' is displayed in the panel) using CSalamanderGeneralAbstract::AlterFileName.
+    // If it is a file, 'isDir' is FALSE, otherwise TRUE. If static control 'subjectWnd' has SS_NOPREFIX,
+    // 'duplicateAmpersands' is FALSE, otherwise TRUE (the second and subsequent ampersands ('&') are doubled; the first
+    // ampersand marks the hotkey in the subject and must be present in 'subjectFormatString' before '%s').
+    // Example: SetSubjectTruncatedText(GetDlgItem(HWindow, IDS_SUBJECT), "&Rename %s to",
     //                                          file->Name, fileIsDir, TRUE)
-    // lze volat z libovolneho threadu
+    // Can be called from any thread
     virtual void WINAPI SetSubjectTruncatedText(HWND subjectWnd, const char* subjectFormatString, const char* fileName,
                                                 BOOL isDir, BOOL duplicateAmpersands) = 0;
 
@@ -2173,31 +2173,31 @@ public:
     //
     // ToolbarHeader
     //
-    // Slouzi pro vytvoreni hlavicky nad seznamem (at uz listview nebo listbox), ktera obsahuje
-    // textovy popis a skupinu tlacitek na prave strane. Priklad lze videt v konfiguraci Salamandera,
-    // viz Hot Paths nebo User Menu. 'hParent' je handle dialogu, 'ctrlID' je ID static textu,
-    // kolem ktereho bude ToolbarHeader vytvoren, 'hAlignWindow' je handle seznamu, ke kteremu
-    // bud hlavicka prisazena, 'buttonMask' je jedna nebo (soucet) vice hodnot TLBHDRMASK_xxx
-    // a udava, ktera tlacitka budou v hlavicce zobrazeny.
+    // Used to create a header above a list (either listview or listbox) that contains
+    // a text description and a group of buttons on the right side. An example can be seen in Salamander configuration,
+    // such as Hot Paths or User Menu. 'hParent' is the handle of the dialog, 'ctrlID' is the ID of the static text,
+    // around which the ToolbarHeader is created, 'hAlignWindow' is the handle of the list to which
+    // the header is aligned, 'buttonMask' is one or a sum of multiple TLBHDRMASK_xxx values
+    // and specifies which buttons are shown in the header.
     virtual CGUIToolbarHeaderAbstract* WINAPI AttachToolbarHeader(HWND hParent, int ctrlID, HWND hAlignWindow, DWORD buttonMask) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // ArrangeHorizontalLines
     //
-    // Najde v dialogu 'hWindow' horizontalni cary a dorazi je zprava na static text
-    // nebo checkbox nebo radiobox, na ktery navazuji. Navic najde checkboxy a
-    // radioboxy, ktere tvori labely groupboxum a zkrati je podle jejich textu a
-    // aktualniho pisma v dialogu. Eliminuje zbytecne mezery vznikle kvuli ruznym
-    // DPI obrazovky.
+    // Finds horizontal lines in dialog 'hWindow' and extends them on the right to the static text,
+    // checkbox, or radio button they connect to. It also finds checkboxes and
+    // radio buttons that serve as groupbox labels and shortens them according to their text and the
+    // current dialog font. Eliminates unnecessary gaps caused by different
+    // screen DPI.
     virtual void WINAPI ArrangeHorizontalLines(HWND hWindow) = 0;
 
     ///////////////////////////////////////////////////////////////////////////
     //
     // GetWindowFontHeight
     //
-    // pro 'hWindow' ziska aktualni font pomoci WM_GETFONT a vrati jeho vysku
-    // pomoci GetObject()
+    // For 'hWindow', gets the current font using WM_GETFONT and returns its height
+    // using GetObject()
     virtual int WINAPI GetWindowFontHeight(HWND hWindow) = 0;
 };
 

@@ -36,13 +36,13 @@
 */
 
 /*
- Pouziti knihovny viz napriklad popis implementace AES do WinZIP
- AES Encryption Information: Encryption Specification AE-1 and AE-2
- http://www.winzip.com/aes_info.htm
-
- Pripadne text autora knihovny (Brian Gladman):
- http://www.gladman.me.uk/cryptography_technology/fileencrypt/
-*/
+ * For an example of how to use the library, see the description of the AES implementation in WinZIP
+ *  AES Encryption Information: Encryption Specification AE-1 and AE-2
+ *  http://www.winzip.com/aes_info.htm
+ *
+ *  See also the library author's notes (Brian Gladman):
+ *  http://www.gladman.me.uk/cryptography_technology/fileencrypt/
+ */
 
 #ifndef _FENC_H
 #define _FENC_H

@@ -83,7 +83,7 @@ CFileHeaderWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         r.left++;
         r.right--;
 
-        // DT_PATH_ELLIPSIS does not work on some strings, which prints clipped text
+        // DT_PATH_ELLIPSIS does not work for some strings, so clipped text gets printed
         // PathCompactPath() needs a copy in a local buffer, but it does not clip the text
         char buff[2 * MAX_PATH];
         strncpy_s(buff, _countof(buff), Text, _TRUNCATE);

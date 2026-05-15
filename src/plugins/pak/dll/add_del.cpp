@@ -131,7 +131,7 @@ void Sort(int left, int right, TIndirectArray2<CDelRegion>& regions)
             i++;
             j--;
         }
-    } while (i <= j); //do they have to match?
+    } while (i <= j); // continue until the indices cross
     if (left < j)
         Sort(left, j, regions);
     if (i < right)
@@ -439,7 +439,7 @@ void SortFiles(int left, int right, TIndirectArray2<CPackEntry>& files)
             i++;
             j--;
         }
-    } while (i <= j); // Do they need to match?
+    } while (i <= j); // continue until the indices cross
     if (left < j)
         SortFiles(left, j, files);
     if (i < right)

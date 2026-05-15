@@ -87,7 +87,7 @@ public:
         char focusPath[MAX_PATH];
         lstrcpyn(focusPath, FocusPathBuf, MAX_PATH);
         FocusPathBuf[0] = 0;
-        if (focusPath[0] != 0) // only if we were not unlucky (we did not hit the beginning of Salamander's BUSY mode)
+        if (focusPath[0] != 0) // only if we were not unlucky (that is, we did not hit the start of Salamander's BUSY mode)
         {
             LPTSTR name;
             if (SalamanderGeneral->CutDirectory(focusPath, &name))
@@ -104,7 +104,7 @@ public:
         char focusPath[MAX_PATH];
         lstrcpyn(focusPath, FocusPathBuf, MAX_PATH);
         FocusPathBuf[0] = 0;
-        if (focusPath[0] != 0) // only if we were not unlucky (we did not hit the beginning of Salamander's BUSY mode)
+        if (focusPath[0] != 0) // only if we did not enter at the start of Salamander's BUSY mode
         {
             SalamanderGeneral->SkipOneActivateRefresh(); // the main window will not refresh when switching from the viewer
             //SalamanderGeneral->ChangePanelPath(PANEL_SOURCE, focusPath);
@@ -212,8 +212,8 @@ RELOAD:
         if ((5000 - (act - buffer) == size + 1) && (act > buffer))
         {
             // if the string was exactly at the end of the buffer, it could
-            // be a truncated string -- if we can move the window
-            // to the beginning of the buffer, load the string once again
+            // have been truncated; if we can move the window
+            // to the beginning of the buffer, load the string again
             act = buffer;
             goto RELOAD;
         }
@@ -714,7 +714,7 @@ BOOL WINAPI CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperations
 
         //TODO: there should be a prompt asking the user for the path and confirming it...
 
-        if (curPathIsDisk) // 'path' is the path to a file/directory, perform the requested action with it
+        if (curPathIsDisk) // 'path' is the path to a file or directory; perform the requested action on it
         {
             //TRACE_I("Opening(" << curPath << ")." /*"): " << GetErrorText(error)*/);
             OpenDiskMapWindow(parent, curPath);
@@ -724,7 +724,7 @@ BOOL WINAPI CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperations
             //TRACE_I("Not disk.");
         }
 
-        return FALSE; // do not unselect items in the panel
+        return FALSE; // do not deselect items in the panel
     }
     default:
         SalamanderGeneral->ShowMessageBox("Unknown command.", "DEMOPLUG", MSGBOX_ERROR);

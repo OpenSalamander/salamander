@@ -219,7 +219,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
         SetPacker(index, 3, "PAK (Plugin)", "pak", TRUE);
     case 3:  // added after beta2
     case 4:  // beta 3 but with old configuration (contains $(SpawnName))
-    case 5:; // what is new in beta4?
+    case 5:; // new in beta4?
              //      if ((index = AddPacker()) == -1) return;
              //      SetPacker(index, 2, "TAR (Plugin)", "tgz", TRUE);
     }
@@ -359,7 +359,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
                             free(cmdC);
                             // an ugly hack because of RAR
                             if (i == 2)
-                                // if it's RAR we cannot tell whether it is 16-bit or 32-bit directly, only from long-name support
+                                // for RAR, we cannot tell directly whether it is 16-bit or 32-bit, only from long-name support
                                 if (GetPackerSupLongNames(index))
                                     cmdC = DupStr(PackConversionTable[i].variable);
                                 else
@@ -373,7 +373,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
                             free(cmdM);
                             // an ugly hack because of RAR
                             if (i == 2)
-                                // if it's RAR we cannot tell whether it is 16-bit or 32-bit directly, only from long-name support
+                                // if it is RAR, we cannot tell directly whether it is 16-bit or 32-bit, only by long-name support
                                 if (GetPackerSupLongNames(index))
                                     cmdM = DupStr(PackConversionTable[i].variable);
                                 else
@@ -424,7 +424,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
         {
             if ((GetPackerOldType(index) && GetPackerType(index) != 1) ||
                 (!GetPackerOldType(index) && GetPackerType(index) != CUSTOMPACKER_EXTERNAL))
-            { // take only plug-ins (not external packers)
+            { // take only plugins (not external packers)
                 char* s = Packers[index]->Title;
                 char* f;
                 if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // contains (Internal)
@@ -483,7 +483,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
                             s = DupStr(newLHAMoveArgs);
                             if (s != NULL)
                             {
-                                free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments here)
+                                free(Packers[index]->CmdArgsMove); // cannot be NULL (it contains the old arguments)
                                 Packers[index]->CmdArgsMove = s;
                             }
                         }
@@ -617,7 +617,7 @@ void CPackerConfig::AddDefault(int SalamVersion)
                         // convert to new arguments (added "-scol")
                         free(Packers[index]->CmdArgsCopy); // cannot be NULL (old arguments here)
                         Packers[index]->CmdArgsCopy = DupStr(newRAR5CopyVolArgs);
-                        free(Packers[index]->CmdArgsMove); // cannot be NULL (old arguments here)
+                        free(Packers[index]->CmdArgsMove); // cannot be NULL (the old arguments are stored here)
                         Packers[index]->CmdArgsMove = DupStr(newRAR5MoveVolArgs);
                     }
                 }
@@ -905,7 +905,7 @@ BOOL CPackerConfig::Load(HKEY hKey)
         if (ret)
         {
             if (!GetValue(hKey, SALAMANDER_CPU_ANSILIST, REG_DWORD, &needANSI, sizeof(DWORD)))
-                needANSI = FALSE; // in older versions it wasn't present, assumed FALSE
+                needANSI = FALSE; // in older versions, it was not present; FALSE was assumed
         }
 
         if (ret)
@@ -1077,7 +1077,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
         }
     case 3: // what was added after beta2
     case 4: // beta 3 but without the $(SpawnName) variable
-        // in older versions the $(SpawnName) variable might exist, it no longer does - we must remove it
+        // older versions may contain the $(SpawnName) variable, which no longer exists, so we must remove it
         for (index = 0; index < GetUnpackersCount(); index++)
             if (GetUnpackerType(index) == 1)
             {
@@ -1126,7 +1126,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                         free(cmd);
                         // an ugly hack because of RAR
                         if (i == 2)
-                            // if it's RAR we cannot tell whether it is 16-bit or 32-bit directly, only from long-name support
+                            // if it is RAR, we cannot tell directly whether it is 16-bit or 32-bit, only by long-name support
                             if (GetUnpackerSupLongNames(index))
                                 cmd = DupStr(PackConversionTable[i].variable);
                             else
@@ -1173,7 +1173,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
         {
             if ((GetUnpackerOldType(index) && GetUnpackerType(index) != 1) ||
                 (!GetUnpackerOldType(index) && GetUnpackerType(index) != CUSTOMUNPACKER_EXTERNAL))
-            { // take only plug-ins (not external unpackers)
+            { // take only plugins (not external unpackers)
                 char* s = Unpackers[index]->Title;
                 char* f;
                 if (s != NULL && (f = strstr(s, "(Internal)")) != NULL) // contains (Internal)
@@ -1238,7 +1238,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                         s = DupStr(newPKZIP25Ext);
                         if (s != NULL)
                         {
-                            free(Unpackers[index]->Ext); // cannot be NULL (old arguments here)
+                            free(Unpackers[index]->Ext); // cannot be NULL (the old arguments are here)
                             Unpackers[index]->Ext = s;
                         }
                     }
@@ -1272,7 +1272,7 @@ void CUnpackerConfig::AddDefault(int SalamVersion)
                         strcmp(extrArgs, "x \"$(ArchiveFullName)\" @\"$(ListFullName)\"") == 0)
                     {
                         // convert to new arguments (added "-scol")
-                        free(Unpackers[index]->CmdArgsExtract); // cannot be NULL (old arguments here)
+                        free(Unpackers[index]->CmdArgsExtract); // cannot be NULL (the old arguments are present)
                         Unpackers[index]->CmdArgsExtract = DupStr(newRAR5Args);
                     }
                 }
@@ -1518,7 +1518,7 @@ BOOL CUnpackerConfig::Load(HKEY hKey)
         if (ret)
         {
             if (!GetValue(hKey, SALAMANDER_CPU_ANSILIST, REG_DWORD, &needANSI, sizeof(DWORD)))
-                needANSI = FALSE; // in older versions it wasn't present, assumed FALSE
+                needANSI = FALSE; // In older versions, it was not present; FALSE was assumed.
         }
 
         if (ret)

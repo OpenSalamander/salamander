@@ -4,9 +4,9 @@
 
 #pragma once
 
-// Used to read (and optionally modify) the VERSIONINFO resource. Reading alone 
+// Used to read (and optionally modify) the VERSIONINFO resource. Reading alone
 // could be handled by the GetFileVersionInfo/VerQueryValue API, but that API does not support later modifications,
-// so we solve the problem with our own module. Using the API would also mean 
+// so we solve the problem with our own module. Using the API would also mean
 // linking Version.LIB/DLL, which we do not use for anything else.
 // WARNING: the module exists both in Salamander and in Translator.
 
@@ -48,7 +48,7 @@ public:
     WCHAR* Key;
     BOOL Text;      // 1 if the version resource contains text data and 0 if the version resource contains binary data
     VOID* Value;    // depends on Type
-    WORD ValueSize; // used only for Var blocks, otherwise we compute it
+    WORD ValueSize; // used only for Var blocks; otherwise computed
     TIndirectArray<CVersionBlock> Children;
 
 public:
@@ -117,14 +117,14 @@ private:
 };
 
 // VS_VERSIONINFO:
-// 2 bytes: Length in bytes (this block, and all child blocks. does _not_ include alignment padding between subsequent blocks)
-// 2 bytes: Length in bytes of VS_FIXEDFILEINFO struct
-// 2 bytes: Type (contains 1 if version resource contains text data and 0 if version resource contains binary data)
-// Variable length unicode string (null terminated): Key (currently "VS_VERSION_INFO")
-// Variable length padding to align VS_FIXEDFILEINFO on a 32-bit boundary
-// VS_FIXEDFILEINFO struct
-// Variable length padding to align Child struct on a 32-bit boundary
-// Child struct (zero or one StringFileInfo structs, zero or one VarFileInfo structs)
+// 2 bytes: Length in bytes (this block and all child blocks; does _not_ include alignment padding between subsequent blocks)
+// 2 bytes: Length in bytes of the VS_FIXEDFILEINFO structure
+// 2 bytes: Type (1 if the version resource contains text data, 0 if it contains binary data)
+// Variable-length Unicode string (null-terminated): Key (currently "VS_VERSION_INFO")
+// Variable-length padding to align VS_FIXEDFILEINFO on a 32-bit boundary
+// VS_FIXEDFILEINFO structure
+// Variable-length padding to align the child structure on a 32-bit boundary
+// Child structure (zero or one StringFileInfo structures, zero or one VarFileInfo structures)
 
 // StringFileInfo:
 // 2 bytes: Length in bytes (includes this block, as well as all Child blocks)

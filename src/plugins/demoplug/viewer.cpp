@@ -72,7 +72,7 @@ MENU_TEMPLATE_ITEM PopupMenuTemplate[] =
 
 struct CButtonData
 {
-    int ImageIndex;                   // zero base index
+    int ImageIndex;                   // zero-based index
     WORD ToolTipResID;                // resource ID containing the tooltip string
     WORD ID;                          // generic command ID
     CViewerWindowEnablerEnum Enabler; // control variable that enables the button
@@ -116,7 +116,7 @@ void ReleaseViewer()
     ViewerAccels = NULL;
 }
 
-/*   // viewer thread start variant without using the CThread object
+/*   // variant of starting the viewer thread without using the CThread object
 struct CTVData
 {
   BOOL AlwaysOnTop;
@@ -136,7 +136,7 @@ unsigned WINAPI ViewerThreadBody(void *param)
   SetThreadNameInVCAndTrace("DOP Viewer");
   TRACE_I("Begin");
 
-  // sample application crash
+  // application crash example
 //  int *p = 0;
 //  *p = 0;       // ACCESS VIOLATION !
 
@@ -156,8 +156,8 @@ unsigned WINAPI ViewerThreadBody(void *param)
       if (CfgSavePosition && CfgWindowPlacement.length != 0)
       {
         WINDOWPLACEMENT place = CfgWindowPlacement;
-        // GetWindowPlacement respects the taskbar so if it sits at the top or left,
-        // the coordinates are offset by its size; correct them.
+        // GetWindowPlacement takes the taskbar into account, so if the taskbar is at the top or left,
+        // the coordinates are offset by its size. Correct them.
         RECT monitorRect;
         RECT workRect;
         SalamanderGeneral->MultiMonGetClipRectByRect(&place.rcNormalPosition, &workRect, &monitorRect);
@@ -171,7 +171,7 @@ unsigned WINAPI ViewerThreadBody(void *param)
         data->ShowCmd = place.showCmd;
       }
 
-      // NOTE: on an existing window/dialog the top-most state is easy to apply:
+      // NOTE: on an existing window/dialog, making it topmost is easy:
       //   SetWindowPos(HWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
       if (window->CreateEx(data->AlwaysOnTop ? WS_EX_TOPMOST : 0,
@@ -204,7 +204,7 @@ unsigned WINAPI ViewerThreadBody(void *param)
   char name[MAX_PATH];
   strcpy(name, data->Name);
   BOOL openFile = data->Success;
-  SetEvent(data->Continue);    // wake the main thread; the data are no longer valid past this point (=NULL)
+  SetEvent(data->Continue);    // let the main thread continue; past this point the data are no longer valid (=NULL)
   data = NULL;
 
   // if everything went well, open the requested file in the window
@@ -239,8 +239,8 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
                                     BOOL *lockOwner, CSalamanderPluginViewerData *viewerData,
                                     int enumFilesSourceUID, int enumFilesCurrentIndex)
 {
-  // DemoPlug does not use 'viewerData'; otherwise we would pass the values (not references)
-  // via CTVData to the viewer thread...
+  // DemoPlug does not use 'viewerData'; otherwise the values would have to be passed
+  // via CTVData to the viewer thread, not by reference...
 
   CTVData data;
   data.AlwaysOnTop = alwaysOnTop;
@@ -263,7 +263,7 @@ CPluginInterfaceForViewer::ViewFile(const char *name, int left, int top, int wid
 
   if (ThreadQueue.StartThread(ViewerThreadBody, &data))
   {
-    // wait until the thread processes the supplied data and returns results
+    // wait until the thread processes the supplied data and returns the results
     WaitForSingleObject(data.Continue, INFINITE);
   }
   else data.Success = FALSE;
@@ -287,7 +287,7 @@ protected:
     BOOL* Success;
 
     int EnumFilesSourceUID;    // UID of the source used to enumerate files in the viewer
-    int EnumFilesCurrentIndex; // index of the first viewer file in the source
+    int EnumFilesCurrentIndex; // index of the first file in the viewer within the source
 
 public:
     CViewerThread(const char* name, int left, int top, int width, int height,
@@ -607,7 +607,7 @@ BOOL CViewerWindow::InitializeGraphics()
 
     BOOL ok = SalamanderGUI->CreateGrayscaleAndMaskBitmaps(hTmpColorBitmap, RGB(255, 0, 255),
                                                            hTmpGrayBitmap, hTmpMaskBitmap);
-    if (ok) // put the obtained bitmap handles into HANDLES (manual insertion example; easier
+    if (ok) // put the obtained bitmap handles into HANDLES (manual insertion example)
     {       // in this scenario DeleteObject follows immediately, so use the NOHANDLES macro with DeleteObject)
         HANDLES_ADD(__htBitmap, __hoCreateDIBitmap, hTmpGrayBitmap);
         HANDLES_ADD(__htBitmap, __hoCreateDIBitmap, hTmpMaskBitmap);
@@ -746,7 +746,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     {
         InitializeGraphics();
-        DragAcceptFiles(HWindow, TRUE); // drag&drop open file
+        DragAcceptFiles(HWindow, TRUE); // enable drag-and-drop file opening
         MainMenu = SalamanderGUI->CreateMenuPopup();
         if (MainMenu == NULL)
             return -1;
@@ -801,7 +801,7 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-        DragAcceptFiles(HWindow, FALSE); // drag&drop open file
+        DragAcceptFiles(HWindow, FALSE); // disable drag-and-drop file opening
         if (CfgSavePosition)
         {
             CfgWindowPlacement.length = sizeof(WINDOWPLACEMENT);
@@ -878,9 +878,9 @@ CViewerWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             HDWP hdwp = HANDLES(BeginDeferWindowPos(2));
             if (hdwp != NULL)
             {
-                // +4: when widening the window the last four pixels refused to repaint
-                // in the rebar; even after hours I could not find the cause; Salamander handles it fine;
-                // this workaround suffices for now; maybe I will remember the cause later
+                // +4: when increasing the window width, the last four pixels did not repaint
+                // in the rebar; the cause was not found after several hours; it works in Salamander;
+                // keep this workaround for now; maybe the cause will become clear later
                 hdwp = HANDLES(DeferWindowPos(hdwp, HRebar, NULL,
                                               0, 0, r.right + 4, rebarHeight,
                                               SWP_NOACTIVATE | SWP_NOZORDER));

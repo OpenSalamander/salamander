@@ -574,7 +574,7 @@ void CFindDialog::Validate(CTransferInfoEx& ti)
         }
     }
 
-    // validujeme casy
+    // Validate times.
     char buffer[20];
     ti.EditLine(IDC_MINTIME, buffer, MAX_KEYNAME);
     if (strlen(buffer) && !ValidateTimeString(buffer))

@@ -452,7 +452,7 @@ BOOL COperationDlg::UpdateDataInDialog()
                     if (totalCount > 0 && transferIdleTime <= 30)
                     {
                         DWORD secs = (SMPLCMD_APPROXBYTESIZE * waitingCount) / speed; // estimate remaining seconds
-                        secs++;                                                       // add one second so we end with "time left: 1 sec" instead of 0 sec
+                        secs++;                                                       // add one more second so we finish the operation with "time left: 1 sec" (instead of 0 sec)
                         if (LastTimeEstimation != -1)
                             secs = (2 * secs + LastTimeEstimation) / 3;
                         // rounding calculation (roughly 10% error + round to nice numbers 1,2,5,10,20,40)
@@ -720,7 +720,7 @@ BOOL COperationDlg::UpdateDataInDialog()
         // determine what actually changed
         int itemUID1, itemUID2;
         Oper->GetChangedItems(&itemUID1, &itemUID2);
-        if (!ShowOnlyErrors && itemUID1 != -1) // change of a single item (ShowOnlyErrors disallows this; must refresh all items because the item may hide/show)
+        if (!ShowOnlyErrors && itemUID1 != -1) // change of a single item (not allowed with ShowOnlyErrors; all items must be refreshed because the item may be hidden or shown)
         {
             // redraw the changed item
             int index1 = Queue->GetItemIndex(itemUID1);
@@ -831,7 +831,7 @@ void COperationDlg::RefreshConnections(BOOL init, int newFocusIndex, int refresh
                 if (!ConsListViewObj.Scrolling)
                     ListView_EnsureVisible(ConsListView, 0, FALSE);
             }
-            else // refresh the list view as gently as possible (preserves top index and focus by UID or the last focus)
+            else // refresh the list view with minimal disruption (preserves the top index and restores focus by UID or the last focused item)
             {
                 if (newFocusIndex != -1)
                     lastFocus = newFocusIndex;
@@ -931,7 +931,7 @@ void COperationDlg::RefreshItems(BOOL init, int refreshOnlyIndex1, int refreshOn
                     focusIndex = ErrorsIndexes[0];
                 FocusedItemUID = Queue->GetItemUID(focusIndex);
             }
-            else // refresh the list view as gently as possible (preserves top index and focus by UID or the last focus)
+            else // refresh the list view with minimal disruption (preserves the top index and restores focus by UID or the last focused item)
             {
                 int index = lastFocus >= 0 ? lastFocus : 0;
                 if (ShowOnlyErrors)

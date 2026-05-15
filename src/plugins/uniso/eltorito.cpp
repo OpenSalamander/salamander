@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -37,10 +38,10 @@ struct etDefaultEntry
     BYTE BootIndicator; // 88 - Bootable
                         // 00 - Not bootable
     BYTE BootMedia;     // 0 - No emulation
-                        // 1 - 1.2 meg diskette
-                        // 2 - 1.44 meg diskette
-                        // 3 - 2.88 meg diskette
-                        // 4 - Hard disk (drive 80)
+                        // 1 - 1.2 MB diskette
+                        // 2 - 1.44 MB diskette
+                        // 3 - 2.88 MB diskette
+                        // 4 - Hard disk (drive 80h)
     WORD LoadSegment;
     BYTE SystemType;
     BYTE Unused;
@@ -63,7 +64,7 @@ struct etSectionHeaderEntry
 // section entry
 struct etSectionEntry
 {
-    BYTE BootIndicator; // 88 - Bootlable
+    BYTE BootIndicator; // 88 - Bootable
                         // 00 - Not bootable
     BYTE BootMedia;
     // Bits 0-3 count as follows
@@ -85,7 +86,7 @@ struct etSectionEntry
     DWORD LoadRBA;
 };
 
-//
+// Fills boot record info from El Torito data.
 BOOL CISO9660::FillBootRecordInfoElTorito(CBootRecordInfo* bri, BYTE bootMedia, WORD sectorCount, DWORD loadRBA)
 {
     CALL_STACK_MESSAGE4("CISO9660::FillBootRecordInfoElTorito(, %u, %u, %u)", bootMedia, sectorCount, loadRBA);
@@ -169,7 +170,7 @@ BOOL CISO9660::ReadElTorito(BYTE* catalog, DWORD size, BOOL quiet)
     memcpy(&ve, catalog + offset, sizeof(ve));
     offset += ENTRY_LENGTH;
 
-    // check if it is validation entry
+    // check whether this is a validation entry
     if (ve.ID != 01 || ve.Reserved != 0x00 || ve.KeyByte[0] != 0x55 || ve.KeyByte[1] != 0xAA)
         return FALSE;
 
@@ -180,7 +181,7 @@ BOOL CISO9660::ReadElTorito(BYTE* catalog, DWORD size, BOOL quiet)
 
     if (de.BootIndicator == 0x88)
     {
-        // it is bootable
+        // bootable
         BootRecordInfo = new CBootRecordInfo;
         if (BootRecordInfo == NULL)
         {
@@ -192,7 +193,7 @@ BOOL CISO9660::ReadElTorito(BYTE* catalog, DWORD size, BOOL quiet)
         return TRUE;
     }
 
-    // it is valid entry, go on...
+    // valid entry, continue...
     //  BYTE entryBuffer[ENTRY_LENGTH];
 
     while (offset < size)

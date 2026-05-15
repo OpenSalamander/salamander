@@ -89,7 +89,7 @@ public:
     CZRoot(TCHAR const* name, CLogger* logger, int sortorder = FILESIZE_DISK) : CZDirectory(NULL, name, NULL, NULL)
     {
         this->_clustersize = 0;
-        this->_minimalfilesize = 0; //TODO: pro NTFS = 512
+        this->_minimalfilesize = 0; // TODO: use 512 for NTFS
 
         this->_allfilecount = 0;
         this->_alldircount = 0;
@@ -109,7 +109,7 @@ public:
     }
     int GetSortOrder() { return this->_sortorder; }
 
-    //FIXME: toto je hack :(
+    // FIXME: this is a hack.
     void SetClusterSize(int clustersize)
     {
         this->_clustersize = clustersize;

@@ -185,7 +185,7 @@ private:
     /// \param nIdealBpp Ideal color depth.
     /// \return Returns the matching score for the icon. The smaller
     ///         the return value is, the better the icon properties
-    ///         match the ideal icon propertis. The return value of zero
+    ///         match the ideal icon properties. The return value of zero
     ///         is for exact match.
     static int GetScoreForIcon(
         __in int nWidth,
@@ -254,7 +254,7 @@ public:
 
     /// Returns appropriate network icon.
     /// \param nSize Size of the requested icon. This is one
-    ///        of the SALICONSIZE_xxx constans.
+    ///        of the SALICONSIZE_xxx constants.
     /// \param icon Identifier of the icon to retrieve. This is
     ///        value from the Icon enumeration.
     /// \return If the method succeeds the return value is handle

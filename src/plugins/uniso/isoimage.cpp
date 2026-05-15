@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include "dbg.h"
@@ -54,7 +55,7 @@ void ISODateTimeToFileTime(BYTE isodt[], FILETIME* ft)
     st.wMilliseconds = 0;
 
     SystemTimeToFileTime(&st, ft);
-    // idodt[6] Offset from Greenwich Mean Time in number of 15 minute intervals from -48(West) to +52(East)
+    // isodt[6] Offset from Greenwich Mean Time in 15-minute intervals, from -48 (West) to +52 (East)
     newtime = ft->dwLowDateTime + (((__int64)ft->dwHighDateTime) << 32);
     newtime -= ((__int64)(signed char)isodt[6]) * 15 * 60 * 1000 * 1000 * 10; // from 15min units to 100ns units
     ft->dwLowDateTime = (DWORD)(newtime & 0xffffffff);
@@ -324,7 +325,7 @@ BOOL CISOImage::CheckForISO(BOOL quiet /* = FALSE*/)
         return FALSE;
 
     if (IsValidCDHeader(hdr) || IsValidUDFHeader(hdr))
-        return TRUE; // ok, it's ISO
+        return TRUE; // ISO detected.
 
     return FALSE;
 }
@@ -340,7 +341,7 @@ BOOL CISOImage::CheckForNRG(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr) || IsValidUDFHeader(hdr))
     {
-        // ok, it's NRG
+        // NRG detected
         DataOffset = 0x4B000;
         return TRUE;
     }
@@ -387,7 +388,7 @@ BOOL CISOImage::CheckForNCD(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's NCD
+        // NCD detected
         DataOffset = 0x16E4E;
         return TRUE;
     }
@@ -405,7 +406,7 @@ BOOL CISOImage::CheckForPDI(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's PDI
+        // PDI detected
         DataOffset = 0x130;
         return TRUE;
     }
@@ -425,7 +426,7 @@ BOOL CISOImage::CheckForECDC(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's Easy CD Creator
+        // Easy CD Creator detected
         DataOffset = 0x0;
         SetSectorFormat(stMode2Form1);
         return TRUE;
@@ -444,7 +445,7 @@ BOOL CISOImage::CheckForC2D(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's WinOnCD
+        // WinOnCD detected
         DataOffset = 0x20000;
         return TRUE;
     }
@@ -469,7 +470,7 @@ BOOL CISOImage::CheckForC2D(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's WinOnCD
+        // recognized as WinOnCD
         DataOffset = 0x000120;
         return TRUE;
     }
@@ -516,7 +517,7 @@ BOOL CISOImage::CheckForCIF(BOOL quiet /* = FALSE*/)
         return FALSE;
     if (!isRIFFHeader(&riffHead) || !checkChunk(&riffHead, "imag"))
         return FALSE;
-    offset += riffHead.Size + 8; // skip this block, sizeof(RIFF signature + chunk size) == 8
+    offset += riffHead.Size + 8; // Skip this block; the RIFF signature and chunk size take 8 bytes
     alignOffset(&offset);
 
     // disc chunk
@@ -534,7 +535,7 @@ BOOL CISOImage::CheckForCIF(BOOL quiet /* = FALSE*/)
         return FALSE;
     offset += sizeof(riffHead) + 8; // sizeof(SectorHeader) == 8
 
-    // it is highly probable that this is a CIF
+    // most likely a CIF image
     SetSectorFormat(stCIF);
 
     if (ReadDataByPos(offset + GetSectorOffset(16), sizeof(hdr), hdr) != sizeof(hdr))
@@ -542,7 +543,7 @@ BOOL CISOImage::CheckForCIF(BOOL quiet /* = FALSE*/)
 
     if (IsValidCDHeader(hdr))
     {
-        // ok, it's CIF
+        // CIF detected
         DataOffset = offset;
         return TRUE;
     }
@@ -720,7 +721,7 @@ BOOL CISOImage::ReadSessionInfo(BOOL quiet /* = FALSE*/)
     if (fn != NULL)
     {
         char* ext = strrchr(fn, '.');
-        if (ext != NULL) // ".cvspass" is extension in Windows
+        if (ext != NULL) // ".cvspass" is considered an extension in Windows
         {
             ext++;
             if (SalamanderGeneral->StrICmp(ext, "nrg") == 0)
@@ -877,7 +878,7 @@ BOOL CISOImage::Open(const char* fileName, BOOL quiet /* = FALSE*/)
         }
         else
         {
-            // If an error occured, CBufferedFile will complain soon...
+            // If an error occurred, CBufferedFile will report it soon...
             File = new CBufferedFile(hFile, GENERIC_READ);
         }
     }
@@ -905,7 +906,7 @@ BOOL CISOImage::Open(const char* fileName, BOOL quiet /* = FALSE*/)
                     if (ret == ERR_CONTINUE)
                     {
                         Tracks[trk]->FSType = fsData;
-                        ret = ERR_OK; // we can handle raw data tracks, so we turn the error into OK (what rascals we are :-D)
+                        ret = ERR_OK; // we can handle raw data tracks, so we change the error to OK
                     }
                     if (ret == ERR_TERMINATE)
                         throw ERR_TERMINATE;
@@ -948,7 +949,7 @@ BOOL CISOImage::Open(const char* fileName, BOOL quiet /* = FALSE*/)
         }
         else
         {
-            // if we don't know the CD info, set it up according to known information
+            // If the CD information is unknown, initialize it from the available information.
             DataOffset = 0x0;
 
             DetectSectorType();
@@ -1134,7 +1135,7 @@ int CISOImage::DetectTrackFS(int track)
 
         block++;
 
-        // Just to make sure we don't read in a too big file, stop after 128 sectors.
+        // To avoid reading too much data, stop after 128 sectors.
         if (block > 128)
             break;
     }
@@ -1210,7 +1211,7 @@ BOOL CISOImage::OpenTrack(int track, BOOL quiet)
     if (track < 0 || track >= Tracks.Count)
         return FALSE;
 
-    // we want to open a track that is already open. We don't have to ;)
+    // The requested track is already open
     if (OpenedTrack == track)
         return TRUE;
 
@@ -1476,7 +1477,7 @@ BOOL CISOImage::UnpackDir(const char* dirName, const CFileData* fileData)
     DWORD attrs = fileData->Attr;
 
     // set attrs to dir
-    if (Options.ClearReadOnly) // clear ReadOnly Attribute if needed
+    if (Options.ClearReadOnly) // Clear the read-only attribute if needed
         attrs &= ~FILE_ATTRIBUTE_READONLY;
 
     if (!SetFileAttributes(dirName, attrs))

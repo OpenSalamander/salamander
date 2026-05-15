@@ -65,7 +65,7 @@ public:
     BOOL Open(const char* fileName);
     void Close();
 
-    // return TRUE if the database is open and all variables are initialized
+    // returns TRUE if the database is open
     BOOL IsOpened() { return Parser != NULL; }
 
     // "", "dbf", "csv"

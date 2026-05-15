@@ -280,7 +280,7 @@ unsigned CScriptAbortPaletteThread::Body()
     // Let everyone know that the palette window is now ready.
     SetEvent(m_hWindowCreatedEvt);
 
-    // Remove unneccessary items from the system menu.
+    // Remove unnecessary items from the system menu.
     HMENU hSysMenu = GetSystemMenu(hwndPalette, FALSE);
     if (hSysMenu != NULL)
     {
@@ -293,8 +293,8 @@ unsigned CScriptAbortPaletteThread::Body()
                 // We cannot delete the SC_CLOSE menu item,
                 // since that would not disable the close button
                 // on the title bar on Vista+ with Aero.
-                // Moreover the item cannot be referenced by
-                // position but by command only.
+                // Moreover, the item cannot be referenced
+                // by position, only by command.
                 EnableMenuItem(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
             }
             else if (uId != SC_MOVE)

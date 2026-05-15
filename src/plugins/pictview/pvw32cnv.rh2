@@ -1,6 +1,7 @@
-﻿// Petr: tento soubor existuje jen pro generovani symbols\plugins\pictview\symbols.inc davkou tools\export_translator\export_inc.py
+﻿// CommentsTranslationProject: TRANSLATED
+// Petr: this file exists only to generate symbols\plugins\pictview\symbols.inc using tools\export_translator\export_inc.py
 
-// Petr: pridal jsem IDS_PVW32Cnv_XXXX, aby nervala quiet-validace v Translatoru
+// Petr: I added IDS_PVW32Cnv_XXXX so the quiet validation in Translator wouldn't complain.
 #define IDS_PVW32Cnv_4003          4003
 #define IDS_PVW32Cnv_4004          4004
 #define IDS_PVW32Cnv_4006          4006

@@ -211,7 +211,7 @@ CVersionInfo::LoadBlock(const BYTE*& ptr, CVersionBlock* parent)
             return NULL;
         }
 
-        // Skip the value.
+        // Skip Value.
         ptr += valSize;
         // Skip the padding.
         ptr = ALIGN_DWORD(BYTE*, ptr);

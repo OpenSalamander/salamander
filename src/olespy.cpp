@@ -12,49 +12,49 @@
 //
 // Notes on the implementation of IMallocSpy
 //
-// 1) OLE caches (among other things) BSTRs, so under a normal OS it returns
-//    nonsensical leaks via IMallocSpy. Caching can be disabled by setting the environment
-//    variable OANOCACHE=1 and using the debug (Checked) version of OLE. Ideally,
-//    use the complete Checked Build of W2K or extract the appropriate DLL from the
-//    Checked version of the Service Pack which is freely available.
+// 1) OLE caches (among other things) BSTRs, so under a normal OS IMallocSpy reports
+//    bogus leaks. Caching can be disabled by setting the OANOCACHE=1 environment
+//    variable and using the debug (Checked) version of OLE. Ideally, use the full
+//    Checked Build of W2K, or extract the appropriate DLLs from the Checked version
+//    of the Service Pack, which is freely available.
 //
-// 2) If there are any remaining leaks in OLE, when trying to unregister the spy via
-//    CoRevokeMallocSpy, it returns E_ACCESSDENIED value and postpones the Release call.
-//    In practice, Release is never going to call us (W2K). Because some allocations are
-//    freed only during DLL_PROCESS_DETACH in OLEAUT32.DLL, the spy reports
-//    them as leaks. It is useful to compare the reported leaks with what the
-//    CairOLE system outputs to the debug window under the W2K Checked Build.
+// 2) If any leaks remain in OLE, an attempt to unregister the spy by calling
+//    CoRevokeMallocSpy returns E_ACCESSDENIED and defers the call to Release.
+//    In practice, Release is never called later (W2K). Because some allocations are
+//    freed only during DLL_PROCESS_DETACH in OLEAUT32.DLL, the spy reports them
+//    as leaks. It is useful to compare the reported leaks with what the CairOLE
+//    system reports to the debug window under the W2K Checked Build.
 //
-// 3) Two issues had to be avoided: we do not want the CRT to report a memory
-//    leak caused by allocating the CMallocSpy instance on the heap. At the same
-//    time, we need to keep the instance of this object alive as long as possible because OLE will
-//    call our methods (especially PreFree and PostFree with fSpy == FALSE) even
-//    after CoRevokeMallocSpy is called. We solve it by copying the object into static
-//    memory in OleSpyRegister(). The destructor is thus never called and the
-//    critical section is never destroyed.
+// 3) Two problems had to be avoided: the CRT must not report a memory leak caused
+//    by allocating the CMallocSpy instance on the heap. At the same time, the
+//    instance of this object must be kept alive as long as possible, because OLE
+//    calls our methods (especially PreFree and PostFree with fSpy == FALSE) even
+//    after CoRevokeMallocSpy is called. This is handled by copying the object into
+//    static memory; see OleSpyRegister(). As a result, the destructor is never
+//    called and the critical section is never destroyed.
 //
-// 4) When testing under W2K Checked Build, more reports can be obtained from OLE by
-//    adding a section to win.ini file:
+// 4) When testing under the W2K Checked Build, OLE can be made to produce more
+//    reports by adding a section to the win.ini file:
 //    [CairOLE InfoLevels]
 //    cairole=7
 //    heap=7
 //
-//    if we want to display detailed messages including call stacks of individual allocations
-//    we have to set both values to the decimal equivalent of 0xffffffff:
+//    To display detailed messages including the call stacks of individual allocations,
+//    both values must be set to the decimal equivalent of 0xffffffff:
 //    [CairOLE InfoLevels]
 //    cairole=4294967295
 //    heap=4294967295
 //
-//    CairOLE often reports a higher amount of leaks than our spy detects. It is also common
-//    that CairOLE reports leaks while the spy reports that everything is OK. What
-//    matters is that these leaks are consistent (for example on Salamander
-//    start/exit CairOLE reports 13 leaks and about 800 bytes of memory). Since this number
-//    does not increase, I consider it unimportant.
+//    CairOLE often reports more leaks than the spy detects. It is also common for
+//    CairOLE to report leaks while the spy reports that everything is OK. The key
+//    point is that these leaks should remain constant (for example, on Salamander
+//    startup and exit CairOLE reports 13 leaks and about 800 bytes of memory). This
+//    number does not increase, so it is not considered important.
 //
-// 5) The spy will report leaks from calls to functions like SHBrowseForFolder or
-//    SHGetSpecialFolderLocation. These are not real leaks but cached PIDLs which
-//    shell32.dll frees only when it detaches from the process. We can recognize
-//    them by the fact that repeated calls do not increase the number of leaks.
+// 5) The spy reports leaks from calls to functions such as SHBrowseForFolder or
+//    SHGetSpecialFolderLocation. These are not real leaks, but cached PIDLs that
+//    shell32.dll frees only when it detaches from the process. They can be recognized
+//    by the fact that repeated calls do not increase the number of leaks.
 //
 
 //-------------------------------------------------------------------------
@@ -73,7 +73,7 @@
 #endif
 
 #define SHID_COMPUTER 0x20
-#define SHID_COMPUTER_1 0x21                             // free
+#define SHID_COMPUTER_1 0x21                             // unused
 #define SHID_COMPUTER_REMOVABLE (0x20 | DRIVE_REMOVABLE) // 2
 #define SHID_COMPUTER_FIXED (0x20 | DRIVE_FIXED)         // 3
 #define SHID_COMPUTER_REMOTE (0x20 | DRIVE_REMOTE)       // 4
@@ -124,7 +124,7 @@
 #define IS_VALID_READ_BUFFER(ptr, type, len) (!IsBadReadPtr((ptr), sizeof(type)*(len)))
 #define IS_VALID_PIDL(ptr) (IsValidPIDL(ptr))
 
-// IsBadReadPtr throws exceptions in the debug version and we don't want that
+// IsBadReadPtr throws exceptions in debug builds, which is undesirable
 BOOL
 IsValidPIDL(LPCITEMIDLIST pidl)
 {
@@ -134,7 +134,7 @@ IsValidPIDL(LPCITEMIDLIST pidl)
 }
 */
 
-// IsBadReadPtr throws exceptions in the debug version and we don't want that
+// IsBadReadPtr throws exceptions in debug builds, and we do not want that
 BOOL IsGoodPIDL(LPCITEMIDLIST pidl, int cb)
 {
     if (cb < sizeof(USHORT) || cb < (int)(pidl->mkid.cb + sizeof(USHORT)))
@@ -742,7 +742,7 @@ CMallocSpy::SpyPreFree(void* pvRequest)
 size_t
 CMallocSpy::SpyPreRealloc(void* pvRequest, size_t cbRequest, void** ppv)
 {
-    ASSERT(pvRequest != NULL); // in this case OLE calls IMallocSpy::PreAlloc
+    ASSERT(pvRequest != NULL); // in this case OLE calls IMallocSpy::PreFree
     ASSERT(cbRequest != 0);    // in this case OLE calls IMallocSpy::PreFree
 
     size_t cb;
@@ -815,7 +815,7 @@ BOOL IsAsciiString(LPSTR pv, int cb)
         cb--;
         pv++;
     }
-    return (!cb && bRet && !*pv); // we've only had ascii characters, and we're null terminated
+    return (!cb && bRet && !*pv); // ASCII characters only, and null-terminated
 }
 
 STDAPI _StrRetToBuf(STRRET* psr, LPCITEMIDLIST pidl, LPSTR pszBuf, UINT cchBuf)
@@ -904,15 +904,15 @@ BOOL CMallocSpy::DumpLeaks()
     int leakedAllocs = 0;
     SPYBLK* psbWalk = _psbHead;
 
-    // reach the end and move forward
+    // Move to the end, then iterate forward
     if (psbWalk != NULL)
         while (psbWalk->psbNext != NULL)
             psbWalk = psbWalk->psbNext;
 
     while (psbWalk != NULL)
     {
-        // FIXME_X64 psbWalk->cbRequest is of type size_t, yet we print it as %d which is likely wrong
-        // check the rest of the code where the bug might appear; it probably should be (%Id) - http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
+        // FIXME_X64 psbWalk->cbRequest is of type size_t, but we print it as %d, which is probably wrong
+        // check the rest of the code for places where the same bug may occur; it should probably be (%Id) - http://msdn.microsoft.com/en-us/library/tcxf1dw6.aspx
         sprintf(buff, "[%u] Leaked %Iu bytes at 0x%p, from thread 0x%X",
                 psbWalk->cOrder, psbWalk->cbRequest,
                 (BYTE*)psbWalk + sizeof(SPYBLK), psbWalk->dwThreadId);
@@ -1049,9 +1049,9 @@ BOOL OleSpyRegister()
     // a correct instance of the object
     CMallocSpy templateSpy;
 
-    // dirty hack: we do not want memory leaks in the CRT so the object is not
-    // allocated on the heap, and we also need a correctly constructed VMT, so
-    // we copy the contents of the template
+    // workaround: we do not want CRT memory leaks, so the object is not
+    // allocated on the heap; at the same time, we need a correctly constructed
+    // VMT, so we copy the contents of the template object
     static byte _Spy[sizeof(templateSpy)];
     memcpy(_Spy, &templateSpy, sizeof(templateSpy));
 

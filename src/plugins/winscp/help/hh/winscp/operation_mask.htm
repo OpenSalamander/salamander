@@ -15,33 +15,33 @@
 <h1>Operation Mask</h1>
 
 <p>
-When using some features of WinSCP you may specify operation mask. For example in:
+When using some features of WinSCP, you can specify an operation mask. For example, in:
 </p>
 
 <ul>
-<li><a href="ui_copy.htm#target_directory">Target directory/file box</a> in transfer options dialog when
+<li><a href="ui_copy.htm#target_directory">Target directory/file box</a> in the Transfer Options Dialog when
     <a href="task_upload.htm">uploading</a> or
     <a href="task_download.htm">downloading</a> files.</li>
 <li>Target directory/file box when <a href="task_move_duplicate.htm">moving or duplicating</a> remote files
-    to different remote directory.</li>
+    to a different remote directory.</li>
 </ul>
 
 <p>
-Operation mask can be used to change name of the file being transferred/moved.
+An operation mask can be used to change the name of the file being transferred or moved.
 </p>
 
 <p>
-The simplest operation mask is new filename. For example when you are uploading file and you type
-<code>/home/martinp/configuration.txt</code> in <a href="ui_copy.htm#target_directory">target directory/file box</a>,
-the file will be stored in remote directory <code>/home/martinp</code> under the name
-<code>configuration.txt</code>, whatever the original filename is.
+The simplest operation mask is a new filename. For example, when you are uploading a file and you type
+<code>/home/martinp/configuration.txt</code> in the <a href="ui_copy.htm#target_directory">target directory/file box</a>,
+the file will be stored in the remote directory <code>/home/martinp</code> under the name
+<code>configuration.txt</code>, regardless of the original filename.
 </p>
 
 <p>
-Such simple operation mask is useful only when transferring/moving one file only. When you are
-working with set of files you need to use some of the special characters to let each file be
-stored under different, yet changed, name. In addition the mask can have two parts, separated by
-dot (<code>.</code>), which allows you to change base filename and the filename extension
+Such a simple operation mask is useful only when transferring or moving a single file. When you are
+working with a set of files, you need to use some of the special characters to allow each file to be
+stored under a different, yet modified, name. In addition, the mask can have two parts separated by
+a dot (<code>.</code>), which allows you to change the base filename and the filename extension
 separately. These special characters are:
 </p>
 
@@ -53,30 +53,30 @@ separately. These special characters are:
   </tr>
   <tr>
     <td><code>*</code> </td>
-    <td>Keep all remaining characters of part of source filename as is. </td>
+    <td>Keep all remaining characters of a part of the source filename as is. </td>
     <td><code>a*.doc</code> to change the first letter of all files to <code>a</code> and to
-		    change extensions of all files to <code>doc</code>. </td>
+		    change the extensions of all files to <code>doc</code>. </td>
   </tr>
   <tr>
     <td><code>?</code> </td>
-    <td>Keep the next character of part of source filename as is. </td>
-    <td><code>*.??~</code> to replace third letter of file extension with <code>~</code>. </td>
+    <td>Keep the next character of a part of the source filename as is. </td>
+    <td><code>*.??~</code> to replace the third letter of the file extension with <code>~</code>. </td>
   </tr>
   <tr>
     <td><code>\</code> </td>
-    <td>Treat the next character literally (only for changing names of remote files, i.e. for upload). </td>
+    <td>Treat the next character literally (only for changing names of remote files, i.e., for upload). </td>
     <td><code>\*</code> to store file under the name <code>*</code>. </td>
   </tr>
 </table><br/>
 
 <p>
-All other characters are treated literally, i.e. they will become part of the target filename.
+All other characters are treated literally, i.e., they will become part of the target filename.
 </p>
 
 <p>
-WinSCP by default offers you operation mask <code>*.*</code> that leaves filename as is. Note that
-you will achieve the same effect with simple <code>*</code> (but not with <code>*.</code> that would
-trim file extension).
+By default, WinSCP offers the operation mask <code>*.*</code>, which leaves the filename as is. Note that
+you will achieve the same effect with simply <code>*</code> (but not with <code>*.</code>, which would
+trim the file extension).
 </p>
 
 </div>

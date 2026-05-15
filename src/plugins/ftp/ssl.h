@@ -96,7 +96,7 @@ typedef const char* (*TX509_verify_cert_error_string)(long n);
 typedef X509* (*TSSL_get_peer_certificate)(const SSL* SSL);
 typedef STACK_OF(X509) * (*TSSL_get_peer_cert_chain)(const SSL* s);
 typedef STACK_OF(SSL_COMP) * (*TSSL_COMP_get_compression_methods)(void);
-typedef SSL_SESSION* (*TSSL_get1_session)(SSL* ssl); /* obtain a reference count */
+typedef SSL_SESSION* (*TSSL_get1_session)(SSL* ssl); /* obtain a session and increment its reference count */
 typedef void (*TSSL_SESSION_free)(SSL_SESSION* ses);
 typedef long (*TSSL_ctrl)(SSL* ssl, int cmd, long larg, void* parg);
 typedef int (*TSSL_set_session)(SSL* to, SSL_SESSION* session);

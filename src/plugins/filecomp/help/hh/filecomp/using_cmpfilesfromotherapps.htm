@@ -14,31 +14,31 @@
 
 <h1>Comparing Files from Other Applications</h1>
 
-<p>You can use File Comparator plugin from other applications, e.g. Tortoise Hg
-or Tortoise SVN. Use supplied fcremote.exe utility to start Open Salamander if it is not
-running and then to open new File Comparator window with two specified files to
+<p>You can use the File Comparator plugin from other applications such as Tortoise Hg
+or Tortoise SVN. Use the supplied fcremote.exe utility to start Open Salamander if it is not
+already running, and to open a new File Comparator window with two specified files to
 compare.</p>
 
-<h3>To compare files specified by other application:</h3>
+<h3>To compare files specified by another application:</h3>
 
 <ol>
-<li>Go to File Comparator plugin's directory, e.g. C:\Program Files\Open Salamander\plugins\filecomp.</li>
-<li>Find fcremote.exe utility.</li>
-<li>Use Copy Path + Name as Text command (Alt+Insert key) on fcremote.exe to copy full name
-of fcremote.exe to clipboard.</li>
-<li>Paste full name of fcremote.exe to application and give it two parameters with files to compare.
-If you need fcremote.exe to wait for closing File Comparator window (applications use it as a signal
-to remove temporary copies of compared files), use option -w before two files to compare.</li>
+<li>Navigate to the File Comparator plugin's directory, e.g., C:\Program Files\Open Salamander\plugins\filecomp.</li>
+<li>Locate the fcremote.exe utility.</li>
+<li>Use the Copy Path + Name as Text command (Alt+Insert key) on fcremote.exe to copy its full path and name
+to the clipboard.</li>
+<li>Paste the full path and name of fcremote.exe into the application and provide it with two file paths as parameters.
+If you need fcremote.exe to wait for the File Comparator window to close (some applications use this as a signal
+to remove temporary copies of compared files), use the -w option before the two file paths.</li>
 </ol>
 
-<h3>Example: Using File Comparator plugin from Tortoise Hg:</h3>
+<h3>Example: Using File Comparator plugin with Tortoise Hg:</h3>
 
 <ol>
-<li>Open your mercurial.ini file in text editor. You can do it e.g. from Tortoise Hg Settings dialog,
-click Edit File button.</li>
-<li>Find section [tortoisehg], add line:<br>
+<li>Open your mercurial.ini file in a text editor. You can do this from the Tortoise Hg Settings dialog
+by clicking the Edit File button.</li>
+<li>Find the [tortoisehg] section and add the line:<br>
 vdiff = MySalDiff</li>
-<li>Find section [merge-tools], add lines:<br>
+<li>Find the [merge-tools] section and add the lines:<br>
 MySalDiff.executable=C:\Program Files\Open Salamander\plugins\filecomp\fcremote.exe<br>
 MySalDiff.diffargs=-w $parent $child
 </li>

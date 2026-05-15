@@ -155,7 +155,7 @@ int CZipCommon::ChangeDisk()
         if (SalamanderGeneral->SalGetFileAttributes(buf) == 0xFFFFFFFF)
         {
             // the file with the next number is not on the disk; try whether it might appear there
-            // s invertovanym winzip flagem
+            // With the inverted WinZip flag.
             RenumberName(DiskNum + 1, ZipName, buf,
                          DiskNum == EOCentrDir.DiskNum, !(CHDiskFlags & CHD_WINZIP));
             if (SalamanderGeneral->SalGetFileAttributes(buf) != 0xFFFFFFFF && lstrcmpi(ZipName, buf))

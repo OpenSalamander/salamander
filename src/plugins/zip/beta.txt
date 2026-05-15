@@ -146,10 +146,10 @@ Sal 2.5 beta 4-----------------------------------------------------------------
 
 version 1.11
 +Improved handling of custom self-extractor text when changing self-extractor language
-+HTML help for ZIP Plugin accesible from the most dialog boxes and from the plugins menu.
++HTML help for ZIP Plugin accessible from the most dialog boxes and from the plugins menu.
 
 version 1.1 (sal 2.0)
-+in some cases self-extractor didn't cleaned unsucessfully extracted files
++in some cases self-extractor didn't cleaned unsuccessfully extracted files
 +zip configuration invoked from pack dialog wasn't saved if you canceled pack dialog
 
 version 1.0 beta 3 (sal 1.6 beta 7)
@@ -157,7 +157,7 @@ version 1.0 beta 3 (sal 1.6 beta 7)
  to a last volume when extraction begins)
 +self-extractor settings are exported with comments
 +ability to wait for another process than the process specified by the 'command' field
-+menu command in SFX setting for managing stored favorit settings
++menu command in SFX setting for managing stored favorite settings
 -"Set archive time to newest file time" used also directory time not only file time
 -ZIP crashed when any directory was selected outside archive and menu command was invoked
 +improved specification of target directory in sfx settings

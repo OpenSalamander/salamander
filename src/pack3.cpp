@@ -585,10 +585,10 @@ BOOL CPackerFormatConfig::SetFormat(int index, const char* ext, BOOL usePacker,
     }
 }
 
-// returns the format table index + 1 or FALSE (0) when it's not an archive
+// Returns the format table index + 1, or FALSE (0) if it is not an archive.
 int CPackerFormatConfig::PackIsArchive(const char* archiveName, int archiveNameLen)
 {
-    // j.r. I disabled the macro because PackIsArchive is heavily called from CFilesWindow::CommonRefresh()
+    // j.r. The macro was disabled because PackIsArchive is called heavily from CFilesWindow::CommonRefresh()
     CALL_STACK_MESSAGE_NONE
     //  CALL_STACK_MESSAGE2("PackIsArchive(%s)", archiveName);
     if (archiveName[0] == 0)
@@ -755,10 +755,10 @@ CArchiverConfig::CArchiverConfig(/*BOOL disableDefaultValues*/)
     : Archivers(20, 10)
 {
     /*
-  // set default values if it is not disabled
-  if (!disableDefaultValues)
-    AddDefault(0);
-*/
+      // set default values unless this is disabled
+      if (!disableDefaultValues)
+        AddDefault(0);
+    */
 }
 
 void CArchiverConfig::InitializeDefaultValues()
@@ -840,7 +840,7 @@ void CArchiverConfig::AddDefault(int SalamVersion)
 // initializes the configuration based on another configuration
 BOOL CArchiverConfig::Load(CArchiverConfig& src)
 {
-    // clear what we have (if we have anything)
+    // clear what we have, if anything
     DeleteAllArchivers();
     // and add what we received
     int i;
@@ -951,10 +951,10 @@ BOOL CArchiverConfig::Save(int index, HKEY hKey)
     d = GetArchiverUID(index);
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PPC_UID, REG_DWORD, &d, sizeof(d));
-    // (saves the title) - because it is translated it can no longer be used for identification
-    //   of the archiver (UID is now used instead), there is no point in storing it
+    // (saves the title) - because it is translated, it can no longer be used to identify the archiver
+    //   (UID is used instead), so there is no point in storing it
     //  if (ret) ret &= SetValue(hKey, SALAMANDER_PPC_TITLE, REG_SZ, GetArchiverTitle(index), -1);
-    // save the executable path
+    // saves the executable path
     if (ret)
         ret &= SetValue(hKey, SALAMANDER_PPC_PACKEXE, REG_SZ, GetPackerExeFile(index), -1);
     // save whether packer and unpacker are the same
@@ -1014,7 +1014,7 @@ BOOL CArchiverConfig::Load(HKEY hKey)
         {
             CArchiverConfigData* arch = Archivers[i];
             // for keys that are complete and whose title matches the default value, take over their paths
-            if (Configuration.ConfigVersion <= 64 && stricmp(title, arch->Title) == 0 || // Title is now translated and cannot be used anymore
+            if (Configuration.ConfigVersion <= 64 && stricmp(title, arch->Title) == 0 || // The title is now localized and can no longer be used
                 Configuration.ConfigVersion > 64 && uid == arch->UID)                    // thus we introduced a standard UID
             {
                 SetPackerExeFile(i, packExe);
@@ -1040,22 +1040,22 @@ CArchiverConfig::Load(HKEY hKey)
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_TITLE, REG_SZ, title, max);
   // loads the packing executable
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_PACKEXE, REG_SZ, packExe, max);
-  // determine whether the unpacker is the same
+  // determines whether the unpacker is the same
   if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_EXESAME, REG_DWORD, &exesAreSame, sizeof(DWORD));
-  // loads the unpacker executable, if it is different from the packer
+  // loads the unpacking executable if it differs from the packing executable
   if (!exesAreSame)
     if (ret) ret &= GetValue(hKey, SALAMANDER_PPC_UNPACKEXE, REG_SZ, unpackExe, max);
 
   EPackExeType type;
   const char *name, *variablePack, *variableUnpack = NULL, *exePack, *exeUnpack = NULL;
 
-  // and now convert to a newer configuration - missing information is taken from defaults
-  // (none of it is configurable anyway :-))
+  // convert to the newer configuration; missing information is taken from defaults
+  // (none of it is configurable anyway)
   if (ret)
   {
     int index;
     if ((index = AddArchiver()) == -1) return FALSE;
-    // I now assume the indices in the configuration keep their order. If not, nothing is loaded
+    // assumes the indices in the configuration keep the same order; otherwise nothing is loaded
     switch (index)
     {
       case 0:
@@ -1137,14 +1137,14 @@ CArchiverConfig::Load(HKEY hKey)
         Archivers.Delete(index);  // To avoid leaving an uninitialized structure; Salamander 2.0 crashed in SaveConfig
         return FALSE;
     }
-    // verify we are really adding the packer we think we are adding
+    // verifies that the packer being added is the expected one
     if (strncmp(title, name, 10) || (exesAreSame && exeUnpack != NULL) || (!exesAreSame && exeUnpack == NULL))
     {
       TRACE_E("Inconsistency in configuration of packers.");
       Archivers.Delete(index);  // To avoid leaving an uninitialized structure; Salamander 2.0 crashed in SaveConfig
       return FALSE;
     }
-    // and set all information
+    // sets all information
     ret &= SetArchiver(index, name, type, exesAreSame, variablePack, variableUnpack,
                        exePack, exeUnpack, packExe, unpackExe);
   }
@@ -1235,7 +1235,7 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
 
     if (data->DOSTmpFilePossible) // use a substitute name
     {
-        if (data->DOSTmpFile[0] == 0) // it needs to be generated
+        if (data->DOSTmpFile[0] == 0) // generate the temporary DOS name
         {
             char path[MAX_PATH + 50];
             strcpy(path, data->ArcName);
@@ -1262,8 +1262,8 @@ const char* WINAPI PackExpArcDosName(HWND msgParent, void* param)
                         //            while (--ext > data->ArcName && *ext != '\\' && *ext != '.');
                         while (--ext >= data->ArcName && *ext != '\\' && *ext != '.')
                             ;
-                        //            if (ext > data->ArcName && *ext == '.' && *(ext - 1) != '\\')  // copy the archive extension (used by multi-volume archivers: ARJ->A01,A02,...); ".cvspass" in Windows is an extension ...
-                        if (ext >= data->ArcName && *ext == '.') // copy the archive extension (used by multi-volume archivers: ARJ->A01,A02,...)
+                        //            if (ext > data->ArcName && *ext == '.' && *(ext - 1) != '\\')  // copy the archive extension (used by multi-volume archivers: ARJ->A01,A02,...); in Windows, ".cvspass" is also an extension ...
+                        if (ext >= data->ArcName && *ext == '.') // copy the archive extension (used by multivolume archivers: ARJ -> A01, A02, ...)
                         {
                             int count = 4; // copy '.' plus at most 3 allowed extension characters (of the 8.3 format)
                             while (count-- && *ext < 128 && *ext != '[' && *ext != ']' &&
@@ -1428,8 +1428,8 @@ PackExpExeName(unsigned int index, BOOL unpacker = FALSE)
             exe = ArchiverConfig.GetUnpackerExecutable(index);
     else
     {
-        // on older Windows it was impossible to redirect output from a DOS program in a directory
-        // with a long name; I no longer feel like patching and risking this that it won't work
+        // on older Windows, it was not possible to redirect output from a DOS program in a directory
+        // with a long name; this is left unchanged to avoid risking that it will stop working
         buff[0] = '\0';
         DWORD len = GetShortPathName(exe, buff, MAX_PATH);
         // if the path was shortened successfully, return the short name
@@ -1723,8 +1723,8 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         POINT p;
         if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
         {
-            // if the main window is on another monitor we should open the new window there
-            // preferably at the default position (as on the primary monitor)
+            // if the main window is on another monitor, we should also open the new window there
+            // preferably at the default position, as on the primary monitor
             si.dwFlags |= STARTF_USEPOSITION;
             si.dwX = p.x;
             si.dwY = p.y;
@@ -1782,16 +1782,16 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
     DWORD ret;
     do
     {
-        /*  // Petr: pumping only WM_PAINT leads to blocking all other instances of Salamander
-    //       (even newly started ones) and other softwares (at least during Paste), if we
-    //       put a file or directory on the clipboard before packing. Accessing clipboard
-    //       data causes OLE to communicate with this process which doesn't respond
-    //       because it pumps only WM_PAINT.
-    // Original Tom's variant:
-    ret = MsgWaitForMultipleObjects(1, objects, FALSE,
-                                    PackWinTimeout <= 0 ? INFINITE : PackWinTimeout - elapsed,
-                                    QS_PAINT);
-*/
+        /*  // Petr: pumping only WM_PAINT blocks all other Salamander instances
+            //       (including newly started ones) and other applications (at least during Paste) if a
+            //       file or directory is placed on the clipboard before packing. When clipboard data is
+            //       accessed, OLE tries to communicate with this process, but it does not respond
+            //       because it pumps only WM_PAINT.
+            // Tom's original variant:
+            ret = MsgWaitForMultipleObjects(1, objects, FALSE,
+                                            PackWinTimeout <= 0 ? INFINITE : PackWinTimeout - elapsed,
+                                            QS_PAINT);
+        */
         ret = MsgWaitForMultipleObjects(1, objects, FALSE,
                                         PackWinTimeout <= 0 ? INFINITE : PackWinTimeout - elapsed,
                                         QS_ALLINPUT);
@@ -1799,10 +1799,10 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         {
             // if a message arrived, handle it
             MSG msg;
-            /*    // Original Tom's variant: (see description above)
-      while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
-        DispatchMessage(&msg);
-*/
+            /*    // Tom's original variant: (see description above)
+                  while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
+                    DispatchMessage(&msg);
+            */
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
@@ -1834,9 +1834,9 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
         } while (win != NULL);
         do
         {
-            /*    // Original Tom's variant: (see description above)
-      ret = MsgWaitForMultipleObjects(1, objects, FALSE, INFINITE, QS_PAINT);
-*/
+            /*    // Tom's original variant: (see description above)
+                  ret = MsgWaitForMultipleObjects(1, objects, FALSE, INFINITE, QS_PAINT);
+            */
             ret = MsgWaitForMultipleObjects(1, objects, FALSE, INFINITE, QS_ALLINPUT);
             MSG msg;
             if (ret == WAIT_OBJECT_0 + 1)
@@ -1926,9 +1926,9 @@ BOOL PackExecute(HWND parent, char* cmdLine, const char* currentDir, TPackErrorT
             }
         }
         //
-        // now come the external program errors
+        // external program errors follow
         //
-        // if errorTable == NULL, no translation is done (table doesn't exist)
+        // if errorTable == NULL, no translation is done (the table does not exist)
         if (!errorTable)
         {
             char buffer[1000];

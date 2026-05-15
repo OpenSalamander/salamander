@@ -591,7 +591,7 @@ CPreviewWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
     {
-        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_CLOSE, 0); // bezpecny close-window
+        PostMessage(FrameWindow.HWindow, WM_COMMAND, CM_CLOSE, 0); // safely close the window
         return 0;
     }
 

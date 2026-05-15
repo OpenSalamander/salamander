@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <tchar.h>
@@ -133,12 +134,12 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     { // reject older versions
         MessageBox(salamander->GetParentWindow(),
                    REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "ZIP" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "ZIP" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // load the language module (.slg)
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "ZIP" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "ZIP" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -154,15 +155,15 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     SalamanderGeneral->SetHelpFileName("zip.chm");
 
     /*
-    // beta valid until the end of February 2001
-  SYSTEMTIME st;
-  GetLocalTime(&st);
-  if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
-  {
-    SalamanderGeneral->ShowMessageBox(LoadStr(IDS_EXPIRE), LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
-    return NULL;
-  }
-  */
+        // beta is valid until the end of February 2001
+      SYSTEMTIME st;
+      GetLocalTime(&st);
+      if (st.wYear == 2001 && st.wMonth > 2 || st.wYear > 2001)
+      {
+        SalamanderGeneral->ShowMessageBox(LoadStr(IDS_EXPIRE), LoadStr(IDS_PLUGINNAME), MSGBOX_INFO);
+        return NULL;
+      }
+      */
 
     // provide the basic plugin information
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
@@ -172,7 +173,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "ZIP" /* neprekladat! */, "zip;pk3;pk4;jar");
+                                   "ZIP" /* DO NOT TRANSLATE */, "zip;pk3;pk4;jar");
 
     // register the plugin home page URL
     salamander->SetPluginHomePageURL("www.altap.cz");
@@ -248,7 +249,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     v = Config.CurSalamanderVersion;
     Config = DefConfig;
     Config.CurSalamanderVersion = v;
-    if (regKey != NULL) // load z registry
+    if (regKey != NULL) // load from registry
     {
         registry->GetValue(regKey, CONFIG_LEVEL, REG_DWORD, &Config.Level, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_ENCRYPTMETHOD, REG_DWORD, &Config.EncryptMethod, sizeof(DWORD));
@@ -613,7 +614,7 @@ CPluginInterfaceForMenuExt::GetMenuItemState(int id, DWORD eventMask)
         file = SalamanderGeneral->GetPanelSelectedItem(PANEL_SOURCE, &index, &isDir);
     }
 
-    return (ret && count > 0) ? MENU_ITEM_STATE_ENABLED : 0; // all selected files are handled by us
+    return (ret && count > 0) ? MENU_ITEM_STATE_ENABLED : 0; // all selected files are handled by this plugin
 }
 
 BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
@@ -654,7 +655,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
             else
                 fileData = SalamanderGeneral->GetPanelFocusedItem(PANEL_SOURCE, NULL);
             if (!fileData)
-                break; // end of enumeration, or an error (for GetFocusedItem)
+                break; // end of enumeration, or an error in the case of GetFocusedItem
             lstrcpy(fileName, fileData->Name);
             DWORD attr = SalamanderGeneral->SalGetFileAttributes(zipFile);
             if (attr != 0xFFFFFFFF && attr & FILE_ATTRIBUTE_DIRECTORY)
@@ -735,7 +736,7 @@ BOOL CPluginInterfaceForMenuExt::ExecuteMenuItem(CSalamanderForOperationsAbstrac
 
         if (id == MID_COMMENT || id == MID_CREATESFX || id == MID_REPAIR) // when the operation may have modified the path
         {
-            if (!changesReported) // path changed and has not been reported yet -> report it
+            if (!changesReported) // path changed and has not yet been reported -> report it
             {
                 changesReported = TRUE;
                 // notify the path containing the modified PAK files (notification happens after leaving
@@ -779,7 +780,7 @@ BOOL CPluginInterfaceForMenuExt::HelpForMenuItem(HWND parent, int id)
 
 void CPluginDataInterface::ReleasePluginData(CFileData& file, BOOL isDir)
 {
-    // file.PluginData is NULL for folders not having extra items in the archive - see GetFileDataForUpDir & GetFileDataForNewDir
+    // file.PluginData is NULL for folders that do not have extra items in the archive - see GetFileDataForUpDir & GetFileDataForNewDir
     delete (CZIPFileData*)file.PluginData; // However, delete NULL is perfectly OK
 }
 
@@ -1096,11 +1097,11 @@ BOOL CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbs
             if (unpack.ErrorID != IDS_NODISPLAY)
                 SalamanderGeneral->ShowMessageBox(LoadStr(unpack.ErrorID),
                                                   LoadStr(IDS_PLUGINNAME), MSGBOX_ERROR);
-            /*    // Petr: I really do not know what this was for... I have to disable it now, otherwise a fatal error with 'delArchiveWhenDone'==TRUE would delete the archive, which is unacceptable
-      if (unpack.Fatal)
-        return TRUE;
-      else
-*/
+            /*    // Original purpose unclear; disabled because with a fatal error and 'delArchiveWhenDone'==TRUE, the archive would be deleted, which is unacceptable.
+                  if (unpack.Fatal)
+                    return TRUE;
+                  else
+            */
             return FALSE;
         }
         if (unpack.UserBreak)

@@ -13,55 +13,55 @@
 <div class="page">
 <h1>Configuring Open Salamander</h1>
 
-<p>Configuration contains settings from Configuration dialog, main window
+<p>The configuration contains settings from the Configuration dialog, the main window
 position, panel widths and current directories, and other options. To configure
-Open Salamander, open Options menu and choose Configuration. Then select
-required dialog box in the tree box. Change options you want to configure and
-click the OK button.</p>
+Open Salamander, open the Options menu and choose Configuration. Then select
+the page you want in the tree, change the options you want,
+and click OK.</p>
 
 <h3>Saving the configuration</h3>
-<p>To save configuration to the registry use command Options/Save Configuration.
-By default, configuration is saved automatically when you are closing Open Salamander.
+<p>To save the configuration to the registry, use the Options/Save Configuration command.
+By default, the configuration is saved automatically when you close Open Salamander.
 To change this behavior, open <a href="configuration_gener.htm">General
 configuration page</a> and clear the <i>Save configuration on exit</i> check box.</p>
 
 <h3>Exporting the configuration</h3>
-<p>You can export Open Salamander's configuration to the file. Choose the
+<p>You can export Open Salamander's configuration to a file. Choose the
 Options/Export Configuration command. If you save the configuration to a file
-named config.reg and place this file to installation directory (near salamand.exe)
-or in Vista or later rather in application data directory (typically
+named config.reg and place this file in the installation directory (near salamand.exe)
+or, on Vista or later, in the application data directory (typically
 <i>C:\Users\&lt;user&gt;\AppData\Roaming\Open Salamander</i>),
-that configuration will be imported from this file to the registry before loading
+the configuration will be imported from this file to the registry before loading
 Open Salamander's configuration from the registry.</p>
 
 <p>The configuration file is a simple text document; you can easily edit it with any
 text editor. Administrators can change this file to suit their needs, then place it
-in a network installation of Salamander, and Salamander is then ready to use in
+in a network installation of Salamander so Salamander is ready to use in a
 network environment.</p>
 
-<p>When exporting configuration, you can choose if you want to add clearing of registry
-key with configuration (it takes place before importing keys and values). Use this
-option if you want to use exported configuration file to fully replace current
-configuration in registry. If you just want to change some values and leave the rest
-of the current configuration in registry without change, clear this option. All keys
-and values from the file overwrite current values in registry. If you delete some
+<p>When exporting configuration, you can choose whether to clear the registry
+key that stores the configuration (this takes place before importing keys and values). Use this
+option if you want to use the exported configuration file to fully replace the current
+configuration in the registry. If you just want to change some values and leave the rest
+of the current configuration in the registry unchanged, clear this option. All keys
+and values from the file overwrite the current values in the registry. If you delete some
 values from the configuration file, you'll avoid overwriting the users' values
-(users will have their own values - it's useful for window positions, and other
-not-important-stuff).</p>
+(users will have their own values - it's useful for window positions and other
+nonessential settings).</p>
 
 <h3>Importing the configuration</h3>
-<p>You can import Open Salamander's configuration from the file. To get such file,
+<p>You can import Open Salamander's configuration from a file. To get such a file,
 see previous section about exporting configuration. You can import configuration
-from other computer or just return to previously exported configuration to undo
-some unwanted changes.</p>
+from another computer or revert to a previously exported configuration to undo
+unwanted changes.</p>
 
-<p>Importing the configuration is quite simple. Just find the file with configuration
-and open it (use Enter key or double-click on it). It should be opened in Registry Editor.
-When it shows question if you want to add information from the file to registry,
-you should close all running instances of Open Salamander. It will prevent overwriting
-of newly imported configuration by automatic save of configuration on exit of Open Salamander.
-When there is no running Open Salamander, press Yes in Registry Editor question
-message box. Then it will import the configuration from the file to registry.
+<p>Importing the configuration is quite simple. Just find the configuration file
+and open it (use the Enter key or double-click it). It should open in Registry Editor.
+When Registry Editor asks whether you want to add information from the file to the registry,
+you should close all running instances of Open Salamander. This prevents the newly imported
+configuration from being overwritten by the automatic save performed when Open Salamander exits.
+When Open Salamander is not running, click Yes in the Registry Editor
+message box. The configuration is then imported from the file into the registry.
 </p>
 
 <h4>Remarks</h4>

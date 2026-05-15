@@ -1,3 +1,4 @@
+@rem CommentsTranslationProject: TRANSLATED
 @echo off
 call :langcopy_bat english
 call :langcopy_bat czech
@@ -24,7 +25,7 @@ for %%v in (vc2019) do (
 exit /b
 
 
-rem ---------------------------- Copy rutina pro jazyky
+rem ---------------------------- Copy routine for languages
 
 :langcopy_bat
 
@@ -40,7 +41,7 @@ for %%v in (vc2019) do (
 exit /b
 
 
-rem ---------------------------- Copy rutina
+rem ---------------------------- Copy routine
 
 :mycopy_bat
 

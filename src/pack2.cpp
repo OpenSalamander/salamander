@@ -189,12 +189,12 @@ BOOL PackCompress(HWND parent, CFilesWindow* panel, const char* archiveFileName,
     if (archiveRoot != NULL && *archiveRoot != '\0')
     {
         strcpy(archiveRootPath, archiveRoot);
-        if (!modifyTable->CanPackToDir) // the archiver program does not support it
+        if (!modifyTable->CanPackToDir) // the archiver does not support it
         {
             if ((*PackErrorHandlerPtr)(parent, IDS_PACKQRY_ARCPATH))
                 strcpy(archiveRootPath, "\\"); // the user wants to ignore it
             else
-                return FALSE; // the user will mind
+                return FALSE; // the user objects
         }
     }
     else
@@ -355,7 +355,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
             return (*PackErrorHandlerPtr)(parent, IDS_PACKERR_PATH, buffer);
         }
 
-        // and put it into the list
+        // and add it to the list file
         if (!isDir)
         {
             if (fprintf(listFile, "%s\n", namecnv) <= 0)
@@ -524,7 +524,7 @@ BOOL PackUniversalCompress(HWND parent, const char* command, TPackErrorTable* co
                         {
                             HANDLES(FindClose(find)); // this name already exists with some extension, searching further
                             (*PackErrorHandlerPtr)(parent, IDS_PACKERR_UNABLETOREN, src, dst);
-                            return TRUE; // succeeded, only the resulting archive names differ slightly (even multivolume)
+                            return TRUE; // Succeeded; only the names of the resulting archive differ slightly (including multivolume archives)
                         }
                     }
                     else
@@ -658,7 +658,7 @@ BOOL PackDelFromArc(HWND parent, CFilesWindow* panel, const char* archiveFileNam
             CharToOem(name, namecnv);
         else
             strcpy(namecnv, name);
-        // and put it into the list
+        // and add it to the list file
         if (!isDir)
         {
             if (fprintf(listFile, "%s%s\n", rootPath, namecnv) <= 0)

@@ -49,7 +49,7 @@ bool FontHasChangedX(CChar* ViewerFontMapping, HDC memDC, int fontWidth, int fon
             rect.bottom = fontHeight;
             // NOTE: GetCharWidth32 still returns the same width for all characters,
             // although DrawTextEx does not!
-            if (DrawTextExX(memDC, ch, 1, &rect, DT_LEFT | DT_TOP | DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE | DT_NOCLIP, NULL)) // with DT_NOCLIP can be 2 x faster
+            if (DrawTextExX(memDC, ch, 1, &rect, DT_LEFT | DT_TOP | DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE | DT_NOCLIP, NULL)) // DT_NOCLIP can be up to 2x faster
             {
                 if (rect.right - rect.left != fontWidth)
                 {

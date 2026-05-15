@@ -509,7 +509,7 @@ UINT_PTR CALLBACK SaveAsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
         psai->Compression = GetItemData(hDlg, IDC_SAVE_COMPRESSION);
         psai->Flags = 0;
         psai->Flip = psai->Flags |= GetItemData(hDlg, IDC_SAVE_FLIP);
-        // Note: must remain ^= to anihilate double flip flags
+        // Note: must remain ^= to annihilate double flip flags
         psai->Flags ^= psai->Rotation = GetItemData(hDlg, IDC_SAVE_ROTATION);
         psai->Colors = GetItemData(hDlg, IDC_SAVE_BIT_DEPTH);
         if (IsDlgButtonChecked(hDlg, IDC_SAVE_INVERT))

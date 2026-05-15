@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include <windows.h>
 #include <shlobj.h>
@@ -24,7 +25,7 @@ int ShortPathControlWidth;
 int ShortPathControlHeigth;
 int DlgWinWidth;
 int DlgWinHeigth;
-int DlgWinAboutHeigth; //heigth with the about showed
+int DlgWinAboutHeigth; //height with the About shown
 bool AboutShowed;
 
 //bool Started = false;
@@ -395,7 +396,7 @@ LRESULT CALLBACK ProgressControlProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 FillRect(dc, &r, NormalBrush);
 
             char txt[10];
-            wsprintf(txt, "%d %%", (int)((progress * 1000 / ProgressTotalSize /*+ 5*/)) / 10); // nezaokrouhlujeme (100% musi byt az pri 100% a ne pri 99.5%)
+            wsprintf(txt, "%d %%", (int)((progress * 1000 / ProgressTotalSize /*+ 5*/)) / 10); // Do not round here (100% must be shown only at 100%, not at 99.5%).
             r.left = 2;                                                                        /*
         r.right = Width - 2;
         r.top = 2;
@@ -734,7 +735,7 @@ int CALLBACK DirectoryBrowse(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     if (uMsg == BFFM_INITIALIZED)
     {
         SetWindowText(hwnd, StringTable[STR_BROWSEDIRTITLE]);
-        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // this is not a root directory
+        if (GetRootLen(TargetPath) < lstrlen(TargetPath)) // not the root directory
             PathRemoveBackslash(TargetPath);
         else
             PathAddBackslash(TargetPath);

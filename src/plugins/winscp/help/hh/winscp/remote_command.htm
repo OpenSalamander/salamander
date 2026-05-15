@@ -14,16 +14,16 @@
 <h1>Remote Commands</h1>
 
 <p>
-WinSCP offers unique feature to execute command on remote server as with regular
-terminal client. However as it cannot implement the
-terminal fully, there are some limitations. Particularly, you cannot execute commands that
+WinSCP offers a unique feature for executing commands on a remote server, much like a regular
+terminal client. However, as it cannot implement the
+terminal fully, there are some limitations. In particular, you cannot execute commands that
 require terminal emulation or user input. See <a href="#limitations">below</a> for technical details.
 </p>
 
 <p>
-Basically the feature is supported only for <a href="protocols.htm#scp">SCP protocol</a>. With
-<a href="protocols.htm#sftp">SFTP</a> you can still use the feature by opening
-<a href="shell_session.htm">separate shell session</a>, which in fact takes place automatically for you.
+Basically, the feature is supported only by the <a href="protocols.htm#scp">SCP protocol</a>. With
+<a href="protocols.htm#sftp">SFTP</a>, you can still use the feature by opening a
+<a href="shell_session.htm">separate shell session</a>, which happens automatically for you.
 </p>
 
 <a name="how_to_enter_the_remote_command"></a>
@@ -37,33 +37,33 @@ You can enter the command on the Open Salamander command line, while the WinSCP 
 <h4>Technical Background of Terminal Limitations</h4>
 
 <p>
-Plugin does not support commands that require terminal 
+The plugin does not support commands that require terminal
 emulation or user input.
 </p>
 
 <p>
-Terminal emulation cannot be implemented at all as it is 
+Terminal emulation cannot be implemented at all, as it is
 not possible to combine terminal emulation and file 
 transfers in the same session. The reason is that with 
-terminal emulation control characters have special meaning 
-that is interpreted by the server. On the other hand the 
+terminal emulation, control characters have special meaning
+that is interpreted by the server. On the other hand, the
 same characters (bytes) have special meaning in the file 
-transfer protocols or may be simply present in the (binary) 
+transfer protocols or may simply be present in the (binary)
 files being transferred.
 </p>
 
 <p>
-If you happen to try execute command requiring terminal 
-emulation, it will typically refuse to run with error 
-message like "Error opening terminal", "No TTY available",
-"stdin: is not a tty" or "Couldn't open /dev/tty for reading".
+If you try to execute a command requiring terminal
+emulation, it will typically refuse to run with an error
+message like "Error opening terminal," "No TTY available,"
+"stdin: is not a tty," or "Couldn't open /dev/tty for reading."
 </p>
 
 <p>
-Plugin may possibly support user input. However most 
-commands requiring user input does that via terminal 
+The plugin may support user input in some cases. However, most
+commands requiring user input do so via terminal
 emulation features. If your command needs plain input 
-without terminal emulation you can use input redirection 
+without terminal emulation, you can use input redirection
 like:
 </p>
   

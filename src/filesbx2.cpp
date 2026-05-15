@@ -348,8 +348,8 @@ void CHeaderLine::SetMinWidths()
         if (column->SupportSorting == 1)
             column->MinWidth += 2 * SORT_BITMAP_W;
 
-        // when measuring the "Name" column and the next column isn't "Ext"
-        // and integration of "Ext" into "Name" is allowed, add the width of "Ext"
+        // when measuring the "Name" column and integration of "Ext" into "Name" is enabled,
+        // add the width of "Ext"
         if (i == 0 && !Parent->Parent->IsExtensionInSeparateColumn() &&
             (Parent->Parent->ValidFileData & VALID_DATA_EXTENSION))
         {
@@ -380,7 +380,7 @@ CHeaderLine::HitTest(int xPos, int yPos, int& index, BOOL& extInName)
         right = left + column->Width;
         if (xPos >= left && xPos < right)
         {
-            // test the separators
+            // check the dividers
             if (xPos < left + 2 && i > 0 && Columns->At(i - 1).FixedWidth == 1)
             {
                 index = i - 1;

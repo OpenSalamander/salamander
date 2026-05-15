@@ -106,7 +106,7 @@ enum rpmtagSignature
     RPMSIGTAG_PGP5 = 1006,    /*!< PGP5 signature @deprecated legacy. */
 
     /* Signature tags by Public Key Algorithm (RFC 2440) */
-    /* N.B.: These tags are tenative, the values may change */
+    /* N.B.: These tags are tentative, the values may change */
     RPMTAG_PK_BASE = 512,                       /*!< @todo Implement. */
     RPMTAG_PK_RSA_ES = RPMTAG_PK_BASE + 1,      /*!< (unused */
     RPMTAG_PK_RSA_E = RPMTAG_PK_BASE + 2,       /*!< (unused) */
@@ -157,7 +157,7 @@ typedef enum rpmTag_e
     RPMTAG_VERSION = 1001,
     RPMTAG_RELEASE = 1002,
     RPMTAG_EPOCH = 1003,
-#define RPMTAG_SERIAL RPMTAG_EPOCH /* backward comaptibility */
+#define RPMTAG_SERIAL RPMTAG_EPOCH /* backward compatibility */
     RPMTAG_SUMMARY = 1004,
     RPMTAG_DESCRIPTION = 1005,
     RPMTAG_BUILDTIME = 1006,
@@ -169,7 +169,7 @@ typedef enum rpmTag_e
     RPMTAG_GIF = 1012,
     RPMTAG_XPM = 1013,
     RPMTAG_LICENSE = 1014,
-#define RPMTAG_COPYRIGHT RPMTAG_LICENSE /* backward comaptibility */
+#define RPMTAG_COPYRIGHT RPMTAG_LICENSE /* backward compatibility */
     RPMTAG_PACKAGER = 1015,
     RPMTAG_GROUP = 1016,
     RPMTAG_CHANGELOG = 1017, /*!< internal */
@@ -203,7 +203,7 @@ typedef enum rpmTag_e
     RPMTAG_FILEVERIFYFLAGS = 1045,
     RPMTAG_ARCHIVESIZE = 1046,
     RPMTAG_PROVIDENAME = 1047,
-#define RPMTAG_PROVIDES RPMTAG_PROVIDENAME /* backward comaptibility */
+#define RPMTAG_PROVIDES RPMTAG_PROVIDENAME /* backward compatibility */
     RPMTAG_REQUIREFLAGS = 1048,
     RPMTAG_REQUIRENAME = 1049,
     RPMTAG_REQUIREVERSION = 1050,
@@ -238,7 +238,7 @@ typedef enum rpmTag_e
     RPMTAG_POSTUNPROG = 1088,
     RPMTAG_BUILDARCHS = 1089,
     RPMTAG_OBSOLETENAME = 1090,
-#define RPMTAG_OBSOLETES RPMTAG_OBSOLETENAME /* backward comaptibility */
+#define RPMTAG_OBSOLETES RPMTAG_OBSOLETENAME /* backward compatibility */
     RPMTAG_VERIFYSCRIPTPROG = 1091,
     RPMTAG_TRIGGERSCRIPTPROG = 1092,
     RPMTAG_DOCDIR = 1093, /*!< internal */

@@ -61,7 +61,7 @@ CScriptEngineShim* CScriptEngineShim::Create(CScriptInfo* pScript)
 void CScriptEngineShim::AdjustSourcePosition(LONG& linePos, LONG& columnPos)
 {
     // JScript and VBScript are zero-based,
-    // so threat this as default behavior
+    // so treat this as the default behavior.
     linePos += 1;
     columnPos += 1;
 }
@@ -159,10 +159,10 @@ bool CScriptEngineShim::DisplayErrorHook(__in EXCEPINFO* ei, __in_opt BSTR src, 
     UNREFERENCED_PARAMETER(src);
     UNREFERENCED_PARAMETER(bDebug);
 
-    // Some engines (Python, Ruby) does not report abortion thru our special
-    // SALAUT_E_ABORT we pass into the engine, instead they raise COM
-    // exception. Since this shim is general and should not influence
-    // anything, I decided to put it here in the base shim.
+    // Some engines (Python, Ruby) do not report aborts through the special
+    // SALAUT_E_ABORT we pass to the engine; instead, they raise a COM
+    // exception. Because this shim is general and should not affect
+    // anything else, handle it here in the base shim.
     if (ei && ei->scode == DISP_E_EXCEPTION && m_pScript->IsAbortPending())
     {
         return false;
@@ -193,8 +193,8 @@ CScriptEngineShim* CPhpScriptEngineShim::Create(CScriptInfo* pScript)
 
 void CPhpScriptEngineShim::AdjustSourcePosition(LONG& linePos, LONG& columnPos)
 {
-    // PHP starts counting lines from one and char position
-    // always sets to zero.
+    // PHP starts line numbering at one, and the char position
+    // is always zero.
     columnPos = -1;
 }
 
@@ -206,14 +206,14 @@ HRESULT CPhpScriptEngineShim::ReleaseEngine(IActiveScript* pScript)
     // This is needed for the buggy PHP script engine to revoke
     // instance from the global interface table.
     hr = pScript->SetScriptSite(NULL);
-    // Behaved engines return E_POINTER, unlike PHP, which returns S_OK
+    // Well-behaved engines return E_POINTER, unlike PHP, which returns S_OK,
     // and ActivePython, which returns E_FAIL.
     _ASSERTE(SUCCEEDED(hr));
 
     hr = ReleaseEngineCore(pScript, cRef);
 
-    // Workaround for the buggy PHP script engine
-    // to kill the script thread and delete the engine object
+    // Workaround for a PHP script engine bug:
+    // kill the script thread and delete the engine object
     if (cRef == 1)
     {
         cRef = pScript->Release();
@@ -275,9 +275,9 @@ CScriptEngineShim* CGlobalRubyScriptEngineShim::Create(CScriptInfo* pScript)
 
 void CGlobalRubyScriptEngineShim::AdjustSourcePosition(LONG& linePos, LONG& columnPos)
 {
-    // Ruby seems not using position information at all,
-    // both the line and column is always set to zero,
-    // the line number is mentioned in the description
+    // Ruby does not seem to use position information at all:
+    // both the line and column are always set to zero,
+    // and the line number is mentioned in the description
     // and is one-based.
     linePos = columnPos = -1;
 }
@@ -303,18 +303,17 @@ void CGlobalRubyScriptEngineShim::Site_OnLeaveScript()
 HRESULT CGlobalRubyScriptEngineShim::InterruptScript(IActiveScript* pScript)
 {
     // Redmine #817:
-    // Calling InterruptScriptThread on Ruby engine is a suicidal mission.
-    // What is going on?
+    // Calling InterruptScriptThread on the Ruby engine is unsafe.
+    // Behavior observed:
     // 1. Ruby suspends the thread executing the script (i.e. Salamander's
     //    main thread).
     // 2. It sets the thread context, forcing the instruction pointer to
-    //    be address of the internal rb_raise function.
+    //    the address of the internal rb_raise function.
     // 3. The engine resumes the thread.
-    // 4. The thread's context is completely messed up, executing the
-    //    rb_raise function (which does longjmp according to search results
-    //    on Google) without correctly unwinding the stack.
-    // I still cannot believe this. To make the long story short, we just
-    // prevent calling InterruptScriptThread when running Ruby script and
-    // we are leaving the script to be interrupted cooperatively.
+    // 4. The thread's context is corrupted, executing the rb_raise function
+    //    (which reportedly calls longjmp) without correctly unwinding the
+    //    stack.
+    // In short, prevent InterruptScriptThread from being called when running
+    // a Ruby script and let the script be interrupted cooperatively.
     return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
 }

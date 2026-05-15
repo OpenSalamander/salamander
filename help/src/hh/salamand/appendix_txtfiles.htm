@@ -17,18 +17,18 @@
 <h5>Character Sets</h5>
 <p>Text files use character sets. A character set contains punctuation marks,
 numerals, uppercase and lowercase letters, and all other printable characters.
-Each element of a character set is identified by a number.</p>
+Each character in the set is identified by a number.</p>
 
 <p>Most character sets in use are supersets of the U.S. ASCII character set,
-which defines characters for the 96 numeric values from 32 through 127. There
-are major groups of character sets:</p>
+which defines characters for the 96 numeric values from 32 through 127. The
+major groups of character sets are:</p>
 
 <dl>
 <dt><i>Windows Character Set (single-byte coding scheme)</i></dt>
 <dd>The Windows character set is the most commonly used character set in Windows.
 It is essentially equivalent to the ANSI character set. The Windows character set
 uses 8 bits to represent each character; therefore, the maximum number of
-characters that can be expressed using 8 bits is 256 (2^8).  This is usually
+characters that can be expressed using 8 bits is 256 (2^8).  This is generally
 sufficient for Western languages, including the diacritical marks used in Czech,
 French, German, Spanish, and other languages.</dd>
 
@@ -37,7 +37,7 @@ French, German, Spanish, and other languages.</dd>
 encoded by using a single-byte coding scheme. With the proliferation of computer
 commerce, double-byte coding schemes were developed so that characters could be
 represented in 8-bit, 16-bit, 24-bit, or 32-bit sequences. This requires
-complicated passing algorithms; even so, using different code sets could yield
+complicated parsing algorithms; even so, using different code sets could yield
 entirely different results on two different computers. 
 </dd>
 

@@ -19,7 +19,7 @@ CPluginFSInterface::CPluginFSInterface()
     // Desktop -> CurrentPIDL
     if (FAILED(SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOP, &CurrentPIDL)))
     {
-        // the Desktop PIDL is empty, but we obtain it cleanly
+        // The Desktop PIDL is an empty PIDL, but we still obtain it explicitly
         CurrentPIDL = NULL;
         TRACE_E("SHGetSpecialFolderLocation failed on CSIDL_DESKTOP");
     }
@@ -90,7 +90,7 @@ BOOL WINAPI
 CPluginFSInterface::GetFullName(CFileData& file, int isDir, char* buf, int bufSize)
 {
     buf[0] = 0;
-    //  lstrcpyn(buf, Path, bufSize);  // if the path does not fit, the name definitely will not either (an error will be reported)
+    //  lstrcpyn(buf, Path, bufSize);  // if the path does not fit, the name definitely will not fit either (an error will be reported)
     if (isDir == 2)
         return SalamanderGeneral->CutDirectory(buf, NULL); // up-dir
     else
@@ -132,7 +132,7 @@ CPluginFSInterface::ChangePath(int currentFSNameIndex, char* fsName, int fsNameI
     if (ErrorState == fesFatal)
     {
         ErrorState = fesOK;
-        return FALSE; // ListCurrentPath failed due to memory, fatal error
+        return FALSE; // ListCurrentPath failed due to insufficient memory, fatal error
     }
 
     return TRUE;

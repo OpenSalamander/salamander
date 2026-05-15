@@ -14,7 +14,7 @@
 <h1>SFTP Tab (Login Dialog)</h1>
 
 <p>
-<em><acronym title="SSH File Transfer Protocol">SFTP</acronym> tab</em> allows user to configure
+<em><acronym title="SSH File Transfer Protocol">SFTP</acronym> tab</em> allows you to configure
 <a href="protocols.htm#sftp">SFTP protocol</a> specific options.
 </p>
 
@@ -43,7 +43,7 @@ Particularly you may want to change user (known as <code>su</code>)
 Use <em>Preferred <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol version</em> to
 configure maximal version of <acronym title="SSH File Transfer Protocol">SFTP</acronym> protocol that
 WinSCP will attempt to use. WinSCP will seamlessly downgrade to any lower version that the server
-supports. The only reason, that you may want to change the option for, is bug either in
+supports. The only reason that you may want to change the option is a bug either in
 <acronym title="SSH File Transfer Protocol">SFTP</acronym> server or WinSCP itself specific to particular
 version of the protocol.
 </p>
@@ -61,13 +61,13 @@ Each bug can be configured in three states. With <em>Off</em> WinSCP will assume
 not have the bug. With <em>On</em> WinSCP will assume that the server does have the bug. With
 <em>Auto</em> (default) WinSCP will try to guess whether or not the server has the bug. The guessing
 is mostly based on software version string of the <acronym title="Secure Shell">SSH</acronym> server,
-as most current <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers does announce their
+as most current <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers do announce their
 software version strings.
 </p>
 
 <p>
 WinSCP can work around the bugs of major <acronym title="SSH File Transfer Protocol">SFTP</acronym>
-servers only. There is many more known bugs in <acronym title="SSH File Transfer Protocol">SFTP</acronym>
+servers only. There are many more known bugs in <acronym title="SSH File Transfer Protocol">SFTP</acronym>
 server implementations. Read more about <a href="interoperability.htm">interoperability</a> with
 <acronym title="SSH File Transfer Protocol">SFTP</acronym> servers.
 </p>
@@ -78,7 +78,7 @@ server implementations. Read more about <a href="interoperability.htm">interoper
 <p>
 The <acronym title="SSH File Transfer Protocol">SFTP</acronym> command to create a symbolic link (symlink) has two
 arguments: the path the symbolic link should point to and the path of the symlink itself. Some servers
-incorrectly expects the arguments in reversed order.
+incorrectly expect the arguments in reversed order.
 </p>
 
 <p>
@@ -99,7 +99,7 @@ While specification for <acronym title="SSH File Transfer Protocol">SFTP</acrony
 and older defines file timestamp to be unsigned 32-bit number representing number of seconds from
 Jan 1, 1970 in <acronym title="Universal Time Coordinated">UTC</acronym>, at least OpenSSH interprets
 it as signed number. The result is that files on the server with timestamps before 1970 will be interpreted
-by WinSCP as times after 2038. As it is probably quite common bug, it is currently considered to apply
+by WinSCP as times after 2038. As it is probably quite a common bug, it is currently considered to apply
 for all servers. Set the option to <em>Off</em> if it does not for your server.
 </p>
 

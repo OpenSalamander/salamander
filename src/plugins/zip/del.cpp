@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -311,7 +312,7 @@ void CZipPack::UpdateCentrDir(CFileInfo* curFile, CFileInfo* nextFile, QWORD del
             }
             else
             {
-                // We leave Zip64 record here even when no longer needed, it is not a violation
+                // We leave the Zip64 record here even when it is no longer needed; this is not a violation
                 *(QWORD*)locHeaderOffsOffs = locHeaderOffs;
             }
         }

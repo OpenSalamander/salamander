@@ -13,21 +13,21 @@
 <div class="page">
 <h1>Getting Lists of Files and Directories from FTP Servers</h1>
 
-<p>FTP client needs to get the list of files and directories in the current directory
-on the FTP server. It should contain as many information about files and directories
+<p>The FTP client needs to get the list of files and directories in the current directory
+on the FTP server. It should contain as much information about files and directories
 as possible (date, size, user, group, access rights, etc.). These files and directories
-are listed in panel where you can work with them. The list of files and directories is
-got from the plain text listing received from the FTP server. This listing is designed
-only for reading by a human, not for automatic parsing. It means that nearly each FTP
-server software has its own format of this listing (format depends on the server
-operating system, its language version, etc.). So the FTP client must handle many
-formats of listings.</p>
+are listed in the panel, where you can work with them. The list of files and directories
+comes from the plain-text listing received from the FTP server. This listing is designed
+for human reading, not for automatic parsing. That means almost every FTP
+server has its own listing format (depending on the server operating system,
+its language version, etc.), so the FTP client must handle many
+listing formats.</p>
 
-<p>For each format of listing we define one server type. It contains a condition
-used to autodetect server type (autodetect condition), a list of available data columns
-(including their visibility in panel), and a parser for plain text listing.
+<p>For each listing format, one server type is defined. It contains a condition
+used to autodetect the server type (the autodetect condition), a list of available data columns
+(including whether they are visible in the panel), and a parser for the plain-text listing.
 All defined server types are displayed in <a href="config_servers.htm">Configuration/Servers</a>.
-You can add new or edit existing in <a href="dlgboxes_editsrvtype.htm">Edit Server Type
+You can add new server types or edit existing ones in the <a href="dlgboxes_editsrvtype.htm">Edit Server Type
 dialog box</a>.</p>
 
 <p>You can choose if the server type should be autodetected or not. If not, choose
@@ -39,7 +39,7 @@ what server type should be used. See the <i>Server type</i> option in the
 
 <p>The specified server type is used to parse the plain text listing. If parsing
 is successful, the list of files and directories is its result. If not, the
-plugin displays warning and only the plain text listing is displayed in panel
+plugin displays a warning and only the plain text listing is displayed in the panel
 (such listing is unusable for any operation).</p>
 
 <p>A directory "." (if it is in the listing) and a directory ".." (if it is
@@ -63,12 +63,12 @@ Each such server type is used to parse the plain text listing. If parsing is
 successful, the list of files and directories is its result. If not, the
 server type is skipped (and next one is tried).</p>
 
-<p>If all defined server types failed in parsing, the plugin displays warning
-and only the plain text listing is displayed in panel (such listing is
+<p>If all defined server types failed in parsing, the plugin displays a warning
+and only the plain text listing is displayed in the panel (such listing is
 unusable for any operation).</p>
 
 <p>The server type is autodetected only for the first listing from the server.
-The same server type is used for all other listings (it allows to display
+The same server type is used for all other listings (this allows the plugin to display
 the same columns also for empty listings, etc.). If the listing
 cannot be parsed with the same server type, the plugin tries to
 autodetect another server type.</p>
@@ -122,12 +122,12 @@ character. Positive number is introduced by '+' character (it can be omitted).</
 <h4>Columns</h4>
 
 <p>Each column has an identifier name, a type of values, an empty value, a name
-and description for displaying in panel, and an alignment of values. The identifier
+and description for displaying in the panel, and an alignment of values. The identifier
 name is used in the column identifier which is used for assigning values to the
 column. Each column can contain only one value for each item (a file or directory).
 If no value was assigned to the column, the empty value defined for the column is
-used. The column can be visible in panel or not. Only columns of Name and Extension
-types are always visible in panel. Columns are defined in the
+used. The column can be visible in the panel or not. Only columns of Name and Extension
+types are always visible in the panel. Columns are defined in the
 <a href="dlgboxes_editcolumn.htm">New/Edit Column dialog box</a>.</p>
 
 <p>We have the following types of columns:</p>
@@ -137,18 +137,18 @@ types are always visible in panel. Columns are defined in the
    <col />
  </colgroup>
  <tr><th>Type</th><th>Description</th></tr>
- <tr><td>Name</td><td>string; file or directory name; exacly one column of this type is
-         neccessary; it cannot be hidden; the definition of the empty value for
-	 this column has no sense; parser must assign a value to this column for
+ <tr><td>Name</td><td>string; file or directory name; exactly one column of this type is
+         necessary; it cannot be hidden; the definition of the empty value for
+	 this column makes no sense; the parser must assign a value to this column for
 	 each file and directory; if no value is assigned, parsing using the current
 	 rule does not add any file nor directory (it is used for skipping empty lines and other
-	 not important parts of the plain text listing); assigning of the empty string ("") is
-	 considered to be an error in parsing</td></tr>
+	 not important parts of the plain text listing); assigning the empty string ("") is
+	 considered an error in parsing</td></tr>
  <tr><td>Extension</td><td>string; file extension; values are automatically generated from
          values in the column of the Name type; it cannot be hidden; the definition of the
-	 empty value for this column has no sense</td></tr>
+	 empty value for this column makes no sense</td></tr>
  <tr><td>File Size in Bytes</td><td>64-bit unsigned integer; file size in bytes; the value is zero
-         and is displayed as "DIR" in panel for all directories; the default empty
+         and is displayed as "DIR" in the panel for all directories; the default empty
 	 value is zero</td></tr>
  <tr><td>Last Write Date</td><td>date; last write (modification) date; a date value must be valid (if not,
          it is replaced by the value January 1, 1602); the default empty value is
@@ -156,23 +156,23 @@ types are always visible in panel. Columns are defined in the
  <tr><td>Last Write Time</td><td>time; last write (modification) time; the default empty value is 0:00:00</td></tr>
  <tr><td>File Type</td><td>string; file type description (defined by Windows for file extensions);
          values are automatically generated from values in the column of the Name type;
-	 the definition of the empty value for this column has no sense</td></tr>
+	 the definition of the empty value for this column makes no sense</td></tr>
  <tr><td>Any Text</td><td>string; general purpose; the default empty value is the empty string ("")</td></tr>
  <tr><td>Any Date</td><td>date; general purpose; a date value must be valid (if not,
          it is replaced by the value January 1, 1602); the default empty value is the empty
-	 string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+	 string (""), it means that if the value is not assigned, nothing is shown in the panel</td></tr>
  <tr><td>Any Time</td><td>time; general purpose; the default empty value is the empty
-         string (""), it means that if the value is not assigned, nothing is shown in panel</td></tr>
+         string (""), it means that if the value is not assigned, nothing is shown in the panel</td></tr>
  <tr><td>Any Number</td><td>64-bit signed integer; general purpose; the default empty
          value is the empty string (""); it means that if the value is not assigned,
-	 nothing is shown in panel</td></tr>
+	 nothing is shown in the panel</td></tr>
 </table>
 
-<p>Moreover we have three virtual columns with identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;
-a &lt;is_link&gt;. We assign boolean values to these columns. Their meanings are: "is
-item a directory?" (false means that it is a file), "is item hidden?" (false means that
-it has not hidden attribute), and "is item a link?" (false means that it is not a link).
-It is not neccessary to assign values to these columns, their empty values are: "is a file",
+<p>In addition, there are three virtual columns with the identifiers &lt;is_dir&gt;, &lt;is_hidden&gt;,
+and &lt;is_link&gt;. Boolean values are assigned to these columns. Their meanings are: "is
+this item a directory?" (false means it is a file), "is this item hidden?" (false means that
+it does not have the hidden attribute), and "is this item a link?" (false means it is not a link).
+It is not necessary to assign values to these columns; their empty values are: "is a file",
 "is not hidden", and "is not a link".</p>
 
 
@@ -211,8 +211,8 @@ that are used as operands:</p>
 <p>The parsing is successful if the plain text listing is completely traversed
 by using defined rules.</p>
 
-<p>The current position in the listing will be mentioned as a pointer. The pointer
-is moved from the beginning to the end of the listing during parsing.</p>
+<p>The current position in the listing is referred to as the pointer. During parsing,
+the pointer moves from the beginning to the end of the listing.</p>
 
 <p>The rule can be used only if all its functions are successfully evaluated,
 the empty string is not assigned to the column of the Name type (in other
@@ -227,13 +227,13 @@ values in columns.</p>
 the order of their definition. In other words, always the first usable rule
 is used.</p>
 
-<p>The listing can be incomplete if user cancels its getting or due to some
+<p>The listing can be incomplete if the user cancels the listing transfer or due to some
 network failure. The incomplete listing is trimmed to contain only the
 complete text lines.</p>
 
 <p>The parsing of the incomplete listing is handled at the level of using
-rules. In simple case the pointer is moved (by using rules) to the end
-of the incomplete listing and it means the successful end of parsing.
+rules. In a simple case the pointer is moved (by using rules) to the end
+of the incomplete listing, which means the successful end of parsing.
 Otherwise during evaluation of some function from currently used rule,
 the pointer should be moved to the next line. But this is not possible
 because the listing is incomplete, so parsing is successfully ended
@@ -259,9 +259,9 @@ move the pointer, and does not assign any value to any column. If the function
 moves the pointer and if not explicitly stated, it is assumed that the pointer
 cannot move behind the end of line (to the next line).</p>
 
-<p>Before using the column identifier in the expression, it is neccessary to
-assign a value to this column. Otherwise the expression has no sense (such
-expression can be replaced by the boolean constant which is calculated using
+<p>Before using the column identifier in the expression, it is necessary to
+assign a value to this column. Otherwise the expression makes no sense (such
+an expression can be replaced by the boolean constant that is calculated using
 the column default empty value in the expression).</p>
 
 <p>Note: in the following table, the whitespace is the space or tab character.</p>
@@ -348,7 +348,7 @@ the column default empty value in the expression).</p>
  <tr><td>month_3(&lt;column&gt;)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be date; assigns a month represented by three letters
 	 at the pointer position to the column; works with month names in several languages
-	 (currently supported languages: English, German, Norweigan, and Swedish);
+	 (currently supported languages: English, German, Norwegian, and Swedish);
 	 the month name must be followed by some common delimiter (',', '.', ';', ':', etc.),
 	 whitespace, or end of line character (not by a letter); moves the pointer behind the
 	 month name; the function is successful only if month name is known and all month
@@ -405,7 +405,7 @@ the column default empty value in the expression).</p>
 
  <tr><td>time(&lt;column&gt;)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be time; assigns hours, minutes, and
-	 eventually also seconds and milliseconds represented by decimal numbers at
+	 optionally seconds and milliseconds represented by decimal numbers at
 	 the pointer position to the column; supported time formats are: 00:00,
 	 00:00:00, or 00:00:00.000; if the time value is followed by "a", "am", "p",
 	 or "pm", it is considered to be "a.m." (morning) or "p.m." (evening) and the
@@ -417,7 +417,7 @@ the column default empty value in the expression).</p>
 
  <tr><td>year_or_time(&lt;column_date&gt;, &lt;column_time&gt;)</td><td>
          types of values in columns (<i>&lt;column_date&gt;</i> and <i>&lt;column_time&gt;</i> parameters)
-	 must be date and time; assigns year and eventually also time (only hours and minutes)
+	 must be date and time; assigns year and optionally time (only hours and minutes)
 	 represented by a decimal number (if it is year) or two decimal numbers separated by ':'
 	 character (if it is time) at the pointer position to the column; supports standard Unix
 	 format: if it is year at the pointer position, time is unknown, and if it is time at the
@@ -438,21 +438,21 @@ the column default empty value in the expression).</p>
 	 parameter) to the column; moves the pointer behind this string; the function is
 	 successful only if such string exists</td></tr>
 
- <tr><td>all_to(string)</td><td>finds the first occurence (searching is case
+ <tr><td>all_to(string)</td><td>finds the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) and moves the pointer
-	 behind this occurence; the function is successful only if the specified string
+	 behind this occurrence; the function is successful only if the specified string
 	 was found</td></tr>
 
  <tr><td>all_to(&lt;column&gt;, string)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
-	 the pointer position and ending behind the first occurence (searching is case
+	 the pointer position and ending behind the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) to the column;
 	 moves the pointer behind the found string; the function is successful only if the
 	 specified string was found</td></tr>
 
  <tr><td>all_up_to(&lt;column&gt;, string)</td><td>the type of values in the column
          (<i>&lt;column&gt;</i> parameter) must be string; assigns a string starting from
-	 the pointer position and ending before the first occurence (searching is case
+	 the pointer position and ending before the first occurrence (searching is case
          insensitive) of the specified string (<i>string</i> parameter) to the column;
 	 moves the pointer behind the found string; the function is successful only if the
 	 specified string was found</td></tr>
@@ -462,7 +462,7 @@ the column default empty value in the expression).</p>
 	 and <i>&lt;column_link&gt;</i> must be Name and Any Text; works with a string starting
 	 at the pointer position and ending before the end of line; moves the pointer behind this
 	 string; expects standard Unix format of link: "link_name -&gt; target_name" or "link_name"
-	 (if the link target is not accessible); gets the link name and eventually also the link
+	 (if the link target is not accessible); gets the link name and optionally the link
 	 target from the string and detects if it is the link to a file or directory (used
 	 heuristics: if the link name or target contains extension, it is probably the link to
 	 a file, otherwise it is the link to a directory; if this heuristics does not fit, you
@@ -543,9 +543,9 @@ the column default empty value in the expression).</p>
 
 <h4>Operators Used in Parsing</h4>
 
-<p>Before using the column identifier in the expression, it is neccessary to
-assign a value to this column. Otherwise the expression has no sense (such
-expression can be replaced by the boolean constant which is calculated using
+<p>Before using the column identifier in the expression, it is necessary to
+assign a value to this column. Otherwise the expression makes no sense (such
+an expression can be replaced by the boolean constant that is calculated using
 the column default empty value in the expression).</p>
 
 <p>We have the following operators:</p>

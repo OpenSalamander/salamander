@@ -186,7 +186,7 @@ int CData::FindStrData(WORD id)
 
 BOOL CData::FindStringWithID(WORD id, int* index, int* subIndex, int* lvIndex)
 {
-    // prohledame strings
+    // Search strings.
     for (int i = 0; i < StrData.Count; i++)
     {
         CStrData* strData = StrData[i];
@@ -218,7 +218,7 @@ BOOL CData::FindStringWithID(WORD id, int* index, int* subIndex, int* lvIndex)
 
 BOOL CData::GetStringWithID(WORD id, wchar_t* buf, int bufSize)
 {
-    // prohledame strings
+    // Search strings.
     for (int i = 0; i < StrData.Count; i++)
     {
         CStrData* strData = StrData[i];

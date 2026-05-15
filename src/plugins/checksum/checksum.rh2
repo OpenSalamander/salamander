@@ -1,4 +1,5 @@
-﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+﻿// WARNING: cannot be replaced with "#pragma once" because this file is included from a .rc file,
+// and the resource compiler does not seem to support "#pragma once".
 #ifndef __CHECKSUM_RH2
 #define __CHECKSUM_RH2
 
@@ -7,7 +8,7 @@
 #endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 
 #define IDC_STATIC_1 300
-#include "statics.rh2"   // 300 az 339 jsou timto zabrane !!!
+#include "statics.rh2"   // 300 to 339 are reserved by this include.
 
 #define IDS_PLUGINNAME                   1
 #define IDS_ABOUTTITLE                   2
@@ -86,17 +87,17 @@
 
 
 #define IDC_CFG_SUM_1                   100
-//#define IDC_CFG_CRC                     IDC_CFG_SUM_1  // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_CRC                     IDC_CFG_SUM_1  // this form will not compile in HTML Help Compiler
 #define IDC_CFG_CRC                     100
-//#define IDC_CFG_MD5                     (IDC_CFG_CRC+1) // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_MD5                     (IDC_CFG_CRC+1) // this form won't compile in HTML Help Compiler
 #define IDC_CFG_MD5                     101
-//#define IDC_CFG_SHA1                    (IDC_CFG_MD5+1) // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_SHA1                    (IDC_CFG_MD5+1) // HTML Help Compiler won't compile this form
 #define IDC_CFG_SHA1                    102
-//#define IDC_CFG_SHA256                  (IDC_CFG_SHA1+1) // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_SHA256                  (IDC_CFG_SHA1+1) // HTML Help Compiler won't compile this form
 #define IDC_CFG_SHA256                  103
-//#define IDC_CFG_SHA512                  (IDC_CFG_SHA256+1) // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_SHA512                  (IDC_CFG_SHA256+1) // HTML Help Compiler won't compile this form
 #define IDC_CFG_SHA512                  104
-//#define IDC_CFG_SUM_COUNT               (IDC_CFG_SHA512+1) // tenhle zapis nezkompiluje HTML Help Compiler
+//#define IDC_CFG_SUM_COUNT               (IDC_CFG_SHA512+1) // this form won't compile in HTML Help Compiler
 #define IDC_CFG_SUM_COUNT               105
 
 #endif // __CHECKSUM_RH2

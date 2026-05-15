@@ -95,7 +95,7 @@ void CServerTypeList::Load(HWND parent, HKEY regKey, CSalamanderRegistryAbstract
                 TRACE_E(LOW_MEMORY);
                 break;
             }
-            if (!item->Load(parent, subKey, registry)) // loading failed, we ignore this item
+            if (!item->Load(parent, subKey, registry)) // loading failed, ignore this item
             {
                 delete item;
             }
@@ -318,14 +318,14 @@ void CFTPServerList::CheckProxyServersUID(CFTPProxyServerList& ftpProxyServerLis
         if (s->ProxyServerUID != -1 && s->ProxyServerUID != -2 &&
             !ftpProxyServerList.IsValidUID(s->ProxyServerUID))
         {
-            s->ProxyServerUID = -2; // validate the UID by switching to "default"
+            s->ProxyServerUID = -2; // make the UID valid by switching to "default"
         }
     }
 }
 
 BOOL CFTPServerList::ContainsUnsecuredPassword()
 {
-    // NOTE, the same method exists for CFTPProxyServerList
+    // NOTE: the same method exists for CFTPProxyServerList
     CSalamanderPasswordManagerAbstract* passwordManager = SalamanderGeneral->GetSalamanderPasswordManager();
     int i;
     for (i = 0; i < Count; i++)
@@ -411,7 +411,7 @@ BOOL EncryptPasswordAux(BYTE** encryptedPassword, int* encryptedPasswordSize, BO
 
 BOOL CFTPServerList::EncryptPasswords(HWND hParent, BOOL encrypt)
 {
-    // NOTE, the same method exists for CFTPProxyServerList
+    // NOTE: the same method exists for CFTPProxyServerList
     BOOL ret = TRUE;
     int i;
     for (i = 0; i < Count; i++)

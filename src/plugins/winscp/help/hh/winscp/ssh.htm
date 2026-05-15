@@ -17,7 +17,7 @@
 <p>
 <acronym title="Secure Shell">SSH</acronym> is a cryptographically protected remote login protocol
 that replaces the insecure telnet and rlogin protocols.
-It provides strong protection against password sniffing and third party
+It provides strong protection against password sniffing and third-party
 session monitoring, better protecting your authentication credentials
 and privacy. In addition to protecting your passwords and your privacy,
 <acronym title="Secure Shell">SSH</acronym> offers additional authentication methods that are considered more
@@ -32,9 +32,9 @@ protection against spoofing.
 <acronym title="Secure Shell">SSH</acronym> servers offer the client a selection of authentication
 methods. The server advertises what it supports, and the client
 attempts to authenticate over each method that it can support.
-Generally, the client will choose methods that are the least intrusive
-to the user, if they are available. In most cases, the client provides
-the option to choose which methods can be used. In WinSCP, you can configure this on
+Generally, the client will choose the methods that are least intrusive
+to the user, if available. In most cases, the client provides
+the option to choose which methods can be used. In WinSCP, you can configure this on the
 <a href="ui_login_authentication.htm">Login dialog</a>.
 </p>
 
@@ -67,8 +67,8 @@ ssh-rsa 1024 94:3c:9e:2b:23:df:bd:53:b4:ad:f1:5f:4e:2f:9d:ba</p>
 <p>
 This is a feature of the <acronym title="Secure Shell">SSH</acronym> protocol. It is designed to protect
 you against a network attack known as spoofing: secretly redirecting your connection to a different
-computer, so that you send your password to the wrong machine. Using this technique, an attacker would be
-able to learn the password that guards your login account, and could then log in as if they were you and
+computer so that you send your password to the wrong machine. Using this technique, an attacker would be
+able to learn the password that guards your login account and could then log in as if they were you and
 use the account for their own purposes.
 </p>
 
@@ -109,7 +109,7 @@ Once the key is verified, you can see it during all future sessions on
 </p>
 
 <p>
-<a href="administration.htm">System administrator can restrict</a> connection to server without having
+A <a href="administration.htm">system administrator can restrict</a> connections to servers without having
 their host keys accepted in advance.
 </p>
 
@@ -121,13 +121,13 @@ their host keys accepted in advance.
 In the older <acronym title="Secure Shell">SSH</acronym>-1 protocol,
 <acronym title="Triple Data Encryption Standard">3DES</acronym> and
 <acronym title="Data Encryption Standard">DES</acronym> are typically used.
-<acronym title="Secure Shell">SSH</acronym>-2 adds support for additional encryption methods including
+<acronym title="Secure Shell">SSH</acronym>-2 adds support for additional encryption methods, including
 <acronym title="Advanced Encryption Standard">AES</acronym> and Blowfish. By default,
 <acronym title="Advanced Encryption Standard">AES</acronym> is used if supported by the server.
 While <acronym title="Advanced Encryption Standard">AES</acronym> is
 considered to be highly secure, <acronym title="Advanced Encryption Standard">AES</acronym> encryption
 requires substantial processor overhead.
-Blowfish is also considered secure, but with less computational overhead, it's also theoretically
+Blowfish is also considered secure, but with less computational overhead; it's also theoretically
 easier to perform a brute-force attack. Depending on your security and
 performance requirements, you may wish to configure WinSCP to prefer
 the Blowfish algorithm. <acronym title="Triple Data Encryption Standard">3DES</acronym> and
@@ -155,7 +155,7 @@ In addition, many sites that use <acronym title="Secure Shell">SSH</acronym>-2 d
 WinSCP's default setting is to prefer <acronym title="Secure Shell">SSH</acronym>-2 and negotiate
 down to <acronym title="Secure Shell">SSH</acronym>-1 if <acronym title="Secure Shell">SSH</acronym>-2 is
 not available. If the majority of systems you
-connect to are using <acronym title="Secure Shell">SSH</acronym>-2, you may wish to change this setting in the
+connect to use <acronym title="Secure Shell">SSH</acronym>-2, you may wish to change this setting in the
 <a href="ui_login_ssh.htm"><acronym title="Secure Shell">SSH</acronym> preferences</a>.
 </p>
 
@@ -170,7 +170,7 @@ actually result in slower transfers, particularly depending on the data type you
 Large text files may still benefit significantly, while
 binaries may actually transfer more slowly. You may want to
 experiment to find what works best in your situation. Compression may
-also improve security slightly, in part by rendering known cyphertext
+also improve security slightly, in part by rendering known ciphertext
 attacks more difficult and by providing less data for
 cryptanalysis.
 </p>
@@ -178,7 +178,7 @@ cryptanalysis.
 <h4>Notes:</h4>
 <p>
 <a name="fn1"></a>
-1) The text is copy of <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
+1) The text is a copy of the <a href="https://tartarus.org/~simon/putty-snapshots/htmldoc/" target="_blank">PuTTY User Manual</a> or was inspired by it.
 </p>
 
 </div>

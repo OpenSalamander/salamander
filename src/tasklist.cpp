@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -13,36 +14,36 @@ extern "C"
 #include "salshlib.h"
 
 #pragma warning(disable : 4074)
-#pragma init_seg(compiler) // inicializaci provedeme co nejdrive
+#pragma init_seg(compiler) // perform initialization as early as possible
 
-#define NOHANDLES(function) function // obrana proti zanaseni maker HANDLES do zdrojaku pomoci CheckHnd
+#define NOHANDLES(function) function // guard against the CheckHnd macros inserting HANDLES into the source
 
 CTaskList TaskList;
 
 BOOL FirstInstance_3_or_later = FALSE;
 
-// process list je sdileny skrz vsechny salamander v lokani session
-// od AS 3.0 menime pojeti "Break" udalosti - vyvola v cili exception, takze mame "plnotucny" bug report, ale zaroven tim cil konci
-// proto menim nasledujici konstanty "AltapSalamander*" -> "AltapSalamander3*", abychom byli oddeleni od starsich verzi
+// the process list is shared by all Salamanders in the local session
+// starting with AS 3.0, the "Break" event behavior changes: it raises an exception in the target, giving us a full bug report, but it also terminates the target
+// therefore the following constants are changed from "AltapSalamander*" to "AltapSalamander3*" so that they remain separate from older versions
 
-// POZOR: pri zmene je potreba upravit salbreak.exe, proste posli mi prosim info ... dik, Petr
+// WARNING: if you change this, adjust salbreak.exe as well; just send me the info ... thanks, Petr
 
-const char* AS_PROCESSLIST_NAME = "AltapSalamander3bProcessList";                               // sdilena pamet CProcessList
-const char* AS_PROCESSLIST_MUTEX_NAME = "AltapSalamander3bProcessListMutex";                    // synchronizace pro pristup do sdilene pameti
-const char* AS_PROCESSLIST_EVENT_NAME = "AltapSalamander3bProcessListEvent";                    // odpaleni udalosti (co se ma delat je ulozeno ve sdilene pameti)
-const char* AS_PROCESSLIST_EVENT_PROCESSED_NAME = "AltapSalamander3bProcessListEventProcessed"; // odpalena udalost byla zpracovana
+const char* AS_PROCESSLIST_NAME = "AltapSalamander3bProcessList";                               // shared memory CProcessList
+const char* AS_PROCESSLIST_MUTEX_NAME = "AltapSalamander3bProcessListMutex";                    // synchronization for accessing shared memory
+const char* AS_PROCESSLIST_EVENT_NAME = "AltapSalamander3bProcessListEvent";                    // firing the event (what should happen is stored in shared memory)
+const char* AS_PROCESSLIST_EVENT_PROCESSED_NAME = "AltapSalamander3bProcessListEventProcessed"; // the fired event has been processed
 
-const char* FIRST_SALAMANDER_MUTEX_NAME = "AltapSalamanderFirstInstance";     // zavedeno od AS 2.52 beta 1
-const char* LOADSAVE_REGISTRY_MUTEX_NAME = "AltapSalamanderLoadSaveRegistry"; // zavedeno od AS 2.52 beta 1
+const char* FIRST_SALAMANDER_MUTEX_NAME = "AltapSalamanderFirstInstance";     // introduced in AS 2.52 beta 1
+const char* LOADSAVE_REGISTRY_MUTEX_NAME = "AltapSalamanderLoadSaveRegistry"; // introduced in AS 2.52 beta 1
 
-// cesta, kam ulozimi bug report a minidump; pozdeji je salmon zabali do 7z a uploadne na server
+// path used to save the bug report and minidump; later Salmon packs them into 7z and uploads them to the server
 char BugReportPath[MAX_PATH] = "";
 
 CRITICAL_SECTION CommandLineParamsCS;
 CCommandLineParams CommandLineParams;
 HANDLE CommandLineParamsProcessed;
 
-// handle hlavniho okna (neni dobre z control threadu pristupovat na MainWindow, ktere se nam muze pod rukama nastavit na NULL)
+// handle of the main window (the control thread should not access MainWindow because it may become NULL while we are using it)
 HWND HSafeMainWindow = NULL;
 
 void RaiseBreakException()
@@ -50,8 +51,8 @@ void RaiseBreakException()
 #ifndef CALLSTK_DISABLE
     CCallStack stack;
 #endif                                                   // CALLSTK_DISABLE
-    RaiseException(OPENSAL_EXCEPTION_BREAK, 0, 0, NULL); // nase vlastni "break" exception
-                                                         // sem uz se kod nedostane
+    RaiseException(OPENSAL_EXCEPTION_BREAK, 0, 0, NULL); // our own "break" exception
+                                                         // the code never gets here
 }
 
 //
@@ -61,8 +62,8 @@ void RaiseBreakException()
 
 DWORD WINAPI FControlThread(void* param)
 {
-    // toto vlakno neni volane s nasim CCallStack - narazil jsem pri leaknutem handlu, ze mi pri pokusu o jeho
-    // vypis (pri ukonceni Salamandera) padal Salam
+    // this thread does not run with our CCallStack; when investigating
+    // a leaked handle, Salamander crashed while trying to dump it during shutdown
 
     CTaskList* tasklist = (CTaskList*)param;
 
@@ -91,61 +92,61 @@ DWORD WINAPI FControlThread(void* param)
 
         case WAIT_OBJECT_0 + 1: // tasklist->Event
         {
-            // zabereme ProcessList
+            // lock ProcessList
             waitRet = WaitForSingleObject(tasklist->FMOMutex, TASKLIST_TODO_TIMEOUT);
             if (waitRet == WAIT_FAILED)
-                Sleep(50); // abychom nezrali CPU
+                Sleep(50); // so we do not hog the CPU
             if (waitRet == WAIT_FAILED || waitRet == WAIT_TIMEOUT)
                 break;
 
-            // ochrana proti cykleni po provedeni commandu
+            // prevent looping after executing the command
             if (tasklist->ProcessList->TodoUID <= lastTodoUID)
             {
-                // uvolnime ProcessList
+                // release ProcessList
                 ReleaseMutex(tasklist->FMOMutex);
-                Sleep(50); // dame prilezitost dalsim procesum
+                Sleep(50); // give other processes a chance
                 break;
             }
             else
                 lastTodoUID = tasklist->ProcessList->TodoUID;
 
-            // mame zabrany ProcessList
+            // ProcessList is now locked by us
             DWORD pid = tasklist->ProcessList->PID;
-            if (pid != ourPID) // pokud se udalost netyka nas
+            if (pid != ourPID) // if the event is not meant for us
             {
-                // uvolnime ProcessList
+                // release ProcessList
                 ReleaseMutex(tasklist->FMOMutex);
-                Sleep(50); // dame prilezitost dalsim procesum
+                Sleep(50); // give other processes a chance
                 break;
             }
 
-            // nyni jiz bezime v procesu, ktery mel zpravu obdrzet; zaroven jsme ve vedlejsim vlakne, takze
-            // pripadnou komunikaci s hlavnim vlaknem je treba resit dalsi synchronizaci
+            // now we are already running in the process that was supposed to receive the message; at the same time we are in a side thread,
+            // so any communication with the main thread has to be synchronized separately
 
-            // resetneme Event, protoze ted uz vime, ze patril nam a je zbytecne nechat bezet control thready ostatnich procesu
+            // reset the Event, because we now know it belonged to us and it is pointless to keep the control threads of other processes running
             ResetEvent(tasklist->Event);
 
-            // overime z timestampu, zda jsme jiz neprosvihli dobu, kterou jsme meli k dispozici pro odbaveni prikazu
+            // check the timestamp to see whether we already missed the window for handling the command
             DWORD tickCount = GetTickCount();
             if (tickCount - tasklist->ProcessList->TodoTimestamp >= TASKLIST_TODO_TIMEOUT)
             {
                 // TIMEOUT
-                // uvolnime ProcessList
+                // release the ProcessList mutex
                 ReleaseMutex(tasklist->FMOMutex);
                 break;
             }
 
-            // poridime si kopii zabraneho ProcessList
+            // make a copy of the locked ProcessList
             CProcessList processList;
             memcpy(&processList, tasklist->ProcessList, sizeof(CProcessList));
-            // a uvolnime sdilenou pamet
+            // and release the shared memory
             ReleaseMutex(tasklist->FMOMutex);
 
             switch (processList.Todo)
             {
             case TASKLIST_TODO_HIGHLIGHT:
             {
-                SetEvent(tasklist->EventProcessed); // zprava pro proces-zadavatele: mame hotovo
+                SetEvent(tasklist->EventProcessed); // notification to the requesting process: we're done
                 if (HSafeMainWindow != NULL)
                     PostMessage(HSafeMainWindow, WM_USER_FLASHWINDOW, 0, 0);
                 break;
@@ -153,17 +154,17 @@ DWORD WINAPI FControlThread(void* param)
 
             case TASKLIST_TODO_BREAK:
             {
-                SetEvent(tasklist->EventProcessed); // zprava pro proces-zadavatele: mame hotovo
+                SetEvent(tasklist->EventProcessed); // notification to the requesting process: done
 
                 RaiseBreakException();
-                // sem uz se kod nedostane
+                // the code never gets here
 
                 break;
             }
 
             case TASKLIST_TODO_TERMINATE:
             {
-                SetEvent(tasklist->EventProcessed); // zprava pro proces-zadavatele: mame hotovo
+                SetEvent(tasklist->EventProcessed); // notify the requesting process that processing is complete
 
                 HANDLE h = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
                 if (h != NULL)
@@ -176,27 +177,27 @@ DWORD WINAPI FControlThread(void* param)
 
             case TASKLIST_TODO_ACTIVATE:
             {
-                // nakopirujeme ProcessList do globalni promenne CommandLineParams,
-                // kterou monitoruje hlavni thread pri vstupu od idle;
+                // copy ProcessList into the global CommandLineParams variable,
+                // which the main thread monitors when returning from idle;
                 NOHANDLES(EnterCriticalSection(&CommandLineParamsCS));
                 memcpy(&CommandLineParams, &processList.CommandLineParams, sizeof(CCommandLineParams));
                 ResetEvent(CommandLineParamsProcessed);
                 NOHANDLES(LeaveCriticalSection(&CommandLineParamsCS));
 
-                // pro pripad, ze je hlavni thread v IDLE do nej strcime a vnutime mu kontrolu CommandLineParams::RequestUID
-                // pokud v IDLE neni, neco prave resi a zpravu odbavi ve chvili, kdy do IDLE vstoupi (pokud se dockame)
+                // if the main thread is idle, wake it up and force it to check CommandLineParams::RequestUID
+                // if it is not idle, it is handling something else and will process the message when it next enters idle
                 if (HSafeMainWindow != NULL)
                     PostMessage(HSafeMainWindow, WM_USER_WAKEUP_FROM_IDLE, 0, 0);
 
-                // pockame 5 vterin, zda se hlavni thread ozve (zatim nevstoupime do kriticke sekce, aby tam mohl on)
+                // wait 5 seconds to see whether the main thread responds (we do not enter the critical section yet so it can do so)
                 WaitForSingleObject(CommandLineParamsProcessed, TASKLIST_TODO_TIMEOUT);
 
-                // nyni jiz do kriticke sekce muzeme vstoupit
+                // now we can enter the critical section
                 NOHANDLES(EnterCriticalSection(&CommandLineParamsCS));
-                CommandLineParams.RequestUID = 0;                             // zakazeme hlavnimu threadu pripadne dalsi akce
-                waitRet = WaitForSingleObject(CommandLineParamsProcessed, 0); // preptame se, jak vypada aktualni stav eventu
+                CommandLineParams.RequestUID = 0;                             // prevent the main thread from taking further actions
+                waitRet = WaitForSingleObject(CommandLineParamsProcessed, 0); // check the current state of the event
                 if (waitRet == WAIT_OBJECT_0)
-                    SetEvent(tasklist->EventProcessed); // zprava pro proces-zadavatele: mame hotovo
+                    SetEvent(tasklist->EventProcessed); // notification to the requesting process: we're done
                 NOHANDLES(LeaveCriticalSection(&CommandLineParamsCS));
                 break;
             }
@@ -219,20 +220,20 @@ DWORD WINAPI FControlThread(void* param)
                 if (HSafeMainWindow != NULL && SalShExtSharedMemView != NULL &&
                     SalShExtSharedMemView->SalamanderMainWnd == (UINT64)(DWORD_PTR)HSafeMainWindow)
                 {
-                    ResetEvent(SalShExtDoPasteEvent); // "zdrojovy" Salamander uz se nasel, dalsi hledani je zbytecne
+                    ResetEvent(SalShExtDoPasteEvent); // the "source" Salamander has been found, further searching is pointless
                     sleep = FALSE;
                     PostMessage(HSafeMainWindow, WM_USER_SALSHEXT_PASTE, SalShExtSharedMemView->PostMsgIndex, 0);
                 }
                 ReleaseMutex(SalShExtSharedMemMutex);
             }
             if (sleep)
-                Sleep(50); // dame sanci dalsim Salamanderum
+                Sleep(50); // let other Salamanders have a chance
             break;
         }
 
-        default: // toto by nemelo nastat
+        default: // this should not happen
         {
-            Sleep(50); // abychom nezrali CPU
+            Sleep(50); // so we do not hog the CPU
             break;
         }
         }
@@ -243,7 +244,7 @@ DWORD WINAPI FControlThread(void* param)
 
 CTaskList::CTaskList()
 {
-    // bezime ve skupine 'compiler', tedy pred ms_init
+    // we run in the 'compiler' segment, so this happens before ms_init
     OK = FALSE;
     FMO = NULL;
     ProcessList = NULL;
@@ -252,7 +253,7 @@ CTaskList::CTaskList()
     EventProcessed = NULL;
     TerminateEvent = NULL;
     ControlThread = NULL;
-    // vnitrni synchronizace mezi ControlThread a hlavnim vlaknem
+    // internal synchronization between the control thread and the main thread
     NOHANDLES(InitializeCriticalSection(&CommandLineParamsCS));
     CommandLineParamsProcessed = NULL;
 }
@@ -267,7 +268,7 @@ BOOL CTaskList::Init()
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES* saPtr = CreateAccessableSecurityAttributes(&sa, &sd, GENERIC_ALL, &psidEveryone, &paclNewDacl);
 
-    //---  nejdrive takova bokovka: pod Vista+ vytvorime event pro komunikaci s copy-hookem (ceka se na nej v control-threadu)
+    //---  first, a side note: on Vista and later, create an event for communication with the copy hook (the control thread waits for it)
     if (WindowsVistaAndLater)
     {
         SalShExtDoPasteEvent = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, SALSHEXT_DOPASTEEVENTNAME));
@@ -277,12 +278,12 @@ BOOL CTaskList::Init()
             TRACE_E("CTaskList::Init(): unable to create event object for communicating with copy-hook shell extension!");
     }
 
-    //---  pokusime se pripojit na FMO-mutex - zaroven test jestli uz nejaky Salamander bezi
+    //---  try to attach to the FMO mutex - also serves as a test whether any Salamander is already running
     FMOMutex = NOHANDLES(OpenMutex(SYNCHRONIZE, FALSE, AS_PROCESSLIST_MUTEX_NAME));
-    if (FMOMutex == NULL) // jsme prvni Salamander 3.0 nebo novejsi v lokalni sessione
+    if (FMOMutex == NULL) // we are the first instance of Salamander 3.0 or newer in the local session
     {
-        //---  vytvoreni systemovych objektu pro komunikaci, zabereme FMO
-        FMOMutex = NOHANDLES(CreateMutex(saPtr, TRUE, AS_PROCESSLIST_MUTEX_NAME)); // task list je platny pouze pro danou session, mutex patri do local namespace
+        //---  create system objects for communication, claim the FMO
+        FMOMutex = NOHANDLES(CreateMutex(saPtr, TRUE, AS_PROCESSLIST_MUTEX_NAME)); // the task list is valid only for the given session; the mutex lives in the local namespace
         if (FMOMutex == NULL)
             return FALSE; // fail
         FMO = NOHANDLES(CreateFileMapping(INVALID_HANDLE_VALUE, saPtr, PAGE_READWRITE | SEC_COMMIT,
@@ -294,12 +295,12 @@ BOOL CTaskList::Init()
             return FALSE; // fail
         Event = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, AS_PROCESSLIST_EVENT_NAME));
         if (Event == NULL)
-            return FALSE; // fail
+            return FALSE; // failure
         EventProcessed = NOHANDLES(CreateEvent(saPtr, TRUE, FALSE, AS_PROCESSLIST_EVENT_PROCESSED_NAME));
         if (EventProcessed == NULL)
             return FALSE; // fail
 
-        //---  inicializace sdilene pameti
+        //---  initialize the shared memory
         ZeroMemory(ProcessList, sizeof(CProcessList));
         ProcessList->Version = 1; // 3.0 beta 4
 
@@ -307,36 +308,36 @@ BOOL CTaskList::Init()
         ProcessList->ItemsStateUID++;
         ProcessList->Items[0] = CProcessListItem();
 
-        //---  uvolnime FMO
+        //---  release the FMO
         ReleaseMutex(FMOMutex);
     }
-    else // dalsi instance, jen se pripojime ...
+    else // another instance, just connect ...
     {
-        //---  zabereme FMO
+        //---  claim the FMO
         DWORD waitRet = WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT);
         if (waitRet == WAIT_TIMEOUT)
-            return FALSE; // fail
+            return FALSE; // failed
 
-        //---  pripojime se na ostatni systemove objekty pro komunikaci
+        //---  attach to the other system objects for communication
         FMO = NOHANDLES(OpenFileMapping(FILE_MAP_WRITE, FALSE, AS_PROCESSLIST_NAME));
         if (FMO == NULL)
-            return FALSE; // fail
+            return FALSE; // failed
         ProcessList = (CProcessList*)NOHANDLES(MapViewOfFile(FMO, FILE_MAP_WRITE, 0, 0, 0));
         if (ProcessList == NULL)
-            return FALSE; // fail
-        // aby na event bylo mozne volat SetEvent(), musi mit nahozeny EVENT_MODIFY_STATE, pro Wait* potrebuje SYNCHRONIZE
+            return FALSE; // failed
+        // to be able to call SetEvent() on the event, it must have EVENT_MODIFY_STATE set, Wait* requires SYNCHRONIZE
         Event = NOHANDLES(OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, AS_PROCESSLIST_EVENT_NAME));
         if (Event == NULL)
-            return FALSE; // fail
+            return FALSE; // failed
         EventProcessed = NOHANDLES(OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, AS_PROCESSLIST_EVENT_PROCESSED_NAME));
         if (EventProcessed == NULL)
-            return FALSE; // fail
+            return FALSE; // failed
 
-        //---  pridame zaznam do sdilene pameti
+        //---  add a record to shared memory
         BOOL attempt = 0;
     AGAIN:
         int c = ProcessList->ItemsCount;
-        if (c < MAX_TL_ITEMS) // pokud jich neni prilis, pridame tento proces
+        if (c < MAX_TL_ITEMS) // if there are not too many, add this process
         {
             ProcessList->ItemsCount++;
             ProcessList->ItemsStateUID++;
@@ -346,25 +347,25 @@ BOOL CTaskList::Init()
         {
             if (attempt == 0)
             {
-                // pole je plne, zkusime ho setrast (nektery z procesu mohl chcipnout a nedat nam vedet)
+                // the array is full, try to shake it down (one of the processes might have died without informing us)
                 RemoveKilledItems(NULL);
                 attempt++;
                 goto AGAIN;
             }
         }
 
-        //---  uvolnime FMO
+        //---  release the FMO
         ReleaseMutex(FMOMutex);
     }
 
-    // detekce ostatnich instanci Salamandera
+    // detect other Salamander instances
     LPTSTR sid = NULL;
     if (!GetStringSid(&sid))
         sid = NULL;
     char mutexName[1000];
     if (sid == NULL)
     {
-        // chyba v ziskani SID -- lokalni name space, bez pripojeneho SID
+        // failed to obtain the SID -- local namespace, without the SID appended
         _snprintf_s(mutexName, _TRUNCATE, "%s", FIRST_SALAMANDER_MUTEX_NAME);
     }
     else
@@ -393,19 +394,19 @@ BOOL CTaskList::Init()
 
     TerminateEvent = NOHANDLES(CreateEvent(NULL, TRUE, FALSE, NULL));
     if (TerminateEvent == NULL)
-        return FALSE; // fail
+        return FALSE; // failed
 
-    // vnitrni synchronizace mezi ControlThread a hlavnim vlaknem
+    // internal synchronization between the control thread and the main thread
     CommandLineParamsProcessed = CreateEvent(NULL, TRUE, FALSE, NULL); // manual, nonsignaled
     if (CommandLineParamsProcessed == NULL)
         return FALSE; // failed
 
-    // nelze pouzit _beginthreadex, protoze jeste nemusi byt inicializovana knihovna
+    // cannot use _beginthreadex because the library might not be initialized yet
     DWORD id;
     ControlThread = NOHANDLES(CreateThread(NULL, 0, FControlThread, this, 0, &id));
     if (ControlThread == NULL)
-        return FALSE; // fail
-    // tenhle thread se musi dostat k lizu i kdyby na chleba nebylo ...
+        return FALSE; // failed
+    // this thread must still receive CPU time even if resources are scarce ...
     SetThreadPriority(ControlThread, THREAD_PRIORITY_TIME_CRITICAL);
 
     OK = TRUE;
@@ -416,30 +417,30 @@ CTaskList::~CTaskList()
 {
     if (ControlThread != NULL)
     {
-        SetEvent(TerminateEvent);                     // terminuj se!
-        WaitForSingleObject(ControlThread, INFINITE); // pockame nez se thread dokonci
+        SetEvent(TerminateEvent);                     // terminate!
+        WaitForSingleObject(ControlThread, INFINITE); // wait until the thread finishes
         NOHANDLES(CloseHandle(ControlThread));
     }
     if (TerminateEvent != NULL)
         NOHANDLES(CloseHandle(TerminateEvent));
 
-    // vyradime se ze seznamu
+    // remove ourselves from the list
     if (OK)
     {
-        //---  zabereme FMO
+        //---  claim the FMO
         if (WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT) != WAIT_TIMEOUT)
         {
             CProcessListItem* ptr = ProcessList->Items;
             int c = ProcessList->ItemsCount;
 
-            //---  vyhodime aktualni proces, ukoncuje se ...
+            //---  remove the current process, it is shutting down ...
             DWORD PID = GetCurrentProcessId();
             int i;
             for (i = 0; i < c; i++)
             {
                 if (PID == ptr[i].PID)
                 {
-                    //---  vykopneme proces ze seznamu
+                    //---  delete the process from the list
                     memmove(ptr + i, ptr + i + 1, (c - i - 1) * sizeof(CProcessListItem));
                     c--;
                     i--;
@@ -448,7 +449,7 @@ CTaskList::~CTaskList()
             ProcessList->ItemsCount = c;
             ProcessList->ItemsStateUID++;
 
-            //---  uvolnime FMO
+            //---  release the FMO
             ReleaseMutex(FMOMutex);
         }
     }
@@ -484,7 +485,7 @@ BOOL CTaskList::SetProcessState(DWORD processState, HWND hMainWindow, BOOL* time
         DWORD ret = WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT);
         if (ret != WAIT_FAILED && ret != WAIT_TIMEOUT)
         {
-            // dohledame se v seznamu procesu a nastavime processState a hMainWindow
+            // find ourselves in the process list and set processState and hMainWindow
             CProcessListItem* ptr = ProcessList->Items;
             int c = ProcessList->ItemsCount;
             DWORD PID = GetCurrentProcessId();
@@ -494,7 +495,7 @@ BOOL CTaskList::SetProcessState(DWORD processState, HWND hMainWindow, BOOL* time
                 if (PID == ptr[i].PID)
                 {
                     ptr[i].ProcessState = processState;
-                    ptr[i].HMainWindow = (UINT64)(DWORD_PTR)hMainWindow; // 64b pro x64/x86 kompatibilitu
+                    ptr[i].HMainWindow = (UINT64)(DWORD_PTR)hMainWindow; // 64b for x64/x86 compatibility
                     break;
                 }
             }
@@ -518,7 +519,7 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
     if (OK)
     {
         BOOL changed = FALSE;
-        //---  zabereme FMO
+        //---  claim the FMO
         if (WaitForSingleObject(FMOMutex, TASKLIST_TODO_TIMEOUT) == WAIT_TIMEOUT)
         {
             if (timeouted != NULL)
@@ -528,10 +529,10 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
 
         CProcessListItem* ptr = ProcessList->Items;
 
-        //---  vyhodime killnute procesy
+        //---  remove killed processes
         RemoveKilledItems(&changed);
 
-        //---  navratove hodnoty
+        //---  return values
         if (items != NULL)
             memcpy(items, ptr, ProcessList->ItemsCount * sizeof(CProcessListItem));
         if (changed)
@@ -540,7 +541,7 @@ int CTaskList::GetItems(CProcessListItem* items, DWORD* itemsStateUID, BOOL* tim
             *itemsStateUID = ProcessList->ItemsStateUID;
 
         int count = ProcessList->ItemsCount;
-        //---  uvolnime FMO
+        //---  release the FMO
         ReleaseMutex(FMOMutex);
         return count;
     }
@@ -554,7 +555,7 @@ BOOL CTaskList::FireEvent(DWORD todo, DWORD pid, BOOL* timeouted)
         *timeouted = FALSE;
     if (OK)
     {
-        // zabereme ProcessList
+        // claim ProcessList
         DWORD waitRet = WaitForSingleObject(FMOMutex, 2000);
         if (waitRet == WAIT_FAILED)
             return FALSE;
@@ -565,44 +566,44 @@ BOOL CTaskList::FireEvent(DWORD todo, DWORD pid, BOOL* timeouted)
             return FALSE; // fail
         }
 
-        // nastavime predavane parametry
+        // set the parameters to pass
         ProcessList->Todo = todo;
         ProcessList->TodoUID++;
         ProcessList->TodoTimestamp = GetTickCount();
         ProcessList->PID = pid;
 
-        // pri breaknuti jine instance Salamandera pustime jeho Salmon nad nas
+        // when breaking another Salamander instance, allow its Salmon to come to the foreground in front of us
         if (todo == TASKLIST_TODO_BREAK)
         {
             for (DWORD i = 0; i < ProcessList->ItemsCount; i++)
             {
                 if (ProcessList->Items[i].PID == pid)
                 {
-                    AllowSetForegroundWindow(ProcessList->Items[i].PID);       // radeji povolime i vlastniho Salamandera, i kdyz to je asi zbytecne...
-                    AllowSetForegroundWindow(ProcessList->Items[i].SalmonPID); // rozhodne musime pustit nad nas jeho Salmon
+                    AllowSetForegroundWindow(ProcessList->Items[i].PID);       // better allow our own Salamander too, even if it is probably unnecessary...
+                    AllowSetForegroundWindow(ProcessList->Items[i].SalmonPID); // we definitely must allow its Salmon to come to the foreground before us
                     break;
                 }
             }
         }
 
-        // uvolnime ProcessList
+        // release ProcessList
         ReleaseMutex(FMOMutex);
 
-        // spustime kontrolu ve vsech Salamanderech
+        // trigger the check in all Salamanders
         ResetEvent(EventProcessed);
         SetEvent(Event);
 
-        //---  dame chvilku na reakci (behem teto doby by se nekdo mel "chytnout" a ukol splnit)
+        //---  give it a moment to react (during this time someone should "grab" it and complete the task)
         BOOL ret = (WaitForSingleObject(EventProcessed, 1000) == WAIT_OBJECT_0);
 
-        //---  rekneme vsem Salamanderum, at se pripravi na dalsi command
+        //---  tell all Salamanders to prepare for the next command
         ResetEvent(Event);
 
-        //---  nastavime zpatky break-PID
+        //---  restore the break PID
         //    ProcessList->Todo = 0;
         //    ProcessList->PID = 0;
 
-        //---  uvolnime FMO
+        //---  release the FMO
 
         return ret;
     }
@@ -619,9 +620,9 @@ BOOL CTaskList::ActivateRunningInstance(const CCommandLineParams* cmdLineParams,
 
     CProcessListItem ourProcessInfo;
 
-    // dohledame bezici proces v nasi tride, pripadne startujici (na ktery chvili pockame jestli se rozebehne)
-    int firstStarting = -1; // index procesu, ktery je z nasi tridy (shodny Integrity Level a SID) ale nema jeste hlavni okno
-    int firstRunnig = -1;   // index procesu, ktery je z nasi tridy (shodny Integrity Level a SID) a jiz bezi (ma hlavni okno)
+    // find a running process in our class, or possibly a starting one (wait a moment to see if it takes off)
+    int firstStarting = -1; // index of a process from our class (matching Integrity Level and SID) that does not yet have a main window
+    int firstRunnig = -1;   // index of a process from our class (matching Integrity Level and SID) that is already running (has a main window)
     DWORD timeStamp = GetTickCount();
     do
     {
@@ -630,13 +631,13 @@ BOOL CTaskList::ActivateRunningInstance(const CCommandLineParams* cmdLineParams,
         DWORD ret = WaitForSingleObject(FMOMutex, 200);
         if (ret == WAIT_FAILED)
             return FALSE;
-        if (ret != WAIT_TIMEOUT) // obdrzeli jsme mutex
+        if (ret != WAIT_TIMEOUT) // we obtained the mutex
         {
             int i;
             for (i = 0; i < (int)ProcessList->ItemsCount; i++)
             {
                 CProcessListItem* item = &ProcessList->Items[i];
-                // hledam pouze procesy v nasi tride (shodny IntegrityLevel a SID)
+                // search only for processes in our class (matching IntegrityLevel and SID)
                 if (item->PID != ourProcessInfo.PID &&
                     item->IntegrityLevel == ourProcessInfo.IntegrityLevel &&
                     memcmp(item->SID_MD5, ourProcessInfo.SID_MD5, 16) == 0)
@@ -644,62 +645,62 @@ BOOL CTaskList::ActivateRunningInstance(const CCommandLineParams* cmdLineParams,
                     if (item->ProcessState == PROCESS_STATE_RUNNING)
                     {
                         firstRunnig = i;
-                        break; // pokud jsme nasli bezici instanci, nemusime uz startujici hledat
+                        break; // if we found a running instance, no need to look for a starting one
                     }
                     if (item->ProcessState == PROCESS_STATE_STARTING && firstStarting == -1)
                         firstStarting = i;
                 }
             }
 
-            if (firstRunnig == -1) // zadny proces z nasi tridy zatim nema hlavni okno
+            if (firstRunnig == -1) // no process from our class has a main window yet
             {
-                ReleaseMutex(FMOMutex); // takze uvolnime pamet ostatnim
+                ReleaseMutex(FMOMutex); // so release the memory to others
                 if (firstStarting == -1)
-                    return FALSE; // nenasli jsme zadneho startujiciho kandidata, vypadneme
+                    return FALSE; // no starting candidate found, give up
                 else
-                    Sleep(200); // nasli jsme startujiciho kandidata, na 200ms se odmlcime, aby mel sanci zavolat SetProcessState()
+                    Sleep(200); // found a starting candidate, pause for 200 ms to give it a chance to call SetProcessState()
             }
         }
-    } while (firstRunnig == -1 && (GetTickCount() - timeStamp < TASKLIST_TODO_TIMEOUT)); // na bezici instanci cekame maximalne 5s
+    } while (firstRunnig == -1 && (GetTickCount() - timeStamp < TASKLIST_TODO_TIMEOUT)); // wait for a running instance for at most 5 s
 
-    // pokud jsme nenasli zadnou instanci z nasi tridy, co by mela hlavni okno, pripadne pokud nam cekani zabralo 5s, zabalime to
+    // if we did not find any instance of our class with a main window, or if waiting took 5 s, stop waiting
     if (firstRunnig == -1)
         return FALSE;
 
     CProcessListItem* item = &ProcessList->Items[firstRunnig];
 
-    // nastavime Todo, PID a parametry
+    // set Todo, PID, and parameters
     ProcessList->Todo = TASKLIST_TODO_ACTIVATE;
-    ProcessList->TodoUID++; // rekneme procesum, ze se bude zpracovavat novy command
+    ProcessList->TodoUID++; // tell processes that a new command will be processed
     ProcessList->TodoTimestamp = GetTickCount();
     ProcessList->PID = item->PID;
 
-    // prebereme parametry z command-line
+    // copy parameters from the command line
     memcpy(&ProcessList->CommandLineParams, cmdLineParams, sizeof(CCommandLineParams));
-    // a nastavime nase vnitrni promenne
+    // and set our internal variables
     ProcessList->CommandLineParams.Version = 1;
     ProcessList->CommandLineParams.RequestUID = ProcessList->TodoUID;
     ProcessList->CommandLineParams.RequestTimestamp = ProcessList->TodoTimestamp;
 
-    // povolime aktivovanemu procesu volani SetForegroundWindow, jinak se nebude schopny vytahnout nahoru
+    // allow the activated process to call SetForegroundWindow, otherwise it will not be able to come to the front
     AllowSetForegroundWindow(item->PID);
 
-    // spustime kontrolu ve vsech Salamanderech
-    // uvolnime sdilenou pamet
+    // trigger the check in all Salamanders
+    // release shared memory
     ReleaseMutex(FMOMutex);
 
     ResetEvent(EventProcessed);
     SetEvent(Event);
 
-    // dame chvilku na reakci (behem teto doby by se nekdo mel "chytnout" a ukol splnit)
-    // 500ms je nase rezerva, abychom bezpecne prekryli podrizena vlakna
+    // give it a moment to react (during this period someone should "grab" it and finish the task)
+    // 500 ms is our cushion so we safely cover subordinate threads
     BOOL ret = (WaitForSingleObject(EventProcessed, TASKLIST_TODO_TIMEOUT + 500) == WAIT_OBJECT_0);
 
-    // rekneme vsem Salamanderum, at se pripravi na dalsi command (reseti se i v control threadu, pokud nektery proces provadi todo)
+    // tell all Salamanders to prepare for the next command (it also resets in the control thread if a process is performing the todo)
     ResetEvent(Event);
 
-    // vynulujeme todo
-    // ProcessList->Todo = 0; // meli bychom si napred zabrat FMOMutex, ale v tomto pripade neni co pokazit a muzeme hodnoty vynulovat
+    // reset todo
+    // ProcessList->Todo = 0; // we should lock FMOMutex first, but in this case there is nothing to corrupt and we can zero the values
     // ProcessList->PID = 0;
 
     return ret;
@@ -721,22 +722,22 @@ BOOL CTaskList::RemoveKilledItems(BOOL* changed)
         HANDLE h = NOHANDLES(OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, ptr[i].PID));
         if (h != NULL)
         {
-            // na starsich Windows ziskame handle i pro ukonceny proces
-            // je proto potreba se jeste doptat na exitcode; od W2K zrejme zbytecne
+            // on older Windows we obtain a handle even for a terminated process
+            // therefore it is still necessary to query the exit code; probably unnecessary since W2K
             BOOL cont = FALSE;
             DWORD exitcode;
             if (!GetExitCodeProcess(h, &exitcode) || exitcode == STILL_ACTIVE)
                 cont = TRUE;
             NOHANDLES(CloseHandle(h));
             if (cont)
-                continue; // nechame proces v seznamu
+                continue; // keep the process in the list
         }
         else
         {
             DWORD lastError = GetLastError();
             if (lastError == ERROR_ACCESS_DENIED)
             {
-                continue; // nechame proces v seznamu
+                continue; // keep the process in the list
             }
         }
         memmove(ptr + i, ptr + i + 1, (c - i - 1) * sizeof(CProcessListItem));
@@ -748,9 +749,9 @@ BOOL CTaskList::RemoveKilledItems(BOOL* changed)
     ProcessList->ItemsCount = c;
 
     /*
-// neslape pod XP pokud jsou procesy v ramci jedne session spusteny pod ruznymi uzivateli
-// nemame pravo otevrit hande jineho procesu
-//---  vyhodime killnuty procesy
+// does not work on XP if processes within one session run under different users
+// we do not have permission to open a handle to another process
+//---  remove killed processes
 int i;
     for (i = 0; i < c; i++)
     {
@@ -761,9 +762,9 @@ int i;
         DWORD exitcode;
         if (!GetExitCodeProcess(h, &exitcode) || exitcode == STILL_ACTIVE) cont = TRUE;
         NOHANDLES(CloseHandle(h));
-        if (cont) continue;  // nechame proces v seznamu
+        if (cont) continue;  // keep the process in the list
       }
-//---  vykopneme proces ze seznamu
+//---  remove the process from the list
       memmove(ptr + i, ptr + i + 1, (c - i - 1) * sizeof(CTLItem));
       c--;
       i--;

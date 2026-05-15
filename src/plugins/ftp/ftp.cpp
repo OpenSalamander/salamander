@@ -10,45 +10,45 @@ CPluginInterface PluginInterface;
 CPluginInterfaceForFS InterfaceForFS;
 CPluginInterfaceForMenuExt InterfaceForMenuExt;
 
-// ConfigVersion: 0 - default (without load),
-//                1 - work version before listing parsing support (from this version on there are sensible lists of server-types and ftp-servers)
-//                2 - work version before the first MVS adjustments according to tester Michael Knigge (server-type list adjustment)
-//                3 - work version before the second MVS adjustments according to tester Michael Knigge (server-type list adjustment)
-//                4 - work version before the third MVS adjustments according to tester Michael Knigge (server-type list adjustment)
-//                5 - work version before the first VMS adjustments (server-type list adjustment)
-//                6 - work version before the fourth MVS adjustments according to tester Michael Knigge (server-type list adjustment)
-//                7 - work version before modifying values in the configuration on the Operations page
-//                8 - work version before Servant Salamander 2.1 beta 1
-//                9 - Servant Salamander 2.5 beta 6 (+adjustments to server-type autodetect conditions)
-//                10 - added parser for Unix systems with two spaces before the file/directory name in the listing (Filezilla + AIX)
-//                11 - fixed parser for Unix systems with two spaces before the file/directory name in the listing (Filezilla + AIX)
-//                12 - priority change: the parser for Unix systems with two spaces after the year before names comes before the parser with one space after the year before names (the variant without spaces at the beginning of names is more likely) + enriched MVS1 and MVS2 parsers
-//                13 - fixed column descriptions in the MVS PO parser (all four): used "Number of Records" instead of "Size"
-//                14 - fixed the MVS PO 4 parser: the value can be missing both in column "AC" and in column "Alias" - now reading them directly by offsets + trimming trailing spaces, there is no other way + fixed the MVS1 and MVS2 parsers (volume OK + followed by "Error determining attributes")
-//                     + fixed the column names in the MVS PO parser (all four): used "Records" instead of "Size" - the size is not in bytes, nonsensical progress was shown during download
-//                15 - added parser for OS/2 FTP server
-//                16 - added parser for VxWorks FTP server
+// ConfigVersion: 0 - default (not loaded),
+//                1 - working version before listing parsing support (from this version on, sensible server-type and ftp-server lists already exist)
+//                2 - working version before the first MVS changes based on tester Michael Knigge's feedback (server-type list update)
+//                3 - working version before the second MVS changes based on tester Michael Knigge's feedback (server-type list update)
+//                4 - working version before the third MVS changes based on tester Michael Knigge's feedback (server-type list update)
+//                5 - working version before the first VMS changes (server-type list update)
+//                6 - working version before the fourth MVS changes based on tester Michael Knigge's feedback (server-type list update)
+//                7 - working version before changing values in the configuration on the Operations page
+//                8 - working version before Servant Salamander 2.1 beta 1
+//                9 - Servant Salamander 2.5 beta 6 (+ changes to server-type autodetection conditions)
+//                10 - added a parser for Unix systems with two spaces before the file/directory name in the listing (FileZilla + AIX)
+//                11 - fixed the parser for Unix systems with two spaces before the file/directory name in the listing (FileZilla + AIX)
+//                12 - priority change: the parser for Unix systems with two spaces after the year before names now takes precedence over the parser with one space after the year before names (the variant without leading spaces in names is more likely) + enhanced MVS1 and MVS2 parsers
+//                13 - fixed column descriptions in the MVS PO parser (all four): "Number of Records" is now used instead of "Size"
+//                14 - fixed the MVS PO 4 parser: a value may be missing in both the "AC" and "Alias" columns - they are now read strictly by offsets + trailing spaces are trimmed, otherwise it simply does not work + fixed the MVS1 and MVS2 parsers (volume OK + followed by "Error determining attributes")
+//                     + fixed column names in the MVS PO parser (all four): "Records" is now used instead of "Size" - the size is not in bytes, so download progress was nonsensical
+//                15 - added a parser for the OS/2 FTP server
+//                16 - added a parser for the VxWorks FTP server
 //                17 - fixed the MVS parser (another type of error message in the listing + another combination of skipped data in the listing) + fixed the VxWorks parser
-//                18 - added alignment to parser columns - we usually align dates+times+numbers to the right
+//                18 - added alignment to parser columns - dates, times, and numbers are usually right-aligned
 //                19 - adjusted the z/VM parser: Date is of type GeneralDate so that item ".." shows an empty string instead of "1.1.1602"
 //                20 - added the "is_link" identifier (TRUE = the panel icon has a link overlay)
-//                21 - added the UNIX4 parser (German dates - months longer than 3 letters), added functions "month_txt"
-//                22 - modified values in the configuration on the Operations 2 (Upload) page
-//                23 - adjusted parser autodetection conditions that skip the first or last rows of the listing (if Microsoft IIS or Netprezenz returned a listing with one or two rows, the VMS parser simply ignored it and an empty listing was used)
-//                24 - adjusted skipping listing headers in parsers, now an invalid row is not skipped when a header is missing
-//                25 - adjusted the Microsoft IIS parser: directories containing spaces instead of names are ignored (I do not understand why they are even shown when they have no name, but they are)
-//                26 - added UNIX5 (IBM AIX - German version) parser (the month and day columns are swapped)
-//                27 - adjusted the VMS1-4 parsers, novelty on cs.felk.cvut.cz: an empty directory returns a listing containing "Total of 0 files, 0/0 blocks" (the listing previously returned the error "no files found")
-//                28 - added parser for Tandem
-//                29 - default change: "Resume or Overwrite" instead of "Overwrite" for Config.UploadRetryOnCreatedFile; Config.DisableLoggingOfWorkers changed to FALSE (I am tired of writing to everyone to enable logging, the logging overhead is minimal)
-//                30 - added parser for IBM AS/400
-//                31 - adjusted parser for IBM AS/400
-//                32 - renamed parser for IBM AS/400 to "IBM iSeries/i5, AS/400"
-//                33 - adjusted parser for IBM AS/400: names must not contain spaces (otherwise it nonsensically parses, for example, unparsable Unix listings)
-//                34 - adjusted all five UNIX parsers: user+group can contain more spaces (in that case they are ignored because we do not know how to separate user from group)
-//                35 - added UNIX parser for MOXA FTP server (missing times + dates); change in all UNIX parsers: reading the <rights> column is no longer done by fixed 10 characters but by a word (reason: ACL on Unix introduced '+' after those ten characters, e.g. "drwxrwxr-x+")
+//                21 - added the UNIX4 parser (German dates - month names longer than 3 letters), added the "month_txt" functions
+//                22 - changed values in the configuration on the Operations 2 (Upload) page
+//                23 - adjusted parser autodetection conditions that skip the first or last rows of the listing (if Microsoft IIS or NetPresenz returned a listing with one or two rows, the VMS parser simply ignored it and an empty listing was used)
+//                24 - adjusted skipping of listing headers in parsers; an invalid row is no longer skipped when a header is missing
+//                25 - adjusted the Microsoft IIS parser: directories with spaces instead of names are ignored
+//                26 - added the UNIX5 (IBM AIX - German version) parser (the month and day columns are swapped)
+//                27 - adjusted the VMS1-4 parsers; new behavior on cs.felk.cvut.cz: an empty directory returns a listing containing "Total of 0 files, 0/0 blocks" (previously the listing returned the error "no files found")
+//                28 - added a parser for Tandem
+//                29 - default change: "Resume or Overwrite" instead of "Overwrite" for Config.UploadRetryOnCreatedFile; Config.DisableLoggingOfWorkers changed to FALSE (logging overhead is minimal)
+//                30 - added a parser for IBM AS/400
+//                31 - adjusted the parser for IBM AS/400
+//                32 - renamed the parser for IBM AS/400 to "IBM iSeries/i5, AS/400"
+//                33 - adjusted the parser for IBM AS/400: names must not contain spaces (otherwise it produces nonsensical parsing, for example for Unix listings that cannot be parsed)
+//                34 - adjusted all five UNIX parsers: user+group may contain multiple spaces (in that case they are ignored because user and group cannot be separated)
+//                35 - added a UNIX parser for the MOXA FTP server (missing times + dates); change in all UNIX parsers: the <rights> column is no longer read as a fixed 10 characters, but as a word (reason: ACLs on Unix introduced '+' after those ten characters, e.g. "drwxrwxr-x+")
 //                36 - change in the CZ+EN parser for IBM AS/400: ignore the first row with an empty file name
-//                37 - added parser for Xbox 360
+//                37 - added a parser for Xbox 360
 
 int ConfigVersion = 0;
 #define CURRENT_CONFIG_VERSION 37
@@ -200,7 +200,7 @@ int InactiveBeepWhenDone = TRUE;  // current value of the Salamander configurati
 HINSTANCE DLLInstance = NULL; // handle to SPL - language-independent resources
 HINSTANCE HLanguage = NULL;   // handle to SLG - language-dependent resources
 
-// general interface of Salamander - valid from startup until the plug-in is closed
+// general interface of Salamander - valid from startup until the plugin is closed
 CSalamanderGeneralAbstract* SalamanderGeneral = NULL;
 
 // ZLIB compression/decompression interface;
@@ -244,7 +244,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         if (!InitCommonControlsEx(&initCtrls))
         {
             MessageBox(NULL, "InitCommonControlsEx failed!", "Error", MB_OK | MB_ICONERROR);
-            return FALSE; // DLL won't start
+            return FALSE; // DLL cannot be loaded
         }
 
         WindowsVistaAndLater = SalIsWindowsVersionOrGreater(6, 0, 0);
@@ -287,16 +287,16 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
     HANDLES_CAN_USE_TRACE();
     CALL_STACK_MESSAGE1("SalamanderPluginEntry()");
 
-    // this plug-in is made for the current version of Salamander and higher - perform a check
+    // this plugin is made for the current version of Salamander and higher - perform a check
     if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
     { // reject older versions
         MessageBox(salamander->GetParentWindow(), REQUIRE_LAST_VERSION_OF_SALAMANDER,
-                   "FTP Client" /* neprekladat! */, MB_OK | MB_ICONERROR);
+                   "FTP Client" /* do not translate */, MB_OK | MB_ICONERROR);
         return NULL;
     }
 
     // let the language module (.slg) load
-    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "FTP Client" /* neprekladat! */);
+    HLanguage = salamander->LoadLanguageModule(salamander->GetParentWindow(), "FTP Client" /* do not translate */);
     if (HLanguage == NULL)
         return NULL;
 
@@ -332,7 +332,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
         return NULL; // error
     }
 
-    // set the basic information about the plug-in
+    // set the basic information about the plugin
     salamander->SetBasicPluginData(LoadStr(IDS_PLUGINNAME),
                                    FUNCTION_CONFIGURATION | FUNCTION_LOADSAVECONFIGURATION |
                                        FUNCTION_FILESYSTEM,
@@ -585,9 +585,9 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             registry->GetValue(regKey, CONFIG_UPLOADDIRALREADYEXISTS, REG_DWORD, &Config.UploadDirAlreadyExists, sizeof(DWORD));
             registry->GetValue(regKey, CONFIG_UPLOADRETRYONCREATFILE, REG_DWORD, &Config.UploadRetryOnCreatedFile, sizeof(DWORD));
 
-            // adjustment of a poorly chosen default - based on user feedback I changed "Overwrite" to "Resume or Overwrite"
-            // (they were annoyed that after an hour of upload and a broken connection the file was overwritten instead of resumed, the risk of
-            // Resume is hopefully small enough, so I changed it to "Resume or Overwrite")
+            // adjustment of a poorly chosen default - based on user feedback, "Overwrite" was changed to "Resume or Overwrite"
+            // (users were annoyed that after an hour of uploading and a broken connection, the file was overwritten instead of resumed; the risk of
+            // Resume errors is hopefully small enough, so it was changed to "Resume or Overwrite")
             if (ConfigVersion < 29 && Config.UploadRetryOnCreatedFile == RETRYONCREATFILE_OVERWRITE)
                 Config.UploadRetryOnCreatedFile = RETRYONCREATFILE_RES_OVRWR;
 
@@ -642,7 +642,7 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_ALWAYSSHOWLOGFORACTPAN, REG_DWORD, &Config.AlwaysShowLogForActPan, sizeof(DWORD));
         registry->GetValue(regKey, CONFIG_DISABLELOGWORKERS, REG_DWORD, &Config.DisableLoggingOfWorkers, sizeof(DWORD));
 
-        // adjustment of a poorly chosen default - logging will be enabled in workers by default (I am tired of constantly pointing people to how to enable logging + the logging overhead is minimal)
+        // adjust a poorly chosen default - logging will now be enabled in workers by default (the logging overhead is minimal)
         if (ConfigVersion < 29 && Config.DisableLoggingOfWorkers)
             Config.DisableLoggingOfWorkers = FALSE;
 
@@ -698,8 +698,8 @@ void CPluginInterface::LoadConfiguration(HWND parent, HKEY regKey, CSalamanderRe
         registry->GetValue(regKey, CONFIG_OPERDLGCLOSEIFSUCCESS, REG_DWORD,
                            &Config.CloseOperationDlgIfSuccessfullyFinished, sizeof(DWORD));
 
-        // commented out because remembering this checkbox feels odd to me - I now see the meaning of the checkbox
-        // in having the option to let the dialog close after the operation completes (which does not depend on the previous operation)
+        // commented out because remembering this checkbox seems odd - the checkbox now appears to mean
+        // having the option to close the dialog after the operation completes (which does not depend on the previous operation)
         //    registry->GetValue(regKey, CONFIG_OPERDLGCLOSEWHENFINISHES, REG_DWORD,
         //                       &Config.CloseOperationDlgWhenOperFinishes, sizeof(DWORD));
 
@@ -874,8 +874,8 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     registry->SetValue(regKey, CONFIG_OPERDLGCLOSEIFSUCCESS, REG_DWORD,
                        &Config.CloseOperationDlgIfSuccessfullyFinished, sizeof(DWORD));
 
-    // commented out because remembering this checkbox feels odd to me - I now see the meaning of the checkbox
-    // in having the option to let the dialog close after the operation completes (which does not depend on the previous operation)
+    // commented out because remembering this checkbox seems odd - the checkbox now appears to mean
+    // having the option to close the dialog after the operation completes (which does not depend on the previous operation)
     //  registry->SetValue(regKey, CONFIG_OPERDLGCLOSEWHENFINISHES, REG_DWORD,
     //                     &Config.CloseOperationDlgWhenOperFinishes, sizeof(DWORD));
 
@@ -1068,7 +1068,7 @@ void CPluginInterface::AcceptChangeOnPathNotification(const char* path, BOOL inc
 
 void CPluginInterface::ReleasePluginDataInterface(CPluginDataInterfaceAbstract* pluginData)
 {
-    if (pluginData != &SimpleListPluginDataInterface) // it is global, no need to release it
+    if (pluginData != &SimpleListPluginDataInterface) // the global one does not need to be released
     {
         delete ((CFTPListingPluginDataInterface*)pluginData);
     }

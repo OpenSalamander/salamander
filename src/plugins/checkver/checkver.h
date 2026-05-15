@@ -11,7 +11,7 @@
 #define WM_USER_KEYDOWN WM_APP + 667
 
 // configuration data
-enum CAutoCheckModeEnum // how often the plugin window is activated
+enum CAutoCheckModeEnum // how often the plugin window is shown
 {
     achmNever,
     achmDay,

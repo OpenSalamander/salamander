@@ -599,7 +599,7 @@ CEditServerTypeDlg::CEditServerTypeDlg(HWND parent, CServerType* serverType)
         }
     }
     if (!ok)
-        ColumnsData.DestroyMembers(); // safeguard against a potential overlooked error
+        ColumnsData.DestroyMembers(); // safeguard in case an error was overlooked
 
     RawListing = NULL;
     RawListIncomplete = FALSE;
@@ -663,7 +663,7 @@ void CEditServerTypeDlg::Validate(CTransferInfo& ti)
             delete parser; // the parser is OK, delete it again
         else               // display the error and mark the error in the "rules for parsing" edit box
         {
-            if (errorResID != -1) // some "reasonable" error was found, comment on it
+            if (errorResID != -1) // some "reasonable" error was found, report it
             {
                 char buf[300];
                 sprintf(buf, LoadStr(IDS_STPAR_UNABLECOMPPARSER), LoadStr(errorResID));
@@ -767,7 +767,7 @@ void CEditServerTypeDlg::Transfer(CTransferInfo& ti)
                 }
             }
             if (!ok)
-                ServerType->Columns.DestroyMembers(); // safeguard against a potential overlooked error
+                ServerType->Columns.DestroyMembers(); // safeguard against a possible missed error
         }
 
         // if the data changed, we must change the server type to "user defined"
@@ -829,7 +829,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
     CanReadListViewChanges = FALSE;
     //  LockWindowUpdate(HListView);    // do not use - it makes the entire Windows flicker
     SendMessage(HListView, WM_SETREDRAW, FALSE, 0);
-    // I see no reason to dim the window here; there are few columns and calling SetColumnWidths()
+    // I see no reason to hide the window here; there are few columns and calling SetColumnWidths()
     // does not cause the list view to flicker
     //  SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_HIDEWINDOW | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOZORDER);
 
@@ -920,7 +920,7 @@ void CEditServerTypeDlg::RefreshListView(BOOL onlySet, int selIndex)
         ListView_SetItemState(HListView, selIndex, state, state);
         ListView_EnsureVisible(HListView, selIndex, FALSE);
     }
-    //  LockWindowUpdate(NULL);  // do not use - it makes the entire Windows flicker
+    //  LockWindowUpdate(NULL);  // do not use - the entire Windows UI flickers
     //  SetWindowPos(HListView, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW | SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOZORDER);
     SendMessage(HListView, WM_SETREDRAW, TRUE, 0);
 
@@ -1589,7 +1589,7 @@ MENU_TEMPLATE_ITEM EditServerTypeADCondMenu[] =
             }
             else // display the error and mark the error in the "rules for parsing" edit box
             {
-                if (errorResID != -1) // some "reasonable" error was found, comment on it
+                if (errorResID != -1) // a "reasonable" error was found; report it
                 {
                     char buf[300];
                     sprintf(buf, LoadStr(IDS_STPAR_UNABLECOMPPARSER), LoadStr(errorResID));

@@ -35,7 +35,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
     {
         // count how many directories are selected (the remaining selected items are files)
         int i;
-        for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, the check would be useless
+        for (i = 0; i < Dirs->Count; i++) // ".." cannot be selected, so the check would be redundant
         {
             if (Dirs->At(i).Selected)
                 selectedDirs++;
@@ -176,7 +176,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                     if (ParsePath(targetPath, pathType, pathIsDir, secondPart, errTitle, NULL, &error, MAX_PATH))
                     {
                         // instead of using a 'switch' statement, we use 'if' so that 'break' and 'continue' work properly
-                        if (pathType == PATH_TYPE_WINDOWS) // Windows path (disk + UNC)
+                        if (pathType == PATH_TYPE_WINDOWS) // Windows path (drive + UNC)
                         {
                             char* mask;
                             if (SalSplitWindowsPath(HWindow, LoadStr(copy ? IDS_COPY : IDS_MOVE),
@@ -188,7 +188,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
                                 {              // masks not supported and mask is empty, cut it off
                                     *mask = 0; // double-null terminated
                                 }
-                                if (!operationMask && mask != NULL && *mask != 0) // mask exists but isn't allowed
+                                if (!operationMask && mask != NULL && *mask != 0) // mask is present but not allowed
                                 {
                                     char* e = targetPath + strlen(targetPath); // fix 'targetPath' (merge 'targetPath' and 'mask')
                                     if (e > targetPath && *(e - 1) != '\\')
@@ -264,7 +264,7 @@ void CFilesWindow::PluginFSFilesAction(CPluginFSActionType type)
             BOOL ret = GetPluginFS()->Delete(GetPluginFS()->GetPluginFSName(), 1, HWindow,
                                              panel, count - selectedDirs,
                                              selectedDirs, cancelOrError);
-            if (!cancelOrError) // not a cancel/operation error
+            if (!cancelOrError) // not canceled and no operation error
             {
                 if (!ret)
                 {
@@ -474,7 +474,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     newF.IsLink = IsFileLink(newF.Ext);
             }
 
-            if ((newF.Attr & FILE_ATTRIBUTE_DIRECTORY) && !baseDir->AddDir("", newF, NULL) ||     // directory, certainly a disk
+            if ((newF.Attr & FILE_ATTRIBUTE_DIRECTORY) && !baseDir->AddDir("", newF, NULL) ||     // directory; this is definitely on disk
                 (newF.Attr & FILE_ATTRIBUTE_DIRECTORY) == 0 && !baseDir->AddFile("", newF, NULL)) // file
             {
                 free(newF.Name);
@@ -576,7 +576,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     if (PackCompress(HWindow, this, data->ArchiveOrFSName, data->ArchivePathOrUserPart,
                                      !data->Copy, data->Data->SrcPath, PanelEnumDiskSelection, &dataEnum))
                     {                   // packing succeeded
-                        if (nullFile && // zero-length file might have had a different compressed attribute, set archive accordingly
+                        if (nullFile && // the zero-length file might have had a different compressed attribute; set the archive file to match
                             nullFileAttrs != INVALID_FILE_ATTRIBUTES)
                         {
                             HANDLE hFile2 = HANDLES_Q(CreateFile(data->ArchiveOrFSName, GENERIC_READ | GENERIC_WRITE,
@@ -642,12 +642,12 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                                   MB_OK | MB_ICONEXCLAMATION);
                 }
             }
-            else // to FS
+            else // Route to FS
             {
                 int selFiles = dataEnum.Files->Count;
                 int selDirs = dataEnum.Dirs->Count;
 
-                // lower thread's priority to "normal" (so that operations don't burden the machine too much)
+                // lower the thread priority to "normal" (so the operation does not put too much load on the machine)
                 SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
                 // select the FS that performs the operation (priority: active, then new)
@@ -658,7 +658,7 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                     fs = GetPluginFS();
 
                 int fsNameIndex;
-                if (fs != NULL && fs->NotEmpty() &&                                         // interface is valid
+                if (fs != NULL && fs->NotEmpty() &&                                         // FS interface is valid
                     fs->IsFSNameFromSamePluginAsThisFS(data->ArchiveOrFSName, fsNameIndex)) // FS name is from the same plugin (otherwise it's not worth trying)
                 {
                     BOOL invalidPathOrCancel;
@@ -676,22 +676,22 @@ void CFilesWindow::DragDropToArcOrFS(CTmpDragDropOperData* data)
                         dataEnum.Reset();
 
                         if (invalidPathOrCancel)
-                            done = TRUE; // invalid path + user cannot fix it, ending
-                                         // else ; // we should try a new FS
+                            done = TRUE; // invalid path + user cannot correct the path, stop
+                                         // else ; // try a new FS
                     }
                 }
-                if (!done) // active FS failed, create a new FS
+                if (!done) // the active FS could not handle it, create a new FS
                 {
                     int index;
                     int fsNameIndex2;
                     if (Plugins.IsPluginFS(data->ArchiveOrFSName, index, fsNameIndex2)) // determine plugin index
                     {
-                        // obtain the plug-in associated with the FS
+                        // obtain the plugin associated with the FS
                         CPluginData* plugin = Plugins.Get(index);
                         if (plugin != NULL)
                         {
                             // open a new FS
-                            // load the plug-in before obtaining DLLName, Version and plugin interfaces
+                            // load the plugin before obtaining DLLName, Version and plugin interfaces
                             CPluginFSInterfaceAbstract* auxFS = plugin->OpenFS(data->ArchiveOrFSName, fsNameIndex2);
                             CPluginFSInterfaceEncapsulation pluginFS(auxFS, plugin->DLLName, plugin->Version,
                                                                      plugin->GetPluginInterfaceForFS()->GetInterface(),

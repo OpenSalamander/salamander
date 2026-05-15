@@ -733,7 +733,7 @@ BOOL CRegistryWorkerThread::CInUseHandler::CanUseThread(CRegistryWorkerThread* t
             t->InUse = TRUE;
             T = t; // destructor will set T->InUse = FALSE
         }
-        // otherwise // this is a recursive call (due to the message loop and thus message distribution) = we reject running the work there
+        // otherwise this is a recursive call (due to the message loop and thus message dispatch), so we reject running the work in the thread
         return ret;
     }
     return FALSE;

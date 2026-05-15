@@ -819,7 +819,7 @@ CHexFileViewWindow::CalculateOffset(int x, int y)
 
     if ((hOffs + FontWidth / 2) / FontWidth < BytesPerLine / 4 * 13)
     {
-        // Inside hexa block
+        // Inside the hex block
         //offset += (hOffs + FontWidth/2)/FontWidth/3;
         int i = ((hOffs + FontWidth / 2) / FontWidth + 2) / 13;
         int j = ((hOffs + FontWidth / 2 - i * 13 * FontWidth) / FontWidth + 1) / 3;

@@ -25,7 +25,7 @@ enum CCSVParserTextQualifier
 struct CCSVColumn
 {
     DWORD MaxLength; // maximum number of characters in the column
-    char* Name;      // allocated column name or NULL if it does not exist
+    char* Name;      // allocated column name, or NULL if the column has no name
     // temporary variables filled during FetchRecord
     DWORD First;
     DWORD Length;
@@ -75,11 +75,11 @@ public:
     virtual CCSVParserStatus FetchRecord(DWORD index) = 0;
 
 protected:
-    // if the column does not exist at columnIndex, add a new one with MaxLength = columnLen
+    // if the column at columnIndex does not exist yet, add a new one with MaxLength = columnLen
     // returns FALSE if the column could not be added to the array
-    // if the column already exists, extend columnLen only when it is larger than
-    // the current MaxLength value in that column
-    // returns TRUE if the addition/update of the column succeeded
+    // if the column already exists, set its MaxLength to columnLen only if it is greater than the
+    // current MaxLength value in that column
+    // returns TRUE if adding/updating the column succeeded
     BOOL SetLongerColumn(int columnIndex, DWORD columnLen);
 
     struct CLineRating

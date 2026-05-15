@@ -1,11 +1,14 @@
-Zdrojaky SQLite z webu http://www.sqlite.org/download.html
-Pouzivame sqlite-amalgamation-*.zip
-Koncepcne bychom meli pro nove verze Salamander pouzivat nejnovejsi verze SQLite, 
-abychom byli schopni cist nejnovejsi binarni verze SQLite databazi.
+CommentsTranslationProject: TRANSLATED
 
-Updatnout:
+SQLite sources are available at http://www.sqlite.org/download.html
+Use sqlite-amalgamation-*.zip.
+Conceptually, new Salamander versions should use the newest SQLite versions
+so we can read the newest binary versions of SQLite databases.
+
+Update:
 salamand\sqlite\sqlite3.c
 salamand\plugins\shared\sqlite\sqlite3.h
 
-Pridat na to-do list:
--otestovat novou verzi SQLite na Google Drive, podivat do TRACE, ze cteme cestu k jeho slozce
+Add to the to-do list:
+- test the new SQLite version on Google Drive and inspect TRACE to confirm that
+  we read the path to its folder

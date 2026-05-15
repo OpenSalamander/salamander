@@ -1,5 +1,6 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
+// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -13,10 +14,10 @@
 // CToolTip
 //
 
-//nahrazeno metodou GetTime()
-//#define TOOLTIP_SHOWDELAY 1000  // [ms] doba pred otevrenim tool tipu pri kurzoru nad jenim ID z jendnoho okna
-//#define TOOLTIP_HIDEDELAY   80  // [ms] (krat 100) doba pred zhasnutim tool tipu, pokud ho nesejme neco jineho
-#define TOOLTIP_KILLDELAY 300 // [ms] jak dlouho vydrzime, nez prejdeme do Killed rezimu (pro prechod pres separatory)
+// Replaced by the GetTime() method.
+//#define TOOLTIP_SHOWDELAY 1000  // [ms] delay before opening the tooltip when the cursor is over a single ID in one window
+//#define TOOLTIP_HIDEDELAY   80  // [ms] (times 100) delay before hiding the tooltip if nothing else dismisses it
+#define TOOLTIP_KILLDELAY 300 // [ms] how long we wait before switching to the Killed state (when crossing separators)
 
 CToolTip* ToolTip = NULL;
 
@@ -48,7 +49,7 @@ CToolTip::~CToolTip()
     CALL_STACK_MESSAGE_NONE
     if (HWindow != NULL)
     {
-        // prekrocime hranici threadu a zhazneme tooltip v threadu, ve kterem byl otevren
+        // Cross the thread boundary and shut down the tooltip in the thread where it was opened.
         SendMessage(HWindow, WM_USER_HIDETOOLTIP, 0, 0);
     }
 }
@@ -86,9 +87,9 @@ BOOL CToolTip::Create(HWND hParent)
 
     if (HWindow != NULL)
     {
-        if (IsWindowVisible(HWindow)) // pokud uz je okno skryte, nebudeme varovat, protoze jde o doruceni odlozene zpravy a nasledne by bylo okno destruovano, viz CToolTip::MessageLoop()
+        if (IsWindowVisible(HWindow)) // if the window is already hidden, do not warn because a deferred message is being delivered and the window would be destroyed afterward; see CToolTip::MessageLoop()
             TRACE_E("CToolTip::Create() Tooltip window already exists!");
-        // prekrocime hranici threadu a zhasneme tooltip v threadu, ve kterem byl otevren
+        // Cross the thread boundary and shut down the tooltip in the thread where it was opened.
         SendMessage(HWindow, WM_USER_HIDETOOLTIP, 0, 0);
     }
 
@@ -116,15 +117,15 @@ BOOL CToolTip::Create(HWND hParent)
 DWORD
 CToolTip::GetTime(BOOL init)
 {
-    // casy viz MSDN/TTM_SETDELAYTIME
+    // timings per MSDN/TTM_SETDELAYTIME
     if (init)
         return GetDoubleClickTime();
     else
         return (GetDoubleClickTime() * 10) / 100;
 }
 
-// jediny zpusob, ktery jsem vykoumal pro detekci vysky kurzoru
-// je nakresleni masky kurzoru do DIBu a nasledne prohledani bitoveho pole
+// The only method found for detecting the cursor height
+// is to draw the cursor mask into a DIB and then scan the bit array.
 BOOL GetCursorHeight(HCURSOR hCursor)
 {
     if (hCursor == 0)
@@ -137,7 +138,7 @@ BOOL GetCursorHeight(HCURSOR hCursor)
     bi.bmiHeader.biWidth = 32;
     bi.bmiHeader.biHeight = 32;
     bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 1; // kazdy radek bude reprezentovan 32 bity
+    bi.bmiHeader.biBitCount = 1; // each row is represented by 32 bits.
     bi.bmiHeader.biCompression = BI_RGB;
     bi.bmiHeader.biClrUsed = 0;
     bi.bmiHeader.biClrImportant = 0;
@@ -148,9 +149,9 @@ BOOL GetCursorHeight(HCURSOR hCursor)
     DrawIconEx(hMemDC, 0, 0, hCursor, 0, 0, 0, NULL, DI_MASK | DI_DEFAULTSIZE);
     SelectObject(hMemDC, hOldBitmap);
 
-    GdiFlush(); // Flush the GDI batch, so we can play with the bits
+    GdiFlush(); // Flush the GDI batch so we can work with the bits.
 
-    // bitmapa ulozena od poslendi scanline smerem k nulte
+    // The bitmap is stored from the last scanline toward the first.
     int i;
     for (i = 0; i < 32; i++)
     {
@@ -223,14 +224,14 @@ void CToolTip::MessageLoop()
     ShowWindow(HWindow, SW_HIDE);
     IsModal = FALSE;
 
-    // nase okno bylo captured, vsechny zpravy jsme dostali my
-    // ted bychom potreboali dorucit posledni zpravu adresatovi
+    // our window had captured the input, so all messages were delivered to us
+    // now we need to deliver the last message to its target
     if (msg.message == WM_LBUTTONDOWN || msg.message == WM_RBUTTONDOWN ||
         msg.message == WM_MBUTTONDOWN)
     {
         HWND hWindow = WindowFromPoint(msg.pt);
         if (hWindow != NULL && hWindow != HWindow &&
-            GetWindowThreadProcessId(hWindow, NULL) == GetCurrentThreadId()) // SendMessage(hWindow, WM_NCHITTEST do jineho threadu zpusoboval deadlock
+            GetWindowThreadProcessId(hWindow, NULL) == GetCurrentThreadId()) // SendMessage(hWindow, WM_NCHITTEST to another thread caused a deadlock
         {
             POINT p;
             p.x = GET_X_LPARAM(msg.lParam);
@@ -258,15 +259,15 @@ void CToolTip::MessageLoop()
             msg.lParam = MAKELPARAM(p.x, p.y);
             msg.hwnd = hWindow;
 
-            // dame prilezitost dialogu, aby si nastavil default push button
+            // give the dialog a chance to set its default push button
             HWND hDialog = GetTopVisibleParent(hWindow);
 
             if (hDialog != NULL)
             {
                 DWORD pid;
                 GetWindowThreadProcessId(hDialog, &pid);
-                // zpravu nesmime dorucit do jineho procesu,
-                // jinak nam padal Salamander v USER32.DLL
+                // we must not deliver the message to another process,
+                // otherwise Salamander crashed in USER32.DLL
                 if (pid == GetCurrentProcessId())
                 {
                     if (hDialog == NULL || !IsDialogMessage(hDialog, &msg))
@@ -278,10 +279,10 @@ void CToolTip::MessageLoop()
             }
         }
     }
-    //IsModal = FALSE; // zde uz je pozde, nefunguje potom preklikavani mezi dvema tooltipama, napr Config > Change Drive Menu dialog
+    //IsModal = FALSE; // too late here; switching between two tooltips stops working, e.g. Config > Change Drive Menu dialog
     HNotifyWindow = NULL;
     LastID = 0;
-    Hide(); // IsModal uze je FALSE, muzeme zavolat Hide()
+    Hide(); // IsModal is already FALSE, we can call Hide()
     if (msg.message == WM_KEYDOWN && msg.wParam == VK_TAB)
     {
         HWND hDialog = GetForegroundWindow();
@@ -303,7 +304,7 @@ BOOL CToolTip::GetText()
     }
     if (TextLen == 0)
     {
-        // neobdrzeli jsme text - zhasneme minuly tooltip a vypadneme
+        // we did not receive text - hide the previous tooltip and exit
         if (HWindow != NULL)
             Hide();
         return FALSE;
@@ -332,12 +333,12 @@ BOOL CToolTip::Show(int x, int y, BOOL considerCursor, BOOL modal, HWND hParent)
 {
     CALL_STACK_MESSAGE1("CToolTip::Show()");
 
-    // vytahneme text z okna
+    // pull the text from the window
     TextLen = 0;
 
     if (GetText())
     {
-        // merime text
+        // measure the text
         SIZE sz;
         GetNeededWindowSize(&sz);
 
@@ -345,9 +346,9 @@ BOOL CToolTip::Show(int x, int y, BOOL considerCursor, BOOL modal, HWND hParent)
         if (considerCursor)
             y += GetCursorHeight(GetCursor());
         if (HWindow != NULL)
-            Hide(); // zhasneme predchozi tooltip
+            Hide(); // hide the previous tooltip
 
-        // zajistime viditelnost tooltipu na obrazovce
+        // ensure the tooltip remains visible on the screen
         RECT r, clipRect;
         r.left = x;
         r.right = x + 1;
@@ -359,7 +360,7 @@ BOOL CToolTip::Show(int x, int y, BOOL considerCursor, BOOL modal, HWND hParent)
         if (x + sz.cx > clipRect.right)
             x = clipRect.right - sz.cx;
         if (y + sz.cy > clipRect.bottom)
-            y = oldY - sz.cy; // tooltip umistime nad kurzor
+            y = oldY - sz.cy; // place the tooltip above the cursor
         if (x < clipRect.left)
             x = 0;
         if (y < clipRect.top)
@@ -388,7 +389,7 @@ void CToolTip::Hide()
     }
     else if (HWindow != NULL)
     {
-        // prekrocime hranici threadu a zhazneme tooltip v threadu, ve kterem byl otevren
+        // Cross the thread boundary and shut down the tooltip in the thread where it was opened.
         SendMessage(HWindow, WM_USER_HIDETOOLTIP, 0, 0);
     }
 }
@@ -423,14 +424,14 @@ void CToolTip::SetCurrentToolTip(HWND hNotifyWindow, DWORD id, int showDelay)
 {
     CALL_STACK_MESSAGE2("CToolTip::SetCurrentToolTip(, 0x%X)", id);
     if (IsModal)
-        return; // behem modalniho tooltipu nebereme toto volani
+        return; // ignore this call during a modal tooltip
 
     HWND hOldNotifyWindow = HNotifyWindow;
     HNotifyWindow = hNotifyWindow;
     DWORD oldLastID = LastID;
     LastID = id;
 
-    // zabranime nechtenemu zobrazeni tooltipu pri prepnuti do okna
+    // prevent unwanted tooltip display when switching into a window
     POINT currentPos;
     GetCursorPos(&currentPos);
     BOOL sameCursorPos = (currentPos.x == LastCursorPos.x && currentPos.y == LastCursorPos.y);
@@ -448,7 +449,7 @@ void CToolTip::SetCurrentToolTip(HWND hNotifyWindow, DWORD id, int showDelay)
     }
     if (hOldNotifyWindow != HNotifyWindow)
     {
-        // zmenilo se okno - sestrelim casovac a zhasnu
+        // the window changed - kill the timer and hide it
         if (WaitingMode != ttmNone)
         {
             WaitingMode = ttmNone;
@@ -467,7 +468,7 @@ void CToolTip::SetCurrentToolTip(HWND hNotifyWindow, DWORD id, int showDelay)
         DWORD pos = GetMessagePos();
         if (Show(GET_X_LPARAM(pos), GET_Y_LPARAM(pos), TRUE, FALSE, HNotifyWindow))
         {
-            // pokud se podarilo text zobrazit, zacneme cekat na jeho zhasnuti
+            // if the text was displayed, start waiting for it to fade
             WaitingMode = ttmWaitingClose;
             MySetTimer(GetTime(FALSE));
             HideCounter = 0;
@@ -476,7 +477,7 @@ void CToolTip::SetCurrentToolTip(HWND hNotifyWindow, DWORD id, int showDelay)
         {
             if (WaitingMode != ttmWaitingKill)
             {
-                // text nebyl dodan - nahodime cekani na KILL
+                // text was not delivered - start the wait for KILL
                 WaitingMode = ttmWaitingKill;
                 MySetTimer(TOOLTIP_KILLDELAY);
             }
@@ -486,7 +487,7 @@ void CToolTip::SetCurrentToolTip(HWND hNotifyWindow, DWORD id, int showDelay)
     {
         if (HNotifyWindow == hOldNotifyWindow && LastID == oldLastID && WaitingMode == ttmNone)
             return;
-        // jinak nahodim (pripadne znovu nastavime) casovac
+        // otherwise start (or restart) the timer
         if (showDelay >= 0)
         {
             if (showDelay == 0)
@@ -521,7 +522,7 @@ void CToolTip::OnTimer()
     {
     case ttmNone:
     {
-        // jak je mozne, ze nam prisel timer, kdyz podle stavove promenne nema zadny bezet
+        // how could we get a timer when the state variable says none should run
         TRACE_E("WaitingMode == ttmNone");
         break;
     }
@@ -532,20 +533,20 @@ void CToolTip::OnTimer()
         POINT p;
         GetCursorPos(&p);
         HWND hWnd = WindowFromPoint(p);
-        if (hWnd == HNotifyWindow) // musime stale byt na notify oknem
+        if (hWnd == HNotifyWindow) // the cursor must still be over the notify window
         {
-            if (HasActiveParent(hWnd)) // a jeho root musi byt aktivni
+            if (HasActiveParent(hWnd)) // its root window must also be active
             {
                 if (Show(p.x, p.y, TRUE, FALSE, HNotifyWindow))
                 {
-                    // pokud se podarilo text zobrazit, zacneme cekat na jeho zhasnuti
+                    // if the text was displayed, start waiting for it to fade
                     WaitingMode = ttmWaitingClose;
                     MySetTimer(GetTime(FALSE));
                     HideCounter = 0;
                 }
                 else
                 {
-                    // text nebyl dodan - nahodime cekani na KILL
+                    // text was not delivered - start the wait for KILL
                     WaitingMode = ttmWaitingKill;
                     MySetTimer(TOOLTIP_KILLDELAY);
                 }
@@ -561,7 +562,7 @@ void CToolTip::OnTimer()
 
     case ttmWaitingClose:
     {
-        // zkontroluju, jestli neni treba zhasnout tooltip
+        // check whether it is time to hide the tooltip
         POINT p;
         GetCursorPos(&p);
         HWND hWnd = WindowFromPoint(p);
@@ -570,8 +571,8 @@ void CToolTip::OnTimer()
         if (hWnd != HNotifyWindow || HideCounter == HideCounterMax)
         {
             Hide();
-            // pokud slo o zhasnuti diky time-outu, necham timer jeste bezet
-            // po dobu, nez mys opusti okno nebo dojde k voalni SetCurrentToolTip
+            // if it was hidden due to a timeout, keep the timer running
+            // until the mouse leaves the window or SetCurrentToolTip is called
             if (hWnd != HNotifyWindow)
             {
                 WaitingMode = ttmNone;
@@ -613,11 +614,11 @@ CToolTip::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_USER_REFRESHTOOLTIP:
     {
-        // musime zachovat stavajici okenko -- pouze ho natahnem pro novy text
+        // we must keep the existing window—just stretch it for the new text
         if (GetText())
         {
             SIZE sz;
-            GetNeededWindowSize(&sz); // kaslem na osetreni vylezeni z obrazovky
+            GetNeededWindowSize(&sz); // ignore handling for climbing off the screen
             SetWindowPos(HWindow, NULL, 0, 0, sz.cx, sz.cy, SWP_NOACTIVATE | SWP_NOMOVE);
             InvalidateRect(HWindow, NULL, TRUE);
             UpdateWindow(HWindow);
@@ -627,7 +628,7 @@ CToolTip::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND:
     {
-        // podmazeme a soucasne vykreslime text
+        // fill the background and draw the text at the same time
         HDC hDC = (HDC)wParam;
         RECT r;
         GetClientRect(HWindow, &r);
@@ -646,7 +647,7 @@ CToolTip::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_PAINT:
     {
-        // nedelame nic - vse je zarizeno v WM_ERASEBKGND
+        // do nothing - everything is handled in WM_ERASEBKGND
         PAINTSTRUCT ps;
         HANDLES(BeginPaint(HWindow, &ps));
         HANDLES(EndPaint(HWindow, &ps));

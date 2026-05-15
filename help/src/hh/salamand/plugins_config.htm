@@ -13,28 +13,28 @@
 <div class="page">
 <h1>Configuring Plugins</h1>
 
-<p>Some plugins have configuration dialogs where you can customize their behavior.
-You can configure all these plugins from menu Options/Plugin Configuration. You can
-also use the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>,
+<p>Some plugins have configuration dialogs that let you customize their behavior.
+You can configure all of these plugins from the Options/Plugin Configuration menu. You can
+also use the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>:
 see the <i>Configure</i> button.</p>
 
 <h4>Loading and Saving Configuration</h4>
-<p>Plugin's configuration is stored together with Salamander's configuration in
+<p>A plugin's configuration is stored together with Salamander's configuration in
 the registry (see <a href="customize_configuration.htm">Configuring Open Salamander</a>).</p>
 
-<p>Plugin reads its configuration from the registry on its load (when you first use
-the plugin). Plugin saves its configuration to the registry when you unload it
+<p>A plugin reads its configuration from the registry when it is loaded (that is, when you first use
+the plugin). A plugin saves its configuration to the registry when you unload it
 (see the <a href="dlgboxes_plugn.htm">Plugins Manager dialog box</a>, the <i>Unload</i> button) or
-when it's unloaded on exit of Salamander (only if <i>Save configuration on exit</i>
+when it is unloaded on exit from Salamander (only if <i>Save configuration on exit</i>
 is checked in <a href="configuration_gener.htm">Configuration/General</a>).
-If you want to save all loaded plugins' configuration, you can also use command
-Options/Save Configuration (it saves also Salamander's configuration).
+If you want to save the configuration of all loaded plugins, you can also use the command
+Options/Save Configuration (it also saves Salamander's configuration).
 </p>
 
 <h4>Remarks</h4>
-<p>Plugins configuration is stored in the Windows Registry:
+<p>Plugin configuration is stored in the Windows Registry:
 'HKEY_CURRENT_USER\Software\Open Salamander\X\Plugins Configuration\PLUGIN-NAME',
-where X is Open Salamander's version and PLUGIN-NAME is name of plugin.</p>
+where X is Open Salamander's version and PLUGIN-NAME is the name of the plugin.</p>
 
 <h4>See Also</h4>
 <p>

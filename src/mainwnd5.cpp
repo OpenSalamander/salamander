@@ -17,7 +17,7 @@ void GetFileDateAndTimeFromPanel(DWORD validFileData, CPluginDataInterfaceEncaps
     *validDate = FALSE;
     *validTime = FALSE;
     FILETIME ft;
-    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // at least something is in LastWrite
+    if (validFileData & (VALID_DATA_DATE | VALID_DATA_TIME)) // LastWrite contains at least the date or time
     {
         if (FileTimeToLocalFileTime(&f->LastWrite, &ft) &&
             FileTimeToSystemTime(&ft, st))
@@ -40,14 +40,14 @@ void GetFileDateAndTimeFromPanel(DWORD validFileData, CPluginDataInterfaceEncaps
     {
         *validTime = TRUE;
     }
-    if (!*validDate) // no date set, reset it...
+    if (!*validDate) // no date set, initialize it to the default date...
     {
         st->wYear = 1602;
         st->wMonth = 1;
         st->wDay = 1;
         st->wDayOfWeek = 2;
     }
-    if (!*validTime) // no time set, reset it...
+    if (!*validTime) // no time set, zero it out...
     {
         st->wHour = 0;
         st->wMinute = 0;
@@ -99,10 +99,10 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
         FILETIME lf, rf;
         if (Configuration.UseTimeResolution)
         {
-            // trim time with second precision
+            // truncate time to whole seconds
             stLeft.wMilliseconds = 0;
             stRight.wMilliseconds = 0;
-            // convert time to numbers
+            // convert times to numeric values
             if (!SystemTimeToFileTime(&stLeft, &lf))
             {
                 TRACE_E("CompareFilesByTime(): date&time of left file is invalid!");
@@ -162,7 +162,7 @@ int CompareFilesByTime(CFilesWindow* leftPanel, const CFileData* l, BOOL lFAT,
                 {
                     if (lFAT == rFAT)
                         res = MyCompareFileTime(&lf, &rf, foundDSTShifts, compResNoDSTShiftIgn); // same filesystems -> OK
-                    else                                                                         // FAT plus a different filesystem -> adjust the non-FAT time to FAT time (by 2 seconds)
+                    else                                                                         // FAT + different filesystem -> convert the non-FAT time to FAT time (2-second resolution)
                     {
                         WORD date, time; // FAT values
                         FILETIME t;
@@ -257,16 +257,16 @@ int CompareFilesBySize(CFilesWindow* leftPanel, CFileData* l, CFilesWindow* righ
     return 0;
 }
 
-// compares files 'file1' and 'file2' specified by full path by their content
-// on successful comparison, it returns TRUE and sets 'different'
-// variable (TRUE if a difference was found, otherwise FALSE)
-// on error or user abort, returns FALSE and sets 'canceled' variable
-// (TRUE if the user canceled the operation, otherwise FALSE)
+// compares the contents of files 'file1' and 'file2', specified by full paths
+// on successful comparison, the function returns TRUE and sets
+// 'different' (TRUE if a difference was found, otherwise FALSE)
+// on error or cancellation, it returns FALSE and sets
+// 'canceled' (TRUE if the user canceled the operation, otherwise FALSE)
 
 #define COMPARE_BUFFER_SIZE (2 * 1024 * 1024) // buffer size for comparison in bytes (does not necessarily need to be fully used)
 #define COMPARE_BLOCK_SIZE (32 * 1024)        // size of a block read continuously from the file; NOTE: COMPARE_BUFFER_SIZE must be divisible by COMPARE_BLOCK_SIZE
 #define COMPARE_BLOCK_GROUP 8                 // how many blocks can be read at once when reading is fast enough (more than 1 MB/s, see COMPARE_BUF_TIME_LIMIT); NOTE: the number of blocks in the buffer (COMPARE_BUFFER_SIZE / COMPARE_BLOCK_SIZE) must be divisible by COMPARE_BLOCK_GROUP
-#define COMPARE_BUF_TIME_LIMIT 2000           // time limit in milliseconds for reading the entire buffer (COMPARE_BUFFER_SIZE) - if met, blocks are read in groups COMPARE_BLOCK_GROUP which speeds up network reading on Vista+ 2-3x; otherwise reading is done block by block (COMPARE_BLOCK_SIZE)
+#define COMPARE_BUF_TIME_LIMIT 2000           // time limit in milliseconds for reading the entire buffer (COMPARE_BUFFER_SIZE) - if met, blocks are read in groups of COMPARE_BLOCK_GROUP, which makes network reading on Vista+ 2x to 3x faster; otherwise, reading is done one block at a time (COMPARE_BLOCK_SIZE)
 
 void AddProgressSizeWithLimit(CCmpDirProgressDialog* progressDlg, DWORD read, CQuadWord* fileProgressTotal, const CQuadWord& sizeLimit)
 {
@@ -324,7 +324,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                 //        DWORD measureStart = GetTickCount();
                 //        unsigned __int64 measuredSize = 0;
                 BOOL readErr = FALSE;
-                BOOL readingIsFast1 = FALSE; // FALSE = wait until speed reaches the limit and we can read in groups (COMPARE_BLOCK_GROUP)
+                BOOL readingIsFast1 = FALSE; // FALSE = wait until the speed reaches the limit and we can read in groups (COMPARE_BLOCK_GROUP)
                 BOOL readingIsFast2 = FALSE;
                 while (TRUE)
                 {
@@ -374,7 +374,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     }
                     if (readErr || *canceled)
                         break;
-                    readingIsFast1 = WindowsVistaAndLater &&                                                                                           // on W2K/XP this should not speed things up, so we will not tempt fate
+                    readingIsFast1 = WindowsVistaAndLater &&                                                                                           // on W2K/XP this should not make things faster, so we will not try it there
                                      GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read1 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // measure the speed so it is over 1 MB/s
                                                                                                                                                        /*
           // read the entire buffer at once from one file (on Vista, when both files are on the same physical disk and the buffer is large, this is slightly faster than reading in 32KB blocks)
@@ -446,7 +446,7 @@ BOOL CompareFilesByContent(HWND hWindow, CCmpDirProgressDialog* progressDlg,
                     }
                     if (readErr || ret || *canceled)
                         break;
-                    readingIsFast2 = WindowsVistaAndLater &&                                                                                           // on W2K/XP this should not speed things up, so we will not tempt fate
+                    readingIsFast2 = WindowsVistaAndLater &&                                                                                           // on W2K/XP this should not make things faster, so we will not try it there
                                      GetTickCount() - readBegTime < (DWORD)(((unsigned __int64)read2 * COMPARE_BUF_TIME_LIMIT) / COMPARE_BUFFER_SIZE); // measure the speed so it is over 1 MB/s
                                                                                                                                                        /*
           // read the entire buffer at once from one file (on Vista, when both files are on the same physical disk and the buffer is large, this is slightly faster than reading in 32KB blocks)
@@ -720,7 +720,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
         if (zipFiles == NULL || zipDirs == NULL)
         {
             *canceled = TRUE;
-            return FALSE; // low memory, bail out
+            return FALSE; // low memory, abort
         }
 
         files->SetDeleteData(FALSE); // shallow data copies only
@@ -737,7 +737,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 {
                     TRACE_E(LOW_MEMORY);
                     *canceled = TRUE;
-                    return FALSE; // low memory, bail out
+                    return FALSE; // low memory, abort
                 }
             }
         }
@@ -752,7 +752,7 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
                 {
                     TRACE_E(LOW_MEMORY);
                     *canceled = TRUE;
-                    return FALSE; // low memory, bail out
+                    return FALSE; // low memory, abort
                 }
             }
         }
@@ -767,16 +767,16 @@ BOOL ReadDirsAndFilesAux(HWND hWindow, DWORD flags, CCmpDirProgressDialog* progr
     return TRUE;
 }
 
-// recursive function searching for differences between directories
-// directories are determined by the paths in the left and right panel
-// and the variables 'leftSubDir' and 'rightSubDir'
-// leftFAT and rightFAT indicate whether the respective panel is on a FAT system; if an archive is opened,
-// the corresponding xxxFAT will be set to FALSE
-// 'flags' specifies comparison criteria and comes from the COMPARE_DIRECTORIES_xxx family
-// the function returns TRUE on successful comparison and sets 'different' (TRUE
+// recursive function that searches for differences between directories
+// the directories are specified by the paths in the left and right panels
+// and by the variables 'leftSubDir' and 'rightSubDir'
+// leftFAT and rightFAT indicate whether the corresponding panel is on a FAT file system; if an archive is open,
+// the corresponding xxxFAT is set to FALSE
+// 'flags' specifies the comparison criteria and comes from the COMPARE_DIRECTORIES_xxx family
+// the function returns TRUE if the comparison succeeds and sets 'different' (TRUE
 // if the directories differ, otherwise FALSE).
-// on error or user abort it returns FALSE
-// and sets the variable 'canceled' (TRUE if aborted by the user, otherwise FALSE)
+// if an error occurs or the operation is canceled by the user, the function returns FALSE
+// and sets the variable 'canceled' (TRUE if canceled by the user, otherwise FALSE)
 
 // supports ptDisk and ptZIPArchive
 
@@ -961,7 +961,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             // directories are not compared by time
         }
 
-        if (timeDiffWithDSTShiftExists) // we found no other difference, so we report an unignored DST time shift including a warning
+        if (timeDiffWithDSTShiftExists) // no other difference found, so report the non-ignored DST time shift including a warning
         {
             (*foundDSTShifts)++;
             *different = TRUE;
@@ -1071,7 +1071,7 @@ BOOL CompareDirsAux(HWND hWindow, CCmpDirProgressDialog* progressDlg,
             if (*different)
             {
                 *foundDSTShifts += foundDSTShiftsInSubDir;
-                return TRUE; // found a difference in a subdirectory, stop
+                return TRUE; // found a difference in a subdirectory, return early
             }
             foundDSTShiftsInThisDir += foundDSTShiftsInSubDir;
         }
@@ -1182,7 +1182,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
     // lower the thread priority to "normal" (so the operation doesn't overburden the machine)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
-    //--- open the progress dialog
+    //--- open the progress dialog box
     BOOL displayDialogBox = (flags & COMPARE_DIRECTORIES_BYCONTENT) != 0 || // for quick actions there's no point in showing the dialog
                             (flags & COMPARE_DIRECTORIES_SUBDIRS) != 0;
     BOOL displayProgressBar = (flags & COMPARE_DIRECTORIES_BYCONTENT) != 0;
@@ -1251,9 +1251,9 @@ void CMainWindow::CompareDirectories(DWORD flags)
             getTotal = FALSE;  // FALSE: we mark differences, compare files by content
         CQuadWord total(0, 0); // total number of bytes that may need to be compared in the worst case
 
-        // the 'dirSubTotal' array contains sizes of individual subdirectories (files contained in them)
+        // the 'dirSubTotal' array contains the sizes of individual subdirectories (the files they contain)
         // the array is filled in the first pass (getTotal == TRUE)
-        // it is used in the second pass (getTotal == FALSE): if a subdirectory differs we know how much to skip on the total progress
+        // it is used in the second pass (getTotal == FALSE): if a subdirectory differs, we know how much to skip in the total progress
         TDirectArray<CQuadWord> dirSubTotal(max(1, min(leftDirs->Count, rightDirs->Count)), 1);
         int subTotalIndex; // index into the dirSubTotal array
 
@@ -1352,7 +1352,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             // By Content
                             if (flags & COMPARE_DIRECTORIES_BYCONTENT)
                             {
-                                if (leftFile->Size == rightFile->Size) // size test is intentionally not covered by the following optimization so both files are marked and unnecessary DST warnings don't pop up
+                                if (leftFile->Size == rightFile->Size) // the size check is intentionally not gated by the following optimization condition so both files are marked and unnecessary DST warnings do not pop up
                                 {
                                     if (!selectLeft && !leftIsNewer || !selectRight && !rightIsNewer) // if both files are already flagged, there is no point in comparing them by content
                                     {
@@ -1412,7 +1412,7 @@ void CMainWindow::CompareDirectories(DWORD flags)
                             if (!getTotal)
                             {
                                 if (leftIsNewerNoDSTShiftIgn && !selectLeft || rightIsNewerNoDSTShiftIgn && !selectRight)
-                                    foundDSTShifts += isDSTShift; // count only time differences of files that are not already marked for another reason (e.g., due to a difference by another criterion) -- motivation: if we don't need to show a complex DST warning, don't show it
+                                    foundDSTShifts += isDSTShift; // count only time differences for files that are not already marked for another reason (e.g. because of a difference by another criterion) -- motivation: if the complex DST warning does not need to be shown, do not show it
 
                                 if (selectLeft || leftIsNewer)
                                 {
@@ -1459,8 +1459,8 @@ void CMainWindow::CompareDirectories(DWORD flags)
         }
 
         // Sal2.0 and TC compare without directories in such a way that they even ignore their names
-        // people kept pointing this out to us, so we'll behave the same (with
-        // COMPARE_DIRECTORIES_ONEPANELDIRS disabled)
+        // this behavior is kept for compatibility because users kept pointing it out
+        // (when COMPARE_DIRECTORIES_ONEPANELDIRS is not set)
         if ((flags & COMPARE_DIRECTORIES_SUBDIRS) || (flags & COMPARE_DIRECTORIES_ONEPANELDIRS))
         {
             // now compare subdirectories
@@ -1853,14 +1853,14 @@ BOOL CDynString::Append(const char* str, int len)
         len = (int)strlen(str);
     if (Length + len >= Allocated)
     {
-        int size = Length + len + 1 + 256; // +256 characters as reserve so we don't allocate so often
+        int size = Length + len + 1 + 256; // +256 characters in reserve so reallocations are less frequent
         char* newBuf = (char*)realloc(Buffer, size);
         if (newBuf != NULL)
         {
             Buffer = newBuf;
             Allocated = size;
         }
-        else // out of memory, tough luck...
+        else // Out of memory.
         {
             TRACE_E(LOW_MEMORY);
             return FALSE;
