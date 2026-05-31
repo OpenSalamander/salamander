@@ -442,7 +442,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
     {
         siz = PackSfxSettings(&LastUsedSfxSet.Settings, buffer, allocated);
         if (siz == -1)
-            TRACE_E("chyba v PackSfxSettings.");
+            TRACE_E("Error in PackSfxSettings.");
         else
         {
             if (registry->SetValue(regKey, CONFIG_SFXLAST, REG_BINARY, buffer, siz))
@@ -467,7 +467,7 @@ void CPluginInterface::SaveConfiguration(HWND parent, HKEY regKey, CSalamanderRe
             siz = PackSfxSettings(&fav->Settings, buffer, allocated);
             if (siz == -1)
             {
-                TRACE_E("chyba v PackSfxSettings.");
+                TRACE_E("Error in PackSfxSettings.");
                 break;
             }
             sprintf(key, CONFIG_SFXFAVDATA, i + 1);
