@@ -469,7 +469,7 @@ LRESULT CSalamanderGuiForm::WndProc(
             }
             else if (LOWORD(wParam) == IDOK)
             {
-                // This is command synthetized by the
+                // This command is synthesized by the
                 // dialog manager in reaction to the
                 // Enter key when there is no button.
             }
@@ -515,7 +515,7 @@ void CSalamanderGuiForm::InternalAddComponent(
     _ASSERTE(bounds.cy >= 0);
 
     // Calculate automatic position of the component.
-    // Put component bellow the previous by default and put
+    // Put the component below the previous one by default and put
     // some spacing between them.
     int yspacing = 0;
     if (pPrevComponent != NULL)

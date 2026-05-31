@@ -302,7 +302,7 @@ void SE_Destructor(ShellExt* se);
 #define _ILNext(pidl)           _ILSkip(pidl, (pidl)->mkid.cb) 
 
 //#ifdef _DEBUG 
-// Dugging aids for making sure we dont use free pidls 
+// Debugging aids for making sure we don't use freed PIDLs
 //#define VALIDATE_PIDL(pidl) Assert((pidl)->mkid.cb != 0xC5C5) 
 //#else 
 #define VALIDATE_PIDL(pidl) 

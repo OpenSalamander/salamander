@@ -508,10 +508,10 @@ typedef struct _DOSDPB
 
 //  GetDriveFormFactor returns the drive form factor.
 //
-//  It returns 350 if the drive is a 3.5" floppy drive.
-//  It returns 525 if the drive is a 5.25" floppy drive.
-//  It returns 800 if the drive is a 8" floppy drive.
-//  It returns   0 on error.
+//  Returns 350 if the drive is a 3.5" floppy drive.
+//  Returns 525 if the drive is a 5.25" floppy drive.
+//  Returns 800 if the drive is an 8" floppy drive.
+//  Returns   0 on error.
 //
 //  drive is C:\, D:\, \\?\Volume{GUID} (win2k and above only) etc.
 

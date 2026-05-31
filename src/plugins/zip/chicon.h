@@ -7,7 +7,7 @@
 // Structs
 
 // These first two structs represent how the icon information is stored
-// when it is bound into a EXE or DLL file. Structure members are WORD
+// when it is bound into an EXE or DLL file. Structure members are WORD
 // aligned and the last member of the structure is the ID instead of
 // the imageoffset.
 #pragma pack(push)

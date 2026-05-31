@@ -1357,7 +1357,7 @@ private:
     ///         the system defined error code.
     DWORD EnumNetworkShortcuts();
 
-    /// Enumerates volumes attached trough Terminal Service client.
+    /// Enumerates volumes attached through Terminal Service client.
     DWORD EnumTSClientVolumes();
 
     /// Reads shortcut target and inserts it as a child of the node

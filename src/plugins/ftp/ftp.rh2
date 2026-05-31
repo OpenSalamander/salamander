@@ -62,7 +62,7 @@
 #define IDM_RESUMETESTFAILEDONRETRY 1117
 // menu on button Use Binary Mode in ASCII Transfer Mode is Set for File with Binary Content dialog (see Solve Error button in operation dialog)
 #define IDM_ASCIITRFORBINFILE  1118
-// menu on Add button in FTP Configuration > General (Proxy Server combobox)
+// menu on Add button in FTP Configuration > General (Proxy Server combo box)
 #define IDM_ADDPROXYSERVER     1119
 // menu in Proxy Server dialog, in Script editbox
 #define IDM_PRXSRVSCRIPTMENU   1120
