@@ -74,7 +74,7 @@ typedef unsigned long ulong;   /* 32 bits or more */
 /* Structure of archive main header (low order byte first):
 /*
 /*  2  header id (comment and local file) = 0x60, 0xEA
-/*  2  basic header size (from 'first_hdr_size' thru 'comment' below)
+/*  2  basic header size (from 'first_hdr_size' through 'comment' below)
 /*	     = first_hdr_size + strlen(filename) + 1 + strlen(comment) + 1
 /*	     = 0 if end of archive
 /*
@@ -114,7 +114,7 @@ typedef unsigned long ulong;   /* 32 bits or more */
 /* Structure of archive file header (low order byte first):
 /*
 /*  2  header id (comment and local file) = 0x60, 0xEA
-/*  2  basic header size (from 'first_hdr_size' thru 'comment' below)
+/*  2  basic header size (from 'first_hdr_size' through 'comment' below)
 /*	     = first_hdr_size + strlen(filename) + 1 + strlen(comment) + 1
 /*	     = 0 if end of archive
 /*

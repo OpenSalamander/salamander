@@ -459,7 +459,7 @@ void CComboboxEdit::SetSel(DWORD start, DWORD end)
 void CComboboxEdit::ReplaceText(const char* text)
 {
     CALL_STACK_MESSAGE_NONE
-    // we must refresh the selection because the dumb combobox forgot it
+    // we must refresh the selection because the dumb combo box forgot it
     SendMessage(HWindow, EM_SETSEL, SelStart, SelEnd);
     SendMessage(HWindow, EM_REPLACESEL, TRUE, (LPARAM)text);
 }
