@@ -1911,7 +1911,7 @@ BOOL CPluginInterfaceForViewer::ViewFile(LPCTSTR name, int left, int top, int wi
     HANDLE contEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (contEvent == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit Continue event.");
+        TRACE_E("Failed to create Continue event.");
         return FALSE;
     }
 
