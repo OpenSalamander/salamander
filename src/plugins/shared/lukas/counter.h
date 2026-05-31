@@ -6,7 +6,7 @@
 
 // ****************************************************************************
 //
-// CCounter -- hight precision counter for performance metering
+// CCounter -- high precision counter for performance metering
 
 class CCounter
 {
