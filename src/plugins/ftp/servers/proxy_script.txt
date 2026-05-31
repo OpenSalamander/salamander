@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 Description of the login script format (for proxy servers and firewalls):
 =========================================================================

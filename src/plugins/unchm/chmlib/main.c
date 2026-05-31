@@ -1,6 +1,5 @@
 //
 //
-// CommentsTranslationProject: TRANSLATED
 //
 
 #include <windows.h>
