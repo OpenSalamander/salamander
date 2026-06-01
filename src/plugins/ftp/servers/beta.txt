@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 This file contains a report about bug fixes and new features
 in Altap Salamander. A plus sign means a new feature,
