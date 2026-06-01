@@ -3403,6 +3403,7 @@ void CCfgPagePanels::Transfer(CTransferInfo& ti)
     ti.CheckBox(IDC_QUICKSEARCH_ALT, Configuration.QuickSearchEnterAlt);
     ti.CheckBox(IDE_PRIMARYCTXMENU, Configuration.PrimaryContextMenu);
     ti.CheckBox(IDC_SHIFTFORHOTPATHS, Configuration.ShiftForHotPaths);
+    ti.CheckBox(IDC_PANELTREEVIEW, Configuration.TreeViewVisible);
     ti.CheckBox(IDC_CLICKTORENAME, Configuration.ClickQuickRename);
     ti.CheckBox(IDC_SORTUSESLOCALE, Configuration.SortUsesLocale);
     ti.CheckBox(IDC_SORTDETECTNUMBERS, Configuration.SortDetectNumbers);

@@ -436,6 +436,7 @@ const char* CONFIG_USERMENUTOOLBARVISIBLE_REG = "Show User Menu ToolBar";
 const char* CONFIG_HOTPATHSBARVISIBLE_REG = "Hot Paths Bar";
 const char* CONFIG_DRIVEBARVISIBLE_REG = "Show Drive Bar";
 const char* CONFIG_DRIVEBAR2VISIBLE_REG = "Show Drive Bar2";
+const char* CONFIG_TREEVIEWVISIBLE_REG = "Show Tree View";
 const char* CONFIG_BOTTOMTOOLBARVISIBLE_REG = "Show Bottom ToolBar";
 const char* CONFIG_EXPLORERLOOK_REG = "Explorer Look";
 const char* CONFIG_FULLROWSELECT_REG = "Full Row Select";
@@ -534,6 +535,7 @@ const char* CONFIG_HOTPATHSWIDTH_REG = "Hot Paths Width";
 const char* CONFIG_DRIVEBARINDEX_REG = "Drive Bar Index";
 const char* CONFIG_DRIVEBARBREAK_REG = "Drive Bar Break";
 const char* CONFIG_DRIVEBARWIDTH_REG = "Drive Bar Width";
+const char* CONFIG_TREEVIEWWIDTH_REG = "Tree View Width";
 const char* CONFIG_GRIPSVISIBLE_REG = "Grips Visible";
 
 const char* SALAMANDER_CONFIRMATION_REG = "Confirmation";
@@ -1710,6 +1712,8 @@ void CMainWindow::SaveConfig(HWND parent)
                          &Configuration.DriveBarBreak, sizeof(DWORD));
                 SetValue(actKey, CONFIG_DRIVEBARWIDTH_REG, REG_DWORD,
                          &Configuration.DriveBarWidth, sizeof(DWORD));
+                SetValue(actKey, CONFIG_TREEVIEWWIDTH_REG, REG_DWORD,
+                         &Configuration.TreeViewWidth, sizeof(DWORD));
                 SetValue(actKey, CONFIG_GRIPSVISIBLE_REG, REG_DWORD,
                          &Configuration.GripsVisible, sizeof(DWORD));
 
@@ -2013,6 +2017,8 @@ void CMainWindow::SaveConfig(HWND parent)
                          &Configuration.DriveBarVisible, sizeof(DWORD));
                 SetValue(actKey, CONFIG_DRIVEBAR2VISIBLE_REG, REG_DWORD,
                          &Configuration.DriveBar2Visible, sizeof(DWORD));
+                SetValue(actKey, CONFIG_TREEVIEWVISIBLE_REG, REG_DWORD,
+                         &Configuration.TreeViewVisible, sizeof(DWORD));
 
                 SetValue(actKey, CONFIG_BOTTOMTOOLBARVISIBLE_REG, REG_DWORD,
                          &Configuration.BottomToolBarVisible, sizeof(DWORD));
@@ -3201,6 +3207,8 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.DriveBarBreak, sizeof(DWORD));
             GetValue(actKey, CONFIG_DRIVEBARWIDTH_REG, REG_DWORD,
                      &Configuration.DriveBarWidth, sizeof(DWORD));
+            GetValue(actKey, CONFIG_TREEVIEWWIDTH_REG, REG_DWORD,
+                     &Configuration.TreeViewWidth, sizeof(DWORD));
             GetValue(actKey, CONFIG_GRIPSVISIBLE_REG, REG_DWORD,
                      &Configuration.GripsVisible, sizeof(DWORD));
             //---  top rebar end
@@ -3604,6 +3612,8 @@ BOOL CMainWindow::LoadConfig(BOOL importingOldConfig, const CCommandLineParams* 
                      &Configuration.DriveBarVisible, sizeof(DWORD));
             GetValue(actKey, CONFIG_DRIVEBAR2VISIBLE_REG, REG_DWORD,
                      &Configuration.DriveBar2Visible, sizeof(DWORD));
+            GetValue(actKey, CONFIG_TREEVIEWVISIBLE_REG, REG_DWORD,
+                     &Configuration.TreeViewVisible, sizeof(DWORD));
 
             if (ret) // if we return FALSE, everything will be inserted later
             {

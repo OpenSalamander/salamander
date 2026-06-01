@@ -3290,6 +3290,7 @@ void CFilesWindow::SetupListBoxScrollBars()
 void CFilesWindow::RefreshForConfig()
 {
     CALL_STACK_MESSAGE1("CFilesWindow::RefreshForConfig()");
+    UpdateTreeView(MainWindow->LeftPanel == this);
     if (Is(ptZIPArchive))
     { // we ensure a refresh of the archive by corrupting the archive's size
         SetZIPArchiveSize(CQuadWord(-1, -1));

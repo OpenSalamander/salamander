@@ -474,6 +474,7 @@ protected:
         BeforeZoomSplitPosition, // split position before panel zoom
         DragSplitPosition;       // shown in the tooltip
     CToolTipWindow ToolTipWindow;
+    BOOL KeepSplitPositionCenteredOnVisiblePanes;
 
     BOOL FirstActivateApp; // WM_ACTIVATEAPP uses this variable during startup
 
@@ -491,6 +492,11 @@ public:
     void ClearHistory(); // clears all histories
 
     void GetSplitRect(RECT& r);
+    void GetPanelWidthsFromSplitPosition(double splitPosition, int& leftWidth, int& rightWidth);
+    double GetVisibleLeftPanelRatio();
+    double GetSplitPositionForVisibleLeftPanelRatio(double leftVisibleRatio);
+    double GetVisiblePanesCenteredSplitPosition();
+    void UpdateCenteredSplitPosition();
 
     BOOL IsGood();
 
@@ -581,6 +587,7 @@ public:
     BOOL TogglePluginsBar(BOOL storePos = TRUE);
     BOOL ToggleMiddleToolBar();
     BOOL ToggleBottomToolBar();
+    BOOL ToggleTreeView();
     BOOL ToggleUserMenuToolBar(BOOL storePos = TRUE);
     BOOL ToggleHotPathsBar(BOOL storePos = TRUE);
     // If 'twoDriveBars' is TRUE, the user wants to toggle two drive bars; otherwise only one

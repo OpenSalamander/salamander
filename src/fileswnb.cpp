@@ -54,6 +54,40 @@ BOOL IsCustomEventGUID(LPARAM lParam, REFGUID guidEvent)
     return ret;
 }
 
+static BOOL GetTreeViewNotifyItemData(HWND hTreeView, HTREEITEM hItem, CTreeViewNodeData* itemData)
+{
+    if (hTreeView == NULL || hItem == NULL)
+        return FALSE;
+
+    TVITEM item;
+    memset(&item, 0, sizeof(item));
+    item.mask = TVIF_PARAM;
+    item.hItem = hItem;
+    if (!TreeView_GetItem(hTreeView, &item))
+        return FALSE;
+    if (item.lParam == 0)
+        return FALSE;
+
+    *itemData = *(CTreeViewNodeData*)item.lParam;
+    return TRUE;
+}
+
+static void FreeTreeViewNodeData(CTreeViewNodeData* itemData)
+{
+    if (itemData == NULL)
+        return;
+
+    free(itemData->FullPath);
+    free(itemData->FocusPath);
+    free(itemData->FocusName);
+    free(itemData);
+}
+
+enum
+{
+    TREEVIEW_SPLITTER_WIDTH = 4
+};
+
 //****************************************************************************
 //
 // WindowProc
@@ -78,6 +112,16 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             int dlHeight = 3;
             int stHeight = 0;
+            int treeWidth = 0;
+            int treeHeight = height;
+            int treeY = 0;
+            int listX = 0;
+            int listWidth = width;
+            int listHeight = height;
+            int directoryLineX = 0;
+            int directoryLineWidth = width;
+            int statusLineX = 0;
+            int statusLineWidth = width;
             int windowsCount = 1;
             if (DirectoryLine->HWindow != NULL)
             {
@@ -91,25 +135,52 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (StatusLine->HWindow != NULL)
             {
                 stHeight = StatusLine->GetNeededHeight();
+                listHeight -= stHeight;
                 InvalidateRect(StatusLine->HWindow, NULL, FALSE);
                 windowsCount++;
             }
+            listHeight -= dlHeight;
+            if (HTreeView != NULL && TreeViewActive)
+            {
+                treeWidth = GetTreeViewWidth(width);
+                listX = treeWidth + TREEVIEW_SPLITTER_WIDTH;
+                listWidth = width - listX;
+                directoryLineX = listX;
+                directoryLineWidth = listWidth;
+                statusLineX = listX;
+                statusLineWidth = listWidth;
+                treeY = 0;
+                treeHeight = height;
+                windowsCount += HTreeSplit != NULL ? 2 : 1;
+            }
+            else
+                treeHeight -= dlHeight;
 
             HDWP hdwp = HANDLES(BeginDeferWindowPos(windowsCount));
             if (hdwp != NULL)
             {
                 if (DirectoryLine->HWindow != NULL)
                     hdwp = HANDLES(DeferWindowPos(hdwp, DirectoryLine->HWindow, NULL,
-                                                  0, 0, width, dlHeight,
+                                                  directoryLineX, 0, directoryLineWidth, dlHeight,
+                                                  SWP_NOACTIVATE | SWP_NOZORDER));
+
+                if (HTreeView != NULL && TreeViewActive)
+                    hdwp = HANDLES(DeferWindowPos(hdwp, HTreeView, NULL,
+                                                  0, treeY, treeWidth, treeHeight,
+                                                  SWP_NOACTIVATE | SWP_NOZORDER));
+
+                if (HTreeSplit != NULL && TreeViewActive)
+                    hdwp = HANDLES(DeferWindowPos(hdwp, HTreeSplit, NULL,
+                                                  treeWidth, treeY, TREEVIEW_SPLITTER_WIDTH, treeHeight,
                                                   SWP_NOACTIVATE | SWP_NOZORDER));
 
                 hdwp = HANDLES(DeferWindowPos(hdwp, ListBox->HWindow, NULL,
-                                              0, dlHeight, width, height - stHeight - dlHeight,
+                                              listX, dlHeight, listWidth, listHeight,
                                               SWP_NOACTIVATE | SWP_NOZORDER));
 
                 if (StatusLine->HWindow != NULL)
                     hdwp = HANDLES(DeferWindowPos(hdwp, StatusLine->HWindow, NULL,
-                                                  0, height - stHeight, width, stHeight,
+                                                  statusLineX, height - stHeight, statusLineWidth, stHeight,
                                                   SWP_NOACTIVATE | SWP_NOZORDER));
 
                 HANDLES(EndDeferWindowPos(hdwp));
@@ -132,6 +203,98 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
         return TRUE;
+    }
+
+    case WM_NOTIFY:
+    {
+        LPNMHDR lphdr = (LPNMHDR)lParam;
+        if (lphdr != NULL && lphdr->hwndFrom == HTreeView)
+        {
+            if (lphdr->code == TVN_DELETEITEM)
+            {
+                LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)lParam;
+                if (pnmtv->itemOld.lParam != 0)
+                    FreeTreeViewNodeData((CTreeViewNodeData*)pnmtv->itemOld.lParam);
+                return 0;
+            }
+
+            if (TreeViewDisableNotify)
+                return 0;
+
+            switch (lphdr->code)
+            {
+            case NM_CUSTOMDRAW:
+            {
+                LPNMTVCUSTOMDRAW pnmcd = (LPNMTVCUSTOMDRAW)lParam;
+                if (pnmcd->nmcd.dwDrawStage == CDDS_PREPAINT)
+                    return CDRF_NOTIFYITEMDRAW;
+
+                if (pnmcd->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
+                {
+                    pnmcd->clrText = GetTreeViewTextColor();
+                    pnmcd->clrTextBk = GetTreeViewBkColor();
+                    if ((pnmcd->nmcd.uItemState & CDIS_SELECTED) != 0)
+                    {
+                        HBRUSH hBrush = HANDLES(CreateSolidBrush(GetTreeViewSelectionBkColor()));
+                        if (hBrush != NULL)
+                        {
+                            FillRect(pnmcd->nmcd.hdc, &pnmcd->nmcd.rc, hBrush);
+                            HANDLES(DeleteObject(hBrush));
+                        }
+                        pnmcd->clrText = GetTreeViewSelectionTextColor();
+                        pnmcd->clrTextBk = GetTreeViewSelectionBkColor();
+                        pnmcd->nmcd.uItemState &= ~(CDIS_SELECTED | CDIS_FOCUS);
+                    }
+                    return CDRF_NEWFONT;
+                }
+                return CDRF_DODEFAULT;
+            }
+
+            case TVN_ITEMEXPANDING:
+            {
+                LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)lParam;
+                if (pnmtv->action == TVE_EXPAND)
+                    PopulateTreeViewItem(pnmtv->itemNew.hItem);
+                return 0;
+            }
+
+            case TVN_SELCHANGED:
+            {
+                LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)lParam;
+                CTreeViewNodeData itemData;
+                CFilesWindow* sourcePanel = GetTreeViewSourcePanel();
+                if (!TreeViewActive || sourcePanel == NULL || !sourcePanel->Is(ptDisk) ||
+                    !GetTreeViewNotifyItemData(HTreeView, pnmtv->itemNew.hItem, &itemData))
+                    return 0;
+
+                if (itemData.Type == tvntDirectory)
+                {
+                    if (itemData.FullPath != NULL && itemData.FullPath[0] != 0 &&
+                        !IsTheSamePath(itemData.FullPath, sourcePanel->GetPath()))
+                    {
+                        char treePath[MAX_PATH];
+                        lstrcpyn(treePath, itemData.FullPath, MAX_PATH);
+                        sourcePanel->ChangePathToDisk(sourcePanel->HWindow, treePath);
+                    }
+                }
+                else
+                {
+                    if (itemData.FocusPath != NULL && itemData.FocusPath[0] != 0 &&
+                        itemData.FocusName != NULL && itemData.FocusName[0] != 0)
+                    {
+                        char focusPath[MAX_PATH + 200];
+                        char focusName[MAX_PATH + 200];
+                        lstrcpyn(focusPath, itemData.FocusPath, MAX_PATH + 200);
+                        lstrcpyn(focusName, itemData.FocusName, MAX_PATH + 200);
+                        MainWindow->PostFocusNameInPanel(sourcePanel == MainWindow->LeftPanel ? PANEL_LEFT : PANEL_RIGHT,
+                                                         focusPath, focusName);
+                    }
+                }
+                return 0;
+            }
+            }
+        }
+        break;
     }
 
     case WM_DEVICECHANGE:
@@ -1044,6 +1207,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         SelectViewTemplate(index, FALSE, FALSE);
         ShowWindow(ListBox->HWindow, SW_SHOW);
+        UpdateTreeView(MainWindow->LeftPanel == this);
 
         // align AutomaticRefresh variable with the directory line
         SetAutomaticRefresh(AutomaticRefresh, TRUE);
@@ -1062,6 +1226,7 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         DetachDirectory(this);
         //---  release child windows
         RevokeDragDrop();
+        DestroyTreeView();
         ListBox->DetachWindow();
         delete ListBox;
         ListBox = NULL; // just to be sure so errors show up...
@@ -1281,6 +1446,18 @@ CFilesWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETFOCUS:
     {
+        if (HTreeView != NULL && TreeViewActive)
+        {
+            POINT pt;
+            RECT r;
+            GetCursorPos(&pt);
+            GetWindowRect(HTreeView, &r);
+            if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0 && PtInRect(&r, pt))
+            {
+                SetFocus(HTreeView);
+                break;
+            }
+        }
         SetFocus(ListBox->HWindow);
         break;
     }

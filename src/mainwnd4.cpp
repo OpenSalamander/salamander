@@ -113,6 +113,98 @@ void CMainWindow::GetWindowSplitRect(RECT& r)
     r.bottom = WindowHeight - EditHeight - BottomToolBarHeight;
 }
 
+void CMainWindow::GetPanelWidthsFromSplitPosition(double splitPosition, int& leftWidth, int& rightWidth)
+{
+    int splitWidth = GetSplitBarWidth();
+    leftWidth = (int)((WindowWidth - splitWidth) * splitPosition) - 1;
+    if (leftWidth < MIN_WIN_WIDTH)
+        leftWidth = MIN_WIN_WIDTH;
+
+    rightWidth = WindowWidth - 2 - leftWidth - splitWidth;
+    if (rightWidth < MIN_WIN_WIDTH)
+    {
+        rightWidth = MIN_WIN_WIDTH;
+        leftWidth = WindowWidth - 2 - rightWidth - splitWidth;
+    }
+}
+
+double CMainWindow::GetVisibleLeftPanelRatio()
+{
+    int leftWidth;
+    int rightWidth;
+    GetPanelWidthsFromSplitPosition(SplitPosition, leftWidth, rightWidth);
+
+    int leftVisibleWidth = leftWidth;
+    if (LeftPanel != NULL)
+    {
+        int reservedWidth = LeftPanel->GetTreeViewReservedWidth(leftWidth);
+        if (reservedWidth > leftVisibleWidth)
+            reservedWidth = leftVisibleWidth;
+        leftVisibleWidth -= reservedWidth;
+    }
+
+    int totalVisibleWidth = leftVisibleWidth + rightWidth;
+    if (totalVisibleWidth <= 0)
+        return 0.5;
+
+    double leftVisibleRatio = (double)leftVisibleWidth / totalVisibleWidth;
+    if (leftVisibleRatio < 0)
+        leftVisibleRatio = 0;
+    if (leftVisibleRatio > 1)
+        leftVisibleRatio = 1;
+    return leftVisibleRatio;
+}
+
+double CMainWindow::GetSplitPositionForVisibleLeftPanelRatio(double leftVisibleRatio)
+{
+    if (leftVisibleRatio < 0)
+        leftVisibleRatio = 0;
+    if (leftVisibleRatio > 1)
+        leftVisibleRatio = 1;
+
+    int splitWidth = GetSplitBarWidth();
+    int totalPanelsWidth = WindowWidth - 2 - splitWidth;
+    if (totalPanelsWidth <= 0)
+        return 0.5;
+
+    int targetLeftWidth = (int)(totalPanelsWidth * leftVisibleRatio + 0.5);
+    if (LeftPanel != NULL)
+    {
+        int probeLeftWidth = targetLeftWidth;
+        for (int i = 0; i < 4; i++)
+        {
+            int reservedWidth = LeftPanel->GetTreeViewReservedWidth(probeLeftWidth);
+            int totalVisibleWidth = totalPanelsWidth - reservedWidth;
+            if (totalVisibleWidth < 0)
+                totalVisibleWidth = 0;
+
+            targetLeftWidth = (int)(leftVisibleRatio * totalVisibleWidth + 0.5) + reservedWidth;
+            if (targetLeftWidth < 0)
+                targetLeftWidth = 0;
+            if (targetLeftWidth > totalPanelsWidth)
+                targetLeftWidth = totalPanelsWidth;
+            probeLeftWidth = targetLeftWidth;
+        }
+    }
+
+    double splitPosition = (double)(targetLeftWidth + 1) / (WindowWidth - splitWidth);
+    if (splitPosition < 0)
+        splitPosition = 0;
+    if (splitPosition > 1)
+        splitPosition = 1;
+    return splitPosition;
+}
+
+double CMainWindow::GetVisiblePanesCenteredSplitPosition()
+{
+    return GetSplitPositionForVisibleLeftPanelRatio(0.5);
+}
+
+void CMainWindow::UpdateCenteredSplitPosition()
+{
+    SplitPosition = GetVisiblePanesCenteredSplitPosition();
+}
+
 BOOL CMainWindow::PtInChild(HWND hChild, POINT p)
 {
     if (hChild == NULL)
@@ -1179,6 +1271,7 @@ void CMainWindow::ChangePanel(BOOL force)
                 SplitPosition = 0.0;
             else
                 SplitPosition = 1.0;
+            KeepSplitPositionCenteredOnVisiblePanes = FALSE;
             LayoutWindows();
             change = TRUE;
         }
@@ -1187,6 +1280,8 @@ void CMainWindow::ChangePanel(BOOL force)
     if (change)
     {
         SetActivePanel(p2);
+        LeftPanel->UpdateTreeView(TRUE);
+        RightPanel->UpdateTreeView(FALSE);
 
         // ensure the active panel header is redrawn
         if (p1->DirectoryLine != NULL)
@@ -1240,6 +1335,8 @@ void CMainWindow::FocusPanel(CFilesWindow* focus, BOOL testIfMainWndActive)
 
     CFilesWindow* old = GetActivePanel();
     SetActivePanel(focus);
+    LeftPanel->UpdateTreeView(TRUE);
+    RightPanel->UpdateTreeView(FALSE);
 
     UpdateDriveBars(); // press the correct drive in the drive bar
 

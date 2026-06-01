@@ -3,6 +3,8 @@
 
 #include "precomp.h"
 
+#include <uxtheme.h>
+
 #include "cfgdlg.h"
 #include "mainwnd.h"
 #include "usermenu.h"
@@ -24,10 +26,204 @@ extern "C"
 #include "salshlib.h"
 #include "shellib.h"
 
+enum
+{
+    TREEVIEW_MIN_WIDTH = 120,
+    TREEVIEW_MIN_LIST_WIDTH = 50,
+    TREEVIEW_SPLITTER_WIDTH = 4
+};
+
+static const char* TREEVIEW_SPLIT_SUBCLASSPROC = "SAL_TREEVIEW_SPLIT_SUBCLASSPROC";
+static const char* TREEVIEW_SPLIT_OWNER = "SAL_TREEVIEW_SPLIT_OWNER";
+
+static COLORREF GetPanelBrushColor(HBRUSH hBrush, COLORREF fallback)
+{
+    if (hBrush != NULL)
+    {
+        LOGBRUSH brushInfo;
+        if (GetObject(hBrush, sizeof(brushInfo), &brushInfo) == sizeof(brushInfo))
+            return brushInfo.lbColor;
+    }
+    return fallback;
+}
+
+static int ClampTreeViewWidth(int clientWidth, int requestedWidth)
+{
+    int maxWidth = clientWidth - TREEVIEW_MIN_LIST_WIDTH - TREEVIEW_SPLITTER_WIDTH;
+    if (maxWidth < 0)
+        maxWidth = 0;
+
+    int minWidth = TREEVIEW_MIN_WIDTH;
+    if (minWidth > maxWidth)
+        minWidth = maxWidth;
+
+    if (requestedWidth < minWidth)
+        requestedWidth = minWidth;
+    if (requestedWidth > maxWidth)
+        requestedWidth = maxWidth;
+    return requestedWidth;
+}
+
+static LRESULT CALLBACK TreeViewSplitSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    WNDPROC oldWndProc = (WNDPROC)GetProp(hwnd, TREEVIEW_SPLIT_SUBCLASSPROC);
+    CFilesWindow* panel = (CFilesWindow*)GetProp(hwnd, TREEVIEW_SPLIT_OWNER);
+    if (oldWndProc == NULL)
+        return DefWindowProc(hwnd, message, wParam, lParam);
+
+    switch (message)
+    {
+    case WM_SETCURSOR:
+        SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+        return TRUE;
+
+    case WM_LBUTTONDOWN:
+    {
+        if (panel != NULL && panel->TreeViewActive)
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            RECT r;
+            GetWindowRect(hwnd, &r);
+            panel->TreeViewSplitDragging = TRUE;
+            panel->TreeViewSplitOffset = pt.x - r.left;
+            SetCapture(hwnd);
+            SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+            return 0;
+        }
+        break;
+    }
+
+    case WM_MOUSEMOVE:
+    {
+        if (panel != NULL && panel->TreeViewSplitDragging && GetCapture() == hwnd)
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            ScreenToClient(panel->HWindow, &pt);
+            panel->SetTreeViewWidth(pt.x - panel->TreeViewSplitOffset);
+            return 0;
+        }
+        SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+        return 0;
+    }
+
+    case WM_LBUTTONUP:
+        if (panel != NULL)
+            panel->TreeViewSplitDragging = FALSE;
+        if (GetCapture() == hwnd)
+            ReleaseCapture();
+        return 0;
+
+    case WM_CAPTURECHANGED:
+    case WM_CANCELMODE:
+        if (panel != NULL)
+            panel->TreeViewSplitDragging = FALSE;
+        break;
+
+    case WM_NCDESTROY:
+    {
+        WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+        if (currentWndProc == TreeViewSplitSubclassProc)
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)oldWndProc);
+        RemoveProp(hwnd, TREEVIEW_SPLIT_SUBCLASSPROC);
+        RemoveProp(hwnd, TREEVIEW_SPLIT_OWNER);
+        break;
+    }
+    }
+
+    return CallWindowProc(oldWndProc, hwnd, message, wParam, lParam);
+}
+
 //
 // ****************************************************************************
 // CFilesWindow
 //
+
+BOOL CFilesWindow::IsTreeViewHost()
+{
+    return MainWindow != NULL && MainWindow->LeftPanel == this;
+}
+
+CFilesWindow* CFilesWindow::GetTreeViewSourcePanel()
+{
+    if (MainWindow != NULL)
+    {
+        CFilesWindow* activePanel = MainWindow->GetActivePanel();
+        if (activePanel != NULL)
+            return activePanel;
+        if (MainWindow->LeftPanel != NULL)
+            return MainWindow->LeftPanel;
+    }
+    return this;
+}
+
+int CFilesWindow::GetTreeViewWidth(int clientWidth)
+{
+    return ClampTreeViewWidth(clientWidth, Configuration.TreeViewWidth);
+}
+
+int CFilesWindow::GetTreeViewReservedWidth(int clientWidth)
+{
+    if (!IsTreeViewHost() || !TreeViewActive)
+        return 0;
+    return GetTreeViewWidth(clientWidth) + TREEVIEW_SPLITTER_WIDTH;
+}
+
+COLORREF CFilesWindow::GetTreeViewTextColor()
+{
+    return GetCOLORREF(CurrentColors[ITEM_FG_NORMAL]);
+}
+
+COLORREF CFilesWindow::GetTreeViewBkColor()
+{
+    return GetPanelBrushColor(HNormalBkBrush, GetCOLORREF(CurrentColors[ITEM_BK_NORMAL]));
+}
+
+COLORREF CFilesWindow::GetTreeViewSelectionTextColor()
+{
+    BOOL useFocusedSelection = MainWindow != NULL && MainWindow->CaptionIsActive;
+    return GetCOLORREF(CurrentColors[useFocusedSelection ? ITEM_FG_FOCSEL : ITEM_FG_SELECTED]);
+}
+
+COLORREF CFilesWindow::GetTreeViewSelectionBkColor()
+{
+    BOOL useFocusedSelection = MainWindow != NULL && MainWindow->CaptionIsActive;
+    return GetPanelBrushColor(useFocusedSelection ? HFocSelBkBrush : HSelectedBkBrush,
+                              GetCOLORREF(CurrentColors[useFocusedSelection ? ITEM_BK_FOCSEL : ITEM_BK_SELECTED]));
+}
+
+void CFilesWindow::UpdateTreeViewColors()
+{
+    if (HTreeView == NULL)
+        return;
+
+    TreeView_SetTextColor(HTreeView, GetTreeViewTextColor());
+    TreeView_SetBkColor(HTreeView, GetTreeViewBkColor());
+    TreeView_SetLineColor(HTreeView, GetTreeViewTextColor());
+    InvalidateRect(HTreeView, NULL, FALSE);
+}
+
+void CFilesWindow::SetTreeViewWidth(int width)
+{
+    if (HWindow != NULL)
+    {
+        RECT r;
+        GetClientRect(HWindow, &r);
+        width = ClampTreeViewWidth(r.right - r.left, width);
+    }
+    Configuration.TreeViewWidth = width;
+
+    if (HWindow != NULL)
+    {
+        RECT r;
+        GetClientRect(HWindow, &r);
+        SendMessage(HWindow, WM_SIZE, SIZE_RESTORED,
+                    MAKELONG(r.right - r.left, r.bottom - r.top));
+        RedrawWindow(HWindow, NULL, NULL,
+                     RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_UPDATENOW);
+    }
+}
 
 void CFilesWindow::HandsOff(BOOL off)
 {
@@ -1369,6 +1565,117 @@ BOOL CFilesWindow::PrepareCloseCurrentPath(HWND parent, BOOL canForce, BOOL canD
                 return FALSE;
             }
         }
+    }
+}
+
+void CFilesWindow::CreateTreeView()
+{
+    CALL_STACK_MESSAGE1("CFilesWindow::CreateTreeView()");
+    if (!IsTreeViewHost() || HWindow == NULL)
+    {
+        if (HWindow == NULL)
+            TRACE_E("HWindow == NULL");
+        return;
+    }
+    if (HTreeView == NULL)
+    {
+        BOOL appIsThemed = IsAppThemed();
+        HTreeView = CreateWindowEx(WS_EX_STATICEDGE, WC_TREEVIEW, "",
+                                   WS_CHILD | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VSCROLL |
+                                       TVS_DISABLEDRAGDROP | TVS_HASBUTTONS | TVS_LINESATROOT |
+                                       TVS_SHOWSELALWAYS | (appIsThemed ? TVS_FULLROWSELECT : TVS_HASLINES),
+                                   0, 0, 0, 0,
+                                   HWindow, (HMENU)IDC_TREEVIEW, HInstance, NULL);
+        if (HTreeView == NULL)
+        {
+            TRACE_E("Unable to create tree-view.");
+            return;
+        }
+        if (appIsThemed)
+            SetWindowTheme(HTreeView, (L" "), (L" "));
+
+        SHFILEINFO sfi;
+        memset(&sfi, 0, sizeof(sfi));
+        HIMAGELIST hImageList = (HIMAGELIST)SHGetFileInfo("C:\\", FILE_ATTRIBUTE_DIRECTORY, &sfi, sizeof(sfi),
+                                                          SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
+        if (hImageList != NULL)
+            TreeView_SetImageList(HTreeView, hImageList, TVSIL_NORMAL);
+        UpdateTreeViewColors();
+    }
+
+    if (HTreeSplit == NULL)
+    {
+        HTreeSplit = CreateWindowEx(0, "STATIC", "",
+                                    WS_CHILD | WS_CLIPSIBLINGS | SS_NOTIFY,
+                                    0, 0, 0, 0,
+                                    HWindow, (HMENU)IDC_TREESPLIT, HInstance, NULL);
+        if (HTreeSplit == NULL)
+        {
+            TRACE_E("Unable to create tree-view splitter.");
+            return;
+        }
+
+        WNDPROC oldWndProc = (WNDPROC)GetWindowLongPtr(HTreeSplit, GWLP_WNDPROC);
+        if (!SetProp(HTreeSplit, TREEVIEW_SPLIT_SUBCLASSPROC, (HANDLE)oldWndProc) ||
+            !SetProp(HTreeSplit, TREEVIEW_SPLIT_OWNER, (HANDLE)this))
+        {
+            TRACE_E("Unable to subclass tree-view splitter.");
+        }
+        else
+            SetWindowLongPtr(HTreeSplit, GWLP_WNDPROC, (LONG_PTR)TreeViewSplitSubclassProc);
+    }
+}
+
+void CFilesWindow::DestroyTreeView()
+{
+    CALL_STACK_MESSAGE1("CFilesWindow::DestroyTreeView()");
+    if (HTreeSplit != NULL)
+    {
+        DestroyWindow(HTreeSplit);
+        HTreeSplit = NULL;
+    }
+    if (HTreeView != NULL)
+    {
+        TreeView_SetImageList(HTreeView, NULL, TVSIL_NORMAL);
+        DestroyWindow(HTreeView);
+        HTreeView = NULL;
+    }
+}
+
+void CFilesWindow::UpdateTreeView(BOOL active)
+{
+    CALL_STACK_MESSAGE2("CFilesWindow::UpdateTreeView(%d)", active);
+    if (!IsTreeViewHost())
+    {
+        TreeViewActive = FALSE;
+        DestroyTreeView();
+    }
+    else
+    {
+        TreeViewActive = active && Configuration.TreeViewVisible;
+        if (Configuration.TreeViewVisible)
+            CreateTreeView();
+        else
+            DestroyTreeView();
+    }
+
+    if (HTreeView != NULL)
+    {
+        ShowWindow(HTreeView, TreeViewActive ? SW_SHOW : SW_HIDE);
+        if (TreeViewActive)
+            RefreshTreeView();
+    }
+    if (HTreeSplit != NULL)
+        ShowWindow(HTreeSplit, TreeViewActive ? SW_SHOW : SW_HIDE);
+
+    if (HWindow != NULL)
+    {
+        RECT r;
+        GetClientRect(HWindow, &r);
+        SendMessage(HWindow, WM_SIZE, SIZE_RESTORED,
+                    MAKELONG(r.right - r.left, r.bottom - r.top));
+        RedrawWindow(HWindow, NULL, NULL,
+                     RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_UPDATENOW);
     }
 }
 

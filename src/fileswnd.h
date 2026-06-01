@@ -702,6 +702,23 @@ typedef PVOID HDEVNOTIFY;
 
 enum CViewModeEnum;
 
+enum CTreeViewNodeTypeEnum
+{
+    tvntDirectory,
+    tvntFile
+};
+
+struct CTreeViewNodeData
+{
+    CTreeViewNodeTypeEnum Type;
+    char* FullPath;
+    char* FocusPath;
+    char* FocusName;
+    int ImageIndex;
+    int SelectedImageIndex;
+    BOOL Populated;
+};
+
 class CFilesWindow : public CFilesWindowAncestor
 {
 public:
@@ -752,10 +769,16 @@ public:
     CFilesBox* ListBox;
     CStatusWindow *StatusLine,
         *DirectoryLine;
+    HWND HTreeView;
+    HWND HTreeSplit;
 
     BOOL StatusLineVisible;
     BOOL DirectoryLineVisible;
     BOOL HeaderLineVisible;
+    BOOL TreeViewActive;
+    BOOL TreeViewDisableNotify;
+    BOOL TreeViewSplitDragging;
+    int TreeViewSplitOffset;
 
     CMainWindow* Parent;
 
@@ -1254,6 +1277,21 @@ public:
     void ToggleStatusLine();
     void ToggleDirectoryLine();
     void ToggleHeaderLine();
+    BOOL IsTreeViewHost();
+    CFilesWindow* GetTreeViewSourcePanel();
+    int GetTreeViewWidth(int clientWidth);
+    int GetTreeViewReservedWidth(int clientWidth);
+    void SetTreeViewWidth(int width);
+    COLORREF GetTreeViewTextColor();
+    COLORREF GetTreeViewBkColor();
+    COLORREF GetTreeViewSelectionTextColor();
+    COLORREF GetTreeViewSelectionBkColor();
+    void UpdateTreeViewColors();
+    void CreateTreeView();
+    void DestroyTreeView();
+    void UpdateTreeView(BOOL active);
+    void RefreshTreeView();
+    BOOL PopulateTreeViewItem(HTREEITEM hItem, BOOL forceRefresh = FALSE);
 
     void ConnectNet(BOOL readOnlyUNC, const char* netRootPath = NULL, BOOL changeToNewDrive = TRUE, char* newlyMappedDrive = NULL);
     void DisconnectNet();

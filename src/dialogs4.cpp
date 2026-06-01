@@ -316,6 +316,7 @@ CConfiguration::CConfiguration()
     HotPathsBarVisible = FALSE;
     DriveBarVisible = TRUE;
     DriveBar2Visible = FALSE;
+    TreeViewVisible = FALSE;
     IconSpacingVert = 43;
     IconSpacingHorz = 43;
     TileSpacingVert = 8;
@@ -490,6 +491,7 @@ CConfiguration::CConfiguration()
     DriveBarIndex = 5;
     DriveBarBreak = TRUE;
     DriveBarWidth = 1; // dummy
+    TreeViewWidth = 200;
 
     GripsVisible = TRUE;
 

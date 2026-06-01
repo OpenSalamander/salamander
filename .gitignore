@@ -8,6 +8,15 @@ Thumbs.db
 .vs/
 *.aps
 *.vcxproj.user
+
+# Local build output
+.localbuild/
+out/
+
+# Generated plugin build output
+/src/plugins/pictview/vcxproj/exif/salamander/
+/src/plugins/pictview/vcxproj/salamander/
+
 /src/plugins/automation/generated/automation.tlb
 /src/plugins/automation/generated/dlldata.c
 /src/plugins/automation/generated/salamander_h.h

@@ -320,6 +320,7 @@ CMainWindow::CMainWindow() : ChangeNotifArray(3, 5)
     WindowWidth = WindowHeight = EditHeight = 0;
     SplitPosition = 0.5; // split is in the middle
     BeforeZoomSplitPosition = 0.5;
+    KeepSplitPositionCenteredOnVisiblePanes = FALSE;
     DragMode = FALSE;
     ContextMenuNew = new CMenuNew;
     ContextMenuChngDrv = NULL;
@@ -763,6 +764,25 @@ BOOL CMainWindow::ToggleBottomToolBar()
         Configuration.BottomToolBarVisible = TRUE;
         return TRUE;
     }
+}
+
+BOOL CMainWindow::ToggleTreeView()
+{
+    CALL_STACK_MESSAGE1("CMainWindow::ToggleTreeView()");
+
+    double visibleLeftRatio = GetVisibleLeftPanelRatio();
+
+    Configuration.TreeViewVisible = !Configuration.TreeViewVisible;
+
+    LeftPanel->UpdateTreeView(TRUE);
+    RightPanel->UpdateTreeView(FALSE);
+
+    if (KeepSplitPositionCenteredOnVisiblePanes)
+        UpdateCenteredSplitPosition();
+    else
+        SplitPosition = GetSplitPositionForVisibleLeftPanelRatio(visibleLeftRatio);
+
+    return TRUE;
 }
 
 void CMainWindow::ToggleToolBarGrips()
@@ -2437,6 +2457,7 @@ MENU_TEMPLATE_ITEM InfoLineMenu[] =
     // evaluate the result
     if (hit == mwhteSplitLine)
     {
+        KeepSplitPositionCenteredOnVisiblePanes = FALSE;
         SplitPosition = (double)cmd / 10;
         LayoutWindows();
         return;

@@ -1870,7 +1870,7 @@ BEGIN
     LTEXT           "items.",IDC_STATIC_8,175,181,22,8
 END
 
-IDD_CFGPAGE_PANELS DIALOGEX 64, 22, 299, 231
+IDD_CFGPAGE_PANELS DIALOGEX 64, 22, 299, 243
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Panels"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1889,28 +1889,30 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,78,256,12
     CONTROL         "&Use Shift+number for go to Hot Path (it conflicts with national keyboard layouts)",IDC_SHIFTFORHOTPATHS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,90,282,12
-    LTEXT           "Mouse",IDC_STATIC_3,1,105,24,8
-    CONTROL         "",IDC_STATIC_8,"Static",SS_ETCHEDHORZ | WS_GROUP,27,109,270,1
+    CONTROL         "Show active panel &Tree View",IDC_PANELTREEVIEW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,102,156,12
+    LTEXT           "Mouse",IDC_STATIC_3,1,117,24,8
+    CONTROL         "",IDC_STATIC_8,"Static",SS_ETCHEDHORZ | WS_GROUP,27,121,270,1
     CONTROL         "&Right-click to open shortcut menu (hold CTRL to select/unselect)",IDE_PRIMARYCTXMENU,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,116,228,12
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,128,228,12
     CONTROL         "R&ename by slowly clicking the name twice",IDC_CLICKTORENAME,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,128,153,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,140,153,12
     CONTROL         "Cancel &drag-and-drop operations shorter than:",IDC_DISABLEDANDD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,140,170,12
-    EDITTEXT        IDE_DRAGDROPDELAY,181,140,28,12,ES_AUTOHSCROLL
-    LTEXT           "ms",IDC_STATIC_4,213,142,13,8,NOT WS_GROUP
-    LTEXT           "Sorting",IDC_STATIC_6,1,156,26,8
-    CONTROL         "",IDC_STATIC_9,"Static",SS_ETCHEDHORZ | WS_GROUP,29,160,268,1
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,152,170,12
+    EDITTEXT        IDE_DRAGDROPDELAY,181,152,28,12,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC_4,213,154,13,8,NOT WS_GROUP
+    LTEXT           "Sorting",IDC_STATIC_6,1,168,26,8
+    CONTROL         "",IDC_STATIC_9,"Static",SS_ETCHEDHORZ | WS_GROUP,29,172,268,1
     CONTROL         "S&ort strings with respect to Regional Settings",IDC_SORTUSESLOCALE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,166,163,12
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,178,163,12
     CONTROL         "Use nu&merical sort for numbers contained in strings",IDC_SORTDETECTNUMBERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,178,186,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,190,186,12
     CONTROL         "Sor&t by Time order: newer items on top",IDC_SORTNEWERONTOP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,190,146,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,202,146,12
     CONTROL         "Sort by T&ime: sort directories by name",IDC_SORTDIRSBYNAME,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,202,141,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,214,141,12
     CONTROL         "Treat dire&ctories as if have extensions (also show extensions in Ext column)",IDC_SORTDIRSBYEXT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,214,265,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,226,265,12
 END
 
 IDD_CANNOTSETATTRSINFO DIALOGEX 15, 33, 353, 89

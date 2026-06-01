@@ -209,6 +209,7 @@ struct CConfiguration
         HotPathsBarVisible,     // toolbar visibility
         DriveBarVisible,        // drive bar visibility
         DriveBar2Visible,       // second drive bar visibility
+        TreeViewVisible,        // active-panel tree visibility
         UseSalOpen,             // should salopen.exe be used (otherwise association runs directly)
         NetwareFastDirMove,     // should fast-dir-move (rename directories) be used on the Novell Netware? (otherwise rename files only, directories are created + old empty ones deleted) (REASON: for some users, fast-dir-move works on Novell and they don’t want to wait)
         UseAsyncCopyAlg,        // Win7+ only (older OS: always FALSE): should asynchronous file copy algorithm be used on network drives?
@@ -381,6 +382,7 @@ struct CConfiguration
     int DriveBarIndex;
     int DriveBarBreak;
     int DriveBarWidth;
+    int TreeViewWidth;
     int GripsVisible;
 
     // Change drive
