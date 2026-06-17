@@ -32,7 +32,7 @@ BEGIN
             VALUE "FileVersion", "2.0.0.0"
             VALUE "InternalName", "Open Salamander Installer"
             VALUE "OriginalFilename", "sfx7zip.exe"
-            VALUE "LegalCopyright", "Copyright © 1997-2023 Open Salamander Authors"
+            VALUE "LegalCopyright", "Copyright © 1997-2025 Open Salamander Authors"
         END
     END
     BLOCK "VarFileInfo"

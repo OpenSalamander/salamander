@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileVersion", "1.28.0.0"
             VALUE "InternalName", "Open Salamander Uninstaller"
             VALUE "OriginalFilename", "remove.exe"
-            VALUE "LegalCopyright", "Copyright © 1997-2023 Open Salamander Authors"
+            VALUE "LegalCopyright", "Copyright © 1997-2025 Open Salamander Authors"
         END
     END
     BLOCK "VarFileInfo"

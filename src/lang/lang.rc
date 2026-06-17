@@ -634,7 +634,7 @@ BEGIN
     LTEXT           "",IDC_ABOUT_LOGO,174,1,123,104
     DEFPUSHBUTTON   "Close",IDOK,124,162,50,14,WS_GROUP
     LTEXT           "Version",IDS_ABOUT_SALAMANDER,10,86,201,8
-    LTEXT           "Copyright © 1997-2023 Open Salamander Authors",IDC_STATIC_1,10,97,196,8
+    LTEXT           "Copyright © 1997-2025 Open Salamander Authors",IDC_STATIC_1,10,97,196,8
     LTEXT           "Web:",IDC_STATIC_3,10,108,20,8
     LTEXT           "www.altap.cz",IDC_ABOUT_WWW,31,108,64,8,WS_TABSTOP
     LTEXT           "Open Salamander is free software",IDC_STATIC_4,10,119,165,8

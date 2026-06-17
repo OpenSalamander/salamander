@@ -16,7 +16,7 @@
 #define VERSINFO_MINORB      VERSINFO_SALAMANDER_MINORB
 #define VERSINFO_VERSION     VERSINFO_SALAMANDER_VERSION
 
-#define VERSINFO_COPYRIGHT   "Copyright © 1997-2023 Open Salamander Authors"
+#define VERSINFO_COPYRIGHT   "Copyright © 1997-2025 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"
 
 #define VERSINFO_DESCRIPTION "Open Salamander, File Manager"
