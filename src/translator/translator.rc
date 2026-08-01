@@ -328,7 +328,7 @@ CAPTION "About Translator"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,50,53,50,14
-    LTEXT           "Translator 1.24",IDC_STATIC,16,10,114,8
+    LTEXT           "Translator 1.25",IDC_STATIC,16,10,114,8
     LTEXT           "Copyright © 2010-2023 Open Salamander Authors",IDC_STATIC,15,22,107,8
 END
 

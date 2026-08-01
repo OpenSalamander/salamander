@@ -1,0 +1,24 @@
+Overlap in dialog: 100: 126 x 125
+Overlap in dialog: 100: 127 x 125
+Overlap in dialog: 100: 128 x 125
+Overlap in dialog: 100: 129 x 125
+Overlap in dialog: 100: 112 x 125
+Overlap in dialog: 100: 114 x 125
+Overlap in dialog: 100: 113 x 125
+Overlap in dialog: 100: 115 x 125
+Overlap in dialog: 100: 123 x 125
+Overlap in dialog: 100: 130 x 125
+Overlap in dialog: 100: 131 x 125
+Overlap in dialog: 100: 132 x 125
+Overlap in dialog: 100: 118 x 125
+
+Too close to dialog frame: 100: 104
+
+Different sized controls in dialog: 100: 101 x 116
+Different sized controls in dialog: 100: 101 x 117
+
+Different spacing between controls: 100: 106
+
+Not standard control size: 175: 176
+
+Incorrectly placed label: 100: 103 x 104

@@ -632,6 +632,22 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
         BOOL cmdLineParamsUsed = FALSE;
         if (GetCmdLine(buf, MAX_PATH, argv, p, cmdLine))
         {
+            // Extract optional -build-dir <path> before processing other switches.
+            // Sets BUILD_DIR as a process environment variable so that $BUILD_DIR
+            // references in .atp project files are resolved by ExpandEnvVarsInPath.
+            for (int i = 0; i < p - 1; i++)
+            {
+                if (_stricmp(argv[i], "-build-dir") == 0)
+                {
+                    SetEnvironmentVariableA("BUILD_DIR", argv[i + 1]);
+                    // Remove -build-dir and its value from argv
+                    for (int j = i; j < p - 2; j++)
+                        argv[j] = argv[j + 2];
+                    p -= 2;
+                    break;
+                }
+            }
+
             if (p > 0)
             {
                 if (p == 2 && _stricmp(argv[0], "-quiet-validate-all") != 0 &&
@@ -650,7 +666,12 @@ WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPSTR cmdLine, int cmd
                     p > 3)
                 {
                     MessageBox(FrameWindow.HWindow, "Unexpected command line arguments.\n\n"
-                                                    "Usage: translator.exe [switch] [switch_param] project.atp \n\n"
+                                                    "Usage: translator.exe [-build-dir path] [switch] [switch_param] project.atp \n\n"
+                                                    "Options:\n"
+                                                    "-build-dir: specifies full path to Open Salamander binaries "
+                                                    "(e.g. C:\\OpenSalamander\\Release_x86). "
+                                                    "The .atp project files may reference the binary files with"
+                                                    "environment variable $BUILD_DIR.\n\n"
                                                     "Switches:\n"
                                                     "-quiet-validate-all: validates translation (using all tests) "
                                                     "and if all is OK, closes Translator automatically.\n\n"

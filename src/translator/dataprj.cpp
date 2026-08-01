@@ -357,6 +357,115 @@ BOOL GetFileCRC(const char* fileName, DWORD* crc)
 // CData
 //
 
+// List of environment variable names that are recognized in $VARNAME references
+// within project file paths. Used by both ExpandEnvVarsInPath (on load) and
+// CollapseEnvVarsInPath (on save) to keep the set of allowed variables consistent.
+static const char* AllowedEnvVars[] = {"BUILD_DIR", NULL};
+
+// Returns TRUE if 'varName' is listed in AllowedEnvVars (case-insensitive).
+static BOOL IsEnvVarAllowed(const char* varName)
+{
+    for (int i = 0; AllowedEnvVars[i] != NULL; i++)
+    {
+        if (_stricmp(varName, AllowedEnvVars[i]) == 0)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// Expands $VARNAME environment variable references in a path string.
+// Only variables listed in AllowedEnvVars are expanded; unknown $VARNAME
+// references are left as-is (the subsequent file-open will fail with a clear path).
+// The expanded result is written back to the buffer.
+// Returns TRUE on success.
+static BOOL ExpandEnvVarsInPath(char* path, int pathSize)
+{
+    if (strchr(path, '$') == NULL)
+        return TRUE; // fast path: nothing to expand
+
+    char temp[MAX_PATH];
+    char* dst = temp;
+    char* dstEnd = temp + _countof(temp) - 1;
+    const char* src = path;
+
+    while (*src != 0 && dst < dstEnd)
+    {
+        if (*src == '$')
+        {
+            // Extract variable name: sequence of alphanumeric chars and underscores
+            const char* varStart = src + 1;
+            const char* varEnd = varStart;
+            while (*varEnd == '_' ||
+                   (*varEnd >= 'A' && *varEnd <= 'Z') ||
+                   (*varEnd >= 'a' && *varEnd <= 'z') ||
+                   (*varEnd >= '0' && *varEnd <= '9'))
+                varEnd++;
+
+            if (varEnd > varStart)
+            {
+                char varName[256];
+                int varNameLen = (int)(varEnd - varStart);
+                if (varNameLen >= (int)_countof(varName))
+                    varNameLen = _countof(varName) - 1;
+                memcpy(varName, varStart, varNameLen);
+                varName[varNameLen] = 0;
+
+                if (IsEnvVarAllowed(varName))
+                {
+                    char varValue[MAX_PATH];
+                    DWORD len = GetEnvironmentVariableA(varName, varValue, MAX_PATH);
+                    if (len > 0 && len < MAX_PATH)
+                    {
+                        // Strip trailing backslash to avoid doubled separators
+                        if (len > 0 && varValue[len - 1] == '\\')
+                            varValue[--len] = 0;
+
+                        for (DWORD i = 0; i < len && dst < dstEnd; i++)
+                            *dst++ = varValue[i];
+                        src = varEnd;
+                        continue;
+                    }
+                }
+                // Unsupported or undefined variable — leave the literal $VARNAME in the output;
+                // the file-open error will show the unexpanded path to the user.
+            }
+        }
+        *dst++ = *src++;
+    }
+    *dst = 0;
+    lstrcpyn(path, temp, pathSize);
+    return TRUE;
+}
+
+// Replaces a leading portion of 'expandedPath' that matches the value of a
+// known environment variable with the corresponding $VARNAME reference.
+// This is the inverse of ExpandEnvVarsInPath: paths expanded on load are
+// collapsed back so that the project file remains portable.
+static void CollapseEnvVarsInPath(const char* expandedPath, char* outputPath, int outputSize)
+{
+    for (int i = 0; AllowedEnvVars[i] != NULL; i++)
+    {
+        char varValue[MAX_PATH];
+        DWORD len = GetEnvironmentVariableA(AllowedEnvVars[i], varValue, MAX_PATH);
+        if (len > 0 && len < MAX_PATH)
+        {
+            // Strip trailing backslash to stay consistent with ExpandEnvVarsInPath
+            if (len > 0 && varValue[len - 1] == '\\')
+                varValue[--len] = 0;
+
+            // Case-insensitive prefix match (paths on Windows are case-insensitive)
+            if (_strnicmp(expandedPath, varValue, len) == 0)
+            {
+                // Replace the matching prefix with $VARNAME
+                sprintf_s(outputPath, outputSize, "$%s%s", AllowedEnvVars[i], expandedPath + len);
+                return;
+            }
+        }
+    }
+    // No variable matched — keep the path unchanged
+    lstrcpyn(outputPath, expandedPath, outputSize);
+}
+
 BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, int row)
 {
     char identifier[100];
@@ -415,6 +524,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
         if (strcmp(identifier, "Original") == 0)
         {
             lstrcpyn(SourceFile, p, MAX_PATH);
+            ExpandEnvVarsInPath(SourceFile, MAX_PATH);
 
             lstrcpy(FullSourceFile, ProjectFile);
             PathRemoveFileSpec(FullSourceFile);
@@ -426,6 +536,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
         if (strcmp(identifier, "Translated") == 0)
         {
             lstrcpyn(TargetFile, p, MAX_PATH);
+            ExpandEnvVarsInPath(TargetFile, MAX_PATH);
 
             lstrcpy(FullTargetFile, ProjectFile);
             PathRemoveFileSpec(FullTargetFile);
@@ -481,6 +592,7 @@ BOOL CData::ProcessProjectLine(CProjectSectionEnum* section, const char* line, i
         if (strcmp(identifier, "SalamanderExe") == 0)
         {
             lstrcpyn(SalamanderExeFile, p, MAX_PATH);
+            ExpandEnvVarsInPath(SalamanderExeFile, MAX_PATH);
 
             lstrcpy(FullSalamanderExeFile, ProjectFile);
             PathRemoveFileSpec(FullSalamanderExeFile);
@@ -834,10 +946,18 @@ BOOL CData::SaveProject()
     char buff[10000];
     if (ret)
         ret &= WriteProjectLine(hFile, "[Files]");
-    sprintf_s(buff, "Original=%s", Data.SourceFile);
+    {
+        char collapsedPath[MAX_PATH];
+        CollapseEnvVarsInPath(Data.SourceFile, collapsedPath, MAX_PATH);
+        sprintf_s(buff, "Original=%s", collapsedPath);
+    }
     if (ret)
         ret &= WriteProjectLine(hFile, buff);
-    sprintf_s(buff, "Translated=%s", Data.TargetFile);
+    {
+        char collapsedPath[MAX_PATH];
+        CollapseEnvVarsInPath(Data.TargetFile, collapsedPath, MAX_PATH);
+        sprintf_s(buff, "Translated=%s", collapsedPath);
+    }
     if (ret)
         ret &= WriteProjectLine(hFile, buff);
     sprintf_s(buff, "Include=%s", Data.IncludeFile);
@@ -863,7 +983,9 @@ BOOL CData::SaveProject()
     }
     if (Data.SalamanderExeFile[0] != 0)
     {
-        sprintf_s(buff, "SalamanderExe=%s", Data.SalamanderExeFile);
+        char collapsedPath[MAX_PATH];
+        CollapseEnvVarsInPath(Data.SalamanderExeFile, collapsedPath, MAX_PATH);
+        sprintf_s(buff, "SalamanderExe=%s", collapsedPath);
         if (ret)
             ret &= WriteProjectLine(hFile, buff);
     }
