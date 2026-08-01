@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -33,7 +32,7 @@
    There are (currently) three kinds of inflate blocks: stored, fixed, and
    dynamic.  The compressor outputs a chunk of data at a time and decides
    which method to use on a chunk-by-chunk basis.  A chunk might typically
-   be 32K to 64K, uncompressed.  If the chunk is uncompressible, then the
+   be 32K to 64K, uncompressed.  If the chunk is incompressible, then the
    "stored" method is used.  In this case, the bytes are simply stored as
    is, eight bits per byte, with none of the above coding.  The bytes are
    preceded by a count, since there is no longer an EOB code.

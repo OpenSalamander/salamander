@@ -89,7 +89,7 @@ BOOL CreateKey(HKEY hKey, const char* name, HKEY& createdKey)
     else
     {
         MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                   "Chyba pri ukladani klice", MB_OK | MB_ICONEXCLAMATION);
+                   "Error saving key", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -107,7 +107,7 @@ BOOL SetValue(HKEY hKey, const char* name, DWORD type,
     else
     {
         MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                   "Chyba pri ukladani klice", MB_OK | MB_ICONEXCLAMATION);
+                   "Error saving key", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -127,7 +127,7 @@ BOOL SetValueW(HKEY hKey, const char* name, DWORD type,
     else
     {
         MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                   "Chyba pri ukladani klice", MB_OK | MB_ICONEXCLAMATION);
+                   "Error saving key", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -143,7 +143,7 @@ BOOL OpenKey(HKEY hKey, const char* name, HKEY& openedKey)
     {
         if (res != ERROR_FILE_NOT_FOUND)
             MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -159,15 +159,15 @@ BOOL GetValue(HKEY hKey, const char* name, DWORD type, void* buffer, DWORD buffe
             return TRUE;
         else
         {
-            MessageBox(FrameWindow.HWindow, "Neocekavany typ hodnoty",
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(FrameWindow.HWindow, "Unexpected value type",
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
         }
     else
     {
         if (res != ERROR_FILE_NOT_FOUND)
             MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -185,15 +185,15 @@ BOOL GetValueW(HKEY hKey, const char* name, DWORD type, void* buffer, DWORD buff
             return TRUE;
         else
         {
-            MessageBox(FrameWindow.HWindow, "Neocekavany typ hodnoty",
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(FrameWindow.HWindow, "Unexpected value type",
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
         }
     else
     {
         if (res != ERROR_FILE_NOT_FOUND)
             MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -209,15 +209,15 @@ BOOL GetSize(HKEY hKey, const char* name, DWORD type, DWORD& bufferSize)
             return TRUE;
         else
         {
-            MessageBox(FrameWindow.HWindow, "Neocekavany typ hodnoty",
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(FrameWindow.HWindow, "Unexpected value type",
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
         }
     else
     {
         if (res != ERROR_FILE_NOT_FOUND)
             MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -235,15 +235,15 @@ BOOL GetSizeW(HKEY hKey, const char* name, DWORD type, DWORD& bufferSize)
             return TRUE;
         else
         {
-            MessageBox(FrameWindow.HWindow, "Neocekavany typ hodnoty",
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(FrameWindow.HWindow, "Unexpected value type",
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
         }
     else
     {
         if (res != ERROR_FILE_NOT_FOUND)
             MessageBox(FrameWindow.HWindow, GetErrorText(res),
-                       "Chyba pri nacitani konfigurace", MB_OK | MB_ICONEXCLAMATION);
+                       "Error loading configuration", MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
 }
@@ -271,7 +271,7 @@ BOOL ClearKey(HKEY key)
     while (RegEnumValue(key, 0, name, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
         if (RegDeleteValue(key, name) != ERROR_SUCCESS)
         {
-            TRACE_E("Nepodarilo se smazat hodnoty klice z registry.");
+            TRACE_E("Failed to delete key values from the registry.");
             break;
         }
         else

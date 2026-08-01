@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <tchar.h>
@@ -492,7 +491,7 @@ void Refill(CDecompressionObject* decompress)
 
     if (CZIPUNPACK(decompress)->BytesLeft == 0)
     {
-        TRACE_E("Pozadavek na doplneni vstupniho bufferu za hranici zkomprimovanych dat");
+        TRACE_E("Request to refill the input buffer beyond the compressed data boundary");
         decompress->Input->Error = IDS_EOF;
         return;
     }
@@ -1317,7 +1316,7 @@ int CZipUnpack::ExtractSingleFile(char* targetDir, int targetDirLen,
                                 {
                                     if (aesExtraField.VendorID != AES_NONVENDOR_ID ||
                                         ((AES_VERSION_1 != aesExtraField.Version) && (AES_VERSION_2 != aesExtraField.Version)))
-                                        TRACE_E("POZOR: soubor '" << FileNameDisp << "' je zakryptovan neznamou verzi AES, mozne komplikace");
+                                        TRACE_E("WARNING: file '" << FileNameDisp << "' is encrypted with an unknown AES version, possible complications");
 
                                     char pwd[MAX_PASSWORD];
                                     unsigned char salt[SAL_AES_MAX_SALT_LENGTH];

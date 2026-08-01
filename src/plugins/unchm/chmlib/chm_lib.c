@@ -1,6 +1,5 @@
 /* $Id$ */
 /***************************************************************************
-// CommentsTranslationProject: TRANSLATED
  *             chm_lib.c - CHM archive manipulation routines               *
  *                           -------------------                           *
  *                                                                         *

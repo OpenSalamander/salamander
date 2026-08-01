@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -603,7 +602,7 @@ int CSalamanderGeneral::DialogError(HWND parent, DWORD flags, const char* fileNa
 {
     if (fileName == NULL || error == NULL)
     {
-        TRACE_E("Invalid parametr (fileName == NULL || error == NULL) in CSalamanderGeneral::DialogError!");
+        TRACE_E("Invalid parameter (fileName == NULL || error == NULL) in CSalamanderGeneral::DialogError!");
         if (fileName == NULL)
             fileName = "";
         if (error == NULL)
@@ -665,7 +664,7 @@ int CSalamanderGeneral::DialogOverwrite(HWND parent, DWORD flags, const char* fi
 {
     if (fileName1 == NULL || fileData1 == NULL || fileName2 == NULL || fileData2 == NULL)
     {
-        TRACE_E("Invalid parametr (fileName1 == NULL || fileData1 == NULL || fileName2 == NULL || fileData2 == NULL) in CSalamanderGeneral::DialogOverwrite!");
+        TRACE_E("Invalid parameter (fileName1 == NULL || fileData1 == NULL || fileName2 == NULL || fileData2 == NULL) in CSalamanderGeneral::DialogOverwrite!");
         if (fileName1 == NULL)
             fileName1 = "";
         if (fileData1 == NULL)
@@ -741,7 +740,7 @@ int CSalamanderGeneral::DialogQuestion(HWND parent, DWORD flags, const char* fil
 {
     if (fileName == NULL || question == NULL)
     {
-        TRACE_E("Invalid parametr (fileName == NULL || question == NULL) in CSalamanderGeneral::DialogQuestion!");
+        TRACE_E("Invalid parameter (fileName == NULL || question == NULL) in CSalamanderGeneral::DialogQuestion!");
         if (fileName == NULL)
             fileName = "";
         if (question == NULL)
@@ -3226,7 +3225,7 @@ void CSalamanderGeneral::RemoveOneFileFromCache(const char* uniqueFileName)
     CALL_STACK_MESSAGE2("CSalamanderGeneral::RemoveOneFileFromCache(%s)", uniqueFileName);
     if (uniqueFileName == NULL)
     {
-        TRACE_E("Invalid parametr (NULL) in CSalamanderGeneral::RemoveOneFileFromCache!");
+        TRACE_E("Invalid parameter (NULL) in CSalamanderGeneral::RemoveOneFileFromCache!");
         return;
     }
     DiskCache.FlushOneFile(uniqueFileName);
@@ -3237,7 +3236,7 @@ void CSalamanderGeneral::RemoveFilesFromCache(const char* fileNamesRoot)
     CALL_STACK_MESSAGE2("CSalamanderGeneral::RemoveFilesFromCache(%s)", fileNamesRoot);
     if (fileNamesRoot == NULL)
     {
-        TRACE_E("Invalid parametr (NULL) in CSalamanderGeneral::RemoveFilesFromCache!");
+        TRACE_E("Invalid parameter (NULL) in CSalamanderGeneral::RemoveFilesFromCache!");
         return;
     }
     DiskCache.FlushCache(fileNamesRoot);
@@ -3260,7 +3259,7 @@ BOOL CSalamanderGeneral::GetConversionTable(HWND parent, char* table, const char
     CALL_STACK_MESSAGE2("CSalamanderGeneral::GetConversionTable(, , %s)", conversion);
     if (table == NULL)
     {
-        TRACE_E("Invalid parametr (table==NULL) in CSalamanderGeneral::GetConversionTable!");
+        TRACE_E("Invalid parameter (table==NULL) in CSalamanderGeneral::GetConversionTable!");
         return FALSE;
     }
     parent = (parent == NULL ? MainWindow->HWindow : parent);
