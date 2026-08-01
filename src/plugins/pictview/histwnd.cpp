@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 
-#include "lib\\pvw32dll.h"
 #include "pictview.h"
 #include "dialogs.h"
 #include "histwnd.h"
