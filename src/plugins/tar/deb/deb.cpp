@@ -333,7 +333,7 @@ BOOL CDEBArchive::AssignArchive(const char* archName, CArchive* archive)
         return TRUE;
     }
 
-    // archiv se uz nebude pouzivat
+    // archive will no longer be in use
     delete archive;
     return FALSE;
 }

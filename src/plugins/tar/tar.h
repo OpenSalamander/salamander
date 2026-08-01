@@ -265,7 +265,7 @@ struct SCommonHeader
 class CArchiveAbstract
 {
 public:
-    virtual ~CArchiveAbstract() {};
+    virtual ~CArchiveAbstract() = default;
 
     virtual BOOL ListArchive(const char* prefix, CSalamanderDirectoryAbstract* dir) = 0;
     virtual BOOL UnpackOneFile(const char* nameInArchive, const CFileData* fileData,
@@ -308,7 +308,7 @@ private:
 
 public:
     CArchive(LPCTSTR fileName, CSalamanderForOperationsAbstract* salamander, DWORD offset, CQuadWord inputSize);
-    ~CArchive();
+    ~CArchive() override;
 
     BOOL IsOk() const override { return Ok; }
 
