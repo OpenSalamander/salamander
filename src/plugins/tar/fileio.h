@@ -16,23 +16,26 @@ public:
     CDecompressFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord size);
     virtual ~CDecompressFile();
 
-    virtual BOOL IsCompressed() { return FALSE; }
-    virtual BOOL BuggySize() { return FALSE; }
+    virtual BOOL IsCompressed() const { return FALSE; }
 
     // returns our current state
-    BOOL IsOk() { return Ok; }
+    BOOL IsOk() const { return Ok; }
     // if an error occurred, returns its code
-    const unsigned int GetErrorCode() { return ErrorCode; }
+    unsigned int GetErrorCode() const { return ErrorCode; }
     // if a system error occurred (I/O etc.) returns more detail (::GetLastError())
-    const DWORD GetLastErr() { return LastError; }
+    DWORD GetLastErr() const { return LastError; }
+    // returns sie of bugger with unread data
+    size_t GetUnreadInputBufferSize() const { return min(size_t(DataEnd - DataStart), (InputSize - InputPos).LoDWord); }
     // returns the size of the archive on disk
-    CQuadWord GetStreamSize() { return InputSize; }
+    CQuadWord GetStreamSize() const { return InputSize; }
+	// returns current position in the file of the archive on disk
+    CQuadWord GetInputPos() const { return InputPos; }
     // returns the current position in the archive on disk
-    CQuadWord GetStreamPos() { return StreamPos; }
+    CQuadWord GetStreamPos() const { return StreamPos; }
     // returns the original file name stored in the archive (the tar name in gzip, etc.)
     const char* GetOldName();
     // returns the name of the file it works with (the archive name)
-    const char* GetArchiveName() { return FileName; }
+    const char* GetArchiveName() const { return FileName; }
 
     // returns part or all of the last read block for further use
     virtual void Rewind(unsigned short size);
@@ -53,7 +56,8 @@ protected:
     unsigned int ErrorCode;   // if an error occurred, it is specified here
     const char* FileName;     // archive name we are working with
     char* OldName;            // original file name before packing
-    CQuadWord InputSize;      // archive size
+    CQuadWord InputSize;      // archive size (partial)
+    CQuadWord InputPos;       // position in the archive (partial)
     CQuadWord StreamPos;      // position in the archive (for progress)
     HANDLE File;              // opened archive
     DWORD LastError;          // if there was a system error (I/O...), the details are here
@@ -67,13 +71,13 @@ class CZippedFile : public CDecompressFile
 public:
     // constructor and destructor
     CZippedFile(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize);
-    virtual ~CZippedFile();
+    ~CZippedFile() override;
 
-    virtual BOOL IsCompressed() { return TRUE; }
+    BOOL IsCompressed() const override { return TRUE; }
 
-    virtual void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr);
-    virtual const unsigned char* GetBlock(unsigned short size, unsigned short* read);
-    virtual void Rewind(unsigned short size);
+    void GetFileInfo(FILETIME& lastWrite, CQuadWord& fileSize, DWORD& fileAttr) override;
+    const unsigned char* GetBlock(unsigned short size, unsigned short* read) override;
+    void Rewind(unsigned short size) override;
 
 protected:
     unsigned char* Window;    // output circular buffer

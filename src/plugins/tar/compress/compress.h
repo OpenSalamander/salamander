@@ -27,9 +27,9 @@ class CCompress : public CZippedFile
 {
 public:
     CCompress(const char* filename, HANDLE file, unsigned char* buffer, unsigned long read, CQuadWord inputSize);
-    virtual ~CCompress();
+    ~CCompress() override;
 
-    virtual BOOL IsCompressed() { return TRUE; }
+    BOOL IsCompressed() const override { return TRUE; }
 
 protected:
     unsigned short* PrefixTab;
@@ -51,5 +51,5 @@ protected:
     unsigned char ReadyBits;
     unsigned char UsedBytes;
 
-    BOOL DecompressBlock(unsigned short needed);
+    BOOL DecompressBlock(unsigned short needed) override;
 };
