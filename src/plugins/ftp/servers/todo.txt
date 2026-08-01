@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 - we keep running into users who want to save bookmarks but do not want to save
   the Salamander configuration so they do not mess anything up (a bit

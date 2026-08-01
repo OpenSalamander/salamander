@@ -77,7 +77,7 @@ public:
 protected:
     void CleanIncompleteItems();
 
-    // analyse the line and add it to the array if it is a define
+    // analyse the line and add it to the array if it is a #define
     BOOL ProcessLine(const char* line, const char* lineEnd, int row);
 
     // convert 'param' to a numeric ID; when the value is still unknown because

@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -237,13 +236,13 @@ BOOL CAdvancedSEDialog::OnInit(WPARAM wParam, LPARAM lParam)
         CurrentSfxLang = (CSfxLang*)SendDlgItemMessage(Dlg, IDC_LANGUAGE, CB_GETITEMDATA, i, 0);
         if ((LRESULT)CurrentSfxLang == CB_ERR)
         {
-            TRACE_E("nepodarilo se ziskat aktualni jazyk z comboboxu");
+            TRACE_E("Failed to get current language from combo box");
             CurrentSfxLang = NULL;
         }
     }
     else
     {
-        TRACE_E("nepodarilo se ziskat aktualni jazyk z comboboxu");
+        TRACE_E("Failed to get current language from combo box");
         CurrentSfxLang = NULL;
     }
 
@@ -487,10 +486,10 @@ BOOL CAdvancedSEDialog::OnTexts(WORD wNotifyCode, WORD wID, HWND hwndCtl)
             dlg.Proceed();
         }
         else
-            TRACE_E("nepodarilo se ziskat aktualni jazyk z comboboxu");
+            TRACE_E("Failed to get current language from combo box");
     }
     else
-        TRACE_E("nepodarilo se ziskat aktualni jazyk z comboboxu");
+        TRACE_E("Failed to get current language from combo box");
 
     return TRUE;
 }
@@ -922,7 +921,7 @@ BOOL CAdvancedSEDialog::CreateFavoritesMenu()
     FavoritiesMenu = CreatePopupMenu();
     if (!FavoritiesMenu)
     {
-        TRACE_E("Nedostali jsme FavoritiesMenu ve funkci InitMenu.");
+        TRACE_E("Failed to create FavoritiesMenu in InitMenu.");
         return FALSE;
     }
     if (Favorities.Count == 0)
@@ -1048,7 +1047,7 @@ BOOL CAdvancedSEDialog::OnImport()
                     lstrcpy(settings.SfxFile, DefLanguage->FileName);
                 else
                 {
-                    TRACE_E("CAdvancedSEDialog::OnImport(), neni naloadena DefLanguage");
+                    TRACE_E("CAdvancedSEDialog::OnImport(), DefLanguage is not loaded");
                     settings.SfxFile[0] = 0;
                 }
 
@@ -1350,7 +1349,7 @@ BOOL CAdvancedSEDialog::OnResetValues()
     if (!DefLanguage)
     {
         //MessageBox(Dlg, LoadStr(IDS_NODEFSFX), LoadStr(IDS_ERROR), MB_OK | MB_ICONEXCLAMATION);
-        TRACE_E("Neni naloudena DefLanguage pro sfx advanced dialog a je volano reset values.");
+        TRACE_E("DefLanguage is not loaded for the SFX advanced dialog, and reset values was called.");
     }
     else
     {
@@ -1577,7 +1576,7 @@ BOOL CAdvancedSEDialog::OnFavoriteOption(WORD itemID)
     mi.fMask = MIIM_DATA;
     if (!GetMenuItemInfo(FavoritiesMenu, itemID, FALSE, &mi))
     {
-        TRACE_E("Nejde ziskat item data vubrane polozky z menu favorities.");
+        TRACE_E("Failed to get item data for the selected Favorities menu item.");
         return TRUE;
     }
     CFavoriteSfx* fav = (CFavoriteSfx*)mi.dwItemData;

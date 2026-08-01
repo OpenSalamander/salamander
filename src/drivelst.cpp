@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -2936,7 +2935,7 @@ BOOL CDrivesList::OnContextMenu(BOOL posByMouse, int itemIndex, int panel, const
 
     // commented out so that we can disconnect a network drive that is not accessible at the moment (longer waiting is tolerated)
     //  if (Drives->At(selectedIndex).DriveType == drvtRemote &&
-    //      Drives->At(selectedIndex).Accessible &&   // we will allow to disconnect unaccessible network drives, we verify the others
+    //      Drives->At(selectedIndex).Accessible &&   // we will allow to disconnect inaccessible network drives, we verify the others
     //      MainWindow->GetActivePanel()->CheckPath(TRUE, path) != ERROR_SUCCESS) return FALSE;
 
     //  MainWindow->ReleaseMenuNew();  // windows weren't built for more context menus

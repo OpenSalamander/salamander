@@ -2870,11 +2870,11 @@ BOOL CRendererWindow::RenameFileInternal(LPCTSTR oldPath, LPCTSTR oldName, TCHAR
                         else
                         {
                             if (in == INVALID_HANDLE_VALUE)
-                                TRACE_E("Nepodarilo se otevrit soubor " << path);
+                                TRACE_E("Failed to open file " << path);
                             else
                                 CloseHandle(in);
                             if (out == INVALID_HANDLE_VALUE)
-                                TRACE_E("Nepodarilo se otevrit soubor " << tgtPath);
+                                TRACE_E("Failed to open file " << tgtPath);
                             else
                                 CloseHandle(out);
                         }

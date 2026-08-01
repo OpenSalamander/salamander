@@ -1,2 +1,1 @@
-CommentsTranslationProject: TRANSLATED
 Only used to keep this directory present.

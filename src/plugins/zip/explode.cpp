@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -153,7 +152,7 @@ int Explode(CDecompressionObject* decompress);
    buffer of inflate is used, and it works just as well to always have
    a 32K circular buffer, so the index is anded with 0x7fff.  This is
    done to allow the window to also be used as the output buffer. */
-/* This must be supplied in an external module useable like "uch slide[8192];"
+/* This must be supplied in an external module usable like "uch slide[8192];"
    or "uch *slide;", where the latter would be malloc'ed.  In unzip, slide[]
    is actually a 32K area for use by inflate, which uses a 32K sliding window.
  */

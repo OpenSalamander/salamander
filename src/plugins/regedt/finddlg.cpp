@@ -1017,7 +1017,7 @@ CComboboxEdit::GetSel(DWORD *start, DWORD *end)
 void
 CComboboxEdit::ReplaceText(const char *text)
 {
-  // we have to revive the selection because the dumb combobox forgot it
+  // we have to revive the selection because the dumb combo box forgot it
   SendMessage(HWindow, EM_SETSEL, SelStart, SelEnd);
   SendMessage(HWindow, EM_REPLACESEL, TRUE, (LPARAM)text);
 }

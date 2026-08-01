@@ -22,7 +22,7 @@ enum
     WN_CBINIT_FINISHED,      // the combo box was initialized successfully
     WN_CALCULATING_DETAILS,  // detailed differences are being computed
     WN_COMPARE_FINISHED,     // comparison finishes
-    WN_GET_CHANGESCOMBO,     // queries HWND of the Change combobox
+    WN_GET_CHANGESCOMBO,     // queries HWND of the Change combo box
     WN_SET_PROGRESS,         // sets progress MAKELPARAM(percent, changesCnt)
     WN_ADD_CHANGE            // registers a change in binary comparison
 };

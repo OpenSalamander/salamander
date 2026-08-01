@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -778,13 +777,13 @@ void CSetWaitCursorWindow::AttachToWindow(HWND hWnd)
     DefWndProc = (WNDPROC)GetWindowLongPtr(hWnd, GWLP_WNDPROC);
     if (DefWndProc == NULL)
     {
-        TRACE_E("Spatny handle okna. hWnd = " << hWnd);
+        TRACE_E("Invalid window handle. hWnd = " << hWnd);
         DefWndProc = DefWindowProc;
         return;
     }
     if (!SetProp(hWnd, (LPCTSTR)AtomObject2, (HANDLE)this))
     {
-        TRACE_E("Chyba pri pripojovani objektu na okno.");
+        TRACE_E("Error attaching object to window.");
         DefWndProc = DefWindowProc;
         return;
     }
@@ -793,7 +792,7 @@ void CSetWaitCursorWindow::AttachToWindow(HWND hWnd)
 
     if (DefWndProc == CSetWaitCursorWindow::CWindowProc) // that would be recursion
     {
-        TRACE_E("Tak tohle by se vubec nemelo stat.");
+        TRACE_E("This should never happen.");
         DefWndProc = DefWindowProc;
     }
 }
