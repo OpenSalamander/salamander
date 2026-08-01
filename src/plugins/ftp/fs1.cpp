@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 
@@ -51,7 +50,7 @@ BOOL InitFS()
     WorkerMayBeClosedEvent = HANDLES(CreateEvent(NULL, TRUE, FALSE, NULL)); // manual, nonsignaled
     if (WorkerMayBeClosedEvent == NULL)
     {
-        TRACE_E("Nepodarilo se vytvorit event WorkerMayBeClosedEvent.");
+        TRACE_E("Failed to create event WorkerMayBeClosedEvent.");
         return FALSE;
     }
     HANDLES(InitializeCriticalSection(&WorkerMayBeClosedStateCS));
@@ -115,7 +114,7 @@ BOOL InitFS()
                                              SAVEBITS_CLASSNAME,
                                              NULL))
     {
-        TRACE_E("Nepodarilo se registrovat tridu SAVEBITS_CLASSNAME.");
+        TRACE_E("Failed to register class SAVEBITS_CLASSNAME.");
         return FALSE;
     }
 

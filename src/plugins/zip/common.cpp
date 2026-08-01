@@ -1,6 +1,5 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #include "precomp.h"
 #include <crtdbg.h>
@@ -1180,7 +1179,7 @@ int CZipCommon::CheckForExtraBytes()
     {
         if (Extract && expectedEndOfCentrDir > CentrDirOffs)
         {
-            TRACE_W("spatna velikost centralniho adresare, kompenzuji chybu");
+            TRACE_W("bad central directory size, compensating for the error");
             CentrDirSize = expectedEndOfCentrDir - CentrDirOffs;
             return 0;
         }
@@ -1355,10 +1354,10 @@ void CZipCommon::ProcessHeader(CFileHeader* fileHeader, CFileInfo* fileInfo)
                     fileInfo->StartDisk = NEXT(DWORD);
             }
             else
-                TRACE_E("zip64 extra-field je prilis maly, poskozeny zip?");
+                TRACE_E("Zip64 extra field is too small, corrupted ZIP?");
         }
         else
-            TRACE_E("nenasli jsme zip64 extra-field, poskozeny zip?");
+            TRACE_E("Zip64 extra field not found, corrupted ZIP?");
     }
 }
 

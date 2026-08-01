@@ -1,5 +1,4 @@
-﻿// CommentsTranslationProject: TRANSLATED
-#include "..\texts.rh2"
+﻿#include "..\texts.rh2"
 
 STRINGTABLE
 {

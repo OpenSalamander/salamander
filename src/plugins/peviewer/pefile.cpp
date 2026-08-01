@@ -112,7 +112,7 @@ BOOL CPEFile::ImageDirectoryOffset(DWORD dwIMAGE_DIRECTORY,
 
     if (!b64Bit)
     {
-        /* must be 0 thru (NumberOfRvaAndSizes-1) */
+        /* must be 0 through (NumberOfRvaAndSizes-1) */
         if (dwIMAGE_DIRECTORY >= poh->NumberOfRvaAndSizes)
             return FALSE;
 
@@ -123,7 +123,7 @@ BOOL CPEFile::ImageDirectoryOffset(DWORD dwIMAGE_DIRECTORY,
     {
         PIMAGE_OPTIONAL_HEADER64 poh64 = (PIMAGE_OPTIONAL_HEADER64)poh;
 
-        /* must be 0 thru (NumberOfRvaAndSizes-1) */
+        /* must be 0 through (NumberOfRvaAndSizes-1) */
         if (dwIMAGE_DIRECTORY >= poh64->NumberOfRvaAndSizes)
             return FALSE;
 

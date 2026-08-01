@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 SQLite sources are available at http://www.sqlite.org/download.html
 Use sqlite-amalgamation-*.zip.

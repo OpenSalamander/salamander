@@ -1,12 +1,11 @@
 ﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
 // SPDX-License-Identifier: GPL-2.0-or-later
-// CommentsTranslationProject: TRANSLATED
 
 #pragma once
 
 // ****************************************************************************
 //
-// CCounter -- hight precision counter for performance metering
+// CCounter -- high precision counter for performance metering
 
 class CCounter
 {

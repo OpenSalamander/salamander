@@ -1,4 +1,3 @@
-@rem CommentsTranslationProject: TRANSLATED
 @echo off
 call :langcopy_bat english
 call :langcopy_bat czech

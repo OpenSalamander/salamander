@@ -1,5 +1,4 @@
 ﻿// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
-// CommentsTranslationProject: TRANSLATED
 #ifndef __RESOURCE_RH2
 #define __RESOURCE_RH2
 

@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 Rework
 - Ignore differences caused by ambiguities in Unicode encoding.

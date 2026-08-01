@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 When moving to VC2013 (from VC2008), I changed address randomization for
 Release and ReleaseEx (enabled randomization), and from that moment

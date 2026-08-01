@@ -1,4 +1,3 @@
-CommentsTranslationProject: TRANSLATED
 
 OS/2:
 NOVELL/WINDOWS-NT:

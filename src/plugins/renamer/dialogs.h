@@ -57,7 +57,7 @@ void TransferCombo(CTransferInfo& ti, int id, int* comboContent, int& value);
 //
 // CComboboxEdit
 //
-// Because the combobox is cleared, the classic method (CB_GETEDITSEL) cannot determine
+// Because the combo box is cleared, the classic method (CB_GETEDITSEL) cannot determine
 // what the selection was after focus is lost. This control solves it.
 //
 
