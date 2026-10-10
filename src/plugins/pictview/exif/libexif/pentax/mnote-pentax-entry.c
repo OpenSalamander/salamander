@@ -425,24 +425,34 @@ mnote_pentax_entry_get_value (MnotePentaxEntry *entry,
 		case EXIF_FORMAT_SHORT:
 		  {
 			const unsigned char *data = entry->data;
-		  	size_t k, len = strlen(val);
+		  	size_t k, len = strlen(val), sizeleft;
+
+			  sizeleft = entry->size;
 		  	for(k=0; k<entry->components; k++) {
+        if (sizeleft < 2)
+					break;
 				vs = exif_get_short (data, entry->order);
 				snprintf (val+len, maxlen-len, "%i ", vs);
 				len = strlen(val);
 				data += 2;
+        sizeleft -= 2;
 			}
 		  }
 		  break;
 		case EXIF_FORMAT_LONG:
 		  {
 			const unsigned char *data = entry->data;
-		  	size_t k, len = strlen(val);
+		  	size_t k, len = strlen(val), sizeleft;
+
+			  sizeleft = entry->size;
 		  	for(k=0; k<entry->components; k++) {
+        if (sizeleft < 4)
+					break;
 				vl = exif_get_long (data, entry->order);
 				snprintf (val+len, maxlen-len, "%li", (long int) vl);
 				len = strlen(val);
 				data += 4;
+        sizeleft -= 4;
 			}
 		  }
 		  break;
@@ -455,5 +465,5 @@ mnote_pentax_entry_get_value (MnotePentaxEntry *entry,
 		break;
 	}
 
-	return (val);
+	return val;
 }
