@@ -142,6 +142,7 @@ STRINGTABLE
  IDS_MENU_OPT_VSB_DB,        "&Drive Bar"
  IDS_MENU_OPT_VSB_DB2,       "T&wo Drive Bars"
  IDS_MENU_OPT_VSB_EDIT,      "C&ommand Line"
+ IDS_MENU_OPT_VSB_TREE,      "&Tree View"
  IDS_MENU_OPT_VSB_BOTTOM,    "&Bottom Toolbar"
  IDS_MENU_OPT_VSB_UMLABELS,  "Te&xt Labels in User Menu Bar"
  IDS_MENU_OPT_VSB_GRIPS,     "&Lock the Toolbars"

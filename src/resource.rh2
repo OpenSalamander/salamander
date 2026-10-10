@@ -272,6 +272,7 @@
 
 #define CM_STORESEL            866
 #define CM_RESTORESEL          867
+#define CM_TOGGLETREEVIEW      868
 
 #define CM_NEWDROP             870
 
@@ -323,6 +324,8 @@
 #define IDC_EDITWINDOW      955
 #define IDC_EDITLINE        956
 #define IDC_DIRTEXT         957
+#define IDC_TREEVIEW        958
+#define IDC_TREESPLIT       959
 
 // icons
 #define IDI_SALAMANDER       960

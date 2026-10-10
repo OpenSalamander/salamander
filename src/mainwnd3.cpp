@@ -4053,6 +4053,16 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             break;
         }
 
+        case CM_TOGGLETREEVIEW:
+        {
+            ToggleTreeView();
+            IdleRefreshStates = TRUE; // on the next Idle, force a check of status variables
+            if (KeepSplitPositionCenteredOnVisiblePanes)
+                UpdateCenteredSplitPosition();
+            LayoutWindows();
+            break;
+        }
+
         case CM_TOGGLE_UMLABELS:
         {
             UMToolBar->ToggleLabels();
@@ -4448,6 +4458,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             if (IsPanelZoomed(TRUE) || IsPanelZoomed(FALSE))
             {
                 SplitPosition = BeforeZoomSplitPosition;
+                KeepSplitPositionCenteredOnVisiblePanes = FALSE;
                 // better protect ourselves against a bad value in BeforeZoomSplitPosition
                 if (IsPanelZoomed(TRUE) || IsPanelZoomed(FALSE))
                     SplitPosition = 0.5;
@@ -4455,6 +4466,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             else
             {
                 BeforeZoomSplitPosition = SplitPosition;
+                KeepSplitPositionCenteredOnVisiblePanes = FALSE;
                 if (LOWORD(wParam) == CM_ACTIVEZOOMPANEL)
                 {
                     if (activePanel == LeftPanel)
@@ -4940,6 +4952,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             popup->CheckItem(CM_TOGGLEDRIVEBAR2, FALSE, DriveBar2->HWindow != NULL);
             popup->CheckItem(CM_TOGGLEEDITLINE, FALSE, EditPermanentVisible);
             popup->CheckItem(CM_TOGGLEBOTTOMTOOLBAR, FALSE, BottomToolBar->HWindow != NULL);
+            popup->CheckItem(CM_TOGGLETREEVIEW, FALSE, Configuration.TreeViewVisible);
             popup->CheckItem(CM_TOGGLE_UMLABELS, FALSE, Configuration.UserMenuToolbarLabels);
             popup->CheckItem(CM_TOGGLE_GRIPS, FALSE, !Configuration.GripsVisible);
             break;
@@ -5095,12 +5108,17 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
             }
             if (uMsg == WM_LBUTTONDBLCLK)
             {
-                if (SplitPosition != 0.5)
+                double targetSplitPosition = GetVisiblePanesCenteredSplitPosition();
+
+                if (fabs(SplitPosition - targetSplitPosition) > 0.0001)
                 {
-                    SplitPosition = 0.5;
+                    KeepSplitPositionCenteredOnVisiblePanes = TRUE;
+                    SplitPosition = targetSplitPosition;
                     LayoutWindows();
                     FocusPanel(GetActivePanel());
                 }
+                else
+                    KeepSplitPositionCenteredOnVisiblePanes = TRUE;
                 return 0;
             }
         }
@@ -5167,6 +5185,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 if (DragSplitX != leftWidth)
                 {
                     DragSplitX = leftWidth;
+                    KeepSplitPositionCenteredOnVisiblePanes = FALSE;
                     SplitPosition = DragSplitPosition;
                     LayoutWindows();
                 }
@@ -5205,6 +5224,7 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
                 // accept the position only when the drag finishes legally
                 //          int splitWidth = MainWindow->GetSplitBarWidth();
                 //          SplitPosition = (double)DragSplitX / (WindowWidth - splitWidth);
+                KeepSplitPositionCenteredOnVisiblePanes = FALSE;
                 SplitPosition = DragSplitPosition;
                 LayoutWindows();
             }
@@ -5367,6 +5387,9 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         WindowWidth = LOWORD(lParam);
         WindowHeight = HIWORD(lParam);
 
+        if (KeepSplitPositionCenteredOnVisiblePanes)
+            UpdateCenteredSplitPosition();
+
         if (SplitPosition < 0)
             SplitPosition = 0;
         if (SplitPosition > 1)
@@ -5494,6 +5517,8 @@ MENU_TEMPLATE_ITEM AddToSystemMenu[] =
         CFilesWindow* panel = GetActivePanel();
         if (panel != NULL && panel->DirectoryLine != NULL)
             panel->DirectoryLine->InvalidateAndUpdate(!CaptionIsActive);
+        if (LeftPanel != NULL)
+            LeftPanel->UpdateTreeViewColors();
 
         if (!CaptionIsActive)
         {
