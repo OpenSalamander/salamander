@@ -3,64 +3,45 @@
 
 #pragma once
 
-#define MAX_BLOCK_COUNT 256
+#include <memory>
+#include <vector>
 #define DEFAULT_BLOCK_SIZE 1024 * 1024 * 1 //1MB
 
 class CRegionAllocator
 {
 protected:
     size_t _blockSize;
-    int _blockCount;
-
-    int _currentBlock;
+    size_t _currentBlock;
     size_t _lastBlockRemSize;
     BYTE* _lastBlockPosition;
 
-    BYTE* _blocks[MAX_BLOCK_COUNT];
+    std::vector<std::unique_ptr<BYTE[]>> _blocks;
 
 public:
     CRegionAllocator(size_t blockSize = DEFAULT_BLOCK_SIZE)
     {
         this->_blockSize = blockSize;
-        this->_currentBlock = -1;
-        this->_blockCount = 0;
+        this->_currentBlock = 0;
         this->_lastBlockRemSize = 0;
         this->_lastBlockPosition = NULL;
     }
-    ~CRegionAllocator()
-    {
-        for (int i = 0; i < this->_blockCount; i++)
-        {
-            free(this->_blocks[i]);
-        }
-        this->_blockCount = 0;
-    }
+    ~CRegionAllocator() = default;
     void* Allocate(size_t size)
     {
-#ifdef _DEBUG
         if (size > this->_blockSize)
         {
-            //			throw std::bad_alloc();
-            return NULL;
+            throw std::bad_alloc();
         }
-#endif
 
         if (size > this->_lastBlockRemSize)
         {
-            this->_currentBlock++;
-            if (this->_currentBlock == this->_blockCount)
+            if (this->_currentBlock == this->_blocks.size())
             {
-                this->_blocks[this->_blockCount] = (BYTE*)malloc(this->_blockSize);
-                if (this->_blocks[this->_blockCount] == NULL)
-                {
-                    this->_currentBlock--;
-                    //					throw std::bad_alloc();
-                    return NULL;
-                }
-                this->_blockCount++;
+                this->_blocks.push_back(std::make_unique_for_overwrite<BYTE[]>(this->_blockSize));
             }
             this->_lastBlockRemSize = this->_blockSize;
-            this->_lastBlockPosition = this->_blocks[this->_currentBlock];
+            this->_lastBlockPosition = this->_blocks[this->_currentBlock].get();
+            this->_currentBlock++;
         }
 
         void* p = this->_lastBlockPosition;
@@ -70,16 +51,12 @@ public:
     }
     void FreeAll(BOOL deallocate = TRUE)
     {
-        this->_currentBlock = -1;
+        this->_currentBlock = 0;
         this->_lastBlockRemSize = 0;
         this->_lastBlockPosition = NULL;
         if (deallocate)
         {
-            for (int i = 0; i < this->_blockCount; i++)
-            {
-                free(this->_blocks[i]);
-            }
-            this->_blockCount = 0;
+            this->_blocks.clear();
         }
     }
 };
