@@ -77,9 +77,9 @@ All source files use UTF-8 with BOM and are formatted with `clang-format`. See `
 
 ## Related Forks
 
-- [Tandem Commanded](https://github.com/tandemcommander/tandemcommander) by [Pavel Stupka](https://github.com/pavel-stupka)
 - [Sally](https://github.com/0xeb/sally) by [Elias Bachaalany / 0xeb](https://github.com/0xeb/)
 - [Samandarin](https://github.com/KRtkovo-eu-AI/salamander/) by [Ondřej Kotas / KRtekTM](https://github.com/KRtekTM)
+- [Tandem Commander](https://github.com/tandemcommander/tandemcommander) by [Pavel Stupka](https://github.com/pavel-stupka)
 
 ## License
 
