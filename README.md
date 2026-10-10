@@ -77,7 +77,9 @@ All source files use UTF-8 with BOM and are formatted with `clang-format`. See `
 
 ## Related Forks
 
-Two interesting Open Salamander forks are [Sally](https://github.com/0xeb/sally) by 0xeb and [Samandarin](https://github.com/KRtkovo-eu-AI/salamander/) by KRtekTM.
+- [Tandem Commanded](https://github.com/tandemcommander/tandemcommander) by [Pavel Stupka](https://github.com/pavel-stupka)
+- [Sally](https://github.com/0xeb/sally) by [Elias Bachaalany / 0xeb](https://github.com/0xeb/)
+- [Samandarin](https://github.com/KRtkovo-eu-AI/salamander/) by [Ondřej Kotas / KRtekTM](https://github.com/KRtekTM)
 
 ## License
 
