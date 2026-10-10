@@ -1,0 +1,13 @@
+[Files]
+Original=$BUILD_DIR\plugins\ftp\lang\english.slg
+Translated=$BUILD_DIR\plugins\ftp\lang\english.slg
+Include=..\..\symbols\plugins\ftp\symbols.inc
+SalMenu=..\..\symbols\plugins\ftp\salmenu.mnu
+IgnoreList=..\..\symbols\plugins\ftp\ignore.lst
+CheckList=..\..\symbols\plugins\ftp\check.lst
+SalamanderExe=$BUILD_DIR\salamand.exe
+
+[Settings]
+ExpandStrings=0
+ExpandMenus=0
+ExpandDialogs=0

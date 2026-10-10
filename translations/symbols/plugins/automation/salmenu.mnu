@@ -1,0 +1,11 @@
+ExecuteScriptMenu=
+{
+IDS_RUNFOCUSED
+}
+
+PluginMenu=
+{
+IDS_RUNFOCUSED
+IDS_SCRIPTPOPUPMENU
+}
+

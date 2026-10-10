@@ -1,0 +1,16 @@
+Salamander: IDS_NEWNAME_COPY (12230) and IDS_NEWNAME_OF (12231)
+===============================================================
+
+Try to duplicate file twice: when file is focused in panel, press
+Ctrl+C and then twice Ctrl+V. Then try it in Windows Explorer
+(runninng in the same language). Names of duplicated files
+should be the same. You should try it on Windows XP and then
+on Vista or Windows 7.
+
+Sample on XP: "file.txt" -> "Copy of file.txt", "Copy (2) of file.txt"
+Sample on Vista: "file.txt" -> "file - Copy.txt", "file - Copy (2).txt".
+
+IDS_NEWNAME_COPY (12230) contains "Copy" from "Copy (?) of file.txt"
+and "file - Copy (?).txt". IDS_NEWNAME_OF (12231) contains "of" from
+"Copy (?) of file.txt", if you do not want to use it, set it to single
+space character (" ").

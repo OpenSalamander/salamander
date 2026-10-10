@@ -835,6 +835,24 @@ BOOL CData::Load(const char* original, const char* translated, BOOL import)
     HINSTANCE hSrcModule = LoadLibraryEx(original, NULL, LOAD_LIBRARY_AS_DATAFILE);
     if (hSrcModule != NULL)
     {
+        // If the file to be translated doesn't exist, create it as a copy of the original (english.slg).
+        // This allows starting a new translation without manually copying the file first.
+        if (GetFileAttributes(translated) == INVALID_FILE_ATTRIBUTES)
+        {
+            wchar_t buff[2 * MAX_PATH];
+            swprintf_s(buff, L"Target file does not exist, creating copy from original: %hs -> %hs", original, translated);
+            OutWindow.AddLine(buff, mteInfo);
+            if (!CopyFile(original, translated, FALSE))
+            {
+                DWORD err = GetLastError();
+                sprintf_s(errtext, "Error copying source file %s to %s.\n%s", original, translated, GetErrorText(err));
+                MessageBox(GetMsgParent(), errtext, ERROR_TITLE, MB_OK | MB_ICONEXCLAMATION);
+                FreeLibrary(hSrcModule);
+                SetCursor(hOldCursor);
+                return FALSE;
+            }
+        }
+
         HINSTANCE hDstModule = LoadLibraryEx(translated, NULL, LOAD_LIBRARY_AS_DATAFILE);
         if (hDstModule != NULL)
         {

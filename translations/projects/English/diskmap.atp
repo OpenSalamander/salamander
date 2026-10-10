@@ -1,0 +1,11 @@
+[Files]
+Original=$BUILD_DIR\plugins\diskmap\lang\english.slg
+Translated=$BUILD_DIR\plugins\diskmap\lang\english.slg
+Include=..\..\symbols\plugins\diskmap\symbols.inc
+SalMenu=..\..\symbols\plugins\diskmap\salmenu.mnu
+SalamanderExe=$BUILD_DIR\salamand.exe
+
+[Settings]
+ExpandStrings=0
+ExpandMenus=0
+ExpandDialogs=0

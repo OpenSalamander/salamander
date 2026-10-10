@@ -1,0 +1,17 @@
+PluginMenu=
+{
+IDS_TESTARCHIVE
+}
+
+MsgBoxButtons=
+{
+IDS_BTN_DELETE
+IDS_BTN_KEEP
+}
+
+MsgBoxButtons=
+{
+IDS_BTN_RETRY
+IDS_BTN_ABORT
+}
+

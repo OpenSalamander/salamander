@@ -1,0 +1,30 @@
+Overlap in dialog: 500: 503 x 504
+Overlap in dialog: 500: 503 x 3000
+Overlap in dialog: 520: 588 x 589
+Overlap in dialog: 520: 590 x 591
+Overlap in dialog: 520: 590 x 3003
+Overlap in dialog: 580: 588 x 589
+Overlap in dialog: 580: 590 x 591
+Overlap in dialog: 750: 756 x 777
+Overlap in dialog: 750: 756 x 776
+
+Clipped text in dialog: 500: 502
+Clipped text in dialog: 500: 503
+Clipped text in dialog: 520: 588
+Clipped text in dialog: 520: 590
+Clipped text in dialog: 580: 588
+Clipped text in dialog: 580: 590
+Clipped text in dialog: 779: 782
+Clipped text in dialog: 785: 787
+Clipped text in dialog: 795: 810
+
+Size of icon is small: 750: 776
+
+Misaligned controls in dialog: 560: 567 x 571
+Misaligned controls in dialog: 560: 568 x 571
+Misaligned controls in dialog: 740: 744 x 1
+
+Different sized controls in dialog: 560: 567 x 571
+
+Control is progress bar: 680: 690
+Control is progress bar: 750: 757

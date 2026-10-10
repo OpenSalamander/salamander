@@ -1,23 +1,61 @@
-In the subdirectories salamand\translations, there are current translations of the latest version
-published on the forum. This is a version that translators can work on, and it is available for
-download at the Translators section on the forum.
+Open Salamander Translation System
+====================================
 
-ATTENTION: These are not the language versions for the current Salamander build!!!
+This directory contains the translation infrastructure for Open Salamander.
 
-All translation modifications are made exclusively on the last published version.
 
-ATTENTION: After each translation change, release a new version of Translator with the current
-translation versions to avoid confusion.
+Directory Structure
+-------------------
 
-Maintain consistency in this directory and the directory of the last released version in salbin
-in the subdirectory translator.
+  translations/
+  |
+  +-- !build_translations.cmd     - Main script: builds translated .slg files
+  |                                 from .slt text archives
+  +-- doc/                        - Documentation and reference materials for translator tool
+  +-- projects/                   - Translator project directories (.atp and .slt files)
+  +-- symbols/                    - Symbol files for translator (Resource IDs, check and ignore lists, etc.)
 
-As soon as the current Salamander build is mature enough for a "translation-ready" release (any type,
-even just EAP; it must run at least until the next released version for Translators), prepare a version
-of Translator for the new version on the web for translators.
 
-Further translation modifications will only be accepted for this new version.
+Automated Build Workflow
+------------------------
 
-If someone provides a modified old version and the translation of the new version has not yet been
-changed, do a new import of the old version into the new one (no conflict will arise). Then naturally
-release a new version of Translator with the current translation versions.
+  1. Build the main solution (salamand.sln) - produces english.slg files
+  2. Build the translator ("Utils (Release)" config or translator.sln)
+  3. Run: !build_translations.cmd [config] [arch]
+
+     config  - Release or Debug (default: Release)
+     arch    - x86 or x64 (default: x86)
+
+  This script invokes translator tool for all `.atp` project files. Translator
+  then reads binary `english.slg` file, makes its copy, and merges all the
+  translated strings, menus, dialogs into it, as defined in `.slt` file.
+
+  That's why translator needs to have the english .slg files to be compiled.
+
+
+Interactive Translation Workflow (for translators)
+--------------------------------------------------
+
+  1. Build the main solution and translator as above
+  2. Run: projects\!setup_projects.bat [config] [arch]
+     This generates .atp project files and per-language wrapper scripts.
+  3. cd projects\<language>
+  4. Run !open_all.bat to open all modules in the translator GUI
+     Or open individual .atp files with translator.exe
+  5. After translating, run !export_slt.bat to export .slt files
+
+
+File Formats
+------------
+
+  .atp   Translator project files. Define the source (english.slg),
+         target (e.g. czech.slg), symbol files, and SLT archive paths
+         for a single module in a single language.
+
+  .slt   Text-based translation archives that can be version-controlled
+         and diffed. They contain all translatable strings, menus, and
+         dialog resources for a single module (main app or plugin).
+
+  .slg   Binary resource DLLs loaded by Salamander at runtime.
+         Produced by importing .slt files into english.slg (the original)
+         using translator.exe.
