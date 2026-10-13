@@ -6,7 +6,7 @@
 #include "../dlldefs.h"
 #include "../fileio.h"
 #include "../gzip/gzip.h"
-#include "../bzip/bzlib.h"
+#include <bzlib.h>
 #include "../bzip/bzip.h"
 #include "rpm.h"
 

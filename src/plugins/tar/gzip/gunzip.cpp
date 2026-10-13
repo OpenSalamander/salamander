@@ -35,7 +35,7 @@ struct SHufTable
 };
 
 // CRCs
-unsigned long crc_32_tab[] =
+static const unsigned long crc_32_tab[] =
     {
         0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
         0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
@@ -972,7 +972,7 @@ BOOL CGZip::InflateBlock()
 CGZip::CGZip(const char* filename, HANDLE file, unsigned char* buffer, unsigned long start, unsigned long read, CQuadWord inputSize) : CZippedFile(filename, file, buffer, start, read, inputSize), CopyInProgress(FALSE), LastBlock(FALSE), CopyCount(0),
                                                                                                                                        CopyDistance(0), BlockType(0), LiteralTable(NULL), LiteralBits(0), DistanceTable(NULL),
                                                                                                                                        DistanceBits(0), FixedLiteralTable(NULL), FixedLiteralBits(0), FixedDistanceTable(NULL),
-                                                                                                                                       FixedDistanceBits(0), StoredLen(0), BitBuffer(0), BitCount(0), InProgress(FALSE)
+                                                                                                                                       FixedDistanceBits(0), StoredLen(0), BitBuffer(0), BitCount(0), crc(0xffffffffL), InProgress(FALSE)
 {
     CALL_STACK_MESSAGE2("CGZip::CGZip(%s, , , )", filename);
 

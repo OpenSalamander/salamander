@@ -13,6 +13,12 @@
 #include "tar.rh2"
 #include "lang\lang.rh"
 
+// just to get versions of the 3rd party libs
+#include <bzlib.h>
+#include <libbz3.h>
+#include <lzma.h>
+#include <zstd.h>
+
 // TODO: resolve case sensitivity
 // TODO: handle multiple files with the same name in one archive
 // TODO: finish the output in the RPM viewer (convert dates to a readable format, etc.)
@@ -40,9 +46,10 @@
 //                3 - work-in-progress version before Servant Salamander 2.5 beta 1, removed the *.CPIO viewer
 //                4 - work-in-progress version before Servant Salamander 2.5 beta 1, added .z archives
 //                5 - work-in-progress version before Servant Salamander 2.52 beta 2, added .DEB archives
+//                6 - added .bzip3, .xz and .zst archives
 
 int ConfigVersion = 0;
-#define CURRENT_CONFIG_VERSION 5
+#define CURRENT_CONFIG_VERSION 6
 const char* CONFIG_VERSION = "Version";
 
 // plugin interface object, its methods are called from Salamander
@@ -158,7 +165,7 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
                                    VERSINFO_VERSION_NO_PLATFORM,
                                    VERSINFO_COPYRIGHT,
                                    LoadStr(IDS_PLUGIN_DESCRIPTION),
-                                   "TAR" /* do not translate */, "tar;tgz;taz;tbz;gz;bz;bz2;z;rpm;cpio;deb");
+                                   "TAR" /* do not translate! */, "tar;tgz;taz;tbz;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk");
 
     salamander->SetPluginHomePageURL("www.altap.cz");
 
@@ -167,12 +174,28 @@ CPluginInterfaceAbstract* WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAbs
 
 void CPluginInterface::About(HWND parent)
 {
-    char buf[1000];
+    // strip additional information after ',' from bzip version string
+    const char* bzip_ver = BZ2_bzlibVersion();
+    auto bzip_ver_len = strcspn(bzip_ver, ",");
+    if (!bzip_ver_len)
+        bzip_ver_len = strlen(bzip_ver);
+
+    char buf[3000];
     _snprintf_s(buf, _TRUNCATE,
-                "%s " VERSINFO_VERSION "\n\n" VERSINFO_COPYRIGHT "\nbzip2 library Copyright © 1996-2010 Julian R Seward\n\n"
-                "%s",
+                "%s " VERSINFO_VERSION "\n" VERSINFO_COPYRIGHT "\n\n"
+                "%s\n\n"
+                "Built with 3rd party libraries:\n"
+                "- bzip2, Copyright © 1996-2025 Julian R Seward (version %.*s)\n"
+                "- bzip3, Copyright © by Kamila Szewczyk, 2022-2025 (version %s)\n"
+                "- lzma (version %s)\n"
+                "- Zstandard, Copyright © 2016-2025 Facebook, Inc. (version %s)\n\n",
                 LoadStr(IDS_PLUGINNAME),
-                LoadStr(IDS_PLUGIN_DESCRIPTION));
+                LoadStr(IDS_PLUGIN_DESCRIPTION),
+                static_cast<int>(bzip_ver_len), bzip_ver,
+                bz3_version(),
+                lzma_version_string(),
+                ZSTD_versionString()
+                );
     SalamanderGeneral->SalMessageBox(parent, buf, LoadStr(IDS_ABOUT), MB_OK | MB_ICONINFORMATION);
 }
 
@@ -204,18 +227,20 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
 {
     CALL_STACK_MESSAGE1("CPluginInterface::Connect()");
 
+    // ignored during upgrades except when upgrading to version 4 - required update because of "*.z" and others
+    bool upgrade = ConfigVersion < CURRENT_CONFIG_VERSION;
+
     // base part:
-    salamander->AddCustomUnpacker("TAR (Plugin)",
-                                  "*.tar;*.tgz;*.tbz;*.taz;"
-                                  "*.tar.gz;*.tar.bz;*.tar.bz2;*.tar.z;"
-                                  "*_tar.gz;*_tar.bz;*_tar.bz2;*_tar.z;"
-                                  "*_tar_gz;*_tar_bz;*_tar_bz2;*_tar_z;"
-                                  "*.tar_gz;*.tar_bz;*.tar_bz2;*.tar_z;"
-                                  "*.gz;*.bz;*.bz2;*.z;"
-                                  "*.rpm;*.cpio;*.deb",
-                                  ConfigVersion < 5);                                       // ignored during upgrades except when upgrading to version 4 - required update because of "*.z" and others
-    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;z;rpm;cpio;deb", FALSE, FALSE); // ignored when upgrading the plugin
-    salamander->AddViewer("*.rpm", FALSE);                                                  // ignored when upgrading the plugin except when upgrading from a version without the viewer (the version shipped with SS 2.0)
+    salamander->AddCustomUnpacker("TAR-z (Plugin)", "*.z;*.tz;*taz;*.tar.z;*_tar.z;*_tar_z;*.tar_z", upgrade);
+    salamander->AddCustomUnpacker("TAR-zst (Plugin)", "*.zst;*.tzs;*.tar.zst;*_tar.zst;*_tar_zst;*.tar_zst", upgrade);
+    salamander->AddCustomUnpacker("TAR-xz (Plugin)", "*.xz;*.txz;*.tar.xz;*_tar.xz;*_tar_xz;*.tar_xz", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz3 (Plugin)", "*.bz3;*.tbz3;*.tar.bz3;*_tar.bz3;*_tar_bz3;*.tar_bz3", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz2 (Plugin)", "*.bz2;*.tbz2;*.tar.bz2;*_tar.bz2;*_tar_bz2;*.tar_bz2", upgrade);
+    salamander->AddCustomUnpacker("TAR-bz (Plugin)", "*.bz;*.tbz;*.tar.bz;*_tar.bz;*_tar_bz;*.tar_bz;", upgrade);
+    salamander->AddCustomUnpacker("TAR-gz (Plugin)", "*.gz;*.tgz;*.tar.gz;*_tar.gz;*_tar_gz;*.tar_gz", upgrade);
+    salamander->AddCustomUnpacker("TAR (Plugin)", "*.tar;*.rpm;*.cpio;*.deb;*.ipk", upgrade);
+    salamander->AddPanelArchiver("tgz;tbz;taz;tar;gz;bz;bz2;bz3;xz;zst;z;rpm;cpio;deb;ipk", FALSE, FALSE); // ignored when upgrading the plugin
+    salamander->AddViewer("*.rpm", FALSE);                                                                 // ignored when upgrading the plugin except when upgrading from a version without the viewer (the version shipped with SS 2.0)
 
     // section for upgrades:
     if (ConfigVersion < 1) // 1 - work-in-progress version before Servant Salamander 2.5 beta 1, added tbz, bz, bz2, and rpm
@@ -244,7 +269,12 @@ void CPluginInterface::Connect(HWND parent, CSalamanderConnectAbstract* salamand
     }
     if (ConfigVersion < 5) // 5 - work-in-progress version before Servant Salamander 2.52 beta 2, added .deb archives
     {
-        salamander->AddPanelArchiver("deb", FALSE, TRUE);
+        salamander->AddPanelArchiver("deb;ipk", FALSE, TRUE);
+    }
+
+    if (ConfigVersion < 6) // 6 - added xz, zst a bz3 archives
+    {
+        salamander->AddPanelArchiver("xz;zst;bz3", FALSE, TRUE);
     }
 }
 
@@ -457,8 +487,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
         free(buffer);
         CloseHandle(file);
         buff[499] = '\0';
-        strcpy(buff, LoadStr(IDS_RPMERR_TMPFILE));
-        strncat(buff, name, 499 - strlen(buff));
+        strcpy_s(buff, LoadStr(IDS_RPMERR_TMPFILE));
+        strncat_s(buff, name, 499 - strlen(buff));
         SalamanderGeneral->ShowMessageBox(buff, LoadStr(IDS_ERR_RPMTITLE), MSGBOX_ERROR);
         return FALSE;
     }
@@ -503,8 +533,8 @@ BOOL CPluginInterfaceForViewer::ViewFile(const char* name, int left, int top, in
     textViewerData.Mode = 0; // text mode
     char caption[500];
     strncpy_s(caption, 451, name, _TRUNCATE);
-    strcat(caption, " - ");
-    strcat(caption, LoadStr(IDS_RPM_VIEWTITLE));
+    strcat_s(caption, " - ");
+    strcat_s(caption, LoadStr(IDS_RPM_VIEWTITLE));
     textViewerData.Caption = caption;
     textViewerData.WholeCaption = TRUE;
     // show the file in Salamander's text viewer and delete it afterwards
