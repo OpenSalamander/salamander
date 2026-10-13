@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 
-#include "lib\\pvw32dll.h"
 #include "renderer.h"
 #include "pictview.h"
 #include "pictview.rh"

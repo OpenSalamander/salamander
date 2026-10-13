@@ -59,7 +59,6 @@ void* just_to_show_error = &change_default_value_of_WIN32_WINNT;
 
 #include <sti.h>
 
-#include "lib/pvw32dll.h"
 #include "renderer.h"
 #include "dialogs.h"
 #include "pictview.h"

@@ -100,6 +100,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgManifestInstall>true</VcpkgManifestInstall>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -131,6 +136,7 @@
     </ClCompile>
     <ClCompile Include="..\dialogs.cpp">
     </ClCompile>
+    <ClCompile Include="..\heif.cpp" />
     <ClCompile Include="..\histwnd.cpp">
     </ClCompile>
     <ClCompile Include="..\pictview.cpp">
@@ -151,6 +157,7 @@
     </ClCompile>
     <ClCompile Include="..\PVMessageWrapper.cpp">
     </ClCompile>
+    <ClCompile Include="..\PVOverrider.cpp" />
     <ClCompile Include="..\pvtwain.cpp">
     </ClCompile>
     <ClCompile Include="..\render1.cpp">
@@ -167,8 +174,12 @@
     </ClCompile>
     <ClCompile Include="..\utils.cpp">
     </ClCompile>
+    <ClCompile Include="..\webp.cpp" />
     <ClCompile Include="..\wiawrap.cpp">
     </ClCompile>
+    <ClCompile Include="..\x11-colormap.cpp" />
+    <ClCompile Include="..\xpm-lite.cpp" />
+    <ClCompile Include="..\xpm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\auxtools.h">
@@ -201,6 +212,7 @@
     </ClInclude>
     <ClInclude Include="..\dialogs.h">
     </ClInclude>
+    <ClInclude Include="..\heif.h" />
     <ClInclude Include="..\histwnd.h">
     </ClInclude>
     <ClInclude Include="..\lib\pvw32dll.h">
@@ -215,6 +227,7 @@
     </ClInclude>
     <ClInclude Include="..\PVMessage.h">
     </ClInclude>
+    <ClInclude Include="..\PVOverrider.h" />
     <ClInclude Include="..\pvtwain.h">
     </ClInclude>
     <ClInclude Include="..\renderer.h">
@@ -225,8 +238,12 @@
     </ClInclude>
     <ClInclude Include="..\utils.h">
     </ClInclude>
+    <ClInclude Include="..\webp.h" />
     <ClInclude Include="..\wiawrap.h">
     </ClInclude>
+    <ClInclude Include="..\x11-colormap.h" />
+    <ClInclude Include="..\xpm-lite.h" />
+    <ClInclude Include="..\xpm.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lang\lang.rh">
