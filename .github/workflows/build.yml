@@ -1,0 +1,55 @@
+# This is a basic workflow that is automatically triggered
+
+name: Build Solution
+
+# Controls when the action will run. Workflow runs when push or pull to main  branch
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  OPENSAL_BUILD_DIR: ${{ github.workspace }}\build\
+  __your_choice: 8
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+        
+      - name: echo MSBuild
+        run: msbuild -version          
+        
+      - name: Build
+        run: |
+          cd ${{ github.workspace }}\src\vcxproj
+          .\rebuild.cmd
+          
+#      - name: Populate build
+#        run: |
+#          cd ${{ github.workspace }}\src\vcxproj
+#          .\!populate_build_dir.cmd
+      
+      - name: Zip artifact for deployment
+        run: |
+          zip release.zip ${{ github.workspace }}\salamander\* -r
+      
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: salamander
+          path: release.zip
+      
