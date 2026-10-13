@@ -15,7 +15,7 @@
 
 #include "spl_vers.h" // pull in the version and build numbers
 
-#define VERSINFO_COPYRIGHT   "Copyright © 1997-2023 Open Salamander Authors"
+#define VERSINFO_COPYRIGHT   "Copyright © 1997-2025 Open Salamander Authors"
 #define VERSINFO_COMPANY     "Open Salamander"
 
 #define VERSINFO_DESCRIPTION "Split & Combine plugin for Open Salamander"
